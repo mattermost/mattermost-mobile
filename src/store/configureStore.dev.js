@@ -9,8 +9,7 @@ export default function configureStore(preloadedState) {
         rootReducer,
         preloadedState,
         compose(
-            //applyMiddleware(thunk, createLogger()),
-            applyMiddleware(thunk),
+            applyMiddleware(thunk, createLogger()),
             devTools({
                 name: 'Mattermost',
                 hostname: 'localhost',
