@@ -1,24 +1,17 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-// import {Client} from 'mattermost';
-// const client = new Client();
-// client.useHeaderToken();
-// client.setUrl('https://pre-release.mattermost.com');
-
-if (typeof process !== 'undefined') {
-    var fetch = require('node-fetch');
-}
+import 'isomorphic-fetch';
 
 import {requestData, requestSuccess, requestFailure} from './helpers';
 
-export const HEADER_X_VERSION_ID = 'x-version-id';
-export const HEADER_X_CLUSTER_ID = 'x-cluster-id';
-export const HEADER_TOKEN = 'token';
-export const HEADER_BEARER = 'BEARER';
-export const HEADER_AUTH = 'Authorization';
+const HEADER_X_VERSION_ID = 'x-version-id';
+const HEADER_X_CLUSTER_ID = 'x-cluster-id';
+const HEADER_TOKEN = 'token';
+const HEADER_BEARER = 'BEARER';
+const HEADER_AUTH = 'Authorization';
 
-export class ClientClass {
+export class Client {
     constructor() {
         this.teamId = '';
         this.serverVersion = '';
@@ -169,5 +162,4 @@ export class ClientClass {
     }
 }
 
-const client = new ClientClass();
-export default client;
+export default new Client();

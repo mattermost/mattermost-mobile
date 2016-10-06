@@ -9,29 +9,24 @@
   },
   "dependencies": {
     "isomorphic-fetch": "2.2.1",
-    "mattermost": "3.4.0",
     "react": "15.3.1",
     "react-native": "0.33.0",
-    "react-native-keyboard-spacer": "0.3.0",
     "react-redux": "4.4.5",
     "redux": "3.6.0",
     "redux-thunk": "2.1.0"
   },
   "devDependencies": {
     "babel-jest": "16.0.0",
-    "babel-polyfill": "6.16.0",
     "babel-preset-react-native": "1.9.0",
-    "deep-freeze-strict": "1.1.1",
-    "jest": "15.1.1",
-    "jest-cli": "15.1.1",
+    "jest": "16.0.0",
     "jest-react-native": "16.0.0",
-    "node-fetch": "1.6.3",
     "react-test-renderer": "15.3.2",
     "redux-logger": "2.6.1",
     "remote-redux-devtools": "0.4.9",
     "remote-redux-devtools-on-debugger": "0.6.2"
   },
   "jest": {
-    "preset": "jest-react-native"
+    "preset": "jest-react-native",
+    "setupFiles": ["setupJest.js"]
   }
 }

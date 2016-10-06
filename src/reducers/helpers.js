@@ -5,7 +5,7 @@ export function initialState() {
     return {
         data: {},
         loading: false,
-        error: {}
+        error: null
     };
 }
 
@@ -22,7 +22,7 @@ export function handle(REQUEST, SUCCESS, FAILURE, state, action) {
         return {
             data: action.data,
             loading: false,
-            error: {}
+            error: null
         };
 
     case FAILURE:

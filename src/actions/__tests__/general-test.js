@@ -6,8 +6,6 @@ import * as actions from '../general';
 import Client from '../client';
 
 describe('General Actions', () => {
-    Client.setUrl('https://pre-release.mattermost.com');
-
     // it('getClientConfig', (done) => {
     //     const store = configureStore();
     //     store.subscribe(() => {
@@ -23,27 +21,34 @@ describe('General Actions', () => {
 
     it('Get ping basic success', (done) => {
         const store = configureStore();
+
         store.subscribe(() => {
-            expect(store.getState().entities.general.ping.error).toEqual({});
-            if (store.getState().entities.general.ping.data.version &&
-                store.getState().entities.general.ping.data.version.length > 0) {
+            const ping = store.getState().entities.general.ping;
+
+            if (ping.error) {
+                done.fail(ping.error);
+            } else if (!ping.loading) {
                 done();
             }
         });
 
+        Client.setUrl('https://pre-release.mattermost.com');
         actions.loadPing()(store.dispatch, store.getState);
     });
 
+
     it('Get ping fail with invalid url', (done) => {
         const store = configureStore();
+
         store.subscribe(() => {
-            expect(store.getState().entities.general.ping.error).toEqual({});
-            if (store.getState().entities.general.ping.data.version &&
-                store.getState().entities.general.ping.data.version.length > 0) {
+            const ping = store.getState().entities.general.ping;
+
+            if (!ping.loading && ping.error) {
                 done();
             }
         });
 
+        Client.setUrl('https://example.com');
         actions.loadPing()(store.dispatch, store.getState);
     });
 });

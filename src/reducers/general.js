@@ -12,9 +12,7 @@ export function ping(state = initialState(), action) {
     return handle(types.PING_REQUEST, types.PING_SUCCESS, types.PING_FAILURE, state, action);
 }
 
-const general = combineReducers({
+export default combineReducers({
     clientConfig,
     ping
 });
-
-export default general;

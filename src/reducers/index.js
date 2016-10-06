@@ -10,9 +10,7 @@ const views = combineReducers({
     device
 });
 
-const rootReducer = combineReducers({
+export default combineReducers({
     entities,
     views
 });
-
-export default rootReducer;
