@@ -2,9 +2,10 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {TouchableHighlight, Text, ActivityIndicator, View, StyleSheet} from 'react-native';
 
-import {GlobalStyles} from '../styles';
+import {ActivityIndicator, StyleSheet, Text, TouchableHighlight, View} from 'react-native';
+
+import {GlobalStyles} from 'styles';
 
 const styles = StyleSheet.create({
     container: {
@@ -31,8 +32,7 @@ export default class Button extends React.Component {
     }
 
     render() {
-        var loading = null;
-
+        let loading = null;
         if (this.props.loading) {
             loading = (
                 <ActivityIndicator

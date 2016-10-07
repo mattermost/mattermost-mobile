@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {ActivityIndicator, View, StyleSheet} from 'react-native';
+
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 const styles = StyleSheet.create({
     container: {

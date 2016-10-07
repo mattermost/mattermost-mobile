@@ -1,6 +1,9 @@
-import general from './general';
-import device from './device';
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
 import {combineReducers} from 'redux';
+import device from './device.js';
+import general from './general.js';
 
 const entities = combineReducers({
     general

@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import configureStore from '../../store/configureStore';
-import * as actions from '../general';
-import Client from '../client';
+import * as Actions from 'actions/general.js';
+import Client from 'actions/client.js';
+import configureStore from 'store/configureStore.js';
 
 describe('General Actions', () => {
     // it('getClientConfig', (done) => {
@@ -16,7 +16,7 @@ describe('General Actions', () => {
     //         }
     //     });
 
-    //     actions.loadClientConfig()(store.dispatch, store.getState);
+    //     Actions.loadClientConfig()(store.dispatch, store.getState);
     // });
 
     it('Get ping basic success', (done) => {
@@ -33,9 +33,8 @@ describe('General Actions', () => {
         });
 
         Client.setUrl('https://pre-release.mattermost.com');
-        actions.loadPing()(store.dispatch, store.getState);
+        Actions.loadPing()(store.dispatch, store.getState);
     });
-
 
     it('Get ping fail with invalid url', (done) => {
         const store = configureStore();
@@ -49,6 +48,6 @@ describe('General Actions', () => {
         });
 
         Client.setUrl('https://example.com');
-        actions.loadPing()(store.dispatch, store.getState);
+        Actions.loadPing()(store.dispatch, store.getState);
     });
 });

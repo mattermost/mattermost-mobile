@@ -1,8 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import client from './client';
-import {emptyError, requestData, requestSuccess, requestFailure} from './helpers';
+import Client from './client.js';
+import {requestData, requestSuccess, requestFailure} from './helpers.js';
 
 export const CLIENT_CONFIG_REQUEST = 'CLIENT_CONFIG_REQUEST';
 export const CLIENT_CONFIG_SUCCESS = 'CLIENT_CONFIG_SUCCESS';
@@ -12,7 +12,7 @@ function fetchClientConfig() {
     return (dispatch) => {
         dispatch(requestData(CLIENT_CONFIG_REQUEST));
 
-        client.getClientConfig(
+        Client.getClientConfig(
             (data) => {
                 dispatch(requestSuccess(CLIENT_CONFIG_SUCCESS, data));
             },
@@ -34,11 +34,11 @@ export const PING_SUCCESS = 'PING_SUCCESS';
 export const PING_FAILURE = 'PING_FAILURE';
 
 function fetchPing() {
-    return client.doFetch(PING_REQUEST, PING_SUCCESS, PING_FAILURE, `${client.getGeneralRoute()}/ping`);
+    return Client.doFetch(PING_REQUEST, PING_SUCCESS, PING_FAILURE, `${Client.getGeneralRoute()}/ping`);
 }
 
 export function loadPing() {
-    return (dispatch, getState) => { // eslint-disable-line no-unused-vars
+    return (dispatch) => {
         return dispatch(fetchPing());
     };
 }

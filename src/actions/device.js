@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {requestData, requestSuccess, requestFailure} from './helpers';
+import {requestData, requestSuccess, requestFailure} from './helpers.js';
 import {AsyncStorage} from 'react-native';
 
 export const DEVICE_REQUEST = 'DEVICE_REQUEST';

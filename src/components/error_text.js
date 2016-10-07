@@ -2,9 +2,10 @@
 // See License.txt for license information.
 
 import React from 'react';
+
 import {Text} from 'react-native';
 
-import {GlobalStyles} from '../styles';
+import {GlobalStyles} from 'styles';
 
 export default class ErrorText extends React.Component {
     static propTypes = {

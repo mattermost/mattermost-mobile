@@ -3,11 +3,11 @@
 
 import 'isomorphic-fetch';
 
-import {requestData, requestSuccess, requestFailure} from './helpers';
+import {requestData, requestSuccess, requestFailure} from './helpers.js';
 
-const HEADER_X_VERSION_ID = 'x-version-id';
-const HEADER_X_CLUSTER_ID = 'x-cluster-id';
-const HEADER_TOKEN = 'token';
+// const HEADER_X_VERSION_ID = 'x-versin-id';
+// const HEADER_X_CLUSTER_ID = 'x-cluster-id';
+// const HEADER_TOKEN = 'token';
 const HEADER_BEARER = 'BEARER';
 const HEADER_AUTH = 'Authorization';
 
@@ -33,6 +33,8 @@ export class Client {
 
     setUrl(url) {
         this.url = url;
+        console.log('aaaaaa ' + this.url);
+        console.log(this);
     }
 
     setAcceptLanguage(locale) {

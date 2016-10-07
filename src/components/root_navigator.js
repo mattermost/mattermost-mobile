@@ -1,11 +1,12 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component, PropTypes} from 'react';
-import {StyleSheet, Navigator, TouchableOpacity, Text, Image} from 'react-native';
+import React from 'react';
 
-import menuImage from '../images/menu.png';
-import SelectServerView from './SelectServerView';
+import {Image, Navigator, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import SelectServerView from './select_server_view.js';
+
+import menuImage from 'images/menu.png';
 
 const styles = StyleSheet.create({
     container: {
@@ -59,13 +60,13 @@ const styles = StyleSheet.create({
     }
 });
 
-var NavigationBarRouteMapper = {
+const NavigationBarRouteMapper = {
     LeftButton(route, navigator, index, navState) {
         if (index === 0) {
             return null;
         }
 
-        var previousRoute = navState.routeStack[index - 1];
+        const previousRoute = navState.routeStack[index - 1];
 
         if (previousRoute.signin) {
             return (
@@ -81,12 +82,10 @@ var NavigationBarRouteMapper = {
             );
         }
 
-        var title = null;
+        let title = null;
         if (previousRoute.root) {
             title = 'Server';
-        }
-
-        if (previousRoute.channels) {
+        } else if (previousRoute.channels) {
             title = 'Channels';
         }
 
@@ -96,7 +95,7 @@ var NavigationBarRouteMapper = {
                 style={styles.navBarLeftButton}
             >
                 <Text style={[styles.navBarText, styles.navBarButtonText]}>
-                  {'< '}{title}
+                    {'< ' + title}
                 </Text>
             </TouchableOpacity>
         );
@@ -115,7 +114,7 @@ var NavigationBarRouteMapper = {
     }
 };
 
-export default class RootNavigator extends Component {
+export default class RootNavigator extends React.Component {
     renderScene = (route, navigator) => {
         if (route.root) {
             return (

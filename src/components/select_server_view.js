@@ -2,17 +2,18 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
-import {StyleSheet, Text, View, Image, TextInput} from 'react-native';
+
+import Client from 'actions/client.js';
 import {connect} from 'react-redux';
+import {loadPing} from 'actions/general.js';
+
+import Button from './button.js';
+import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 
-import {GlobalStyles} from '../styles';
-import logo from '../images/logo.png';
-import Button from './Button';
-import ErrorText from './ErrorText';
-
-import {loadPing} from '../actions/general';
-import Client from '../actions/client';
+import {GlobalStyles} from 'styles';
+import logo from 'images/logo.png';
+import ErrorText from './error_text.js';
 
 const styles = StyleSheet.create({
     container: {
@@ -47,8 +48,8 @@ class SelectServerView extends Component {
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
         this.props.loadPing().then(() => {
-            //console.log('FOUND IT - AAAAAAAAAAAAAAAAAA ' + this.props.ping.loading);
-            //console.log(this.props.ping);
+            // console.log('FOUND IT - AAAAAAAAAAAAAAAAAA ' + this.props.ping.loading);
+            // console.log(this.props.ping);
         });
 
         // Client.getPing(
@@ -111,4 +112,3 @@ function mapStateToProps(state) {
 export default connect(mapStateToProps, {
     loadPing
 })(SelectServerView);
-
