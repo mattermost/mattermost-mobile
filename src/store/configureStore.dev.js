@@ -23,7 +23,7 @@ export default function configureStore(preloadedState) {
     if (module.hot) {
         // Enable Webpack hot module replacement for reducers
         module.hot.accept(() => {
-            const nextRootReducer = require('reducers/index.js').default; // eslint-disable-line global-require
+            const nextRootReducer = require('../reducers/index.js').default; // eslint-disable-line global-require
             store.replaceReducer(nextRootReducer);
         });
     }

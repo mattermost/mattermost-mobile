@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "babel-eslint": "7.0.0",
+    "babel-plugin-resolver": "1.1.0",
     "babel-preset-react-native": "1.9.0",
     "babel-register": "6.16.3",
     "eslint": "3.7.1",
@@ -26,13 +27,16 @@
   },
   "scripts": {
     "check": "eslint --ext \".jsx\" --ignore-pattern node_modules --quiet .",
-    "start": "NODE_PATH=./src node node_modules/react-native/local-cli/cli.js start",
-    "test": "NODE_PATH=./src mocha --compilers js:babel-register",
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "mocha --compilers js:babel-register",
     "postinstall": "remotedev-debugger --hostname localhost --port 5678 --injectserver"
   },
   "babel": {
     "presets": [
       "react-native"
+    ],
+    "plugins": [
+      ["resolver", {"resolveDirs": ["src"]}]
     ]
   }
 }

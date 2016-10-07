@@ -33,8 +33,6 @@ export class Client {
 
     setUrl(url) {
         this.url = url;
-        console.log('aaaaaa ' + this.url);
-        console.log(this);
     }
 
     setAcceptLanguage(locale) {
