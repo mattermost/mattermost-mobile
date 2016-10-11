@@ -8,7 +8,8 @@ import TestHelper from './test_helper.js';
 describe('Client.General', () => {
     it('General.getClientConfig', (done) => {
         TestHelper.initBasic(({client}) => {
-            const {onRequest, onSuccess, onFailure} = TestHelper.assertOnRequestHappensFirst(
+            client.getClientConfig(
+                null,
                 (data) => {
                     assert.ok(data.Version);
                     assert.ok(data.BuildNumber);
@@ -21,14 +22,13 @@ describe('Client.General', () => {
                     done(new Error(err));
                 }
             );
-
-            client.getClientConfig(onRequest, onSuccess, onFailure)();
         });
     });
 
     it('General.getPing', (done) => {
         TestHelper.initBasic(({client}) => {
-            const {onRequest, onSuccess, onFailure} = TestHelper.assertOnRequestHappensFirst(
+            client.getPing(
+                null,
                 () => {
                     done();
                 },
@@ -36,14 +36,14 @@ describe('Client.General', () => {
                     done(new Error(err));
                 }
             );
-
-            client.getPing(onRequest, onSuccess, onFailure)();
         });
     });
 
     it('General.getPing - Invalid URL', (done) => {
         TestHelper.initBasic(({client}) => {
-            const {onRequest, onSuccess, onFailure} = TestHelper.assertOnRequestHappensFirst(
+            client.setUrl('https://example.com/fake/url');
+            client.getPing(
+                null,
                 () => {
                     done(new Error('ping should\'ve failed'));
                 },
@@ -51,24 +51,22 @@ describe('Client.General', () => {
                     done();
                 }
             );
-
-            client.setUrl('https://example.com/fake/url');
-            client.getPing(onRequest, onSuccess, onFailure)();
         });
     });
 
     // it('General.logClientError', function(done) {
-    //     const {onRequest, onSuccess, onFailure} = TestHelper.assertOnRequestHappensFirst(
-    //         (data) => {
-    //             TestHelper.assertStatusOkay(data);
+    //     TestHelper.initBasic(({client}) => {
+    //         client.logClientError(
+    //             null,
+    //             (data) => {
+    //                 TestHelper.assertStatusOkay(data);
 
-    //             done();
-    //         },
-    //         (err) => {
-    //             done(new Error(err));
-    //         }
-    //     );
-
-    //     Client.logClientError(onRequest, onSuccess, onFailure)();
+    //                 done();
+    //             },
+    //             (err) => {
+    //                 done(new Error(err));
+    //             }
+    //         )();
+    //     });
     // });
 });

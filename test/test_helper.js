@@ -6,32 +6,36 @@ import assert from 'assert';
 import Client from 'client/client.js';
 
 class TestHelper {
-    assertOnRequestHappensFirst(onSuccess, onFailure) {
-        let hasReceivedOnRequest = false;
-
-        return {
-            onRequest: () => {
-                hasReceivedOnRequest = true;
-            },
-            onSuccess: (response, data) => {
-                assert(hasReceivedOnRequest);
-
-                onSuccess(response, data);
-            },
-            onFailure: (err) => {
-                assert(hasReceivedOnRequest);
-
-                onFailure(err);
-            }
-        };
+    constructor() {
+        this.basicClient = null;
     }
 
-    assertStatusOkay(data) {
+    assertStatusOkay = (data) => {
         assert(data);
         assert(data.status === 'OK');
     }
 
-    createClient() {
+    generateId = () => {
+        // Implementation taken from http://stackoverflow.com/a/2117523
+        let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+
+        id = id.replace(/[xy]/g, (c) => {
+            const r = Math.floor(Math.random() * 16);
+
+            let v;
+            if (c === 'x') {
+                v = r;
+            } else {
+                v = (r & 0x3) | 0x8;
+            }
+
+            return v.toString(16);
+        });
+
+        return 'uid' + id;
+    }
+
+    createClient = () => {
         const client = new Client();
 
         client.setUrl('http://localhost:8065');
@@ -39,7 +43,48 @@ class TestHelper {
         return client;
     }
 
-    initBasic(callback) {
+    fakeEmail = () => {
+        return 'success' + this.generateId() + '@simulator.amazonses.com';
+    }
+
+    fakeUser = () => {
+        return {
+            email: this.fakeEmail(),
+            allow_marketing: true,
+            password: 'password1',
+            username: this.generateId()
+        };
+    }
+
+    fakeTeam = () => {
+        const name = this.generateId();
+
+        return {
+            name,
+            display_name: `Unit Test ${name}`,
+            type: 'O',
+            email: this.fakeEmail(),
+            allowed_domains: ''
+        };
+    }
+
+    fakeChannel = () => {
+        const name = this.generateId();
+
+        return {
+            name,
+            display_name: `Unit Test ${name}`,
+            type: 'O'
+        };
+    }
+
+    fakePost = () => {
+        return {
+            message: `Unit Test ${this.generateId()}`
+        };
+    }
+
+    initBasic = (callback) => {
         const client = this.createClient();
 
         callback({client});

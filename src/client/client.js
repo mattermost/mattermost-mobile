@@ -6,11 +6,11 @@ import 'isomorphic-fetch';
 const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
+const HEADER_TOKEN = 'token';
 
 export default class Client {
     constructor() {
         this.teamId = '';
-        this.serverVersion = ''; // ??
         this.logToConsole = false;
         this.token = '';
         this.url = '';
@@ -26,10 +26,6 @@ export default class Client {
         this.url = url;
     }
 
-    setAcceptLanguage(locale) {
-        this.defaultHeaders['Accept-Language'] = locale;
-    }
-
     setTeamId(id) {
         this.teamId = id;
     }
@@ -40,10 +36,6 @@ export default class Client {
         }
 
         return this.teamId;
-    }
-
-    getServerVersion() {
-        return this.serverVersion;
     }
 
     getBaseRoute() {
@@ -114,27 +106,21 @@ export default class Client {
         return `${this.url}${this.urlVersion}/users/${userId}`;
     }
 
-    setTranslations(messages) {
-        this.translations = messages;
-    }
-
     enableLogErrorsToConsole(enabled) {
         this.logToConsole = enabled;
     }
 
-    useHeaderToken() {
-        this.useToken = true;
-        if (this.token !== '') {
-            this.defaultHeaders[HEADER_AUTH] = `${HEADER_BEARER} ${this.token}`;
-        }
-    }
-
     getOptions(options) {
+        const headers = {
+            [HEADER_REQUESTED_WITH]: 'XMLHttpRequest'
+        };
+
+        if (this.token) {
+            headers[HEADER_AUTH] = `${HEADER_BEARER} ${this.token}`;
+        }
+
         return {
-            headers: {
-                [HEADER_AUTH]: this.token,
-                [HEADER_REQUESTED_WITH]: 'XMLHttpRequest'
-            },
+            headers,
             ...options
         };
     }
@@ -178,26 +164,37 @@ export default class Client {
 
     // User routes
 
-    // login(onRequest, onSuccess, onFailure, loginId, password, token) {
-    //     const body = {
-    //         login_id: loginId,
-    //         password,
-    //         token
-    //     };
+    createUser = (onRequest, onSuccess, onFailure, user) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/create`,
+            {method: 'post', body: JSON.stringify(user)},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
 
-    //     return this.doFetch(
-    //         `${this.getUsersRoute()}/login`,
-    //         {method: 'post', body},
-    //         onRequest,
-    //         (data, response) => {
-    //             console.log(response.headers);
-    //             // if (response.headers.)
+    login = (onRequest, onSuccess, onFailure, loginId, password, token = null) => {
+        const body = {
+            login_id: loginId,
+            password,
+            token
+        };
 
-    //             onSuccess(data, response);
-    //         },
-    //         onFailure
-    //     );
-    // }
+        return this.doFetch(
+            `${this.getUsersRoute()}/login`,
+            {method: 'post', body: JSON.stringify(body)},
+            onRequest,
+            (data, response) => {
+                if (response.headers.has(HEADER_TOKEN)) {
+                    this.token = response.headers.get(HEADER_TOKEN);
+                }
+
+                onSuccess(data, response);
+            },
+            onFailure
+        );
+    }
 
     // getInitialLoad(success, error) {
     //     request.
@@ -208,29 +205,41 @@ export default class Client {
     //         end(this.handleResponse.bind(this, 'getInitialLoad', success, error));
     // }
 
+    // Team routes
+
+    createTeam = (onRequest, onSuccess, onFailure, team) => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/create`,
+            {method: 'post', body: JSON.stringify(team)},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
     doFetch = (url, options, onRequest, onSuccess, onFailure) => {
-        return () => {
+        if (onRequest) {
             onRequest();
+        }
 
-            return fetch(url, this.getOptions(options)).then(
-                (response) => {
-                    return response.json().then((data) => ({data, response}));
-                }).then(({data, response}) => {
-                    if (!response.ok) {
-                        return Promise.reject(data);
-                    }
-
-                    return onSuccess(data, response);
-                }).catch((err) => {
-                    // TODO errors that return non-json data get sent here
-
-                    if (this.logToConsole) {
-                        console.log(err); // eslint-disable-line no-console
-                    }
-
-                    onFailure(err);
+        return fetch(url, this.getOptions(options)).then(
+            (response) => {
+                return response.json().then((data) => ({data, response}));
+            }).then(({data, response}) => {
+                if (!response.ok) {
+                    return Promise.reject(data);
                 }
-            );
-        };
+
+                return onSuccess(data, response);
+            }).catch((err) => {
+                // TODO errors that return non-json data get sent here
+
+                if (this.logToConsole) {
+                    console.log(err); // eslint-disable-line no-console
+                }
+
+                onFailure(err);
+            }
+        );
     }
 }
