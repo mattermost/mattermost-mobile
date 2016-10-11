@@ -11,6 +11,7 @@ describe('Client.User', () => {
         const user = TestHelper.fakeUser();
 
         client.createUser(
+            user,
             null,
             (data) => {
                 assert.ok(data.id, 'id is empty');
@@ -20,8 +21,7 @@ describe('Client.User', () => {
             },
             (err) => {
                 done(new Error(err));
-            },
-            user
+            }
         );
     });
 
@@ -30,9 +30,13 @@ describe('Client.User', () => {
         const user = TestHelper.fakeUser();
 
         client.createUser(
+            user,
             null,
             () => {
                 client.login(
+                    user.email,
+                    user.password,
+                    '',
                     null,
                     (data) => {
                         assert.ok(data.id, 'id is empty');
@@ -43,15 +47,12 @@ describe('Client.User', () => {
                     },
                     (err) => {
                         done(new Error(err));
-                    },
-                    user.email,
-                    user.password
+                    }
                 );
             },
             (err) => {
                 done(new Error(err));
-            },
-            user
+            }
         );
     });
 

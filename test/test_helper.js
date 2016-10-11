@@ -92,14 +92,19 @@ class TestHelper {
         const client = this.createClient();
 
         client.createUser(
+            this.fakeUser(),
             null,
             (user) => {
                 this.basicUser = user;
 
                 client.login(
+                    user.email,
+                    PASSWORD,
+                    '',
                     null,
                     () => {
                         client.createTeam(
+                            this.fakeTeam(),
                             null,
                             (team) => {
                                 this.basicTeam = team;
@@ -107,11 +112,13 @@ class TestHelper {
                                 client.setTeamId(team.id);
 
                                 client.createChannel(
+                                    this.fakeChannel(this.basicTeam.id),
                                     null,
                                     (channel) => {
                                         this.basicChannel = channel;
 
                                         client.createPost(
+                                            this.fakePost(this.basicChannel.id),
                                             null,
                                             (post) => {
                                                 this.basicPost = post;
@@ -127,36 +134,30 @@ class TestHelper {
                                             (err) => {
                                                 console.error(err);
                                                 throw err;
-                                            },
-                                            this.fakePost(this.basicChannel.id)
+                                            }
                                         );
                                     },
                                     (err) => {
                                         console.error(err);
                                         throw err;
-                                    },
-                                    this.fakeChannel(this.basicTeam.id)
+                                    }
                                 );
                             },
                             (err) => {
                                 console.error(err);
                                 throw err;
-                            },
-                            this.fakeTeam()
+                            }
                         );
                     },
                     (err) => {
                         console.error(err);
                         throw err;
-                    },
-                    user.email,
-                    PASSWORD
+                    }
                 );
             },
             (err) => {
                 throw err;
-            },
-            this.fakeUser()
+            }
         );
     }
 }

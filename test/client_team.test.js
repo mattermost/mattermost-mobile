@@ -11,6 +11,7 @@ describe('Client.Team', () => {
         const team = TestHelper.fakeTeam();
 
         client.createTeam(
+            team,
             null,
             (data) => {
                 assert.equal(data.id.length > 0, true);
@@ -20,8 +21,7 @@ describe('Client.Team', () => {
             },
             (err) => {
                 done(new Error(err));
-            },
-            team
+            }
         );
     });
 });

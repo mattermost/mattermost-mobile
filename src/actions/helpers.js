@@ -44,6 +44,6 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
             return dispatch(() => requestFailure(failure, err), getState);
         }
 
-        return dispatch(() => clientFunc(onRequest, onSuccess, onFailure, ...args), getState);
+        return dispatch(() => clientFunc(...args, onRequest, onSuccess, onFailure), getState);
     };
 }

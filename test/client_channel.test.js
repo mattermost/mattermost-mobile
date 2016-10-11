@@ -11,6 +11,7 @@ describe('Client.Channel', () => {
             const channel = TestHelper.fakeChannel(team.id);
 
             client.createChannel(
+                channel,
                 null,
                 (data) => {
                     assert.ok(data.id, 'id is empty');
@@ -21,8 +22,7 @@ describe('Client.Channel', () => {
                 },
                 (err) => {
                     done(new Error(err));
-                },
-                channel
+                }
             );
         });
     });

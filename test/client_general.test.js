@@ -42,6 +42,7 @@ describe('Client.General', () => {
     it('getPing - Invalid URL', (done) => {
         TestHelper.initBasic(({client}) => {
             client.setUrl('https://example.com/fake/url');
+
             client.getPing(
                 null,
                 () => {
@@ -57,6 +58,8 @@ describe('Client.General', () => {
     it('logClientError', function(done) {
         TestHelper.initBasic(({client}) => {
             client.logClientError(
+                'this is a test',
+                'ERROR',
                 null,
                 (data) => {
                     TestHelper.assertStatusOkay(data);

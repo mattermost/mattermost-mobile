@@ -147,10 +147,10 @@ export default class Client {
         );
     }
 
-    logClientError = (onRequest, onSuccess, onFailure, message, level = 'ERROR') => {
+    logClientError = (message, level, onRequest, onSuccess, onFailure) => {
         const body = {
             message,
-            level
+            level: level || 'ERROR'
         };
 
         return this.doFetch(
@@ -164,7 +164,7 @@ export default class Client {
 
     // User routes
 
-    createUser = (onRequest, onSuccess, onFailure, user) => {
+    createUser = (user, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getUsersRoute()}/create`,
             {method: 'post', body: JSON.stringify(user)},
@@ -174,7 +174,7 @@ export default class Client {
         );
     }
 
-    login = (onRequest, onSuccess, onFailure, loginId, password, token = null) => {
+    login = (loginId, password, token, onRequest, onSuccess, onFailure) => {
         const body = {
             login_id: loginId,
             password,
@@ -208,7 +208,7 @@ export default class Client {
 
     // Team routes
 
-    createTeam = (onRequest, onSuccess, onFailure, team) => {
+    createTeam = (team, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getTeamsRoute()}/create`,
             {method: 'post', body: JSON.stringify(team)},
@@ -220,7 +220,7 @@ export default class Client {
 
     // Channel routes
 
-    createChannel = (onRequest, onSuccess, onFailure, channel) => {
+    createChannel = (channel, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getChannelsRoute()}/create`,
             {method: 'post', body: JSON.stringify(channel)},
@@ -232,7 +232,7 @@ export default class Client {
 
     // Post routes
 
-    createPost = (onRequest, onSuccess, onFailure, post) => {
+    createPost = (post, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getPostsRoute(post.channel_id)}/create`,
             {method: 'post', body: JSON.stringify(post)},

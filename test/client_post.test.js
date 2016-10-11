@@ -11,6 +11,7 @@ describe('Client.Post', () => {
             const post = TestHelper.fakePost(channel.id);
 
             client.createPost(
+                post,
                 null,
                 (data) => {
                     assert.ok(data.id, 'id is empty');
@@ -19,8 +20,7 @@ describe('Client.Post', () => {
                 },
                 (err) => {
                     done(new Error(err));
-                },
-                post
+                }
             );
         });
     });
