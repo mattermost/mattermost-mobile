@@ -3,27 +3,47 @@
 
 import assert from 'assert';
 
-export function assertOnRequestHappensFirst(onSuccess, onFailure) {
-    let hasReceivedOnRequest = false;
+import Client from 'client/client.js';
 
-    return {
-        onRequest: () => {
-            hasReceivedOnRequest = true;
-        },
-        onSuccess: (response, data) => {
-            assert(hasReceivedOnRequest);
+class TestHelper {
+    assertOnRequestHappensFirst(onSuccess, onFailure) {
+        let hasReceivedOnRequest = false;
 
-            onSuccess(response, data);
-        },
-        onFailure: (err) => {
-            assert(hasReceivedOnRequest);
+        return {
+            onRequest: () => {
+                hasReceivedOnRequest = true;
+            },
+            onSuccess: (response, data) => {
+                assert(hasReceivedOnRequest);
 
-            onFailure(err);
-        }
-    };
+                onSuccess(response, data);
+            },
+            onFailure: (err) => {
+                assert(hasReceivedOnRequest);
+
+                onFailure(err);
+            }
+        };
+    }
+
+    assertStatusOkay(data) {
+        assert(data);
+        assert(data.status === 'OK');
+    }
+
+    createClient() {
+        const client = new Client();
+
+        client.setUrl('http://localhost:8065');
+
+        return client;
+    }
+
+    initBasic(callback) {
+        const client = this.createClient();
+
+        callback({client});
+    }
 }
 
-export function assertStatusOkay(data) {
-    assert(data);
-    assert(data.status === 'OK');
-}
+export default new TestHelper();

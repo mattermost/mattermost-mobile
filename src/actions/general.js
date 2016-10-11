@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import Client from './client.js';
+import Client from 'client/client_instance.js';
 import {bindClientFunc} from './helpers.js';
 
 export const PING_REQUEST = 'PING_REQUEST';

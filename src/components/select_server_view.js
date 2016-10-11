@@ -3,7 +3,7 @@
 
 import React, {Component} from 'react';
 
-import Client from 'actions/client.js';
+import Client from 'client/client_instance.js';
 import {connect} from 'react-redux';
 import {getPing} from 'actions/general.js';
 

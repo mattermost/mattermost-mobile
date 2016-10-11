@@ -7,7 +7,7 @@ const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
 
-export class Client {
+export default class Client {
     constructor() {
         this.teamId = '';
         this.serverVersion = ''; // ??
@@ -222,6 +222,8 @@ export class Client {
 
                     return onSuccess(data, response);
                 }).catch((err) => {
+                    // TODO errors that return non-json data get sent here
+
                     if (this.logToConsole) {
                         console.log(err); // eslint-disable-line no-console
                     }
@@ -232,5 +234,3 @@ export class Client {
         };
     }
 }
-
-export default new Client();
