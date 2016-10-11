@@ -49,10 +49,26 @@ describe('Client.User', () => {
                 );
             },
             (err) => {
-                console.log(err);
                 done(new Error(err));
             },
             user
         );
+    });
+
+    it('getInitialLoad', (done) => {
+        TestHelper.initBasic(({client, user}) => {
+            client.getInitialLoad(
+                null,
+                (data) => {
+                    assert.ok(data.user.id.length, 'id is empty');
+                    assert.equal(data.user.id, user.id, 'user ids don\'t match');
+
+                    done();
+                },
+                (err) => {
+                    done(new Error(err));
+                }
+            );
+        });
     });
 });

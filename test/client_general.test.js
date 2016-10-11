@@ -6,7 +6,7 @@ import assert from 'assert';
 import TestHelper from './test_helper.js';
 
 describe('Client.General', () => {
-    it('General.getClientConfig', (done) => {
+    it('getClientConfig', (done) => {
         TestHelper.initBasic(({client}) => {
             client.getClientConfig(
                 null,
@@ -25,7 +25,7 @@ describe('Client.General', () => {
         });
     });
 
-    it('General.getPing', (done) => {
+    it('getPing', (done) => {
         TestHelper.initBasic(({client}) => {
             client.getPing(
                 null,
@@ -39,7 +39,7 @@ describe('Client.General', () => {
         });
     });
 
-    it('General.getPing - Invalid URL', (done) => {
+    it('getPing - Invalid URL', (done) => {
         TestHelper.initBasic(({client}) => {
             client.setUrl('https://example.com/fake/url');
             client.getPing(
@@ -54,19 +54,19 @@ describe('Client.General', () => {
         });
     });
 
-    // it('General.logClientError', function(done) {
-    //     TestHelper.initBasic(({client}) => {
-    //         client.logClientError(
-    //             null,
-    //             (data) => {
-    //                 TestHelper.assertStatusOkay(data);
+    it('logClientError', function(done) {
+        TestHelper.initBasic(({client}) => {
+            client.logClientError(
+                null,
+                (data) => {
+                    TestHelper.assertStatusOkay(data);
 
-    //                 done();
-    //             },
-    //             (err) => {
-    //                 done(new Error(err));
-    //             }
-    //         )();
-    //     });
-    // });
+                    done();
+                },
+                (err) => {
+                    done(new Error(err));
+                }
+            );
+        });
+    });
 });

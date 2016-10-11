@@ -154,7 +154,7 @@ export default class Client {
         };
 
         return this.doFetch(
-            `${this.getGeneralRoute()}/log_client_error`,
+            `${this.getGeneralRoute()}/log_client`,
             {method: 'post', body},
             onRequest,
             onSuccess,
@@ -196,14 +196,15 @@ export default class Client {
         );
     }
 
-    // getInitialLoad(success, error) {
-    //     request.
-    //         get(`${this.getUsersRoute()}/initial_load`).
-    //         set(this.defaultHeaders).
-    //         type('application/json').
-    //         accept('application/json').
-    //         end(this.handleResponse.bind(this, 'getInitialLoad', success, error));
-    // }
+    getInitialLoad = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/initial_load`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
 
     // Team routes
 
@@ -211,6 +212,30 @@ export default class Client {
         return this.doFetch(
             `${this.getTeamsRoute()}/create`,
             {method: 'post', body: JSON.stringify(team)},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
+    // Channel routes
+
+    createChannel = (onRequest, onSuccess, onFailure, channel) => {
+        return this.doFetch(
+            `${this.getChannelsRoute()}/create`,
+            {method: 'post', body: JSON.stringify(channel)},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
+    // Post routes
+
+    createPost = (onRequest, onSuccess, onFailure, post) => {
+        return this.doFetch(
+            `${this.getPostsRoute(post.channel_id)}/create`,
+            {method: 'post', body: JSON.stringify(post)},
             onRequest,
             onSuccess,
             onFailure

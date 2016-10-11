@@ -5,6 +5,8 @@ import assert from 'assert';
 
 import Client from 'client/client.js';
 
+const PASSWORD = 'password1';
+
 class TestHelper {
     constructor() {
         this.basicClient = null;
@@ -51,7 +53,7 @@ class TestHelper {
         return {
             email: this.fakeEmail(),
             allow_marketing: true,
-            password: 'password1',
+            password: PASSWORD,
             username: this.generateId()
         };
     }
@@ -68,18 +70,20 @@ class TestHelper {
         };
     }
 
-    fakeChannel = () => {
+    fakeChannel = (teamId) => {
         const name = this.generateId();
 
         return {
             name,
+            team_id: teamId,
             display_name: `Unit Test ${name}`,
             type: 'O'
         };
     }
 
-    fakePost = () => {
+    fakePost = (channelId) => {
         return {
+            channel_id: channelId,
             message: `Unit Test ${this.generateId()}`
         };
     }
@@ -87,7 +91,73 @@ class TestHelper {
     initBasic = (callback) => {
         const client = this.createClient();
 
-        callback({client});
+        client.createUser(
+            null,
+            (user) => {
+                this.basicUser = user;
+
+                client.login(
+                    null,
+                    () => {
+                        client.createTeam(
+                            null,
+                            (team) => {
+                                this.basicTeam = team;
+
+                                client.setTeamId(team.id);
+
+                                client.createChannel(
+                                    null,
+                                    (channel) => {
+                                        this.basicChannel = channel;
+
+                                        client.createPost(
+                                            null,
+                                            (post) => {
+                                                this.basicPost = post;
+
+                                                callback({
+                                                    client,
+                                                    user: this.basicUser,
+                                                    team: this.basicTeam,
+                                                    channel: this.basicChannel,
+                                                    post: this.basicPost
+                                                });
+                                            },
+                                            (err) => {
+                                                console.error(err);
+                                                throw err;
+                                            },
+                                            this.fakePost(this.basicChannel.id)
+                                        );
+                                    },
+                                    (err) => {
+                                        console.error(err);
+                                        throw err;
+                                    },
+                                    this.fakeChannel(this.basicTeam.id)
+                                );
+                            },
+                            (err) => {
+                                console.error(err);
+                                throw err;
+                            },
+                            this.fakeTeam()
+                        );
+                    },
+                    (err) => {
+                        console.error(err);
+                        throw err;
+                    },
+                    user.email,
+                    PASSWORD
+                );
+            },
+            (err) => {
+                throw err;
+            },
+            this.fakeUser()
+        );
     }
 }
 
