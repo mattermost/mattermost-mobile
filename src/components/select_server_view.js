@@ -68,12 +68,13 @@ class SelectServerView extends Component {
                 <TextInput
                     style={GlobalStyles.inputBox}
                     onChangeText={(serverUrl) => this.setState({serverUrl})}
+                    onSubmitEditing={this.onClick}
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='url'
                     placeholder='https://mattermost.example.com'
-                    returnKeyType='done'
-                    defaultValue={this.state.serverUrl}
+                    returnKeyType='go'
+                    value={this.state.serverUrl}
                 />
                 <Button
                     text='Proceed'

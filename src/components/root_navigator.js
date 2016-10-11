@@ -120,9 +120,18 @@ export default class RootNavigator extends React.Component {
             return (
                 <SelectServerView
                     onProceed={() => {
-                        navigator.push({title: 'Sign In', signin: true});
+                        navigator.push({signin: true});
                     }}
-                />);
+                />
+            );
+        } else if (route.signin) {
+            // return (
+            //     <LoginView
+            //         onSignIn={() => {
+            //             navigator.push({title: 'Team Selection', });
+            //         }}
+            //     />
+            // );
         }
 
         return null;
