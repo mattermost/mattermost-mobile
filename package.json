@@ -28,7 +28,7 @@
   "scripts": {
     "check": "eslint --ext \".jsx\" --ignore-pattern node_modules --quiet .",
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "mocha --compilers js:babel-register",
+    "test": "mocha --compilers js:babel-register test/**/*.test.js",
     "postinstall": "remotedev-debugger --hostname localhost --port 5678 --injectserver"
   },
   "babel": {

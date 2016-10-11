@@ -3,27 +3,18 @@
 
 import 'isomorphic-fetch';
 
-import {requestData, requestSuccess, requestFailure} from './helpers.js';
-
-// const HEADER_X_VERSION_ID = 'x-versin-id';
-// const HEADER_X_CLUSTER_ID = 'x-cluster-id';
-// const HEADER_TOKEN = 'token';
-const HEADER_BEARER = 'BEARER';
 const HEADER_AUTH = 'Authorization';
+const HEADER_BEARER = 'BEARER';
+const HEADER_REQUESTED_WITH = 'X-Requested-With';
 
 export class Client {
     constructor() {
         this.teamId = '';
-        this.serverVersion = '';
-        this.clusterId = '';
+        this.serverVersion = ''; // ??
         this.logToConsole = false;
-        this.useToken = false;
         this.token = '';
         this.url = '';
         this.urlVersion = '/api/v3';
-        this.defaultHeaders = {
-            'X-Requested-With': 'XMLHttpRequest'
-        };
 
         this.translations = {
             connectionError: 'There appears to be a problem with your internet connection.',
@@ -138,26 +129,45 @@ export class Client {
         }
     }
 
-    doFetch(REQUEST, SUCCESS, FAILURE, url) {
-        return (dispatch) => {
-            dispatch(requestData(REQUEST));
+    getOptions(options) {
+        return {
+            headers: {
+                [HEADER_AUTH]: this.token,
+                [HEADER_REQUESTED_WITH]: 'XMLHttpRequest'
+            },
+            ...options
+        };
+    }
 
-            return fetch(url).then(
+    getPing = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(`${this.getGeneralRoute()}/ping`, {method: 'get'}, onRequest, onSuccess, onFailure);
+    }
+
+    getClientConfig = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(`${this.getGeneralRoute()}/client_props`, {method: 'get'}, onRequest, onSuccess, onFailure);
+    }
+
+    doFetch = (url, options, onRequest, onSuccess, onFailure) => {
+        return () => {
+            onRequest();
+
+            return fetch(url, this.getOptions(options)).then(
                 (response) => {
                     return response.json().then((json) => ({json, response}));
-                }).then(({json, response}) => {
+                }).then(({response, json}) => {
                     if (!response.ok) {
                         return Promise.reject(json);
                     }
 
-                    return dispatch(requestSuccess(SUCCESS, json));
+                    return onSuccess(json);
                 }).catch((err) => {
                     if (this.logToConsole) {
                         console.log(err); // eslint-disable-line no-console
                     }
 
-                    dispatch(requestFailure(FAILURE, err));
-                });
+                    onFailure(err);
+                }
+            );
         };
     }
 }

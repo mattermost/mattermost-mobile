@@ -8,7 +8,7 @@ import {connect} from 'react-redux';
 import {loadPing} from 'actions/general.js';
 
 import Button from './button.js';
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
+import {AsyncStorage, Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import {GlobalStyles} from 'styles';
@@ -41,35 +41,20 @@ class SelectServerView extends Component {
         super(props);
 
         this.state = {
-            serverUrl: ''
+            serverUrl: 'http://localhost:8065'
         };
     }
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
+
         this.props.loadPing().then(() => {
-            // console.log('FOUND IT - AAAAAAAAAAAAAAAAAA ' + this.props.ping.loading);
-            // console.log(this.props.ping);
+            AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
+                if (!this.props.ping.error) {
+                    this.props.onProceed();
+                }
+            });
         });
-
-        // Client.getPing(
-        //     () => {
-        //         AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
-        //             this.props.onProceed();
-        //         });
-
-        //         this.setState({
-        //             error: '',
-        //             loading: false
-        //         });
-        //     },
-        //     () => {
-        //         this.setState({
-        //             error: 'The URL does not appear to be a Mattermost Server.  Please check http vs https. You should not include the team name.',
-        //             loading: false
-        //         });
-        //     }
-        // );
     }
 
     render() {
