@@ -13,7 +13,7 @@ export default class ErrorText extends React.Component {
     }
 
     render() {
-        if (!this.props.error || Object.keys(this.props.error).length === 0) {
+        if (!this.props.error) {
             return null;
         }
 
