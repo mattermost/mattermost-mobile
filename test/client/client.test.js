@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import TestHelper from './test_helper.js';
+import TestHelper from 'test_helper.js';
 
 describe('Client', () => {
     it('doFetch', (done) => {

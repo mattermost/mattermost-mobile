@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import * as Actions from 'actions/general.js';
-import Client from 'actions/client.js';
+import Client from 'client/client_instance.js';
 import configureStore from 'store/configureStore.js';
 
 describe('Actions.General', () => {
@@ -12,8 +12,9 @@ describe('Actions.General', () => {
         Client.setUrl('http://localhost:8065');
     });
 
-    it('Actions.General.getClientConfig', (done) => {
+    it('getClientConfig', (done) => {
         const store = configureStore();
+
         store.subscribe(() => {
             const clientConfig = store.getState().entities.general.clientConfig;
 
@@ -35,7 +36,7 @@ describe('Actions.General', () => {
         Actions.getClientConfig()(store.dispatch, store.getState);
     });
 
-    it('Actions.General.getPing', (done) => {
+    it('getPing', (done) => {
         const store = configureStore();
 
         store.subscribe(() => {
@@ -51,7 +52,7 @@ describe('Actions.General', () => {
         Actions.getPing()(store.dispatch, store.getState);
     });
 
-    it('Actions.General.getPing - Invalid URL', (done) => {
+    it('getPing - Invalid URL', (done) => {
         const store = configureStore();
 
         store.subscribe(() => {
@@ -65,11 +66,4 @@ describe('Actions.General', () => {
         Client.setUrl('https://example.com/fake/url');
         Actions.getPing()(store.dispatch, store.getState);
     });
-
-    // it('General.logClientError', function(done) {
-    //     TestHelper.initBasic(() => {
-    //         TestHelper.basicClient().logClientError('this is a test');
-    //         done();
-    //     });
-    // });
 });
