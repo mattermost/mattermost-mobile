@@ -5,7 +5,7 @@ import React, {Component} from 'react';
 
 import Client from 'actions/client.js';
 import {connect} from 'react-redux';
-import {loadPing} from 'actions/general.js';
+import {getPing} from 'actions/general.js';
 
 import Button from './button.js';
 import {AsyncStorage, Image, StyleSheet, Text, TextInput, View} from 'react-native';
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
 class SelectServerView extends Component {
     static propTypes = {
         onProceed: React.PropTypes.func.isRequired,
-        loadPing: React.PropTypes.func.isRequired,
+        getPing: React.PropTypes.func.isRequired,
         ping: React.PropTypes.object.isRequired,
         device: React.PropTypes.object.isRequired
     }
@@ -48,7 +48,7 @@ class SelectServerView extends Component {
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
 
-        this.props.loadPing().then(() => {
+        this.props.getPing().then(() => {
             AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
                 if (!this.props.ping.error) {
                     this.props.onProceed();
@@ -95,5 +95,5 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps, {
-    loadPing
+    getPing
 })(SelectServerView);

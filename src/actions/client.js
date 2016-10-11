@@ -139,13 +139,74 @@ export class Client {
         };
     }
 
-    getPing = (onRequest, onSuccess, onFailure) => {
-        return this.doFetch(`${this.getGeneralRoute()}/ping`, {method: 'get'}, onRequest, onSuccess, onFailure);
-    }
+    // General routes
 
     getClientConfig = (onRequest, onSuccess, onFailure) => {
-        return this.doFetch(`${this.getGeneralRoute()}/client_props`, {method: 'get'}, onRequest, onSuccess, onFailure);
+        return this.doFetch(
+            `${this.getGeneralRoute()}/client_props`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
     }
+
+    getPing = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getGeneralRoute()}/ping`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
+    logClientError = (onRequest, onSuccess, onFailure, message, level = 'ERROR') => {
+        const body = {
+            message,
+            level
+        };
+
+        return this.doFetch(
+            `${this.getGeneralRoute()}/log_client_error`,
+            {method: 'post', body},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
+    // User routes
+
+    // login(onRequest, onSuccess, onFailure, loginId, password, token) {
+    //     const body = {
+    //         login_id: loginId,
+    //         password,
+    //         token
+    //     };
+
+    //     return this.doFetch(
+    //         `${this.getUsersRoute()}/login`,
+    //         {method: 'post', body},
+    //         onRequest,
+    //         (data, response) => {
+    //             console.log(response.headers);
+    //             // if (response.headers.)
+
+    //             onSuccess(data, response);
+    //         },
+    //         onFailure
+    //     );
+    // }
+
+    // getInitialLoad(success, error) {
+    //     request.
+    //         get(`${this.getUsersRoute()}/initial_load`).
+    //         set(this.defaultHeaders).
+    //         type('application/json').
+    //         accept('application/json').
+    //         end(this.handleResponse.bind(this, 'getInitialLoad', success, error));
+    // }
 
     doFetch = (url, options, onRequest, onSuccess, onFailure) => {
         return () => {
@@ -153,13 +214,13 @@ export class Client {
 
             return fetch(url, this.getOptions(options)).then(
                 (response) => {
-                    return response.json().then((json) => ({json, response}));
-                }).then(({response, json}) => {
+                    return response.json().then((data) => ({data, response}));
+                }).then(({data, response}) => {
                     if (!response.ok) {
-                        return Promise.reject(json);
+                        return Promise.reject(data);
                     }
 
-                    return onSuccess(json);
+                    return onSuccess(data, response);
                 }).catch((err) => {
                     if (this.logToConsole) {
                         console.log(err); // eslint-disable-line no-console

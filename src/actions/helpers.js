@@ -30,20 +30,20 @@ export function emptyError() {
     };
 }
 
-export function bindClientFunc(clientFunc, request, success, failure) {
+export function bindClientFunc(clientFunc, request, success, failure, ...args) {
     return (dispatch, getState) => {
         function onRequest() {
-            dispatch(requestData(request));
+            dispatch(requestData(request), getState);
         }
 
-        function onSuccess(json) {
-            dispatch(requestSuccess(success, json));
+        function onSuccess(data) {
+            dispatch(requestSuccess(success, data), getState);
         }
 
         function onFailure(err) {
-            dispatch(requestFailure(failure, err));
+            dispatch(requestFailure(failure, err), getState);
         }
 
-        return dispatch(clientFunc(onRequest, onSuccess, onFailure), getState);
+        return dispatch(clientFunc(onRequest, onSuccess, onFailure, ...args), getState);
     };
 }
