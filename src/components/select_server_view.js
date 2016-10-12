@@ -7,7 +7,7 @@ import Client from 'client/client_instance.js';
 import {connect} from 'react-redux';
 import {getPing} from 'actions/general.js';
 
-import Button from './button_.js';
+import Button from './button.js';
 import {AsyncStorage, Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 

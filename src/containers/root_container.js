@@ -6,7 +6,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {loadDevice} from 'actions/device.js';
 
-import Loading from 'components/loading_.js';
+import Loading from 'components/loading.js';
 import RootNavigator from 'components/root_navigator.js';
 
 class RootContainer extends React.Component {
