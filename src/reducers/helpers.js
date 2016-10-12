@@ -5,8 +5,8 @@ export function initialState() {
     return {
         data: {},
         loading: false,
-        error: null
-    };
+        error: null,
+    }
 }
 
 export function handle(REQUEST, SUCCESS, FAILURE, state, action) {
