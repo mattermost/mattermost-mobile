@@ -6,64 +6,67 @@ import assert from 'assert';
 import * as Actions from 'actions/general.js';
 import Client from 'client/client_instance.js';
 import configureStore from 'store/configureStore.js';
+import TestHelper from 'test_helper.js';
 
 describe('Actions.General', () => {
-    beforeEach(() => {
-        Client.setUrl('http://localhost:8065');
-    });
-
     it('getClientConfig', (done) => {
-        const store = configureStore();
+        TestHelper.initClient(Client, () => {
+            const store = configureStore();
 
-        store.subscribe(() => {
-            const clientConfig = store.getState().entities.general.clientConfig;
+            store.subscribe(() => {
+                const clientConfig = store.getState().entities.general.clientConfig;
 
-            if (!clientConfig.loading) {
-                if (clientConfig.error) {
-                    done(new Error(clientConfig.error));
-                } else {
-                    // Check a few basic fields since they may change over time
-                    assert.ok(clientConfig.data.Version);
-                    assert.ok(clientConfig.data.BuildNumber);
-                    assert.ok(clientConfig.data.BuildDate);
-                    assert.ok(clientConfig.data.BuildHash);
+                if (!clientConfig.loading) {
+                    if (clientConfig.error) {
+                        done(new Error(clientConfig.error));
+                    } else {
+                        // Check a few basic fields since they may change over time
+                        assert.ok(clientConfig.data.Version);
+                        assert.ok(clientConfig.data.BuildNumber);
+                        assert.ok(clientConfig.data.BuildDate);
+                        assert.ok(clientConfig.data.BuildHash);
 
-                    done();
+                        done();
+                    }
                 }
-            }
-        });
+            });
 
-        Actions.getClientConfig()(store.dispatch, store.getState);
+            Actions.getClientConfig()(store.dispatch, store.getState);
+        });
     });
 
     it('getPing', (done) => {
-        const store = configureStore();
+        TestHelper.initClient(Client, () => {
+            const store = configureStore();
 
-        store.subscribe(() => {
-            const ping = store.getState().entities.general.ping;
+            store.subscribe(() => {
+                const ping = store.getState().entities.general.ping;
 
-            if (ping.error) {
-                done(new Error(ping.error));
-            } else if (!ping.loading) {
-                done();
-            }
+                if (ping.error) {
+                    done(new Error(ping.error));
+                } else if (!ping.loading) {
+                    done();
+                }
+            });
+
+            Actions.getPing()(store.dispatch, store.getState);
         });
-
-        Actions.getPing()(store.dispatch, store.getState);
     });
 
     it('getPing - Invalid URL', (done) => {
-        const store = configureStore();
+        TestHelper.initClient(Client, () => {
+            const store = configureStore();
 
-        store.subscribe(() => {
-            const ping = store.getState().entities.general.ping;
+            store.subscribe(() => {
+                const ping = store.getState().entities.general.ping;
 
-            if (!ping.loading && ping.error) {
-                done();
-            }
+                if (!ping.loading && ping.error) {
+                    done();
+                }
+            });
+
+            Client.setUrl('https://example.com/fake/url');
+            Actions.getPing()(store.dispatch, store.getState);
         });
-
-        Client.setUrl('https://example.com/fake/url');
-        Actions.getPing()(store.dispatch, store.getState);
     });
 });

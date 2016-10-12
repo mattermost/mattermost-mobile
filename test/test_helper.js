@@ -10,6 +10,11 @@ const PASSWORD = 'password1';
 class TestHelper {
     constructor() {
         this.basicClient = null;
+
+        this.basicUser = null;
+        this.basicTeam = null;
+        this.basicChannel = null;
+        this.basicPost = null;
     }
 
     assertStatusOkay = (data) => {
@@ -88,8 +93,8 @@ class TestHelper {
         };
     }
 
-    initBasic = (callback) => {
-        const client = this.createClient();
+    initClient = (client, callback) => {
+        client.setUrl('http://localhost:8065');
 
         client.createUser(
             this.fakeUser(),
@@ -159,6 +164,12 @@ class TestHelper {
                 throw err;
             }
         );
+    }
+
+    initBasic = (callback) => {
+        this.basicClient = this.createClient();
+
+        this.initClient(this.basicClient, callback);
     }
 }
 
