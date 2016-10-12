@@ -7,6 +7,7 @@ import 'react-native';
 // Ensure that everything is imported correctly for testing
 describe('Sanity test', () => {
     it('Promise', (done) => {
+        done(new Error('foo'));
         Promise.resolve(true).then(() => {
             done();
         }).catch((err) => {
