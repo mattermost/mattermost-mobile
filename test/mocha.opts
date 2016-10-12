@@ -1,2 +1,3 @@
 --require react-native-mock/mock.js
+--require isomorphic-fetch
 --recursive
