@@ -26,7 +26,7 @@
     "remote-redux-devtools-on-debugger": "0.6.2"
   },
   "scripts": {
-    "check": "eslint --ext \".js\" --ignore-pattern node_modules --quiet .",
+    "check": "node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .",
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "mocha --compilers js:babel-register",
     "postinstall": "remotedev-debugger --hostname localhost --port 5678 --injectserver"
