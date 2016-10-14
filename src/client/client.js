@@ -240,29 +240,19 @@ export default class Client {
         );
     }
 
-    doFetch = (url, options, onRequest, onSuccess, onFailure) => {
+    doFetch = async (url, options, onRequest, onSuccess, onFailure) => {
         if (onRequest) {
             onRequest();
         }
-
-        return fetch(url, this.getOptions(options)).then(
-            (response) => {
-                return response.json().then((data) => ({data, response}));
-            }).then(({data, response}) => {
-                if (!response.ok) {
-                    return Promise.reject(data);
-                }
-
-                return onSuccess(data, response);
-            }).catch((err) => {
-                // TODO errors that return non-json data get sent here
-
-                if (this.logToConsole) {
-                    console.log(err); // eslint-disable-line no-console
-                }
-
-                onFailure(err);
+        try {
+            const response = await fetch(url, this.getOptions(options));
+            const data = await response.json();
+            return response.ok ? onSuccess(data, response) : Promise.reject(data);
+        } catch (err) {
+            if (this.logToConsole) {
+                console.log(err); // eslint-disable-line no-console
             }
-        );
+            return onFailure(err);
+        }
     }
 }
