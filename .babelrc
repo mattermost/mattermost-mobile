@@ -1,0 +1,6 @@
+{
+  "presets": [ "react-native" ],
+  "plugins": [
+    ["resolver", {"resolveDirs": ["src", "test"]}]
+  ]
+}
