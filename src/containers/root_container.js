@@ -4,9 +4,9 @@
 import React from 'react';
 
 import {connect} from 'react-redux';
-import {loadDevice} from 'actions/device.js';
-import Loading from 'components/loading.js';
-import Routes from '../routes.js';
+import {loadDevice} from 'actions/device';
+import Loading from 'components/loading';
+import Routes from 'routes';
 
 class RootContainer extends React.Component {
     static propTypes = {

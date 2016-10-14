@@ -6,16 +6,16 @@ import React, {Component} from 'react';
 import Client from 'client/client_instance.js';
 import Config from 'config/config.js';
 import {connect} from 'react-redux';
-import {getPing} from 'actions/general.js';
+import {getPing} from 'actions/general';
 
-import Button from './button.js';
-import {AsyncStorage, Image, StyleSheet, Text, TextInput, View} from 'react-native';
+import Button from './button';
+import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {Actions} from 'react-native-router-flux';
 
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
-import ErrorText from './error_text.js';
+import ErrorText from './error_text';
 
 const styles = StyleSheet.create({
     container: {
