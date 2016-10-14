@@ -9,21 +9,14 @@ export const DEVICE_SUCCESS = 'DEVICE_SUCCESS';
 export const DEVICE_FAILURE = 'DEVICE_FAILURE';
 
 function fetchDevice() {
-    return (dispatch) => {
-        dispatch(requestData(DEVICE_REQUEST));
-
-        AsyncStorage.getItem('basic_info', (err, data) => {
-            if (err) {
-                dispatch(requestFailure(DEVICE_FAILURE, {msg: 'failed to load local storage'}));
-            }
-
-            if (data && data.length > 0) {
-                const json = JSON.parse(data);
-                dispatch(requestSuccess(DEVICE_SUCCESS, json));
-            } else {
-                dispatch(requestSuccess(DEVICE_SUCCESS, {hello: 'hello'}));
-            }
-        });
+    return async (dispatch) => {
+        try {
+            dispatch(requestData(DEVICE_REQUEST));
+            const json = await AsyncStorage.getItem('basic_info');
+            dispatch(requestSuccess(DEVICE_SUCCESS, JSON.parse(json)));
+        } catch (err) {
+            dispatch(requestFailure(DEVICE_FAILURE, {msg: 'failed to load local storage'}));
+        }
     };
 }
 
