@@ -30,13 +30,5 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "mocha --compilers js:babel-register",
     "postinstall": "remotedev-debugger --hostname localhost --port 5678 --injectserver"
-  },
-  "babel": {
-    "presets": [
-      "react-native"
-    ],
-    "plugins": [
-      ["resolver", {"resolveDirs": ["src", "test"]}]
-    ]
   }
 }
