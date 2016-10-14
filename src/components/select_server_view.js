@@ -11,6 +11,7 @@ import {getPing} from 'actions/general.js';
 import Button from './button.js';
 import {AsyncStorage, Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import {Actions} from 'react-native-router-flux';
 
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
@@ -48,14 +49,15 @@ class SelectServerView extends Component {
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
+        Actions.pageTwo();
 
-        this.props.getPing().then(() => {
-            AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
-                if (!this.props.ping.error) {
-                    this.props.onProceed();
-                }
-            });
-        });
+        // this.props.getPing().then(() => {
+        //     AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
+        //         if (!this.props.ping.error) {
+        //             this.props.onProceed();
+        //         }
+        //     });
+        // });
     }
 
     render() {
