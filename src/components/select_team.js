@@ -3,14 +3,13 @@
 
 import React, {Component} from 'react';
 
-import Client from 'client/client_instance';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import * as team_actions from 'actions/teams';
 
 import _ from 'lodash';
 import Button from './button';
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Image, StyleSheet, Text, Picker, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {Actions as Routes} from 'react-native-router-flux';
 
@@ -44,12 +43,18 @@ class SelectTeam extends Component {
         super(props);
 
         this.state = {
-            serverUrl: 'http://localhost:8065'
+            serverUrl: 'http://localhost:8065',
+            team: null
         };
     }
 
     componentWillMount() {
       this.props.actions.fetchTeams();
+    }
+
+    setTeam(team) {
+        this.setState({team: team});
+        console.warn(team.display_name);
     }
 
     render() {
@@ -59,9 +64,14 @@ class SelectTeam extends Component {
                     style={styles.logo}
                     source={logo}
                 />
-              {_.map(this.props.teams.data, (team) => (
-                <Text>{team.display_name}</Text>
-              ))}
+                <Picker
+                  style={{width: 300}}
+                  selectedValue={this.state.team}
+                  onValueChange={(team) => this.setTeam(team)}>
+                    {_.map(this.props.teams.data, (team) => (
+                        <Picker.Item label={team.display_name} value={team} />
+                    ))}
+                </Picker>
 
                 <ErrorText error={this.props.teams.error}/>
                 <KeyboardSpacer/>
