@@ -3,43 +3,32 @@
 
 import Client from 'client/client_instance.js';
 import {bindClientFunc} from './helpers.js';
-
-export const PING_REQUEST = 'PING_REQUEST';
-export const PING_SUCCESS = 'PING_SUCCESS';
-export const PING_FAILURE = 'PING_FAILURE';
+import {GeneralTypes as types} from 'constants';
 
 export function getPing() {
     return bindClientFunc(
         Client.getPing,
-        PING_REQUEST,
-        PING_SUCCESS,
-        PING_FAILURE
+        types.PING_REQUEST,
+        types.PING_SUCCESS,
+        types.PING_FAILURE
     );
 }
-
-export const CLIENT_CONFIG_REQUEST = 'CLIENT_CONFIG_REQUEST';
-export const CLIENT_CONFIG_SUCCESS = 'CLIENT_CONFIG_SUCCESS';
-export const CLIENT_CONFIG_FAILURE = 'CLIENT_CONFIG_FAILURE';
 
 export function getClientConfig() {
     return bindClientFunc(
         Client.getClientConfig,
-        CLIENT_CONFIG_REQUEST,
-        CLIENT_CONFIG_SUCCESS,
-        CLIENT_CONFIG_FAILURE
+        types.CLIENT_CONFIG_REQUEST,
+        types.CLIENT_CONFIG_SUCCESS,
+        types.CLIENT_CONFIG_FAILURE
     );
 }
-
-export const LOG_CLIENT_ERROR_REQUEST = 'LOG_CLIENT_ERROR_REQUEST';
-export const LOG_CLIENT_ERROR_SUCCESS = 'LOG_CLIENT_ERROR_SUCCESS';
-export const LOG_CLIENT_ERROR_FAILURE = 'LOG_CLIENT_ERROR_FAILURE';
 
 export function logClientError(message, level = 'ERROR') {
     return bindClientFunc(
         Client.logClientError,
-        LOG_CLIENT_ERROR_REQUEST,
-        LOG_CLIENT_ERROR_SUCCESS,
-        LOG_CLIENT_ERROR_FAILURE,
+        types.LOG_CLIENT_ERROR_REQUEST,
+        types.LOG_CLIENT_ERROR_SUCCESS,
+        types.LOG_CLIENT_ERROR_FAILURE,
         message,
         level
     );
