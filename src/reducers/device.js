@@ -2,8 +2,7 @@
 // See License.txt for license information.
 
 import {handle, initialState} from './helpers.js';
-
-import * as types from '../constants/base';
+import {DeviceTypes as types} from 'constants';
 
 export default function device(state = initialState(), action) {
     return handle(

@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 import {initialState, handle} from './helpers.js';
-import * as types from 'constants/base';
+import {GeneralTypes as types} from 'constants';
 
 export function clientConfig(state = initialState(), action) {
     return handle(

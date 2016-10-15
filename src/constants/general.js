@@ -1,7 +1,3 @@
-export const DEVICE_REQUEST = 'DEVICE_REQUEST';
-export const DEVICE_SUCCESS = 'DEVICE_SUCCESS';
-export const DEVICE_FAILURE = 'DEVICE_FAILURE';
-
 export const PING_REQUEST = 'PING_REQUEST';
 export const PING_SUCCESS = 'PING_SUCCESS';
 export const PING_FAILURE = 'PING_FAILURE';

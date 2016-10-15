@@ -3,7 +3,7 @@
 
 import {requestData, requestSuccess, requestFailure} from './helpers.js';
 import {AsyncStorage} from 'react-native';
-import * as types from '../constants/base';
+import {DeviceTypes as types} from 'constants';
 
 function fetchDevice() {
     return async (dispatch) => {

@@ -3,7 +3,7 @@
 
 import Client from 'client/client_instance.js';
 import {bindClientFunc} from './helpers.js';
-import * as types from '../constants/base';
+import {GeneralTypes as types} from 'constants';
 
 export function getPing() {
     return bindClientFunc(
