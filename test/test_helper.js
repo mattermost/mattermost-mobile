@@ -7,6 +7,8 @@ import Client from 'client/client.js';
 
 const PASSWORD = 'password1';
 
+import Config from '../secrets/config.json';
+
 class TestHelper {
     constructor() {
         this.basicClient = null;
@@ -45,7 +47,7 @@ class TestHelper {
     createClient = () => {
         const client = new Client();
 
-        client.setUrl('http://localhost:8065');
+        client.setUrl(Config.API_URL);
 
         return client;
     }
@@ -94,7 +96,7 @@ class TestHelper {
     }
 
     initClient = (client, callback) => {
-        client.setUrl('http://localhost:8065');
+        client.setUrl(Config.API_URL);
 
         client.createUser(
             this.fakeUser(),
