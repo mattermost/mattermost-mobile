@@ -125,27 +125,25 @@ export default class Client {
 
     // General routes
 
-    getClientConfig = (onRequest, onSuccess, onFailure) => {
+    getClientConfig = (onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getGeneralRoute()}/client_props`,
             {method: 'get'},
-            onRequest,
             onSuccess,
             onFailure
         );
     }
 
-    getPing = (onRequest, onSuccess, onFailure) => {
+    getPing = (onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getGeneralRoute()}/ping`,
             {method: 'get'},
-            onRequest,
             onSuccess,
             onFailure
         );
     }
 
-    logClientError = (message, level, onRequest, onSuccess, onFailure) => {
+    logClientError = (message, level, onSuccess, onFailure) => {
         const body = {
             message,
             level: level || 'ERROR'
@@ -154,7 +152,6 @@ export default class Client {
         return this.doFetch(
             `${this.getGeneralRoute()}/log_client`,
             {method: 'post', body},
-            onRequest,
             onSuccess,
             onFailure
         );
@@ -162,17 +159,16 @@ export default class Client {
 
     // User routes
 
-    createUser = (user, onRequest, onSuccess, onFailure) => {
+    createUser = (user, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getUsersRoute()}/create`,
             {method: 'post', body: JSON.stringify(user)},
-            onRequest,
             onSuccess,
             onFailure
         );
     }
 
-    login = (loginId, password, token, onRequest, onSuccess, onFailure) => {
+    login = (loginId, password, token, onSuccess, onFailure) => {
         const body = {
             login_id: loginId,
             password,
@@ -182,7 +178,6 @@ export default class Client {
         return this.doFetch(
             `${this.getUsersRoute()}/login`,
             {method: 'post', body: JSON.stringify(body)},
-            onRequest,
             (data, response) => {
                 if (response.headers.has(HEADER_TOKEN)) {
                     this.token = response.headers.get(HEADER_TOKEN);
@@ -194,11 +189,10 @@ export default class Client {
         );
     }
 
-    getInitialLoad = (onRequest, onSuccess, onFailure) => {
+    getInitialLoad = (onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getUsersRoute()}/initial_load`,
             {method: 'get'},
-            onRequest,
             onSuccess,
             onFailure
         );
@@ -206,11 +200,10 @@ export default class Client {
 
     // Team routes
 
-    createTeam = (team, onRequest, onSuccess, onFailure) => {
+    createTeam = (team, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getTeamsRoute()}/create`,
             {method: 'post', body: JSON.stringify(team)},
-            onRequest,
             onSuccess,
             onFailure
         );
@@ -228,11 +221,10 @@ export default class Client {
 
     // Channel routes
 
-    createChannel = (channel, onRequest, onSuccess, onFailure) => {
+    createChannel = (channel, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getChannelsRoute()}/create`,
             {method: 'post', body: JSON.stringify(channel)},
-            onRequest,
             onSuccess,
             onFailure
         );
@@ -250,20 +242,16 @@ export default class Client {
 
     // Post routes
 
-    createPost = (post, onRequest, onSuccess, onFailure) => {
+    createPost = (post, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getPostsRoute(post.channel_id)}/create`,
             {method: 'post', body: JSON.stringify(post)},
-            onRequest,
             onSuccess,
             onFailure
         );
     }
 
-    doFetch = async (url, options, onRequest, onSuccess, onFailure) => {
-        if (onRequest) {
-            onRequest();
-        }
+    doFetch = async (url, options, onSuccess, onFailure) => {
         try {
             const resp = await fetch(url, this.getOptions(options));
             let data;

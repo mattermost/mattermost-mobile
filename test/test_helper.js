@@ -249,7 +249,6 @@ class TestHelper {
 
         client.createUser(
             this.fakeUser(),
-            null,
             (user) => {
                 this.basicUser = user;
 
@@ -257,11 +256,9 @@ class TestHelper {
                     user.email,
                     PASSWORD,
                     '',
-                    null,
                     () => {
                         client.createTeam(
                             this.fakeTeam(),
-                            null,
                             (team) => {
                                 this.basicTeam = team;
 
@@ -269,13 +266,11 @@ class TestHelper {
 
                                 client.createChannel(
                                     this.fakeChannel(this.basicTeam.id),
-                                    null,
                                     (channel) => {
                                         this.basicChannel = channel;
 
                                         client.createPost(
                                             this.fakePost(this.basicChannel.id),
-                                            null,
                                             (post) => {
                                                 this.basicPost = post;
 
