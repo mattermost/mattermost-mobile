@@ -1,16 +1,17 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-
+import React, {Component, PropTypes} from 'react';
 import {Text} from 'react-native';
 
 import {GlobalStyles} from 'styles';
 
-export default class ErrorText extends React.Component {
-    static propTypes = {
-        error: React.PropTypes.object
-    }
+const propTypes = {
+    error: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+};
+
+export default class ErrorText extends Component {
+    static propTypes = propTypes;
 
     render() {
         if (!this.props.error) {
