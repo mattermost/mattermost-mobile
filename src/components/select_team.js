@@ -1,19 +1,16 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import * as team_actions from 'actions/teams';
 
 import _ from 'lodash';
-import Button from './button';
-import {Image, StyleSheet, Text, Picker, View} from 'react-native';
+import {Image, StyleSheet, Picker, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
-import {Actions as Routes} from 'react-native-router-flux';
 
-import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 import ErrorText from './error_text';
 
@@ -31,13 +28,13 @@ const styles = StyleSheet.create({
     }
 });
 
+const propTypes = {
+    teams: PropTypes.object.isRequired,
+    actions: PropTypes.object.isRequired
+};
+
 class SelectTeam extends Component {
-    static propTypes = {
-        onProceed: React.PropTypes.func.isRequired,
-        getPing: React.PropTypes.func.isRequired,
-        ping: React.PropTypes.object.isRequired,
-        device: React.PropTypes.object.isRequired
-    }
+    static propTypes = propTypes;
 
     constructor(props) {
         super(props);
