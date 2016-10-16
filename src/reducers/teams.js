@@ -16,7 +16,7 @@ export default function reduceTeams(state = initState, action) {
             current_team_id: action.team_id
         };
 
-    case types.FETCH_TEAMS:
+    case types.FETCH_TEAMS_REQUEST:
         return {...state,
             status: 'fetching',
             error: null

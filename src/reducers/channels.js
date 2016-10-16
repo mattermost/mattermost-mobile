@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {ChannelsTypes as types} from 'constants';
 
 const initState = {
@@ -16,7 +15,7 @@ export default function reduceChannels(state = initState, action) {
             current_channel_id: action.channel_id
         };
 
-    case types.FETCH_CHANNELS:
+    case types.FETCH_CHANNELS_REQUEST:
         return {...state,
             status: 'fetching',
             error: null
@@ -24,7 +23,7 @@ export default function reduceChannels(state = initState, action) {
     case types.FETCH_CHANNELS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: _.values(action.data)
+            data: action.data.channels
         };
     case types.FETCH_CHANNELS_FAILURE:
         return {...state,
