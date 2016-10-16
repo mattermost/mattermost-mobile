@@ -9,8 +9,8 @@ export function fetchTeams() {
     return async (dispatch) => {
         try {
             dispatch(requestData(types.FETCH_TEAMS_REQUEST));
-            const url = `${Client.getTeamsRoute()}/all`;
             const response = await fetch(url, {
+            const url = `${Client.getTeamsRoute()}/all_team_listings`;
                 headers: {
                     Authorization: 'Bearer bpfzjdtxybddtnfptmt78hghqo'
                 }
