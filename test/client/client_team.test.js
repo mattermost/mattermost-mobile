@@ -12,7 +12,6 @@ describe('Client.Team', () => {
 
         client.createTeam(
             team,
-            null,
             (data) => {
                 assert.equal(data.id.length > 0, true);
                 assert.equal(data.name, team.name);

@@ -12,7 +12,6 @@ describe('Client.Post', () => {
 
             client.createPost(
                 post,
-                null,
                 (data) => {
                     assert.ok(data.id, 'id is empty');
 

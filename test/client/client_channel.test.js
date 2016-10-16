@@ -12,7 +12,6 @@ describe('Client.Channel', () => {
 
             client.createChannel(
                 channel,
-                null,
                 (data) => {
                     assert.ok(data.id, 'id is empty');
                     assert.equal(data.name, channel.name, 'name doesn\'t match');
