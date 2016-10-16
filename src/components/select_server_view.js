@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
 
 class SelectServerView extends Component {
     static propTypes = {
-        onProceed: React.PropTypes.func.isRequired,
+        onProceed: React.PropTypes.func,
         getPing: React.PropTypes.func.isRequired,
         ping: React.PropTypes.object.isRequired,
         device: React.PropTypes.object.isRequired
