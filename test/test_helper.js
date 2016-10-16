@@ -7,7 +7,7 @@ import Client from 'client/client.js';
 
 const PASSWORD = 'password1';
 
-import Config from '../secrets/config.json';
+import Config from '../config/config.json';
 
 class TestHelper {
     constructor() {
@@ -47,7 +47,7 @@ class TestHelper {
     createClient = () => {
         const client = new Client();
 
-        client.setUrl(Config.API_URL);
+        client.setUrl(Config.DefaultServerUrl);
 
         return client;
     }
