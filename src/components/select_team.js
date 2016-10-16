@@ -5,7 +5,7 @@ import React, {Component, PropTypes} from 'react';
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import * as team_actions from 'actions/teams';
+import * as teamActions from 'actions/teams';
 
 import _ from 'lodash';
 import {Image, StyleSheet, Picker, View} from 'react-native';
@@ -46,12 +46,11 @@ class SelectTeam extends Component {
     }
 
     componentWillMount() {
-      this.props.actions.fetchTeams();
+        this.props.actions.fetchTeams();
     }
 
     setTeam(team) {
-        this.setState({team: team});
-        console.warn(team.display_name);
+        this.setState({team});
     }
 
     render() {
@@ -62,11 +61,15 @@ class SelectTeam extends Component {
                     source={logo}
                 />
                 <Picker
-                  style={{width: 300}}
-                  selectedValue={this.state.team}
-                  onValueChange={(team) => this.setTeam(team)}>
+                    style={{width: 300}}
+                    selectedValue={this.state.team}
+                    onValueChange={(team) => this.setTeam(team)}
+                >
                     {_.map(this.props.teams.data, (team) => (
-                        <Picker.Item label={team.display_name} value={team} />
+                        <Picker.Item
+                            label={team.display_name}
+                            value={team}
+                        />
                     ))}
                 </Picker>
 
@@ -79,13 +82,13 @@ class SelectTeam extends Component {
 
 function mapStateToProps(state) {
     return {
-        teams: state.entities.teams,
+        teams: state.entities.teams
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(team_actions, dispatch)
+        actions: bindActionCreators(teamActions, dispatch)
     };
 }
 

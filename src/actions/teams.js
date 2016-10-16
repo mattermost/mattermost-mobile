@@ -10,15 +10,11 @@ export function fetchTeams() {
         try {
             dispatch(requestData(types.FETCH_TEAMS_REQUEST));
             const url = `${Client.getTeamsRoute()}/all`;
-            console.warn(url)
-            const response = await fetch(
-                url,
-                {
-                    headers: {
-                        Authorization: 'Bearer bpfzjdtxybddtnfptmt78hghqo'
-                    }
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: 'Bearer bpfzjdtxybddtnfptmt78hghqo'
                 }
-            );
+            });
             const data = await response.json();
             dispatch(requestSuccess(types.FETCH_TEAMS_SUCCESS, data));
         } catch (err) {
