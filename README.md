@@ -6,10 +6,15 @@ It's written in JavaScript using React Native.
 
 ##Development
 
-To run this project you will need to setup a `secrets/` directory that will hold a config.json file.  The Mattermost team manages this using git submodules.  You can manage the `secrets/config.json` file manually but if you want to setup the submodules here is what you need:
+ENV variables are stored in `secrets/config.json`.  To get started you need to copy the `secrets_example/` directory to `secrets/`.  On a mac this command would be:
+- `cp -r secrets_example/ secrets/`
 
-- First you will need to create a repository that will hold your secrets.  Once you have your repository holding your secrets create a `config.json` file in the root.  Push this up to your git host.  Get the ssh url from your repository, navigate back to this repository and run the following.
-- run: `git submodule add -f git@<host>.com:<username>/<repo_name>.git`
+If you are working with a team, you can manage this directory using submodules. To setup a submodules for the secrets directory here is what you need to do:
 
-This will add the secrets directory and track changes through the git submodule system.  When someone pushes changes to your secrets repository, you can update by running:
+- First you will need to create a repository that will hold your secrets.  Once you have your repository holding your secrets, create a `config.json` file in the root.  This should look similar to the one provided in `secrets_example/config.json` in this repo.  Push your secrets repository up to your git host.  Get the ssh url from your repository, navigate back to this repository and run the following.
+- `git rm -rf secrets & rm -rf .git/modules/secrets & rm -rf secrets`
+  - This will remove the secrets directory and will also remove any leftover git references if any.  You can also use this command to completely wipe the submodule if you want to go back to manually managing the `config.json`.
+- `git submodule add -f git@<host>.com:<username>/<repo_name>.git`
+  - This will pull the contents of the secrets repository into this repository and initiate git tracking for this submodule.
 - `git submodule foreach git pull origin master`
+  - When a change is added to the secrets repository that needs to be distributed to the team and CI/CD, you can run this command to pull down the recent changes to the secrets directory in this repo.
