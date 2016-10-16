@@ -6,6 +6,14 @@ import {requestData, requestSuccess, requestFailure} from './helpers.js';
 import Client from 'client/client_instance';
 import {TeamsTypes as types} from 'constants';
 
+export function selectTeam(team) {
+    Client.setTeamId(team.id);
+    return {
+        type: types.SELECT_TEAM,
+        team_id: team.id
+    };
+}
+
 export function fetchTeams() {
     return async (dispatch) => {
         try {

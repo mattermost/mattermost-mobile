@@ -5,14 +5,13 @@ import React, {Component, PropTypes} from 'react';
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import * as teamActions from 'actions/teams';
-
-import _ from 'lodash';
 import {Image, StyleSheet, Picker, View} from 'react-native';
-import KeyboardSpacer from 'react-native-keyboard-spacer';
+import {Actions as Routes} from 'react-native-router-flux';
+import _ from 'lodash';
 
+import * as teamActions from 'actions/teams';
+import ErrorText from 'components/error_text';
 import logo from 'images/logo.png';
-import ErrorText from './error_text';
 
 const styles = StyleSheet.create({
     container: {
@@ -22,7 +21,6 @@ const styles = StyleSheet.create({
         paddingTop: 200,
         backgroundColor: 'white'
     },
-
     logo: {
         marginBottom: 10
     }
@@ -36,21 +34,14 @@ const propTypes = {
 class SelectTeam extends Component {
     static propTypes = propTypes;
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            serverUrl: 'http://localhost:8065',
-            team: null
-        };
-    }
-
     componentWillMount() {
         this.props.actions.fetchTeams();
     }
 
-    setTeam(team) {
-        this.setState({team});
+    componentWillReceiveProps(props) {
+        if (props.teams.current_team_id && !this.props.teams.current_team_id) {
+            Routes.ChannelsList();
+        }
     }
 
     render() {
@@ -62,11 +53,13 @@ class SelectTeam extends Component {
                 />
                 <Picker
                     style={{width: 300}}
-                    selectedValue={this.state.team}
-                    onValueChange={(team) => this.setTeam(team)}
+                    onValueChange={(team) => {
+                        this.props.actions.selectTeam(team);
+                    }}
                 >
                     {_.map(this.props.teams.data, (team) => (
                         <Picker.Item
+                            key={team.id}
                             label={team.display_name}
                             value={team}
                         />
@@ -74,7 +67,6 @@ class SelectTeam extends Component {
                 </Picker>
 
                 <ErrorText error={this.props.teams.error}/>
-                <KeyboardSpacer/>
             </View>
         );
     }

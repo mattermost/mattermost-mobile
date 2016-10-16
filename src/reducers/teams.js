@@ -4,11 +4,17 @@ import {TeamsTypes as types} from 'constants';
 const initState = {
     status: 'not fetched',
     error: null,
-    data: []
+    data: [],
+    current_team_id: null
 };
 
 export default function reduceTeams(state = initState, action) {
     switch (action.type) {
+
+    case types.SELECT_TEAM:
+        return {...state,
+            current_team_id: action.team_id
+        };
 
     case types.FETCH_TEAMS:
         return {...state,
