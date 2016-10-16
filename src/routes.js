@@ -1,3 +1,7 @@
+/* eslint-disable
+  class-methods-use-this,
+  react/require-optimization */
+
 import React, {Component} from 'react';
 import {Scene, Router} from 'react-native-router-flux';
 import SelectServerView from 'components/select_server_view';
