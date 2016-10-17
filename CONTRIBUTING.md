@@ -2,6 +2,8 @@
 
 Please see the [Mattermost Contribution Guide](http://docs.mattermost.com/developer/contribution-guide.html) which describes the process for making code contributions across Mattermost projects. 
 
+Note: Community work won't start until October 31, and no community pull requests will be accepted before then.
+
 ### Review Process for this Repo
 
 After following the steps in the [Contribution Guide](http://docs.mattermost.com/developer/contribution-guide.html), submitted pull requests go through the review process outlined below. We aim to start reviewing pull requests in this repo the week they are submitted, but the length of time to complete the process will vary depending on the pull request.
