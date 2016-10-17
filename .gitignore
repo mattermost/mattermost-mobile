@@ -39,3 +39,12 @@ buck-out/
 \.buckd/
 android/app/libs
 android/keystores/debug.keystore
+
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+tags
