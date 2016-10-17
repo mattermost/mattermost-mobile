@@ -6,7 +6,6 @@ import React, {Component, PropTypes} from 'react';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {StyleSheet, Text, View} from 'react-native';
-import _ from 'lodash';
 
 import * as postActions from 'actions/posts';
 import ErrorText from 'components/error_text';
@@ -32,19 +31,22 @@ class PostsList extends Component {
     static propTypes = propTypes;
 
     componentWillMount() {
-      this.props.actions.fetchPosts(
-        this.props.current_team_id,
-        this.props.current_channel_id
-      );
+        this.props.actions.fetchPosts(
+            this.props.current_team_id,
+            this.props.current_channel_id
+        );
     }
 
     render() {
         return (
             <View style={styles.container}>
-                {_.map(this.props.posts.data, (post) => (
-                    <Text key={post.id}>{post.user_id} - {post.message}</Text>
-                ))}
-
+                {this.props.posts.data.map((post) => {
+                    return (
+                        <Text key={post.id}>
+                            {`${post.user_id} - ${post.message}`}
+                        </Text>
+                    );
+                })}
                 <ErrorText error={this.props.posts.error}/>
             </View>
         );

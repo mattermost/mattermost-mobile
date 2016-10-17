@@ -283,7 +283,6 @@ export default class Client {
     }
 
     doFetch = async (url, options, onRequest, onSuccess, onFailure) => {
-        this.token = 'dmnz3by1nbfaubx7k3oi5738ye';
         if (onRequest) {
             onRequest();
         }
