@@ -1,11 +1,11 @@
 /* eslint-disable no-empty-function */
 
-// set this to false to allow requests to server in test suite
-const MOCK_FETCH = true;
+import config from 'config/config';
+const {MockFetchInTests} = config;
 
 let fetchMock = require('fetch-mock');
 
-if (!MOCK_FETCH) {
+if (!MockFetchInTests) {
     fetchMock.restore();
     fetchMock = {
         mock: () => {},
