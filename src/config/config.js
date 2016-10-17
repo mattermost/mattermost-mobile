@@ -4,6 +4,9 @@
 import BaseConfig from '../../config/config.json';
 import SecretConfig from '../../config/config.secret.json';
 
-const Config = Object.assign({}, BaseConfig, SecretConfig);
+const Config = {
+    ...BaseConfig,
+    ...SecretConfig
+};
 
 export default Config;
