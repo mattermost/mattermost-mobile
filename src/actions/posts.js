@@ -5,9 +5,9 @@ import {bindClientFunc} from './helpers.js';
 import Client from 'client/client_instance';
 import {PostsTypes as types} from 'constants';
 
-export function fetchPosts(team_id, channel_id) {
-    Client.setTeamId(team_id);
-    Client.setChannelId(channel_id);
+export function fetchPosts(teamId, channelId) {
+    Client.setTeamId(teamId);
+    Client.setChannelId(channelId);
     return bindClientFunc(
         Client.fetchPosts,
         types.FETCH_POSTS_REQUEST,

@@ -40,7 +40,7 @@ class ChannelsList extends Component {
     componentWillReceiveProps(props) {
         if (props.channels.current_channel_id &&
           !this.props.channels.current_channel_id) {
-            Routes.PostsList();
+            Routes.PostsList(); // eslint-disable-line new-cap
         }
     }
 
