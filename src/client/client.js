@@ -216,12 +216,32 @@ export default class Client {
         );
     }
 
+    fetchTeams = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/all_team_listings`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
     // Channel routes
 
     createChannel = (channel, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getChannelsRoute()}/create`,
             {method: 'post', body: JSON.stringify(channel)},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
+    fetchChannels = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getChannelsRoute()}/`,
+            {method: 'get'},
             onRequest,
             onSuccess,
             onFailure
@@ -245,13 +265,25 @@ export default class Client {
             onRequest();
         }
         try {
-            const response = await fetch(url, this.getOptions(options));
-            const data = await response.json();
-            if (response.ok) {
-                return onSuccess(data, response);
+            const resp = await fetch(url, this.getOptions(options));
+            let data;
+
+            const contentType = resp.headers.get('Content-Type') || 'unknown';
+            if (contentType.match(/application\/json/)) {
+                data = await resp.json();
+            } else {
+                data = await resp.text();
             }
-            const {message} = data;
-            throw new Error(message || 'Failed to fetch');
+            if (resp.ok) {
+                return onSuccess(data, resp);
+            }
+            let msg;
+            if (contentType === 'application/json') {
+                msg = data.message;
+            } else {
+                msg = data;
+            }
+            throw new Error(msg);
         } catch (err) {
             if (this.logToConsole) {
                 console.log(err); // eslint-disable-line no-console

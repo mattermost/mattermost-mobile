@@ -6,15 +6,16 @@ import React, {Component} from 'react';
 import Client from 'client/client_instance.js';
 import Config from 'config/config.js';
 import {connect} from 'react-redux';
-import {getPing} from 'actions/general.js';
+import {getPing} from 'actions/general';
 
-import Button from './button.js';
-import {AsyncStorage, Image, StyleSheet, Text, TextInput, View} from 'react-native';
+import Button from './button';
+import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import {Actions as Routes} from 'react-native-router-flux';
 
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
-import ErrorText from './error_text.js';
+import ErrorText from './error_text';
 
 const styles = StyleSheet.create({
     container: {
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
 
 class SelectServerView extends Component {
     static propTypes = {
-        onProceed: React.PropTypes.func.isRequired,
+        onProceed: React.PropTypes.func,
         getPing: React.PropTypes.func.isRequired,
         ping: React.PropTypes.object.isRequired,
         device: React.PropTypes.object.isRequired
@@ -48,14 +49,15 @@ class SelectServerView extends Component {
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
+        Routes.SelectTeam(); // eslint-disable-line new-cap
 
-        this.props.getPing().then(() => {
-            AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
-                if (!this.props.ping.error) {
-                    this.props.onProceed();
-                }
-            });
-        });
+        // this.props.getPing().then(() => {
+        //     AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
+        //         if (!this.props.ping.error) {
+        //             this.props.onProceed();
+        //         }
+        //     });
+        // });
     }
 
     render() {

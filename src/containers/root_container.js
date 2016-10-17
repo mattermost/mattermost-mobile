@@ -4,10 +4,9 @@
 import React from 'react';
 
 import {connect} from 'react-redux';
-import {loadDevice} from 'actions/device.js';
-
-import Loading from 'components/loading.js';
-import RootNavigator from 'components/root_navigator.js';
+import {loadDevice} from 'actions/device';
+import Loading from 'components/loading';
+import Routes from 'routes';
 
 class RootContainer extends React.Component {
     static propTypes = {
@@ -31,7 +30,7 @@ class RootContainer extends React.Component {
         }
 
         return (
-            <RootNavigator {...this.props}/>
+            <Routes/>
         );
     }
 }
