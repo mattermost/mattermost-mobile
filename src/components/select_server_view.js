@@ -14,6 +14,7 @@ import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 import ErrorText from './error_text.js';
+import Config from '../../secrets/config.json';
 
 const styles = StyleSheet.create({
     container: {
@@ -41,7 +42,7 @@ class SelectServerView extends Component {
         super(props);
 
         this.state = {
-            serverUrl: 'http://localhost:8065'
+            serverUrl: Config.API_URL
         };
     }
 

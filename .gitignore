@@ -33,6 +33,8 @@ local.properties
 #
 node_modules/
 npm-debug.log
+secrets/*
+.gitmodules
 
 # BUCK
 buck-out/
