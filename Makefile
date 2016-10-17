@@ -1,9 +1,4 @@
-.PHONY: build run clean test
-
-check-style: .npminstall
-	@echo Checking for style guide compliance
-
-	npm run check
+.PHONY: run check-style test clean
 
 .npminstall: package.json
 	@echo Getting dependencies using npm
@@ -12,25 +7,25 @@ check-style: .npminstall
 
 	touch $@
 
-build: .npminstall
-	@echo Building Mobile app
+config/config.secret.json:
+	@echo Generating default config/config.secret.json
+	@echo '{}' > config/config.secret.json
 
-	rm -rf dist
-
-	npm run build
-
-run: .npminstall
+run: .npminstall config/config.secret.json
 	@echo Running Mobile iOS Apps for development
 
 	react-native run-ios
 
+test: .npminstall config/config.secret.json
+	npm test
+
+check-style: .npminstall
+	@echo Checking for style guide compliance
+
+	npm run check
+
 clean:
 	@echo Cleaning app
 
-	rm -rf dist
 	rm -rf node_modules
 	rm -f .npminstall
-
-
-test: .npminstall
-	npm test

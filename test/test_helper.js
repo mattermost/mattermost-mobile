@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import Client from 'client/client.js';
+import Config from 'config/config.js';
 
 const PASSWORD = 'password1';
 
@@ -45,7 +46,7 @@ class TestHelper {
     createClient = () => {
         const client = new Client();
 
-        client.setUrl('http://localhost:8065');
+        client.setUrl(Config.DefaultServerUrl);
 
         return client;
     }
@@ -94,7 +95,7 @@ class TestHelper {
     }
 
     initClient = (client, callback) => {
-        client.setUrl('http://localhost:8065');
+        client.setUrl(Config.DefaultServerUrl);
 
         client.createUser(
             this.fakeUser(),

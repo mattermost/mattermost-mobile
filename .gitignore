@@ -48,3 +48,5 @@ Session.vim
 .netrwhist
 *~
 tags
+
+config/config.secret.json
