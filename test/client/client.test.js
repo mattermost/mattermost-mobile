@@ -2,8 +2,7 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-const fetchMock = require('fetch-mock');
-
+import fetchMock from 'fetch_mock';
 import TestHelper from 'test_helper.js';
 
 const fakeNotFoundResp = {

@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import 'react-native';
-const fetchMock = require('fetch-mock');
+import fetchMock from 'fetch_mock';
 
 fetchMock.get('http://example.com', {
     status: 200
