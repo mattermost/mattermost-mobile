@@ -9,6 +9,7 @@ import ChannelsList from 'components/channels_list';
 import Login from 'components/login';
 import SelectServerView from 'components/select_server_view';
 import SelectTeam from 'components/select_team';
+import PostsList from 'components/posts_list';
 
 export default class Routes extends Component {
     render() {
@@ -35,6 +36,11 @@ export default class Routes extends Component {
                         key='SelectTeam'
                         component={SelectTeam}
                         title='Select Team'
+                    />
+                    <Scene
+                        key='PostsList'
+                        component={PostsList}
+                        title='Posts List'
                     />
                 </Scene>
             </Router>

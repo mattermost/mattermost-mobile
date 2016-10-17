@@ -36,6 +36,18 @@ export default class Client {
         return this.teamId;
     }
 
+    setChannelId(id) {
+        this.channelId = id;
+    }
+
+    getChannelId() {
+        if (!this.channelId) {
+            console.error('You are trying to use a route that requires a channel_id, but you have not called setChannelId() in client.jsx'); // eslint-disable-line no-console
+        }
+
+        return this.channelId;
+    }
+
     getBaseRoute() {
         return `${this.url}${this.urlVersion}`;
     }
@@ -84,8 +96,8 @@ export default class Client {
         return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/hooks`;
     }
 
-    getPostsRoute(channelId) {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/${channelId}/posts`;
+    getPostsRoute() {
+        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/${this.getChannelId()}/posts`;
     }
 
     getUsersRoute() {
@@ -250,6 +262,16 @@ export default class Client {
 
     // Post routes
 
+    fetchPosts = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getPostsRoute()}/page/0/60`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
     createPost = (post, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getPostsRoute(post.channel_id)}/create`,
@@ -261,6 +283,7 @@ export default class Client {
     }
 
     doFetch = async (url, options, onRequest, onSuccess, onFailure) => {
+        this.token = 'dmnz3by1nbfaubx7k3oi5738ye';
         if (onRequest) {
             onRequest();
         }
