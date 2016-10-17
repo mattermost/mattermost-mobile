@@ -216,6 +216,16 @@ export default class Client {
         );
     }
 
+    fetchTeams = (onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/all_team_listings`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
+
     // Channel routes
 
     createChannel = (channel, onRequest, onSuccess, onFailure) => {

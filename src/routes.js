@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {Scene, Router} from 'react-native-router-flux';
 import SelectServerView from 'components/select_server_view';
-import PageTwo from 'components/page_two';
+import SelectTeam from 'components/select_team';
 
-export default class PageOne extends Component {
+export default class Routes extends Component {
     render() {
         return (
             <Router>
@@ -15,9 +15,9 @@ export default class PageOne extends Component {
                         initial={true}
                     />
                     <Scene
-                        key='pageTwo'
-                        component={PageTwo}
-                        title='PageTwo'
+                        key='SelectTeam'
+                        component={SelectTeam}
+                        title='SelectTeam'
                     />
                 </Scene>
             </Router>

@@ -4,9 +4,11 @@
 import {combineReducers} from 'redux';
 import device from './device.js';
 import general from './general.js';
+import teams from './teams';
 
 const entities = combineReducers({
-    general
+    general,
+    teams,
 });
 
 const views = combineReducers({
