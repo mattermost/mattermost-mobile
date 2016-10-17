@@ -4,6 +4,7 @@
 import React, {Component} from 'react';
 
 import Client from 'client/client_instance.js';
+import Config from 'config/config.js';
 import {connect} from 'react-redux';
 import {getPing} from 'actions/general.js';
 
@@ -41,7 +42,7 @@ class SelectServerView extends Component {
         super(props);
 
         this.state = {
-            serverUrl: 'http://localhost:8065'
+            serverUrl: Config.DefaultServerUrl
         };
     }
 
