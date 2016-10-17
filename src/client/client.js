@@ -1,8 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import _ from 'lodash';
-
 const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
@@ -270,10 +268,8 @@ export default class Client {
             const resp = await fetch(url, this.getOptions(options));
             let data;
 
-            // TODO: find an 'isomorphic' way to parse response headers
-            const contentType = resp.headers.get('Content-Type') ||
-                _.first(_.get(resp.headers, 'map.content-type')) || 'unknown';
-            if (contentType === 'application/json') {
+            const contentType = resp.headers.get('Content-Type') || 'unknown';
+            if (contentType.match(/application\/json/)) {
                 data = await resp.json();
             } else {
                 data = await resp.text();
