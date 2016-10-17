@@ -250,7 +250,6 @@ export default class Client {
         );
     }
 
-
     // Post routes
 
     createPost = (post, onRequest, onSuccess, onFailure) => {
@@ -270,7 +269,10 @@ export default class Client {
         try {
             const resp = await fetch(url, this.getOptions(options));
             let data;
-            const contentType = _.first(resp.headers.map['content-type']) || 'unknown';
+
+            // TODO: find an 'isomorphic' way to parse response headers
+            const contentType = resp.headers.get('Content-Type') ||
+                _.first(_.get(resp.headers, 'map.content-type')) || 'unknown';
             if (contentType === 'application/json') {
                 data = await resp.json();
             } else {
