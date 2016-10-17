@@ -6,6 +6,7 @@ import {combineReducers} from 'redux';
 import channels from './channels';
 import device from './device.js';
 import general from './general.js';
+import login from './login';
 import teams from './teams';
 
 const entities = combineReducers({
@@ -15,7 +16,8 @@ const entities = combineReducers({
 });
 
 const views = combineReducers({
-    device
+    device,
+    login
 });
 
 export default combineReducers({

@@ -6,6 +6,7 @@ import React, {Component} from 'react';
 import {Scene, Router} from 'react-native-router-flux';
 
 import ChannelsList from 'components/channels_list';
+import Login from 'components/login';
 import SelectServerView from 'components/select_server_view';
 import SelectTeam from 'components/select_team';
 
@@ -18,6 +19,11 @@ export default class Routes extends Component {
                         key='ChannelsList'
                         component={ChannelsList}
                         title='Channels'
+                    />
+                    <Scene
+                        key='Login'
+                        component={Login}
+                        title='Login'
                     />
                     <Scene
                         key='SelectServerView'
