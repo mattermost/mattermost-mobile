@@ -12,7 +12,6 @@ describe('Client.User', () => {
 
         client.createUser(
             user,
-            null,
             (data) => {
                 assert.ok(data.id, 'id is empty');
                 assert.equal(data.email, user.email, 'email addresses aren\'t equal');
@@ -31,13 +30,11 @@ describe('Client.User', () => {
 
         client.createUser(
             user,
-            null,
             () => {
                 client.login(
                     user.email,
                     user.password,
                     '',
-                    null,
                     (data) => {
                         assert.ok(data.id, 'id is empty');
                         assert.equal(data.email, user.email, 'email addresses aren\'t equal');
@@ -59,7 +56,6 @@ describe('Client.User', () => {
     it('getInitialLoad', (done) => {
         TestHelper.initBasic(({client, user}) => {
             client.getInitialLoad(
-                null,
                 (data) => {
                     assert.ok(data.user.id.length, 'id is empty');
                     assert.equal(data.user.id, user.id, 'user ids don\'t match');

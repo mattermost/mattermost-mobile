@@ -9,7 +9,6 @@ describe('Client.General', () => {
     it('getClientConfig', (done) => {
         TestHelper.initBasic(({client}) => {
             client.getClientConfig(
-                null,
                 (data) => {
                     assert.ok(data.Version);
                     assert.ok(data.BuildNumber);
@@ -28,7 +27,6 @@ describe('Client.General', () => {
     it('getPing', (done) => {
         TestHelper.initBasic(({client}) => {
             client.getPing(
-                null,
                 () => {
                     done();
                 },
@@ -44,7 +42,6 @@ describe('Client.General', () => {
             client.setUrl('https://example.com/fake/url');
 
             client.getPing(
-                null,
                 () => {
                     done(new Error('ping should\'ve failed'));
                 },
@@ -60,7 +57,6 @@ describe('Client.General', () => {
             client.logClientError(
                 'this is a test',
                 'ERROR',
-                null,
                 (data) => {
                     TestHelper.assertStatusOkay(data);
 

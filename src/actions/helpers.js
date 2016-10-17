@@ -32,9 +32,7 @@ export function emptyError() {
 
 export function bindClientFunc(clientFunc, request, success, failure, ...args) {
     return (dispatch, getState) => {
-        function onRequest() {
-            return dispatch(requestData(request), getState);
-        }
+        dispatch(requestData(request), getState);
 
         function onSuccess(data) {
             return dispatch(requestSuccess(success, data), getState);
@@ -44,6 +42,6 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
             return dispatch(requestFailure(failure, err), getState);
         }
 
-        return dispatch(() => clientFunc(...args, onRequest, onSuccess, onFailure), getState);
+        return dispatch(() => clientFunc(...args, onSuccess, onFailure), getState);
     };
 }
