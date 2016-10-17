@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "isomorphic-fetch": "2.2.1",
+    "lodash": "4.16.4",
     "react": "15.3.2",
     "react-native": "0.34.1",
     "react-native-keyboard-spacer": "0.3.0",
