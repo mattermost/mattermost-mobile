@@ -5,7 +5,7 @@ const initState = {
     status: 'not fetched',
     error: null,
     data: [],
-    current_team_id: null
+    currentTeamId: null
 };
 
 export default function reduceTeams(state = initState, action) {
@@ -13,7 +13,7 @@ export default function reduceTeams(state = initState, action) {
 
     case types.SELECT_TEAM:
         return {...state,
-            current_team_id: action.team_id
+            currentTeamId: action.team_id
         };
 
     case types.FETCH_TEAMS_REQUEST:

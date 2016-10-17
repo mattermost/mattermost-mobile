@@ -42,7 +42,7 @@ class Login extends Component {
     componentWillReceiveProps(props) {
         if (this.props.login.status === 'fetching' &&
           props.login.status === 'fetched') {
-            Routes.SelectTeam(); // eslint-disable-line new-cap
+            Routes.goToSelectTeam(); // eslint-disable-line new-cap
         }
     }
 

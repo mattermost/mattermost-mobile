@@ -4,7 +4,7 @@ const initState = {
     status: 'not fetched',
     error: null,
     data: [],
-    current_channel_id: null
+    currentChannelId: null
 };
 
 export default function reduceChannels(state = initState, action) {
@@ -12,7 +12,7 @@ export default function reduceChannels(state = initState, action) {
 
     case types.SELECT_CHANNEL:
         return {...state,
-            current_channel_id: action.channel_id
+            currentChannelId: action.channel_id
         };
 
     case types.FETCH_CHANNELS_REQUEST:

@@ -22,8 +22,8 @@ const styles = StyleSheet.create({
 
 const propTypes = {
     posts: PropTypes.object.isRequired,
-    current_team_id: PropTypes.string.isRequired,
-    current_channel_id: PropTypes.string.isRequired,
+    currentTeamId: PropTypes.string.isRequired,
+    currentChannelId: PropTypes.string.isRequired,
     actions: PropTypes.object.isRequired
 };
 
@@ -32,8 +32,8 @@ class PostsList extends Component {
 
     componentWillMount() {
         this.props.actions.fetchPosts(
-            this.props.current_team_id,
-            this.props.current_channel_id
+            this.props.currentTeamId,
+            this.props.currentChannelId
         );
     }
 
@@ -56,8 +56,8 @@ class PostsList extends Component {
 function mapStateToProps(state) {
     return {
         posts: state.entities.posts,
-        current_team_id: state.entities.teams.current_team_id,
-        current_channel_id: state.entities.channels.current_channel_id
+        currentTeamId: state.entities.teams.currentTeamId,
+        currentChannelId: state.entities.channels.currentChannelId
     };
 }
 

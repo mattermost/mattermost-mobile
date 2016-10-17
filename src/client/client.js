@@ -36,18 +36,6 @@ export default class Client {
         return this.teamId;
     }
 
-    setChannelId(id) {
-        this.channelId = id;
-    }
-
-    getChannelId() {
-        if (!this.channelId) {
-            console.error('You are trying to use a route that requires a channel_id, but you have not called setChannelId() in client.jsx'); // eslint-disable-line no-console
-        }
-
-        return this.channelId;
-    }
-
     getBaseRoute() {
         return `${this.url}${this.urlVersion}`;
     }
@@ -96,8 +84,8 @@ export default class Client {
         return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/hooks`;
     }
 
-    getPostsRoute() {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/${this.getChannelId()}/posts`;
+    getPostsRoute(channelId) {
+        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/${channelId}/posts`;
     }
 
     getUsersRoute() {
@@ -261,10 +249,9 @@ export default class Client {
     }
 
     // Post routes
-
-    fetchPosts = (onRequest, onSuccess, onFailure) => {
+    fetchPosts = (channelId, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
-            `${this.getPostsRoute()}/page/0/60`,
+            `${this.getPostsRoute(channelId)}/page/0/60`,
             {method: 'get'},
             onRequest,
             onSuccess,

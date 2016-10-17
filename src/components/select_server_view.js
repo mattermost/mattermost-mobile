@@ -49,7 +49,7 @@ class SelectServerView extends Component {
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
-        Routes.Login(); // eslint-disable-line new-cap
+        Routes.goToLogin();
 
         // this.props.getPing().then(() => {
         //     AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
