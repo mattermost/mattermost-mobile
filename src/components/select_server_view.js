@@ -11,7 +11,7 @@ import {getPing} from 'actions/general';
 import Button from './button';
 import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
-import {Actions} from 'react-native-router-flux';
+import {Actions as Routes} from 'react-native-router-flux';
 
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
@@ -49,7 +49,7 @@ class SelectServerView extends Component {
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
-        Actions.SelectTeam();
+        Routes.SelectTeam(); // eslint-disable-line new-cap
 
         // this.props.getPing().then(() => {
         //     AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {

@@ -40,7 +40,7 @@ class SelectTeam extends Component {
 
     componentWillReceiveProps(props) {
         if (props.teams.current_team_id && !this.props.teams.current_team_id) {
-            Routes.ChannelsList();
+            Routes.ChannelsList(); // eslint-disable-line new-cap
         }
     }
 

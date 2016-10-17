@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 
 import {ListView, StyleSheet, View, Text} from 'react-native';
 const {DataSource} = ListView;
-import {Actions as Routes} from 'react-native-router-flux';
+import {Actions as Routes} from 'react-native-router-flux'; // eslint-disable-line no-unused-vars
 
 import * as channelActions from 'actions/channels';
 
@@ -40,8 +40,8 @@ class ChannelsList extends Component {
     componentWillReceiveProps(props) {
         if (props.channels.current_channel_id &&
           !this.props.channels.current_channel_id) {
-            console.warn('TODO route to PostsList');
-            // TODO: Routes.PostLists();
+            console.warn('TODO route to PostsList'); // eslint-disable-line no-console
+            // TODO: Routes.PostLists(); // eslint-disable-line new-cap
         }
     }
 
