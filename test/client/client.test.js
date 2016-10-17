@@ -34,18 +34,9 @@ fetchMock.post(/\/log_client/, {
 });
 
 describe('Client', () => {
-    it('doFetch', (done) => {
+    it('doFetch', async () => {
         const client = TestHelper.createClient();
 
-        client.doFetch(
-            `${client.getGeneralRoute()}/ping`,
-            {},
-            () => {
-                done();
-            },
-            (err) => {
-                done(new Error(err));
-            }
-        );
+        return client.doFetch(`${client.getGeneralRoute()}/ping`, {});
     });
 });

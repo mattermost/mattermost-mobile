@@ -10,7 +10,7 @@ import TestHelper from 'test_helper.js';
 
 describe('Actions.General', () => {
     it('getClientConfig', (done) => {
-        TestHelper.initClient(Client, () => {
+        TestHelper.initBasic(Client).then(() => {
             const store = configureStore();
 
             store.subscribe(() => {
@@ -36,7 +36,7 @@ describe('Actions.General', () => {
     });
 
     it('getPing', (done) => {
-        TestHelper.initClient(Client, () => {
+        TestHelper.initBasic(Client).then(() => {
             const store = configureStore();
 
             store.subscribe(() => {
@@ -54,7 +54,7 @@ describe('Actions.General', () => {
     });
 
     it('getPing - Invalid URL', (done) => {
-        TestHelper.initClient(Client, () => {
+        TestHelper.initBasic(Client).then(() => {
             const store = configureStore();
 
             store.subscribe(() => {

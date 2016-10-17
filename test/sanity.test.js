@@ -18,6 +18,10 @@ describe('Sanity test', () => {
         });
     });
 
+    it('async/await', async () => {
+        await Promise.resolve(true);
+    });
+
     it('fetch', (done) => {
         fetch('http://example.com').then(() => {
             done();
