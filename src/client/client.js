@@ -247,7 +247,11 @@ export default class Client {
         try {
             const response = await fetch(url, this.getOptions(options));
             const data = await response.json();
-            return response.ok ? onSuccess(data, response) : Promise.reject(data);
+            if (response.ok) {
+                return onSuccess(data, response);
+            }
+            const {message} = data;
+            throw new Error(message || 'Failed to fetch');
         } catch (err) {
             if (this.logToConsole) {
                 console.log(err); // eslint-disable-line no-console
