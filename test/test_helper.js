@@ -130,7 +130,6 @@ fetchMock.post(/\/users\/login$/, (url, opts) => {
             token: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
         },
         body: {...fakeUserRespBody,
-            ...reqBody,
             email: reqBody.login_id
         }
     };
