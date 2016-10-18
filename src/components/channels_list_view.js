@@ -11,6 +11,7 @@ import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
 
 const propTypes = {
+    teams: PropTypes.object.isRequired,
     channels: PropTypes.object.isRequired,
     actions: PropTypes.object.isRequired
 };
@@ -31,9 +32,14 @@ class ChannelsListView extends Component {
     }
 
     render() {
+        const {data: teams, currentTeamId} = this.props.teams;
+        const currentTeam = teams[currentTeamId];
         const channels = _.values(this.props.channels.data);
         return (
             <View style={GlobalStyles.container}>
+                <Text style={GlobalStyles.header}>
+                    {currentTeam.display_name}
+                </Text>
                 <Text style={GlobalStyles.subheader}>
                     {'Your channels:'}
                 </Text>
