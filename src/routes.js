@@ -22,23 +22,23 @@ export default class Routes extends Component {
                         title='Login'
                     />
                     <Scene
-                        key='goToSelectServerContainer'
+                        key='goToSelectServer'
                         component={SelectServerContainer}
                         title='Enter Server URL'
                         initial={true}
                     />
                     <Scene
-                        key='goToChannelsListContainer'
+                        key='goToChannelsList'
                         component={ChannelsListContainer}
                         title='Channels'
                     />
                     <Scene
-                        key='goToSelectTeamContainer'
+                        key='goToSelectTeam'
                         component={SelectTeamContainer}
                         title='Select Team'
                     />
                     <Scene
-                        key='goToPostsListContainer'
+                        key='goToPostsList'
                         component={PostsListContainer}
                         title='Posts List'
                     />

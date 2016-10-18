@@ -16,16 +16,6 @@ const propTypes = {
 class SelectTeamContainer extends Component {
     static propTypes = propTypes;
 
-    componentWillMount() {
-        this.props.actions.fetchTeams();
-    }
-
-    componentWillReceiveProps(props) {
-        if (props.teams.currentTeamId && !this.props.teams.currentTeamId) {
-            Routes.goToChannelsListContainer();
-        }
-    }
-
     render() {
         return (
             <SelectTeamView

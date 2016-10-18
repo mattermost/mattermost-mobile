@@ -34,7 +34,7 @@ class ChannelsListView extends Component {
     componentWillReceiveProps(props) {
         if (props.channels.currentChannelId &&
           !this.props.channels.currentChannelId) {
-            Routes.goToPostsListContainer();
+            Routes.goToPostsList();
         }
     }
 

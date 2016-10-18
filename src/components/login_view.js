@@ -38,7 +38,7 @@ export default class LoginView extends Component {
     componentWillReceiveProps(props) {
         if (this.props.login.status === 'fetching' &&
           props.login.status === 'fetched') {
-            Routes.goToSelectTeamContainer();
+            Routes.goToSelectTeam();
         }
     }
 
