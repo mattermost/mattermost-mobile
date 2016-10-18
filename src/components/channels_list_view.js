@@ -32,14 +32,11 @@ class ChannelsListView extends Component {
     }
 
     componentWillReceiveProps(props) {
-        if (props.channels.currentChannelId &&
-          !this.props.channels.currentChannelId) {
+        const {currentChannelId} = props.channels;
+        if (currentChannelId &&
+          currentChannelId !== this.props.channels.currentChannelId) {
             Routes.goToPostsList();
         }
-    }
-
-    setChannel(channel) {
-        this.props.actions.selectChannel(channel);
     }
 
     render() {
