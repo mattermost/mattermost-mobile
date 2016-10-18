@@ -2,15 +2,10 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-
 import {ListView, StyleSheet, View, Text} from 'react-native';
 const {DataSource} = ListView;
 import {Actions as Routes} from 'react-native-router-flux';
 import _ from 'lodash';
-
-import * as channelActions from 'actions/channels';
 import ErrorText from 'components/error_text';
 
 const styles = StyleSheet.create({
@@ -28,7 +23,7 @@ const propTypes = {
     actions: PropTypes.object.isRequired
 };
 
-class ChannelsList extends Component {
+class ChannelsListView extends Component {
     static propTypes = propTypes;
     ds: DataSource = new DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
@@ -67,16 +62,4 @@ class ChannelsList extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        channels: state.entities.channels
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators(channelActions, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelsList);
+export default ChannelsListView;

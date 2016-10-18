@@ -3,13 +3,10 @@
 
 import React, {Component, PropTypes} from 'react';
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 import {Image, StyleSheet, Picker, View} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import _ from 'lodash';
 
-import * as teamActions from 'actions/teams';
 import ErrorText from 'components/error_text';
 import logo from 'images/logo.png';
 
@@ -31,7 +28,7 @@ const propTypes = {
     actions: PropTypes.object.isRequired
 };
 
-class SelectTeam extends Component {
+export default class SelectTeamView extends Component {
     static propTypes = propTypes;
 
     componentWillMount() {
@@ -71,17 +68,3 @@ class SelectTeam extends Component {
         );
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        teams: state.entities.teams
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators(teamActions, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SelectTeam);

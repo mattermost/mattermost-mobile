@@ -2,13 +2,9 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
-
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 
-import * as loginActions from 'actions/login';
 import Button from 'components/button';
 import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
@@ -32,7 +28,7 @@ const propTypes = {
     actions: PropTypes.object.isRequired
 };
 
-class Login extends Component {
+export default class LoginView extends Component {
     static propTypes = propTypes;
     state = {
         loginId: '',
@@ -42,7 +38,7 @@ class Login extends Component {
     componentWillReceiveProps(props) {
         if (this.props.login.status === 'fetching' &&
           props.login.status === 'fetched') {
-            Routes.goToSelectTeam(); // eslint-disable-line new-cap
+            Routes.goToSelectTeam();
         }
     }
 
@@ -89,17 +85,3 @@ class Login extends Component {
         );
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        login: state.views.login
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators(loginActions, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Login);

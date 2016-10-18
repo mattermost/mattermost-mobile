@@ -5,11 +5,11 @@
 import React, {Component} from 'react';
 import {Scene, Router} from 'react-native-router-flux';
 
-import ChannelsList from 'components/channels_list';
-import Login from 'components/login';
-import SelectServerView from 'components/select_server_view';
-import SelectTeam from 'components/select_team';
-import PostsList from 'components/posts_list';
+import ChannelsListContainer from 'containers/channels_list_container';
+import LoginContainer from 'containers/login_container';
+import SelectServerContainer from 'containers/select_server_container';
+import SelectTeamContainer from 'containers/select_team_container';
+import PostsListContainer from 'containers/posts_list_container';
 
 export default class Routes extends Component {
     render() {
@@ -18,34 +18,28 @@ export default class Routes extends Component {
                 <Scene key='root'>
                     <Scene
                         key='goToLogin'
-                        component={Login}
+                        component={LoginContainer}
                         title='Login'
                     />
                     <Scene
-                        key='goToSelectServerView'
-                        component={SelectServerView}
-                        title='Enter Server URL'
-                        initial={true}
-                    />
-                    <Scene
-                        key='goToSelectServerView'
-                        component={SelectServerView}
+                        key='goToSelectServer'
+                        component={SelectServerContainer}
                         title='Enter Server URL'
                         initial={true}
                     />
                     <Scene
                         key='goToChannelsList'
-                        component={ChannelsList}
+                        component={ChannelsListContainer}
                         title='Channels'
                     />
                     <Scene
                         key='goToSelectTeam'
-                        component={SelectTeam}
+                        component={SelectTeamContainer}
                         title='Select Team'
                     />
                     <Scene
                         key='goToPostsList'
-                        component={PostsList}
+                        component={PostsListContainer}
                         title='Posts List'
                     />
                 </Scene>
