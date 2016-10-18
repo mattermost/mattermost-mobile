@@ -1,10 +1,9 @@
-import _ from 'lodash';
 import {PostsTypes as types} from 'constants';
 
 const initState = {
     status: 'not fetched',
     error: null,
-    data: []
+    data: {}
 };
 
 export default function reducePosts(state = initState, action) {
@@ -18,7 +17,7 @@ export default function reducePosts(state = initState, action) {
     case types.FETCH_POSTS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: _.values(action.data.posts)
+            data: action.data.posts
         };
     case types.FETCH_POSTS_FAILURE:
         return {...state,

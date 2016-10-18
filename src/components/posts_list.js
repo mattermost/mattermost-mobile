@@ -6,6 +6,7 @@ import React, {Component, PropTypes} from 'react';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {StyleSheet, Text, View} from 'react-native';
+import _ from 'lodash';
 
 import * as postActions from 'actions/posts';
 import ErrorText from 'components/error_text';
@@ -38,15 +39,14 @@ class PostsList extends Component {
     }
 
     render() {
+        const posts = _.values(this.props.posts.data);
         return (
             <View style={styles.container}>
-                {this.props.posts.data.map((post) => {
-                    return (
-                        <Text key={post.id}>
-                            {`${post.user_id} - ${post.message}`}
-                        </Text>
-                    );
-                })}
+                {posts.map((post) => (
+                    <Text key={post.id}>
+                        {`${post.user_id} - ${post.message}`}
+                    </Text>
+                ))}
                 <ErrorText error={this.props.posts.error}/>
             </View>
         );
