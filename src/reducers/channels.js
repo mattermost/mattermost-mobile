@@ -12,7 +12,7 @@ export default function reduceChannels(state = initState, action) {
 
     case types.SELECT_CHANNEL:
         return {...state,
-            currentChannelId: action.channel_id
+            currentChannelId: action.channelId
         };
 
     case types.FETCH_CHANNELS_REQUEST:

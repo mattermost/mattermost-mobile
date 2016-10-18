@@ -9,7 +9,7 @@ export function selectTeam(team) {
     Client.setTeamId(team.id);
     return {
         type: types.SELECT_TEAM,
-        team_id: team.id
+        teamId: team.id
     };
 }
 

@@ -13,7 +13,7 @@ export default function reduceTeams(state = initState, action) {
 
     case types.SELECT_TEAM:
         return {...state,
-            currentTeamId: action.team_id
+            currentTeamId: action.teamId
         };
 
     case types.FETCH_TEAMS_REQUEST:

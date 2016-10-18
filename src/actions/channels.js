@@ -8,7 +8,7 @@ import {ChannelsTypes as types} from 'constants';
 export function selectChannel(channel) {
     return {
         type: types.SELECT_CHANNEL,
-        channel_id: channel.id
+        channelId: channel.id
     };
 }
 
