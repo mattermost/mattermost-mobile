@@ -3,9 +3,10 @@
 
 import React, {Component, PropTypes} from 'react';
 
-import {Image, StyleSheet, Picker, View} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import _ from 'lodash';
+import Button from 'react-native-button';
 
 import ErrorText from 'components/error_text';
 import logo from 'images/logo.png';
@@ -15,11 +16,37 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         alignItems: 'center',
-        paddingTop: 200,
+        paddingVertical: 100,
         backgroundColor: 'white'
     },
     logo: {
         marginBottom: 10
+    },
+    header: {
+        fontSize: 36,
+        fontWeight: '600'
+    },
+    subheader: {
+        fontSize: 18,
+        fontWeight: '300',
+        color: '#777'
+    },
+    button: {
+        textAlign: 'left',
+        fontSize: 18,
+        fontWeight: '400',
+        color: '#777'
+    },
+    buttonContainer: {
+        alignSelf: 'stretch',
+        height: 50,
+        marginHorizontal: 15,
+        marginVertical: 5,
+        padding: 13,
+        backgroundColor: '#fafafa',
+        borderWidth: 1,
+        borderRadius: 3,
+        borderColor: '#d5d5d5'
     }
 });
 
@@ -44,27 +71,30 @@ export default class SelectTeamView extends Component {
     }
 
     render() {
+        const teams = _.values(this.props.teams.data);
         return (
             <View style={styles.container}>
                 <Image
                     style={styles.logo}
                     source={logo}
                 />
-                <Picker
-                    style={{width: 300}}
-                    onValueChange={(team) => {
-                        this.props.actions.selectTeam(team);
-                    }}
-                >
-                    {_.map(this.props.teams.data, (team) => (
-                        <Picker.Item
-                            key={team.id}
-                            label={team.display_name}
-                            value={team}
-                        />
-                    ))}
-                </Picker>
-
+                <Text style={styles.header}>{'Mattermost'}</Text>
+                <Text style={styles.subheader}>
+                    {'All team communication in one place, searchable and accessible anywhere'}
+                </Text>
+                <Text style={styles.subheader}>
+                    {'Your teams:'}
+                </Text>
+                {_.map(teams, (team) => (
+                    <Button
+                        key={team.id}
+                        onPress={() => this.props.actions.selectTeam(team)}
+                        style={styles.button}
+                        containerStyle={styles.buttonContainer}
+                    >
+                        {team.display_name}
+                    </Button>
+                ))}
                 <ErrorText error={this.props.teams.error}/>
             </View>
         );
