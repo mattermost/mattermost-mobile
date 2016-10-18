@@ -2,15 +2,15 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import reduceTeams, {initState} from 'reducers/teams';
-import {TeamsTypes as types} from 'constants';
+import reduceDevice, {initState} from 'reducers/device';
+import {DeviceTypes as types} from 'constants';
 
-describe('teams reducer', () => {
+describe('device reducer', () => {
     describe('Init', () => {
         let store;
         let expectedStore;
         before(() => {
-            store = reduceTeams(store, {type: ''});
+            store = reduceDevice(store, {type: ''});
             expectedStore = {...initState};
         });
         it('should be initial state', () => {
@@ -20,51 +20,34 @@ describe('teams reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.SELECT_TEAM}`, () => {
+    describe(`when ${types.DEVICE_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
-            store = reduceTeams(store, {
-                type: types.SELECT_TEAM,
-                teamId: '1'
+            store = reduceDevice(store, {
+                type: types.DEVICE_REQUEST
             });
             expectedStore = {
                 ...initState,
-                currentTeamId: '1'
+                loading: true
             };
         });
         it('should set status to fetching', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_TEAMS_REQUEST}`, () => {
+    describe(`when ${types.DEVICE_SUCCESS}`, () => {
         let store;
         let expectedStore;
+        const data = {some: 'data'};
         before(() => {
-            store = reduceTeams(store, {
-                type: types.FETCH_TEAMS_REQUEST
-            });
-            expectedStore = {
-                ...initState,
-                status: 'fetching'
-            };
-        });
-        it('should set status to fetching', () => {
-            assert.deepEqual(store, expectedStore);
-        });
-    });
-    describe(`when ${types.FETCH_TEAMS_SUCCESS}`, () => {
-        let store;
-        const data = {some: 'thing'};
-        let expectedStore;
-        before(() => {
-            store = reduceTeams(store, {
-                type: types.FETCH_TEAMS_SUCCESS,
+            store = reduceDevice(store, {
+                type: types.DEVICE_SUCCESS,
                 data
             });
             expectedStore = {
                 ...initState,
-                status: 'fetched',
+                loading: false,
                 data
             };
         });
@@ -72,19 +55,19 @@ describe('teams reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_TEAMS_FAILURE}`, () => {
+    describe(`when ${types.DEVICE_FAILURE}`, () => {
         let store;
-        let expectedStore;
         let error;
+        let expectedStore;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
-            store = reduceTeams(store, {
-                type: types.FETCH_TEAMS_FAILURE,
+            store = reduceDevice(store, {
+                type: types.DEVICE_FAILURE,
                 error
             });
             expectedStore = {
                 ...initState,
-                status: 'failed',
+                loading: false,
                 error
             };
         });
