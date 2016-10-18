@@ -3,12 +3,8 @@
 
 import React, {Component, PropTypes} from 'react';
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 import {StyleSheet, Text, View} from 'react-native';
 import _ from 'lodash';
-
-import * as postActions from 'actions/posts';
 import ErrorText from 'components/error_text';
 
 const styles = StyleSheet.create({
@@ -28,7 +24,7 @@ const propTypes = {
     actions: PropTypes.object.isRequired
 };
 
-class PostsList extends Component {
+export default class PostsListView extends Component {
     static propTypes = propTypes;
 
     componentWillMount() {
@@ -52,19 +48,3 @@ class PostsList extends Component {
         );
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        posts: state.entities.posts,
-        currentTeamId: state.entities.teams.currentTeamId,
-        currentChannelId: state.entities.channels.currentChannelId
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators(postActions, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(PostsList);

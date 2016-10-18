@@ -5,8 +5,6 @@ import React, {Component} from 'react';
 
 import Client from 'client/client_instance.js';
 import Config from 'config/config.js';
-import {connect} from 'react-redux';
-import {getPing} from 'actions/general';
 
 import Button from './button';
 import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
@@ -91,13 +89,4 @@ class SelectServerView extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        ping: state.entities.general.ping,
-        device: state.views.device
-    };
-}
-
-export default connect(mapStateToProps, {
-    getPing
-})(SelectServerView);
+export default SelectServerView;
