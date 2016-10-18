@@ -1,6 +1,6 @@
 import {TeamsTypes as types} from 'constants';
 
-const initState = {
+export const initState = {
     status: 'not fetched',
     error: null,
     data: {},
