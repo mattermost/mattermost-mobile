@@ -1,6 +1,11 @@
 .PHONY: run check-style test clean
 
 .npminstall: package.json
+	@if ! [ $(shell command -v npm) ]; then \
+		echo "npm is not installed"; \
+		exit 1; \
+	fi
+
 	@echo Getting dependencies using npm
 
 	npm install
