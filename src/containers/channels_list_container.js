@@ -8,6 +8,7 @@ import ChannelsListView from 'components/channels_list_view';
 
 function mapStateToProps(state) {
     return {
+        teams: state.entities.teams,
         channels: state.entities.channels
     };
 }

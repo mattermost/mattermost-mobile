@@ -2,26 +2,13 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
+import {View, Text, TextInput, Image} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 
 import Button from 'components/button';
 import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 200,
-        backgroundColor: 'white'
-    },
-    logo: {
-        marginBottom: 10
-    }
-});
 
 const propTypes = {
     login: PropTypes.object.isRequired,
@@ -51,13 +38,13 @@ export default class LoginView extends Component {
 
     render() {
         return (
-            <View style={styles.container}>
+            <View style={GlobalStyles.container}>
                 <Image
-                    style={styles.logo}
+                    style={GlobalStyles.logo}
                     source={logo}
                 />
-                <Text>{'Mattermost'}</Text>
-                <Text>
+                <Text style={GlobalStyles.header}>{'Mattermost'}</Text>
+                <Text style={GlobalStyles.subheader}>
                     {'All team communication in one place, searchable and accessible anywhere'}
                 </Text>
                 <TextInput
@@ -67,6 +54,7 @@ export default class LoginView extends Component {
                     placeholder='Email or Username'
                     autoCorrect={false}
                     autoCapitalize='none'
+                    underlineColorAndroid='transparent'
                 />
                 <TextInput
                     value={this.state.password}
@@ -75,6 +63,7 @@ export default class LoginView extends Component {
                     placeholder='Password'
                     autoCorrect={false}
                     autoCapitalize='none'
+                    underlineColorAndroid='transparent'
                 />
                 <Button
                     onPress={() => this.signIn()}

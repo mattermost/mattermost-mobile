@@ -2,32 +2,17 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
+import {View, Text, TextInput, Image} from 'react-native';
+import KeyboardSpacer from 'react-native-keyboard-spacer';
+import {Actions as Routes} from 'react-native-router-flux';
+import _ from 'lodash';
 
 import Client from 'client/client_instance.js';
 import Config from 'config/config.js';
-
-import Button from './button';
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
-import KeyboardSpacer from 'react-native-keyboard-spacer';
-import {Actions as Routes} from 'react-native-router-flux';
-
+import Button from 'components/button';
+import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
-import ErrorText from './error_text';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 200,
-        backgroundColor: 'white'
-    },
-
-    logo: {
-        marginBottom: 10
-    }
-});
 
 class SelectServerView extends Component {
     static propTypes = {
@@ -59,22 +44,25 @@ class SelectServerView extends Component {
 
     render() {
         return (
-            <View style={styles.container}>
+            <View style={GlobalStyles.container}>
                 <Image
-                    style={styles.logo}
+                    style={GlobalStyles.logo}
                     source={logo}
                 />
-                <Text style={GlobalStyles.label}>{'Enter Server URL'}</Text>
+                <Text style={_.at(GlobalStyles, ['header', 'label'])}>
+                    {'Enter Server URL'}
+                </Text>
                 <TextInput
-                    style={GlobalStyles.inputBox}
+                    value={this.state.serverUrl}
                     onChangeText={(serverUrl) => this.setState({serverUrl})}
                     onSubmitEditing={this.onClick}
+                    style={GlobalStyles.inputBox}
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='url'
                     placeholder='https://mattermost.example.com'
                     returnKeyType='go'
-                    value={this.state.serverUrl}
+                    underlineColorAndroid='transparent'
                 />
                 <Button
                     text='Proceed'

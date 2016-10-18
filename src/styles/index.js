@@ -7,6 +7,42 @@
 import {StyleSheet} from 'react-native';
 
 export const GlobalStyles = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingTop: 200,
+        backgroundColor: 'white'
+    },
+    logo: {
+        marginBottom: 10
+    },
+    header: {
+        fontSize: 36,
+        fontWeight: '600'
+    },
+    subheader: {
+        fontSize: 18,
+        fontWeight: '300',
+        color: '#777'
+    },
+    buttonListItemText: {
+        textAlign: 'left',
+        fontSize: 18,
+        fontWeight: '400',
+        color: '#777'
+    },
+    buttonListItem: {
+        alignSelf: 'stretch',
+        height: 50,
+        marginHorizontal: 15,
+        marginVertical: 5,
+        padding: 13,
+        backgroundColor: '#fafafa',
+        borderWidth: 1,
+        borderRadius: 3,
+        borderColor: '#d5d5d5'
+    },
     button: {
         margin: 3,
         paddingTop: 10,
