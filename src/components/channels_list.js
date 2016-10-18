@@ -7,11 +7,10 @@ import {connect} from 'react-redux';
 
 import {ListView, StyleSheet, View, Text} from 'react-native';
 const {DataSource} = ListView;
-import {Actions as Routes} from 'react-native-router-flux'; // eslint-disable-line no-unused-vars
+import {Actions as Routes} from 'react-native-router-flux';
+import _ from 'lodash';
 
 import * as channelActions from 'actions/channels';
-
-// import _ from 'lodash';
 import ErrorText from 'components/error_text';
 
 const styles = StyleSheet.create({
@@ -49,10 +48,11 @@ class ChannelsList extends Component {
     }
 
     render() {
+        const channels = _.values(this.props.channels.data);
         return (
             <View style={styles.container}>
                 <ListView
-                    dataSource={this.ds.cloneWithRows(this.props.channels.data)}
+                    dataSource={this.ds.cloneWithRows(channels)}
                     enableEmptySections={true}
                     renderRow={(channel) => (
                         <Text onPress={() => this.props.actions.selectChannel(channel)}>

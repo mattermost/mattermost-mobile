@@ -1,10 +1,9 @@
-import _ from 'lodash';
 import {TeamsTypes as types} from 'constants';
 
 const initState = {
     status: 'not fetched',
     error: null,
-    data: [],
+    data: {},
     currentTeamId: null
 };
 
@@ -13,7 +12,7 @@ export default function reduceTeams(state = initState, action) {
 
     case types.SELECT_TEAM:
         return {...state,
-            currentTeamId: action.team_id
+            currentTeamId: action.teamId
         };
 
     case types.FETCH_TEAMS_REQUEST:
@@ -24,7 +23,7 @@ export default function reduceTeams(state = initState, action) {
     case types.FETCH_TEAMS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: _.values(action.data)
+            data: action.data
         };
     case types.FETCH_TEAMS_FAILURE:
         return {...state,
