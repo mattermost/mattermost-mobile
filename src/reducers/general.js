@@ -5,7 +5,9 @@ import {combineReducers} from 'redux';
 import {initialState, handle} from './helpers.js';
 import {GeneralTypes as types} from 'constants';
 
-export function clientConfig(state = initialState(), action) {
+export const initState = initialState();
+
+export function clientConfig(state = initState, action) {
     return handle(
       types.CLIENT_CONFIG_REQUEST,
       types.CLIENT_CONFIG_SUCCESS,

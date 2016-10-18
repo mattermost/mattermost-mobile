@@ -3,8 +3,9 @@
 
 import {handle, initialState} from './helpers.js';
 import {DeviceTypes as types} from 'constants';
+export const initState = initialState();
 
-export default function device(state = initialState(), action) {
+export default function device(state = initState, action) {
     return handle(
       types.DEVICE_REQUEST,
       types.DEVICE_SUCCESS,
