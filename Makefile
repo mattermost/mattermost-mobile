@@ -1,4 +1,4 @@
-.PHONY: run check-style test clean
+.PHONY: run run-ios run-android check-style test clean
 
 .npminstall: package.json
 	@if ! [ $(shell command -v npm) ]; then \
@@ -18,10 +18,17 @@ config/config.secret.json:
 		@echo '{}' > config/config.secret.json
 	fi
 
-run: .npminstall config/config.secret.json
-	@echo Running Mobile iOS Apps for development
+run: run-ios
+
+run-ios: .npminstall config/config.secret.json
+	@echo Running iOS app in development
 
 	npm run run-ios
+
+run-android: .npminstall config/config.secret.json
+	@echo Running Android app in development
+
+	npm run run-android
 
 test: .npminstall config/config.secret.json
 	npm test
