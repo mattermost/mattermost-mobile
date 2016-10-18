@@ -244,7 +244,7 @@ class TestHelper {
     }
 
     initBasic = async (client = this.createClient()) => {
-        client.setUrl('http://localhost:8065');
+        client.setUrl(Config.DefaultServerUrl);
         this.basicClient = client;
 
         this.basicUser = await client.createUser(this.fakeUser());
