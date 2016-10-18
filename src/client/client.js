@@ -249,6 +249,15 @@ export default class Client {
     }
 
     // Post routes
+    fetchPosts = (channelId, onRequest, onSuccess, onFailure) => {
+        return this.doFetch(
+            `${this.getPostsRoute(channelId)}/page/0/60`,
+            {method: 'get'},
+            onRequest,
+            onSuccess,
+            onFailure
+        );
+    }
 
     createPost = (post, onRequest, onSuccess, onFailure) => {
         return this.doFetch(

@@ -38,10 +38,9 @@ class ChannelsList extends Component {
     }
 
     componentWillReceiveProps(props) {
-        if (props.channels.current_channel_id &&
-          !this.props.channels.current_channel_id) {
-            console.warn('TODO route to PostsList'); // eslint-disable-line no-console
-            // TODO: Routes.PostLists(); // eslint-disable-line new-cap
+        if (props.channels.currentChannelId &&
+          !this.props.channels.currentChannelId) {
+            Routes.goToPostsList();
         }
     }
 

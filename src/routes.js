@@ -9,6 +9,7 @@ import ChannelsList from 'components/channels_list';
 import Login from 'components/login';
 import SelectServerView from 'components/select_server_view';
 import SelectTeam from 'components/select_team';
+import PostsList from 'components/posts_list';
 
 export default class Routes extends Component {
     render() {
@@ -16,25 +17,36 @@ export default class Routes extends Component {
             <Router>
                 <Scene key='root'>
                     <Scene
-                        key='ChannelsList'
-                        component={ChannelsList}
-                        title='Channels'
-                    />
-                    <Scene
-                        key='Login'
+                        key='goToLogin'
                         component={Login}
                         title='Login'
                     />
                     <Scene
-                        key='SelectServerView'
+                        key='goToSelectServerView'
                         component={SelectServerView}
                         title='Enter Server URL'
                         initial={true}
                     />
                     <Scene
-                        key='SelectTeam'
+                        key='goToSelectServerView'
+                        component={SelectServerView}
+                        title='Enter Server URL'
+                        initial={true}
+                    />
+                    <Scene
+                        key='goToChannelsList'
+                        component={ChannelsList}
+                        title='Channels'
+                    />
+                    <Scene
+                        key='goToSelectTeam'
                         component={SelectTeam}
                         title='Select Team'
+                    />
+                    <Scene
+                        key='goToPostsList'
+                        component={PostsList}
+                        title='Posts List'
                     />
                 </Scene>
             </Router>

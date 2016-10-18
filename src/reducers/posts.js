@@ -1,32 +1,26 @@
 import _ from 'lodash';
-import {TeamsTypes as types} from 'constants';
+import {PostsTypes as types} from 'constants';
 
 const initState = {
     status: 'not fetched',
     error: null,
-    data: [],
-    currentTeamId: null
+    data: []
 };
 
-export default function reduceTeams(state = initState, action) {
+export default function reducePosts(state = initState, action) {
     switch (action.type) {
 
-    case types.SELECT_TEAM:
-        return {...state,
-            currentTeamId: action.team_id
-        };
-
-    case types.FETCH_TEAMS_REQUEST:
+    case types.FETCH_POSTS_REQUEST:
         return {...state,
             status: 'fetching',
             error: null
         };
-    case types.FETCH_TEAMS_SUCCESS:
+    case types.FETCH_POSTS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: _.values(action.data)
+            data: _.values(action.data.posts)
         };
-    case types.FETCH_TEAMS_FAILURE:
+    case types.FETCH_POSTS_FAILURE:
         return {...state,
             status: 'failed',
             error: action.error

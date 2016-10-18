@@ -8,11 +8,13 @@ import device from './device.js';
 import general from './general.js';
 import login from './login';
 import teams from './teams';
+import posts from './posts';
 
 const entities = combineReducers({
     channels,
     general,
-    teams
+    teams,
+    posts
 });
 
 const views = combineReducers({
