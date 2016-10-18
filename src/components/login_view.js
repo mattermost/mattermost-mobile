@@ -54,6 +54,7 @@ export default class LoginView extends Component {
                     placeholder='Email or Username'
                     autoCorrect={false}
                     autoCapitalize='none'
+                    underlineColorAndroid='transparent'
                 />
                 <TextInput
                     value={this.state.password}
@@ -62,6 +63,7 @@ export default class LoginView extends Component {
                     placeholder='Password'
                     autoCorrect={false}
                     autoCapitalize='none'
+                    underlineColorAndroid='transparent'
                 />
                 <Button
                     onPress={() => this.signIn()}
