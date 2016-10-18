@@ -3,52 +3,14 @@
 
 import React, {Component, PropTypes} from 'react';
 
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {View, Text, Image} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
-import _ from 'lodash';
 import Button from 'react-native-button';
+import _ from 'lodash';
 
 import ErrorText from 'components/error_text';
+import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingVertical: 100,
-        backgroundColor: 'white'
-    },
-    logo: {
-        marginBottom: 10
-    },
-    header: {
-        fontSize: 36,
-        fontWeight: '600'
-    },
-    subheader: {
-        fontSize: 18,
-        fontWeight: '300',
-        color: '#777'
-    },
-    button: {
-        textAlign: 'left',
-        fontSize: 18,
-        fontWeight: '400',
-        color: '#777'
-    },
-    buttonContainer: {
-        alignSelf: 'stretch',
-        height: 50,
-        marginHorizontal: 15,
-        marginVertical: 5,
-        padding: 13,
-        backgroundColor: '#fafafa',
-        borderWidth: 1,
-        borderRadius: 3,
-        borderColor: '#d5d5d5'
-    }
-});
 
 const propTypes = {
     teams: PropTypes.object.isRequired,
@@ -73,24 +35,26 @@ export default class SelectTeamView extends Component {
     render() {
         const teams = _.values(this.props.teams.data);
         return (
-            <View style={styles.container}>
+            <View style={GlobalStyles.container}>
                 <Image
-                    style={styles.logo}
+                    style={GlobalStyles.logo}
                     source={logo}
                 />
-                <Text style={styles.header}>{'Mattermost'}</Text>
-                <Text style={styles.subheader}>
+                <Text style={GlobalStyles.header}>
+                    {'Mattermost'}
+                </Text>
+                <Text style={GlobalStyles.subheader}>
                     {'All team communication in one place, searchable and accessible anywhere'}
                 </Text>
-                <Text style={styles.subheader}>
+                <Text style={GlobalStyles.subheader}>
                     {'Your teams:'}
                 </Text>
                 {_.map(teams, (team) => (
                     <Button
                         key={team.id}
                         onPress={() => this.props.actions.selectTeam(team)}
-                        style={styles.button}
-                        containerStyle={styles.buttonContainer}
+                        style={GlobalStyles.buttonListItemText}
+                        containerStyle={GlobalStyles.buttonListItem}
                     >
                         {team.display_name}
                     </Button>
