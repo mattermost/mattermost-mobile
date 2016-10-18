@@ -21,7 +21,7 @@ config/config.secret.json:
 run: .npminstall config/config.secret.json
 	@echo Running Mobile iOS Apps for development
 
-	react-native run-ios
+	npm run run-ios
 
 test: .npminstall config/config.secret.json
 	npm test
