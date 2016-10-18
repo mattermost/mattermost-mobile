@@ -29,5 +29,6 @@ check-style: .npminstall
 clean:
 	@echo Cleaning app
 
+	npm cache clean
 	rm -rf node_modules
 	rm -f .npminstall
