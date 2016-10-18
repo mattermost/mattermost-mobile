@@ -31,10 +31,9 @@ const styles = StyleSheet.create({
 
 class SelectServerView extends Component {
     static propTypes = {
-        onProceed: React.PropTypes.func,
-        getPing: React.PropTypes.func.isRequired,
         ping: React.PropTypes.object.isRequired,
-        device: React.PropTypes.object.isRequired
+        device: React.PropTypes.object.isRequired,
+        actions: React.PropTypes.object.isRequired
     }
 
     constructor(props) {
@@ -49,7 +48,7 @@ class SelectServerView extends Component {
         Client.setUrl(this.state.serverUrl);
         Routes.goToLogin();
 
-        // this.props.getPing().then(() => {
+        // this.props.actions.getPing().then(() => {
         //     AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
         //         if (!this.props.ping.error) {
         //             this.props.onProceed();
