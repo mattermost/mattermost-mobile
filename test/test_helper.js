@@ -130,7 +130,6 @@ fetchMock.post(/\/users\/login$/, (url, opts) => {
             token: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
         },
         body: {...fakeUserRespBody,
-            ...reqBody,
             email: reqBody.login_id
         }
     };
@@ -244,83 +243,26 @@ class TestHelper {
         };
     }
 
-    initClient = (client, callback) => {
+    initBasic = async (client = this.createClient()) => {
         client.setUrl(Config.DefaultServerUrl);
+        this.basicClient = client;
 
-        client.createUser(
-            this.fakeUser(),
-            null,
-            (user) => {
-                this.basicUser = user;
+        this.basicUser = await client.createUser(this.fakeUser());
+        await client.login(this.basicUser.email, PASSWORD);
 
-                client.login(
-                    user.email,
-                    PASSWORD,
-                    '',
-                    null,
-                    () => {
-                        client.createTeam(
-                            this.fakeTeam(),
-                            null,
-                            (team) => {
-                                this.basicTeam = team;
+        this.basicTeam = await client.createTeam(this.fakeTeam());
+        client.setTeamId(this.basicTeam.id);
 
-                                client.setTeamId(team.id);
+        this.basicChannel = await client.createChannel(this.fakeChannel(this.basicTeam.id));
+        this.basicPost = await client.createPost(this.fakePost(this.basicChannel.id));
 
-                                client.createChannel(
-                                    this.fakeChannel(this.basicTeam.id),
-                                    null,
-                                    (channel) => {
-                                        this.basicChannel = channel;
-
-                                        client.createPost(
-                                            this.fakePost(this.basicChannel.id),
-                                            null,
-                                            (post) => {
-                                                this.basicPost = post;
-
-                                                callback({
-                                                    client,
-                                                    user: this.basicUser,
-                                                    team: this.basicTeam,
-                                                    channel: this.basicChannel,
-                                                    post: this.basicPost
-                                                });
-                                            },
-                                            (err) => {
-                                                console.error(err);
-                                                throw err;
-                                            }
-                                        );
-                                    },
-                                    (err) => {
-                                        console.error(err);
-                                        throw err;
-                                    }
-                                );
-                            },
-                            (err) => {
-                                console.error(err);
-                                throw err;
-                            }
-                        );
-                    },
-                    (err) => {
-                        console.error(err);
-                        throw err;
-                    }
-                );
-            },
-            (err) => {
-                throw err;
-            }
-        );
-    }
-
-    initBasic = (callback) => {
-        this.basicClient = this.createClient();
-
-        this.initClient(this.basicClient, callback);
+        return {
+            client: this.basicClient,
+            user: this.basicUser,
+            team: this.basicTeam,
+            channel: this.basicChannel,
+            post: this.basicPost
+        };
     }
 }
 

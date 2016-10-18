@@ -6,70 +6,37 @@ import assert from 'assert';
 import TestHelper from 'test_helper.js';
 
 describe('Client.User', () => {
-    it('createUser', (done) => {
+    it('createUser', async () => {
         const client = TestHelper.createClient();
         const user = TestHelper.fakeUser();
 
-        client.createUser(
-            user,
-            null,
-            (data) => {
-                assert.ok(data.id, 'id is empty');
-                assert.equal(data.email, user.email, 'email addresses aren\'t equal');
+        const ruser = await client.createUser(user);
 
-                done();
-            },
-            (err) => {
-                done(new Error(err));
-            }
-        );
+        assert.ok(ruser.id, 'id is empty');
+        assert.equal(ruser.email, user.email, 'email addresses aren\'t equal');
     });
 
-    it('login', (done) => {
+    it('login', async () => {
         const client = TestHelper.createClient();
         const user = TestHelper.fakeUser();
 
-        client.createUser(
-            user,
-            null,
-            () => {
-                client.login(
-                    user.email,
-                    user.password,
-                    '',
-                    null,
-                    (data) => {
-                        assert.ok(data.id, 'id is empty');
-                        assert.equal(data.email, user.email, 'email addresses aren\'t equal');
-                        assert.ok(client.token, 'token is empty');
+        user.password = 'password';
+        await client.createUser(user);
 
-                        done();
-                    },
-                    (err) => {
-                        done(new Error(err));
-                    }
-                );
-            },
-            (err) => {
-                done(new Error(err));
-            }
-        );
+        const ruser = await client.login(user.email, user.password);
+
+        assert.ok(ruser.id, 'id is empty');
+        assert.equal(ruser.email, user.email, 'email addresses aren\'t equal');
+        assert.ok(!ruser.password, 'returned password should be empty');
+        assert.ok(client.token, 'token is empty');
     });
 
-    it('getInitialLoad', (done) => {
-        TestHelper.initBasic(({client, user}) => {
-            client.getInitialLoad(
-                null,
-                (data) => {
-                    assert.ok(data.user.id.length, 'id is empty');
-                    assert.equal(data.user.id, user.id, 'user ids don\'t match');
+    it('getInitialLoad', async () => {
+        const {client, user} = await TestHelper.initBasic();
 
-                    done();
-                },
-                (err) => {
-                    done(new Error(err));
-                }
-            );
-        });
+        const data = await client.getInitialLoad();
+
+        assert.ok(data.user.id.length, 'id is empty');
+        assert.equal(data.user.id, user.id, 'user ids don\'t match');
     });
 });

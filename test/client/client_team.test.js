@@ -6,22 +6,13 @@ import assert from 'assert';
 import TestHelper from 'test_helper.js';
 
 describe('Client.Team', () => {
-    it('createTeam', (done) => {
+    it('createTeam', async () => {
         const client = TestHelper.createClient();
         const team = TestHelper.fakeTeam();
 
-        client.createTeam(
-            team,
-            null,
-            (data) => {
-                assert.equal(data.id.length > 0, true);
-                assert.equal(data.name, team.name);
+        const rteam = await client.createTeam(team);
 
-                done();
-            },
-            (err) => {
-                done(new Error(err));
-            }
-        );
+        assert.equal(rteam.id.length > 0, true);
+        assert.equal(rteam.name, team.name);
     });
 });

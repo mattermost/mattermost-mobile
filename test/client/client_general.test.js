@@ -5,71 +5,43 @@ import assert from 'assert';
 
 import TestHelper from 'test_helper.js';
 
-describe('Client.General', () => {
-    it('getClientConfig', (done) => {
-        TestHelper.initBasic(({client}) => {
-            client.getClientConfig(
-                null,
-                (data) => {
-                    assert.ok(data.Version);
-                    assert.ok(data.BuildNumber);
-                    assert.ok(data.BuildDate);
-                    assert.ok(data.BuildHash);
+describe('Client.General', function() {
+    it('getClientConfig', async () => {
+        const {client} = await TestHelper.initBasic();
 
-                    done();
-                },
-                (err) => {
-                    done(new Error(err));
-                }
-            );
-        });
+        const clientConfig = await client.getClientConfig('foo');
+
+        assert.ok(clientConfig.Version);
+        assert.ok(clientConfig.BuildNumber);
+        assert.ok(clientConfig.BuildDate);
+        assert.ok(clientConfig.BuildHash);
     });
 
-    it('getPing', (done) => {
-        TestHelper.initBasic(({client}) => {
-            client.getPing(
-                null,
-                () => {
-                    done();
-                },
-                (err) => {
-                    done(new Error(err));
-                }
-            );
-        });
+    it('getPing', async () => {
+        const {client} = await TestHelper.initBasic();
+
+        await client.getPing();
     });
 
-    it('getPing - Invalid URL', (done) => {
-        TestHelper.initBasic(({client}) => {
-            client.setUrl('https://example.com/fake/url');
+    it('getPing - Invalid URL', async () => {
+        const {client} = await TestHelper.initBasic();
+        client.setUrl('https://example.com/fake/url');
 
-            client.getPing(
-                null,
-                () => {
-                    done(new Error('ping should\'ve failed'));
-                },
-                () => {
-                    done();
-                }
-            );
-        });
+        let errored;
+        try {
+            await client.getPing();
+
+            errored = false;
+        } catch (err) {
+            errored = true;
+        }
+
+        assert.ok(errored, 'should have errored');
     });
 
-    it('logClientError', function(done) {
-        TestHelper.initBasic(({client}) => {
-            client.logClientError(
-                'this is a test',
-                'ERROR',
-                null,
-                (data) => {
-                    TestHelper.assertStatusOkay(data);
+    it('logClientError', async () => {
+        const {client} = await TestHelper.initBasic();
 
-                    done();
-                },
-                (err) => {
-                    done(new Error(err));
-                }
-            );
-        });
+        await client.logClientError('this is a test');
     });
 });

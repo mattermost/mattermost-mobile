@@ -1,7 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import assert from 'assert';
 import fetchMock from 'fetch_mock';
 import TestHelper from 'test_helper.js';
 
@@ -35,25 +34,9 @@ fetchMock.post(/\/log_client/, {
 });
 
 describe('Client', () => {
-    it('doFetch', (done) => {
+    it('doFetch', async () => {
         const client = TestHelper.createClient();
 
-        let onRequestCalled = false;
-
-        client.doFetch(
-            `${client.getGeneralRoute()}/ping`,
-            {},
-            () => {
-                onRequestCalled = true;
-            },
-            () => {
-                assert.ok(onRequestCalled, 'onSuccess called before onRequest');
-
-                done();
-            },
-            (err) => {
-                done(new Error(err));
-            }
-        );
+        return client.doFetch(`${client.getGeneralRoute()}/ping`, {});
     });
 });

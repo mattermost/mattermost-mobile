@@ -6,22 +6,12 @@ import assert from 'assert';
 import TestHelper from 'test_helper.js';
 
 describe('Client.Post', () => {
-    it('createPost', (done) => {
-        TestHelper.initBasic(({client, channel}) => {
-            const post = TestHelper.fakePost(channel.id);
+    it('createPost', async () => {
+        const {client, channel} = await TestHelper.initBasic();
+        const post = TestHelper.fakePost(channel.id);
 
-            client.createPost(
-                post,
-                null,
-                (data) => {
-                    assert.ok(data.id, 'id is empty');
+        const rpost = await client.createPost(post);
 
-                    done();
-                },
-                (err) => {
-                    done(new Error(err));
-                }
-            );
-        });
+        assert.ok(rpost.id, 'id is empty');
     });
 });

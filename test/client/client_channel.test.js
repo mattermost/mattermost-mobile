@@ -6,24 +6,14 @@ import assert from 'assert';
 import TestHelper from 'test_helper.js';
 
 describe('Client.Channel', () => {
-    it('createChannel', (done) => {
-        TestHelper.initBasic(({client, team}) => {
-            const channel = TestHelper.fakeChannel(team.id);
+    it('createChannel', async () => {
+        const {client, team} = await TestHelper.initBasic();
+        const channel = TestHelper.fakeChannel(team.id);
 
-            client.createChannel(
-                channel,
-                null,
-                (data) => {
-                    assert.ok(data.id, 'id is empty');
-                    assert.equal(data.name, channel.name, 'name doesn\'t match');
-                    assert.equal(data.team_id, channel.team_id, 'team id doesn\'t match');
+        const rchannel = await client.createChannel(channel);
 
-                    done();
-                },
-                (err) => {
-                    done(new Error(err));
-                }
-            );
-        });
+        assert.ok(rchannel.id, 'id is empty');
+        assert.equal(rchannel.name, channel.name, 'name doesn\'t match');
+        assert.equal(rchannel.team_id, channel.team_id, 'team id doesn\'t match');
     });
 });

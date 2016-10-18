@@ -14,15 +14,20 @@ describe('Sanity test', () => {
         Promise.resolve(true).then(() => {
             done();
         }).catch((err) => {
-            done.fail(err);
+            done(err);
         });
+    });
+
+    it('async/await', async () => {
+        await Promise.resolve(true);
     });
 
     it('fetch', (done) => {
         fetch('http://example.com').then(() => {
             done();
-        }).catch((err) => {
-            done.fail(err);
+        }).catch(() => {
+            // No internet connection, but fetch still returned at least
+            done();
         });
     });
 });

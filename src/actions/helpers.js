@@ -31,19 +31,15 @@ export function emptyError() {
 }
 
 export function bindClientFunc(clientFunc, request, success, failure, ...args) {
-    return (dispatch, getState) => {
-        function onRequest() {
-            return dispatch(requestData(request), getState);
-        }
+    return async (dispatch, getState) => {
+        dispatch(requestData(request), getState);
 
-        function onSuccess(data) {
-            return dispatch(requestSuccess(success, data), getState);
-        }
+        try {
+            const data = await clientFunc(...args);
 
-        function onFailure(err) {
-            return dispatch(requestFailure(failure, err), getState);
+            dispatch(requestSuccess(success, data), getState);
+        } catch (err) {
+            dispatch(requestFailure(failure, err));
         }
-
-        return dispatch(() => clientFunc(...args, onRequest, onSuccess, onFailure), getState);
     };
 }

@@ -3,8 +3,11 @@
 
 const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
+const HEADER_CONTENT_TYPE = 'Content-Type';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
 const HEADER_TOKEN = 'token';
+
+const CONTENT_TYPE_JSON = 'application/json';
 
 export default class Client {
     constructor() {
@@ -125,126 +128,96 @@ export default class Client {
 
     // General routes
 
-    getClientConfig = (onRequest, onSuccess, onFailure) => {
+    getClientConfig = async () => {
         return this.doFetch(
             `${this.getGeneralRoute()}/client_props`,
-            {method: 'get'},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'get'}
         );
     }
 
-    getPing = (onRequest, onSuccess, onFailure) => {
+    getPing = async () => {
         return this.doFetch(
             `${this.getGeneralRoute()}/ping`,
-            {method: 'get'},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'get'}
         );
     }
 
-    logClientError = (message, level, onRequest, onSuccess, onFailure) => {
+    logClientError = async (message, level = 'ERROR') => {
         const body = {
             message,
-            level: level || 'ERROR'
+            level
         };
 
         return this.doFetch(
             `${this.getGeneralRoute()}/log_client`,
-            {method: 'post', body},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'post', body}
         );
     }
 
     // User routes
 
-    createUser = (user, onRequest, onSuccess, onFailure) => {
+    createUser = async (user) => {
         return this.doFetch(
             `${this.getUsersRoute()}/create`,
-            {method: 'post', body: JSON.stringify(user)},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'post', body: JSON.stringify(user)}
         );
     }
 
-    login = (loginId, password, token, onRequest, onSuccess, onFailure) => {
+    login = async (loginId, password, token = '') => {
         const body = {
             login_id: loginId,
             password,
             token
         };
 
-        return this.doFetch(
+        const {response, data} = await this.doFetchWithResponse(
             `${this.getUsersRoute()}/login`,
-            {method: 'post', body: JSON.stringify(body)},
-            onRequest,
-            (data, response) => {
-                if (response.headers.has(HEADER_TOKEN)) {
-                    this.token = response.headers.get(HEADER_TOKEN);
-                }
-
-                onSuccess(data, response);
-            },
-            onFailure
+            {method: 'post', body: JSON.stringify(body)}
         );
+
+        if (response.headers.has(HEADER_TOKEN)) {
+            this.token = response.headers.get(HEADER_TOKEN);
+        }
+
+        return data;
     }
 
-    getInitialLoad = (onRequest, onSuccess, onFailure) => {
+    getInitialLoad = async () => {
         return this.doFetch(
             `${this.getUsersRoute()}/initial_load`,
-            {method: 'get'},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'get'}
         );
     }
 
     // Team routes
 
-    createTeam = (team, onRequest, onSuccess, onFailure) => {
+    createTeam = async (team) => {
         return this.doFetch(
             `${this.getTeamsRoute()}/create`,
-            {method: 'post', body: JSON.stringify(team)},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'post', body: JSON.stringify(team)}
         );
     }
 
-    fetchTeams = (onRequest, onSuccess, onFailure) => {
+    fetchTeams = async () => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all_team_listings`,
-            {method: 'get'},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'get'}
         );
     }
 
     // Channel routes
 
-    createChannel = (channel, onRequest, onSuccess, onFailure) => {
+    createChannel = async (channel) => {
         return this.doFetch(
             `${this.getChannelsRoute()}/create`,
-            {method: 'post', body: JSON.stringify(channel)},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'post', body: JSON.stringify(channel)}
         );
     }
 
-    fetchChannels = (onRequest, onSuccess, onFailure) => {
+    fetchChannels = async () => {
         return this.doFetch(
             `${this.getChannelsRoute()}/`,
-            {method: 'get'},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'get'}
         );
     }
 
@@ -259,45 +232,50 @@ export default class Client {
         );
     }
 
-    createPost = (post, onRequest, onSuccess, onFailure) => {
+    createPost = async (post) => {
         return this.doFetch(
             `${this.getPostsRoute(post.channel_id)}/create`,
-            {method: 'post', body: JSON.stringify(post)},
-            onRequest,
-            onSuccess,
-            onFailure
+            {method: 'post', body: JSON.stringify(post)}
         );
     }
 
-    doFetch = async (url, options, onRequest, onSuccess, onFailure) => {
-        if (onRequest) {
-            onRequest();
-        }
-        try {
-            const resp = await fetch(url, this.getOptions(options));
-            let data;
+    doFetch = async (url, options) => {
+        const {data} = await this.doFetchWithResponse(url, options);
 
-            const contentType = resp.headers.get('Content-Type') || 'unknown';
-            if (contentType.match(/application\/json/)) {
-                data = await resp.json();
-            } else {
-                data = await resp.text();
-            }
-            if (resp.ok) {
-                return onSuccess(data, resp);
-            }
-            let msg;
-            if (contentType === 'application/json') {
-                msg = data.message;
-            } else {
-                msg = data;
-            }
-            throw new Error(msg);
-        } catch (err) {
-            if (this.logToConsole) {
-                console.log(err); // eslint-disable-line no-console
-            }
-            return onFailure(err);
+        return data;
+    }
+
+    doFetchWithResponse = async (url, options) => {
+        const response = await fetch(url, this.getOptions(options));
+
+        const contentType = response.headers.get(HEADER_CONTENT_TYPE);
+        const isJson = contentType && contentType.indexOf(CONTENT_TYPE_JSON) !== -1;
+
+        let data;
+        if (isJson) {
+            data = await response.json();
+        } else {
+            data = await response.text();
         }
+
+        if (response.ok) {
+            return {
+                response,
+                data
+            };
+        }
+
+        let msg;
+        if (isJson) {
+            msg = data.message || '';
+        } else {
+            msg = data;
+        }
+
+        if (this.logToConsole) {
+            console.error(msg); // eslint-disable-line no-console
+        }
+
+        throw new Error(msg);
     }
 }
