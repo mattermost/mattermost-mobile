@@ -182,6 +182,13 @@ export default class Client {
         return data;
     }
 
+    logout = async () => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/logout`,
+            {method: 'post'}
+        );
+    }
+
     getInitialLoad = async () => {
         return this.doFetch(
             `${this.getUsersRoute()}/initial_load`,

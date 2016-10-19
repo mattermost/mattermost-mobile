@@ -10,6 +10,8 @@ import LoginContainer from 'containers/login_container';
 import SelectServerContainer from 'containers/select_server_container';
 import SelectTeamContainer from 'containers/select_team_container';
 import PostsListContainer from 'containers/posts_list_container';
+import Logout from 'components/logout';
+import * as logout from 'actions/logout';
 
 import {injectIntl, intlShape} from 'react-intl';
 
@@ -44,6 +46,9 @@ class Routes extends Component {
                         key='goToSelectTeam'
                         component={SelectTeamContainer}
                         title={formatMessage({id: 'routes.selectTeam', defaultMessage: 'Select Team'})}
+                        renderRightButton={() =>
+                            <Logout actions={logout}/>
+                        }
                     />
                     <Scene
                         key='goToPostsList'

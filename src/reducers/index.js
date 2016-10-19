@@ -7,6 +7,7 @@ import channels from './channels';
 import device from './device.js';
 import general from './general.js';
 import login from './login';
+import logout from './logout';
 import teams from './teams';
 import posts from './posts';
 
@@ -19,7 +20,8 @@ const entities = combineReducers({
 
 const views = combineReducers({
     device,
-    login
+    login,
+    logout
 });
 
 export default combineReducers({
