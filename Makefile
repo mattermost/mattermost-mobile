@@ -30,6 +30,18 @@ run-ios: .npminstall config/config.secret.json
 	npm run run-ios
 
 run-android: .npminstall config/config.secret.json
+	@if ! [ $(ANDROID_HOME) ]; then \
+		echo "ANDROID_HOME is not set"; \
+		exit 1; \
+	fi
+	@if ! [ $(shell command -v adb) ]; then \
+		echo "adb is not installed"; \
+		exit 1; \
+	fi
+	@if ! [ $(shell adb get-state) == "device" ]; then \
+		echo "no android device or emulator is running"; \
+		exit 1; \
+	fi
 	@echo Running Android app in development
 
 	npm run run-android
