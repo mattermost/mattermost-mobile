@@ -40,7 +40,7 @@ export default class ErrorText extends Component {
         return (
             <FormattedText
                 style={GlobalStyles.errorLabel}
-                id='components.error_text.unknownError'
+                id='mobile.components.error_text.unknownError'
                 defaultMessage='Unknown error'
             />
         );

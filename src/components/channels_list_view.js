@@ -43,7 +43,7 @@ class ChannelsListView extends Component {
                 </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.channels_list_view.yourChannels'
+                    id='mobile.components.channels_list_view.yourChannels'
                     defaultMessage='Your channels:'
                 />
                 {_.map(channels, (channel) => (

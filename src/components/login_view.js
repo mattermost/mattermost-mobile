@@ -49,19 +49,19 @@ class LoginView extends Component {
                 />
                 <FormattedText
                     style={GlobalStyles.header}
-                    id='components.login_view.header'
+                    id='mobile.components.login_view.header'
                     defaultMessage='Mattermost'
                 />
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.login_view.subheader'
+                    id='mobile.components.login_view.subheader'
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <TextInput
                     value={this.state.loginId}
                     onChangeText={(loginId) => this.setState({loginId})}
                     style={GlobalStyles.inputBox}
-                    placeholder={this.props.intl.formatMessage({id: 'components.login_view.loginIdPlaceholder', defaultMessage: 'Email or Username'})}
+                    placeholder={this.props.intl.formatMessage({id: 'mobile.components.login_view.loginIdPlaceholder', defaultMessage: 'Email or Username'})}
                     autoCorrect={false}
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
@@ -70,14 +70,14 @@ class LoginView extends Component {
                     value={this.state.password}
                     onChangeText={(password) => this.setState({password})}
                     style={GlobalStyles.inputBox}
-                    placeholder={this.props.intl.formatMessage({id: 'components.login_view.passwordPlaceholder', defaultMessage: 'Password'})}
+                    placeholder={this.props.intl.formatMessage({id: 'mobile.components.login_view.passwordPlaceholder', defaultMessage: 'Password'})}
                     autoCorrect={false}
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
                 />
                 <Button onPress={() => this.signIn()}>
                     <FormattedText
-                        id='components.login_view.signIn'
+                        id='mobile.components.login_view.signIn'
                         defaultMessage='Sign in'
                     />
                 </Button>

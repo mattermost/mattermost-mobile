@@ -43,17 +43,17 @@ export default class SelectTeamView extends Component {
                 />
                 <FormattedText
                     style={GlobalStyles.header}
-                    id='components.select_team_view.header'
+                    id='mobile.components.select_team_view.header'
                     defaultMessage='Mattermost'
                 />
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.select_team_view.subheader'
+                    id='mobile.components.select_team_view.subheader'
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.select_team_view.yourTeams'
+                    id='mobile.components.select_team_view.yourTeams'
                     defaultMessage='Your teams:'
                 />
                 {_.map(teams, (team) => (
