@@ -1,4 +1,5 @@
 {
     "DefaultServerUrl": "http://localhost:8065",
-    "MockFetchInTests": true
+    "MockFetchInTests": true,
+    "DefaultLocale": "en"
 }
