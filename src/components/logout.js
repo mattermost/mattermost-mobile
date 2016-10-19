@@ -23,6 +23,7 @@ class Logout extends Component {
         if (this.props.logout.status === 'fetching' &&
           props.logout.status === 'fetched') {
             Routes.goToLogin();
+            Routes.pop();
         }
     }
 

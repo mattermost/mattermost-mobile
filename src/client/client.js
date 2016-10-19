@@ -183,10 +183,14 @@ export default class Client {
     }
 
     logout = async () => {
-        return this.doFetch(
+        const response = await this.doFetch(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'}
         );
+        if (response.user_id) {
+            this.token = '';
+        }
+        return response;
     }
 
     getInitialLoad = async () => {
