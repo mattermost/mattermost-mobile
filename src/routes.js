@@ -41,6 +41,9 @@ class Routes extends Component {
                         key='goToChannelsList'
                         component={ChannelsListContainer}
                         title={formatMessage({id: 'routes.channels', defaultMessage: 'Channels'})}
+                        renderRightButton={() =>
+                            <Logout actions={logout}/>
+                        }
                     />
                     <Scene
                         key='goToSelectTeam'
@@ -54,6 +57,9 @@ class Routes extends Component {
                         key='goToPostsList'
                         component={PostsListContainer}
                         title={formatMessage({id: 'routes.postsList', defaultMessage: 'Posts List'})}
+                        renderRightButton={() =>
+                            <Logout actions={logout}/>
+                        }
                     />
                 </Scene>
             </Router>
