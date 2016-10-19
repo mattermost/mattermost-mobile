@@ -27,28 +27,28 @@ class Routes extends Component {
                     <Scene
                         key='goToLogin'
                         component={LoginContainer}
-                        title={formatMessage({id: 'routes.login', defaultMessage: 'Login'})}
+                        title={formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'})}
                     />
                     <Scene
                         key='goToSelectServer'
                         component={SelectServerContainer}
-                        title={formatMessage({id: 'routes.enterServerUrl', defaultMessage: 'Enter Server URL'})}
+                        title={formatMessage({id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'})}
                         initial={true}
                     />
                     <Scene
                         key='goToChannelsList'
                         component={ChannelsListContainer}
-                        title={formatMessage({id: 'routes.channels', defaultMessage: 'Channels'})}
+                        title={formatMessage({id: 'mobile.routes.channels', defaultMessage: 'Channels'})}
                     />
                     <Scene
                         key='goToSelectTeam'
                         component={SelectTeamContainer}
-                        title={formatMessage({id: 'routes.selectTeam', defaultMessage: 'Select Team'})}
+                        title={formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'})}
                     />
                     <Scene
                         key='goToPostsList'
                         component={PostsListContainer}
-                        title={formatMessage({id: 'routes.postsList', defaultMessage: 'Posts List'})}
+                        title={formatMessage({id: 'mobile.routes.postsList', defaultMessage: 'Posts List'})}
                     />
                 </Scene>
             </Router>
