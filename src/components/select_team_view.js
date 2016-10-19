@@ -3,7 +3,7 @@
 
 import React, {Component, PropTypes} from 'react';
 
-import {View, Text, Image} from 'react-native';
+import {View, Image} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import Button from 'react-native-button';
 import _ from 'lodash';
@@ -11,6 +11,7 @@ import _ from 'lodash';
 import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
+import FormattedText from 'components/formatted_text';
 
 const propTypes = {
     teams: PropTypes.object.isRequired,
@@ -40,15 +41,21 @@ export default class SelectTeamView extends Component {
                     style={GlobalStyles.logo}
                     source={logo}
                 />
-                <Text style={GlobalStyles.header}>
-                    {'Mattermost'}
-                </Text>
-                <Text style={GlobalStyles.subheader}>
-                    {'All team communication in one place, searchable and accessible anywhere'}
-                </Text>
-                <Text style={GlobalStyles.subheader}>
-                    {'Your teams:'}
-                </Text>
+                <FormattedText
+                    style={GlobalStyles.header}
+                    id='components.select_team_view.header'
+                    defaultMessage='Mattermost'
+                />
+                <FormattedText
+                    style={GlobalStyles.subheader}
+                    id='components.select_team_view.subheader'
+                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                />
+                <FormattedText
+                    style={GlobalStyles.subheader}
+                    id='components.select_team_view.yourTeams'
+                    defaultMessage='Your teams:'
+                />
                 {_.map(teams, (team) => (
                     <Button
                         key={team.id}

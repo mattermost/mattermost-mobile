@@ -52,7 +52,7 @@ class SelectServerView extends Component {
                 />
                 <FormattedText
                     style={_.at(GlobalStyles, ['header', 'label'])}
-                    id='mobile.select_server_view.enterServerUrl'
+                    id='components.select_server_view.enterServerUrl'
                     defaultMessage='Enter Server URL'
                 />
                 <TextInput
@@ -72,7 +72,7 @@ class SelectServerView extends Component {
                     loading={this.props.ping.loading}
                 >
                     <FormattedText
-                        id='mobile.select_server_view.proceed'
+                        id='components.select_server_view.proceed'
                         defaultMessage='Proceed'
                     />
                 </Button>

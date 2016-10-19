@@ -8,6 +8,7 @@ import Button from 'react-native-button';
 import _ from 'lodash';
 
 import ErrorText from 'components/error_text';
+import FormattedText from 'components/formatted_text';
 import {GlobalStyles} from 'styles';
 
 const propTypes = {
@@ -40,9 +41,11 @@ class ChannelsListView extends Component {
                 <Text style={GlobalStyles.header}>
                     {currentTeam.display_name}
                 </Text>
-                <Text style={GlobalStyles.subheader}>
-                    {'Your channels:'}
-                </Text>
+                <FormattedText
+                    style={GlobalStyles.subheader}
+                    id='components.channels_list_view.yourChannels'
+                    defaultMessage='Your channels:'
+                />
                 {_.map(channels, (channel) => (
                     <Button
                         key={channel.id}

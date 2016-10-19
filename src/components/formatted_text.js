@@ -5,17 +5,14 @@ import React, {Component, PropTypes} from 'react';
 
 import {Text} from 'react-native';
 
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 
-export default class FormattedText extends Component {
+class FormattedText extends Component {
     static propTypes = {
+        intl: intlShape.isRequired,
         id: PropTypes.string.isRequired,
         defaultMessage: PropTypes.string.isRequired,
         values: PropTypes.object
-    };
-
-    static contextTypes = {
-        intl: intlShape.isRequired
     };
 
     render() {
@@ -23,13 +20,16 @@ export default class FormattedText extends Component {
             id,
             defaultMessage,
             values,
+            intl,
             ...props
         } = this.props;
 
         return (
             <Text {...props}>
-                {this.context.intl.formatMessage({id, defaultMessage}, values)}
+                {intl.formatMessage({id, defaultMessage}, values)}
             </Text>
         );
     }
 }
+
+export default injectIntl(FormattedText);
