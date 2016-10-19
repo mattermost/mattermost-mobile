@@ -6,6 +6,7 @@
     "isomorphic-fetch": "2.2.1",
     "lodash": "4.16.4",
     "react": "15.3.2",
+    "react-intl": "2.1.5",
     "react-native": "0.34.1",
     "react-native-button": "1.7.1",
     "react-native-keyboard-spacer": "0.3.0",
@@ -35,6 +36,6 @@
     "run-android": "node node_modules/react-native/local-cli/cli.js run-android",
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "mocha --compilers js:babel-register --require babel-polyfill",
-    "postinstall": "remotedev-debugger --hostname localhost --port 5678 --injectserver"
+    "postinstall": "make post-install"
   }
 }

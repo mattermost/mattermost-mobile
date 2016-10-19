@@ -3,10 +3,14 @@
 
 import React from 'react';
 
+import Config from 'config/config.js';
 import {connect} from 'react-redux';
 import {loadDevice} from 'actions/device';
 import Loading from 'components/loading';
 import Routes from 'routes';
+
+import {getTranslations} from 'i18n/i18n.js';
+import {IntlProvider} from 'react-intl';
 
 class RootContainer extends React.Component {
     static propTypes = {
@@ -29,8 +33,16 @@ class RootContainer extends React.Component {
             );
         }
 
+        const locale = Config.DefaultLocale;
+
         return (
-            <Routes/>
+            <IntlProvider
+                key={locale}
+                locale={locale}
+                messages={getTranslations(locale)}
+            >
+                <Routes/>
+            </IntlProvider>
         );
     }
 }

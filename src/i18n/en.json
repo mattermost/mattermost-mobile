@@ -1,0 +1,19 @@
+{
+  "components.channels_list_view.yourChannels": "Your channels:",
+  "components.error_text.unknownError": "Unknown error",
+  "components.login_view.header": "Mattermost",
+  "components.login_view.loginIdPlaceholder": "Email or Username",
+  "components.login_view.passwordPlaceholder": "Password",
+  "components.login_view.signIn": "Sign in",
+  "components.login_view.subheader": "All team communication in one place, searchable and accessible anywhere",
+  "components.select_server_view.enterServerUrl": "Enter Server URL",
+  "components.select_server_view.proceed": "Proceed",
+  "components.select_team_view.header": "Mattermost",
+  "components.select_team_view.subheader": "All team communication in one place, searchable and accessible anywhere",
+  "components.select_team_view.yourTeams": "Your teams:",
+  "routes.channels": "Channels",
+  "routes.enterServerUrl": "Enter Server URL",
+  "routes.login": "Login",
+  "routes.postsList": "Posts List",
+  "routes.selectTeam": "Select Team"
+}

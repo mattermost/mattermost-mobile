@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {ActivityIndicator, StyleSheet, Text, TouchableHighlight, View} from 'react-native';
+import {ActivityIndicator, StyleSheet, TouchableHighlight, View} from 'react-native';
 
 import {GlobalStyles} from 'styles';
 
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
 
 export default class Button extends React.Component {
     static propTypes = {
-        text: React.PropTypes.string.isRequired,
+        children: React.PropTypes.node,
         loading: React.PropTypes.bool,
         onPress: React.PropTypes.func.isRequired
     }
@@ -50,7 +50,7 @@ export default class Button extends React.Component {
                 onPress={this.onPress}
             >
                 <View style={styles.container}>
-                    <Text style={GlobalStyles.buttonText}>{this.props.text}</Text>
+                    {this.props.children}
                     {loading}
                 </View>
             </TouchableHighlight>

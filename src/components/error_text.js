@@ -4,6 +4,8 @@
 import React, {Component, PropTypes} from 'react';
 import {Text} from 'react-native';
 
+import FormattedText from 'components/formatted_text';
+
 import {GlobalStyles} from 'styles';
 
 const propTypes = {
@@ -18,7 +20,7 @@ export default class ErrorText extends Component {
             return null;
         }
 
-        let message = 'unknown error type';
+        let message;
         if (typeof this.props.error === 'string' || this.props.error instanceof String) {
             message = this.props.error;
         }
@@ -27,6 +29,20 @@ export default class ErrorText extends Component {
             message = this.props.error.message;
         }
 
-        return (<Text style={GlobalStyles.errorLabel}>{message}</Text>);
+        if (message) {
+            return (
+                <Text style={GlobalStyles.errorLabel}>
+                    {message}
+                </Text>
+            );
+        }
+
+        return (
+            <FormattedText
+                style={GlobalStyles.errorLabel}
+                id='components.error_text.unknownError'
+                defaultMessage='Unknown error'
+            />
+        );
     }
 }

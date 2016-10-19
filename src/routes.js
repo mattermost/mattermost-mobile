@@ -11,39 +11,49 @@ import SelectServerContainer from 'containers/select_server_container';
 import SelectTeamContainer from 'containers/select_team_container';
 import PostsListContainer from 'containers/posts_list_container';
 
-export default class Routes extends Component {
+import {injectIntl, intlShape} from 'react-intl';
+
+class Routes extends Component {
+    static propTypes = {
+        intl: intlShape.isRequired
+    }
+
     render() {
+        const {formatMessage} = this.props.intl;
+
         return (
             <Router>
                 <Scene key='root'>
                     <Scene
                         key='goToLogin'
                         component={LoginContainer}
-                        title='Login'
+                        title={formatMessage({id: 'routes.login', defaultMessage: 'Login'})}
                     />
                     <Scene
                         key='goToSelectServer'
                         component={SelectServerContainer}
-                        title='Enter Server URL'
+                        title={formatMessage({id: 'routes.enterServerUrl', defaultMessage: 'Enter Server URL'})}
                         initial={true}
                     />
                     <Scene
                         key='goToChannelsList'
                         component={ChannelsListContainer}
-                        title='Channels'
+                        title={formatMessage({id: 'routes.channels', defaultMessage: 'Channels'})}
                     />
                     <Scene
                         key='goToSelectTeam'
                         component={SelectTeamContainer}
-                        title='Select Team'
+                        title={formatMessage({id: 'routes.selectTeam', defaultMessage: 'Select Team'})}
                     />
                     <Scene
                         key='goToPostsList'
                         component={PostsListContainer}
-                        title='Posts List'
+                        title={formatMessage({id: 'routes.postsList', defaultMessage: 'Posts List'})}
                     />
                 </Scene>
             </Router>
         );
     }
 }
+
+export default injectIntl(Routes);
