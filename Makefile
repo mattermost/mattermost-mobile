@@ -13,9 +13,9 @@
 	touch $@
 
 config/config.secret.json:
-	if ! [ -f config/config.secret.json ]; then
-		@echo Generating default config/config.secret.json
-		@echo '{}' > config/config.secret.json
+	@if ! [ $(shell test -f config/config.secret.json) ]; then \
+		echo "Generating default config/config.secret.json"; \
+		echo '{}' > "config/config.secret.json"; \
 	fi
 
 run: run-ios
