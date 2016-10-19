@@ -5,8 +5,7 @@ import {LogoutTypes as types} from 'constants';
 
 export const initState = {
     status: 'not fetched',
-    error: null,
-    loggedOut: null
+    error: null
 };
 
 export default function reduceLogout(state = initState, action) {
@@ -18,8 +17,7 @@ export default function reduceLogout(state = initState, action) {
         };
     case types.LOGOUT_SUCCESS:
         return {...state,
-            status: 'fetched',
-            loggedOut: true
+            status: 'fetched'
         };
     case types.LOGOUT_FAILURE:
         return {...state,
