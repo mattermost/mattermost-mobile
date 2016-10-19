@@ -1,0 +1,19 @@
+{
+  "components.channels_list_view.yourChannels": "Sus canales:",
+  "components.error_text.unknownError": "Error desconocido",
+  "components.login_view.header": "Mattermost",
+  "components.login_view.loginIdPlaceholder": "Correo electrónico o nombre de usario",
+  "components.login_view.passwordPlaceholder": "Contraseña",
+  "components.login_view.signIn": "Iniciar sesión",
+  "components.login_view.subheader": "Toda la comunicación del equipo en un solo lugar, buscar y accesible desde cualquier lugar",
+  "components.select_server_view.enterServerUrl": "Introduce la URL del servidor",
+  "components.select_server_view.proceed": "Proceder",
+  "components.select_team_view.header": "Mattermost",
+  "components.select_team_view.subheader": "Toda la comunicación del equipo en un solo lugar, buscar y accesible desde cualquier lugar",
+  "components.select_team_view.yourTeams": "Sus equipos:",
+  "routes.channels": "Channels",
+  "routes.enterServerUrl": "Introduce la URL del servidor",
+  "routes.login": "Login",
+  "routes.postsList": "Lista de mensajes",
+  "routes.selectTeam": "Selecciona un equipo"
+}
