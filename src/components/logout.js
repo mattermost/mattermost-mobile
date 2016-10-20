@@ -15,24 +15,19 @@ const propTypes = {
 
 class Logout extends Component {
     static propTypes = propTypes;
-    logout() {
-        this.props.actions.logout();
-    }
 
-    componentWillReceiveProps(props) {
+    componentWillReceiveProps(newProps) {
         if (this.props.logout.status === 'fetching' &&
-          props.logout.status === 'fetched') {
+          newProps.logout.status === 'fetched') {
             Routes.popTo('goToLogin');
         }
     }
 
+    logout = () => this.props.actions.logout();
+
     render() {
         return (
-            <TouchableHighlight
-                onPress={(() => {
-                    this.logout();
-                })}
-            >
+            <TouchableHighlight onPress={this.logout}>
                 <Text>{'logout'}</Text>
             </TouchableHighlight>
         );

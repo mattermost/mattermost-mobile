@@ -183,11 +183,11 @@ export default class Client {
     }
 
     logout = async () => {
-        const response = await this.doFetch(
+        const response = await this.doFetchWithResponse(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'}
         );
-        if (response.user_id) {
+        if (response.ok) {
             this.token = '';
         }
         return response;
