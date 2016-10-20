@@ -37,6 +37,8 @@ export default function reduceChannels(state = initState, action) {
             error: action.error
         };
 
+    case types.LOGOUT_SUCCESS:
+        return initState;
     default:
         return state;
     }
