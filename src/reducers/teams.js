@@ -31,6 +31,8 @@ export default function reduceTeams(state = initState, action) {
             error: action.error
         };
 
+    case types.LOGOUT_SUCCESS:
+        return initState;
     default:
         return state;
     }

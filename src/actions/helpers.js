@@ -36,7 +36,6 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
 
         try {
             const data = await clientFunc(...args);
-
             dispatch(requestSuccess(success, data), getState);
         } catch (err) {
             dispatch(requestFailure(failure, err));
