@@ -1,7 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {LoginTypes as types} from 'constants';
+import {LoginTypes, LogoutTypes} from 'constants';
+const types = {...LoginTypes, ...LogoutTypes};
 
 export const initState = {
     status: 'not fetched',
