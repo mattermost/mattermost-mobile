@@ -49,6 +49,11 @@ run-android: .npminstall config/config.secret.json
 		echo "no android device or emulator is running"; \
 		exit 1; \
 	fi
+	@if ! [ $(shell command -v watchman) ]; then \
+		echo "watchman is not installed"; \
+		exit 1; \
+	fi
+
 	@echo Running Android app in development
 
 	npm run run-android
