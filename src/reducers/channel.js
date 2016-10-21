@@ -1,3 +1,6 @@
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
 import _ from 'lodash';
 import {ChannelsTypes, LogoutTypes} from 'constants';
 const types = {...ChannelsTypes, ...LogoutTypes};
