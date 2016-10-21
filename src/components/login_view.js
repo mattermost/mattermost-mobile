@@ -65,7 +65,7 @@ class LoginView extends Component {
 
         if (loginPlaceholders.length >= 2) {
             return loginPlaceholders.slice(0, loginPlaceholders.length - 1).join(', ') +
-                formatMessage({id: 'login.placeholderOr', defaultMessage: ' or '}) +
+                ` ${formatMessage({id: 'login.or', defaultMessage: 'or'})} ` +
                 loginPlaceholders[loginPlaceholders.length - 1];
         } else if (loginPlaceholders.length === 1) {
             return loginPlaceholders[0];

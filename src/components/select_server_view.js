@@ -69,7 +69,7 @@ class SelectServerView extends Component {
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='url'
-                    placeholder={formatMessage({id: 'mobile.components.select_server_view.serverUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'})}
+                    placeholder={formatMessage({id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'})}
                     returnKeyType='go'
                     underlineColorAndroid='transparent'
                 />
