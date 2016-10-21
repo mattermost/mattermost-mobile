@@ -107,6 +107,7 @@ class LoginView extends Component {
                     onChangeText={(password) => this.setState({password})}
                     style={GlobalStyles.inputBox}
                     placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                    secureTextEntry={true}
                     autoCorrect={false}
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
