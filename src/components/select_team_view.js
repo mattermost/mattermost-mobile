@@ -36,7 +36,7 @@ export default class SelectTeamView extends Component {
     }
 
     render() {
-        const teams = _.values(this.props.team.data);
+        const teams = _.values(this.props.team.teams);
 
         return (
             <View style={GlobalStyles.container}>

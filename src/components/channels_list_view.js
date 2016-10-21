@@ -33,9 +33,9 @@ class ChannelsListView extends Component {
     }
 
     render() {
-        const {data: teams, currentTeamId} = this.props.team;
+        const {teams, currentTeamId} = this.props.team;
         const currentTeam = teams[currentTeamId];
-        const channels = _.values(this.props.channel.data);
+        const channels = _.values(this.props.channel.channels);
         return (
             <View style={GlobalStyles.container}>
                 <Text style={GlobalStyles.header}>

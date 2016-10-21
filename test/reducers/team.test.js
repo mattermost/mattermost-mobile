@@ -65,7 +65,7 @@ describe('team reducer', () => {
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data
+                teams: data
             };
         });
         it('should set status to fetched and data', () => {

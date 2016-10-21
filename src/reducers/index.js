@@ -14,8 +14,8 @@ import team from 'reducers/team';
 const entities = combineReducers({
     channel,
     general,
-    team,
-    post
+    post,
+    team
 });
 
 const views = combineReducers({

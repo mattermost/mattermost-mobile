@@ -7,7 +7,7 @@ const types = {...PostsTypes, ...LogoutTypes};
 export const initState = {
     status: 'not fetched',
     error: null,
-    data: {}
+    posts: {}
 };
 
 export default function reducePosts(state = initState, action) {
@@ -21,7 +21,7 @@ export default function reducePosts(state = initState, action) {
     case types.FETCH_POSTS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: action.data.posts
+            posts: action.data.posts
         };
     case types.FETCH_POSTS_FAILURE:
         return {...state,

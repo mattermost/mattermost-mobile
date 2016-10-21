@@ -64,7 +64,7 @@ describe('channel reducer', () => {
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data: {1: {id: '1', attr: 'attr'}}
+                channels: {1: {id: '1', attr: 'attr'}}
             };
         });
         it('should set status to fetched and data', () => {

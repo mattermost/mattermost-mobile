@@ -35,7 +35,7 @@ export default class PostsListView extends Component {
     }
 
     render() {
-        const posts = _.values(this.props.post.data);
+        const posts = _.values(this.props.post.posts);
         return (
             <View style={styles.container}>
                 {posts.map((post) => (

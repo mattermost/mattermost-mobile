@@ -8,7 +8,7 @@ const types = {...ChannelsTypes, ...LogoutTypes};
 export const initState = {
     status: 'not fetched',
     error: null,
-    data: {},
+    channels: {},
     currentChannelId: null
 };
 
@@ -33,7 +33,7 @@ export default function reduceChannels(state = initState, action) {
     case types.FETCH_CHANNELS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: zipById(action.data.channels)
+            channels: zipById(action.data.channels)
         };
     case types.FETCH_CHANNELS_FAILURE:
         return {...state,

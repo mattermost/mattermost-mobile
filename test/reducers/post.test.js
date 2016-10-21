@@ -50,7 +50,7 @@ describe('post reducer', () => {
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data
+                posts: data
             };
         });
         it('should set status to fetched and data', () => {

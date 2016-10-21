@@ -7,7 +7,7 @@ const types = {...TeamsTypes, ...LogoutTypes};
 export const initState = {
     status: 'not fetched',
     error: null,
-    data: {},
+    teams: {},
     currentTeamId: null
 };
 
@@ -27,7 +27,7 @@ export default function reduceTeams(state = initState, action) {
     case types.FETCH_TEAMS_SUCCESS:
         return {...state,
             status: 'fetched',
-            data: action.data
+            teams: action.data
         };
     case types.FETCH_TEAMS_FAILURE:
         return {...state,
