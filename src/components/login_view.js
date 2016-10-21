@@ -2,12 +2,13 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
-import {View, TextInput, Image} from 'react-native';
+import {View, Text, TextInput, Image} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 
 import Button from 'components/button';
 import FormattedText from 'components/formatted_text';
 import ErrorText from 'components/error_text';
+import Loading from 'components/loading';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 
@@ -15,6 +16,7 @@ import {injectIntl, intlShape} from 'react-intl';
 
 const propTypes = {
     intl: intlShape.isRequired,
+    clientConfig: PropTypes.object.isRequired,
     login: PropTypes.object.isRequired,
     actions: PropTypes.object.isRequired
 };
@@ -40,28 +42,62 @@ class LoginView extends Component {
         }
     }
 
+    createLoginPlaceholder() {
+        const {formatMessage} = this.props.intl;
+        const clientConfig = this.props.clientConfig.data;
+
+        const loginPlaceholders = [];
+        if (clientConfig.EnableSignInWithEmail === 'true') {
+            loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
+        }
+
+        if (clientConfig.EnableSignInWithUsername === 'true') {
+            loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
+        }
+
+        if (clientConfig.EnableLdap === 'true') { // TODO check if we're licensed once we have that
+            if (clientConfig.LdapLoginFieldName) {
+                loginPlaceholders.push(clientConfig.LdapLoginFieldName);
+            } else {
+                loginPlaceholders.push(formatMessage({id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username'}));
+            }
+        }
+
+        if (loginPlaceholders.length >= 2) {
+            return loginPlaceholders.slice(0, loginPlaceholders.length - 1).join(', ') +
+                ` ${formatMessage({id: 'login.or', defaultMessage: 'or'})} ` +
+                loginPlaceholders[loginPlaceholders.length - 1];
+        } else if (loginPlaceholders.length === 1) {
+            return loginPlaceholders[0];
+        }
+
+        return '';
+    }
+
     render() {
+        if (!this.props.clientConfig || !this.props.clientConfig.data) {
+            return <Loading/>;
+        }
+
         return (
             <View style={GlobalStyles.container}>
                 <Image
                     style={GlobalStyles.logo}
                     source={logo}
                 />
-                <FormattedText
-                    style={GlobalStyles.header}
-                    id='components.login_view.header'
-                    defaultMessage='Mattermost'
-                />
+                <Text style={GlobalStyles.header}>
+                    {this.props.clientConfig.data.SiteName}
+                </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.login_view.subheader'
+                    id='web.root.signup_info'
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <TextInput
                     value={this.state.loginId}
                     onChangeText={(loginId) => this.setState({loginId})}
                     style={GlobalStyles.inputBox}
-                    placeholder={this.props.intl.formatMessage({id: 'components.login_view.loginIdPlaceholder', defaultMessage: 'Email or Username'})}
+                    placeholder={this.createLoginPlaceholder()}
                     autoCorrect={false}
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
@@ -70,14 +106,14 @@ class LoginView extends Component {
                     value={this.state.password}
                     onChangeText={(password) => this.setState({password})}
                     style={GlobalStyles.inputBox}
-                    placeholder={this.props.intl.formatMessage({id: 'components.login_view.passwordPlaceholder', defaultMessage: 'Password'})}
+                    placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                     autoCorrect={false}
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
                 />
                 <Button onPress={() => this.signIn()}>
                     <FormattedText
-                        id='components.login_view.signIn'
+                        id='login.signIn'
                         defaultMessage='Sign in'
                     />
                 </Button>

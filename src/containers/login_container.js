@@ -8,6 +8,7 @@ import LoginView from 'components/login_view';
 
 function mapStateToProps(state) {
     return {
+        clientConfig: state.entities.general.clientConfig,
         login: state.views.login
     };
 }

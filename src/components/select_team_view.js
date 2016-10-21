@@ -3,7 +3,7 @@
 
 import React, {Component, PropTypes} from 'react';
 
-import {View, Image} from 'react-native';
+import {View, Image, Text} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -15,6 +15,7 @@ import logo from 'images/logo.png';
 import FormattedText from 'components/formatted_text';
 
 const propTypes = {
+    clientConfig: PropTypes.object.isRequired,
     teams: PropTypes.object.isRequired,
     actions: PropTypes.object.isRequired
 };
@@ -36,25 +37,24 @@ export default class SelectTeamView extends Component {
 
     render() {
         const teams = _.values(this.props.teams.data);
+
         return (
             <View style={GlobalStyles.container}>
                 <Image
                     style={GlobalStyles.logo}
                     source={logo}
                 />
-                <FormattedText
-                    style={GlobalStyles.header}
-                    id='components.select_team_view.header'
-                    defaultMessage='Mattermost'
-                />
+                <Text style={GlobalStyles.header}>
+                    {this.props.clientConfig.data.SiteName}
+                </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.select_team_view.subheader'
+                    id='web.root.signup_info'
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <FormattedText
                     style={GlobalStyles.subheader}
-                    id='components.select_team_view.yourTeams'
+                    id='signup_team.choose'
                     defaultMessage='Your teams:'
                 />
                 {_.map(teams, (team) => (

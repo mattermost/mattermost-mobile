@@ -15,8 +15,11 @@ import FormattedText from 'components/formatted_text';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 
+import {injectIntl, intlShape} from 'react-intl';
+
 class SelectServerView extends Component {
     static propTypes = {
+        intl: intlShape.isRequired,
         ping: React.PropTypes.object.isRequired,
         device: React.PropTypes.object.isRequired,
         actions: React.PropTypes.object.isRequired
@@ -32,6 +35,7 @@ class SelectServerView extends Component {
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
+        this.props.actions.getClientConfig();
         Routes.goToLogin();
 
         // this.props.actions.getPing().then(() => {
@@ -44,6 +48,8 @@ class SelectServerView extends Component {
     }
 
     render() {
+        const {formatMessage} = this.props.intl;
+
         return (
             <View style={GlobalStyles.container}>
                 <Image
@@ -52,7 +58,7 @@ class SelectServerView extends Component {
                 />
                 <FormattedText
                     style={_.at(GlobalStyles, ['header', 'label'])}
-                    id='components.select_server_view.enterServerUrl'
+                    id='mobile.components.select_server_view.enterServerUrl'
                     defaultMessage='Enter Server URL'
                 />
                 <TextInput
@@ -63,7 +69,7 @@ class SelectServerView extends Component {
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='url'
-                    placeholder='https://mattermost.example.com'
+                    placeholder={formatMessage({id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'})}
                     returnKeyType='go'
                     underlineColorAndroid='transparent'
                 />
@@ -72,7 +78,7 @@ class SelectServerView extends Component {
                     loading={this.props.ping.loading}
                 >
                     <FormattedText
-                        id='components.select_server_view.proceed'
+                        id='mobile.components.select_server_view.proceed'
                         defaultMessage='Proceed'
                     />
                 </Button>
@@ -83,4 +89,4 @@ class SelectServerView extends Component {
     }
 }
 
-export default SelectServerView;
+export default injectIntl(SelectServerView);
