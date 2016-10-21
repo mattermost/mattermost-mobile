@@ -9,7 +9,7 @@ import SelectTeamView from 'components/select_team_view';
 function mapStateToProps(state) {
     return {
         clientConfig: state.entities.general.clientConfig,
-        teams: state.entities.teams
+        team: state.entities.team
     };
 }
 

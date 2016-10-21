@@ -3,19 +3,19 @@
 
 import {combineReducers} from 'redux';
 
-import channels from './channels';
+import channel from './channels';
 import device from './device.js';
 import general from './general.js';
 import login from './login';
 import logout from './logout';
-import teams from './teams';
-import posts from './posts';
+import post from './posts';
+import team from './teams';
 
 const entities = combineReducers({
-    channels,
+    channel,
     general,
-    teams,
-    posts
+    team,
+    post
 });
 
 const views = combineReducers({

@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
 });
 
 const propTypes = {
-    posts: PropTypes.object.isRequired,
+    post: PropTypes.object.isRequired,
     currentTeamId: PropTypes.string.isRequired,
     currentChannelId: PropTypes.string.isRequired,
     actions: PropTypes.object.isRequired
@@ -35,7 +35,7 @@ export default class PostsListView extends Component {
     }
 
     render() {
-        const posts = _.values(this.props.posts.data);
+        const posts = _.values(this.props.post.data);
         return (
             <View style={styles.container}>
                 {posts.map((post) => (
@@ -43,7 +43,7 @@ export default class PostsListView extends Component {
                         {`${post.user_id} - ${post.message}`}
                     </Text>
                 ))}
-                <ErrorText error={this.props.posts.error}/>
+                <ErrorText error={this.props.post.error}/>
             </View>
         );
     }
