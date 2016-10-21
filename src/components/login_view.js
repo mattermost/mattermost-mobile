@@ -28,9 +28,9 @@ class LoginView extends Component {
         password: ''
     };
 
-    componentWillReceiveProps(props) {
+    componentWillReceiveProps(nextProps) {
         if (this.props.login.status === 'fetching' &&
-          props.login.status === 'fetched') {
+          nextProps.login.status === 'fetched') {
             Routes.goToSelectTeam();
         }
     }
