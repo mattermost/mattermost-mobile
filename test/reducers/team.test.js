@@ -2,15 +2,15 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import reduceChannels, {initState} from 'reducers/channels';
-import {ChannelsTypes as types} from 'constants';
+import reduceTeams, {initState} from 'reducers/team';
+import {TeamsTypes as types} from 'constants';
 
-describe('channels reducer', () => {
+describe('team reducer', () => {
     describe('Init', () => {
         let store;
         let expectedStore;
         before(() => {
-            store = reduceChannels(store, {type: ''});
+            store = reduceTeams(store, {type: ''});
             expectedStore = {...initState};
         });
         it('should be initial state', () => {
@@ -20,29 +20,29 @@ describe('channels reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.SELECT_CHANNEL}`, () => {
+    describe(`when ${types.SELECT_TEAM}`, () => {
         let store;
         let expectedStore;
         before(() => {
-            store = reduceChannels(store, {
-                type: types.SELECT_CHANNEL,
-                channelId: '1'
+            store = reduceTeams(store, {
+                type: types.SELECT_TEAM,
+                teamId: '1'
             });
             expectedStore = {
                 ...initState,
-                currentChannelId: '1'
+                currentTeamId: '1'
             };
         });
         it('should set status to fetching', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_CHANNELS_REQUEST}`, () => {
+    describe(`when ${types.FETCH_TEAMS_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
-            store = reduceChannels(store, {
-                type: types.FETCH_CHANNELS_REQUEST
+            store = reduceTeams(store, {
+                type: types.FETCH_TEAMS_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -53,32 +53,33 @@ describe('channels reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_CHANNELS_SUCCESS}`, () => {
+    describe(`when ${types.FETCH_TEAMS_SUCCESS}`, () => {
         let store;
+        const data = {some: 'thing'};
         let expectedStore;
         before(() => {
-            store = reduceChannels(store, {
-                type: types.FETCH_CHANNELS_SUCCESS,
-                data: {channels: [{id: '1', attr: 'attr'}]}
+            store = reduceTeams(store, {
+                type: types.FETCH_TEAMS_SUCCESS,
+                data
             });
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data: {1: {id: '1', attr: 'attr'}}
+                data
             };
         });
         it('should set status to fetched and data', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_CHANNELS_FAILURE}`, () => {
+    describe(`when ${types.FETCH_TEAMS_FAILURE}`, () => {
         let store;
         let expectedStore;
         let error;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
-            store = reduceChannels(store, {
-                type: types.FETCH_CHANNELS_FAILURE,
+            store = reduceTeams(store, {
+                type: types.FETCH_TEAMS_FAILURE,
                 error
             });
             expectedStore = {
