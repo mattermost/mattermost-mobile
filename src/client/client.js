@@ -183,7 +183,7 @@ export default class Client {
     }
 
     logout = async () => {
-        const response = await this.doFetchWithResponse(
+        const {response} = await this.doFetchWithResponse(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'}
         );

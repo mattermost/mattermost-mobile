@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import {ChannelsTypes as types} from 'constants';
+import {ChannelsTypes, LogoutTypes} from 'constants';
+const types = {...ChannelsTypes, ...LogoutTypes};
 
 export const initState = {
     status: 'not fetched',

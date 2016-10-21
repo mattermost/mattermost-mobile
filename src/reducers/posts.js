@@ -1,4 +1,5 @@
-import {PostsTypes as types} from 'constants';
+import {PostsTypes, LogoutTypes} from 'constants';
+const types = {...PostsTypes, ...LogoutTypes};
 
 export const initState = {
     status: 'not fetched',
