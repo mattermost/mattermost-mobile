@@ -7,6 +7,8 @@ import {GeneralTypes as types} from 'constants';
 
 export const initState = initialState();
 
+// TODO: clientConfig should be cleared when the user logs out.
+// We can't do so until it's extracted into its own store with more reducers
 export function clientConfig(state = initState, action) {
     return handle(
       types.CLIENT_CONFIG_REQUEST,
