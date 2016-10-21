@@ -6,6 +6,7 @@ import React, {Component, PropTypes} from 'react';
 import {View, Image} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import Button from 'react-native-button';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import _ from 'lodash';
 
 import ErrorText from 'components/error_text';
@@ -64,6 +65,11 @@ export default class SelectTeamView extends Component {
                         containerStyle={GlobalStyles.buttonListItem}
                     >
                         {team.display_name}
+                        <Icon
+                            name='keyboard-arrow-right'
+                            size={24}
+                            color='#777'
+                        />
                     </Button>
                 ))}
                 <ErrorText error={this.props.teams.error}/>

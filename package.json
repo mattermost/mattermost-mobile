@@ -14,7 +14,8 @@
     "react-native-router-flux": "3.36.0",
     "react-redux": "4.4.5",
     "redux": "3.6.0",
-    "redux-thunk": "2.1.0"
+    "redux-thunk": "2.1.0",
+    "react-native-vector-icons": "2.1.0"
   },
   "devDependencies": {
     "babel-eslint": "7.0.0",
