@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
-import {View, TextInput, Image} from 'react-native';
+import {View, TextInput, Image, AsyncStorage} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {Actions as Routes} from 'react-native-router-flux';
 import _ from 'lodash';
@@ -31,6 +31,20 @@ class SelectServerView extends Component {
         this.state = {
             serverUrl: Config.DefaultServerUrl
         };
+    }
+
+    componentWillMount() {
+        AsyncStorage.getItem('serverUrl').then((serverUrl) => {
+            if (serverUrl) {
+                Client.setUrl(serverUrl);
+                AsyncStorage.getItem('auth_token').then((auth_token) => {
+                    if (auth_token) {
+                        Client.setToken(auth_token);
+                        Routes.goToSelectTeam();
+                    }
+                });
+            }
+        });
     }
 
     onClick = () => {
