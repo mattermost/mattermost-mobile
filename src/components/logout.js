@@ -16,9 +16,9 @@ const propTypes = {
 class Logout extends Component {
     static propTypes = propTypes;
 
-    componentWillReceiveProps(newProps) {
+    componentWillReceiveProps(nextProps) {
         if (this.props.logout.status === 'fetching' &&
-          newProps.logout.status === 'fetched') {
+          nextProps.logout.status === 'fetched') {
             Routes.popTo('goToSelectServer');
         }
     }

@@ -27,8 +27,8 @@ export default class SelectTeamView extends Component {
         this.props.actions.fetchTeams();
     }
 
-    componentWillReceiveProps(props) {
-        const {currentTeamId} = props.teams;
+    componentWillReceiveProps(nextProps) {
+        const {currentTeamId} = nextProps.teams;
         if (currentTeamId &&
           currentTeamId !== this.props.teams.currentTeamId) {
             Routes.goToChannelsList();
