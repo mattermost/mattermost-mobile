@@ -1,6 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {AsyncStorage} from 'react-native';
+
 const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
 const HEADER_CONTENT_TYPE = 'Content-Type';
@@ -25,6 +27,12 @@ export default class Client {
 
     setUrl(url) {
         this.url = url;
+        AsyncStorage.setItem('serverUrl', url);
+    }
+
+    setToken(token) {
+        this.token = token;
+        AsyncStorage.setItem('auth_token', token);
     }
 
     setTeamId(id) {
@@ -176,13 +184,15 @@ export default class Client {
         );
 
         if (response.headers.has(HEADER_TOKEN)) {
-            this.token = response.headers.get(HEADER_TOKEN);
+            this.setToken(response.headers.get(HEADER_TOKEN));
         }
 
         return data;
     }
 
     logout = async () => {
+        this.token = '';
+        AsyncStorage.removeItem('auth_token');
         const {response} = await this.doFetchWithResponse(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'}
