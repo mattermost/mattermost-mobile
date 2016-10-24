@@ -12,8 +12,8 @@ import FormattedText from 'components/formatted_text';
 import {GlobalStyles} from 'styles';
 
 const propTypes = {
-    teams: PropTypes.object.isRequired,
-    channels: PropTypes.object.isRequired,
+    team: PropTypes.object.isRequired,
+    channel: PropTypes.object.isRequired,
     actions: PropTypes.object.isRequired
 };
 
@@ -25,17 +25,17 @@ class ChannelsListView extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {currentChannelId} = nextProps.channels;
+        const {currentChannelId} = nextProps.channel;
         if (currentChannelId &&
-          currentChannelId !== this.props.channels.currentChannelId) {
+          currentChannelId !== this.props.channel.currentChannelId) {
             Routes.goToPostsList();
         }
     }
 
     render() {
-        const {data: teams, currentTeamId} = this.props.teams;
+        const {teams, currentTeamId} = this.props.team;
         const currentTeam = teams[currentTeamId];
-        const channels = _.values(this.props.channels.data);
+        const channels = _.values(this.props.channel.channels);
         return (
             <View style={GlobalStyles.container}>
                 <Text style={GlobalStyles.header}>
@@ -57,7 +57,7 @@ class ChannelsListView extends Component {
                     </Button>
                 ))}
 
-                <ErrorText error={this.props.channels.error}/>
+                <ErrorText error={this.props.channel.error}/>
             </View>
         );
     }

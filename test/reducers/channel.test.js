@@ -2,10 +2,10 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import reduceChannels, {initState} from 'reducers/channels';
+import reduceChannels, {initState} from 'reducers/channel';
 import {ChannelsTypes as types} from 'constants';
 
-describe('channels reducer', () => {
+describe('channel reducer', () => {
     describe('Init', () => {
         let store;
         let expectedStore;
@@ -64,7 +64,7 @@ describe('channels reducer', () => {
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data: {1: {id: '1', attr: 'attr'}}
+                channels: {1: {id: '1', attr: 'attr'}}
             };
         });
         it('should set status to fetched and data', () => {

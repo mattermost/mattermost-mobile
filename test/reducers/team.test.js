@@ -2,10 +2,10 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import reduceTeams, {initState} from 'reducers/teams';
+import reduceTeams, {initState} from 'reducers/team';
 import {TeamsTypes as types} from 'constants';
 
-describe('teams reducer', () => {
+describe('team reducer', () => {
     describe('Init', () => {
         let store;
         let expectedStore;
@@ -65,7 +65,7 @@ describe('teams reducer', () => {
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data
+                teams: data
             };
         });
         it('should set status to fetched and data', () => {

@@ -2,10 +2,10 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import reducePosts, {initState} from 'reducers/posts';
+import reducePosts, {initState} from 'reducers/post';
 import {PostsTypes as types} from 'constants';
 
-describe('posts reducer', () => {
+describe('post reducer', () => {
     describe('Init', () => {
         let store;
         let expectedStore;
@@ -50,7 +50,7 @@ describe('posts reducer', () => {
             expectedStore = {
                 ...initState,
                 status: 'fetched',
-                data
+                posts: data
             };
         });
         it('should set status to fetched and data', () => {

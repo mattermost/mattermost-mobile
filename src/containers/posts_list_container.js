@@ -8,9 +8,9 @@ import PostsListView from 'components/posts_list_view';
 
 function mapStateToProps(state) {
     return {
-        posts: state.entities.posts,
-        currentTeamId: state.entities.teams.currentTeamId,
-        currentChannelId: state.entities.channels.currentChannelId
+        post: state.entities.post,
+        currentTeamId: state.entities.team.currentTeamId,
+        currentChannelId: state.entities.channel.currentChannelId
     };
 }
 

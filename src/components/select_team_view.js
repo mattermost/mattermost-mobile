@@ -16,7 +16,7 @@ import FormattedText from 'components/formatted_text';
 
 const propTypes = {
     clientConfig: PropTypes.object.isRequired,
-    teams: PropTypes.object.isRequired,
+    team: PropTypes.object.isRequired,
     actions: PropTypes.object.isRequired
 };
 
@@ -28,15 +28,15 @@ export default class SelectTeamView extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {currentTeamId} = nextProps.teams;
+        const {currentTeamId} = nextProps.team;
         if (currentTeamId &&
-          currentTeamId !== this.props.teams.currentTeamId) {
+          currentTeamId !== this.props.team.currentTeamId) {
             Routes.goToChannelsList();
         }
     }
 
     render() {
-        const teams = _.values(this.props.teams.data);
+        const teams = _.values(this.props.team.teams);
 
         return (
             <View style={GlobalStyles.container}>
@@ -72,7 +72,7 @@ export default class SelectTeamView extends Component {
                         />
                     </Button>
                 ))}
-                <ErrorText error={this.props.teams.error}/>
+                <ErrorText error={this.props.team.error}/>
             </View>
         );
     }
