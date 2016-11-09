@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import * as loginActions from 'actions/login';
+import {getClientConfig} from 'actions/general';
 import LoginView from 'components/login_view';
 
 function mapStateToProps(state) {
@@ -15,7 +16,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(loginActions, dispatch)
+        actions: bindActionCreators({
+            ...loginActions,
+            getClientConfig
+        }, dispatch)
     };
 }
 

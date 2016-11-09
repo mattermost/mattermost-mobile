@@ -6,37 +6,54 @@ import React, {Component, PropTypes} from 'react';
 import {View, Image, Text} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import Button from 'react-native-button';
+import Loading from 'components/loading.js';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import _ from 'lodash';
 
 import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 import FormattedText from 'components/formatted_text';
 
-const propTypes = {
-    clientConfig: PropTypes.object.isRequired,
-    teams: PropTypes.object.isRequired,
-    actions: PropTypes.object.isRequired
-};
-
 export default class SelectTeamView extends Component {
-    static propTypes = propTypes;
+    static propTypes = {
+        clientConfig: PropTypes.object.isRequired,
+        teams: PropTypes.object.isRequired,
+        actions: PropTypes.object.isRequired
+    };
 
     componentWillMount() {
         this.props.actions.fetchTeams();
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {currentTeamId} = nextProps.teams;
-        if (currentTeamId &&
-          currentTeamId !== this.props.teams.currentTeamId) {
-            Routes.goToChannelsList();
-        }
+    onSelectTeam(team) {
+        Routes.goToMain({currentTeamId: team.id});
     }
 
     render() {
-        const teams = _.values(this.props.teams.data);
+        if (this.props.teams.status !== 'fetched') {
+            return <Loading/>;
+        }
+
+        const teams = [];
+        for (const id of Object.keys(this.props.teams.data)) {
+            const team = this.props.teams.data[id];
+
+            teams.push(
+                <Button
+                    key={id}
+                    onPress={() => this.onSelectTeam(team)}
+                    style={GlobalStyles.buttonListItemText}
+                    containerStyle={GlobalStyles.buttonListItem}
+                >
+                    {team.display_name}
+                    <Icon
+                        name='keyboard-arrow-right'
+                        size={24}
+                        color='#777'
+                    />
+                </Button>
+            );
+        }
 
         return (
             <View style={GlobalStyles.container}>
@@ -45,7 +62,7 @@ export default class SelectTeamView extends Component {
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
-                    {this.props.clientConfig.data.SiteName}
+                    {this.props.clientConfig.SiteName}
                 </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
@@ -57,21 +74,7 @@ export default class SelectTeamView extends Component {
                     id='signup_team.choose'
                     defaultMessage='Your teams:'
                 />
-                {_.map(teams, (team) => (
-                    <Button
-                        key={team.id}
-                        onPress={() => this.props.actions.selectTeam(team)}
-                        style={GlobalStyles.buttonListItemText}
-                        containerStyle={GlobalStyles.buttonListItem}
-                    >
-                        {team.display_name}
-                        <Icon
-                            name='keyboard-arrow-right'
-                            size={24}
-                            color='#777'
-                        />
-                    </Button>
-                ))}
+                {teams}
                 <ErrorText error={this.props.teams.error}/>
             </View>
         );

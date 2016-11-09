@@ -35,16 +35,12 @@ class SelectServerView extends Component {
 
     onClick = () => {
         Client.setUrl(this.state.serverUrl);
-        this.props.actions.getClientConfig();
-        Routes.goToLogin();
 
-        // this.props.actions.getPing().then(() => {
-        //     AsyncStorage.setItem('serverUrl', this.state.serverUrl, () => {
-        //         if (!this.props.ping.error) {
-        //             this.props.onProceed();
-        //         }
-        //     });
-        // });
+        this.props.actions.getPing().then(() => {
+            if (!this.props.ping.loading && !this.props.ping.error) {
+                Routes.goToLogin();
+            }
+        });
     }
 
     render() {

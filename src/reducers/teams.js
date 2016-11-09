@@ -14,22 +14,26 @@ export default function reduceTeams(state = initState, action) {
     switch (action.type) {
 
     case TeamsTypes.SELECT_TEAM:
-        return {...state,
+        return {
+            ...state,
             currentTeamId: action.teamId
         };
 
     case TeamsTypes.FETCH_TEAMS_REQUEST:
-        return {...state,
+        return {
+            ...state,
             status: 'fetching',
             error: null
         };
     case TeamsTypes.FETCH_TEAMS_SUCCESS:
-        return {...state,
+        return {
+            ...state,
             status: 'fetched',
             data: action.data
         };
     case TeamsTypes.FETCH_TEAMS_FAILURE:
-        return {...state,
+        return {
+            ...state,
             status: 'failed',
             error: action.error
         };

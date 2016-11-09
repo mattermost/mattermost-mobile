@@ -11,7 +11,6 @@ const CONTENT_TYPE_JSON = 'application/json';
 
 export default class Client {
     constructor() {
-        this.teamId = '';
         this.logToConsole = false;
         this.token = '';
         this.url = '';
@@ -25,18 +24,6 @@ export default class Client {
 
     setUrl(url) {
         this.url = url;
-    }
-
-    setTeamId(id) {
-        this.teamId = id;
-    }
-
-    getTeamId() {
-        if (!this.teamId) {
-            console.error('You are trying to use a route that requires a team_id, but you have not called setTeamId() in client.jsx'); // eslint-disable-line no-console
-        }
-
-        return this.teamId;
     }
 
     getBaseRoute() {
@@ -59,16 +46,16 @@ export default class Client {
         return `${this.url}${this.urlVersion}/teams`;
     }
 
-    getTeamNeededRoute() {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}`;
+    getTeamNeededRoute(teamId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}`;
     }
 
-    getChannelsRoute() {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels`;
+    getChannelsRoute(teamId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/channels`;
     }
 
-    getChannelNameRoute(channelName) {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/name/${channelName}`;
+    getChannelNameRoute(teamId, channelName) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/channels/name/${channelName}`;
     }
 
     getChannelNeededRoute(channelId) {
@@ -209,7 +196,14 @@ export default class Client {
         );
     }
 
-    fetchTeams = async () => {
+    getAllTeams = async() => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/all`,
+            {method: 'get'}
+        );
+    }
+
+    getAllTeamListings = async () => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all_team_listings`,
             {method: 'get'}
@@ -225,9 +219,16 @@ export default class Client {
         );
     }
 
-    fetchChannels = async () => {
+    getChannels = async (teamId) => {
         return this.doFetch(
-            `${this.getChannelsRoute()}/`,
+            `${this.getChannelsRoute(teamId)}/`,
+            {method: 'get'}
+        );
+    }
+
+    getMyChannelMembers = async (teamId) => {
+        return this.doFetch(
+            `${this.getChannelsRoute(teamId)}/members`,
             {method: 'get'}
         );
     }

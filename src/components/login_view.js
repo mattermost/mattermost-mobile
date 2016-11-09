@@ -14,28 +14,30 @@ import logo from 'images/logo.png';
 
 import {injectIntl, intlShape} from 'react-intl';
 
-const propTypes = {
-    intl: intlShape.isRequired,
-    clientConfig: PropTypes.object.isRequired,
-    login: PropTypes.object.isRequired,
-    actions: PropTypes.object.isRequired
-};
-
 class LoginView extends Component {
-    static propTypes = propTypes;
+    static propTypes = {
+        intl: intlShape.isRequired,
+        clientConfig: PropTypes.object.isRequired,
+        login: PropTypes.object.isRequired,
+        actions: PropTypes.object.isRequired
+    };
+
     state = {
         loginId: '',
         password: ''
     };
 
+    componentWillMount() {
+        this.props.actions.getClientConfig();
+    }
+
     componentWillReceiveProps(nextProps) {
-        if (this.props.login.status === 'fetching' &&
-          nextProps.login.status === 'fetched') {
+        if (this.props.login.status === 'fetching' && nextProps.login.status === 'fetched') {
             Routes.goToSelectTeam();
         }
     }
 
-    signIn() {
+    signIn = () => {
         if (this.props.login.status !== 'fetching') {
             const {loginId, password} = this.state;
             this.props.actions.login(loginId, password);
@@ -44,7 +46,7 @@ class LoginView extends Component {
 
     createLoginPlaceholder() {
         const {formatMessage} = this.props.intl;
-        const clientConfig = this.props.clientConfig.data;
+        const clientConfig = this.props.clientConfig;
 
         const loginPlaceholders = [];
         if (clientConfig.EnableSignInWithEmail === 'true') {
@@ -75,7 +77,7 @@ class LoginView extends Component {
     }
 
     render() {
-        if (!this.props.clientConfig || !this.props.clientConfig.data) {
+        if (this.props.clientConfig.loading || this.props.clientConfig.error) {
             return <Loading/>;
         }
 
@@ -86,7 +88,7 @@ class LoginView extends Component {
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
-                    {this.props.clientConfig.data.SiteName}
+                    {this.props.clientConfig.SiteName}
                 </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
@@ -94,6 +96,7 @@ class LoginView extends Component {
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <TextInput
+                    ref='loginId'
                     value={this.state.loginId}
                     onChangeText={(loginId) => this.setState({loginId})}
                     style={GlobalStyles.inputBox}
@@ -111,8 +114,10 @@ class LoginView extends Component {
                     autoCorrect={false}
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
+                    returnKeyType='go'
+                    onSubmitEditing={this.signIn}
                 />
-                <Button onPress={() => this.signIn()}>
+                <Button onPress={this.signIn}>
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'

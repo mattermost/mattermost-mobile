@@ -12,16 +12,19 @@ export default function reduceLogin(state = initState, action) {
     switch (action.type) {
 
     case LoginTypes.LOGIN_REQUEST:
-        return {...state,
+        return {
+            ...state,
             status: 'fetching',
             error: null
         };
     case LoginTypes.LOGIN_SUCCESS:
-        return {...state,
+        return {
+            ...state,
             status: 'fetched'
         };
     case LoginTypes.LOGIN_FAILURE:
-        return {...state,
+        return {
+            ...state,
             status: 'failed',
             error: action.error
         };

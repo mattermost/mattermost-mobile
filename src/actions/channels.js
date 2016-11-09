@@ -1,22 +1,30 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {bindClientFunc} from './helpers.js';
-import Client from 'client/client_instance';
-import {ChannelsTypes} from 'constants';
+import {ChannelTypes} from 'constants';
+import {batchActions} from 'redux-batched-actions';
+import Client from 'client/client_instance.js';
 
-export function selectChannel(channel) {
-    return {
-        type: ChannelsTypes.SELECT_CHANNEL,
-        channelId: channel.id
+export function fetchMyChannelsAndMembers(teamId) {
+    return async (dispatch, getState) => {
+        try {
+            const channels = Client.getChannels(teamId);
+            const channelMembers = Client.getMyChannelMembers(teamId);
+
+            dispatch(batchActions([
+                {
+                    type: ChannelTypes.CHANNELS_RECEIVED,
+                    teamId,
+                    channels: await channels
+                },
+                {
+                    type: ChannelTypes.CHANNEL_MEMBERS_RECEIVED,
+                    teamId,
+                    channelMembers: await channelMembers
+                }
+            ]), getState);
+        } catch (err) {
+            console.error(err); // eslint-disable-line no-console
+        }
     };
-}
-
-export function fetchChannels() {
-    return bindClientFunc(
-        Client.fetchChannels,
-        ChannelsTypes.FETCH_CHANNELS_REQUEST,
-        ChannelsTypes.FETCH_CHANNELS_SUCCESS,
-        ChannelsTypes.FETCH_CHANNELS_FAILURE
-    );
 }

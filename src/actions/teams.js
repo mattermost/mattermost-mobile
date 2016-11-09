@@ -15,7 +15,7 @@ export function selectTeam(team) {
 
 export function fetchTeams() {
     return bindClientFunc(
-        Client.fetchTeams,
+        Client.getAllTeams,
         TeamsTypes.FETCH_TEAMS_REQUEST,
         TeamsTypes.FETCH_TEAMS_SUCCESS,
         TeamsTypes.FETCH_TEAMS_FAILURE

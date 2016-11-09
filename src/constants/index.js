@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import * as ChannelsTypes from './channels';
+import * as ChannelTypes from './channel';
 import * as DeviceTypes from './device';
 import * as GeneralTypes from './general';
 import * as LoginTypes from './login';
@@ -15,6 +15,6 @@ export {
     LoginTypes,
     LogoutTypes,
     TeamsTypes,
-    ChannelsTypes,
+    ChannelTypes,
     PostsTypes
 };

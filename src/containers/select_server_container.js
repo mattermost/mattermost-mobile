@@ -3,7 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {getPing, getClientConfig} from 'actions/general';
+import {getPing} from 'actions/general';
 import SelectServerView from 'components/select_server_view';
 
 function mapStateToProps(state) {
@@ -15,7 +15,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators({getPing, getClientConfig}, dispatch)
+        actions: bindActionCreators({getPing}, dispatch)
     };
 }
 

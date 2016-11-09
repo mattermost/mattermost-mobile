@@ -1,15 +1,13 @@
-/* eslint-disable
-  class-methods-use-this,
-  react/require-optimization */
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
 
 import React, {Component} from 'react';
 import {Scene, Router} from 'react-native-router-flux';
 
-import ChannelsListContainer from 'containers/channels_list_container';
 import LoginContainer from 'containers/login_container';
 import SelectServerContainer from 'containers/select_server_container';
 import SelectTeamContainer from 'containers/select_team_container';
-import PostsListContainer from 'containers/posts_list_container';
+import MainContainer from 'containers/main_container.js';
 import Logout from 'components/logout';
 import * as logout from 'actions/logout';
 
@@ -27,23 +25,15 @@ class Routes extends Component {
             <Router>
                 <Scene key='root'>
                     <Scene
-                        key='goToLogin'
-                        component={LoginContainer}
-                        title={formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'})}
-                    />
-                    <Scene
                         key='goToSelectServer'
                         component={SelectServerContainer}
                         title={formatMessage({id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'})}
                         initial={true}
                     />
                     <Scene
-                        key='goToChannelsList'
-                        component={ChannelsListContainer}
-                        title={formatMessage({id: 'mobile.routes.channels', defaultMessage: 'Channels'})}
-                        renderRightButton={() =>
-                            <Logout actions={logout}/>
-                        }
+                        key='goToLogin'
+                        component={LoginContainer}
+                        title={formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'})}
                     />
                     <Scene
                         key='goToSelectTeam'
@@ -54,12 +44,9 @@ class Routes extends Component {
                         }
                     />
                     <Scene
-                        key='goToPostsList'
-                        component={PostsListContainer}
-                        title={formatMessage({id: 'mobile.routes.postsList', defaultMessage: 'Posts List'})}
-                        renderRightButton={() =>
-                            <Logout actions={logout}/>
-                        }
+                        key='goToMain'
+                        component={MainContainer}
+                        hideNavBar={true}
                     />
                 </Scene>
             </Router>

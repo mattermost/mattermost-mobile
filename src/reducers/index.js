@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 
-import channels from './channels';
+import channel from './channel.js';
 import device from './device.js';
 import general from './general.js';
 import login from './login';
@@ -12,7 +12,7 @@ import teams from './teams';
 import posts from './posts';
 
 const entities = combineReducers({
-    channels,
+    channel,
     general,
     teams,
     posts

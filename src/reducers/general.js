@@ -2,34 +2,62 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {initialState, handle} from './helpers.js';
+import {initialState} from './helpers.js';
 import {GeneralTypes} from 'constants';
 
 export const initState = initialState();
 
-// TODO: clientConfig should be cleared when the user logs out.
-// We can't do so until it's extracted into its own store with more reducers
-export function clientConfig(state = initState, action) {
-    return handle(
-        GeneralTypes.CLIENT_CONFIG_REQUEST,
-        GeneralTypes.CLIENT_CONFIG_SUCCESS,
-        GeneralTypes.CLIENT_CONFIG_FAILURE,
-        state,
-        action
-    );
+function ping(state = {}, action) {
+    switch (action.type) {
+    case GeneralTypes.PING_REQUEST:
+        return {
+            ...action.data,
+            loading: true
+        };
+    case GeneralTypes.PING_SUCCESS:
+        return {
+            ...action.data,
+            loading: false,
+            error: null
+        };
+    case GeneralTypes.PING_FAILURE:
+        return {
+            ...action.data,
+            loading: false,
+            error: action.error
+        };
+
+    default:
+        return state;
+    }
 }
 
-export function ping(state = initialState(), action) {
-    return handle(
-        GeneralTypes.PING_REQUEST,
-        GeneralTypes.PING_SUCCESS,
-        GeneralTypes.PING_FAILURE,
-        state,
-        action
-    );
+function clientConfig(state = {}, action) {
+    switch (action.type) {
+    case GeneralTypes.CLIENT_CONFIG_REQUEST:
+        return {
+            ...action.data,
+            loading: true
+        };
+    case GeneralTypes.CLIENT_CONFIG_SUCCESS:
+        return {
+            ...action.data,
+            loading: false,
+            error: null
+        };
+    case GeneralTypes.CLIENT_CONFIG_FAILURE:
+        return {
+            ...action.data,
+            loading: false,
+            error: action.error
+        };
+
+    default:
+        return state;
+    }
 }
 
 export default combineReducers({
-    clientConfig,
-    ping
+    ping,
+    clientConfig
 });
