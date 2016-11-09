@@ -10,11 +10,11 @@ import * as TeamsTypes from './teams';
 import * as PostsTypes from './posts';
 
 export {
-  DeviceTypes,
-  GeneralTypes,
-  LoginTypes,
-  LogoutTypes,
-  TeamsTypes,
-  ChannelsTypes,
-  PostsTypes
+    DeviceTypes,
+    GeneralTypes,
+    LoginTypes,
+    LogoutTypes,
+    TeamsTypes,
+    ChannelsTypes,
+    PostsTypes
 };

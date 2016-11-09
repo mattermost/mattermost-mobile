@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reducePosts, {initState} from 'reducers/posts';
-import {PostsTypes as types} from 'constants';
+import {PostsTypes} from 'constants';
 
 describe('posts reducer', () => {
     describe('Init', () => {
@@ -20,12 +20,12 @@ describe('posts reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_POSTS_REQUEST}`, () => {
+    describe(`when ${PostsTypes.FETCH_POSTS_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reducePosts(store, {
-                type: types.FETCH_POSTS_REQUEST
+                type: PostsTypes.FETCH_POSTS_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -36,13 +36,13 @@ describe('posts reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_POSTS_SUCCESS}`, () => {
+    describe(`when ${PostsTypes.FETCH_POSTS_SUCCESS}`, () => {
         let store;
         let expectedStore;
         const data = {id: '1', attrs: 'attrs'};
         before(() => {
             store = reducePosts(store, {
-                type: types.FETCH_POSTS_SUCCESS,
+                type: PostsTypes.FETCH_POSTS_SUCCESS,
                 data: {
                     posts: data
                 }
@@ -57,14 +57,14 @@ describe('posts reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_POSTS_FAILURE}`, () => {
+    describe(`when ${PostsTypes.FETCH_POSTS_FAILURE}`, () => {
         let store;
         let error;
         let expectedStore;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
             store = reducePosts(store, {
-                type: types.FETCH_POSTS_FAILURE,
+                type: PostsTypes.FETCH_POSTS_FAILURE,
                 error
             });
             expectedStore = {

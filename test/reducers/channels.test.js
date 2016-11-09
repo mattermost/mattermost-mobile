@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reduceChannels, {initState} from 'reducers/channels';
-import {ChannelsTypes as types} from 'constants';
+import {ChannelsTypes} from 'constants';
 
 describe('channels reducer', () => {
     describe('Init', () => {
@@ -20,12 +20,12 @@ describe('channels reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.SELECT_CHANNEL}`, () => {
+    describe(`when ${ChannelsTypes.SELECT_CHANNEL}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceChannels(store, {
-                type: types.SELECT_CHANNEL,
+                type: ChannelsTypes.SELECT_CHANNEL,
                 channelId: '1'
             });
             expectedStore = {
@@ -37,12 +37,12 @@ describe('channels reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_CHANNELS_REQUEST}`, () => {
+    describe(`when ${ChannelsTypes.FETCH_CHANNELS_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceChannels(store, {
-                type: types.FETCH_CHANNELS_REQUEST
+                type: ChannelsTypes.FETCH_CHANNELS_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -53,12 +53,12 @@ describe('channels reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_CHANNELS_SUCCESS}`, () => {
+    describe(`when ${ChannelsTypes.FETCH_CHANNELS_SUCCESS}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceChannels(store, {
-                type: types.FETCH_CHANNELS_SUCCESS,
+                type: ChannelsTypes.FETCH_CHANNELS_SUCCESS,
                 data: {channels: [{id: '1', attr: 'attr'}]}
             });
             expectedStore = {
@@ -71,14 +71,14 @@ describe('channels reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_CHANNELS_FAILURE}`, () => {
+    describe(`when ${ChannelsTypes.FETCH_CHANNELS_FAILURE}`, () => {
         let store;
         let expectedStore;
         let error;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
             store = reduceChannels(store, {
-                type: types.FETCH_CHANNELS_FAILURE,
+                type: ChannelsTypes.FETCH_CHANNELS_FAILURE,
                 error
             });
             expectedStore = {

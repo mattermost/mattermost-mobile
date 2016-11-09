@@ -3,32 +3,32 @@
 
 import Client from 'client/client_instance.js';
 import {bindClientFunc} from './helpers.js';
-import {GeneralTypes as types} from 'constants';
+import {GeneralTypes} from 'constants';
 
 export function getPing() {
     return bindClientFunc(
         Client.getPing,
-        types.PING_REQUEST,
-        types.PING_SUCCESS,
-        types.PING_FAILURE
+        GeneralTypes.PING_REQUEST,
+        GeneralTypes.PING_SUCCESS,
+        GeneralTypes.PING_FAILURE
     );
 }
 
 export function getClientConfig() {
     return bindClientFunc(
         Client.getClientConfig,
-        types.CLIENT_CONFIG_REQUEST,
-        types.CLIENT_CONFIG_SUCCESS,
-        types.CLIENT_CONFIG_FAILURE
+        GeneralTypes.CLIENT_CONFIG_REQUEST,
+        GeneralTypes.CLIENT_CONFIG_SUCCESS,
+        GeneralTypes.CLIENT_CONFIG_FAILURE
     );
 }
 
 export function logClientError(message, level = 'ERROR') {
     return bindClientFunc(
         Client.logClientError,
-        types.LOG_CLIENT_ERROR_REQUEST,
-        types.LOG_CLIENT_ERROR_SUCCESS,
-        types.LOG_CLIENT_ERROR_FAILURE,
+        GeneralTypes.LOG_CLIENT_ERROR_REQUEST,
+        GeneralTypes.LOG_CLIENT_ERROR_SUCCESS,
+        GeneralTypes.LOG_CLIENT_ERROR_FAILURE,
         message,
         level
     );

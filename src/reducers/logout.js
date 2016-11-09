@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {LogoutTypes as types} from 'constants';
+import {LogoutTypes} from 'constants';
 
 export const initState = {
     status: 'not fetched',
@@ -10,16 +10,16 @@ export const initState = {
 
 export default function reduceLogout(state = initState, action) {
     switch (action.type) {
-    case types.LOGOUT_REQUEST:
+    case LogoutTypes.LOGOUT_REQUEST:
         return {...state,
             status: 'fetching',
             error: null
         };
-    case types.LOGOUT_SUCCESS:
+    case LogoutTypes.LOGOUT_SUCCESS:
         return {...state,
             status: 'fetched'
         };
-    case types.LOGOUT_FAILURE:
+    case LogoutTypes.LOGOUT_FAILURE:
         return {...state,
             status: 'failed',
             error: action.error

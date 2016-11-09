@@ -3,16 +3,16 @@
 
 import {requestData, requestSuccess, requestFailure} from './helpers.js';
 import {AsyncStorage} from 'react-native';
-import {DeviceTypes as types} from 'constants';
+import {DeviceTypes} from 'constants';
 
 function fetchDevice() {
     return async (dispatch) => {
         try {
-            dispatch(requestData(types.DEVICE_REQUEST));
+            dispatch(requestData(DeviceTypes.DEVICE_REQUEST));
             const json = await AsyncStorage.getItem('basic_info');
-            dispatch(requestSuccess(types.DEVICE_SUCCESS, JSON.parse(json)));
+            dispatch(requestSuccess(DeviceTypes.DEVICE_SUCCESS, JSON.parse(json)));
         } catch (err) {
-            dispatch(requestFailure(types.DEVICE_FAILURE, {msg: 'failed to load local storage'}));
+            dispatch(requestFailure(DeviceTypes.DEVICE_FAILURE, {msg: 'failed to load local storage'}));
         }
     };
 }

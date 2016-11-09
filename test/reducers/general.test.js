@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reduceGeneral, {initState} from 'reducers/general';
-import {GeneralTypes as types} from 'constants';
+import {GeneralTypes} from 'constants';
 
 const combinedState = {
     clientConfig: {...initState},
@@ -26,12 +26,12 @@ describe('general reducer', () => {
                 assert.deepEqual(store, expectedStore);
             });
         });
-        describe(`when ${types.PING_REQUEST}`, () => {
+        describe(`when ${GeneralTypes.PING_REQUEST}`, () => {
             let store;
             let expectedStore;
             before(() => {
                 store = reduceGeneral(store, {
-                    type: types.PING_REQUEST
+                    type: GeneralTypes.PING_REQUEST
                 });
                 expectedStore = {
                     ...combinedState,
@@ -45,13 +45,13 @@ describe('general reducer', () => {
                 assert.deepEqual(store, expectedStore);
             });
         });
-        describe(`when ${types.PING_SUCCESS}`, () => {
+        describe(`when ${GeneralTypes.PING_SUCCESS}`, () => {
             let store;
             let expectedStore;
             const data = {some: 'data'};
             before(() => {
                 store = reduceGeneral(store, {
-                    type: types.PING_SUCCESS,
+                    type: GeneralTypes.PING_SUCCESS,
                     data
                 });
                 expectedStore = {
@@ -66,14 +66,14 @@ describe('general reducer', () => {
                 assert.deepEqual(store, expectedStore);
             });
         });
-        describe(`when ${types.PING_FAILURE}`, () => {
+        describe(`when ${GeneralTypes.PING_FAILURE}`, () => {
             let store;
             let error;
             let expectedStore;
             before(() => {
                 error = {id: 'the.error.id', message: 'Something went wrong'};
                 store = reduceGeneral(store, {
-                    type: types.PING_FAILURE,
+                    type: GeneralTypes.PING_FAILURE,
                     error
                 });
                 expectedStore = {
@@ -104,12 +104,12 @@ describe('general reducer', () => {
                 assert.deepEqual(store, expectedStore);
             });
         });
-        describe(`when ${types.CLIENT_CONFIG_REQUEST}`, () => {
+        describe(`when ${GeneralTypes.CLIENT_CONFIG_REQUEST}`, () => {
             let store;
             let expectedStore;
             before(() => {
                 store = reduceGeneral(store, {
-                    type: types.CLIENT_CONFIG_REQUEST
+                    type: GeneralTypes.CLIENT_CONFIG_REQUEST
                 });
                 expectedStore = {
                     ...combinedState,
@@ -123,13 +123,13 @@ describe('general reducer', () => {
                 assert.deepEqual(store, expectedStore);
             });
         });
-        describe(`when ${types.CLIENT_CONFIG_SUCCESS}`, () => {
+        describe(`when ${GeneralTypes.CLIENT_CONFIG_SUCCESS}`, () => {
             let store;
             let expectedStore;
             const data = {some: 'data'};
             before(() => {
                 store = reduceGeneral(store, {
-                    type: types.CLIENT_CONFIG_SUCCESS,
+                    type: GeneralTypes.CLIENT_CONFIG_SUCCESS,
                     data
                 });
                 expectedStore = {
@@ -144,14 +144,14 @@ describe('general reducer', () => {
                 assert.deepEqual(store, expectedStore);
             });
         });
-        describe(`when ${types.CLIENT_CONFIG_FAILURE}`, () => {
+        describe(`when ${GeneralTypes.CLIENT_CONFIG_FAILURE}`, () => {
             let store;
             let error;
             let expectedStore;
             before(() => {
                 error = {id: 'the.error.id', message: 'Something went wrong'};
                 store = reduceGeneral(store, {
-                    type: types.CLIENT_CONFIG_FAILURE,
+                    type: GeneralTypes.CLIENT_CONFIG_FAILURE,
                     error
                 });
                 expectedStore = {

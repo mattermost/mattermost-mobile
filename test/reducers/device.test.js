@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reduceDevice, {initState} from 'reducers/device';
-import {DeviceTypes as types} from 'constants';
+import {DeviceTypes} from 'constants';
 
 describe('device reducer', () => {
     describe('Init', () => {
@@ -20,12 +20,12 @@ describe('device reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.DEVICE_REQUEST}`, () => {
+    describe(`when ${DeviceTypes.DEVICE_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceDevice(store, {
-                type: types.DEVICE_REQUEST
+                type: DeviceTypes.DEVICE_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -36,13 +36,13 @@ describe('device reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.DEVICE_SUCCESS}`, () => {
+    describe(`when ${DeviceTypes.DEVICE_SUCCESS}`, () => {
         let store;
         let expectedStore;
         const data = {some: 'data'};
         before(() => {
             store = reduceDevice(store, {
-                type: types.DEVICE_SUCCESS,
+                type: DeviceTypes.DEVICE_SUCCESS,
                 data
             });
             expectedStore = {
@@ -55,14 +55,14 @@ describe('device reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.DEVICE_FAILURE}`, () => {
+    describe(`when ${DeviceTypes.DEVICE_FAILURE}`, () => {
         let store;
         let error;
         let expectedStore;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
             store = reduceDevice(store, {
-                type: types.DEVICE_FAILURE,
+                type: DeviceTypes.DEVICE_FAILURE,
                 error
             });
             expectedStore = {

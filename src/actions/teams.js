@@ -3,12 +3,12 @@
 
 import {bindClientFunc} from './helpers.js';
 import Client from 'client/client_instance';
-import {TeamsTypes as types} from 'constants';
+import {TeamsTypes} from 'constants';
 
 export function selectTeam(team) {
     Client.setTeamId(team.id);
     return {
-        type: types.SELECT_TEAM,
+        type: TeamsTypes.SELECT_TEAM,
         teamId: team.id
     };
 }
@@ -16,8 +16,8 @@ export function selectTeam(team) {
 export function fetchTeams() {
     return bindClientFunc(
         Client.fetchTeams,
-        types.FETCH_TEAMS_REQUEST,
-        types.FETCH_TEAMS_SUCCESS,
-        types.FETCH_TEAMS_FAILURE
+        TeamsTypes.FETCH_TEAMS_REQUEST,
+        TeamsTypes.FETCH_TEAMS_SUCCESS,
+        TeamsTypes.FETCH_TEAMS_FAILURE
     );
 }

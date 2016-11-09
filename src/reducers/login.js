@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import {LoginTypes, LogoutTypes} from 'constants';
-const types = {...LoginTypes, ...LogoutTypes};
 
 export const initState = {
     status: 'not fetched',
@@ -12,22 +11,22 @@ export const initState = {
 export default function reduceLogin(state = initState, action) {
     switch (action.type) {
 
-    case types.LOGIN_REQUEST:
+    case LoginTypes.LOGIN_REQUEST:
         return {...state,
             status: 'fetching',
             error: null
         };
-    case types.LOGIN_SUCCESS:
+    case LoginTypes.LOGIN_SUCCESS:
         return {...state,
             status: 'fetched'
         };
-    case types.LOGIN_FAILURE:
+    case LoginTypes.LOGIN_FAILURE:
         return {...state,
             status: 'failed',
             error: action.error
         };
 
-    case types.LOGOUT_SUCCESS:
+    case LogoutTypes.LOGOUT_SUCCESS:
         return initState;
     default:
         return state;

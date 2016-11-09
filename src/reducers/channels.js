@@ -1,6 +1,8 @@
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
 import _ from 'lodash';
 import {ChannelsTypes, LogoutTypes} from 'constants';
-const types = {...ChannelsTypes, ...LogoutTypes};
 
 export const initState = {
     status: 'not fetched',
@@ -17,28 +19,28 @@ function zipById(channels) {
 export default function reduceChannels(state = initState, action) {
     switch (action.type) {
 
-    case types.SELECT_CHANNEL:
+    case ChannelsTypes.SELECT_CHANNEL:
         return {...state,
             currentChannelId: action.channelId
         };
 
-    case types.FETCH_CHANNELS_REQUEST:
+    case ChannelsTypes.FETCH_CHANNELS_REQUEST:
         return {...state,
             status: 'fetching',
             error: null
         };
-    case types.FETCH_CHANNELS_SUCCESS:
+    case ChannelsTypes.FETCH_CHANNELS_SUCCESS:
         return {...state,
             status: 'fetched',
             data: zipById(action.data.channels)
         };
-    case types.FETCH_CHANNELS_FAILURE:
+    case ChannelsTypes.FETCH_CHANNELS_FAILURE:
         return {...state,
             status: 'failed',
             error: action.error
         };
 
-    case types.LOGOUT_SUCCESS:
+    case LogoutTypes.LOGOUT_SUCCESS:
         return initState;
     default:
         return state;

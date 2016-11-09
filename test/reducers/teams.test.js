@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reduceTeams, {initState} from 'reducers/teams';
-import {TeamsTypes as types} from 'constants';
+import {TeamsTypes} from 'constants';
 
 describe('teams reducer', () => {
     describe('Init', () => {
@@ -20,12 +20,12 @@ describe('teams reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.SELECT_TEAM}`, () => {
+    describe(`when ${TeamsTypes.SELECT_TEAM}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceTeams(store, {
-                type: types.SELECT_TEAM,
+                type: TeamsTypes.SELECT_TEAM,
                 teamId: '1'
             });
             expectedStore = {
@@ -37,12 +37,12 @@ describe('teams reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_TEAMS_REQUEST}`, () => {
+    describe(`when ${TeamsTypes.FETCH_TEAMS_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceTeams(store, {
-                type: types.FETCH_TEAMS_REQUEST
+                type: TeamsTypes.FETCH_TEAMS_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -53,13 +53,13 @@ describe('teams reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_TEAMS_SUCCESS}`, () => {
+    describe(`when ${TeamsTypes.FETCH_TEAMS_SUCCESS}`, () => {
         let store;
         const data = {some: 'thing'};
         let expectedStore;
         before(() => {
             store = reduceTeams(store, {
-                type: types.FETCH_TEAMS_SUCCESS,
+                type: TeamsTypes.FETCH_TEAMS_SUCCESS,
                 data
             });
             expectedStore = {
@@ -72,14 +72,14 @@ describe('teams reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.FETCH_TEAMS_FAILURE}`, () => {
+    describe(`when ${TeamsTypes.FETCH_TEAMS_FAILURE}`, () => {
         let store;
         let expectedStore;
         let error;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
             store = reduceTeams(store, {
-                type: types.FETCH_TEAMS_FAILURE,
+                type: TeamsTypes.FETCH_TEAMS_FAILURE,
                 error
             });
             expectedStore = {

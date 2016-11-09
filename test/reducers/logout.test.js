@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reduceLogout, {initState} from 'reducers/logout';
-import {LogoutTypes as types} from 'constants';
+import {LogoutTypes} from 'constants';
 
 describe('logout reducer', () => {
     describe('Init', () => {
@@ -20,12 +20,12 @@ describe('logout reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.LOGOUT_REQUEST}`, () => {
+    describe(`when ${LogoutTypes.LOGOUT_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceLogout(store, {
-                type: types.LOGOUT_REQUEST
+                type: LogoutTypes.LOGOUT_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -36,12 +36,12 @@ describe('logout reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.LOGOUT_SUCCESS}`, () => {
+    describe(`when ${LogoutTypes.LOGOUT_SUCCESS}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceLogout(store, {
-                type: types.LOGOUT_SUCCESS
+                type: LogoutTypes.LOGOUT_SUCCESS
             });
             expectedStore = {
                 ...initState,
@@ -52,14 +52,14 @@ describe('logout reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.LOGOUT_FAILURE}`, () => {
+    describe(`when ${LogoutTypes.LOGOUT_FAILURE}`, () => {
         let store;
         let error;
         let expectedStore;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
             store = reduceLogout(store, {
-                type: types.LOGOUT_FAILURE,
+                type: LogoutTypes.LOGOUT_FAILURE,
                 error
             });
             expectedStore = {

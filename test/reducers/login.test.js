@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import reduceLogin, {initState} from 'reducers/login';
-import {LoginTypes as types} from 'constants';
+import {LoginTypes} from 'constants';
 
 describe('login reducer', () => {
     describe('Init', () => {
@@ -20,12 +20,12 @@ describe('login reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.LOGIN_REQUEST}`, () => {
+    describe(`when ${LoginTypes.LOGIN_REQUEST}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceLogin(store, {
-                type: types.LOGIN_REQUEST
+                type: LoginTypes.LOGIN_REQUEST
             });
             expectedStore = {
                 ...initState,
@@ -36,12 +36,12 @@ describe('login reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.LOGIN_SUCCESS}`, () => {
+    describe(`when ${LoginTypes.LOGIN_SUCCESS}`, () => {
         let store;
         let expectedStore;
         before(() => {
             store = reduceLogin(store, {
-                type: types.LOGIN_SUCCESS
+                type: LoginTypes.LOGIN_SUCCESS
             });
             expectedStore = {
                 ...initState,
@@ -52,14 +52,14 @@ describe('login reducer', () => {
             assert.deepEqual(store, expectedStore);
         });
     });
-    describe(`when ${types.LOGIN_FAILURE}`, () => {
+    describe(`when ${LoginTypes.LOGIN_FAILURE}`, () => {
         let store;
         let error;
         let expectedStore;
         before(() => {
             error = {id: 'the.error.id', message: 'Something went wrong'};
             store = reduceLogin(store, {
-                type: types.LOGIN_FAILURE,
+                type: LoginTypes.LOGIN_FAILURE,
                 error
             });
             expectedStore = {

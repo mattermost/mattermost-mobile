@@ -3,11 +3,11 @@
 
 import {bindClientFunc} from './helpers.js';
 import Client from 'client/client_instance';
-import {ChannelsTypes as types} from 'constants';
+import {ChannelsTypes} from 'constants';
 
 export function selectChannel(channel) {
     return {
-        type: types.SELECT_CHANNEL,
+        type: ChannelsTypes.SELECT_CHANNEL,
         channelId: channel.id
     };
 }
@@ -15,8 +15,8 @@ export function selectChannel(channel) {
 export function fetchChannels() {
     return bindClientFunc(
         Client.fetchChannels,
-        types.FETCH_CHANNELS_REQUEST,
-        types.FETCH_CHANNELS_SUCCESS,
-        types.FETCH_CHANNELS_FAILURE
+        ChannelsTypes.FETCH_CHANNELS_REQUEST,
+        ChannelsTypes.FETCH_CHANNELS_SUCCESS,
+        ChannelsTypes.FETCH_CHANNELS_FAILURE
     );
 }
