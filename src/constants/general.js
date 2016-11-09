@@ -1,3 +1,6 @@
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
 export const PING_REQUEST = 'PING_REQUEST';
 export const PING_SUCCESS = 'PING_SUCCESS';
 export const PING_FAILURE = 'PING_FAILURE';

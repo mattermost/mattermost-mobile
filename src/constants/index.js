@@ -1,3 +1,6 @@
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
 import * as ChannelsTypes from './channels';
 import * as DeviceTypes from './device';
 import * as GeneralTypes from './general';
