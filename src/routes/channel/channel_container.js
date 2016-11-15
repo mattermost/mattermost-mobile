@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {fetchMyChannelsAndMembers} from 'actions/channels.js';
-import MainView from 'components/main_view.js';
+import Channel from './channel.js';
 
 function mapStateToProps(state, ownProps) {
     let currentChannel;
@@ -39,4 +39,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MainView);
+export default connect(mapStateToProps, mapDispatchToProps)(Channel);

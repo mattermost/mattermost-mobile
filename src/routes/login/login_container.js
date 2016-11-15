@@ -3,20 +3,24 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import * as teamActions from 'actions/teams';
-import SelectTeamView from 'components/select_team_view';
+import * as loginActions from 'actions/login';
+import {getClientConfig} from 'actions/general';
+import Login from './login.js';
 
 function mapStateToProps(state) {
     return {
         clientConfig: state.entities.general.clientConfig,
-        teams: state.entities.teams
+        login: state.views.login
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(teamActions, dispatch)
+        actions: bindActionCreators({
+            ...loginActions,
+            getClientConfig
+        }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectTeamView);
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

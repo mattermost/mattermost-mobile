@@ -14,7 +14,7 @@ import logo from 'images/logo.png';
 
 import {injectIntl, intlShape} from 'react-intl';
 
-class LoginView extends Component {
+class Login extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         clientConfig: PropTypes.object.isRequired,
@@ -129,4 +129,4 @@ class LoginView extends Component {
     }
 }
 
-export default injectIntl(LoginView);
+export default injectIntl(Login);

@@ -17,7 +17,7 @@ import logo from 'images/logo.png';
 
 import {injectIntl, intlShape} from 'react-intl';
 
-class SelectServerView extends Component {
+class SelectServer extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         ping: React.PropTypes.object.isRequired,
@@ -85,4 +85,4 @@ class SelectServerView extends Component {
     }
 }
 
-export default injectIntl(SelectServerView);
+export default injectIntl(SelectServer);

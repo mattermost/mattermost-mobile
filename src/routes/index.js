@@ -4,10 +4,10 @@
 import React, {Component} from 'react';
 import {Scene, Router} from 'react-native-router-flux';
 
-import LoginContainer from 'containers/login_container';
-import SelectServerContainer from 'containers/select_server_container';
-import SelectTeamContainer from 'containers/select_team_container';
-import MainContainer from 'containers/main_container.js';
+import LoginContainer from './login/login_container.js';
+import SelectServerContainer from './select_server/select_server_container.js';
+import SelectTeamContainer from './select_team/select_team_container.js';
+import ChannelContainer from './channel/channel_container.js';
 import Logout from 'components/logout';
 import * as logout from 'actions/logout';
 
@@ -45,7 +45,7 @@ class Routes extends Component {
                     />
                     <Scene
                         key='goToMain'
-                        component={MainContainer}
+                        component={ChannelContainer}
                         hideNavBar={true}
                     />
                 </Scene>

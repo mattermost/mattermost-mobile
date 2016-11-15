@@ -6,12 +6,12 @@ import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 
 import Drawer from 'react-native-drawer';
-import ChannelSidebar from './channel_sidebar.js';
-import Loading from './loading.js';
-import RightSidebarMenu from './right_sidebar_menu.js';
+import ChannelSidebar from 'components/channel_sidebar.js';
+import Loading from 'components/loading.js';
+import RightSidebarMenu from 'components/right_sidebar_menu.js';
 import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
 
-export default class MainView extends React.Component {
+export default class Channel extends React.Component {
     static propTypes = {
         actions: React.PropTypes.object.isRequired,
         currentTeam: React.PropTypes.object,

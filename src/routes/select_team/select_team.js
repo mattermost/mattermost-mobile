@@ -14,7 +14,7 @@ import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 import FormattedText from 'components/formatted_text';
 
-export default class SelectTeamView extends Component {
+export default class SelectTeam extends Component {
     static propTypes = {
         clientConfig: PropTypes.object.isRequired,
         teams: PropTypes.object.isRequired,

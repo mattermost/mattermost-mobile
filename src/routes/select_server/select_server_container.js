@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {getPing} from 'actions/general';
-import SelectServerView from 'components/select_server_view';
+import SelectServerView from './select_server.js';
 
 function mapStateToProps(state) {
     return {
