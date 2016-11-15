@@ -14,8 +14,9 @@ import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
 export default class Channel extends React.Component {
     static propTypes = {
         actions: React.PropTypes.object.isRequired,
-        currentTeam: React.PropTypes.object,
-        currentChannel: React.PropTypes.object
+        currentTeam: React.PropTypes.object.isRequired,
+        currentChannel: React.PropTypes.object,
+        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired
     }
 
     constructor(props) {
@@ -30,7 +31,13 @@ export default class Channel extends React.Component {
     }
 
     componentWillMount() {
-        this.props.actions.fetchMyChannelsAndMembers(this.props.currentTeam.Id);
+        this.props.actions.fetchMyChannelsAndMembers(this.props.currentTeam.id);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.currentTeam.id !== nextProps.currentTeam.id) {
+            this.props.actions.fetchMyChannelsAndMembers(nextProps.currentTeam.id);
+        }
     }
 
     openLeftSidebar = () => {
@@ -60,7 +67,12 @@ export default class Channel extends React.Component {
                 <Drawer
                     open={this.state.leftSidebarOpen}
                     type='displace'
-                    content={<ChannelSidebar currentTeam={this.props.currentTeam}/>}
+                    content={
+                        <ChannelSidebar
+                            currentTeam={this.props.currentTeam}
+                            channels={this.props.channels}
+                        />
+                    }
                     side='left'
                     tapToClose={true}
                     onCloseStart={this.closeLeftSidebar}

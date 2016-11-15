@@ -45,10 +45,14 @@ const Styles = StyleSheet.create({
 });
 
 export default class RightSidebarMenu extends React.Component {
+    handlePress() {
+        console.log('press'); // eslint-disable-line no-console
+    }
+
     render() {
         return (
             <ScrollView style={Styles.container}>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Text style={[Styles.icon, Styles.mentionIcon]}>{'@'}</Text>
                     <FormattedText
                         style={Styles.itemText}
@@ -56,7 +60,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Recent Mentions'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='flag'
@@ -68,7 +72,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='cog'
@@ -79,7 +83,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Account Settings'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='user-plus'
@@ -90,7 +94,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Invite New Member'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='link'
@@ -102,7 +106,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='globe'
@@ -113,7 +117,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Team Settings'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='users'
@@ -124,7 +128,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Manage Members'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='exchange'
@@ -136,7 +140,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='question'
@@ -147,7 +151,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Help'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='phone'
@@ -158,7 +162,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Report a Problem'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='info'
@@ -170,7 +174,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item>
+                <Item onPress={this.handlePress}>
                     <Icon
                         style={Styles.icon}
                         name='sign-out'

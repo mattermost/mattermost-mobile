@@ -3,15 +3,12 @@
 
 import React from 'react';
 
-// import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-
 import {Text, View} from 'react-native';
 
-class ChannelSidebar extends React.Component {
+export default class ChannelSidebar extends React.Component {
     static propTypes = {
         currentTeam: React.PropTypes.object.isRequired,
-        channels: React.PropTypes.array.isRequired,
+        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
         onSelectChannel: React.PropTypes.func
     };
 
@@ -48,12 +45,3 @@ class ChannelSidebar extends React.Component {
         );
     }
 }
-
-function mapStateToProps(state, ownProps) {
-    return {
-        ...ownProps,
-        channels: Object.keys(state.entities.channel.channelIdsByTeamId[ownProps.currentTeam.id] || {}).map((channelId) => state.entities.channel.channels[channelId])
-    };
-}
-
-export default connect(mapStateToProps)(ChannelSidebar);
