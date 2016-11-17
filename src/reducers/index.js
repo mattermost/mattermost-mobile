@@ -11,6 +11,8 @@ import logout from './logout';
 import teams from './teams';
 import posts from './posts';
 
+import SelectServer from './views/select_server.js';
+
 const entities = combineReducers({
     channel,
     general,
@@ -21,7 +23,8 @@ const entities = combineReducers({
 const views = combineReducers({
     device,
     login,
-    logout
+    logout,
+    SelectServer
 });
 
 export default combineReducers({

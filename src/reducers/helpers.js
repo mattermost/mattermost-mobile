@@ -1,34 +1,33 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import RequestStatus from 'constants/request_status';
+
 export function initialState() {
     return {
+        status: RequestStatus.UNSENT,
         data: {},
-        loading: false,
         error: null
     };
 }
 
 export function handle(REQUEST, SUCCESS, FAILURE, state, action) {
     switch (action.type) {
-
     case REQUEST:
         return {
-            ...state,
-            loading: true
+            status: RequestStatus.IN_PROGRESS,
+            ...state
         };
-
     case SUCCESS:
         return {
+            status: RequestStatus.SUCCEEDED,
             data: action.data,
-            loading: false,
             error: null
         };
-
     case FAILURE:
         return {
+            status: RequestStatus.FAILED,
             ...state,
-            loading: false,
             error: action.error
         };
 

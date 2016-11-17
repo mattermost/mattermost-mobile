@@ -3,20 +3,26 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+
 import {getPing} from 'actions/general';
-import SelectServerView from './select_server.js';
+import {handleServerUrlChanged} from 'actions/views/select_server';
+
+import SelectServer from './select_server';
 
 function mapStateToProps(state) {
     return {
-        ping: state.entities.general.ping,
-        device: state.views.device
+        ...state.views.SelectServer,
+        ping: state.entities.general.ping
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators({getPing}, dispatch)
+        actions: bindActionCreators({
+            getPing,
+            handleServerUrlChanged
+        }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectServerView);
+export default connect(mapStateToProps, mapDispatchToProps)(SelectServer);
