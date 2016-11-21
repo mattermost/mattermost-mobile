@@ -21,10 +21,10 @@ describe('Actions.General', () => {
                         done(new Error(clientConfig.error));
                     } else {
                         // Check a few basic fields since they may change over time
-                        assert.ok(clientConfig.data.Version);
-                        assert.ok(clientConfig.data.BuildNumber);
-                        assert.ok(clientConfig.data.BuildDate);
-                        assert.ok(clientConfig.data.BuildHash);
+                        assert.ok(clientConfig.Version);
+                        assert.ok(clientConfig.BuildNumber);
+                        assert.ok(clientConfig.BuildDate);
+                        assert.ok(clientConfig.BuildHash);
 
                         done();
                     }
