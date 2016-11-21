@@ -7,10 +7,14 @@ import TestHelper from 'test_helper.js';
 
 describe('Client.Post', () => {
     it('createPost', async () => {
-        const {client, channel} = await TestHelper.initBasic();
+        const {
+            client,
+            channel,
+            team
+        } = await TestHelper.initBasic();
         const post = TestHelper.fakePost(channel.id);
 
-        const rpost = await client.createPost(post);
+        const rpost = await client.createPost(team.id, post);
 
         assert.ok(rpost.id, 'id is empty');
     });

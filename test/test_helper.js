@@ -101,10 +101,9 @@ class TestHelper {
         await client.login(this.basicUser.email, PASSWORD);
 
         this.basicTeam = await client.createTeam(this.fakeTeam());
-        client.setTeamId(this.basicTeam.id);
 
-        this.basicChannel = await client.createChannel(this.fakeChannel(this.basicTeam.id));
-        this.basicPost = await client.createPost(this.fakePost(this.basicChannel.id));
+        this.basicChannel = await client.createChannel(this.basicTeam.id, this.fakeChannel(this.basicTeam.id));
+        this.basicPost = await client.createPost(this.basicTeam.id, this.fakePost(this.basicChannel.id));
 
         return {
             client: this.basicClient,
