@@ -86,6 +86,15 @@ class TestHelper {
         };
     }
 
+    fakeChannelMember = (userId, channelId) => {
+        return {
+            user_id: userId,
+            channel_id: channelId,
+            notify_props: {},
+            roles: 'system_user'
+        };
+    }
+
     fakePost = (channelId) => {
         return {
             channel_id: channelId,

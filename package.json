@@ -26,6 +26,7 @@
     "babel-plugin-resolver": "1.1.0",
     "babel-preset-react-native": "1.9.0",
     "babel-register": "6.16.3",
+    "deep-freeze": "0.0.1",
     "eslint": "3.7.1",
     "eslint-plugin-react": "6.3.0",
     "fetch-mock": "5.5.0",
