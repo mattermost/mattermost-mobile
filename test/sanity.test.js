@@ -2,11 +2,6 @@
 // See License.txt for license information.
 
 import 'react-native';
-import fetchMock from 'fetch_mock';
-
-fetchMock.get('http://example.com', {
-    status: 200
-});
 
 // Ensure that everything is imported correctly for testing
 describe('Sanity test', () => {
