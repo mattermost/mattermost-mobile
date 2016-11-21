@@ -2,10 +2,7 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {initialState} from './helpers.js';
 import {GeneralTypes} from 'constants';
-
-export const initState = initialState();
 
 function ping(state = {}, action) {
     switch (action.type) {
