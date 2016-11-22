@@ -58,32 +58,32 @@ export default class Client {
         return `${this.url}${this.urlVersion}/teams/${teamId}/channels/name/${channelName}`;
     }
 
-    getChannelNeededRoute(channelId) {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/${channelId}`;
+    getChannelNeededRoute(teamId, channelId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/channels/${channelId}`;
     }
 
-    getCommandsRoute() {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/commands`;
+    getCommandsRoute(teamId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/commands`;
     }
 
     getEmojiRoute() {
         return `${this.url}${this.urlVersion}/emoji`;
     }
 
-    getHooksRoute() {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/hooks`;
+    getHooksRoute(teamId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/hooks`;
     }
 
-    getPostsRoute(channelId) {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/channels/${channelId}/posts`;
+    getPostsRoute(teamId, channelId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/channels/${channelId}/posts`;
     }
 
     getUsersRoute() {
         return `${this.url}${this.urlVersion}/users`;
     }
 
-    getFilesRoute() {
-        return `${this.url}${this.urlVersion}/teams/${this.getTeamId()}/files`;
+    getFilesRoute(teamId) {
+        return `${this.url}${this.urlVersion}/teams/${teamId}/files`;
     }
 
     getOAuthRoute() {
@@ -214,7 +214,7 @@ export default class Client {
 
     createChannel = async (channel) => {
         return this.doFetch(
-            `${this.getChannelsRoute()}/create`,
+            `${this.getChannelsRoute(channel.team_id)}/create`,
             {method: 'post', body: JSON.stringify(channel)}
         );
     }
@@ -234,9 +234,9 @@ export default class Client {
     }
 
     // Post routes
-    fetchPosts = (channelId, onRequest, onSuccess, onFailure) => {
+    fetchPosts = (teamId, channelId, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
-            `${this.getPostsRoute(channelId)}/page/0/60`,
+            `${this.getPostsRoute(teamId, channelId)}/page/0/60`,
             {method: 'get'},
             onRequest,
             onSuccess,
@@ -244,9 +244,9 @@ export default class Client {
         );
     }
 
-    createPost = async (post) => {
+    createPost = async (teamId, post) => {
         return this.doFetch(
-            `${this.getPostsRoute(post.channel_id)}/create`,
+            `${this.getPostsRoute(teamId, post.channel_id)}/create`,
             {method: 'post', body: JSON.stringify(post)}
         );
     }
