@@ -7,5 +7,9 @@ export const SelectServerActions = {
 
 export const LoginActions = {
     LOGIN_ID_CHANGED: 'Login.LOGIN_ID_CHANGED',
-    PASSWORD_CHANGED: 'Login.PASSWORD_CHANGED'
+    PASSWORD_CHANGED: 'Login.PASSWORD_CHANGED',
+
+    LOGIN_REQUEST: 'Login.LOGIN_REQUEST',
+    LOGIN_SUCCESS: 'Login.LOGIN_SUCCESS',
+    LOGIN_FAILURE: 'Login.LOGIN_FAILURE'
 };

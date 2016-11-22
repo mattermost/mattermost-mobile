@@ -3,7 +3,9 @@
 
 import {combineReducers} from 'redux';
 
-import {LoginActions} from 'constants/view_actions';
+import {handle, initialState} from 'reducers/helpers.js';
+
+import {LoginActions} from 'constants/view_actions.js';
 
 function loginId(state = '', action) {
     switch (action.type) {
@@ -25,7 +27,18 @@ function password(state = '', action) {
     }
 }
 
+function loginRequest(state = initialState(), action) {
+    return handle(
+        LoginActions.LOGIN_REQUEST,
+        LoginActions.LOGIN_SUCCESS,
+        LoginActions.LOGIN_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
     loginId,
-    password
+    password,
+    loginRequest
 });

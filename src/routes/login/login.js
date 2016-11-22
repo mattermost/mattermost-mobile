@@ -20,10 +20,10 @@ class Login extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         clientConfig: PropTypes.object.isRequired,
-        login: PropTypes.object.isRequired,
         actions: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
-        password: PropTypes.string.isRequired
+        password: PropTypes.string.isRequired,
+        loginRequest: PropTypes.object.isRequired
     };
 
     componentWillMount() {
@@ -31,13 +31,13 @@ class Login extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.login.status === 'fetching' && nextProps.login.status === 'fetched') {
+        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
             Routes.goToSelectTeam();
         }
     }
 
     signIn = () => {
-        if (this.props.login.status !== 'fetching') {
+        if (this.props.loginRequest.status !== RequestStatus.STARTED) {
             this.props.actions.login(this.props.loginId, this.props.password);
         }
     }
@@ -121,7 +121,7 @@ class Login extends Component {
                         defaultMessage='Sign in'
                     />
                 </Button>
-                <ErrorText error={this.props.login.error}/>
+                <ErrorText error={this.props.loginRequest.error}/>
             </View>
         );
     }

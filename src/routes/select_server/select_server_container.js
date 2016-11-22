@@ -5,13 +5,13 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getPing} from 'actions/general';
-import SelectServerActions from 'actions/views/select_server';
+import * as SelectServerActions from 'actions/views/select_server';
 
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
     return {
-        ...state.views.SelectServer,
+        ...state.views.selectServer,
         ping: state.entities.general.ping
     };
 }

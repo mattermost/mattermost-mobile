@@ -15,19 +15,20 @@ export function handle(REQUEST, SUCCESS, FAILURE, state, action) {
     switch (action.type) {
     case REQUEST:
         return {
-            status: RequestStatus.STARTED,
-            ...state
+            ...state,
+            status: RequestStatus.STARTED
         };
     case SUCCESS:
         return {
+            ...state,
             status: RequestStatus.SUCCESS,
             data: action.data,
             error: null
         };
     case FAILURE:
         return {
-            status: RequestStatus.FAILURE,
             ...state,
+            status: RequestStatus.FAILURE,
             error: action.error
         };
 
