@@ -2,8 +2,8 @@
 // See License.txt for license information.
 
 export default {
-    UNSENT: 'unsent',
-    IN_PROGRESS: 'in_progress',
-    SUCCEEDED: 'succeeded',
-    FAILED: 'failed'
+    NOT_STARTED: 'not_started',
+    STARTED: 'started',
+    SUCCESS: 'success',
+    FAILURE: 'failure'
 };

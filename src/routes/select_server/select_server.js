@@ -29,7 +29,7 @@ class SelectServer extends Component {
         Client.setUrl(this.props.serverUrl);
 
         this.props.actions.getPing().then(() => {
-            if (this.props.ping.status === RequestStatus.SUCCEEDED) {
+            if (this.props.ping.status === RequestStatus.SUCCESS) {
                 Routes.goToLogin();
             }
         });

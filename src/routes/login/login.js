@@ -75,7 +75,7 @@ class Login extends Component {
     }
 
     render() {
-        if (this.props.clientConfig.status !== RequestStatus.SUCCEEDED) {
+        if (this.props.clientConfig.status !== RequestStatus.SUCCESS) {
             return <Loading/>;
         }
 

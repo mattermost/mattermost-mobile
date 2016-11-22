@@ -5,7 +5,7 @@ import RequestStatus from 'constants/request_status';
 
 export function initialState() {
     return {
-        status: RequestStatus.UNSENT,
+        status: RequestStatus.NOT_STARTED,
         data: {},
         error: null
     };
@@ -15,18 +15,18 @@ export function handle(REQUEST, SUCCESS, FAILURE, state, action) {
     switch (action.type) {
     case REQUEST:
         return {
-            status: RequestStatus.IN_PROGRESS,
+            status: RequestStatus.STARTED,
             ...state
         };
     case SUCCESS:
         return {
-            status: RequestStatus.SUCCEEDED,
+            status: RequestStatus.SUCCESS,
             data: action.data,
             error: null
         };
     case FAILURE:
         return {
-            status: RequestStatus.FAILED,
+            status: RequestStatus.FAILURE,
             ...state,
             error: action.error
         };
