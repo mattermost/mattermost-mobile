@@ -9,6 +9,27 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
 
 # Detailed configuration:
 
+## Mac
+
+- General requirements
+
+    - XCode 8.1
+    - Install watchman
+        $ brew install watchman
+
+- Clone repository and configure:
+    ```bash
+    $ git clone git@github.com:mattermost/mattermost-mobile.git
+    $ cd mattermost-mobile
+    $ npm install
+    $ npm install -g react-native-cli
+    ```
+
+- Run application
+    ```bash
+    $ make run
+    ```
+
 ## Linux:
 
 - General requiriments:
@@ -18,20 +39,26 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
   - Virtualbox
   - An Android emulator: Genymotion or Android emulator. If using genymotion ensure that it uses existing adb tools (Settings: "Use custom Android SDK Tools")
   - Install watchman (do this globally):
+      ```bash
       $ git clone https://github.com/facebook/watchman.git
       $ cd watchman
       $ git checkout master
       $ ./autogen.sh
       $ ./configure make
       $ sudo make install
+      ```
       Configure your kernel to accept a lot of file watches, using a command like:
+      ```bash
       $ sudo sysctl -w fs.inotify.max_user_watches=1048576
+      ```
 
 - Clone repository and configure:
-    $ git clone git@github.com:mattermost/mattermost-mobile.git
+    ```bash
+    $ git clone git@github.com:mattermost/mattermost-mobile.git
     $ cd mattermost-mobile
     $ npm install
     $ npm install -g react-native-cli
+    ```
 
   - Add or edit file `src/config/config.secret.json` and add the url to the Mattermost server that you will use to develop:
     `{
@@ -39,9 +66,9 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
     }`
 
     To use a local Mattermost server you will need to configure the "DefaultServerUrl" depending on the emulator you will use:
-      IOs:        "DefaultServerUrl": "http://localhost:8065"
-      Android:    "DefaultServerUrl": "http://10.0.2.2:3000"
-      Genymotion: "DefaultServerUrl": "http://10.0.3.2:8065"
+      * IOs:        "DefaultServerUrl": "http://localhost:8065"
+      * Android:    "DefaultServerUrl": "http://10.0.2.2:3000"
+      * Genymotion: "DefaultServerUrl": "http://10.0.3.2:8065"
 
 - Run application
   - Start emulator
