@@ -14,17 +14,16 @@ import logo from 'images/logo.png';
 
 import {injectIntl, intlShape} from 'react-intl';
 
+import RequestStatus from 'constants/request_status';
+
 class Login extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         clientConfig: PropTypes.object.isRequired,
         login: PropTypes.object.isRequired,
-        actions: PropTypes.object.isRequired
-    };
-
-    state = {
-        loginId: '',
-        password: ''
+        actions: PropTypes.object.isRequired,
+        loginId: PropTypes.string.isRequired,
+        password: PropTypes.string.isRequired
     };
 
     componentWillMount() {
@@ -39,14 +38,13 @@ class Login extends Component {
 
     signIn = () => {
         if (this.props.login.status !== 'fetching') {
-            const {loginId, password} = this.state;
-            this.props.actions.login(loginId, password);
+            this.props.actions.login(this.props.loginId, this.props.password);
         }
     }
 
     createLoginPlaceholder() {
         const {formatMessage} = this.props.intl;
-        const clientConfig = this.props.clientConfig;
+        const clientConfig = this.props.clientConfig.data;
 
         const loginPlaceholders = [];
         if (clientConfig.EnableSignInWithEmail === 'true') {
@@ -77,7 +75,7 @@ class Login extends Component {
     }
 
     render() {
-        if (this.props.clientConfig.loading || this.props.clientConfig.error) {
+        if (this.props.clientConfig.status !== RequestStatus.SUCCEEDED) {
             return <Loading/>;
         }
 
@@ -97,8 +95,8 @@ class Login extends Component {
                 />
                 <TextInput
                     ref='loginId'
-                    value={this.state.loginId}
-                    onChangeText={(loginId) => this.setState({loginId})}
+                    value={this.props.loginId}
+                    onChangeText={this.props.actions.handleLoginIdChanged}
                     style={GlobalStyles.inputBox}
                     placeholder={this.createLoginPlaceholder()}
                     autoCorrect={false}
@@ -106,8 +104,8 @@ class Login extends Component {
                     underlineColorAndroid='transparent'
                 />
                 <TextInput
-                    value={this.state.password}
-                    onChangeText={(password) => this.setState({password})}
+                    value={this.props.password}
+                    onChangeText={this.props.actions.handlePasswordChanged}
                     style={GlobalStyles.inputBox}
                     placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                     secureTextEntry={true}

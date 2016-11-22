@@ -4,3 +4,8 @@
 export const SelectServerActions = {
     SERVER_URL_CHANGED: 'SelectServer.SERVER_URL_CHANGED'
 };
+
+export const LoginActions = {
+    LOGIN_ID_CHANGED: 'Login.LOGIN_ID_CHANGED',
+    PASSWORD_CHANGED: 'Login.PASSWORD_CHANGED'
+};

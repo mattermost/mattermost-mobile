@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getPing} from 'actions/general';
-import {handleServerUrlChanged} from 'actions/views/select_server';
+import SelectServerActions from 'actions/views/select_server';
 
 import SelectServer from './select_server';
 
@@ -19,8 +19,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getPing,
-            handleServerUrlChanged
+            ...SelectServerActions,
+            getPing
         }, dispatch)
     };
 }

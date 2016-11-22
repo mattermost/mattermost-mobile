@@ -11,3 +11,7 @@ export function handleServerUrlChanged(serverUrl) {
         }, getState);
     };
 }
+
+export default {
+    handleServerUrlChanged
+};
