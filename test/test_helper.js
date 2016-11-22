@@ -111,7 +111,7 @@ class TestHelper {
 
         this.basicTeam = await client.createTeam(this.fakeTeam());
 
-        this.basicChannel = await client.createChannel(this.basicTeam.id, this.fakeChannel(this.basicTeam.id));
+        this.basicChannel = await client.createChannel(this.fakeChannel(this.basicTeam.id));
         this.basicPost = await client.createPost(this.basicTeam.id, this.fakePost(this.basicChannel.id));
 
         return {

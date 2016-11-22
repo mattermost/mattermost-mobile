@@ -212,9 +212,9 @@ export default class Client {
 
     // Channel routes
 
-    createChannel = async (teamId, channel) => {
+    createChannel = async (channel) => {
         return this.doFetch(
-            `${this.getChannelsRoute()}/create`,
+            `${this.getChannelsRoute(channel.team_id)}/create`,
             {method: 'post', body: JSON.stringify(channel)}
         );
     }

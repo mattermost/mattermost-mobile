@@ -10,7 +10,7 @@ describe('Client.Channel', () => {
         const {client, team} = await TestHelper.initBasic();
         const channel = TestHelper.fakeChannel(team.id);
 
-        const rchannel = await client.createChannel(team.id, channel);
+        const rchannel = await client.createChannel(channel);
 
         assert.ok(rchannel.id, 'id is empty');
         assert.equal(rchannel.name, channel.name, 'name doesn\'t match');
