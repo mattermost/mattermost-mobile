@@ -2,7 +2,7 @@
 
 This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is not yet stable, and the instructions are for internal use currently (i.e. probably out-of-date until we stablize). 
 
-We'll post an announcements to our [Forums](http://forum.mattermost.org/) and [Twitter](https://twitter.com/mattermosthq) when we're ready to bring in more community contributors. 
+We'll post updates to our [Forums](http://forum.mattermost.org/) and [Twitter](https://twitter.com/mattermosthq) when we're ready to bring in more community contributors. 
 
 [Our early roadmap was discussed on the Mattermost forums in October 2016](http://forum.mattermost.org/t/roadmap-for-next-generation-mobile-apps-in-react-native/2339) and we'll have more updates as the project evolves. Priorities are shifting so please only use the dates in the post as a highly approximate guide. 
 
