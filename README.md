@@ -1,4 +1,4 @@
-# Mattermost Mobile (un-released) 
+# Mattermost Mobile (unreleased) 
 
 This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is not yet stable, and the instructions are for internal use currently (i.e. probably out-of-date until we stablize). 
 
