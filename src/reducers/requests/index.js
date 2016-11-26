@@ -3,14 +3,14 @@
 
 import {combineReducers} from 'redux';
 
-import login from './login';
-import selectServer from './select_server';
-import device from './device';
-import i18n from './i18n';
+import general from './general';
+import channels from './channels';
+import users from './users';
+import teams from './teams';
 
 export default combineReducers({
-    device,
-    i18n,
-    login,
-    selectServer
+    general,
+    channels,
+    users,
+    teams
 });

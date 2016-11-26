@@ -46,6 +46,10 @@ export default class Client {
         return `${this.url}${this.urlVersion}/teams`;
     }
 
+    getPreferencesRoute() {
+        return `${this.url}${this.urlVersion}/preferences`;
+    }
+
     getTeamNeededRoute(teamId) {
         return `${this.url}${this.urlVersion}/teams/${teamId}`;
     }
@@ -120,14 +124,21 @@ export default class Client {
             `${this.getGeneralRoute()}/client_props`,
             {method: 'get'}
         );
-    }
+    };
+
+    getLicenseConfig = async () => {
+        return this.doFetch(
+            `${this.getLicenseRoute()}/client_config`,
+            {method: 'get'}
+        );
+    };
 
     getPing = async () => {
         return this.doFetch(
             `${this.getGeneralRoute()}/ping`,
             {method: 'get'}
         );
-    }
+    };
 
     logClientError = async (message, level = 'ERROR') => {
         const body = {
@@ -139,7 +150,7 @@ export default class Client {
             `${this.getGeneralRoute()}/log_client`,
             {method: 'post', body}
         );
-    }
+    };
 
     // User routes
 
@@ -148,7 +159,7 @@ export default class Client {
             `${this.getUsersRoute()}/create`,
             {method: 'post', body: JSON.stringify(user)}
         );
-    }
+    };
 
     login = async (loginId, password, token = '') => {
         const body = {
@@ -167,7 +178,7 @@ export default class Client {
         }
 
         return data;
-    }
+    };
 
     logout = async () => {
         const {response} = await this.doFetchWithResponse(
@@ -178,14 +189,21 @@ export default class Client {
             this.token = '';
         }
         return response;
-    }
+    };
+
+    getMyPreferences = async () => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/`,
+            {method: 'get'}
+        );
+    };
 
     getInitialLoad = async () => {
         return this.doFetch(
             `${this.getUsersRoute()}/initial_load`,
             {method: 'get'}
         );
-    }
+    };
 
     // Team routes
 
@@ -194,21 +212,28 @@ export default class Client {
             `${this.getTeamsRoute()}/create`,
             {method: 'post', body: JSON.stringify(team)}
         );
-    }
+    };
 
     getAllTeams = async() => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all`,
             {method: 'get'}
         );
-    }
+    };
+
+    getMyTeamMembers = async() => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/members`,
+            {method: 'get'}
+        );
+    };
 
     getAllTeamListings = async () => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all_team_listings`,
             {method: 'get'}
         );
-    }
+    };
 
     // Channel routes
 
@@ -217,21 +242,21 @@ export default class Client {
             `${this.getChannelsRoute(channel.team_id)}/create`,
             {method: 'post', body: JSON.stringify(channel)}
         );
-    }
+    };
 
     getChannels = async (teamId) => {
         return this.doFetch(
             `${this.getChannelsRoute(teamId)}/`,
             {method: 'get'}
         );
-    }
+    };
 
     getMyChannelMembers = async (teamId) => {
         return this.doFetch(
             `${this.getChannelsRoute(teamId)}/members`,
             {method: 'get'}
         );
-    }
+    };
 
     // Post routes
     fetchPosts = (teamId, channelId, onRequest, onSuccess, onFailure) => {
@@ -242,20 +267,20 @@ export default class Client {
             onSuccess,
             onFailure
         );
-    }
+    };
 
     createPost = async (teamId, post) => {
         return this.doFetch(
             `${this.getPostsRoute(teamId, post.channel_id)}/create`,
             {method: 'post', body: JSON.stringify(post)}
         );
-    }
+    };
 
     doFetch = async (url, options) => {
         const {data} = await this.doFetchWithResponse(url, options);
 
         return data;
-    }
+    };
 
     doFetchWithResponse = async (url, options) => {
         const response = await fetch(url, this.getOptions(options));

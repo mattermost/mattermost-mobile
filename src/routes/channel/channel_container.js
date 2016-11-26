@@ -7,18 +7,17 @@ import {fetchMyChannelsAndMembers} from 'actions/channels.js';
 import Channel from './channel.js';
 
 function mapStateToProps(state, ownProps) {
-    const currentTeamId = ownProps.currentTeamId;
-    const currentTeam = state.entities.teams.data[currentTeamId];
+    const currentTeamId = state.entities.teams.currentId;
+    const currentTeam = state.entities.teams.teams[currentTeamId];
+    let channels = state.entities.channels.channels;
 
     let currentChannel;
     if (ownProps.currentChannelId) {
-        currentChannel = state.entities.channel.channels[ownProps.currentChannelId];
+        currentChannel = state.entities.channels.channels[ownProps.currentChannelId];
     } else {
         // TODO figure out the town square id before this
-        const channelIds = state.entities.channel.channelIdsByTeamId[currentTeamId] || {};
-
-        for (const channelId of Object.keys(channelIds)) {
-            const channel = state.entities.channel.channels[channelId];
+        for (const channelId of Object.keys(channels)) {
+            const channel = channels[channelId];
 
             if (channel.name === 'town-square') {
                 currentChannel = channel;
@@ -27,8 +26,7 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
-    const channelIdsForTeam = state.entities.channel.channelIdsByTeamId[currentTeamId] || {};
-    const channels = Object.keys(channelIdsForTeam).map((channelId) => state.entities.channel.channels[channelId]);
+    channels = Object.keys(channels).map((channelId) => channels[channelId]);
 
     return {
         ...ownProps,

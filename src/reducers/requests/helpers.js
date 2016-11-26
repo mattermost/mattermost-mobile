@@ -1,17 +1,14 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import RequestStatus from 'constants/request_status';
+import {RequestStatus} from 'constants';
 
-export function initialState() {
-    return {
-        status: RequestStatus.NOT_STARTED,
-        data: {},
-        error: null
-    };
-}
+export const initialRequestState = {
+    status: RequestStatus.NOT_STARTED,
+    error: null
+};
 
-export function handle(REQUEST, SUCCESS, FAILURE, state, action) {
+export function handleRequest(REQUEST, SUCCESS, FAILURE, state, action) {
     switch (action.type) {
     case REQUEST:
         return {

@@ -6,7 +6,7 @@ import {View, TextInput, Image} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {Actions as Routes} from 'react-native-router-flux';
 
-import Client from 'client/client_instance.js';
+import Client from 'client';
 import Button from 'components/button';
 import ErrorText from 'components/error_text';
 import FormattedText from 'components/formatted_text';
@@ -21,19 +21,19 @@ class SelectServer extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         serverUrl: React.PropTypes.string.isRequired,
-        ping: React.PropTypes.object.isRequired,
+        server: React.PropTypes.object.isRequired,
         actions: React.PropTypes.object.isRequired
-    }
+    };
 
     onClick = () => {
         Client.setUrl(this.props.serverUrl);
 
         this.props.actions.getPing().then(() => {
-            if (this.props.ping.status === RequestStatus.SUCCESS) {
+            if (this.props.server.status === RequestStatus.SUCCESS) {
                 Routes.goToLogin();
             }
         });
-    }
+    };
 
     render() {
         const {formatMessage} = this.props.intl;
@@ -63,14 +63,14 @@ class SelectServer extends Component {
                 />
                 <Button
                     onPress={this.onClick}
-                    loading={this.props.ping.loading}
+                    loading={this.props.server.loading}
                 >
                     <FormattedText
                         id='mobile.components.select_server_view.proceed'
                         defaultMessage='Proceed'
                     />
                 </Button>
-                <ErrorText error={this.props.ping.error}/>
+                <ErrorText error={this.props.server.error}/>
                 <KeyboardSpacer/>
             </View>
         );

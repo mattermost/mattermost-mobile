@@ -73,7 +73,7 @@ class TestHelper {
             email: this.fakeEmail(),
             allowed_domains: ''
         };
-    }
+    };
 
     fakeChannel = (teamId) => {
         const name = this.generateId();
@@ -84,7 +84,7 @@ class TestHelper {
             display_name: `Unit Test ${name}`,
             type: 'O'
         };
-    }
+    };
 
     fakeChannelMember = (userId, channelId) => {
         return {
@@ -93,14 +93,14 @@ class TestHelper {
             notify_props: {},
             roles: 'system_user'
         };
-    }
+    };
 
     fakePost = (channelId) => {
         return {
             channel_id: channelId,
             message: `Unit Test ${this.generateId()}`
         };
-    }
+    };
 
     initBasic = async (client = this.createClient()) => {
         client.setUrl(Config.DefaultServerUrl);

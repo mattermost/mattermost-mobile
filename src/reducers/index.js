@@ -3,21 +3,12 @@
 
 import {combineReducers} from 'redux';
 
-import channel from './channel.js';
-import general from './general.js';
-import teams from './teams.js';
-import posts from './posts.js';
-
-import views from './views/index.js';
-
-const entities = combineReducers({
-    channel,
-    general,
-    teams,
-    posts
-});
+import entities from './entities';
+import requests from './requests';
+import views from './views';
 
 export default combineReducers({
     entities,
+    requests,
     views
 });

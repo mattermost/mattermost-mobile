@@ -3,13 +3,13 @@
 
 import {combineReducers} from 'redux';
 
-import Config from 'config/config';
+import Config from 'config/index';
 
-import {SelectServerActions} from 'constants/view_actions';
+import {GeneralTypes} from 'constants';
 
 function serverUrl(state = Config.DefaultServerUrl, action) {
     switch (action.type) {
-    case SelectServerActions.SERVER_URL_CHANGED:
+    case GeneralTypes.SERVER_URL_CHANGED:
         return action.serverUrl;
 
     default:

@@ -12,7 +12,7 @@ import SelectServer from './select_server';
 function mapStateToProps(state) {
     return {
         ...state.views.selectServer,
-        ping: state.entities.general.ping
+        server: state.requests.general.server
     };
 }
 

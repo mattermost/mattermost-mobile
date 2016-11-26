@@ -9,14 +9,14 @@ import SelectServerContainer from './select_server/select_server_container.js';
 import SelectTeamContainer from './select_team/select_team_container.js';
 import ChannelContainer from './channel/channel_container.js';
 import Logout from 'components/logout';
-import * as logout from 'actions/logout';
+import {logout} from 'actions/users';
 
 import {injectIntl, intlShape} from 'react-intl';
 
 class Routes extends Component {
     static propTypes = {
         intl: intlShape.isRequired
-    }
+    };
 
     render() {
         const {formatMessage} = this.props.intl;

@@ -2,33 +2,31 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
+import {GeneralTypes, UsersTypes} from 'constants';
 
-import {UsersTypes} from 'constants';
-
-
-function loginId(state = '', action) {
+function config(state = {}, action) {
     switch (action.type) {
-    case UsersTypes.LOGIN_ID_CHANGED:
-        return action.loginId;
+    case GeneralTypes.CLIENT_CONFIG_RECEIVED:
+        return Object.assign({}, state, action.data);
     case UsersTypes.LOGOUT_SUCCESS:
-        return '';
+        return {};
     default:
         return state;
     }
 }
 
-function password(state = '', action) {
+function license(state = {}, action) {
     switch (action.type) {
-    case UsersTypes.PASSWORD_CHANGED:
-        return action.password;
+    case GeneralTypes.CLIENT_LICENSE_RECEIVED:
+        return Object.assign({}, state, action.data);
     case UsersTypes.LOGOUT_SUCCESS:
-        return '';
+        return {};
     default:
         return state;
     }
 }
 
 export default combineReducers({
-    loginId,
-    password
+    config,
+    license
 });

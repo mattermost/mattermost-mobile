@@ -2,15 +2,15 @@
 // See License.txt for license information.
 
 import {bindClientFunc} from './helpers.js';
-import Client from 'client/client_instance';
-import {PostsTypes as types} from 'constants';
+import Client from 'client';
+import {PostsTypes} from 'constants';
 
 export function fetchPosts(teamId, channelId) {
     return bindClientFunc(
         Client.fetchPosts,
-        types.FETCH_POSTS_REQUEST,
-        types.FETCH_POSTS_SUCCESS,
-        types.FETCH_POSTS_FAILURE,
+        PostsTypes.FETCH_POSTS_REQUEST,
+        PostsTypes.FETCH_POSTS_SUCCESS,
+        PostsTypes.FETCH_POSTS_FAILURE,
         teamId,
         channelId
     );

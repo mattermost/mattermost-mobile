@@ -17,7 +17,7 @@ export default class Channel extends React.Component {
         currentTeam: React.PropTypes.object.isRequired,
         currentChannel: React.PropTypes.object,
         channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired
-    }
+    };
 
     constructor(props) {
         super(props);

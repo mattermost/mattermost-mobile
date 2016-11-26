@@ -2,11 +2,11 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {handle, initialState} from './helpers';
 import {GeneralTypes} from 'constants';
+import {handleRequest, initialRequestState} from './helpers';
 
-function ping(state = initialState(), action) {
-    return handle(
+function server(state = initialRequestState, action) {
+    return handleRequest(
         GeneralTypes.PING_REQUEST,
         GeneralTypes.PING_SUCCESS,
         GeneralTypes.PING_FAILURE,
@@ -15,8 +15,8 @@ function ping(state = initialState(), action) {
     );
 }
 
-function clientConfig(state = initialState(), action) {
-    return handle(
+function config(state = initialRequestState, action) {
+    return handleRequest(
         GeneralTypes.CLIENT_CONFIG_REQUEST,
         GeneralTypes.CLIENT_CONFIG_SUCCESS,
         GeneralTypes.CLIENT_CONFIG_FAILURE,
@@ -25,7 +25,18 @@ function clientConfig(state = initialState(), action) {
     );
 }
 
+function license(state = initialRequestState, action) {
+    return handleRequest(
+        GeneralTypes.CLIENT_LICENSE_REQUEST,
+        GeneralTypes.CLIENT_LICENSE_SUCCESS,
+        GeneralTypes.CLIENT_LICENSE_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
-    ping,
-    clientConfig
+    server,
+    config,
+    license
 });

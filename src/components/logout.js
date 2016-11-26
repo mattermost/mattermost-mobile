@@ -3,7 +3,8 @@
 
 import React, {Component, PropTypes} from 'react';
 import {TouchableHighlight, Text} from 'react-native';
-import * as logoutActions from 'actions/logout';
+import {logout} from 'actions/users';
+import {RequestStatus} from 'constants';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {Actions as Routes} from 'react-native-router-flux';
@@ -17,8 +18,8 @@ class Logout extends Component {
     static propTypes = propTypes;
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.logout.status === 'fetching' &&
-          nextProps.logout.status === 'fetched') {
+        if (this.props.logout.status === RequestStatus.STARTED &&
+          nextProps.logout.status === RequestStatus.SUCCESS) {
             Routes.popTo('goToSelectServer');
         }
     }
@@ -36,13 +37,13 @@ class Logout extends Component {
 
 function mapStateToProps(state) {
     return {
-        logout: state.views.logout
+        logout: state.requests.users.logout
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(logoutActions, dispatch)
+        actions: bindActionCreators({logout}, dispatch)
     };
 }
 
