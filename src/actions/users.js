@@ -4,7 +4,10 @@
 import {batchActions} from 'redux-batched-actions';
 
 import Client from 'client';
-import {UsersTypes, TeamsTypes} from 'constants';
+
+// TODO: uncomment when PLT-4167 is merged
+// import {UsersTypes, TeamsTypes} from 'constants';
+import {UsersTypes} from 'constants';
 import {bindClientFunc} from 'actions/helpers';
 
 export function login(loginId, password, mfaToken = '') {
@@ -12,7 +15,7 @@ export function login(loginId, password, mfaToken = '') {
         dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
         Client.login(loginId, password, mfaToken).
         then(async (data) => {
-            try{
+            try {
                 const preferences = Client.getMyPreferences();
 
                 // TODO: uncomment when PLT-4167 is merged
@@ -26,6 +29,7 @@ export function login(loginId, password, mfaToken = '') {
                         type: UsersTypes.RECEIVED_PREFERENCES,
                         data: await preferences
                     },
+
                     // TODO: uncomment when PLT-4167 is merged
                     // {
                     //     type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,

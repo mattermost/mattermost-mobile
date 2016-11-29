@@ -2,8 +2,8 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import Client from 'client/client.js';
-import Config from 'config/config.js';
+import Client from 'client/client';
+import Config from 'config';
 
 const PASSWORD = 'password1';
 

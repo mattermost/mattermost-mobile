@@ -29,7 +29,7 @@ describe('Actions.Channels', () => {
                     assert.equal(Object.keys(channels).length, Object.keys(members).length);
                     done();
                 } else if (channelsRequest.status === RequestStatus.FAILURE && membersRequest.status === RequestStatus.FAILURE) {
-                    return done(new Error(channelsRequest.error));
+                    done(new Error(channelsRequest.error));
                 }
             });
 

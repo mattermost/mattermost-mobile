@@ -5,7 +5,6 @@ import {combineReducers} from 'redux';
 
 import {UsersTypes} from 'constants';
 
-
 function loginId(state = '', action) {
     switch (action.type) {
     case UsersTypes.LOGIN_ID_CHANGED:

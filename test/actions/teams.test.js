@@ -20,12 +20,12 @@ describe('Actions.Teams', () => {
 
                 if (teamsRequest.status === RequestStatus.SUCCESS || teamsRequest.status === RequestStatus.FAILURE) {
                     if (teamsRequest.error) {
-                        return done(new Error(teamsRequest.error));
+                        done(new Error(teamsRequest.error));
+                    } else {
+                        assert.ok(teams);
+                        assert.ok(teams[TestHelper.basicTeam.id]);
+                        done();
                     }
-
-                    assert.ok(teams);
-                    assert.ok(teams[TestHelper.basicTeam.id]);
-                    done();
                 }
             });
 

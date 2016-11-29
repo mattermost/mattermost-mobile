@@ -9,20 +9,20 @@ import {combineReducers} from 'redux';
 function login(state = initialRequestState, action) {
     switch (action.type) {
     case UsersTypes.LOGIN_REQUEST:
-        state = {...state, status: RequestStatus.STARTED};
-        break;
-    case UsersTypes.LOGIN_SUCCESS:
-        state = {...state, status: RequestStatus.SUCCESS, error: null};
-        break;
-    case UsersTypes.LOGIN_FAILURE:
-        state = {...state, status: RequestStatus.FAILURE, error: action.error};
-        break;
-    case UsersTypes.LOGOUT_SUCCESS:
-        state = {...state, status: RequestStatus.NOT_STARTED, error: null};
-        break;
-    }
+        return {...state, status: RequestStatus.STARTED};
 
-    return state;
+    case UsersTypes.LOGIN_SUCCESS:
+        return {...state, status: RequestStatus.SUCCESS, error: null};
+
+    case UsersTypes.LOGIN_FAILURE:
+        return {...state, status: RequestStatus.FAILURE, error: action.error};
+
+    case UsersTypes.LOGOUT_SUCCESS:
+        return {...state, status: RequestStatus.NOT_STARTED, error: null};
+
+    default:
+        return state;
+    }
 }
 
 function logout(state = initialRequestState, action) {

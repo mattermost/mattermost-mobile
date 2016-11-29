@@ -1,19 +1,18 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-
 import {combineReducers} from 'redux';
 
 import {UsersTypes} from 'constants';
 
 function currentId(state = '', action) {
-    switch(action.type) {
+    switch (action.type) {
     case UsersTypes.RECEIVED_ME:
         return action.data.id;
-        break;
+
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
-        break;
+
     }
 
     return state;
@@ -55,7 +54,7 @@ function myAudits(state = [], action) {
 
 function profiles(state = {}, action) {
     let nextState = {...state};
-    switch(action.type) {
+    switch (action.type) {
     case UsersTypes.RECEIVED_ME:
         nextState[action.data.id] = action.data;
         break;
@@ -104,6 +103,7 @@ function statuses(state = {}, action) {
 }
 
 export default combineReducers({
+
     // the current selected user
     currentId,
 

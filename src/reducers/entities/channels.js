@@ -50,8 +50,8 @@ function myMembers(state = {}, action) {
     case ChannelTypes.RECEIVED_MY_CHANNNEL_MEMBERS:
         const nextState = {...state};
 
-        for (const channelMember of action.channelMembers) {
-            nextState[channelMember.channel_id] = channelMember;
+        for (const cm of action.channelMembers) {
+            nextState[cm.channel_id] = cm;
         }
 
         return nextState;
@@ -82,6 +82,7 @@ function stats(state = {}, action) {
 }
 
 export default combineReducers({
+
     // the current selected channel
     currentId,
 

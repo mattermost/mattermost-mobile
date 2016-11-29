@@ -8,15 +8,15 @@ import configureStore from 'store/configureStore';
 
 describe('Actions.Views.Login', () => {
     it('handleLoginIdChanged', (done) => {
-            const store = configureStore();
+        const store = configureStore();
 
-            store.subscribe(() => {
-                const loginId = store.getState().views.login.loginId;
-                assert.equal('email@example.com', loginId);
-                done();
-            });
+        store.subscribe(() => {
+            const loginId = store.getState().views.login.loginId;
+            assert.equal('email@example.com', loginId);
+            done();
+        });
 
-            Actions.handleLoginIdChanged('email@example.com')(store.dispatch, store.getState);
+        Actions.handleLoginIdChanged('email@example.com')(store.dispatch, store.getState);
     });
 
     it('handlePasswordChanged', (done) => {

@@ -27,7 +27,6 @@ function postsInfo(state = {}, action) {
     switch (action.type) {
     case PostsTypes.FETCH_POSTS_SUCCESS:
         return PostUtils.addPosts(state, action);
-        break;
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -45,6 +44,7 @@ function latestPageTime(state = {}, action) {
 }
 
 export default combineReducers({
+
     // the current selected post
     selectedPostId,
 

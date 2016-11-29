@@ -35,7 +35,7 @@ function myMembers(state = {}, action) {
         return nextState;
     case TeamsTypes.LEAVE_TEAM:
         const data = action.data;
-        Reflect.deleteProperty(nexState, data.team_id);
+        Reflect.deleteProperty(nextState, data.team_id);
         return nextState;
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
@@ -73,6 +73,7 @@ function openTeamIds(state = new Set(), action) {
 }
 
 export default combineReducers({
+
     // the current selected team
     currentId,
 
