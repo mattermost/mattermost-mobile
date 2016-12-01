@@ -5,13 +5,17 @@ import React from 'react';
 import {Provider} from 'react-redux';
 
 import store from 'store';
-import RootContainer from 'containers/root_container.js';
+
+import Router from 'navigation/router';
+import RootLayout from 'layouts/root_layout/root_layout_container';
 
 export default class Mattermost extends React.Component {
     render() {
         return (
             <Provider store={store}>
-                <RootContainer/>
+                <RootLayout>
+                    <Router/>
+                </RootLayout>
             </Provider>
         );
     }
