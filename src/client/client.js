@@ -198,6 +198,69 @@ export default class Client {
         );
     };
 
+    getProfiles = async (offset, limit) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getProfilesByIds = async (userIds) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/ids`,
+            {method: 'post', body: JSON.stringify(userIds)}
+        );
+    };
+
+    getProfilesInTeam = async (teamId, offset, limit) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(teamId)}/users/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getProfilesInChannel = async (teamId, channelId, offset, limit) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/users/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getProfilesNotInChannel = async (teamId, channelId, offset, limit) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/users/not_in_channel/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getStatusesByIds = async (userIds) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/status/ids`,
+            {method: 'post', body: JSON.stringify(userIds)}
+        );
+    };
+
+    getSessions = async (userId) => {
+        return this.doFetch(
+            `${this.getUserNeededRoute(userId)}/sessions`,
+            {method: 'get'}
+        );
+    };
+
+    revokeSession = async (id) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/revoke_session`,
+            {method: 'post', body: JSON.stringify({id})}
+        );
+    };
+
+    getAudits = async (userId) => {
+        return this.doFetch(
+            `${this.getUserNeededRoute(userId)}/audits`,
+            {method: 'get'}
+        );
+    };
+
     getInitialLoad = async () => {
         return this.doFetch(
             `${this.getUsersRoute()}/initial_load`,
@@ -313,6 +376,6 @@ export default class Client {
             console.error(msg); // eslint-disable-line no-console
         }
 
-        throw new Error(msg);
-    }
+        throw {message: msg, status_code: data.status_code, url};
+    };
 }

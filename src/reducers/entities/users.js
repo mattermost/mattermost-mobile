@@ -2,8 +2,8 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-
 import {UsersTypes} from 'constants';
+import {profilesToSet} from 'utils/users';
 
 function currentId(state = '', action) {
     switch (action.type) {
@@ -36,8 +36,24 @@ function myPreferences(state = {}, action) {
 
 function mySessions(state = [], action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_SESSIONS:
+        return [].concat(...action.data);
+    case UsersTypes.RECEIVED_REVOKED_SESSION:
+        let index = -1;
+        const length = state.length;
+        for (let i = 0; i < length; i++) {
+            if (state[i].id === action.data.id) {
+                index = i;
+                break;
+            }
+        }
+        if (index > -1) {
+            return state.slice(0, index).concat(state.slice(index + 1));
+        }
+
+        return [].concat(...action.data);
     case UsersTypes.LOGOUT_SUCCESS:
-        return [];
+        return state.slice(state.length + 1).concat([]);
     default:
         return state;
     }
@@ -45,49 +61,63 @@ function mySessions(state = [], action) {
 
 function myAudits(state = [], action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_AUDITS:
+        return [].concat(...action.data);
     case UsersTypes.LOGOUT_SUCCESS:
-        return [];
+        return state.slice(state.length + 1).concat([]);
     default:
         return state;
     }
 }
 
-function profiles(state = {}, action) {
-    let nextState = {...state};
+function profiles(state = {items: {}, offset: 0, count: 0}, action) {
+    const nextState = {...state};
     switch (action.type) {
     case UsersTypes.RECEIVED_ME:
-        nextState[action.data.id] = action.data;
+        nextState.items[action.data.id] = action.data;
+        break;
+    case UsersTypes.RECEIVED_PROFILES:
+        if (action.offset != null && action.count != null) {
+            nextState.offset = action.offset + action.count;
+            nextState.count += action.count;
+        }
+        nextState.items = Object.assign({}, nextState.items, action.data);
         break;
     case UsersTypes.LOGOUT_SUCCESS:
-        nextState = {};
-        break;
+        return {...state, items: {}, offset: 0, count: 0};
     }
 
     return nextState;
 }
 
-function profilesInTeam(state = {}, action) {
+function profilesInTeam(state = {items: new Set(), offset: 0, count: 0}, action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_PROFILES_IN_TEAM:
+        return profilesToSet(state, action);
     case UsersTypes.LOGOUT_SUCCESS:
-        return {};
+        return {...state, items: new Set(), offset: 0, count: 0};
     default:
         return state;
     }
 }
 
-function profilesInChannel(state = {}, action) {
+function profilesInChannel(state = {items: new Set(), offset: 0, count: 0}, action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_PROFILES_IN_CHANNEL:
+        return profilesToSet(state, action);
     case UsersTypes.LOGOUT_SUCCESS:
-        return {};
+        return {...state, items: new Set(), offset: 0, count: 0};
     default:
         return state;
     }
 }
 
-function profilesNotInChannel(state = {}, action) {
+function profilesNotInChannel(state = {items: new Set(), offset: 0, count: 0}, action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_PROFILES_NOT_IN_CHANNEL:
+        return profilesToSet(state, action);
     case UsersTypes.LOGOUT_SUCCESS:
-        return {};
+        return {...state, items: new Set(), offset: 0, count: 0};
     default:
         return state;
     }
@@ -95,6 +125,9 @@ function profilesNotInChannel(state = {}, action) {
 
 function statuses(state = {}, action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_STATUSES:
+        const nextState = {...state};
+        return Object.assign({}, nextState, action.data);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -116,16 +149,20 @@ export default combineReducers({
     // array with the user's audits
     myAudits,
 
-    // object where every key is a user id and has an object with the users details
+    // object containing items, count and offset where items is an object where every key is a user id
+    // and has an object with the users details
     profiles,
 
-    // object where every key is the team id and has a Set with the users id that are members of the team
+    // object containing items, count and offset where items is an object where every key is a user id
+    // and has a Set with the users id that are members of the team
     profilesInTeam,
 
-    // object where every key is the channel id and has a Set with the users id that are members of the channel
+    // object containing items, count and offset where items is an object where every key is a user id
+    // and has a Set with the users id that are members of the channel
     profilesInChannel,
 
-    // object where every key is the channel id and has a Set with the users id that are members of the channel
+    // object containing items, count and offset where items is an object where every key is a user id
+    // and has a Set with the users id that are members of the channel
     profilesNotInChannel,
 
     // object where every key is the user id and has a value with the current status of each user

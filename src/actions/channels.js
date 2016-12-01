@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import {ChannelTypes} from 'constants';
+import {forceLogoutIfNecessary} from 'utils/users';
 import {batchActions} from 'redux-batched-actions';
 import Client from 'client';
 
@@ -39,7 +40,7 @@ export function fetchMyChannelsAndMembers(teamId) {
                 }
             ]), getState);
         } catch (error) {
-            // console.error(err); // eslint-disable-line no-console
+            forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {
                     type: ChannelTypes.CHANNELS_FAILURE,

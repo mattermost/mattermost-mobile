@@ -10,7 +10,7 @@ export function getPing() {
         Client.getPing,
         GeneralTypes.PING_REQUEST,
         GeneralTypes.PING_SUCCESS,
-        GeneralTypes.PING_FAILURE,
+        GeneralTypes.PING_FAILURE
     );
 }
 
@@ -19,7 +19,7 @@ export function getClientConfig() {
         Client.getClientConfig,
         GeneralTypes.CLIENT_CONFIG_REQUEST,
         [GeneralTypes.CLIENT_CONFIG_RECEIVED, GeneralTypes.CLIENT_CONFIG_SUCCESS],
-        GeneralTypes.CLIENT_CONFIG_FAILURE,
+        GeneralTypes.CLIENT_CONFIG_FAILURE
     );
 }
 
@@ -28,7 +28,7 @@ export function getLicenseConfig() {
         Client.getLicenseConfig,
         GeneralTypes.CLIENT_LICENSE_REQUEST,
         [GeneralTypes.CLIENT_LICENSE_RECEIVED, GeneralTypes.CLIENT_LICENSE_SUCCESS],
-        GeneralTypes.CLIENT_LICENSE_FAILURE,
+        GeneralTypes.CLIENT_LICENSE_FAILURE
     );
 }
 

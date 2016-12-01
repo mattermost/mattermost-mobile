@@ -84,13 +84,13 @@ describe('Actions.General', () => {
             store.subscribe(() => {
                 const ping = store.getState().requests.general.server;
 
-                if (ping.status !== RequestStatus.STARTED && ping.error) {
+                if (ping.status === RequestStatus.FAILURE && ping.error) {
                     done();
                 }
             });
 
-            Client.setUrl('https://example.com/fake/url');
+            Client.setUrl('https://google.com/fake/url');
             Actions.getPing()(store.dispatch, store.getState);
         });
-    });
+    }).timeout(5000);
 });

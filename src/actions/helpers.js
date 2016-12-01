@@ -1,6 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {forceLogoutIfNecessary} from 'utils/users';
+
 function dispatcher(type, data, dispatch, getState) {
     if (type.indexOf('SUCCESS') === -1) { // we don't want to pass the data for the request types
         dispatch(requestSuccess(type, data), getState);
@@ -43,7 +45,8 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
                 dispatcher(success, data, dispatch, getState);
             }
         } catch (err) {
-            dispatch(requestFailure(failure, err));
+            forceLogoutIfNecessary(err, dispatch);
+            dispatch(requestFailure(failure, err), getState);
         }
     };
 }
