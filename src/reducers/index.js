@@ -6,9 +6,11 @@ import {combineReducers} from 'redux';
 import entities from './entities';
 import requests from './requests';
 import views from './views';
+import navigation from './navigation';
 
 export default combineReducers({
     entities,
     requests,
-    views
+    views,
+    navigation
 });

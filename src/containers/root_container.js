@@ -7,7 +7,7 @@ import Config from 'config';
 import {connect} from 'react-redux';
 import {loadDevice} from 'actions/device';
 import Loading from 'components/loading';
-import Routes from 'routes';
+import Router from 'navigation/router.js';
 
 import {getTranslations} from 'i18n';
 import {IntlProvider} from 'react-intl';
@@ -41,7 +41,7 @@ class RootContainer extends React.Component {
                 locale={locale}
                 messages={getTranslations(locale)}
             >
-                <Routes/>
+                <Router/>
             </IntlProvider>
         );
     }

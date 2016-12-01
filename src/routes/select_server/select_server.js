@@ -4,7 +4,6 @@
 import React, {Component} from 'react';
 import {View, TextInput, Image} from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
-import {Actions as Routes} from 'react-native-router-flux';
 
 import Client from 'client';
 import Button from 'components/button';
@@ -30,7 +29,7 @@ class SelectServer extends Component {
 
         this.props.actions.getPing().then(() => {
             if (this.props.server.status === RequestStatus.SUCCESS) {
-                Routes.goToLogin();
+                this.props.actions.goToLogin();
             }
         });
     };
