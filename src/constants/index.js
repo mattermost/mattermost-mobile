@@ -8,6 +8,8 @@ import GeneralTypes from './general';
 import UsersTypes from './users';
 import TeamsTypes from './teams';
 import PostsTypes from './posts';
+import NavigationTypes from './navigation';
+
 import RequestStatus from './request_status';
 
 export {
@@ -18,5 +20,7 @@ export {
     TeamsTypes,
     ChannelTypes,
     PostsTypes,
+    NavigationTypes,
+
     RequestStatus
 };

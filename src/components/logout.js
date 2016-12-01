@@ -4,10 +4,8 @@
 import React, {Component, PropTypes} from 'react';
 import {TouchableHighlight, Text} from 'react-native';
 import {logout} from 'actions/users';
-import {RequestStatus} from 'constants';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {Actions as Routes} from 'react-native-router-flux';
 
 const propTypes = {
     logout: PropTypes.object.isRequired,
@@ -16,13 +14,6 @@ const propTypes = {
 
 class Logout extends Component {
     static propTypes = propTypes;
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.logout.status === RequestStatus.STARTED &&
-          nextProps.logout.status === RequestStatus.SUCCESS) {
-            Routes.popTo('goToSelectServer');
-        }
-    }
 
     logout = () => this.props.actions.logout();
 
