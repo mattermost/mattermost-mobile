@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 import {UsersTypes} from 'constants';
-import {profilesToSet} from 'utils/users';
+import {profilesToSet, addProfileToSet, removeProfileFromSet} from './helpers';
 
 function currentId(state = '', action) {
     switch (action.type) {
@@ -19,16 +19,23 @@ function currentId(state = '', action) {
 }
 
 function myPreferences(state = {}, action) {
+    const nextState = {...state};
     switch (action.type) {
     case UsersTypes.RECEIVED_PREFERENCES:
         const preferences = action.data;
-        const nextState = {...state};
         for (const p of preferences) {
             nextState[`${p.category}--${p.name}`] = p.value;
         }
         return nextState;
+
+    case UsersTypes.RECEIVED_PREFERENCE:
+        const p = action.data;
+        nextState[`${p.category}--${p.name}`] = p.value;
+        return nextState;
+
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
+
     default:
         return state;
     }
@@ -37,7 +44,8 @@ function myPreferences(state = {}, action) {
 function mySessions(state = [], action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_SESSIONS:
-        return [].concat(...action.data);
+        return [...action.data];
+
     case UsersTypes.RECEIVED_REVOKED_SESSION:
         let index = -1;
         const length = state.length;
@@ -51,9 +59,11 @@ function mySessions(state = [], action) {
             return state.slice(0, index).concat(state.slice(index + 1));
         }
 
-        return [].concat(...action.data);
+        return [...action.data];
+
     case UsersTypes.LOGOUT_SUCCESS:
-        return state.slice(state.length + 1).concat([]);
+        return [];
+
     default:
         return state;
     }
@@ -62,9 +72,11 @@ function mySessions(state = [], action) {
 function myAudits(state = [], action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_AUDITS:
-        return [].concat(...action.data);
+        return [...action.data];
+
     case UsersTypes.LOGOUT_SUCCESS:
-        return state.slice(state.length + 1).concat([]);
+        return [];
+
     default:
         return state;
     }
@@ -75,27 +87,32 @@ function profiles(state = {items: {}, offset: 0, count: 0}, action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_ME:
         nextState.items[action.data.id] = action.data;
-        break;
+        return nextState;
+
     case UsersTypes.RECEIVED_PROFILES:
         if (action.offset != null && action.count != null) {
             nextState.offset = action.offset + action.count;
             nextState.count += action.count;
         }
         nextState.items = Object.assign({}, nextState.items, action.data);
-        break;
+        return nextState;
+
     case UsersTypes.LOGOUT_SUCCESS:
         return {...state, items: {}, offset: 0, count: 0};
-    }
 
-    return nextState;
+    default:
+        return state;
+    }
 }
 
 function profilesInTeam(state = {items: new Set(), offset: 0, count: 0}, action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_PROFILES_IN_TEAM:
         return profilesToSet(state, action);
+
     case UsersTypes.LOGOUT_SUCCESS:
         return {...state, items: new Set(), offset: 0, count: 0};
+
     default:
         return state;
     }
@@ -103,10 +120,18 @@ function profilesInTeam(state = {items: new Set(), offset: 0, count: 0}, action)
 
 function profilesInChannel(state = {items: new Set(), offset: 0, count: 0}, action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_PROFILE_IN_CHANNEL:
+        return addProfileToSet(state, action.user_id);
+
     case UsersTypes.RECEIVED_PROFILES_IN_CHANNEL:
         return profilesToSet(state, action);
+
+    case UsersTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL:
+        return removeProfileFromSet(state, action.user_id);
+
     case UsersTypes.LOGOUT_SUCCESS:
         return {...state, items: new Set(), offset: 0, count: 0};
+
     default:
         return state;
     }
@@ -114,10 +139,18 @@ function profilesInChannel(state = {items: new Set(), offset: 0, count: 0}, acti
 
 function profilesNotInChannel(state = {items: new Set(), offset: 0, count: 0}, action) {
     switch (action.type) {
+    case UsersTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL:
+        return addProfileToSet(state, action.user_id);
+
     case UsersTypes.RECEIVED_PROFILES_NOT_IN_CHANNEL:
         return profilesToSet(state, action);
+
+    case UsersTypes.RECEIVED_PROFILE_IN_CHANNEL:
+        return removeProfileFromSet(state, action.user_id);
+
     case UsersTypes.LOGOUT_SUCCESS:
         return {...state, items: new Set(), offset: 0, count: 0};
+
     default:
         return state;
     }
@@ -128,8 +161,10 @@ function statuses(state = {}, action) {
     case UsersTypes.RECEIVED_STATUSES:
         const nextState = {...state};
         return Object.assign({}, nextState, action.data);
+
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
+
     default:
         return state;
     }

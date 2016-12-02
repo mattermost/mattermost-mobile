@@ -18,7 +18,7 @@ describe('Actions.General', () => {
                 const ping = store.getState().requests.general.server;
 
                 if (ping.error) {
-                    done(new Error(ping.error));
+                    done(new Error(JSON.stringify(ping.error)));
                 } else if (ping.status !== RequestStatus.STARTED) {
                     done();
                 }
@@ -37,7 +37,7 @@ describe('Actions.General', () => {
                 const configRequest = store.getState().requests.general.config;
                 if (configRequest.status === RequestStatus.SUCCESS || configRequest.status === RequestStatus.FAILURE) {
                     if (configRequest.error) {
-                        done(new Error(configRequest.error));
+                        done(new Error(JSON.stringify(configRequest.error)));
                     } else {
                         // Check a few basic fields since they may change over time
                         assert.ok(clientConfig.Version);
@@ -63,7 +63,7 @@ describe('Actions.General', () => {
                 const licenseRequest = store.getState().requests.general.license;
                 if (licenseRequest.status === RequestStatus.SUCCESS || licenseRequest.status === RequestStatus.FAILURE) {
                     if (licenseRequest.error) {
-                        done(new Error(licenseRequest.error));
+                        done(new Error(JSON.stringify(licenseRequest.error)));
                     } else {
                         // Check a few basic fields since they may change over time
                         assert.notStrictEqual(licenseConfig.IsLicensed, undefined);

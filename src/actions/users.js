@@ -8,7 +8,7 @@ import Client from 'client';
 // import {Constants, UsersTypes, TeamsTypes} from 'constants';
 import {Constants, UsersTypes} from 'constants';
 import {bindClientFunc} from 'actions/helpers';
-import {forceLogoutIfNecessary} from 'utils/users';
+import {forceLogoutIfNecessary} from './helpers';
 
 export function login(loginId, password, mfaToken = '') {
     return async (dispatch, getState) => {

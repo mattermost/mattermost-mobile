@@ -1,7 +1,16 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {forceLogoutIfNecessary} from 'utils/users';
+import Client from 'client';
+import {UsersTypes} from 'constants';
+const HTTP_UNAUTHORIZED = 401;
+
+export async function forceLogoutIfNecessary(err, dispatch) {
+    if (err.status_code === HTTP_UNAUTHORIZED && err.url.indexOf('/login') === -1) {
+        await Client.logout();
+        dispatch({type: UsersTypes.LOGOUT_SUCCESS});
+    }
+}
 
 function dispatcher(type, data, dispatch, getState) {
     if (type.indexOf('SUCCESS') === -1) { // we don't want to pass the data for the request types

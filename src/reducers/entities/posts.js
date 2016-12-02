@@ -3,7 +3,7 @@
 
 import {PostsTypes, UsersTypes} from 'constants';
 import {combineReducers} from 'redux';
-import * as PostUtils from 'utils/posts';
+import {addPosts} from './helpers';
 
 function selectedPostId(state = '', action) {
     switch (action.type) {
@@ -26,7 +26,7 @@ function currentFocusedPostId(state = '', action) {
 function postsInfo(state = {}, action) {
     switch (action.type) {
     case PostsTypes.FETCH_POSTS_SUCCESS:
-        return PostUtils.addPosts(state, action);
+        return addPosts(state, action);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:

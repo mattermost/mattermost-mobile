@@ -20,7 +20,7 @@ class TestHelper {
     assertStatusOkay = (data) => {
         assert(data);
         assert(data.status === 'OK');
-    }
+    };
 
     generateId = () => {
         // Implementation taken from http://stackoverflow.com/a/2117523
@@ -40,7 +40,7 @@ class TestHelper {
         });
 
         return 'uid' + id;
-    }
+    };
 
     createClient = () => {
         const client = new Client();
@@ -48,11 +48,11 @@ class TestHelper {
         client.setUrl(Config.DefaultServerUrl);
 
         return client;
-    }
+    };
 
     fakeEmail = () => {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
-    }
+    };
 
     fakeUser = () => {
         return {
@@ -61,17 +61,22 @@ class TestHelper {
             password: PASSWORD,
             username: this.generateId()
         };
-    }
+    };
 
     fakeTeam = () => {
         const name = this.generateId();
+        let inviteId = this.generateId();
+        if (inviteId.length > 32) {
+            inviteId = inviteId.substring(0, 32);
+        }
 
         return {
             name,
             display_name: `Unit Test ${name}`,
             type: 'O',
             email: this.fakeEmail(),
-            allowed_domains: ''
+            allowed_domains: '',
+            invite_id: inviteId
         };
     };
 
@@ -121,7 +126,7 @@ class TestHelper {
             channel: this.basicChannel,
             post: this.basicPost
         };
-    }
+    };
 }
 
 export default new TestHelper();

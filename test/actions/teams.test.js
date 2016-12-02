@@ -20,7 +20,7 @@ describe('Actions.Teams', () => {
 
                 if (teamsRequest.status === RequestStatus.SUCCESS || teamsRequest.status === RequestStatus.FAILURE) {
                     if (teamsRequest.error) {
-                        done(new Error(teamsRequest.error));
+                        done(new Error(JSON.stringify(teamsRequest.error)));
                     } else {
                         assert.ok(teams);
                         assert.ok(teams[TestHelper.basicTeam.id]);

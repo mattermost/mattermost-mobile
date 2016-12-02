@@ -86,3 +86,34 @@ export function addPosts(state, action) {
 
     return newState;
 }
+
+export function profilesToSet(state, action) {
+    const nextState = {...state};
+    if (action.offset != null && action.count != null) {
+        nextState.offset = action.offset + action.count;
+        nextState.count += action.count;
+    }
+
+    nextState.items = new Set(state.items);
+    Object.keys(action.data).forEach((key) => {
+        nextState.items.add(key);
+    });
+
+    return nextState;
+}
+
+export function addProfileToSet(state, profileId) {
+    const nextState = {...state};
+    nextState.items = new Set(state.items);
+    nextState.items.add(profileId);
+
+    return nextState;
+}
+
+export function removeProfileFromSet(state, profileId) {
+    const nextState = {...state};
+    nextState.items = new Set(state.items);
+    nextState.items.delete(profileId);
+
+    return nextState;
+}

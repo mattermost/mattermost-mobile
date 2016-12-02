@@ -25,12 +25,12 @@ describe('Actions.Users', () => {
 
                 if (loginRequest.status === RequestStatus.SUCCESS || loginRequest.status === RequestStatus.FAILURE) {
                     if (loginRequest.error) {
-                        done(new Error(loginRequest.error));
+                        done(new Error(JSON.stringify(loginRequest.error)));
                     } else {
                         assert.ok(currentUserId);
                         assert.ok(profiles);
                         assert.ok(profiles.items[currentUserId]);
-                        assert.ok(preferences);
+                        assert.ok(Object.keys(preferences).length);
 
                         // TODO: uncomment when PLT-4167 is merged
                         // Object.keys(teamMembers).forEach((id) => {
@@ -64,7 +64,7 @@ describe('Actions.Users', () => {
 
                 if (logoutRequest.status === RequestStatus.SUCCESS || logoutRequest.status === RequestStatus.FAILURE) {
                     if (logoutRequest.error) {
-                        done(new Error(logoutRequest.error));
+                        done(new Error(JSON.stringify(logoutRequest.error)));
                     } else {
                         assert.deepStrictEqual(general.config, {}, 'config not empty');
                         assert.deepStrictEqual(general.license, {}, 'license not empty');
@@ -116,7 +116,7 @@ describe('Actions.Users', () => {
 
                 if (profilesRequest.status === RequestStatus.SUCCESS || profilesRequest.status === RequestStatus.FAILURE) {
                     if (profilesRequest.error) {
-                        done(new Error(profilesRequest.error));
+                        done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
                         assert.strictEqual(profiles.offset, 0, 'offset should be 0');
                         assert.strictEqual(profiles.count, 0, 'count should be 0');
@@ -142,7 +142,7 @@ describe('Actions.Users', () => {
 
                 if (profilesRequest.status === RequestStatus.SUCCESS || profilesRequest.status === RequestStatus.FAILURE) {
                     if (profilesRequest.error) {
-                        done(new Error(profilesRequest.error));
+                        done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
                         assert.ok(profilesInTeam.offset > 0, 'offset should be > 0');
                         assert.ok(profilesInTeam.count > 0, 'count should be > 0');
@@ -170,7 +170,7 @@ describe('Actions.Users', () => {
 
                 if (profilesRequest.status === RequestStatus.SUCCESS || profilesRequest.status === RequestStatus.FAILURE) {
                     if (profilesRequest.error) {
-                        done(new Error(profilesRequest.error));
+                        done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
                         assert.ok(profilesInChannel.offset > 0, 'offset should be > 0');
                         assert.ok(profilesInChannel.count > 0, 'count should be > 0');
@@ -198,7 +198,7 @@ describe('Actions.Users', () => {
 
                 if (profilesRequest.status === RequestStatus.SUCCESS || profilesRequest.status === RequestStatus.FAILURE) {
                     if (profilesRequest.error) {
-                        done(new Error(profilesRequest.error));
+                        done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
                         assert.ok(profilesNotInChannel.offset > 0, 'offset should be > 0');
                         assert.ok(profilesNotInChannel.count > 0, 'count should be > 0');
@@ -226,7 +226,7 @@ describe('Actions.Users', () => {
 
                 if (statusesRequest.status === RequestStatus.SUCCESS || statusesRequest.status === RequestStatus.FAILURE) {
                     if (statusesRequest.error) {
-                        done(new Error(statusesRequest.error));
+                        done(new Error(JSON.stringify(statusesRequest.error)));
                     } else {
                         assert.ok(statuses[TestHelper.basicUser.id]);
                         assert.ok(statuses[user.id]);
@@ -250,7 +250,7 @@ describe('Actions.Users', () => {
 
                 if (sessionsRequest.status === RequestStatus.SUCCESS || sessionsRequest.status === RequestStatus.FAILURE) {
                     if (sessionsRequest.error) {
-                        done(new Error(sessionsRequest.error));
+                        done(new Error(JSON.stringify(sessionsRequest.error)));
                     } else {
                         assert.ok(sessions.length);
                         assert.equal(sessions[0].user_id, TestHelper.basicUser.id);
@@ -274,7 +274,7 @@ describe('Actions.Users', () => {
 
                 if (revokeRequest.status === RequestStatus.SUCCESS || revokeRequest.status === RequestStatus.FAILURE) {
                     if (revokeRequest.error) {
-                        done(new Error(revokeRequest.error));
+                        done(new Error(JSON.stringify(revokeRequest.error)));
                     } else {
                         assert.ok(sessions.length === 0);
                         done();
@@ -283,7 +283,7 @@ describe('Actions.Users', () => {
 
                 if (sessionsRequest.status === RequestStatus.SUCCESS || sessionsRequest.status === RequestStatus.FAILURE) {
                     if (sessionsRequest.error) {
-                        done(new Error(sessionsRequest.error));
+                        done(new Error(JSON.stringify(sessionsRequest.error)));
                     } else if (revokeRequest.status === RequestStatus.NOT_STARTED) {
                         Actions.revokeSession(sessions[0].id)(store.dispatch, store.getState);
                     }
@@ -307,7 +307,7 @@ describe('Actions.Users', () => {
 
                 if (logoutRequest.status === RequestStatus.SUCCESS || logoutRequest.status === RequestStatus.FAILURE) {
                     if (logoutRequest.error) {
-                        done(new Error(logoutRequest.error));
+                        done(new Error(JSON.stringify(logoutRequest.error)));
                     } else {
                         done();
                     }
@@ -315,7 +315,7 @@ describe('Actions.Users', () => {
 
                 if (revokeRequest.status === RequestStatus.SUCCESS || revokeRequest.status === RequestStatus.FAILURE) {
                     if (revokeRequest.error) {
-                        done(new Error(revokeRequest.error));
+                        done(new Error(JSON.stringify(revokeRequest.error)));
                     } else if (logoutRequest.status === RequestStatus.NOT_STARTED && profilesRequest.status === RequestStatus.NOT_STARTED) {
                         Actions.getProfiles(0)(store.dispatch, store.getState);
                     }
@@ -323,7 +323,7 @@ describe('Actions.Users', () => {
 
                 if (sessionsRequest.status === RequestStatus.SUCCESS || sessionsRequest.status === RequestStatus.FAILURE) {
                     if (sessionsRequest.error) {
-                        done(new Error(sessionsRequest.error));
+                        done(new Error(JSON.stringify(sessionsRequest.error)));
                     } else if (revokeRequest.status === RequestStatus.NOT_STARTED) {
                         Actions.revokeSession(sessions[0].id)(store.dispatch, store.getState);
                     }
@@ -344,7 +344,7 @@ describe('Actions.Users', () => {
 
                 if (auditsRequest.status === RequestStatus.SUCCESS || auditsRequest.status === RequestStatus.FAILURE) {
                     if (auditsRequest.error) {
-                        done(new Error(auditsRequest.error));
+                        done(new Error(JSON.stringify(auditsRequest.error)));
                     } else {
                         assert.ok(audits.length);
                         assert.equal(audits[0].user_id, TestHelper.basicUser.id);
