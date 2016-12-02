@@ -7,7 +7,6 @@
     "intl": "1.2.5",
     "isomorphic-fetch": "2.2.1",
     "keymirror": "0.1.1",
-    "lodash": "4.16.4",
     "react": "15.3.2",
     "react-addons-pure-render-mixin": "15.3.2",
     "react-intl": "2.1.5",
