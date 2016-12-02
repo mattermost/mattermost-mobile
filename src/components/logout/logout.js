@@ -8,7 +8,6 @@ import FormattedText from 'components/formatted_text';
 
 export default class Logout extends React.Component {
     static propTypes = {
-        logout: React.PropTypes.object.isRequired,
         actions: React.PropTypes.object.isRequired
     }
 

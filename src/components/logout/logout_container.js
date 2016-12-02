@@ -8,16 +8,10 @@ import {logout} from 'actions/users';
 
 import Logout from './logout.js';
 
-function mapStateToProps(state) {
-    return {
-        logout: state.requests.users.logout
-    };
-}
-
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({logout}, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Logout);
+export default connect(null, mapDispatchToProps)(Logout);
