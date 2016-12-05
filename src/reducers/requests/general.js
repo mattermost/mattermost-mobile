@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 import {GeneralTypes} from 'constants';
 import {handleRequest, initialRequestState} from './helpers';
 
-function server(state = initialRequestState, action) {
+function server(state = initialRequestState(), action) {
     return handleRequest(
         GeneralTypes.PING_REQUEST,
         GeneralTypes.PING_SUCCESS,
@@ -15,7 +15,7 @@ function server(state = initialRequestState, action) {
     );
 }
 
-function config(state = initialRequestState, action) {
+function config(state = initialRequestState(), action) {
     return handleRequest(
         GeneralTypes.CLIENT_CONFIG_REQUEST,
         GeneralTypes.CLIENT_CONFIG_SUCCESS,
@@ -25,7 +25,7 @@ function config(state = initialRequestState, action) {
     );
 }
 
-function license(state = initialRequestState, action) {
+function license(state = initialRequestState(), action) {
     return handleRequest(
         GeneralTypes.CLIENT_LICENSE_REQUEST,
         GeneralTypes.CLIENT_LICENSE_SUCCESS,

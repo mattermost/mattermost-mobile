@@ -9,7 +9,7 @@ import {UsersTypes} from 'constants';
 function locale(state = Config.DefaultLocale, action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_ME:
-        return action.data.locale;
+        return action.profile.locale;
 
     case UsersTypes.LOGOUT_SUCCESS:
         return Config.DefaultLocale;

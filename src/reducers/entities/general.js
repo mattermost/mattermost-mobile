@@ -7,7 +7,7 @@ import {GeneralTypes, UsersTypes} from 'constants';
 function config(state = {}, action) {
     switch (action.type) {
     case GeneralTypes.CLIENT_CONFIG_RECEIVED:
-        return Object.assign({}, state, action.data);
+        return Object.assign({}, state, action.config);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -18,7 +18,7 @@ function config(state = {}, action) {
 function license(state = {}, action) {
     switch (action.type) {
     case GeneralTypes.CLIENT_LICENSE_RECEIVED:
-        return Object.assign({}, state, action.data);
+        return Object.assign({}, state, action.license);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:

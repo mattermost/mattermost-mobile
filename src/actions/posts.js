@@ -11,6 +11,7 @@ export function fetchPosts(teamId, channelId) {
         PostsTypes.FETCH_POSTS_REQUEST,
         PostsTypes.FETCH_POSTS_SUCCESS,
         PostsTypes.FETCH_POSTS_FAILURE,
+        'posts',
         teamId,
         channelId
     );

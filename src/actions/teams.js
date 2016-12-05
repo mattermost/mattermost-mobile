@@ -19,6 +19,7 @@ export function fetchTeams() {
         Client.getAllTeams,
         TeamsTypes.FETCH_TEAMS_REQUEST,
         [TeamsTypes.RECEIVED_ALL_TEAMS, TeamsTypes.FETCH_TEAMS_SUCCESS],
-        TeamsTypes.FETCH_TEAMS_FAILURE
+        TeamsTypes.FETCH_TEAMS_FAILURE,
+        'teams'
     );
 }

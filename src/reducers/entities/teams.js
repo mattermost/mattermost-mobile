@@ -16,7 +16,7 @@ function currentId(state = '', action) {
 function teams(state = {}, action) {
     switch (action.type) {
     case TeamsTypes.RECEIVED_ALL_TEAMS:
-        return Object.assign({}, state, action.data);
+        return Object.assign({}, state, action.teams);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -26,17 +26,20 @@ function teams(state = {}, action) {
 
 function myMembers(state = {}, action) {
     const nextState = {...state};
+
     switch (action.type) {
-    case TeamsTypes.RECEIVED_MY_TEAM_MEMBERS:
-        const members = action.data;
+    case TeamsTypes.RECEIVED_MY_TEAM_MEMBERS: {
+        const members = action.members;
         for (const m of members) {
             nextState[m.team_id] = m;
         }
         return nextState;
-    case TeamsTypes.LEAVE_TEAM:
-        const data = action.data;
+    }
+    case TeamsTypes.LEAVE_TEAM: {
+        const data = action.team;
         Reflect.deleteProperty(nextState, data.team_id);
         return nextState;
+    }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:

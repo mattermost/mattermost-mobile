@@ -107,14 +107,14 @@ export function createDirectChannel(userId, otherUserId) {
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
-                    data: {[profile.id]: profile}
+                    profiles: {[profile.id]: profile}
                 },
                 {
                     type: UsersTypes.PROFILES_SUCCESS
                 },
                 {
                     type: UsersTypes.RECEIVED_PREFERENCE,
-                    data: {category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}
+                    preference: {category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}
                 }
             ]), getState);
         } catch (error) {

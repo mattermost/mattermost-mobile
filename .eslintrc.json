@@ -75,7 +75,7 @@
         "no-alert": 2,
         "no-array-constructor": 2,
         "no-caller": 2,
-        "no-case-declarations": 0,
+        "no-case-declarations": 2,
         "no-class-assign": 2,
         "no-cond-assign": [2, "except-parens"],
         "no-confusing-arrow": 2,

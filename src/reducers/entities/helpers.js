@@ -1,6 +1,14 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+export function initialPagingState() {
+    return {
+        items: new Set(),
+        offset: 0,
+        count: 0
+    };
+}
+
 function isPostListNull(pl) {
     if (!pl) {
         return true;
@@ -14,7 +22,7 @@ function isPostListNull(pl) {
 }
 
 function makePostListNonNull(pl) {
-    let postList = pl;
+    let postList = {...pl};
     if (!postList) {
         postList = {order: [], posts: {}};
     }
@@ -32,27 +40,33 @@ function makePostListNonNull(pl) {
 
 export function addPosts(state, action) {
     const newState = {...state};
-    const newPosts = action.post_list;
+    const newPosts = action.posts;
     const id = action.channel_id;
 
     if (isPostListNull(newPosts)) {
         return state;
     }
 
-    if (action.check_latest) {
+    if (action.checkLatest) {
         const currentLatest = newState.latestPageTime[id] || 0;
         if (newPosts.order.length >= 1) {
             const newLatest = newPosts.posts[newPosts.order[0]].create_at || 0;
             if (newLatest > currentLatest) {
-                newState.latestPageTime[id] = newLatest;
+                newState.latestPageTime = {
+                    ...newState.latestPageTime,
+                    [id]: newLatest
+                };
             }
         } else if (currentLatest === 0) {
             // Mark that an empty page was received
-            newState.latestPageTime[id] = 1;
+            newState.latestPageTime = {
+                ...newState.latestPageTime,
+                [id]: 1
+            };
         }
     }
 
-    const combinedPosts = makePostListNonNull(newState.postsInfo[id].postList);
+    const combinedPosts = {...makePostListNonNull(newState.postsInfo[id].postList)};
 
     for (const pid in newPosts.posts) {
         if (newPosts.posts.hasOwnProperty(pid)) {
@@ -79,10 +93,13 @@ export function addPosts(state, action) {
         return 0;
     });
 
-    if (newState.postInfo.hasOwnProperty(id)) {
-        newState.postInfo[id] = {};
-    }
-    newState.postsInfo[id].postList = combinedPosts;
+    newState.postsInfo = {
+        ...newState.postsInfo,
+        [id]: {
+            ...newState.postsInfo[id],
+            postList: combinedPosts
+        }
+    };
 
     return newState;
 }
@@ -95,7 +112,7 @@ export function profilesToSet(state, action) {
     }
 
     nextState.items = new Set(state.items);
-    Object.keys(action.data).forEach((key) => {
+    Object.keys(action.profiles).forEach((key) => {
         nextState.items.add(key);
     });
 

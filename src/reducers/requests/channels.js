@@ -6,7 +6,7 @@ import {ChannelTypes} from 'constants';
 
 import {combineReducers} from 'redux';
 
-function getChannel(state = initialRequestState, action) {
+function getChannel(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.CHANNEL_REQUEST,
         ChannelTypes.CHANNEL_SUCCESS,
@@ -16,7 +16,7 @@ function getChannel(state = initialRequestState, action) {
     );
 }
 
-function getChannels(state = initialRequestState, action) {
+function getChannels(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.CHANNELS_REQUEST,
         ChannelTypes.CHANNELS_SUCCESS,
@@ -26,7 +26,7 @@ function getChannels(state = initialRequestState, action) {
     );
 }
 
-function myMembers(state = initialRequestState, action) {
+function myMembers(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.CHANNEL_MEMBERS_REQUEST,
         ChannelTypes.CHANNEL_MEMBERS_SUCCESS,
@@ -36,7 +36,7 @@ function myMembers(state = initialRequestState, action) {
     );
 }
 
-function createChannel(state = initialRequestState, action) {
+function createChannel(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.CREATE_CHANNEL_REQUEST,
         ChannelTypes.CREATE_CHANNEL_SUCCESS,
@@ -46,7 +46,7 @@ function createChannel(state = initialRequestState, action) {
     );
 }
 
-function updateChannel(state = initialRequestState, action) {
+function updateChannel(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.UPDATE_CHANNEL_REQUEST,
         ChannelTypes.UPDATE_CHANNEL_SUCCESS,
@@ -56,7 +56,7 @@ function updateChannel(state = initialRequestState, action) {
     );
 }
 
-function updateChannelNotifyProps(state = initialRequestState, action) {
+function updateChannelNotifyProps(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.NOTIFY_PROPS_REQUEST,
         ChannelTypes.NOTIFY_PROPS_SUCCESS,
@@ -66,7 +66,7 @@ function updateChannelNotifyProps(state = initialRequestState, action) {
     );
 }
 
-function leaveChannel(state = initialRequestState, action) {
+function leaveChannel(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.LEAVE_CHANNEL_REQUEST,
         ChannelTypes.LEAVE_CHANNEL_SUCCESS,
@@ -76,7 +76,7 @@ function leaveChannel(state = initialRequestState, action) {
     );
 }
 
-function joinChannel(state = initialRequestState, action) {
+function joinChannel(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.JOIN_CHANNEL_REQUEST,
         ChannelTypes.JOIN_CHANNEL_SUCCESS,
@@ -86,7 +86,7 @@ function joinChannel(state = initialRequestState, action) {
     );
 }
 
-function deleteChannel(state = initialRequestState, action) {
+function deleteChannel(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.DELETE_CHANNEL_REQUEST,
         ChannelTypes.DELETE_CHANNEL_SUCCESS,
@@ -96,7 +96,7 @@ function deleteChannel(state = initialRequestState, action) {
     );
 }
 
-function updateLastViewedAt(state = initialRequestState, action) {
+function updateLastViewedAt(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.UPDATE_LAST_VIEWED_REQUEST,
         ChannelTypes.UPDATE_LAST_VIEWED_SUCCESS,
@@ -106,7 +106,7 @@ function updateLastViewedAt(state = initialRequestState, action) {
     );
 }
 
-function getMoreChannels(state = initialRequestState, action) {
+function getMoreChannels(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.MORE_CHANNELS_REQUEST,
         ChannelTypes.MORE_CHANNELS_SUCCESS,
@@ -116,7 +116,7 @@ function getMoreChannels(state = initialRequestState, action) {
     );
 }
 
-function getChannelStats(state = initialRequestState, action) {
+function getChannelStats(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.CHANNEL_STATS_REQUEST,
         ChannelTypes.CHANNEL_STATS_SUCCESS,
@@ -126,7 +126,7 @@ function getChannelStats(state = initialRequestState, action) {
     );
 }
 
-function addChannelMember(state = initialRequestState, action) {
+function addChannelMember(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.ADD_CHANNEL_MEMBER_REQUEST,
         ChannelTypes.ADD_CHANNEL_MEMBER_SUCCESS,
@@ -136,7 +136,7 @@ function addChannelMember(state = initialRequestState, action) {
     );
 }
 
-function removeChannelMember(state = initialRequestState, action) {
+function removeChannelMember(state = initialRequestState(), action) {
     return handleRequest(
         ChannelTypes.REMOVE_CHANNEL_MEMBER_REQUEST,
         ChannelTypes.REMOVE_CHANNEL_MEMBER_SUCCESS,

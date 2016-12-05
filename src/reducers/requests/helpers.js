@@ -3,10 +3,12 @@
 
 import {RequestStatus} from 'constants';
 
-export const initialRequestState = {
-    status: RequestStatus.NOT_STARTED,
-    error: null
-};
+export function initialRequestState() {
+    return {
+        status: RequestStatus.NOT_STARTED,
+        error: null
+    };
+}
 
 export function handleRequest(REQUEST, SUCCESS, FAILURE, state, action) {
     switch (action.type) {

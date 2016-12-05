@@ -23,17 +23,17 @@ export function login(loginId, password, mfaToken = '') {
                 dispatch(batchActions([
                     {
                         type: UsersTypes.RECEIVED_ME,
-                        data
+                        profile: data
                     },
                     {
                         type: UsersTypes.RECEIVED_PREFERENCES,
-                        data: await preferences
+                        preferences: await preferences
                     },
 
                     // TODO: uncomment when PLT-4167 is merged
                     // {
                     //     type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
-                    //     data: await teamMembers
+                    //     members: await teamMembers
                     // },
                     {
                         type: UsersTypes.LOGIN_SUCCESS
@@ -54,7 +54,7 @@ export function logout() {
         Client.logout,
         UsersTypes.LOGOUT_REQUEST,
         UsersTypes.LOGOUT_SUCCESS,
-        UsersTypes.LOGOUT_FAILURE
+        UsersTypes.LOGOUT_FAILURE,
     );
 }
 
@@ -64,6 +64,7 @@ export function getProfiles(offset, limit = Constants.PROFILE_CHUNK_SIZE) {
         UsersTypes.PROFILES_REQUEST,
         [UsersTypes.RECEIVED_PROFILES, UsersTypes.PROFILES_SUCCESS],
         UsersTypes.PROFILES_FAILURE,
+        'profiles',
         offset,
         limit
     );
@@ -75,6 +76,7 @@ export function getProfilesByIds(userIds) {
         UsersTypes.PROFILES_REQUEST,
         [UsersTypes.RECEIVED_PROFILES, UsersTypes.PROFILES_SUCCESS],
         UsersTypes.PROFILES_FAILURE,
+        'profiles',
         userIds
     );
 }
@@ -87,13 +89,13 @@ export function getProfilesInTeam(teamId, offset, limit = Constants.PROFILE_CHUN
             dispatch(batchActions([
                 {
                     type: UsersTypes.RECEIVED_PROFILES_IN_TEAM,
-                    data: profiles,
+                    profiles,
                     offset,
                     count: Object.keys(profiles).length
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
-                    data: profiles
+                    profiles
                 },
                 {
                     type: UsersTypes.PROFILES_IN_TEAM_SUCCESS
@@ -114,13 +116,13 @@ export function getProfilesInChannel(teamId, channelId, offset, limit = Constant
             dispatch(batchActions([
                 {
                     type: UsersTypes.RECEIVED_PROFILES_IN_CHANNEL,
-                    data: profiles,
+                    profiles,
                     offset,
                     count: Object.keys(profiles).length
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
-                    data: profiles
+                    profiles
                 },
                 {
                     type: UsersTypes.PROFILES_IN_CHANNEL_SUCCESS
@@ -141,13 +143,13 @@ export function getProfilesNotInChannel(teamId, channelId, offset, limit = Const
             dispatch(batchActions([
                 {
                     type: UsersTypes.RECEIVED_PROFILES_NOT_IN_CHANNEL,
-                    data: profiles,
+                    profiles,
                     offset,
                     count: Object.keys(profiles).length
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
-                    data: profiles
+                    profiles
                 },
                 {
                     type: UsersTypes.PROFILES_NOT_IN_CHANNEL_SUCCESS
@@ -166,6 +168,7 @@ export function getStatusesByIds(userIds) {
         UsersTypes.PROFILES_STATUSES_REQUEST,
         [UsersTypes.RECEIVED_STATUSES, UsersTypes.PROFILES_STATUSES_SUCCESS],
         UsersTypes.PROFILES_STATUSES_FAILURE,
+        'statuses',
         userIds
     );
 }
@@ -176,6 +179,7 @@ export function getSessions(userId) {
         UsersTypes.SESSIONS_REQUEST,
         [UsersTypes.RECEIVED_SESSIONS, UsersTypes.SESSIONS_SUCCESS],
         UsersTypes.SESSIONS_FAILURE,
+        'sessions',
         userId
     );
 }
@@ -186,6 +190,7 @@ export function revokeSession(id) {
         UsersTypes.REVOKE_SESSION_REQUEST,
         [UsersTypes.RECEIVED_REVOKED_SESSION, UsersTypes.REVOKE_SESSION_SUCCESS],
         UsersTypes.REVOKE_SESSION_FAILURE,
+        'session',
         id
     );
 }
@@ -196,6 +201,7 @@ export function getAudits(userId) {
         UsersTypes.AUDITS_REQUEST,
         [UsersTypes.RECEIVED_AUDITS, UsersTypes.AUDITS_SUCCESS],
         UsersTypes.AUDITS_FAILURE,
+        'audits',
         userId
     );
 }

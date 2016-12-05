@@ -15,6 +15,7 @@ function currentId(state = '', action) {
 
 function channels(state = {}, action) {
     const nextState = {...state};
+
     switch (action.type) {
     case ChannelTypes.RECEIVED_CHANNEL:
         return {
@@ -22,17 +23,17 @@ function channels(state = {}, action) {
             [action.channel.id]: action.channel
         };
 
-    case ChannelTypes.RECEIVED_CHANNELS:
+    case ChannelTypes.RECEIVED_CHANNELS: {
         for (const channel of action.channels) {
             nextState[channel.id] = channel;
         }
         return nextState;
-
+    }
     case ChannelTypes.LEAVE_CHANNEL:
-    case ChannelTypes.RECEIVED_CHANNEL_DELETED:
+    case ChannelTypes.RECEIVED_CHANNEL_DELETED: {
         Reflect.deleteProperty(nextState, action.channel_id);
         return nextState;
-
+    }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
 
@@ -43,39 +44,39 @@ function channels(state = {}, action) {
 
 function myMembers(state = {}, action) {
     const nextState = {...state};
-    let member;
+
     switch (action.type) {
-    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER:
+    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER: {
         const channelMember = action.channelMember;
         return {
             ...state,
             [channelMember.channel_id]: channelMember
         };
-
-    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS:
+    }
+    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS: {
         for (const cm of action.channelMembers) {
             nextState[cm.channel_id] = cm;
         }
         return nextState;
-
-    case ChannelTypes.RECEIVED_CHANNEL_PROPS:
-        member = {...state[action.channel_id]};
+    }
+    case ChannelTypes.RECEIVED_CHANNEL_PROPS: {
+        const member = {...state[action.channel_id]};
         member.notify_props = action.props;
 
         return {
             ...state,
             [action.channel_id]: member
         };
-
-    case ChannelTypes.RECEIVED_LAST_VIEWED:
-        member = {...state[action.channel_id]};
+    }
+    case ChannelTypes.RECEIVED_LAST_VIEWED: {
+        const member = {...state[action.channel_id]};
         member.last_viewed_at = action.last_viewed_at;
 
         return {
             ...state,
             [action.channel_id]: member
         };
-
+    }
     case ChannelTypes.LEAVE_CHANNEL:
     case ChannelTypes.RECEIVED_CHANNEL_DELETED:
         Reflect.deleteProperty(nextState, action.channel_id);
@@ -90,18 +91,19 @@ function myMembers(state = {}, action) {
 
 function moreChannels(state = {}, action) {
     const nextState = {...state};
+
     switch (action.type) {
-    case ChannelTypes.RECEIVED_MORE_CHANNELS:
+    case ChannelTypes.RECEIVED_MORE_CHANNELS: {
         for (const channel of action.channels) {
             nextState[channel.id] = channel;
         }
         return nextState;
-
-    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER:
+    }
+    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER: {
         const channelMember = action.channelMember;
         Reflect.deleteProperty(nextState, channelMember.channel_id);
         return nextState;
-
+    }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -111,13 +113,13 @@ function moreChannels(state = {}, action) {
 
 function stats(state = {}, action) {
     switch (action.type) {
-    case ChannelTypes.RECEIVED_CHANNEL_STATS:
+    case ChannelTypes.RECEIVED_CHANNEL_STATS: {
         const nextState = {...state};
         const stat = action.stat;
         nextState[stat.channel_id] = stat;
 
         return nextState;
-
+    }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:

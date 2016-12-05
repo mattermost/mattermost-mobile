@@ -6,7 +6,7 @@ import {TeamsTypes} from 'constants';
 
 import {combineReducers} from 'redux';
 
-function allTeams(state = initialRequestState, action) {
+function allTeams(state = initialRequestState(), action) {
     return handleRequest(
         TeamsTypes.FETCH_TEAMS_REQUEST,
         TeamsTypes.FETCH_TEAMS_SUCCESS,

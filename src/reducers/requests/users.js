@@ -6,7 +6,7 @@ import {UsersTypes, RequestStatus} from 'constants';
 
 import {combineReducers} from 'redux';
 
-function login(state = initialRequestState, action) {
+function login(state = initialRequestState(), action) {
     switch (action.type) {
     case UsersTypes.LOGIN_REQUEST:
         return {...state, status: RequestStatus.STARTED};
@@ -25,7 +25,7 @@ function login(state = initialRequestState, action) {
     }
 }
 
-function logout(state = initialRequestState, action) {
+function logout(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.LOGOUT_REQUEST,
         UsersTypes.LOGOUT_SUCCESS,
@@ -35,7 +35,7 @@ function logout(state = initialRequestState, action) {
     );
 }
 
-function getProfiles(state = initialRequestState, action) {
+function getProfiles(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.PROFILES_REQUEST,
         UsersTypes.PROFILES_SUCCESS,
@@ -45,7 +45,7 @@ function getProfiles(state = initialRequestState, action) {
     );
 }
 
-function getProfilesInTeam(state = initialRequestState, action) {
+function getProfilesInTeam(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.PROFILES_IN_TEAM_REQUEST,
         UsersTypes.PROFILES_IN_TEAM_SUCCESS,
@@ -55,7 +55,7 @@ function getProfilesInTeam(state = initialRequestState, action) {
     );
 }
 
-function getProfilesInChannel(state = initialRequestState, action) {
+function getProfilesInChannel(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.PROFILES_IN_CHANNEL_REQUEST,
         UsersTypes.PROFILES_IN_CHANNEL_SUCCESS,
@@ -65,7 +65,7 @@ function getProfilesInChannel(state = initialRequestState, action) {
     );
 }
 
-function getProfilesNotInChannel(state = initialRequestState, action) {
+function getProfilesNotInChannel(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.PROFILES_NOT_IN_CHANNEL_REQUEST,
         UsersTypes.PROFILES_NOT_IN_CHANNEL_SUCCESS,
@@ -75,7 +75,7 @@ function getProfilesNotInChannel(state = initialRequestState, action) {
     );
 }
 
-function getStatusesByIds(state = initialRequestState, action) {
+function getStatusesByIds(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.PROFILES_STATUSES_REQUEST,
         UsersTypes.PROFILES_STATUSES_SUCCESS,
@@ -85,7 +85,7 @@ function getStatusesByIds(state = initialRequestState, action) {
     );
 }
 
-function getSessions(state = initialRequestState, action) {
+function getSessions(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.SESSIONS_REQUEST,
         UsersTypes.SESSIONS_SUCCESS,
@@ -95,7 +95,7 @@ function getSessions(state = initialRequestState, action) {
     );
 }
 
-function revokeSession(state = initialRequestState, action) {
+function revokeSession(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.REVOKE_SESSION_REQUEST,
         UsersTypes.REVOKE_SESSION_SUCCESS,
@@ -105,7 +105,7 @@ function revokeSession(state = initialRequestState, action) {
     );
 }
 
-function getAudits(state = initialRequestState, action) {
+function getAudits(state = initialRequestState(), action) {
     return handleRequest(
         UsersTypes.AUDITS_REQUEST,
         UsersTypes.AUDITS_SUCCESS,
