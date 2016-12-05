@@ -8,7 +8,7 @@ import {initialPagingState, profilesToSet, addProfileToSet, removeProfileFromSet
 function currentId(state = '', action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_ME:
-        return action.profile.id;
+        return action.data.id;
 
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
@@ -23,14 +23,14 @@ function myPreferences(state = {}, action) {
 
     switch (action.type) {
     case UsersTypes.RECEIVED_PREFERENCES: {
-        const preferences = action.preferences;
+        const preferences = action.data;
         for (const p of preferences) {
             nextState[`${p.category}--${p.name}`] = p.value;
         }
         return nextState;
     }
     case UsersTypes.RECEIVED_PREFERENCE: {
-        const p = action.preference;
+        const p = action.data;
         nextState[`${p.category}--${p.name}`] = p.value;
         return nextState;
     }
@@ -45,13 +45,13 @@ function myPreferences(state = {}, action) {
 function mySessions(state = [], action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_SESSIONS:
-        return [...action.sessions];
+        return [...action.data];
 
     case UsersTypes.RECEIVED_REVOKED_SESSION: {
         let index = -1;
         const length = state.length;
         for (let i = 0; i < length; i++) {
-            if (state[i].id === action.session.id) {
+            if (state[i].id === action.data.id) {
                 index = i;
                 break;
             }
@@ -73,7 +73,7 @@ function mySessions(state = [], action) {
 function myAudits(state = [], action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_AUDITS:
-        return [...action.audits];
+        return [...action.data];
 
     case UsersTypes.LOGOUT_SUCCESS:
         return [];
@@ -83,19 +83,20 @@ function myAudits(state = [], action) {
     }
 }
 
-function profiles(state = initialPagingState(), action) {
+function profiles(state = {items: {}, offset: 0, count: 0}, action) {
     const nextState = {...state};
 
     switch (action.type) {
     case UsersTypes.RECEIVED_ME: {
-        const id = action.profile.id;
+        const id = action.data.id;
         nextState.items = {
             ...nextState.items,
             [id]: {
                 ...nextState.items[id],
-                ...action.profiles
+                ...action.data
             }
         };
+
         return nextState;
     }
     case UsersTypes.RECEIVED_PROFILES:
@@ -103,11 +104,12 @@ function profiles(state = initialPagingState(), action) {
             nextState.offset = action.offset + action.count;
             nextState.count += action.count;
         }
-        nextState.items = Object.assign({}, nextState.items, action.profiles);
+        nextState.items = Object.assign({}, nextState.items, action.data);
+
         return nextState;
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return {...state, items: {}, offset: 0, count: 0};
+        return {items: {}, offset: 0, count: 0};
 
     default:
         return state;
@@ -120,7 +122,7 @@ function profilesInTeam(state = initialPagingState(), action) {
         return profilesToSet(state, action);
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return {...state, items: new Set(), offset: 0, count: 0};
+        return initialPagingState();
 
     default:
         return state;
@@ -139,7 +141,7 @@ function profilesInChannel(state = initialPagingState(), action) {
         return removeProfileFromSet(state, action.user_id);
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return {...state, items: new Set(), offset: 0, count: 0};
+        return initialPagingState();
 
     default:
         return state;
@@ -158,7 +160,7 @@ function profilesNotInChannel(state = initialPagingState(), action) {
         return removeProfileFromSet(state, action.user_id);
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return {...state, items: new Set(), offset: 0, count: 0};
+        return initialPagingState();
 
     default:
         return state;
@@ -169,7 +171,7 @@ function statuses(state = {}, action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_STATUSES: {
         const nextState = {...state};
-        return Object.assign({}, nextState, action.statuses);
+        return Object.assign({}, nextState, action.data);
     }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};

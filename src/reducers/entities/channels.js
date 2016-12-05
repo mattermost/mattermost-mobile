@@ -20,11 +20,11 @@ function channels(state = {}, action) {
     case ChannelTypes.RECEIVED_CHANNEL:
         return {
             ...state,
-            [action.channel.id]: action.channel
+            [action.data.id]: action.data
         };
 
     case ChannelTypes.RECEIVED_CHANNELS: {
-        for (const channel of action.channels) {
+        for (const channel of action.data) {
             nextState[channel.id] = channel;
         }
         return nextState;
@@ -47,21 +47,21 @@ function myMembers(state = {}, action) {
 
     switch (action.type) {
     case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER: {
-        const channelMember = action.channelMember;
+        const channelMember = action.data;
         return {
             ...state,
             [channelMember.channel_id]: channelMember
         };
     }
     case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS: {
-        for (const cm of action.channelMembers) {
+        for (const cm of action.data) {
             nextState[cm.channel_id] = cm;
         }
         return nextState;
     }
     case ChannelTypes.RECEIVED_CHANNEL_PROPS: {
         const member = {...state[action.channel_id]};
-        member.notify_props = action.props;
+        member.notify_props = action.data;
 
         return {
             ...state,
@@ -94,13 +94,13 @@ function moreChannels(state = {}, action) {
 
     switch (action.type) {
     case ChannelTypes.RECEIVED_MORE_CHANNELS: {
-        for (const channel of action.channels) {
+        for (const channel of action.data) {
             nextState[channel.id] = channel;
         }
         return nextState;
     }
     case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER: {
-        const channelMember = action.channelMember;
+        const channelMember = action.data;
         Reflect.deleteProperty(nextState, channelMember.channel_id);
         return nextState;
     }
@@ -115,7 +115,7 @@ function stats(state = {}, action) {
     switch (action.type) {
     case ChannelTypes.RECEIVED_CHANNEL_STATS: {
         const nextState = {...state};
-        const stat = action.stat;
+        const stat = action.data;
         nextState[stat.channel_id] = stat;
 
         return nextState;

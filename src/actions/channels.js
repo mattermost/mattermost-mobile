@@ -33,14 +33,14 @@ export function createChannel(channel, userId) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL,
-                    channel: created
+                    data: created
                 },
                 {
                     type: ChannelTypes.CREATE_CHANNEL_SUCCESS
                 },
                 {
                     type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                    channelMember: member
+                    data: member
                 },
                 {
                     type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
@@ -93,28 +93,28 @@ export function createDirectChannel(userId, otherUserId) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL,
-                    channel: created
+                    data: created
                 },
                 {
                     type: ChannelTypes.CREATE_CHANNEL_SUCCESS
                 },
                 {
                     type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                    channelMember: member
+                    data: member
                 },
                 {
                     type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
-                    profiles: {[profile.id]: profile}
+                    data: {[profile.id]: profile}
                 },
                 {
                     type: UsersTypes.PROFILES_SUCCESS
                 },
                 {
                     type: UsersTypes.RECEIVED_PREFERENCE,
-                    preference: {category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}
+                    data: {category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}
                 }
             ]), getState);
         } catch (error) {
@@ -145,7 +145,7 @@ export function updateChannel(channel) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL,
-                    channel: updated
+                    data: updated
                 },
                 {
                     type: ChannelTypes.UPDATE_CHANNEL_SUCCESS
@@ -173,7 +173,7 @@ export function updateChannelNotifyProps(userId, teamId, channelId, props) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL_PROPS,
-                    props: notifyProps,
+                    data: notifyProps,
                     channel_id: channelId
                 },
                 {
@@ -197,14 +197,14 @@ export function getChannel(teamId, channelId) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL,
-                    channel: data.channel
+                    data: data.channel
                 },
                 {
                     type: ChannelTypes.CHANNEL_SUCCESS
                 },
                 {
                     type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                    channelMember: data.member
+                    data: data.member
                 }
             ]), getState);
         } catch (error) {
@@ -232,14 +232,14 @@ export function fetchMyChannelsAndMembers(teamId) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNELS,
-                    channels: await channels
+                    data: await channels
                 },
                 {
                     type: ChannelTypes.CHANNELS_SUCCESS
                 },
                 {
                     type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS,
-                    channelMembers: await channelMembers
+                    data: await channelMembers
                 },
                 {
                     type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
@@ -309,11 +309,11 @@ export function joinChannel(userId, teamId, channelId, channelName) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL,
-                    channel
+                    data: channel
                 },
                 {
                     type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                    channelMember
+                    data: channelMember
                 },
                 {
                     type: ChannelTypes.JOIN_CHANNEL_SUCCESS
@@ -382,7 +382,7 @@ export function getMoreChannels(teamId, offset, limit = Constants.CHANNELS_CHUNK
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_MORE_CHANNELS,
-                    channels: await channels
+                    data: await channels
                 },
                 {
                     type: ChannelTypes.MORE_CHANNELS_SUCCESS
@@ -404,7 +404,7 @@ export function getChannelStats(teamId, channelId) {
             dispatch(batchActions([
                 {
                     type: ChannelTypes.RECEIVED_CHANNEL_STATS,
-                    stat
+                    data: stat
                 },
                 {
                     type: ChannelTypes.CHANNEL_STATS_SUCCESS

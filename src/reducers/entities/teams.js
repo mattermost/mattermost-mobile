@@ -16,7 +16,7 @@ function currentId(state = '', action) {
 function teams(state = {}, action) {
     switch (action.type) {
     case TeamsTypes.RECEIVED_ALL_TEAMS:
-        return Object.assign({}, state, action.teams);
+        return Object.assign({}, state, action.data);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -29,7 +29,7 @@ function myMembers(state = {}, action) {
 
     switch (action.type) {
     case TeamsTypes.RECEIVED_MY_TEAM_MEMBERS: {
-        const members = action.members;
+        const members = action.data;
         for (const m of members) {
             nextState[m.team_id] = m;
         }

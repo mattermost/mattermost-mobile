@@ -40,7 +40,7 @@ function makePostListNonNull(pl) {
 
 export function addPosts(state, action) {
     const newState = {...state};
-    const newPosts = action.posts;
+    const newPosts = action.data;
     const id = action.channel_id;
 
     if (isPostListNull(newPosts)) {
@@ -112,7 +112,7 @@ export function profilesToSet(state, action) {
     }
 
     nextState.items = new Set(state.items);
-    Object.keys(action.profiles).forEach((key) => {
+    Object.keys(action.data).forEach((key) => {
         nextState.items.add(key);
     });
 

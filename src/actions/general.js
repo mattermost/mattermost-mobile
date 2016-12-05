@@ -19,8 +19,7 @@ export function getClientConfig() {
         Client.getClientConfig,
         GeneralTypes.CLIENT_CONFIG_REQUEST,
         [GeneralTypes.CLIENT_CONFIG_RECEIVED, GeneralTypes.CLIENT_CONFIG_SUCCESS],
-        GeneralTypes.CLIENT_CONFIG_FAILURE,
-        'config'
+        GeneralTypes.CLIENT_CONFIG_FAILURE
     );
 }
 
@@ -29,8 +28,7 @@ export function getLicenseConfig() {
         Client.getLicenseConfig,
         GeneralTypes.CLIENT_LICENSE_REQUEST,
         [GeneralTypes.CLIENT_LICENSE_RECEIVED, GeneralTypes.CLIENT_LICENSE_SUCCESS],
-        GeneralTypes.CLIENT_LICENSE_FAILURE,
-        'license'
+        GeneralTypes.CLIENT_LICENSE_FAILURE
     );
 }
 
@@ -40,7 +38,6 @@ export function logClientError(message, level = 'ERROR') {
         GeneralTypes.LOG_CLIENT_ERROR_REQUEST,
         GeneralTypes.LOG_CLIENT_ERROR_SUCCESS,
         GeneralTypes.LOG_CLIENT_ERROR_FAILURE,
-        'data',
         message,
         level
     );

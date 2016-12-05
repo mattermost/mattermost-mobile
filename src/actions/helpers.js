@@ -12,9 +12,9 @@ export async function forceLogoutIfNecessary(err, dispatch) {
     }
 }
 
-function dispatcher(type, propertyName, data, dispatch, getState) {
+function dispatcher(type, data, dispatch, getState) {
     if (type.indexOf('SUCCESS') === -1) { // we don't want to pass the data for the request types
-        dispatch(requestSuccess(type, propertyName, data), getState);
+        dispatch(requestSuccess(type, data), getState);
     } else {
         dispatch(requestData(type), getState);
     }
@@ -26,10 +26,10 @@ export function requestData(type) {
     };
 }
 
-export function requestSuccess(type, propertyName, data) {
+export function requestSuccess(type, data) {
     return {
         type,
-        [propertyName]: data
+        data
     };
 }
 
@@ -40,7 +40,7 @@ export function requestFailure(type, error) {
     };
 }
 
-export function bindClientFunc(clientFunc, request, success, failure, propertyName = 'data', ...args) {
+export function bindClientFunc(clientFunc, request, success, failure, ...args) {
     return async (dispatch, getState) => {
         dispatch(requestData(request), getState);
 
@@ -48,10 +48,10 @@ export function bindClientFunc(clientFunc, request, success, failure, propertyNa
             const data = await clientFunc(...args);
             if (Array.isArray(success)) {
                 success.forEach((s) => {
-                    dispatcher(s, propertyName, data, dispatch, getState);
+                    dispatcher(s, data, dispatch, getState);
                 });
             } else {
-                dispatcher(success, propertyName, data, dispatch, getState);
+                dispatcher(success, data, dispatch, getState);
             }
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
