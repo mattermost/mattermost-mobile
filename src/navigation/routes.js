@@ -1,6 +1,10 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+export const Root = {
+    key: 'Root'
+};
+
 export const SelectServer = {
     key: 'SelectServer',
     title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}

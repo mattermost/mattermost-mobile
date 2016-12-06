@@ -3,13 +3,13 @@
 
 import Channel from './channel/channel_container.js';
 import Login from './login/login_container.js';
-// import Root from './channel/root_container.js';
+import Root from './root/root_container.js';
 import Search from './search/search_container.js';
 import SelectServer from './select_server/select_server_container.js';
 import SelectTeam from './select_team/select_team_container.js';
 
 const scenes = {
-    // Root,
+    Root,
     SelectServer,
     Login,
     SelectTeam,
