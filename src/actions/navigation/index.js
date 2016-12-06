@@ -38,3 +38,31 @@ export function goToChannel() {
         }, getState);
     };
 }
+
+export function goToRecentMentions() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {
+                ...Routes.Search,
+                props: {
+                    searchType: 'recent_mentions'
+                }
+            }
+        }, getState);
+    };
+}
+
+export function goToFlaggedPosts() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {
+                ...Routes.Search,
+                props: {
+                    searchType: 'flagged_posts'
+                }
+            }
+        }, getState);
+    };
+}
