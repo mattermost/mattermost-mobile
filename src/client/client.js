@@ -46,6 +46,10 @@ export default class Client {
         return `${this.url}${this.urlVersion}/teams`;
     }
 
+    getPreferencesRoute() {
+        return `${this.url}${this.urlVersion}/preferences`;
+    }
+
     getTeamNeededRoute(teamId) {
         return `${this.url}${this.urlVersion}/teams/${teamId}`;
     }
@@ -120,14 +124,21 @@ export default class Client {
             `${this.getGeneralRoute()}/client_props`,
             {method: 'get'}
         );
-    }
+    };
+
+    getLicenseConfig = async () => {
+        return this.doFetch(
+            `${this.getLicenseRoute()}/client_config`,
+            {method: 'get'}
+        );
+    };
 
     getPing = async () => {
         return this.doFetch(
             `${this.getGeneralRoute()}/ping`,
             {method: 'get'}
         );
-    }
+    };
 
     logClientError = async (message, level = 'ERROR') => {
         const body = {
@@ -139,16 +150,33 @@ export default class Client {
             `${this.getGeneralRoute()}/log_client`,
             {method: 'post', body}
         );
-    }
+    };
 
     // User routes
-
     createUser = async (user) => {
+        return this.createUserWithInvite(user);
+    };
+
+    // TODO: add deep linking to emails so we can create accounts from within
+    // the mobile app
+    createUserWithInvite = async(user, data, emailHash, inviteId) => {
+        let url = `${this.getUsersRoute()}/create`;
+
+        url += '?d=' + encodeURIComponent(data);
+
+        if (emailHash) {
+            url += '&h=' + encodeURIComponent(emailHash);
+        }
+
+        if (inviteId) {
+            url += '&iid=' + encodeURIComponent(inviteId);
+        }
+
         return this.doFetch(
-            `${this.getUsersRoute()}/create`,
+            url,
             {method: 'post', body: JSON.stringify(user)}
         );
-    }
+    };
 
     login = async (loginId, password, token = '') => {
         const body = {
@@ -167,7 +195,7 @@ export default class Client {
         }
 
         return data;
-    }
+    };
 
     logout = async () => {
         const {response} = await this.doFetchWithResponse(
@@ -178,14 +206,125 @@ export default class Client {
             this.token = '';
         }
         return response;
-    }
+    };
+
+    updateUser = async (user) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/update`,
+            {method: 'post', body: JSON.stringify(user)}
+        );
+    };
+
+    updatePassword = async (userId, currentPassword, newPassword) => {
+        const data = {
+            user_id: userId,
+            current_password: currentPassword,
+            new_password: newPassword
+        };
+
+        return this.doFetch(
+            `${this.getUsersRoute()}/newpassword`,
+            {method: 'post', body: JSON.stringify(data)}
+        );
+    };
+
+    updateUserNotifyProps = async (notifyProps) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/update_notify`,
+            {method: 'post', body: JSON.stringify(notifyProps)}
+        );
+    };
+
+    updateUserRoles = async (userId, newRoles) => {
+        return this.doFetch(
+            `${this.getUserNeededRoute(userId)}/update_roles`,
+            {method: 'post', body: JSON.stringify({new_roles: newRoles})}
+        );
+    };
+
+    getMyPreferences = async () => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/`,
+            {method: 'get'}
+        );
+    };
+
+    getProfiles = async (offset, limit) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getProfilesByIds = async (userIds) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/ids`,
+            {method: 'post', body: JSON.stringify(userIds)}
+        );
+    };
+
+    getProfilesInTeam = async (teamId, offset, limit) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(teamId)}/users/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getProfilesInChannel = async (teamId, channelId, offset, limit) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/users/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getProfilesNotInChannel = async (teamId, channelId, offset, limit) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/users/not_in_channel/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getUser = async (userId) => {
+        return this.doFetch(
+            `${this.getUserNeededRoute(userId)}/get`,
+            {method: 'get'}
+        );
+    };
+
+    getStatusesByIds = async (userIds) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/status/ids`,
+            {method: 'post', body: JSON.stringify(userIds)}
+        );
+    };
+
+    getSessions = async (userId) => {
+        return this.doFetch(
+            `${this.getUserNeededRoute(userId)}/sessions`,
+            {method: 'get'}
+        );
+    };
+
+    revokeSession = async (id) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/revoke_session`,
+            {method: 'post', body: JSON.stringify({id})}
+        );
+    };
+
+    getAudits = async (userId) => {
+        return this.doFetch(
+            `${this.getUserNeededRoute(userId)}/audits`,
+            {method: 'get'}
+        );
+    };
 
     getInitialLoad = async () => {
         return this.doFetch(
             `${this.getUsersRoute()}/initial_load`,
             {method: 'get'}
         );
-    }
+    };
 
     // Team routes
 
@@ -194,21 +333,49 @@ export default class Client {
             `${this.getTeamsRoute()}/create`,
             {method: 'post', body: JSON.stringify(team)}
         );
-    }
+    };
 
     getAllTeams = async() => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all`,
             {method: 'get'}
         );
-    }
+    };
+
+    getMyTeamMembers = async() => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/members`,
+            {method: 'get'}
+        );
+    };
 
     getAllTeamListings = async () => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all_team_listings`,
             {method: 'get'}
         );
-    }
+    };
+
+    addUserToTeamFromInvite = async (inviteId, data, hash) => {
+        return this.doFetch(
+            `${this.getTeamsRoute()}/add_user_to_team_from_invite`,
+            {method: 'post', body: JSON.stringify({hash, data, invite_id: inviteId})}
+        );
+    };
+
+    addChannelMember = async (teamId, channelId, userId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/add`,
+            {method: 'post', body: JSON.stringify({user_id: userId})}
+        );
+    };
+
+    removeChannelMember = async (teamId, channelId, userId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/remove`,
+            {method: 'post', body: JSON.stringify({user_id: userId})}
+        );
+    };
 
     // Channel routes
 
@@ -217,21 +384,98 @@ export default class Client {
             `${this.getChannelsRoute(channel.team_id)}/create`,
             {method: 'post', body: JSON.stringify(channel)}
         );
-    }
+    };
+
+    createDirectChannel = async (userId) => {
+        return this.doFetch(
+            `${this.getChannelsRoute('fake')}/create_direct`,
+            {method: 'post', body: JSON.stringify({user_id: userId})}
+        );
+    };
+
+    getChannel = async(teamId, channelId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/`,
+            {method: 'get'}
+        );
+    };
 
     getChannels = async (teamId) => {
         return this.doFetch(
             `${this.getChannelsRoute(teamId)}/`,
             {method: 'get'}
         );
-    }
+    };
 
     getMyChannelMembers = async (teamId) => {
         return this.doFetch(
             `${this.getChannelsRoute(teamId)}/members`,
             {method: 'get'}
         );
-    }
+    };
+
+    updateChannel = async (channel) => {
+        return this.doFetch(
+            `${this.getChannelsRoute(channel.team_id)}/update`,
+            {method: 'post', body: JSON.stringify(channel)}
+        );
+    };
+
+    updateChannelNotifyProps = async (teamId, data) => {
+        return this.doFetch(
+            `${this.getChannelsRoute(teamId)}/update_notify_props`,
+            {method: 'post', body: JSON.stringify(data)}
+        );
+    };
+
+    leaveChannel = async(teamId, channelId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/leave`,
+            {method: 'post'}
+        );
+    };
+
+    joinChannel = async(teamId, channelId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/join`,
+            {method: 'post'}
+        );
+    };
+
+    joinChannelByName = async(teamId, channelName) => {
+        return this.doFetch(
+            `${this.getChannelNameRoute(teamId, channelName)}/join`,
+            {method: 'post'}
+        );
+    };
+
+    deleteChannel = async(teamId, channelId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/delete`,
+            {method: 'post'}
+        );
+    };
+
+    updateLastViewedAt = async(teamId, channelId, active) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/update_last_viewed_at`,
+            {method: 'post', body: JSON.stringify({active})}
+        );
+    };
+
+    getMoreChannels = async(teamId, offset, limit) => {
+        return this.doFetch(
+            `${this.getChannelsRoute(teamId)}/more/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getChannelStats = async(teamId, channelId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/stats`,
+            {method: 'get'}
+        );
+    };
 
     // Post routes
     fetchPosts = (teamId, channelId, onRequest, onSuccess, onFailure) => {
@@ -242,20 +486,20 @@ export default class Client {
             onSuccess,
             onFailure
         );
-    }
+    };
 
     createPost = async (teamId, post) => {
         return this.doFetch(
             `${this.getPostsRoute(teamId, post.channel_id)}/create`,
             {method: 'post', body: JSON.stringify(post)}
         );
-    }
+    };
 
     doFetch = async (url, options) => {
         const {data} = await this.doFetchWithResponse(url, options);
 
         return data;
-    }
+    };
 
     doFetchWithResponse = async (url, options) => {
         const response = await fetch(url, this.getOptions(options));
@@ -288,6 +532,6 @@ export default class Client {
             console.error(msg); // eslint-disable-line no-console
         }
 
-        throw new Error(msg);
-    }
+        throw {message: msg, status_code: data.status_code, url};
+    };
 }

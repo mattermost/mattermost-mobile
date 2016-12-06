@@ -2,8 +2,8 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import Client from 'client/client.js';
-import Config from 'config/config.js';
+import Client from 'client/client';
+import Config from 'config';
 
 const PASSWORD = 'password1';
 
@@ -20,7 +20,7 @@ class TestHelper {
     assertStatusOkay = (data) => {
         assert(data);
         assert(data.status === 'OK');
-    }
+    };
 
     generateId = () => {
         // Implementation taken from http://stackoverflow.com/a/2117523
@@ -40,7 +40,7 @@ class TestHelper {
         });
 
         return 'uid' + id;
-    }
+    };
 
     createClient = () => {
         const client = new Client();
@@ -48,11 +48,11 @@ class TestHelper {
         client.setUrl(Config.DefaultServerUrl);
 
         return client;
-    }
+    };
 
     fakeEmail = () => {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
-    }
+    };
 
     fakeUser = () => {
         return {
@@ -61,19 +61,24 @@ class TestHelper {
             password: PASSWORD,
             username: this.generateId()
         };
-    }
+    };
 
     fakeTeam = () => {
         const name = this.generateId();
+        let inviteId = this.generateId();
+        if (inviteId.length > 32) {
+            inviteId = inviteId.substring(0, 32);
+        }
 
         return {
             name,
             display_name: `Unit Test ${name}`,
             type: 'O',
             email: this.fakeEmail(),
-            allowed_domains: ''
+            allowed_domains: '',
+            invite_id: inviteId
         };
-    }
+    };
 
     fakeChannel = (teamId) => {
         const name = this.generateId();
@@ -84,7 +89,7 @@ class TestHelper {
             display_name: `Unit Test ${name}`,
             type: 'O'
         };
-    }
+    };
 
     fakeChannelMember = (userId, channelId) => {
         return {
@@ -93,14 +98,14 @@ class TestHelper {
             notify_props: {},
             roles: 'system_user'
         };
-    }
+    };
 
     fakePost = (channelId) => {
         return {
             channel_id: channelId,
             message: `Unit Test ${this.generateId()}`
         };
-    }
+    };
 
     initBasic = async (client = this.createClient()) => {
         client.setUrl(Config.DefaultServerUrl);
@@ -121,7 +126,7 @@ class TestHelper {
             channel: this.basicChannel,
             post: this.basicPost
         };
-    }
+    };
 }
 
 export default new TestHelper();

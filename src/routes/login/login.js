@@ -14,52 +14,55 @@ import logo from 'images/logo.png';
 
 import {injectIntl, intlShape} from 'react-intl';
 
+import {RequestStatus} from 'constants';
+
 class Login extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
-        clientConfig: PropTypes.object.isRequired,
-        login: PropTypes.object.isRequired,
-        actions: PropTypes.object.isRequired
-    };
-
-    state = {
-        loginId: '',
-        password: ''
+        config: PropTypes.object.isRequired,
+        license: PropTypes.object.isRequired,
+        actions: PropTypes.object.isRequired,
+        loginId: PropTypes.string.isRequired,
+        password: PropTypes.string.isRequired,
+        loginRequest: PropTypes.object.isRequired,
+        configRequest: PropTypes.object.isRequired,
+        licenseRequest: PropTypes.object.isRequired
     };
 
     componentWillMount() {
         this.props.actions.getClientConfig();
+        this.props.actions.getLicenseConfig();
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.login.status === 'fetching' && nextProps.login.status === 'fetched') {
+        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
             Routes.goToSelectTeam();
         }
     }
 
-    signIn = () => {
-        if (this.props.login.status !== 'fetching') {
-            const {loginId, password} = this.state;
-            this.props.actions.login(loginId, password);
+    signIn() {
+        if (this.props.loginRequest.status !== RequestStatus.STARTED) {
+            this.props.actions.login(this.props.loginId, this.props.password);
         }
     }
 
     createLoginPlaceholder() {
         const {formatMessage} = this.props.intl;
-        const clientConfig = this.props.clientConfig;
+        const license = this.props.license;
+        const config = this.props.config;
 
         const loginPlaceholders = [];
-        if (clientConfig.EnableSignInWithEmail === 'true') {
+        if (config.EnableSignInWithEmail === 'true') {
             loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
         }
 
-        if (clientConfig.EnableSignInWithUsername === 'true') {
+        if (config.EnableSignInWithUsername === 'true') {
             loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
         }
 
-        if (clientConfig.EnableLdap === 'true') { // TODO check if we're licensed once we have that
-            if (clientConfig.LdapLoginFieldName) {
-                loginPlaceholders.push(clientConfig.LdapLoginFieldName);
+        if (license.IsLicensed === 'true' && license.LDAP === 'true' && config.EnableLdap === 'true') {
+            if (config.LdapLoginFieldName) {
+                loginPlaceholders.push(config.LdapLoginFieldName);
             } else {
                 loginPlaceholders.push(formatMessage({id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username'}));
             }
@@ -77,7 +80,7 @@ class Login extends Component {
     }
 
     render() {
-        if (this.props.clientConfig.loading || this.props.clientConfig.error) {
+        if (this.props.configRequest.status === RequestStatus.STARTED || this.props.licenseRequest.status === RequestStatus.STARTED) {
             return <Loading/>;
         }
 
@@ -88,7 +91,7 @@ class Login extends Component {
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
-                    {this.props.clientConfig.SiteName}
+                    {this.props.config.SiteName}
                 </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
@@ -97,8 +100,8 @@ class Login extends Component {
                 />
                 <TextInput
                     ref='loginId'
-                    value={this.state.loginId}
-                    onChangeText={(loginId) => this.setState({loginId})}
+                    value={this.props.loginId}
+                    onChangeText={this.props.actions.handleLoginIdChanged}
                     style={GlobalStyles.inputBox}
                     placeholder={this.createLoginPlaceholder()}
                     autoCorrect={false}
@@ -106,8 +109,8 @@ class Login extends Component {
                     underlineColorAndroid='transparent'
                 />
                 <TextInput
-                    value={this.state.password}
-                    onChangeText={(password) => this.setState({password})}
+                    value={this.props.password}
+                    onChangeText={this.props.actions.handlePasswordChanged}
                     style={GlobalStyles.inputBox}
                     placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                     secureTextEntry={true}
@@ -115,15 +118,15 @@ class Login extends Component {
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
                     returnKeyType='go'
-                    onSubmitEditing={this.signIn}
+                    onSubmitEditing={this.signIn.bind(this)}
                 />
-                <Button onPress={this.signIn}>
+                <Button onPress={this.signIn.bind(this)}>
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'
                     />
                 </Button>
-                <ErrorText error={this.props.login.error}/>
+                <ErrorText error={this.props.loginRequest.error}/>
             </View>
         );
     }

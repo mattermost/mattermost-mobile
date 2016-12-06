@@ -6,18 +6,21 @@ import React, {Component, PropTypes} from 'react';
 import {View, Image, Text} from 'react-native';
 import {Actions as Routes} from 'react-native-router-flux';
 import Button from 'react-native-button';
-import Loading from 'components/loading.js';
+import Loading from 'components/loading';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import ErrorText from 'components/error_text';
 import {GlobalStyles} from 'styles';
 import logo from 'images/logo.png';
 import FormattedText from 'components/formatted_text';
+import {RequestStatus} from 'constants';
 
 export default class SelectTeam extends Component {
     static propTypes = {
-        clientConfig: PropTypes.object.isRequired,
+        config: PropTypes.object.isRequired,
         teams: PropTypes.object.isRequired,
+        myMembers: PropTypes.object.isRequired,
+        teamsRequest: PropTypes.object.isRequired,
         actions: PropTypes.object.isRequired
     };
 
@@ -26,18 +29,21 @@ export default class SelectTeam extends Component {
     }
 
     onSelectTeam(team) {
+        this.props.actions.selectTeam(team);
         Routes.goToMain({currentTeamId: team.id});
     }
 
     render() {
-        if (this.props.teams.status !== 'fetched') {
+        if (this.props.teamsRequest.status === RequestStatus.STARTED) {
             return <Loading/>;
         }
 
         const teams = [];
-        for (const id of Object.keys(this.props.teams.data)) {
-            const team = this.props.teams.data[id];
+        for (const id of Object.keys(this.props.teams)) {
+            const team = this.props.teams[id];
 
+            // TODO: uncomment when PLT-4167 is merged
+            // if (this.props.myMembers.hasOwnProperty(id)) {
             teams.push(
                 <Button
                     key={id}
@@ -53,6 +59,8 @@ export default class SelectTeam extends Component {
                     />
                 </Button>
             );
+
+            // }
         }
 
         return (
@@ -62,7 +70,7 @@ export default class SelectTeam extends Component {
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
-                    {this.props.clientConfig.SiteName}
+                    {this.props.config.SiteName}
                 </Text>
                 <FormattedText
                     style={GlobalStyles.subheader}
@@ -75,7 +83,7 @@ export default class SelectTeam extends Component {
                     defaultMessage='Your teams:'
                 />
                 {teams}
-                <ErrorText error={this.props.teams.error}/>
+                <ErrorText error={this.props.teamsRequest.error}/>
             </View>
         );
     }

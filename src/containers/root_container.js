@@ -3,20 +3,20 @@
 
 import React from 'react';
 
-import Config from 'config/config.js';
+import Config from 'config';
 import {connect} from 'react-redux';
 import {loadDevice} from 'actions/device';
 import Loading from 'components/loading';
 import Routes from 'routes';
 
-import {getTranslations} from 'i18n/i18n.js';
+import {getTranslations} from 'i18n';
 import {IntlProvider} from 'react-intl';
 
 class RootContainer extends React.Component {
     static propTypes = {
         device: React.PropTypes.object.isRequired,
         loadDevice: React.PropTypes.func.isRequired
-    }
+    };
 
     constructor(props) {
         super(props);

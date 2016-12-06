@@ -3,22 +3,31 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import * as loginActions from 'actions/login';
-import {getClientConfig} from 'actions/general';
+
+import {getClientConfig, getLicenseConfig} from 'actions/general';
+import * as LoginActions from 'actions/views/login';
+import {login} from 'actions/users';
+
 import Login from './login.js';
 
 function mapStateToProps(state) {
     return {
-        clientConfig: state.entities.general.clientConfig,
-        login: state.views.login
+        ...state.views.login,
+        loginRequest: state.requests.users.login,
+        configRequest: state.requests.general.config,
+        licenseRequest: state.requests.general.license,
+        config: state.entities.general.config,
+        license: state.entities.general.license
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            ...loginActions,
-            getClientConfig
+            ...LoginActions,
+            login,
+            getClientConfig,
+            getLicenseConfig
         }, dispatch)
     };
 }

@@ -8,8 +8,10 @@ import SelectTeamView from './select_team.js';
 
 function mapStateToProps(state) {
     return {
-        clientConfig: state.entities.general.clientConfig,
-        teams: state.entities.teams
+        config: state.entities.general.config,
+        teamsRequest: state.requests.teams.allTeams,
+        teams: state.entities.teams.teams,
+        myMembers: state.entities.teams.myMembers
     };
 }
 

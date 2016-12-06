@@ -1,0 +1,66 @@
+// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
+import keymirror from 'keymirror';
+
+const UserTypes = keymirror({
+    LOGIN_ID_CHANGED: null,
+    PASSWORD_CHANGED: null,
+
+    LOGIN_REQUEST: null,
+    LOGIN_SUCCESS: null,
+    LOGIN_FAILURE: null,
+
+    LOGOUT_REQUEST: null,
+    LOGOUT_SUCCESS: null,
+    LOGOUT_FAILURE: null,
+
+    PROFILES_REQUEST: null,
+    PROFILES_SUCCESS: null,
+    PROFILES_FAILURE: null,
+
+    PROFILES_IN_TEAM_REQUEST: null,
+    PROFILES_IN_TEAM_SUCCESS: null,
+    PROFILES_IN_TEAM_FAILURE: null,
+
+    PROFILES_IN_CHANNEL_REQUEST: null,
+    PROFILES_IN_CHANNEL_SUCCESS: null,
+    PROFILES_IN_CHANNEL_FAILURE: null,
+
+    PROFILES_NOT_IN_CHANNEL_REQUEST: null,
+    PROFILES_NOT_IN_CHANNEL_SUCCESS: null,
+    PROFILES_NOT_IN_CHANNEL_FAILURE: null,
+
+    PROFILES_STATUSES_REQUEST: null,
+    PROFILES_STATUSES_SUCCESS: null,
+    PROFILES_STATUSES_FAILURE: null,
+
+    SESSIONS_REQUEST: null,
+    SESSIONS_SUCCESS: null,
+    SESSIONS_FAILURE: null,
+
+    REVOKE_SESSION_REQUEST: null,
+    REVOKE_SESSION_SUCCESS: null,
+    REVOKE_SESSION_FAILURE: null,
+
+    AUDITS_REQUEST: null,
+    AUDITS_SUCCESS: null,
+    AUDITS_FAILURE: null,
+
+    RECEIVED_ME: null,
+    RECEIVED_PROFILES: null,
+    RECEIVED_PROFILES_IN_TEAM: null,
+    RECEIVED_PROFILES_IN_CHANNEL: null,
+    RECEIVED_PROFILE_IN_CHANNEL: null,
+    RECEIVED_PROFILES_NOT_IN_CHANNEL: null,
+    RECEIVED_PROFILE_NOT_IN_CHANNEL: null,
+    RECEIVED_SESSIONS: null,
+    RECEIVED_REVOKED_SESSION: null,
+    RECEIVED_AUDITS: null,
+    RECEIVED_STATUSES: null,
+    RECEIVED_PREFERENCE: null,
+    RECEIVED_PREFERENCES: null,
+    DELETED_PREFERENCES: null
+});
+
+export default UserTypes;
