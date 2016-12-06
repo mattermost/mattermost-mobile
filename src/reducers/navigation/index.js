@@ -1,11 +1,11 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import * as NavigationStateUtils from 'NavigationStateUtils';
+import {NavigationExperimental} from 'react-native';
 
 import {UsersTypes, NavigationTypes} from 'constants';
 
-import * as Routes from 'navigation/routes.js';
+import Routes from 'navigation/routes.js';
 
 const initialState = {
     index: 0,
@@ -17,22 +17,22 @@ const initialState = {
 export default function(state = initialState, action) {
     switch (action.type) {
     case NavigationTypes.NAVIGATION_PUSH:
-        return NavigationStateUtils.push(state, action.route);
+        return NavigationExperimental.StateUtils.push(state, action.route);
 
     case NavigationTypes.NAVIGATION_POP:
-        return NavigationStateUtils.pop(state);
+        return NavigationExperimental.StateUtils.pop(state);
 
     case NavigationTypes.NAVIGATION_JUMP:
-        return NavigationStateUtils.jumpTo(state, action.key);
+        return NavigationExperimental.StateUtils.jumpTo(state, action.key);
 
     case NavigationTypes.NAVIGATION_JUMP_TO_INDEX:
-        return NavigationStateUtils.jumpToIndex(state, action.index);
+        return NavigationExperimental.StateUtils.jumpToIndex(state, action.index);
 
     case NavigationTypes.NAVIGATION_RESET:
-        return NavigationStateUtils.reset(state, action.routes, action.index);
+        return NavigationExperimental.StateUtils.reset(state, action.routes, action.index);
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return NavigationStateUtils.reset(state, initialState.routes, initialState.index);
+        return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);
 
     default:
         return state;
