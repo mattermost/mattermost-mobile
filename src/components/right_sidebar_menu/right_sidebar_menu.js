@@ -10,7 +10,6 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TouchableHighlight,
     View
 } from 'react-native';
 
@@ -182,7 +181,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item style={{backgroundColor: 'red'}} onPress={this.props.actions.logout}>
+                <Item onPress={this.props.actions.logout}>
                     <Icon
                         style={Styles.icon}
                         name='sign-out'
