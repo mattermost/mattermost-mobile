@@ -8,13 +8,14 @@ import {connect} from 'react-redux';
 
 import {goBack} from 'actions/navigation';
 
-import LoginContainer from 'routes/login/login_container.js';
-import SelectServerContainer from 'routes/select_server/select_server_container.js';
-import SelectTeamContainer from 'routes/select_team/select_team_container.js';
-import ChannelContainer from 'routes/channel/channel_container.js';
+import LoginContainer from 'routes/login/login_container';
+import SelectServerContainer from 'routes/select_server/select_server_container';
+import SelectTeamContainer from 'routes/select_team/select_team_container';
+import ChannelContainer from 'routes/channel/channel_container';
+import SearchContainer from 'routes/search/search_container';
 
+import {Easing, NavigationExperimental, View} from 'react-native';
 import FormattedText from 'components/formatted_text.js';
-import {NavigationExperimental, View} from 'react-native';
 
 class Router extends React.Component {
     static propTypes = {
@@ -49,14 +50,31 @@ class Router extends React.Component {
             );
         }
 
-        return (
-            <View>
+        const renderedScenes = transitionProps.scenes.map((scene) => {
+            const cardProps = {
+                ...transitionProps,
+                scene
+            };
+
+            return (
                 <NavigationExperimental.Card
-                    {...transitionProps}
+                    {...cardProps}
+                    style={NavigationExperimental.Card.PagerStyleInterpolator.forHorizontal({
+                        ...cardProps,
+                        onNavigateBack: this.props.actions.goBack
+                    })}
                     onNavigateBack={this.props.actions.goBack}
                     renderScene={this.renderScene}
-                    key={transitionProps.scene.route.key}
+                    key={scene.key}
                 />
+            );
+        });
+
+        return (
+            <View style={{flex: 1, flexDirection: 'column-reverse'}}>
+                <View style={{flex: 1}}>
+                    {renderedScenes}
+                </View>
                 {title}
             </View>
         );
@@ -80,25 +98,38 @@ class Router extends React.Component {
     }
 
     renderScene = ({scene}) => {
+        const sceneProps = scene.route.props;
+
         switch (scene.route.key) {
         case 'select_server':
-            return <SelectServerContainer/>;
+            return <SelectServerContainer {...sceneProps}/>;
         case 'login':
-            return <LoginContainer/>;
+            return <LoginContainer {...sceneProps}/>;
         case 'select_team':
-            return <SelectTeamContainer/>;
+            return <SelectTeamContainer {...sceneProps}/>;
         case 'channel':
-            return <ChannelContainer/>;
+            return <ChannelContainer {...sceneProps}/>;
+        case 'search':
+            return <SearchContainer {...sceneProps}/>;
         default:
             return null;
         }
     }
 
+    configureTransition = () => {
+        return {
+            duration: 500,
+            easing: Easing.inOut(Easing.ease)
+        };
+    }
+
     render = () => {
         return (
             <NavigationExperimental.Transitioner
+                style={{flex: 1}}
                 navigationState={this.props.navigation}
                 render={this.renderTransition}
+                configureTransition={this.configureTransition}
             />
         );
     }

@@ -19,3 +19,7 @@ export const SelectTeam = {
 export const Channel = {
     key: 'channel'
 };
+
+export const Search = {
+    key: 'search'
+};
