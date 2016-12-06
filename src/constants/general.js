@@ -1,14 +1,28 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-export const PING_REQUEST = 'PING_REQUEST';
-export const PING_SUCCESS = 'PING_SUCCESS';
-export const PING_FAILURE = 'PING_FAILURE';
+import keymirror from 'keymirror';
 
-export const CLIENT_CONFIG_REQUEST = 'CLIENT_CONFIG_REQUEST';
-export const CLIENT_CONFIG_SUCCESS = 'CLIENT_CONFIG_SUCCESS';
-export const CLIENT_CONFIG_FAILURE = 'CLIENT_CONFIG_FAILURE';
+const GeneralTypes = keymirror({
+    PING_REQUEST: null,
+    PING_SUCCESS: null,
+    PING_FAILURE: null,
 
-export const LOG_CLIENT_ERROR_REQUEST = 'LOG_CLIENT_ERROR_REQUEST';
-export const LOG_CLIENT_ERROR_SUCCESS = 'LOG_CLIENT_ERROR_SUCCESS';
-export const LOG_CLIENT_ERROR_FAILURE = 'LOG_CLIENT_ERROR_FAILURE';
+    CLIENT_CONFIG_REQUEST: null,
+    CLIENT_CONFIG_SUCCESS: null,
+    CLIENT_CONFIG_FAILURE: null,
+    CLIENT_CONFIG_RECEIVED: null,
+
+    CLIENT_LICENSE_REQUEST: null,
+    CLIENT_LICENSE_SUCCESS: null,
+    CLIENT_LICENSE_FAILURE: null,
+    CLIENT_LICENSE_RECEIVED: null,
+
+    LOG_CLIENT_ERROR_REQUEST: null,
+    LOG_CLIENT_ERROR_SUCCESS: null,
+    LOG_CLIENT_ERROR_FAILURE: null,
+
+    SERVER_URL_CHANGED: null
+});
+
+export default GeneralTypes;
