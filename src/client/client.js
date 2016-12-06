@@ -319,13 +319,6 @@ export default class Client {
         );
     };
 
-    getInitialLoad = async () => {
-        return this.doFetch(
-            `${this.getUsersRoute()}/initial_load`,
-            {method: 'get'}
-        );
-    };
-
     // Team routes
 
     createTeam = async (team) => {
@@ -335,14 +328,21 @@ export default class Client {
         );
     };
 
-    getAllTeams = async() => {
+    updateTeam = async (team) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(team.id)}/update`,
+            {method: 'post', body: JSON.stringify(team)}
+        );
+    };
+
+    getAllTeams = async () => {
         return this.doFetch(
             `${this.getTeamsRoute()}/all`,
             {method: 'get'}
         );
     };
 
-    getMyTeamMembers = async() => {
+    getMyTeamMembers = async () => {
         return this.doFetch(
             `${this.getTeamsRoute()}/members`,
             {method: 'get'}
@@ -356,23 +356,37 @@ export default class Client {
         );
     };
 
-    addUserToTeamFromInvite = async (inviteId, data, hash) => {
+    getTeamMember = async (teamId, userId) => {
         return this.doFetch(
-            `${this.getTeamsRoute()}/add_user_to_team_from_invite`,
-            {method: 'post', body: JSON.stringify({hash, data, invite_id: inviteId})}
+            `${this.getTeamNeededRoute(teamId)}/members/${userId}`,
+            {method: 'get'}
         );
     };
 
-    addChannelMember = async (teamId, channelId, userId) => {
+    getTeamMemberByIds = async (teamId, userIds) => {
         return this.doFetch(
-            `${this.getChannelNeededRoute(teamId, channelId)}/add`,
+            `${this.getTeamNeededRoute(teamId)}/members/ids`,
+            {method: 'post', body: JSON.stringify(userIds)}
+        );
+    };
+
+    getTeamStats = async (teamId) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(teamId)}/stats`,
+            {method: 'get'}
+        );
+    };
+
+    addUserToTeam = async (teamId, userId) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(teamId)}/add_user_to_team`,
             {method: 'post', body: JSON.stringify({user_id: userId})}
         );
     };
 
-    removeChannelMember = async (teamId, channelId, userId) => {
+    removeUserFromTeam = async (teamId, userId) => {
         return this.doFetch(
-            `${this.getChannelNeededRoute(teamId, channelId)}/remove`,
+            `${this.getTeamNeededRoute(teamId)}/remove_user_from_team`,
             {method: 'post', body: JSON.stringify({user_id: userId})}
         );
     };
@@ -393,7 +407,7 @@ export default class Client {
         );
     };
 
-    getChannel = async(teamId, channelId) => {
+    getChannel = async (teamId, channelId) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/`,
             {method: 'get'}
@@ -428,52 +442,66 @@ export default class Client {
         );
     };
 
-    leaveChannel = async(teamId, channelId) => {
+    leaveChannel = async (teamId, channelId) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/leave`,
             {method: 'post'}
         );
     };
 
-    joinChannel = async(teamId, channelId) => {
+    joinChannel = async (teamId, channelId) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/join`,
             {method: 'post'}
         );
     };
 
-    joinChannelByName = async(teamId, channelName) => {
+    joinChannelByName = async (teamId, channelName) => {
         return this.doFetch(
             `${this.getChannelNameRoute(teamId, channelName)}/join`,
             {method: 'post'}
         );
     };
 
-    deleteChannel = async(teamId, channelId) => {
+    deleteChannel = async (teamId, channelId) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/delete`,
             {method: 'post'}
         );
     };
 
-    updateLastViewedAt = async(teamId, channelId, active) => {
+    updateLastViewedAt = async (teamId, channelId, active) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/update_last_viewed_at`,
             {method: 'post', body: JSON.stringify({active})}
         );
     };
 
-    getMoreChannels = async(teamId, offset, limit) => {
+    getMoreChannels = async (teamId, offset, limit) => {
         return this.doFetch(
             `${this.getChannelsRoute(teamId)}/more/${offset}/${limit}`,
             {method: 'get'}
         );
     };
 
-    getChannelStats = async(teamId, channelId) => {
+    getChannelStats = async (teamId, channelId) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/stats`,
             {method: 'get'}
+        );
+    };
+
+    addChannelMember = async (teamId, channelId, userId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/add`,
+            {method: 'post', body: JSON.stringify({user_id: userId})}
+        );
+    };
+
+    removeChannelMember = async (teamId, channelId, userId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/remove`,
+            {method: 'post', body: JSON.stringify({user_id: userId})}
         );
     };
 
