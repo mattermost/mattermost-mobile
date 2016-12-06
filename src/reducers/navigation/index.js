@@ -10,7 +10,7 @@ import * as Routes from 'navigation/routes.js';
 const initialState = {
     index: 0,
     routes: [
-        Routes.SelectServer
+        Routes.Root
     ]
 };
 
@@ -27,6 +27,9 @@ export default function(state = initialState, action) {
 
     case NavigationTypes.NAVIGATION_JUMP_TO_INDEX:
         return NavigationStateUtils.jumpToIndex(state, action.index);
+
+    case NavigationTypes.NAVIGATION_RESET:
+        return NavigationStateUtils.reset(state, action.routes, action.index);
 
     case UsersTypes.LOGOUT_SUCCESS:
         return NavigationStateUtils.reset(state, initialState.routes, initialState.index);
