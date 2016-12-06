@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {NavigationTypes} from 'constants';
-import * as Routes from 'navigation/routes';
+import Routes from 'navigation/routes';
 
 export function goBack() {
     return async (dispatch, getState) => {
