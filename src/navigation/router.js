@@ -8,11 +8,7 @@ import {connect} from 'react-redux';
 
 import {goBack} from 'actions/navigation';
 
-import LoginContainer from 'routes/login/login_container';
-import SelectServerContainer from 'routes/select_server/select_server_container';
-import SelectTeamContainer from 'routes/select_team/select_team_container';
-import ChannelContainer from 'routes/channel/channel_container';
-import SearchContainer from 'routes/search/search_container';
+import {getComponentForScene} from 'scenes';
 
 import {Easing, NavigationExperimental, View} from 'react-native';
 import FormattedText from 'components/formatted_text.js';
@@ -98,22 +94,9 @@ class Router extends React.Component {
     }
 
     renderScene = ({scene}) => {
-        const sceneProps = scene.route.props;
+        const SceneComponent = getComponentForScene(scene.route.key);
 
-        switch (scene.route.key) {
-        case 'select_server':
-            return <SelectServerContainer {...sceneProps}/>;
-        case 'login':
-            return <LoginContainer {...sceneProps}/>;
-        case 'select_team':
-            return <SelectTeamContainer {...sceneProps}/>;
-        case 'channel':
-            return <ChannelContainer {...sceneProps}/>;
-        case 'search':
-            return <SearchContainer {...sceneProps}/>;
-        default:
-            return null;
-        }
+        return <SceneComponent {...scene.route.props}/>;
     }
 
     configureTransition = () => {

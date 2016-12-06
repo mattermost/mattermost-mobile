@@ -2,24 +2,24 @@
 // See License.txt for license information.
 
 export const SelectServer = {
-    key: 'select_server',
+    key: 'SelectServer',
     title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}
 };
 
 export const Login = {
-    key: 'login',
+    key: 'Login',
     title: {id: 'mobile.routes.login', defaultMessage: 'Login'}
 };
 
 export const SelectTeam = {
-    key: 'select_team',
+    key: 'SelectTeam',
     title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}
 };
 
 export const Channel = {
-    key: 'channel'
+    key: 'Channel'
 };
 
 export const Search = {
-    key: 'search'
+    key: 'Search'
 };
