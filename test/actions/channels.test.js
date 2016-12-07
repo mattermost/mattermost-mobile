@@ -382,13 +382,15 @@ describe('Actions.Channels', () => {
                 TestHelper.fakeChannel(TestHelper.basicTeam.id));
 
             store.subscribe(() => {
-                const channels = store.getState().entities.channels.moreChannels;
+                const channels = store.getState().entities.channels.channels;
+                const members = store.getState().entities.channels.myMembers;
                 const moreRequest = store.getState().requests.channels.getMoreChannels;
 
                 if (moreRequest.status === RequestStatus.SUCCESS) {
                     const channel = channels[secondChannel.id];
 
                     assert.ok(channel);
+                    assert.ifError(members[channel.id]);
                     done();
                 } else if (moreRequest.status === RequestStatus.FAILURE) {
                     done(new Error(JSON.stringify(moreRequest.error)));

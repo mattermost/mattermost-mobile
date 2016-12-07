@@ -23,15 +23,11 @@ function channels(state = {}, action) {
             [action.data.id]: action.data
         };
 
-    case ChannelTypes.RECEIVED_CHANNELS: {
+    case ChannelTypes.RECEIVED_CHANNELS:
+    case ChannelTypes.RECEIVED_MORE_CHANNELS: {
         for (const channel of action.data) {
             nextState[channel.id] = channel;
         }
-        return nextState;
-    }
-    case ChannelTypes.LEAVE_CHANNEL:
-    case ChannelTypes.RECEIVED_CHANNEL_DELETED: {
-        Reflect.deleteProperty(nextState, action.channel_id);
         return nextState;
     }
     case UsersTypes.LOGOUT_SUCCESS:
@@ -89,28 +85,6 @@ function myMembers(state = {}, action) {
     }
 }
 
-function moreChannels(state = {}, action) {
-    const nextState = {...state};
-
-    switch (action.type) {
-    case ChannelTypes.RECEIVED_MORE_CHANNELS: {
-        for (const channel of action.data) {
-            nextState[channel.id] = channel;
-        }
-        return nextState;
-    }
-    case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER: {
-        const channelMember = action.data;
-        Reflect.deleteProperty(nextState, channelMember.channel_id);
-        return nextState;
-    }
-    case UsersTypes.LOGOUT_SUCCESS:
-        return {};
-    default:
-        return state;
-    }
-}
-
 function stats(state = {}, action) {
     switch (action.type) {
     case ChannelTypes.RECEIVED_CHANNEL_STATS: {
@@ -137,9 +111,6 @@ export default combineReducers({
 
     //object where every key is the channel id and has and object with the channel members detail
     myMembers,
-
-    // object where every key is the channel id and has a object with the channel detail where the user is not a current member
-    moreChannels,
 
     // object where every key is the team id and has an object with the team stats
     stats
