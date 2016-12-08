@@ -22,7 +22,10 @@ function teams(state = {}, action) {
 
     case TeamsTypes.CREATED_TEAM:
     case TeamsTypes.UPDATED_TEAM:
-        return {...state, [action.data.id]: action.data};
+        return {
+            ...state,
+            [action.data.id]: action.data
+        };
 
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
@@ -67,21 +70,21 @@ function myMembers(state = {}, action) {
 
 function membersInTeam(state = {}, action) {
     switch (action.type) {
+    case TeamsTypes.RECEIVED_MEMBER_IN_TEAM: {
+        const data = action.data;
+        const members = new Set(state[data.team_id]);
+        members.add(data.user_id);
+        return {
+            ...state,
+            [data.team_id]: members
+        };
+    }
     case TeamsTypes.RECEIVED_MEMBERS_IN_TEAM: {
         const data = action.data;
-        let teamId;
-        let members;
-
-        if (Array.isArray(data)) {
-            teamId = data[0].team_id;
-            members = new Set(state[teamId]);
-            for (const member of data) {
-                members.add(member.user_id);
-            }
-        } else {
-            teamId = data.team_id;
-            members = new Set(state[teamId]);
-            members.add(data.user_id);
+        const teamId = data[0].team_id;
+        const members = new Set(state[teamId]);
+        for (const member of data) {
+            members.add(member.user_id);
         }
 
         return {

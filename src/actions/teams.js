@@ -134,7 +134,7 @@ export function addUserToTeam(teamId, userId) {
 
             dispatch(batchActions([
                 {
-                    type: TeamsTypes.RECEIVED_MEMBERS_IN_TEAM,
+                    type: TeamsTypes.RECEIVED_MEMBER_IN_TEAM,
                     data: member
                 },
                 {
