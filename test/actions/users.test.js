@@ -30,7 +30,7 @@ describe('Actions.Users', () => {
                     } else {
                         assert.ok(currentUserId);
                         assert.ok(profiles);
-                        assert.ok(profiles.items[currentUserId]);
+                        assert.ok(profiles[currentUserId]);
                         assert.ok(Object.keys(preferences).length);
 
                         // TODO: uncomment when PLT-4167 is merged
@@ -75,10 +75,10 @@ describe('Actions.Users', () => {
                         assert.deepStrictEqual(users.myPreferences, {}, 'user preferences not empty');
                         assert.deepStrictEqual(users.mySessions, [], 'user sessions not empty');
                         assert.deepStrictEqual(users.myAudits, [], 'user audits not empty');
-                        assert.deepStrictEqual(users.profiles, {items: {}, offset: 0, count: 0}, 'user profiles not empty');
-                        assert.deepStrictEqual(users.profilesInTeam, {items: new Set(), offset: 0, count: 0}, 'users profiles in team not empty');
-                        assert.deepStrictEqual(users.profilesInChannel, {items: new Set(), offset: 0, count: 0}, 'users profiles in channel not empty');
-                        assert.deepStrictEqual(users.profilesNotInChannel, {items: new Set(), offset: 0, count: 0}, 'users profiles NOT in channel not empty');
+                        assert.deepStrictEqual(users.profiles, {}, 'user profiles not empty');
+                        assert.deepStrictEqual(users.profilesInTeam, {}, 'users profiles in team not empty');
+                        assert.deepStrictEqual(users.profilesInChannel, {}, 'users profiles in channel not empty');
+                        assert.deepStrictEqual(users.profilesNotInChannel, {}, 'users profiles NOT in channel not empty');
                         assert.deepStrictEqual(users.statuses, {}, 'users statuses not empty');
                         assert.strictEqual(loginView.loginId, '', 'login id not empty');
                         assert.strictEqual(loginView.password, '', 'password not empty');
@@ -123,9 +123,7 @@ describe('Actions.Users', () => {
                     if (profilesRequest.error) {
                         done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
-                        assert.strictEqual(profiles.offset, 0, 'offset should be 0');
-                        assert.strictEqual(profiles.count, 0, 'count should be 0');
-                        assert.ok(profiles.items[user.id]);
+                        assert.ok(profiles[user.id]);
 
                         done();
                     }
@@ -149,11 +147,10 @@ describe('Actions.Users', () => {
                     if (profilesRequest.error) {
                         done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
-                        assert.ok(profilesInTeam.offset > 0, 'offset should be > 0');
-                        assert.ok(profilesInTeam.count > 0, 'count should be > 0');
-                        assert.equal(profilesInTeam.count, profilesInTeam.items.size, 'count should be equal to the amount of profiles');
-                        assert.ok(profilesInTeam.items.has(TestHelper.basicUser.id));
-                        assert.equal(Object.keys(profiles.items).length, profilesInTeam.count, 'profiles != profiles in team');
+                        const team = profilesInTeam[TestHelper.basicTeam.id];
+                        assert.ok(team);
+                        assert.ok(team.has(TestHelper.basicUser.id));
+                        assert.equal(Object.keys(profiles).length, team.size, 'profiles != profiles in team');
 
                         done();
                     }
@@ -177,11 +174,9 @@ describe('Actions.Users', () => {
                     if (profilesRequest.error) {
                         done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
-                        assert.ok(profilesInChannel.offset > 0, 'offset should be > 0');
-                        assert.ok(profilesInChannel.count > 0, 'count should be > 0');
-                        assert.equal(profilesInChannel.count, profilesInChannel.items.size, 'count should be equal to the amount of profiles');
-                        assert.ok(profilesInChannel.items.has(TestHelper.basicUser.id));
-                        assert.equal(Object.keys(profiles.items).length, profilesInChannel.count, 'profiles != profiles in channel');
+                        const channel = profilesInChannel[TestHelper.basicChannel.id];
+                        assert.ok(channel.has(TestHelper.basicUser.id));
+                        assert.equal(Object.keys(profiles).length, channel.size, 'profiles != profiles in channel');
 
                         done();
                     }
@@ -195,6 +190,12 @@ describe('Actions.Users', () => {
     it('getProfilesNotInChannel', (done) => {
         TestHelper.initBasic(Client).then(async () => {
             const store = configureStore();
+            const user = await TestHelper.basicClient.createUserWithInvite(
+                TestHelper.fakeUser(),
+                null,
+                null,
+                TestHelper.basicTeam.invite_id
+            );
 
             store.subscribe(() => {
                 const profilesRequest = store.getState().requests.users.getProfilesNotInChannel;
@@ -205,11 +206,9 @@ describe('Actions.Users', () => {
                     if (profilesRequest.error) {
                         done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
-                        assert.ok(profilesNotInChannel.offset > 0, 'offset should be > 0');
-                        assert.ok(profilesNotInChannel.count > 0, 'count should be > 0');
-                        assert.equal(profilesNotInChannel.count, profilesNotInChannel.items.size, 'count should be equal to the amount of profiles');
-                        assert.ok(profilesNotInChannel.items.has(TestHelper.basicUser.id));
-                        assert.equal(Object.keys(profiles.items).length, profilesNotInChannel.count, 'profiles != profiles in channel');
+                        const channel = profilesNotInChannel[TestHelper.basicChannel.id];
+                        assert.ok(channel.has(user.id));
+                        assert.equal(Object.keys(profiles).length, channel.size, 'profiles != profiles in channel');
 
                         done();
                     }

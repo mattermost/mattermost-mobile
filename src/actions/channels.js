@@ -426,7 +426,8 @@ export function addChannelMember(teamId, channelId, userId) {
             dispatch(batchActions([
                 {
                     type: UsersTypes.RECEIVED_PROFILE_IN_CHANNEL,
-                    user_id: userId
+                    data: {user_id: userId},
+                    id: channelId
                 },
                 {
                     type: ChannelTypes.ADD_CHANNEL_MEMBER_SUCCESS
@@ -448,7 +449,8 @@ export function removeChannelMember(teamId, channelId, userId) {
             dispatch(batchActions([
                 {
                     type: UsersTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL,
-                    user_id: userId
+                    data: {user_id: userId},
+                    id: channelId
                 },
                 {
                     type: ChannelTypes.REMOVE_CHANNEL_MEMBER_SUCCESS
