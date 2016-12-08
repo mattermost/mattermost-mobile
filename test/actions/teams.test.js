@@ -165,7 +165,7 @@ describe('Actions.Teams', () => {
     //     });
     // });
 
-    it.only('getTeamMember', (done) => {
+    it('getTeamMember', (done) => {
         TestHelper.initBasic(Client).then(async () => {
             const store = configureStore();
 
