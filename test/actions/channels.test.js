@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import * as Actions from 'actions/channels';
+import {getProfiles} from 'actions/users';
 import Client from 'client';
 import configureStore from 'store/configureStore';
 import {RequestStatus} from 'constants';
@@ -54,7 +55,12 @@ describe('Actions.Channels', () => {
     it('createDirectChannel', (done) => {
         TestHelper.initBasic(Client).then(async () => {
             const store = configureStore();
-            const user = await TestHelper.basicClient.createUser(TestHelper.fakeUser());
+            const user = await TestHelper.basicClient.createUserWithInvite(
+                TestHelper.fakeUser(),
+                null,
+                null,
+                TestHelper.basicTeam.invite_id
+            );
 
             store.subscribe(() => {
                 const channels = store.getState().entities.channels.channels;
@@ -63,9 +69,12 @@ describe('Actions.Channels', () => {
                 const preferences = store.getState().entities.users.myPreferences;
 
                 const createRequest = store.getState().requests.channels.createChannel;
-                const membersRequest = store.getState().requests.channels.myMembers;
 
-                if (createRequest.status === RequestStatus.SUCCESS && membersRequest.status === RequestStatus.SUCCESS) {
+                if (createRequest.status === RequestStatus.SUCCESS || createRequest.status === RequestStatus.FAILURE) {
+                    if (createRequest.error) {
+                        done(new Error(JSON.stringify(createRequest.error)));
+                    }
+
                     const channelsCount = Object.keys(channels).length;
                     const membersCount = Object.keys(members).length;
                     assert.ok(channels);
@@ -80,11 +89,10 @@ describe('Actions.Channels', () => {
                     assert.equal(channelsCount, 1);
                     assert.equal(membersCount, 1);
                     done();
-                } else if (createRequest.status === RequestStatus.FAILURE && membersRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(createRequest.error)));
                 }
             });
 
+            await getProfiles(0)(store.dispatch, store.getState);
             Actions.createDirectChannel(TestHelper.basicUser.id, user.id)(store.dispatch, store.getState);
         });
     });
@@ -382,13 +390,15 @@ describe('Actions.Channels', () => {
                 TestHelper.fakeChannel(TestHelper.basicTeam.id));
 
             store.subscribe(() => {
-                const channels = store.getState().entities.channels.moreChannels;
+                const channels = store.getState().entities.channels.channels;
+                const members = store.getState().entities.channels.myMembers;
                 const moreRequest = store.getState().requests.channels.getMoreChannels;
 
                 if (moreRequest.status === RequestStatus.SUCCESS) {
                     const channel = channels[secondChannel.id];
 
                     assert.ok(channel);
+                    assert.ifError(members[channel.id]);
                     done();
                 } else if (moreRequest.status === RequestStatus.FAILURE) {
                     done(new Error(JSON.stringify(moreRequest.error)));
