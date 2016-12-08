@@ -13,7 +13,7 @@ const scenes = {
     SelectServer,
     Login,
     SelectTeam,
-    Channel,
+    ChannelView: Channel, // Special case the name for this one to avoid ambiguity
     Search
 };
 

@@ -17,8 +17,8 @@ export default {
         key: 'SelectTeam',
         title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}
     },
-    Channel: {
-        key: 'Channel'
+    ChannelView: {
+        key: 'ChannelView'
     },
     Search: {
         key: 'Search'

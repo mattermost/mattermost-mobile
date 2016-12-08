@@ -30,11 +30,11 @@ export function goToSelectTeam() {
     };
 }
 
-export function goToChannel() {
+export function goToChannelView() {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.Channel
+            route: Routes.ChannelView
         }, getState);
     };
 }

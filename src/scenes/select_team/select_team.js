@@ -29,7 +29,7 @@ export default class SelectTeam extends Component {
 
     onSelectTeam(team) {
         this.props.actions.selectTeam(team);
-        this.props.actions.goToChannel();
+        this.props.actions.goToChannelView();
     }
 
     render() {

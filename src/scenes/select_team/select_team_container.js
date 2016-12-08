@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import * as teamActions from 'actions/teams';
-import {goToChannel} from 'actions/navigation';
+import {goToChannelView} from 'actions/navigation';
 
 import SelectTeamView from './select_team.js';
 
@@ -22,7 +22,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             ...teamActions,
-            goToChannel
+            goToChannelView
         }, dispatch)
     };
 }
