@@ -88,8 +88,7 @@ export function getProfilesInTeam(teamId, offset, limit = Constants.PROFILE_CHUN
                 {
                     type: UsersTypes.RECEIVED_PROFILES_IN_TEAM,
                     data: profiles,
-                    offset,
-                    count: Object.keys(profiles).length
+                    id: teamId
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
@@ -115,8 +114,7 @@ export function getProfilesInChannel(teamId, channelId, offset, limit = Constant
                 {
                     type: UsersTypes.RECEIVED_PROFILES_IN_CHANNEL,
                     data: profiles,
-                    offset,
-                    count: Object.keys(profiles).length
+                    id: channelId
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,
@@ -137,13 +135,12 @@ export function getProfilesNotInChannel(teamId, channelId, offset, limit = Const
     return async (dispatch, getState) => {
         try {
             dispatch({type: UsersTypes.PROFILES_NOT_IN_CHANNEL_REQUEST}, getState);
-            const profiles = await Client.getProfilesInChannel(teamId, channelId, offset, limit);
+            const profiles = await Client.getProfilesNotInChannel(teamId, channelId, offset, limit);
             dispatch(batchActions([
                 {
                     type: UsersTypes.RECEIVED_PROFILES_NOT_IN_CHANNEL,
                     data: profiles,
-                    offset,
-                    count: Object.keys(profiles).length
+                    id: channelId
                 },
                 {
                     type: UsersTypes.RECEIVED_PROFILES,

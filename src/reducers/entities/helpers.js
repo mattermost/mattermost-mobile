@@ -1,14 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-export function initialPagingState() {
-    return {
-        items: new Set(),
-        offset: 0,
-        count: 0
-    };
-}
-
 function isPostListNull(pl) {
     if (!pl) {
         return true;
@@ -105,32 +97,34 @@ export function addPosts(state, action) {
 }
 
 export function profilesToSet(state, action) {
-    const nextState = {...state};
-    if (action.offset != null && action.count != null) {
-        nextState.offset = action.offset + action.count;
-        nextState.count += action.count;
-    }
-
-    nextState.items = new Set(state.items);
+    const id = action.id;
+    const nextSet = new Set(state[id]);
     Object.keys(action.data).forEach((key) => {
-        nextState.items.add(key);
+        nextSet.add(key);
     });
 
-    return nextState;
+    return {
+        ...state,
+        [id]: nextSet
+    };
 }
 
-export function addProfileToSet(state, profileId) {
-    const nextState = {...state};
-    nextState.items = new Set(state.items);
-    nextState.items.add(profileId);
-
-    return nextState;
+export function addProfileToSet(state, action) {
+    const id = action.id;
+    const nextSet = new Set(state[id]);
+    nextSet.add(action.data.user_id);
+    return {
+        ...state,
+        [id]: nextSet
+    };
 }
 
-export function removeProfileFromSet(state, profileId) {
-    const nextState = {...state};
-    nextState.items = new Set(state.items);
-    nextState.items.delete(profileId);
-
-    return nextState;
+export function removeProfileFromSet(state, action) {
+    const id = action.id;
+    const nextSet = new Set(state[id]);
+    nextSet.delete(action.data.user_id);
+    return {
+        ...state,
+        [id]: nextSet
+    };
 }

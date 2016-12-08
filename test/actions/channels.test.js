@@ -70,7 +70,7 @@ describe('Actions.Channels', () => {
                     const membersCount = Object.keys(members).length;
                     assert.ok(channels);
                     assert.ok(members);
-                    assert.ok(profiles.items[user.id]);
+                    assert.ok(profiles[user.id]);
                     assert.ok(Object.keys(preferences).length);
                     assert.ok(channels[Object.keys(members)[0]]);
                     assert.ok(members[Object.keys(channels)[0]]);
@@ -440,8 +440,12 @@ describe('Actions.Channels', () => {
                 const addRequest = store.getState().requests.channels.addChannelMember;
 
                 if (addRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(profilesInChannel.items.has(user.id));
-                    assert.ifError(profilesNotInChannel.items.has(user.id));
+                    const channel = profilesInChannel[TestHelper.basicChannel.id];
+                    const notChannel = profilesNotInChannel[TestHelper.basicChannel.id];
+                    assert.ok(channel);
+                    assert.ok(notChannel);
+                    assert.ok(channel.has(user.id));
+                    assert.ifError(notChannel.has(user.id));
                     done();
                 } else if (addRequest.status === RequestStatus.FAILURE) {
                     done(new Error(JSON.stringify(addRequest.error)));
@@ -472,8 +476,12 @@ describe('Actions.Channels', () => {
                 const removeRequest = store.getState().requests.channels.removeChannelMember;
 
                 if (removeRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(profilesNotInChannel.items.has(user.id));
-                    assert.ifError(profilesInChannel.items.has(user.id));
+                    const channel = profilesInChannel[TestHelper.basicChannel.id];
+                    const notChannel = profilesNotInChannel[TestHelper.basicChannel.id];
+                    assert.ok(channel);
+                    assert.ok(notChannel);
+                    assert.ok(notChannel.has(user.id));
+                    assert.ifError(channel.has(user.id));
                     done();
                 } else if (removeRequest.status === RequestStatus.FAILURE) {
                     done(new Error(JSON.stringify(removeRequest.error)));
