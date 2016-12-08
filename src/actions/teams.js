@@ -91,14 +91,24 @@ export function getMyTeamMembers() {
 }
 
 export function getTeamMember(teamId, userId) {
-    return bindClientFunc(
-        Client.getTeamMember,
-        TeamsTypes.TEAM_MEMBERS_REQUEST,
-        [TeamsTypes.RECEIVED_MEMBERS_IN_TEAM, TeamsTypes.TEAM_MEMBERS_SUCCESS],
-        TeamsTypes.TEAM_MEMBERS_FAILURE,
-        teamId,
-        userId
-    );
+    return async (dispatch, getState) => {
+        try {
+            dispatch({type: TeamsTypes.TEAM_MEMBERS_REQUEST}, getState);
+            const member = await Client.getTeamMember(teamId, userId);
+            dispatch(batchActions([
+                {
+                    type: TeamsTypes.RECEIVED_MEMBERS_IN_TEAM,
+                    data: [member]
+                },
+                {
+                    type: TeamsTypes.TEAM_MEMBERS_SUCCESS
+                }
+            ]), getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: TeamsTypes.TEAM_MEMBERS_FAILURE, error}, getState);
+        }
+    };
 }
 
 export function getTeamMembersByIds(teamId, userIds) {

@@ -37,14 +37,6 @@ function teams(state = {}, action) {
 
 function myMembers(state = {}, action) {
     switch (action.type) {
-    case TeamsTypes.RECEIVED_MY_TEAM_MEMBER: {
-        const member = action.data;
-        return {
-            ...state,
-            [member.team_id]: member
-        };
-    }
-
     case TeamsTypes.RECEIVED_MY_TEAM_MEMBERS: {
         const nextState = {};
         const members = action.data;

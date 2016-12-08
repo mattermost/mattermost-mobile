@@ -44,7 +44,6 @@ const TeamTypes = keymirror({
     SELECT_TEAM: null,
     UPDATED_TEAM: null,
     RECEIVED_ALL_TEAMS: null,
-    RECEIVED_MY_TEAM_MEMBER: null,
     RECEIVED_MY_TEAM_MEMBERS: null,
     RECEIVED_TEAM_LISTINGS: null,
     RECEIVED_MEMBERS_IN_TEAM: null,
