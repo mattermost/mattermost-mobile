@@ -3,13 +3,13 @@
 
 import React from 'react';
 
-import FormattedText from './formatted_text.js';
+import FormattedText from 'components/formatted_text';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Item from './components/item';
 import {
     ScrollView,
     StyleSheet,
     Text,
-    TouchableHighlight,
     View
 } from 'react-native';
 
@@ -18,14 +18,6 @@ const Styles = StyleSheet.create({
         backgroundColor: '#2071a7',
         flex: 1,
         paddingTop: 20
-    },
-    item: {
-        alignItems: 'center',
-        height: 40,
-        paddingLeft: 10,
-        paddingRight: 10,
-        flex: 1,
-        flexDirection: 'row'
     },
     itemText: {
         color: 'white'
@@ -45,14 +37,29 @@ const Styles = StyleSheet.create({
 });
 
 export default class RightSidebarMenu extends React.Component {
-    handlePress() {
-        console.log('press'); // eslint-disable-line no-console
+    static propTypes = {
+        actions: React.PropTypes.shape({
+            goToFlaggedPosts: React.PropTypes.func.isRequired,
+            goToRecentMentions: React.PropTypes.func.isRequired,
+            logout: React.PropTypes.func.isRequired
+        }).isRequired,
+        onClose: React.PropTypes.func.isRequired
+    }
+
+    goToRecentMentions = () => {
+        this.props.onClose();
+        this.props.actions.goToRecentMentions();
+    }
+
+    goToFlaggedPosts = () => {
+        this.props.onClose();
+        this.props.actions.goToFlaggedPosts();
     }
 
     render() {
         return (
             <ScrollView style={Styles.container}>
-                <Item onPress={this.handlePress}>
+                <Item onPress={this.goToRecentMentions}>
                     <Text style={[Styles.icon, Styles.mentionIcon]}>{'@'}</Text>
                     <FormattedText
                         style={Styles.itemText}
@@ -60,7 +67,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Recent Mentions'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item onPress={this.goToFlaggedPosts}>
                     <Icon
                         style={Styles.icon}
                         name='flag'
@@ -72,7 +79,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='cog'
@@ -83,7 +90,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Account Settings'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='user-plus'
@@ -94,7 +101,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Invite New Member'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='link'
@@ -106,7 +113,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='globe'
@@ -117,7 +124,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Team Settings'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='users'
@@ -128,7 +135,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Manage Members'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='exchange'
@@ -140,7 +147,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='question'
@@ -151,7 +158,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Help'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='phone'
@@ -162,7 +169,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Report a Problem'
                     />
                 </Item>
-                <Item onPress={this.handlePress}>
+                <Item>
                     <Icon
                         style={Styles.icon}
                         name='info'
@@ -174,7 +181,7 @@ export default class RightSidebarMenu extends React.Component {
                     />
                 </Item>
                 <Divider/>
-                <Item onPress={this.handlePress}>
+                <Item onPress={this.props.actions.logout}>
                     <Icon
                         style={Styles.icon}
                         name='sign-out'
@@ -189,23 +196,6 @@ export default class RightSidebarMenu extends React.Component {
         );
     }
 }
-
-function Item({onPress, children}) {
-    return (
-        <TouchableHighlight
-            underlayColor='rgba(255, 255, 255, 0.3)'
-            onPress={onPress}
-        >
-            <View style={Styles.item}>
-                {children}
-            </View>
-        </TouchableHighlight>
-    );
-}
-Item.propTypes = {
-    onPress: React.PropTypes.func.isRequired,
-    children: React.PropTypes.node
-};
 
 function Divider() {
     return <View style={Styles.divider}/>;

@@ -3,7 +3,6 @@
 
 import React, {Component, PropTypes} from 'react';
 import {View, Text, TextInput, Image} from 'react-native';
-import {Actions as Routes} from 'react-native-router-flux';
 
 import Button from 'components/button';
 import FormattedText from 'components/formatted_text';
@@ -36,7 +35,7 @@ class Login extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            Routes.goToSelectTeam();
+            this.props.actions.goToSelectTeam();
         }
     }
 

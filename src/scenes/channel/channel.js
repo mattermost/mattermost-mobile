@@ -6,9 +6,9 @@ import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 
 import Drawer from 'react-native-drawer';
-import ChannelSidebar from 'components/channel_sidebar.js';
-import Loading from 'components/loading.js';
-import RightSidebarMenu from 'components/right_sidebar_menu.js';
+import ChannelSidebar from 'components/channel_sidebar';
+import Loading from 'components/loading';
+import RightSidebarMenu from 'components/right_sidebar_menu';
 import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
 
 export default class Channel extends React.Component {
@@ -81,13 +81,13 @@ export default class Channel extends React.Component {
                     <Drawer
                         open={this.state.rightSidebarOpen}
                         type='displace'
-                        content={<RightSidebarMenu/>}
+                        content={<RightSidebarMenu onClose={this.closeRightSidebar}/>}
                         side='right'
                         tapToClose={true}
                         onCloseStart={this.closeRightSidebar}
                         openDrawerOffset={0.2}
                     >
-                        <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20}}>
+                        <View style={{backgroundColor: 'skyblue', flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
                             <TouchableHighlight
                                 onPress={this.openLeftSidebar}
                                 style={{height: 50, width: 50}}

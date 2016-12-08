@@ -4,7 +4,6 @@
 import React, {Component, PropTypes} from 'react';
 
 import {View, Image, Text} from 'react-native';
-import {Actions as Routes} from 'react-native-router-flux';
 import Button from 'react-native-button';
 import Loading from 'components/loading';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -30,7 +29,7 @@ export default class SelectTeam extends Component {
 
     onSelectTeam(team) {
         this.props.actions.selectTeam(team);
-        Routes.goToMain({currentTeamId: team.id});
+        this.props.actions.goToChannelView();
     }
 
     render() {

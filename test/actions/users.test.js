@@ -7,6 +7,7 @@ import * as Actions from 'actions/users';
 import Client from 'client';
 import configureStore from 'store/configureStore';
 import {RequestStatus} from 'constants';
+import Routes from 'navigation/routes';
 import TestHelper from 'test_helper';
 
 describe('Actions.Users', () => {
@@ -54,13 +55,15 @@ describe('Actions.Users', () => {
             const store = configureStore();
 
             store.subscribe(() => {
-                const logoutRequest = store.getState().requests.users.logout;
-                const general = store.getState().entities.general;
-                const users = store.getState().entities.users;
-                const loginView = store.getState().views.login;
-                const teams = store.getState().entities.teams;
-                const channels = store.getState().entities.channels;
-                const posts = store.getState().entities.posts;
+                const state = store.getState();
+                const logoutRequest = state.requests.users.logout;
+                const general = state.entities.general;
+                const users = state.entities.users;
+                const loginView = state.views.login;
+                const teams = state.entities.teams;
+                const channels = state.entities.channels;
+                const posts = state.entities.posts;
+                const navigation = state.navigation;
 
                 if (logoutRequest.status === RequestStatus.SUCCESS || logoutRequest.status === RequestStatus.FAILURE) {
                     if (logoutRequest.error) {
@@ -95,6 +98,8 @@ describe('Actions.Users', () => {
                         assert.strictEqual(posts.currentFocusedPostId, '', 'current focused post id is not empty');
                         assert.deepStrictEqual(posts.postsInfo, {}, 'posts info is not empty');
                         assert.deepStrictEqual(posts.latestPageTime, {}, 'posts latest page time is not empty');
+                        assert.strictEqual(navigation.index, 0, 'navigation not reset to first element of stack');
+                        assert.deepStrictEqual(navigation.routes, [Routes.Root], 'navigation not reset to root route');
 
                         done();
                     }

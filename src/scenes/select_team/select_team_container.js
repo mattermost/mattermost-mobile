@@ -3,7 +3,10 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+
 import * as teamActions from 'actions/teams';
+import {goToChannelView} from 'actions/navigation';
+
 import SelectTeamView from './select_team.js';
 
 function mapStateToProps(state) {
@@ -17,7 +20,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators(teamActions, dispatch)
+        actions: bindActionCreators({
+            ...teamActions,
+            goToChannelView
+        }, dispatch)
     };
 }
 
