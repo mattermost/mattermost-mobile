@@ -65,20 +65,9 @@ export function createChannel(channel, userId) {
 export function createDirectChannel(userId, otherUserId) {
     return async (dispatch, getState) => {
         try {
-            dispatch(batchActions([
-                {
-                    type: ChannelTypes.CREATE_CHANNEL_REQUEST
-                },
-                {
-                    type: ChannelTypes.CHANNEL_MEMBERS_REQUEST
-                },
-                {
-                    type: UsersTypes.PROFILES_REQUEST
-                }
-            ]), getState);
+            dispatch({type: ChannelTypes.CREATE_CHANNEL_REQUEST}, getState);
 
             const created = await Client.createDirectChannel(otherUserId);
-            const profile = await Client.getUser(otherUserId);
             const member = {
                 channel_id: created.id,
                 user_id: userId,
@@ -96,25 +85,15 @@ export function createDirectChannel(userId, otherUserId) {
                     data: created
                 },
                 {
-                    type: ChannelTypes.CREATE_CHANNEL_SUCCESS
-                },
-                {
                     type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
                     data: member
                 },
                 {
-                    type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
-                },
-                {
-                    type: UsersTypes.RECEIVED_PROFILES,
-                    data: {[profile.id]: profile}
-                },
-                {
-                    type: UsersTypes.PROFILES_SUCCESS
-                },
-                {
                     type: UsersTypes.RECEIVED_PREFERENCE,
                     data: {category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}
+                },
+                {
+                    type: ChannelTypes.CREATE_CHANNEL_SUCCESS
                 }
             ]), getState);
         } catch (error) {
@@ -127,9 +106,6 @@ export function createDirectChannel(userId, otherUserId) {
                 {
                     type: ChannelTypes.CHANNEL_MEMBERS_FAILURE,
                     error
-                },
-                {
-                    type: UsersTypes.PROFILES_FAILURE
                 }
             ]), getState);
         }
