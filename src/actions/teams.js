@@ -53,8 +53,8 @@ export function createTeam(userId, team) {
                     data: created
                 },
                 {
-                    type: TeamsTypes.RECEIVED_MY_TEAM_MEMBER,
-                    data: member
+                    type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
+                    data: [member]
                 },
                 {
                     type: TeamsTypes.SELECT_TEAM,
