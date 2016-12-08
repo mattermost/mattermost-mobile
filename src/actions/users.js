@@ -7,8 +7,7 @@ import Client from 'client';
 // TODO: uncomment when PLT-4167 is merged
 // import {Constants, UsersTypes, TeamsTypes} from 'constants';
 import {Constants, UsersTypes} from 'constants';
-import {bindClientFunc} from 'actions/helpers';
-import {forceLogoutIfNecessary} from './helpers';
+import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 export function login(loginId, password, mfaToken = '') {
     return async (dispatch, getState) => {

@@ -21,7 +21,6 @@ export function handleRequest(REQUEST, SUCCESS, FAILURE, state, action) {
         return {
             ...state,
             status: RequestStatus.SUCCESS,
-            data: action.data,
             error: null
         };
     case FAILURE:
