@@ -21,20 +21,7 @@ class Router extends React.Component {
         }).isRequired
     }
 
-    renderTransition = (transitionProps/*, prevTransitionProps*/) => {
-        // let cardStyle;
-        // if (currentSceneIsModal) {
-        //     // Override modals to come in vertically
-        //     cardStyle = NavigationCard.CardStackStyleInterpolator.forVertical(props);
-        // }
-
-        // let panHandlers;
-        // if (currentSceneIsModal) {
-        //     // Explicitly set pan handlers to null to let NavigationCard override it and disable swiping back to
-        //     // close the modal
-        //     panHandlers = null;
-        // }
-
+    renderTransition = (transitionProps) => {
         let title;
         if (transitionProps.scene.route.title) {
             title = (
