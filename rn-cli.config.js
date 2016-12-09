@@ -6,8 +6,7 @@ var path = require('path');
 var config = {
     getProjectRoots() {
         return [
-            path.resolve(__dirname, '.'),
-            path.resolve(__dirname, './src')
+            path.resolve(__dirname, '.')
         ];
     }
 };

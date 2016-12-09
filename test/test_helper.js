@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import assert from 'assert';
-import Client from 'client/client';
+import Client from 'service/client/client';
 import Config from 'config';
 
 const PASSWORD = 'password1';

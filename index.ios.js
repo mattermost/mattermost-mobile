@@ -2,6 +2,6 @@
 // See License.txt for license information.
 
 import {AppRegistry} from 'react-native';
-import Mattermost from 'mattermost';
+import Mattermost from 'app/mattermost';
 
 AppRegistry.registerComponent('Mattermost', () => Mattermost);
