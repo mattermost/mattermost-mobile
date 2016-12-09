@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import * as Actions from 'app/actions/views/login';
-import configureStore from 'service/store/configureStore';
+import configureStore from 'app/store';
 
 describe('Actions.Views.Login', () => {
     it('handleLoginIdChanged', (done) => {

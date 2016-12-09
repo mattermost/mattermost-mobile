@@ -5,10 +5,9 @@ import {applyMiddleware, compose, createStore, combineReducers} from 'redux';
 import devTools from 'remote-redux-devtools';
 import {enableBatching} from 'redux-batched-actions';
 import serviceReducer from 'service/reducers';
-import appReducer from 'app/reducers';
 import thunk from 'redux-thunk';
 
-export default function configureStore(preloadedState) {
+export default function configureServiceStore(preloadedState, appReducer, getAppReducer) {
     const store = createStore(
         enableBatching(combineReducers(Object.assign({}, serviceReducer, appReducer))),
         preloadedState,
@@ -26,7 +25,10 @@ export default function configureStore(preloadedState) {
         // Enable Webpack hot module replacement for reducers
         module.hot.accept(() => {
             const nextServiceReducer = require('../reducers').default; // eslint-disable-line global-require
-            const nextAppReducer = require('../../app/reducers').default; // eslint-disable-line global-require
+            let nextAppReducer;
+            if (getAppReducer) {
+                nextAppReducer = getAppReducer(); // eslint-disable-line global-require
+            }
             store.replaceReducer(combineReducers(Object.assign({}, nextServiceReducer, nextAppReducer)));
         });
     }

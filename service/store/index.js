@@ -1,8 +1,12 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import configureStore from 'service/store/configureStore';
+/* eslint-disable global-require, no-process-env */
 
-const store = configureStore();
+if (process.env.NODE_ENV === 'production') {
+    module.exports = require('./configureStore.prod.js');
+} else {
+    module.exports = require('./configureStore.dev.js');
+}
 
-export default store;
+/* eslint-enable global-require, no-process-env */

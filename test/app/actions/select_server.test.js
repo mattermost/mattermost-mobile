@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import * as Actions from 'app/actions/views/select_server';
-import configureStore from 'service/store/configureStore';
+import configureStore from 'app/store';
 
 describe('Actions.Views.SelectServer', () => {
     it('handleServerUrlChanged', (done) => {

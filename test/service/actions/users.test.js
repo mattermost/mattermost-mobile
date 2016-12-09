@@ -5,7 +5,7 @@ import assert from 'assert';
 
 import * as Actions from 'service/actions/users';
 import Client from 'service/client';
-import configureStore from 'service/store/configureStore';
+import configureStore from 'app/store';
 import {RequestStatus} from 'service/constants';
 import Routes from 'app/navigation/routes';
 import TestHelper from 'test/test_helper';

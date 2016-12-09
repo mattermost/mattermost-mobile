@@ -4,10 +4,9 @@
 import {applyMiddleware, createStore, combineReducers} from 'redux';
 import {enableBatching} from 'redux-batched-actions';
 import serviceReducer from 'service/reducers';
-import appReducer from 'app/reducers';
 import thunk from 'redux-thunk';
 
-export default function configureStore(preloadedState) {
+export default function configureServiceStore(preloadedState, appReducer) {
     return createStore(
         enableBatching(combineReducers({serviceReducer, appReducer})),
         preloadedState,
