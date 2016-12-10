@@ -1,6 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {Constants} from 'service/constants';
+
 function isPostListNull(pl) {
     if (!pl) {
         return true;
@@ -30,35 +32,17 @@ function makePostListNonNull(pl) {
     return postList;
 }
 
-export function addPosts(state, action) {
-    const newState = {...state};
+function storePosts(state, action) {
     const newPosts = action.data;
-    const id = action.channel_id;
+    const channelId = action.channelId;
 
     if (isPostListNull(newPosts)) {
         return state;
     }
 
-    if (action.checkLatest) {
-        const currentLatest = newState.latestPageTime[id] || 0;
-        if (newPosts.order.length >= 1) {
-            const newLatest = newPosts.posts[newPosts.order[0]].create_at || 0;
-            if (newLatest > currentLatest) {
-                newState.latestPageTime = {
-                    ...newState.latestPageTime,
-                    [id]: newLatest
-                };
-            }
-        } else if (currentLatest === 0) {
-            // Mark that an empty page was received
-            newState.latestPageTime = {
-                ...newState.latestPageTime,
-                [id]: 1
-            };
-        }
-    }
-
-    const combinedPosts = {...makePostListNonNull(newState.postsInfo[id].postList)};
+    const postInfo = state[channelId];
+    const postList = postInfo || {};
+    const combinedPosts = {...makePostListNonNull(postList)};
 
     for (const pid in newPosts.posts) {
         if (newPosts.posts.hasOwnProperty(pid)) {
@@ -69,7 +53,7 @@ export function addPosts(state, action) {
                     combinedPosts.order.push(pid);
                 }
             } else if (combinedPosts.posts.hasOwnProperty(pid)) {
-                combinedPosts.posts[pid] = {...np, state: 'DELETED', fileIds: []};
+                combinedPosts.posts[pid] = {...np, state: Constants.POST_DELETED, fileIds: []};
             }
         }
     }
@@ -85,15 +69,117 @@ export function addPosts(state, action) {
         return 0;
     });
 
-    newState.postsInfo = {
-        ...newState.postsInfo,
-        [id]: {
-            ...newState.postsInfo[id],
-            postList: combinedPosts
-        }
+    return {
+        ...state,
+        [channelId]: combinedPosts
     };
+}
 
-    return newState;
+function storePost(state, action) {
+    const post = action.data;
+    const channelId = post.channel_id;
+
+    const postInfo = state[channelId];
+    const postList = postInfo ? postInfo.postList : {};
+    const combinedPosts = {...makePostListNonNull(postList)};
+
+    combinedPosts.posts[post.id] = post;
+
+    if (combinedPosts.order.indexOf(post.id) === -1) {
+        combinedPosts.order.unshift(post.id);
+    }
+
+    return {
+        ...state,
+        [channelId]: combinedPosts
+    };
+}
+
+export function addPosts(state, action) {
+    if (action.channelId) {
+        return storePosts(state, action);
+    }
+
+    return storePost(state, action);
+}
+
+export function deletePost(state, action) {
+    const post = action.data;
+    const channelId = post.channel_id;
+    const postInfo = state[channelId];
+
+    if (!postInfo) {
+        // the post that has been deleted is in a channel that we haven't seen so just ignore it
+        return state;
+    }
+
+    if (isPostListNull(postInfo)) {
+        return state;
+    }
+
+    if (postInfo.posts[post.id]) {
+        const combinedPosts = {...makePostListNonNull(postInfo)};
+
+        combinedPosts.posts[post.id] = {
+            ...post,
+            state: Constants.POST_DELETED,
+            file_ids: [],
+            has_reactions: false
+        };
+
+        return {
+            ...state,
+            [channelId]: combinedPosts
+        };
+    }
+
+    return state;
+}
+
+export function removePost(state, action) {
+    const post = action.data;
+    const channelId = post.channel_id;
+    const postInfo = state[channelId];
+
+    if (!postInfo) {
+        // the post that has been deleted is in a channel that we haven't seen so just ignore it
+        return state;
+    }
+
+    if (isPostListNull(postInfo)) {
+        return state;
+    }
+
+    if (postInfo.posts[post.id]) {
+        const combinedPosts = {...makePostListNonNull(postInfo)};
+        Reflect.deleteProperty(combinedPosts.posts, post.id);
+
+        const index = combinedPosts.order.indexOf(post.id);
+        if (index !== -1) {
+            combinedPosts.order.splice(index, 1);
+        }
+
+        for (const pid in combinedPosts.posts) {
+            if (!combinedPosts.posts.hasOwnProperty(pid)) {
+                continue;
+            }
+
+            if (combinedPosts.posts[pid].root_id === post.id) {
+                Reflect.deleteProperty(combinedPosts.posts, pid);
+                const commentIndex = combinedPosts.order.indexOf(pid);
+                if (commentIndex !== -1) {
+                    combinedPosts.order.splice(commentIndex, 1);
+                }
+            }
+        }
+
+        return {
+            ...state,
+            [channelId]: combinedPosts
+        };
+    }
+
+    return state;
 }
 
 export function profilesToSet(state, action) {

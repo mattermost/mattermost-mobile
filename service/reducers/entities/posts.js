@@ -3,7 +3,7 @@
 
 import {PostsTypes, UsersTypes} from 'service/constants';
 import {combineReducers} from 'redux';
-import {addPosts} from './helpers';
+import {addPosts, deletePost, removePost} from './helpers';
 
 function selectedPostId(state = '', action) {
     switch (action.type) {
@@ -25,17 +25,12 @@ function currentFocusedPostId(state = '', action) {
 
 function postsInfo(state = {}, action) {
     switch (action.type) {
-    case PostsTypes.FETCH_POSTS_SUCCESS:
+    case PostsTypes.RECEIVED_POSTS:
         return addPosts(state, action);
-    case UsersTypes.LOGOUT_SUCCESS:
-        return {};
-    default:
-        return state;
-    }
-}
-
-function latestPageTime(state = {}, action) {
-    switch (action.type) {
+    case PostsTypes.POST_DELETED:
+        return deletePost(state, action);
+    case PostsTypes.REMOVE_POST:
+        return removePost(state, action);
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
     default:
@@ -52,8 +47,5 @@ export default combineReducers({
     currentFocusedPostId,
 
     // object where every key is the channel id and has and object with the postList
-    postsInfo,
-
-    // object where the every key is the channel id and has the timestamp of the latest post created in that channel
-    latestPageTime
+    postsInfo
 });

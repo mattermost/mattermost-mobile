@@ -96,7 +96,6 @@ describe('Actions.Users', () => {
                         assert.strictEqual(posts.selectedPostId, '', 'selected post id is not empty');
                         assert.strictEqual(posts.currentFocusedPostId, '', 'current focused post id is not empty');
                         assert.deepStrictEqual(posts.postsInfo, {}, 'posts info is not empty');
-                        assert.deepStrictEqual(posts.latestPageTime, {}, 'posts latest page time is not empty');
                         assert.deepStrictEqual(preferences.myPreferences, {}, 'user preferences not empty');
                         assert.strictEqual(navigation.index, 0, 'navigation not reset to first element of stack');
                         assert.deepStrictEqual(navigation.routes, [Routes.Root], 'navigation not reset to root route');
