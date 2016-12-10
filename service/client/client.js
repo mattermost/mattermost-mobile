@@ -242,13 +242,6 @@ export default class Client {
         );
     };
 
-    getMyPreferences = async () => {
-        return this.doFetch(
-            `${this.getPreferencesRoute()}/`,
-            {method: 'get'}
-        );
-    };
-
     getProfiles = async (offset, limit) => {
         return this.doFetch(
             `${this.getUsersRoute()}/${offset}/${limit}`,
@@ -506,6 +499,7 @@ export default class Client {
     };
 
     // Post routes
+
     fetchPosts = (teamId, channelId, onRequest, onSuccess, onFailure) => {
         return this.doFetch(
             `${this.getPostsRoute(teamId, channelId)}/page/0/60`,
@@ -520,6 +514,43 @@ export default class Client {
         return this.doFetch(
             `${this.getPostsRoute(teamId, post.channel_id)}/create`,
             {method: 'post', body: JSON.stringify(post)}
+        );
+    };
+
+    // Preferences routes
+
+    getMyPreferences = async () => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/`,
+            {method: 'get'}
+        );
+    };
+
+    savePreferences = async (preferences) => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/save`,
+            {method: 'post', body: JSON.stringify(preferences)}
+        );
+    };
+
+    deletePreferences = async (preferences) => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/delete`,
+            {method: 'post', body: JSON.stringify(preferences)}
+        );
+    };
+
+    getPreferenceCategory = async (category) => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/${category}`,
+            {method: 'get'}
+        );
+    };
+
+    getPreference = async (category, name) => {
+        return this.doFetch(
+            `${this.getPreferencesRoute()}/${category}/${name}`,
+            {method: 'get'}
         );
     };
 

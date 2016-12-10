@@ -8,11 +8,13 @@ import general from './general';
 import users from './users';
 import teams from './teams';
 import posts from './posts';
+import preferences from './preferences';
 
 export default combineReducers({
     general,
     users,
     teams,
     channels,
-    posts
+    posts,
+    preferences
 });

@@ -7,6 +7,7 @@ import GeneralTypes from './general';
 import UsersTypes from './users';
 import TeamsTypes from './teams';
 import PostsTypes from './posts';
+import PreferencesTypes from './preferences';
 import RequestStatus from './request_status';
 
 export {
@@ -16,5 +17,6 @@ export {
     TeamsTypes,
     ChannelTypes,
     PostsTypes,
+    PreferencesTypes,
     RequestStatus
 };

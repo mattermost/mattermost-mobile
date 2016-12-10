@@ -12,7 +12,7 @@ export async function forceLogoutIfNecessary(err, dispatch) {
     }
 }
 
-function dispatcher(type, data, dispatch, getState) {
+export function dispatcher(type, data, dispatch, getState) {
     if (type.indexOf('SUCCESS') === -1) { // we don't want to pass the data for the request types
         dispatch(requestSuccess(type, data), getState);
     } else {
