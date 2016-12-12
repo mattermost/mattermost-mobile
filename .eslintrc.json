@@ -53,7 +53,7 @@
         "func-call-spacing": [2, "never"],
         "func-names": 2,
         "func-style": [2, "declaration"],
-        "generator-star-spacing": [2, {"before": false, "after": true}],
+        "generator-star-spacing": [0, {"before": false, "after": true}],
         "global-require": 2,
         "guard-for-in": 2,
         "id-blacklist": 0,

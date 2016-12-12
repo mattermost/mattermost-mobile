@@ -7,10 +7,12 @@ import general from './general';
 import channels from './channels';
 import users from './users';
 import teams from './teams';
+import preferences from './preferences';
 
 export default combineReducers({
     general,
     channels,
     users,
-    teams
+    teams,
+    preferences
 });

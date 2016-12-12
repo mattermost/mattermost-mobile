@@ -63,12 +63,13 @@ describe('Actions.Channels', () => {
             );
 
             store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-                const profiles = store.getState().entities.users.profiles;
-                const preferences = store.getState().entities.users.myPreferences;
+                const state = store.getState();
+                const channels = state.entities.channels.channels;
+                const members = state.entities.channels.myMembers;
+                const profiles = state.entities.users.profiles;
+                const preferences = state.entities.preferences.myPreferences;
 
-                const createRequest = store.getState().requests.channels.createChannel;
+                const createRequest = state.requests.channels.createChannel;
 
                 if (createRequest.status === RequestStatus.SUCCESS || createRequest.status === RequestStatus.FAILURE) {
                     if (createRequest.error) {

@@ -16,13 +16,14 @@ describe('Actions.Users', () => {
             const store = configureStore();
 
             store.subscribe(() => {
-                const loginRequest = store.getState().requests.users.login;
-                const currentUserId = store.getState().entities.users.currentId;
-                const profiles = store.getState().entities.users.profiles;
-                const preferences = store.getState().entities.users.myPreferences;
+                const state = store.getState();
+                const loginRequest = state.requests.users.login;
+                const currentUserId = state.entities.users.currentId;
+                const profiles = state.entities.users.profiles;
+                const preferences = state.entities.preferences.myPreferences;
 
                 // TODO: uncomment when PLT-4167 is merged
-                // const teamMembers = store.getState().entities.teams.myMembers;
+                // const teamMembers = state.entities.teams.myMembers;
 
                 if (loginRequest.status === RequestStatus.SUCCESS || loginRequest.status === RequestStatus.FAILURE) {
                     if (loginRequest.error) {
@@ -63,6 +64,7 @@ describe('Actions.Users', () => {
                 const teams = state.entities.teams;
                 const channels = state.entities.channels;
                 const posts = state.entities.posts;
+                const preferences = state.entities.preferences;
                 const navigation = state.navigation;
 
                 if (logoutRequest.status === RequestStatus.SUCCESS || logoutRequest.status === RequestStatus.FAILURE) {
@@ -72,7 +74,6 @@ describe('Actions.Users', () => {
                         assert.deepStrictEqual(general.config, {}, 'config not empty');
                         assert.deepStrictEqual(general.license, {}, 'license not empty');
                         assert.strictEqual(users.currentId, '', 'current user id not empty');
-                        assert.deepStrictEqual(users.myPreferences, {}, 'user preferences not empty');
                         assert.deepStrictEqual(users.mySessions, [], 'user sessions not empty');
                         assert.deepStrictEqual(users.myAudits, [], 'user audits not empty');
                         assert.deepStrictEqual(users.profiles, {}, 'user profiles not empty');
@@ -96,6 +97,7 @@ describe('Actions.Users', () => {
                         assert.strictEqual(posts.currentFocusedPostId, '', 'current focused post id is not empty');
                         assert.deepStrictEqual(posts.postsInfo, {}, 'posts info is not empty');
                         assert.deepStrictEqual(posts.latestPageTime, {}, 'posts latest page time is not empty');
+                        assert.deepStrictEqual(preferences.myPreferences, {}, 'user preferences not empty');
                         assert.strictEqual(navigation.index, 0, 'navigation not reset to first element of stack');
                         assert.deepStrictEqual(navigation.routes, [Routes.Root], 'navigation not reset to root route');
 

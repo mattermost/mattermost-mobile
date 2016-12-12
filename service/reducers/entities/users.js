@@ -18,30 +18,6 @@ function currentId(state = '', action) {
     return state;
 }
 
-function myPreferences(state = {}, action) {
-    const nextState = {...state};
-
-    switch (action.type) {
-    case UsersTypes.RECEIVED_PREFERENCES: {
-        const preferences = action.data;
-        for (const p of preferences) {
-            nextState[`${p.category}--${p.name}`] = p.value;
-        }
-        return nextState;
-    }
-    case UsersTypes.RECEIVED_PREFERENCE: {
-        const p = action.data;
-        nextState[`${p.category}--${p.name}`] = p.value;
-        return nextState;
-    }
-    case UsersTypes.LOGOUT_SUCCESS:
-        return {};
-
-    default:
-        return state;
-    }
-}
-
 function mySessions(state = [], action) {
     switch (action.type) {
     case UsersTypes.RECEIVED_SESSIONS:
@@ -170,9 +146,6 @@ export default combineReducers({
 
     // the current selected user
     currentId,
-
-    // object where the key is the category-name and has the corresponding value
-    myPreferences,
 
     // array with the user's sessions
     mySessions,
