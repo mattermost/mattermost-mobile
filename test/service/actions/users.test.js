@@ -16,13 +16,14 @@ describe('Actions.Users', () => {
             const store = configureStore();
 
             store.subscribe(() => {
-                const loginRequest = store.getState().requests.users.login;
-                const currentUserId = store.getState().entities.users.currentId;
-                const profiles = store.getState().entities.users.profiles;
-                const preferences = store.getState().entities.users.myPreferences;
+                const state = store.getState();
+                const loginRequest = state.requests.users.login;
+                const currentUserId = state.entities.users.currentId;
+                const profiles = state.entities.users.profiles;
+                const preferences = state.entities.preferences.myPreferences;
 
                 // TODO: uncomment when PLT-4167 is merged
-                // const teamMembers = store.getState().entities.teams.myMembers;
+                // const teamMembers = state.entities.teams.myMembers;
 
                 if (loginRequest.status === RequestStatus.SUCCESS || loginRequest.status === RequestStatus.FAILURE) {
                     if (loginRequest.error) {

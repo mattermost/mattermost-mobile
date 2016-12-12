@@ -5,8 +5,8 @@ import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 
 // TODO: uncomment when PLT-4167 is merged
-// import {Constants, UsersTypes, TeamsTypes} from 'constants';
-import {Constants, UsersTypes} from 'service/constants';
+// import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'constants';
+import {Constants, PreferencesTypes, UsersTypes} from 'service/constants';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 export function login(loginId, password, mfaToken = '') {
@@ -25,7 +25,7 @@ export function login(loginId, password, mfaToken = '') {
                         data
                     },
                     {
-                        type: UsersTypes.RECEIVED_PREFERENCES,
+                        type: PreferencesTypes.RECEIVED_PREFERENCES,
                         data: await preferences
                     },
 

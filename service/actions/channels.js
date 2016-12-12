@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Constants, ChannelTypes, UsersTypes} from 'service/constants';
+import {Constants, ChannelTypes, PreferencesTypes, UsersTypes} from 'service/constants';
 import {forceLogoutIfNecessary} from './helpers';
 import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
@@ -89,8 +89,8 @@ export function createDirectChannel(userId, otherUserId) {
                     data: member
                 },
                 {
-                    type: UsersTypes.RECEIVED_PREFERENCE,
-                    data: {category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}
+                    type: PreferencesTypes.RECEIVED_PREFERENCES,
+                    data: [{category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: 'true'}]
                 },
                 {
                     type: ChannelTypes.CREATE_CHANNEL_SUCCESS
