@@ -10,6 +10,11 @@ import PostsTypes from './posts';
 import PreferencesTypes from './preferences';
 import RequestStatus from './request_status';
 
+const Preferences = {
+    CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
+    CATEGORY_THEME: 'theme'
+};
+
 export {
     Constants,
     GeneralTypes,
@@ -18,5 +23,6 @@ export {
     ChannelTypes,
     PostsTypes,
     PreferencesTypes,
+    Preferences,
     RequestStatus
 };
