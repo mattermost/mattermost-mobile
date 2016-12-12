@@ -3,11 +3,11 @@
 
 import {combineReducers} from 'redux';
 import {UsersTypes} from 'service/constants';
-import {UsersViewTypes} from 'app/constants';
+import {ViewTypes} from 'app/constants';
 
 function loginId(state = '', action) {
     switch (action.type) {
-    case UsersViewTypes.LOGIN_ID_CHANGED:
+    case ViewTypes.LOGIN_ID_CHANGED:
         return action.loginId;
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
@@ -18,7 +18,7 @@ function loginId(state = '', action) {
 
 function password(state = '', action) {
     switch (action.type) {
-    case UsersViewTypes.PASSWORD_CHANGED:
+    case ViewTypes.PASSWORD_CHANGED:
         return action.password;
     case UsersTypes.LOGOUT_SUCCESS:
         return '';

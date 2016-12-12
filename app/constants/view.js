@@ -3,9 +3,11 @@
 
 import keymirror from 'keymirror';
 
-const UsersViewTypes = keymirror({
+const ViewTypes = keymirror({
+    SERVER_URL_CHANGED: null,
+
     LOGIN_ID_CHANGED: null,
     PASSWORD_CHANGED: null
 });
 
-export default UsersViewTypes;
+export default ViewTypes;

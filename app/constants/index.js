@@ -2,9 +2,9 @@
 // See License.txt for license information.
 
 import NavigationTypes from './navigation';
-import UsersViewTypes from './users';
+import ViewTypes from './view';
 
 export {
     NavigationTypes,
-    UsersViewTypes
+    ViewTypes
 };
