@@ -16,7 +16,8 @@ export default class Channel extends React.Component {
         actions: React.PropTypes.object.isRequired,
         currentTeam: React.PropTypes.object.isRequired,
         currentChannel: React.PropTypes.object,
-        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired
+        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+        theme: React.PropTypes.object.isRequired
     };
 
     constructor(props) {
@@ -57,20 +58,27 @@ export default class Channel extends React.Component {
     }
 
     render() {
-        if (!this.props.currentChannel) {
+        const {
+            currentChannel,
+            currentTeam,
+            channels,
+            theme
+        } = this.props;
+
+        if (!currentChannel) {
             return <Loading/>;
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
                 <StatusBar barStyle='default'/>
                 <Drawer
                     open={this.state.leftSidebarOpen}
                     type='displace'
                     content={
                         <ChannelSidebar
-                            currentTeam={this.props.currentTeam}
-                            channels={this.props.channels}
+                            currentTeam={currentTeam}
+                            channels={channels}
                         />
                     }
                     side='left'
@@ -87,22 +95,24 @@ export default class Channel extends React.Component {
                         onCloseStart={this.closeRightSidebar}
                         openDrawerOffset={0.2}
                     >
-                        <View style={{backgroundColor: 'skyblue', flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
+                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
                             <TouchableHighlight
                                 onPress={this.openLeftSidebar}
                                 style={{height: 50, width: 50}}
                             >
-                                <Text>{'<'}</Text>
+                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'<'}</Text>
                             </TouchableHighlight>
                             <TouchableHighlight
                                 onPress={this.openRightSidebar}
                                 style={{height: 50, width: 50}}
                             >
-                                <Text>{'>'}</Text>
+                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>
                             </TouchableHighlight>
                         </View>
-                        <Text>{this.props.currentTeam.id + ' - ' + this.props.currentTeam.name}</Text>
-                        <Text>{this.props.currentChannel.id + ' - ' + this.props.currentChannel.name}</Text>
+                        <View style={{flex: 1}}>
+                            <Text style={{color: theme.centerChannelColor}}>{currentTeam.id + ' - ' + currentTeam.name}</Text>
+                            <Text style={{color: theme.centerChannelColor}}>{currentChannel.id + ' - ' + currentChannel.name}</Text>
+                        </View>
                     </Drawer>
                 </Drawer>
             </View>

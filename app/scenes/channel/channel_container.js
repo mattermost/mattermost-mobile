@@ -3,7 +3,10 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+
 import {fetchMyChannelsAndMembers} from 'service/actions/channels';
+import {getTheme} from 'service/selectors/entities/preferences';
+
 import Channel from './channel.js';
 
 function mapStateToProps(state, ownProps) {
@@ -32,7 +35,8 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         currentTeam,
         currentChannel,
-        channels
+        channels,
+        theme: getTheme(state)
     };
 }
 
