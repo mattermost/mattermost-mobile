@@ -513,9 +513,9 @@ export default class Client {
         );
     };
 
-    deletePost = async (teamId, channeId, postId) => {
+    deletePost = async (teamId, channelId, postId) => {
         return this.doFetch(
-            `${this.getPostsRoute(teamId, channeId)}/${postId}/delete`,
+            `${this.getPostsRoute(teamId, channelId)}/${postId}/delete`,
             {method: 'post'}
         );
     };

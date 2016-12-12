@@ -154,7 +154,7 @@ describe('Actions.Posts', () => {
             );
 
             store.subscribe(() => {
-                const getRequest = store.getState().requests.posts.getPosts;
+                const getRequest = store.getState().requests.posts.getPost;
                 const postsInfo = store.getState().entities.posts.postsInfo;
 
                 if (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE) {
@@ -253,7 +253,7 @@ describe('Actions.Posts', () => {
             );
 
             store.subscribe(() => {
-                const getRequest = store.getState().requests.posts.getPosts;
+                const getRequest = store.getState().requests.posts.getPostsSince;
                 const postsInfo = store.getState().entities.posts.postsInfo;
 
                 if (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE) {
@@ -303,7 +303,7 @@ describe('Actions.Posts', () => {
             );
 
             store.subscribe(() => {
-                const getRequest = store.getState().requests.posts.getPosts;
+                const getRequest = store.getState().requests.posts.getPostsBefore;
                 const postsInfo = store.getState().entities.posts.postsInfo;
 
                 if (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE) {
@@ -355,7 +355,7 @@ describe('Actions.Posts', () => {
             );
 
             store.subscribe(() => {
-                const getRequest = store.getState().requests.posts.getPosts;
+                const getRequest = store.getState().requests.posts.getPostsAfter;
                 const postsInfo = store.getState().entities.posts.postsInfo;
 
                 if (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE) {

@@ -36,6 +36,16 @@ function deletePost(state = initialRequestState(), action) {
     );
 }
 
+function getPost(state = initialRequestState(), action) {
+    return handleRequest(
+        PostsTypes.GET_POST_REQUEST,
+        PostsTypes.GET_POST_SUCCESS,
+        PostsTypes.GET_POST_FAILURE,
+        state,
+        action
+    );
+}
+
 function getPosts(state = initialRequestState(), action) {
     return handleRequest(
         PostsTypes.GET_POSTS_REQUEST,
@@ -46,9 +56,43 @@ function getPosts(state = initialRequestState(), action) {
     );
 }
 
+function getPostsSince(state = initialRequestState(), action) {
+    return handleRequest(
+        PostsTypes.GET_POSTS_SINCE_REQUEST,
+        PostsTypes.GET_POSTS_SINCE_SUCCESS,
+        PostsTypes.GET_POSTS_SINCE_FAILURE,
+        state,
+        action
+    );
+}
+
+function getPostsBefore(state = initialRequestState(), action) {
+    return handleRequest(
+        PostsTypes.GET_POSTS_BEFORE_REQUEST,
+        PostsTypes.GET_POSTS_BEFORE_SUCCESS,
+        PostsTypes.GET_POSTS_BEFORE_FAILURE,
+        state,
+        action
+    );
+}
+
+function getPostsAfter(state = initialRequestState(), action) {
+    return handleRequest(
+        PostsTypes.GET_POSTS_AFTER_REQUEST,
+        PostsTypes.GET_POSTS_AFTER_SUCCESS,
+        PostsTypes.GET_POSTS_AFTER_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
     createPost,
     editPost,
     deletePost,
-    getPosts
+    getPost,
+    getPosts,
+    getPostsSince,
+    getPostsBefore,
+    getPostsAfter
 });

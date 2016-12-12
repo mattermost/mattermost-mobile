@@ -4,7 +4,7 @@
 import Client from 'service/client';
 
 import {PreferencesTypes} from 'service/constants';
-import {bindClientFunc, forceLogoutIfNecessary, requestData, requestFailure} from './helpers';
+import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 import {batchActions} from 'redux-batched-actions';
 
@@ -19,7 +19,7 @@ export function getMyPreferences() {
 
 export function savePreferences(preferences) {
     return async (dispatch, getState) => {
-        dispatch(requestData(PreferencesTypes.SAVE_PREFERENCES_REQUEST), getState);
+        dispatch({type: PreferencesTypes.SAVE_PREFERENCES_REQUEST}, getState);
 
         try {
             await Client.savePreferences(preferences);
@@ -33,16 +33,16 @@ export function savePreferences(preferences) {
                     type: PreferencesTypes.SAVE_PREFERENCES_SUCCESS
                 }
             ]), getState);
-        } catch (err) {
-            forceLogoutIfNecessary(err, dispatch);
-            dispatch(requestFailure(PreferencesTypes.SAVE_PREFERENCES_FAILURE, err), getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: PreferencesTypes.SAVE_PREFERENCES_FAILURE, error}, getState);
         }
     };
 }
 
 export function deletePreferences(preferences) {
     return async (dispatch, getState) => {
-        dispatch(requestData(PreferencesTypes.DELETE_PREFERENCES_REQUEST), getState);
+        dispatch({type: PreferencesTypes.DELETE_PREFERENCES_REQUEST}, getState);
 
         try {
             await Client.deletePreferences(preferences);
@@ -56,9 +56,9 @@ export function deletePreferences(preferences) {
                     type: PreferencesTypes.DELETE_PREFERENCES_SUCCESS
                 }
             ]), getState);
-        } catch (err) {
-            forceLogoutIfNecessary(err, dispatch);
-            dispatch(requestFailure(PreferencesTypes.DELETE_PREFERENCES_FAILURE, err), getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: PreferencesTypes.DELETE_PREFERENCES_FAILURE, error}, getState);
         }
     };
 }
