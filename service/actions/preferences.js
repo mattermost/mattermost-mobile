@@ -4,7 +4,9 @@
 import Client from 'service/client';
 
 import {PreferencesTypes} from 'service/constants';
-import {bindClientFunc, dispatcher, forceLogoutIfNecessary, requestData, requestFailure} from './helpers';
+import {bindClientFunc, forceLogoutIfNecessary, requestData, requestFailure} from './helpers';
+
+import {batchActions} from 'redux-batched-actions';
 
 export function getMyPreferences() {
     return bindClientFunc(
@@ -22,8 +24,15 @@ export function savePreferences(preferences) {
         try {
             await Client.savePreferences(preferences);
 
-            dispatcher(PreferencesTypes.RECEIVED_PREFERENCES, preferences, dispatch, getState);
-            dispatcher(PreferencesTypes.SAVE_PREFERENCES_SUCCESS, preferences, dispatch, getState);
+            dispatch(batchActions([
+                {
+                    type: PreferencesTypes.RECEIVED_PREFERENCES,
+                    data: preferences
+                },
+                {
+                    type: PreferencesTypes.SAVE_PREFERENCES_SUCCESS
+                }
+            ]), getState);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch(requestFailure(PreferencesTypes.SAVE_PREFERENCES_FAILURE, err), getState);
@@ -38,8 +47,15 @@ export function deletePreferences(preferences) {
         try {
             await Client.deletePreferences(preferences);
 
-            dispatcher(PreferencesTypes.DELETED_PREFERENCES, preferences, dispatch, getState);
-            dispatcher(PreferencesTypes.DELETE_PREFERENCES_SUCCESS, preferences, dispatch, getState);
+            dispatch(batchActions([
+                {
+                    type: PreferencesTypes.DELETED_PREFERENCES,
+                    data: preferences
+                },
+                {
+                    type: PreferencesTypes.DELETE_PREFERENCES_SUCCESS
+                }
+            ]), getState);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch(requestFailure(PreferencesTypes.DELETE_PREFERENCES_FAILURE, err), getState);
