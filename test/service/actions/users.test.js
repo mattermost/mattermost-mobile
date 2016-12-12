@@ -63,6 +63,7 @@ describe('Actions.Users', () => {
                 const teams = state.entities.teams;
                 const channels = state.entities.channels;
                 const posts = state.entities.posts;
+                const preferences = state.entities.preferences;
                 const navigation = state.navigation;
 
                 if (logoutRequest.status === RequestStatus.SUCCESS || logoutRequest.status === RequestStatus.FAILURE) {
@@ -72,7 +73,6 @@ describe('Actions.Users', () => {
                         assert.deepStrictEqual(general.config, {}, 'config not empty');
                         assert.deepStrictEqual(general.license, {}, 'license not empty');
                         assert.strictEqual(users.currentId, '', 'current user id not empty');
-                        assert.deepStrictEqual(users.myPreferences, {}, 'user preferences not empty');
                         assert.deepStrictEqual(users.mySessions, [], 'user sessions not empty');
                         assert.deepStrictEqual(users.myAudits, [], 'user audits not empty');
                         assert.deepStrictEqual(users.profiles, {}, 'user profiles not empty');
@@ -96,6 +96,7 @@ describe('Actions.Users', () => {
                         assert.strictEqual(posts.currentFocusedPostId, '', 'current focused post id is not empty');
                         assert.deepStrictEqual(posts.postsInfo, {}, 'posts info is not empty');
                         assert.deepStrictEqual(posts.latestPageTime, {}, 'posts latest page time is not empty');
+                        assert.deepStrictEqual(preferences.myPreferences, {}, 'user preferences not empty');
                         assert.strictEqual(navigation.index, 0, 'navigation not reset to first element of stack');
                         assert.deepStrictEqual(navigation.routes, [Routes.Root], 'navigation not reset to root route');
 

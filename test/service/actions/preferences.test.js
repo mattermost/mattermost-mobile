@@ -9,7 +9,7 @@ import configureStore from 'app/store';
 import {RequestStatus} from 'service/constants';
 import TestHelper from 'test/test_helper';
 
-describe.only('Actions.Preferences', () => {
+describe('Actions.Preferences', () => {
     it('getMyPreferences', (done) => {
         TestHelper.initBasic(Client).then(async ({user}) => {
             const store = configureStore();
