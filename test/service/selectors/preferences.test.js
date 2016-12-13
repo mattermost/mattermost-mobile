@@ -9,7 +9,7 @@ import {Preferences, Themes} from 'service/constants';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 describe('Selectors.Preferences', () => {
-    it.only('getTheme', () => {
+    it('getTheme', () => {
         it('should return default theme', () => {
             assert.deepEqual(
                 getTheme({
