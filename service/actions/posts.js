@@ -43,7 +43,7 @@ export function deletePost(teamId, post) {
         dispatch(batchActions([
             {
                 type: PostsTypes.POST_DELETED,
-                data: post
+                data: {...post}
             },
             {
                 type: PostsTypes.DELETE_POST_SUCCESS
@@ -56,7 +56,7 @@ export function removePost(post) {
     return async (dispatch, getState) => {
         dispatch({
             type: PostsTypes.REMOVE_POST,
-            data: post
+            data: {...post}
         }, getState);
     };
 }
@@ -77,7 +77,7 @@ export function getPost(teamId, channelId, postId) {
         dispatch(batchActions([
             {
                 type: PostsTypes.RECEIVED_POSTS,
-                data: post,
+                data: {...post},
                 channelId
             },
             {
