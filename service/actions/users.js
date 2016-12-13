@@ -12,38 +12,48 @@ import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 export function login(loginId, password, mfaToken = '') {
     return async (dispatch, getState) => {
         dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
+
         Client.login(loginId, password, mfaToken).
         then(async (data) => {
+            // TODO: uncomment when PLT-4167 is merged
+            // let teamMembers;
+            let preferences;
             try {
-                const preferences = Client.getMyPreferences();
+                // TODO: uncomment when PLT-4167 is merged
+                // const teamMembersRequest = Client.getMyTeamMembers();
+                const preferencesRequest = Client.getMyPreferences();
 
                 // TODO: uncomment when PLT-4167 is merged
-                // const teamMembers = Client.getMyTeamMembers();
-                dispatch(batchActions([
-                    {
-                        type: UsersTypes.RECEIVED_ME,
-                        data
-                    },
-                    {
-                        type: PreferencesTypes.RECEIVED_PREFERENCES,
-                        data: await preferences
-                    },
-
-                    // TODO: uncomment when PLT-4167 is merged
-                    // {
-                    //     type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
-                    //     data: await teamMembers
-                    // },
-                    {
-                        type: UsersTypes.LOGIN_SUCCESS
-                    }
-                ]), getState);
+                // teamMembers = await teamMembersRequest;
+                preferences = await preferencesRequest;
             } catch (err) {
                 dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+                return;
             }
+
+            dispatch(batchActions([
+                {
+                    type: UsersTypes.RECEIVED_ME,
+                    data
+                },
+                {
+                    type: PreferencesTypes.RECEIVED_PREFERENCES,
+                    data: await preferences
+                },
+
+                // TODO: uncomment when PLT-4167 is merged
+                // {
+                //     type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
+                //     data: await teamMembers
+                // },
+                {
+                    type: UsersTypes.LOGIN_SUCCESS
+                }
+            ]), getState);
         }).
         catch((err) => {
             dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+            return;
         });
     };
 }
@@ -80,79 +90,91 @@ export function getProfilesByIds(userIds) {
 
 export function getProfilesInTeam(teamId, offset, limit = Constants.PROFILE_CHUNK_SIZE) {
     return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.PROFILES_IN_TEAM_REQUEST}, getState);
+
+        let profiles;
         try {
-            dispatch({type: UsersTypes.PROFILES_IN_TEAM_REQUEST}, getState);
-            const profiles = await Client.getProfilesInTeam(teamId, offset, limit);
-            dispatch(batchActions([
-                {
-                    type: UsersTypes.RECEIVED_PROFILES_IN_TEAM,
-                    data: profiles,
-                    id: teamId
-                },
-                {
-                    type: UsersTypes.RECEIVED_PROFILES,
-                    data: profiles
-                },
-                {
-                    type: UsersTypes.PROFILES_IN_TEAM_SUCCESS
-                }
-            ]), getState);
+            profiles = await Client.getProfilesInTeam(teamId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: UsersTypes.PROFILES_IN_TEAM_FAILURE, error}, getState);
+            return;
         }
+
+        dispatch(batchActions([
+            {
+                type: UsersTypes.RECEIVED_PROFILES_IN_TEAM,
+                data: profiles,
+                id: teamId
+            },
+            {
+                type: UsersTypes.RECEIVED_PROFILES,
+                data: profiles
+            },
+            {
+                type: UsersTypes.PROFILES_IN_TEAM_SUCCESS
+            }
+        ]), getState);
     };
 }
 
 export function getProfilesInChannel(teamId, channelId, offset, limit = Constants.PROFILE_CHUNK_SIZE) {
     return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.PROFILES_IN_CHANNEL_REQUEST}, getState);
+
+        let profiles;
         try {
-            dispatch({type: UsersTypes.PROFILES_IN_CHANNEL_REQUEST}, getState);
-            const profiles = await Client.getProfilesInChannel(teamId, channelId, offset, limit);
-            dispatch(batchActions([
-                {
-                    type: UsersTypes.RECEIVED_PROFILES_IN_CHANNEL,
-                    data: profiles,
-                    id: channelId
-                },
-                {
-                    type: UsersTypes.RECEIVED_PROFILES,
-                    data: profiles
-                },
-                {
-                    type: UsersTypes.PROFILES_IN_CHANNEL_SUCCESS
-                }
-            ]), getState);
+            profiles = await Client.getProfilesInChannel(teamId, channelId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: UsersTypes.PROFILES_IN_CHANNEL_FAILURE, error}, getState);
+            return;
         }
+
+        dispatch(batchActions([
+            {
+                type: UsersTypes.RECEIVED_PROFILES_IN_CHANNEL,
+                data: profiles,
+                id: channelId
+            },
+            {
+                type: UsersTypes.RECEIVED_PROFILES,
+                data: profiles
+            },
+            {
+                type: UsersTypes.PROFILES_IN_CHANNEL_SUCCESS
+            }
+        ]), getState);
     };
 }
 
 export function getProfilesNotInChannel(teamId, channelId, offset, limit = Constants.PROFILE_CHUNK_SIZE) {
     return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.PROFILES_NOT_IN_CHANNEL_REQUEST}, getState);
+
+        let profiles;
         try {
-            dispatch({type: UsersTypes.PROFILES_NOT_IN_CHANNEL_REQUEST}, getState);
-            const profiles = await Client.getProfilesNotInChannel(teamId, channelId, offset, limit);
-            dispatch(batchActions([
-                {
-                    type: UsersTypes.RECEIVED_PROFILES_NOT_IN_CHANNEL,
-                    data: profiles,
-                    id: channelId
-                },
-                {
-                    type: UsersTypes.RECEIVED_PROFILES,
-                    data: profiles
-                },
-                {
-                    type: UsersTypes.PROFILES_NOT_IN_CHANNEL_SUCCESS
-                }
-            ]), getState);
+            profiles = await Client.getProfilesNotInChannel(teamId, channelId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: UsersTypes.PROFILES_NOT_IN_CHANNEL_FAILURE, error}, getState);
+            return;
         }
+
+        dispatch(batchActions([
+            {
+                type: UsersTypes.RECEIVED_PROFILES_NOT_IN_CHANNEL,
+                data: profiles,
+                id: channelId
+            },
+            {
+                type: UsersTypes.RECEIVED_PROFILES,
+                data: profiles
+            },
+            {
+                type: UsersTypes.PROFILES_NOT_IN_CHANNEL_SUCCESS
+            }
+        ]), getState);
     };
 }
 
