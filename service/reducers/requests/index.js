@@ -3,16 +3,18 @@
 
 import {combineReducers} from 'redux';
 
-import general from './general';
 import channels from './channels';
-import users from './users';
+import general from './general';
+import posts from './posts';
 import teams from './teams';
+import users from './users';
 import preferences from './preferences';
 
 export default combineReducers({
-    general,
     channels,
-    users,
+    general,
+    posts,
     teams,
+    users,
     preferences
 });

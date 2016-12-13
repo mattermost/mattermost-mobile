@@ -3,7 +3,39 @@
 
 import {combineReducers} from 'redux';
 import {UsersTypes} from 'service/constants';
-import {profilesToSet, addProfileToSet, removeProfileFromSet} from './helpers';
+
+function profilesToSet(state, action) {
+    const id = action.id;
+    const nextSet = new Set(state[id]);
+    Object.keys(action.data).forEach((key) => {
+        nextSet.add(key);
+    });
+
+    return {
+        ...state,
+        [id]: nextSet
+    };
+}
+
+function addProfileToSet(state, action) {
+    const id = action.id;
+    const nextSet = new Set(state[id]);
+    nextSet.add(action.data.user_id);
+    return {
+        ...state,
+        [id]: nextSet
+    };
+}
+
+function removeProfileFromSet(state, action) {
+    const id = action.id;
+    const nextSet = new Set(state[id]);
+    nextSet.delete(action.data.user_id);
+    return {
+        ...state,
+        [id]: nextSet
+    };
+}
 
 function currentId(state = '', action) {
     switch (action.type) {

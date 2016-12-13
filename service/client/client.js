@@ -499,17 +499,6 @@ export default class Client {
     };
 
     // Post routes
-
-    fetchPosts = (teamId, channelId, onRequest, onSuccess, onFailure) => {
-        return this.doFetch(
-            `${this.getPostsRoute(teamId, channelId)}/page/0/60`,
-            {method: 'get'},
-            onRequest,
-            onSuccess,
-            onFailure
-        );
-    };
-
     createPost = async (teamId, post) => {
         return this.doFetch(
             `${this.getPostsRoute(teamId, post.channel_id)}/create`,
@@ -517,6 +506,56 @@ export default class Client {
         );
     };
 
+    editPost = async (teamId, post) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, post.channel_id)}/update`,
+            {method: 'post', body: JSON.stringify(post)}
+        );
+    };
+
+    deletePost = async (teamId, channelId, postId) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, channelId)}/${postId}/delete`,
+            {method: 'post'}
+        );
+    };
+
+    getPost = async (teamId, channelId, postId) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, channelId)}/${postId}/get`,
+            {method: 'get'}
+        );
+    };
+
+    getPosts = async (teamId, channelId, offset, limit) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, channelId)}/page/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getPostsSince = async (teamId, channelId, since) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, channelId)}/since/${since}`,
+            {method: 'get'}
+        );
+    };
+
+    getPostsBefore = async (teamId, channelId, postId, offset, limit) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, channelId)}/${postId}/before/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    getPostsAfter = async (teamId, channelId, postId, offset, limit) => {
+        return this.doFetch(
+            `${this.getPostsRoute(teamId, channelId)}/${postId}/after/${offset}/${limit}`,
+            {method: 'get'}
+        );
+    };
+
+    // Client helpers
     // Preferences routes
 
     getMyPreferences = async () => {

@@ -16,7 +16,6 @@ export default keymirror({
     DELETE_PREFERENCES_SUCCESS: null,
     DELETE_PREFERENCES_FAILURE: null,
 
-    RECEIVED_PREFERENCE: null,
     RECEIVED_PREFERENCES: null,
     DELETED_PREFERENCES: null
 });
