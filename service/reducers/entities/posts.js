@@ -111,11 +111,14 @@ function deletePost(state, action) {
     if (postInfo.posts[post.id]) {
         const combinedPosts = makePostListNonNull(postInfo);
 
-        combinedPosts.posts[post.id] = {
-            ...post,
-            state: Constants.POST_DELETED,
-            file_ids: [],
-            has_reactions: false
+        combinedPosts.posts = {
+            ...combinedPosts.posts,
+            [post.id]: {
+                ...post,
+                state: Constants.POST_DELETED,
+                file_ids: [],
+                has_reactions: false
+            }
         };
 
         return {
@@ -143,6 +146,11 @@ function removePost(state, action) {
 
     if (postInfo.posts[post.id]) {
         const combinedPosts = makePostListNonNull(postInfo);
+
+        combinedPosts.order = combinedPosts.order.slice(0);
+        combinedPosts.posts = {...combinedPosts.posts};
+
+        // Remove the post
         Reflect.deleteProperty(combinedPosts.posts, post.id);
 
         const index = combinedPosts.order.indexOf(post.id);
@@ -150,11 +158,8 @@ function removePost(state, action) {
             combinedPosts.order.splice(index, 1);
         }
 
-        for (const pid in combinedPosts.posts) {
-            if (!combinedPosts.posts.hasOwnProperty(pid)) {
-                continue;
-            }
-
+        // Remove any children of the post
+        for (const pid of Object.keys(combinedPosts.posts)) {
             if (combinedPosts.posts[pid].root_id === post.id) {
                 Reflect.deleteProperty(combinedPosts.posts, pid);
                 const commentIndex = combinedPosts.order.indexOf(pid);

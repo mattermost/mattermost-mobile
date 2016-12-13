@@ -75,45 +75,36 @@ describe('Actions.Posts', () => {
     });
 
     it('deletePost', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
+        TestHelper.initBasic(Client).then(async ({channel}) => {
             const store = configureStore();
-            let created;
+
+            await Actions.createPost(
+                TestHelper.basicTeam.id,
+                TestHelper.fakePost(TestHelper.basicChannel.id)
+            )(store.dispatch, store.getState);
+
+            const initialPostsInfo = store.getState().entities.posts.postsInfo[channel.id];
+            const created = initialPostsInfo.posts[initialPostsInfo.order[0]];
 
             store.subscribe(() => {
-                const createRequest = store.getState().requests.posts.createPost;
-                const deleteRequest = store.getState().requests.posts.deletePost;
-                const postsInfo = store.getState().entities.posts.postsInfo;
+                const state = store.getState();
+                const deleteRequest = state.requests.posts.deletePost;
+                const postsInfo = state.entities.posts.postsInfo[channel.id];
 
-                if (deleteRequest.status === RequestStatus.SUCCESS || deleteRequest.status === RequestStatus.FAILURE) {
-                    if (deleteRequest.error) {
-                        done(new Error(JSON.stringify(deleteRequest.error)));
-                    } else {
-                        assert.ok(postsInfo[TestHelper.basicChannel.id]);
-                        assert.strictEqual(
-                            postsInfo[TestHelper.basicChannel.id].posts[created.id].state,
-                            Constants.POST_DELETED
-                        );
-                        done();
-                    }
-                }
+                if (deleteRequest.status === RequestStatus.SUCCESS) {
+                    assert.ok(postsInfo);
+                    assert.strictEqual(
+                        postsInfo.posts[created.id].state,
+                        Constants.POST_DELETED
+                    );
 
-                if (deleteRequest.status === RequestStatus.NOT_STARTED &&
-                    (createRequest.status === RequestStatus.SUCCESS || createRequest.status === RequestStatus.FAILURE)) {
-                    if (createRequest.error) {
-                        done(new Error(JSON.stringify(createRequest.error)));
-                    } else {
-                        const posts = postsInfo[TestHelper.basicChannel.id].posts;
-                        created = posts[Object.keys(posts)[0]];
-                        Actions.deletePost(TestHelper.basicTeam.id, created)(store.dispatch, store.getState);
-                    }
+                    done();
+                } else if (deleteRequest.status === RequestStatus.FAILURE) {
+                    done(new Error(JSON.stringify(deleteRequest.error)));
                 }
             });
 
-            const post = TestHelper.fakePost(TestHelper.basicChannel.id);
-            Actions.createPost(
-                TestHelper.basicTeam.id,
-                post
-            )(store.dispatch, store.getState);
+            Actions.deletePost(TestHelper.basicTeam.id, created)(store.dispatch, store.getState);
         });
     });
 
@@ -133,9 +124,11 @@ describe('Actions.Posts', () => {
             store.subscribe(() => {
                 const postsInfo = store.getState().entities.posts.postsInfo;
                 const postList = postsInfo[TestHelper.basicChannel.id];
+
                 assert.strictEqual(postList.order.length, 0);
-                assert.ifError(postList.posts[post1a.id]);
-                assert.ifError(postList.posts[TestHelper.basicPost.id]);
+                assert.ok(!postList.posts[post1a.id]);
+                assert.ok(!postList.posts[TestHelper.basicPost.id]);
+
                 done();
             });
 
