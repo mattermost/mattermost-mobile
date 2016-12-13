@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 import {PreferencesTypes, UsersTypes} from 'service/constants';
 
 function getKey(preference) {
-    return `${preference.category}-${preference.name}`;
+    return `${preference.category}--${preference.name}`;
 }
 
 function myPreferences(state = {}, action) {

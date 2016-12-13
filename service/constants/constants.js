@@ -10,9 +10,7 @@ const Constants = {
     TEAM_ADMIN_ROLE: 'team_admin',
 
     CHANNEL_USER_ROLE: 'channel_user',
-    CHANNEL_ADMIN_ROLE: 'channel_admin',
-
-    CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show'
+    CHANNEL_ADMIN_ROLE: 'channel_admin'
 };
 
 export default Constants;

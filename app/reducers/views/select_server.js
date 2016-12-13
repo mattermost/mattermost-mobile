@@ -5,11 +5,11 @@ import {combineReducers} from 'redux';
 
 import Config from 'config';
 
-import {GeneralTypes} from 'service/constants';
+import {ViewTypes} from 'app/constants';
 
 function serverUrl(state = Config.DefaultServerUrl, action) {
     switch (action.type) {
-    case GeneralTypes.SERVER_URL_CHANGED:
+    case ViewTypes.SERVER_URL_CHANGED:
         return action.serverUrl;
 
     default:

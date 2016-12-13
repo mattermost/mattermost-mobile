@@ -9,6 +9,12 @@ import TeamsTypes from './teams';
 import PostsTypes from './posts';
 import PreferencesTypes from './preferences';
 import RequestStatus from './request_status';
+import Themes from './themes';
+
+const Preferences = {
+    CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
+    CATEGORY_THEME: 'theme'
+};
 
 export {
     Constants,
@@ -18,5 +24,7 @@ export {
     ChannelTypes,
     PostsTypes,
     PreferencesTypes,
-    RequestStatus
+    Preferences,
+    RequestStatus,
+    Themes
 };

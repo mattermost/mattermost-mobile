@@ -20,9 +20,7 @@ const GeneralTypes = keymirror({
 
     LOG_CLIENT_ERROR_REQUEST: null,
     LOG_CLIENT_ERROR_SUCCESS: null,
-    LOG_CLIENT_ERROR_FAILURE: null,
-
-    SERVER_URL_CHANGED: null
+    LOG_CLIENT_ERROR_FAILURE: null
 });
 
 export default GeneralTypes;
