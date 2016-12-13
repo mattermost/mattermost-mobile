@@ -38,10 +38,10 @@ describe('Actions.Preferences', () => {
                 if (request.status === RequestStatus.SUCCESS) {
                     const myPreferences = state.entities.preferences.myPreferences;
 
-                    assert.ok(myPreferences['test-test1']);
-                    assert.deepEqual(existingPreferences[0], myPreferences['test-test1']);
-                    assert.ok(myPreferences['test-test2']);
-                    assert.deepEqual(existingPreferences[1], myPreferences['test-test2']);
+                    assert.ok(myPreferences['test--test1'], 'first preference doesn\'t exist');
+                    assert.deepEqual(existingPreferences[0], myPreferences['test--test1']);
+                    assert.ok(myPreferences['test--test2'], 'second preference doesn\'t exist');
+                    assert.deepEqual(existingPreferences[1], myPreferences['test--test2']);
 
                     done();
                 } else if (request.status === RequestStatus.FAILURE) {
@@ -91,12 +91,12 @@ describe('Actions.Preferences', () => {
                 if (request.status === RequestStatus.SUCCESS) {
                     const myPreferences = state.entities.preferences.myPreferences;
 
-                    assert.ok(myPreferences['test-test1']);
-                    assert.deepEqual(existingPreferences[0], myPreferences['test-test1']);
-                    assert.ok(myPreferences['test-test2']);
-                    assert.deepEqual(preferences[0], myPreferences['test-test2']);
-                    assert.ok(myPreferences['test-test3']);
-                    assert.deepEqual(preferences[1], myPreferences['test-test3']);
+                    assert.ok(myPreferences['test--test1'], 'first preference doesn\'t exist');
+                    assert.deepEqual(existingPreferences[0], myPreferences['test--test1']);
+                    assert.ok(myPreferences['test--test2'], 'second preference doesn\'t exist');
+                    assert.deepEqual(preferences[0], myPreferences['test--test2']);
+                    assert.ok(myPreferences['test--test3'], 'third preference doesn\'t exist');
+                    assert.deepEqual(preferences[1], myPreferences['test--test3']);
 
                     done();
                 } else if (request.status === RequestStatus.FAILURE) {
@@ -143,10 +143,10 @@ describe('Actions.Preferences', () => {
                 if (request.status === RequestStatus.SUCCESS) {
                     const myPreferences = state.entities.preferences.myPreferences;
 
-                    assert.ok(!myPreferences['test-test1']);
-                    assert.ok(myPreferences['test-test2']);
-                    assert.deepEqual(existingPreferences[1], myPreferences['test-test2']);
-                    assert.ok(!myPreferences['test-test3']);
+                    assert.ok(!myPreferences['test--test1'], 'deleted preference still exists');
+                    assert.ok(myPreferences['test--test2'], 'second preference doesn\'t exist');
+                    assert.deepEqual(existingPreferences[1], myPreferences['test--test2']);
+                    assert.ok(!myPreferences['test--test3'], 'third preference doesn\'t exist');
 
                     done();
                 } else if (request.status === RequestStatus.FAILURE) {
