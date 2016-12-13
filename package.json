@@ -27,6 +27,7 @@
     "babel-register": "6.16.3",
     "deep-freeze": "0.0.1",
     "eslint": "3.7.1",
+    "eslint-plugin-mocha": "4.7.0",
     "eslint-plugin-react": "6.3.0",
     "fetch-mock": "5.5.0",
     "mocha": "3.1.0",
