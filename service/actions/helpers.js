@@ -44,18 +44,21 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
     return async (dispatch, getState) => {
         dispatch(requestData(request), getState);
 
+        let data = null;
         try {
-            const data = await clientFunc(...args);
-            if (Array.isArray(success)) {
-                success.forEach((s) => {
-                    dispatcher(s, data, dispatch, getState);
-                });
-            } else {
-                dispatcher(success, data, dispatch, getState);
-            }
+            data = await clientFunc(...args);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch(requestFailure(failure, err), getState);
+            return;
+        }
+
+        if (Array.isArray(success)) {
+            success.forEach((s) => {
+                dispatcher(s, data, dispatch, getState);
+            });
+        } else {
+            dispatcher(success, data, dispatch, getState);
         }
     };
 }

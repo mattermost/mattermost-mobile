@@ -23,20 +23,21 @@ export function savePreferences(preferences) {
 
         try {
             await Client.savePreferences(preferences);
-
-            dispatch(batchActions([
-                {
-                    type: PreferencesTypes.RECEIVED_PREFERENCES,
-                    data: preferences
-                },
-                {
-                    type: PreferencesTypes.SAVE_PREFERENCES_SUCCESS
-                }
-            ]), getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PreferencesTypes.SAVE_PREFERENCES_FAILURE, error}, getState);
+            return;
         }
+
+        dispatch(batchActions([
+            {
+                type: PreferencesTypes.RECEIVED_PREFERENCES,
+                data: preferences
+            },
+            {
+                type: PreferencesTypes.SAVE_PREFERENCES_SUCCESS
+            }
+        ]), getState);
     };
 }
 
@@ -46,20 +47,21 @@ export function deletePreferences(preferences) {
 
         try {
             await Client.deletePreferences(preferences);
-
-            dispatch(batchActions([
-                {
-                    type: PreferencesTypes.DELETED_PREFERENCES,
-                    data: preferences
-                },
-                {
-                    type: PreferencesTypes.DELETE_PREFERENCES_SUCCESS
-                }
-            ]), getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PreferencesTypes.DELETE_PREFERENCES_FAILURE, error}, getState);
+            return;
         }
+
+        dispatch(batchActions([
+            {
+                type: PreferencesTypes.DELETED_PREFERENCES,
+                data: preferences
+            },
+            {
+                type: PreferencesTypes.DELETE_PREFERENCES_SUCCESS
+            }
+        ]), getState);
     };
 }
 

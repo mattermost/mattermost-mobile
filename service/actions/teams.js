@@ -35,39 +35,43 @@ export function getAllTeamListings() {
 
 export function createTeam(userId, team) {
     return async (dispatch, getState) => {
-        try {
-            dispatch({type: TeamsTypes.CREATE_TEAM_REQUEST}, getState);
-            const created = await Client.createTeam(team);
-            const member = {
-                team_id: created.id,
-                user_id: userId,
-                roles: `${Constants.TEAM_ADMIN_ROLE} ${Constants.TEAM_USER_ROLE}`,
-                delete_at: 0,
-                msg_count: 0,
-                mention_count: 0
-            };
+        dispatch({type: TeamsTypes.CREATE_TEAM_REQUEST}, getState);
 
-            dispatch(batchActions([
-                {
-                    type: TeamsTypes.CREATED_TEAM,
-                    data: created
-                },
-                {
-                    type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
-                    data: [member]
-                },
-                {
-                    type: TeamsTypes.SELECT_TEAM,
-                    data: created.id
-                },
-                {
-                    type: TeamsTypes.CREATE_TEAM_SUCCESS
-                }
-            ]), getState);
+        let created;
+        try {
+            created = await Client.createTeam(team);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch({type: TeamsTypes.CREATE_TEAM_FAILURE, error: err}, getState);
+            return;
         }
+
+        const member = {
+            team_id: created.id,
+            user_id: userId,
+            roles: `${Constants.TEAM_ADMIN_ROLE} ${Constants.TEAM_USER_ROLE}`,
+            delete_at: 0,
+            msg_count: 0,
+            mention_count: 0
+        };
+
+        dispatch(batchActions([
+            {
+                type: TeamsTypes.CREATED_TEAM,
+                data: created
+            },
+            {
+                type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
+                data: [member]
+            },
+            {
+                type: TeamsTypes.SELECT_TEAM,
+                data: created.id
+            },
+            {
+                type: TeamsTypes.CREATE_TEAM_SUCCESS
+            }
+        ]), getState);
     };
 }
 
@@ -92,22 +96,26 @@ export function getMyTeamMembers() {
 
 export function getTeamMember(teamId, userId) {
     return async (dispatch, getState) => {
+        dispatch({type: TeamsTypes.TEAM_MEMBERS_REQUEST}, getState);
+
+        let member;
         try {
-            dispatch({type: TeamsTypes.TEAM_MEMBERS_REQUEST}, getState);
-            const member = await Client.getTeamMember(teamId, userId);
-            dispatch(batchActions([
-                {
-                    type: TeamsTypes.RECEIVED_MEMBERS_IN_TEAM,
-                    data: [member]
-                },
-                {
-                    type: TeamsTypes.TEAM_MEMBERS_SUCCESS
-                }
-            ]), getState);
+            member = await Client.getTeamMember(teamId, userId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: TeamsTypes.TEAM_MEMBERS_FAILURE, error}, getState);
+            return;
         }
+
+        dispatch(batchActions([
+            {
+                type: TeamsTypes.RECEIVED_MEMBERS_IN_TEAM,
+                data: [member]
+            },
+            {
+                type: TeamsTypes.TEAM_MEMBERS_SUCCESS
+            }
+        ]), getState);
     };
 }
 
@@ -134,52 +142,58 @@ export function getTeamStats(teamId) {
 
 export function addUserToTeam(teamId, userId) {
     return async (dispatch, getState) => {
-        try {
-            dispatch({type: TeamsTypes.ADD_TEAM_MEMBER_REQUEST}, getState);
-            await Client.addUserToTeam(teamId, userId);
-            const member = {
-                team_id: teamId,
-                user_id: userId
-            };
+        dispatch({type: TeamsTypes.ADD_TEAM_MEMBER_REQUEST}, getState);
 
-            dispatch(batchActions([
-                {
-                    type: TeamsTypes.RECEIVED_MEMBER_IN_TEAM,
-                    data: member
-                },
-                {
-                    type: TeamsTypes.ADD_TEAM_MEMBER_SUCCESS
-                }
-            ]), getState);
+        try {
+            await Client.addUserToTeam(teamId, userId);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch({type: TeamsTypes.ADD_TEAM_MEMBER_FAILURE, error: err}, getState);
+            return;
         }
+
+        const member = {
+            team_id: teamId,
+            user_id: userId
+        };
+
+        dispatch(batchActions([
+            {
+                type: TeamsTypes.RECEIVED_MEMBER_IN_TEAM,
+                data: member
+            },
+            {
+                type: TeamsTypes.ADD_TEAM_MEMBER_SUCCESS
+            }
+        ]), getState);
     };
 }
 
 export function removeUserFromTeam(teamId, userId) {
     return async (dispatch, getState) => {
-        try {
-            dispatch({type: TeamsTypes.REMOVE_TEAM_MEMBER_REQUEST}, getState);
-            await Client.removeUserFromTeam(teamId, userId);
-            const member = {
-                team_id: teamId,
-                user_id: userId
-            };
+        dispatch({type: TeamsTypes.REMOVE_TEAM_MEMBER_REQUEST}, getState);
 
-            dispatch(batchActions([
-                {
-                    type: TeamsTypes.REMOVE_MEMBER_FROM_TEAM,
-                    data: member
-                },
-                {
-                    type: TeamsTypes.REMOVE_TEAM_MEMBER_SUCCESS
-                }
-            ]), getState);
+        try {
+            await Client.removeUserFromTeam(teamId, userId);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch({type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error: err}, getState);
+            return;
         }
+
+        const member = {
+            team_id: teamId,
+            user_id: userId
+        };
+
+        dispatch(batchActions([
+            {
+                type: TeamsTypes.REMOVE_MEMBER_FROM_TEAM,
+                data: member
+            },
+            {
+                type: TeamsTypes.REMOVE_TEAM_MEMBER_SUCCESS
+            }
+        ]), getState);
     };
 }
