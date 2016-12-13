@@ -11,7 +11,8 @@
     },
     "parser": "babel-eslint",
     "plugins": [
-        "react"
+        "react",
+        "mocha"
     ],
     "env": {
         "browser": true,
@@ -254,6 +255,7 @@
         "vars-on-top": 0,
         "wrap-iife": [2, "outside"],
         "wrap-regex": 2,
-        "yoda": [2, "never", {"exceptRange": false, "onlyEquality": false}]
+        "yoda": [2, "never", {"exceptRange": false, "onlyEquality": false}],
+        "mocha/no-exclusive-tests": 2
     }
 }
