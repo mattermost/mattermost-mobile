@@ -10,7 +10,7 @@ This document includes a list of open source components used in Mattermost Mobil
 
 ## intl
 
-This product contains a modified portion of 'Intl.js', to bring long overdue localization methods to ECMAScript implementations, built by andyearnshaw.
+This product contains a modified portion of 'Intl.js', to bring long overdue localization methods to ECMAScript implementations by Andy Earnshaw.
 
 * HOMEPAGE: 
   * https://github.com/andyearnshaw/Intl.js
@@ -87,7 +87,7 @@ the property of their respective owners.
 
 ## isomorphic-fetch
 
-This product contains a modified portion of 'isomorphic-fetch', to provide the fetch function for node.
+This product contains a modified portion of 'isomorphic-fetch', to provide the fetch function for node by Matt Andrews.
 
 * HOMEPAGE: 
   * https://github.com/matthew-andrews/isomorphic-fetch
@@ -191,7 +191,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## react-addons-pure-render-mixin
 
-This product contains a modified portion of 'react-addons-pure-render-mixin',  a JavaScript library for building user interfaces.
+This product contains a modified portion of 'react-addons-pure-render-mixin',  a JavaScript library for building user interfaces by Facebook, Inc.
 
 * HOMEPAGE: 
   * https://github.com/facebook/react
@@ -234,8 +234,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## react-intl
 
-This product contains a modified portion of 'react-intl', a library that provides React components and an API to format dates, numbers, and string messages including pluralization. 
-by Yahoo Inc. 
+This product contains a modified portion of 'react-intl', a library that provides React components and an API to format dates, numbers, and string messages including pluralization by Yahoo Inc. 
 
 * HOMEPAGE: 
   * https://github.com/yahoo/react-intl
@@ -274,7 +273,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## react-native
 
-This product contains a modified portion of 'react-native', a library for building native applications using Javascript and React.
+This product contains a modified portion of 'react-native', a library for building native applications using Javascript and React by Facebook, Inc.
 
 * HOMEPAGE: 
   * https://github.com/facebook/react-native
@@ -316,7 +315,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## react-native-button
 
-This product contains a modified portion of 'react-native-button', a button for React apps.
+This product contains a modified portion of 'react-native-button', a button for React apps by James Ide.
 
 * HOMEPAGE: 
   * https://github.com/ide/react-native-button
@@ -349,7 +348,7 @@ SOFTWARE.
 
 ## react-native-drawer
 
-This product contains a modified portion of 'react-native-drawer', a drawer component for React Native.
+This product contains a modified portion of 'react-native-drawer', a drawer component for React Native by Zack Story.
 
 * HOMEPAGE: 
   * https://github.com/root-two/react-native-drawer
@@ -370,7 +369,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## react-native-keyboard-spacer
 
-This product contains a modified portion of 'react-native-keyboard-spacer', a keyboard spacer view for React Native.
+This product contains a modified portion of 'react-native-keyboard-spacer', a keyboard spacer view for React Native by Andrew Hurst.
 
 * HOMEPAGE: 
   * https://github.com/Andr3wHur5t/react-native-keyboard-spacer
@@ -403,7 +402,7 @@ SOFTWARE.
 
 ## react-native-vector-icons
 
-This product contains a modified portion of 'react-native-vector-icons', a set of vector icons for use in React Native apps.
+This product contains a modified portion of 'react-native-vector-icons', a set of vector icons for use in React Native apps by Joel Arvidsson.
 
 * HOMEPAGE: 
   * https://github.com/oblador/react-native-vector-icons
@@ -436,7 +435,7 @@ SOFTWARE.
 
 ## react-redux
 
-This product contains a modified portion of 'react-redux', a set of React bindings for Redux.
+This product contains a modified portion of 'react-redux', a set of React bindings for Redux by Dan Abramov.
 
 * HOMEPAGE: 
   * https://github.com/reactjs/react-redux
@@ -469,7 +468,7 @@ SOFTWARE.
 
 ## redux
 
-This product contains a modified portion of 'redux', a predictable state container for JavaScript apps.
+This product contains a modified portion of 'redux', a predictable state container for JavaScript apps by Dan Abramov.
 
 * HOMEPAGE: 
   * https://github.com/reactjs/redux
@@ -502,7 +501,7 @@ SOFTWARE.
 
 ## redux-batched-actions
 
-This product contains a modified portion of 'redux-batched-actions', a batching action creator and higher order reducer for Redux.
+This product contains a modified portion of 'redux-batched-actions', a batching action creator and higher order reducer for Redux by Tim Shelburne.
 
 * HOMEPAGE: 
   * https://github.com/tshelburne/redux-batched-actions
@@ -535,7 +534,7 @@ SOFTWARE.
 
 ## redux-thunk
 
-This product contains a modified portion of 'redux-thunk', middleware to allow asynchronous actions in Redux.
+This product contains a modified portion of 'redux-thunk', middleware to allow asynchronous actions in Redux by Dan Abramov.
 
 * HOMEPAGE: 
   * https://github.com/gaearon/redux-thunk
