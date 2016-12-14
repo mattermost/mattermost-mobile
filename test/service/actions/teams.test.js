@@ -317,5 +317,5 @@ describe('Actions.Teams', () => {
 
             Actions.addUserToTeam(TestHelper.basicTeam.id, user.id)(store.dispatch, store.getState);
         });
-    });
+    }).timeout(3000);
 });

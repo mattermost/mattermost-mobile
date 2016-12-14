@@ -26,7 +26,18 @@ function license(state = {}, action) {
     }
 }
 
+function appState(state = '', action) {
+    switch (action.type) {
+    case GeneralTypes.RECEIVED_APP_STATE:
+        return action.data;
+
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
+    appState,
     config,
     license
 });

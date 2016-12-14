@@ -1,10 +1,12 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import Config from 'config/index';
 
-import Config from 'config';
-
+import {goToSelectTeam} from 'app/actions/navigation';
+import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
 import RootLayout from './root_layout';
 
 function mapStateToProps(state, ownProps) {
@@ -18,8 +20,20 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        locale
+        locale,
+        users,
+        storage: state.storage.info
     };
 }
 
-export default connect(mapStateToProps)(RootLayout);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            goToSelectTeam,
+            goToSelectServer,
+            setStoreFromLocalData
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RootLayout);

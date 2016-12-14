@@ -12,6 +12,7 @@ import {getComponentForScene} from 'app/scenes';
 
 import {Easing, NavigationExperimental, View} from 'react-native';
 import FormattedText from 'app/components/formatted_text';
+import Loading from 'app/components/loading';
 
 class Router extends React.Component {
     static propTypes = {
@@ -19,7 +20,7 @@ class Router extends React.Component {
         actions: React.PropTypes.shape({
             goBack: React.PropTypes.func
         }).isRequired
-    }
+    };
 
     renderTransition = (transitionProps) => {
         let title;
@@ -61,7 +62,7 @@ class Router extends React.Component {
                 {title}
             </View>
         );
-    }
+    };
 
     renderTitle = ({scene}) => {
         const title = scene.route.title;
@@ -78,22 +79,25 @@ class Router extends React.Component {
                 />
             </NavigationExperimental.Header.Title>
         );
-    }
+    };
 
     renderScene = ({scene}) => {
         const SceneComponent = getComponentForScene(scene.route.key);
 
         return <SceneComponent {...scene.route.props}/>;
-    }
+    };
 
     configureTransition = () => {
         return {
             duration: 500,
             easing: Easing.inOut(Easing.ease)
         };
-    }
+    };
 
     render = () => {
+        if (!this.props.navigation.routes.length) {
+            return <Loading/>;
+        }
         return (
             <NavigationExperimental.Transitioner
                 style={{flex: 1}}
@@ -102,7 +106,7 @@ class Router extends React.Component {
                 configureTransition={this.configureTransition}
             />
         );
-    }
+    };
 }
 
 function mapStateToProps(state) {
