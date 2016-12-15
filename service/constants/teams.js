@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import keymirror from 'keymirror';
+import keyMirror from 'service/utils/key_mirror';
 
-const TeamTypes = keymirror({
+const TeamTypes = keyMirror({
     FETCH_TEAMS_REQUEST: null,
     FETCH_TEAMS_SUCCESS: null,
     FETCH_TEAMS_FAILURE: null,

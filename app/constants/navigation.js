@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import keymirror from 'keymirror';
+import keyMirror from 'service/utils/key_mirror';
 
-const NavigationTypes = keymirror({
+const NavigationTypes = keyMirror({
     NAVIGATION_PUSH: null,
     NAVIGATION_POP: null,
     NAVIGATION_JUMP: null,
