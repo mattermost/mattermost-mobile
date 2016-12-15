@@ -21,8 +21,8 @@ describe('Reducers.Navigation', () => {
         const state = initialState();
 
         assert.deepEqual(state, {
-            index: -1,
-            routes: []
+            index: 0,
+            routes: [Routes.Root]
         }, 'initial state');
     });
 

@@ -54,7 +54,8 @@ const UserTypes = keymirror({
     RECEIVED_SESSIONS: null,
     RECEIVED_REVOKED_SESSION: null,
     RECEIVED_AUDITS: null,
-    RECEIVED_STATUSES: null
+    RECEIVED_STATUSES: null,
+    RESET_LOGOUT_STATE: null
 });
 
 export default UserTypes;

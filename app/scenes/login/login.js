@@ -35,8 +35,7 @@ class Login extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.saveStorage();
-            this.props.actions.goToSelectTeam();
+            this.props.actions.saveStorage().then(this.props.actions.goToSelectTeam);
         }
     }
 

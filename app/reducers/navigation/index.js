@@ -9,8 +9,10 @@ import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
 
 const initialState = {
-    index: -1,
-    routes: []
+    index: 0,
+    routes: [
+        Routes.Root
+    ]
 };
 
 export default function(state = initialState, action) {
@@ -31,7 +33,7 @@ export default function(state = initialState, action) {
         return NavigationExperimental.StateUtils.reset(state, action.routes, action.index);
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return NavigationExperimental.StateUtils.reset(state, [Routes.Root], 0);
+        return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);
 
     default:
         return state;

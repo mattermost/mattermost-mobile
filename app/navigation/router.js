@@ -12,7 +12,6 @@ import {getComponentForScene} from 'app/scenes';
 
 import {Easing, NavigationExperimental, View} from 'react-native';
 import FormattedText from 'app/components/formatted_text';
-import Loading from 'app/components/loading';
 
 class Router extends React.Component {
     static propTypes = {
@@ -95,9 +94,6 @@ class Router extends React.Component {
     };
 
     render = () => {
-        if (!this.props.navigation.routes.length) {
-            return <Loading/>;
-        }
         return (
             <NavigationExperimental.Transitioner
                 style={{flex: 1}}

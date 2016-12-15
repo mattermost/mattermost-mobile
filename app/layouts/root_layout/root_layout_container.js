@@ -5,8 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import Config from 'config/index';
 
-import {goToSelectTeam} from 'app/actions/navigation';
-import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
+import {setAppState} from 'service/actions/general';
 import RootLayout from './root_layout';
 
 function mapStateToProps(state, ownProps) {
@@ -20,18 +19,14 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        locale,
-        users,
-        storage: state.storage.info
+        locale
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goToSelectTeam,
-            goToSelectServer,
-            setStoreFromLocalData
+            setAppState
         }, dispatch)
     };
 }

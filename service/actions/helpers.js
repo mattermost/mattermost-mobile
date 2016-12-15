@@ -7,9 +7,8 @@ const HTTP_UNAUTHORIZED = 401;
 
 export async function forceLogoutIfNecessary(err, dispatch) {
     if (err.status_code === HTTP_UNAUTHORIZED && err.url.indexOf('/login') === -1) {
+        dispatch({type: UsersTypes.LOGOUT_REQUEST});
         await Client.logout();
-
-        // TODO: we need to find a way to clear the storage too
         dispatch({type: UsersTypes.LOGOUT_SUCCESS});
     }
 }

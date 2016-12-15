@@ -5,6 +5,8 @@ import keymirror from 'keymirror';
 
 const GeneralTypes = keymirror({
     RECEIVED_APP_STATE: null,
+    RECEIVED_APP_CREDENTIALS: null,
+    REMOVED_APP_CREDENTIALS: null,
 
     PING_REQUEST: null,
     PING_SUCCESS: null,

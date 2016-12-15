@@ -2,11 +2,9 @@
 // See License.txt for license information.
 
 import navigation from './navigation';
-import storage from './storage';
 import views from './views';
 
 export default {
     navigation,
-    storage,
     views
 };
