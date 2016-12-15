@@ -19,7 +19,7 @@ class Router extends React.Component {
         actions: React.PropTypes.shape({
             goBack: React.PropTypes.func
         }).isRequired
-    }
+    };
 
     renderTransition = (transitionProps) => {
         let title;
@@ -61,7 +61,7 @@ class Router extends React.Component {
                 {title}
             </View>
         );
-    }
+    };
 
     renderTitle = ({scene}) => {
         const title = scene.route.title;
@@ -78,20 +78,20 @@ class Router extends React.Component {
                 />
             </NavigationExperimental.Header.Title>
         );
-    }
+    };
 
     renderScene = ({scene}) => {
         const SceneComponent = getComponentForScene(scene.route.key);
 
         return <SceneComponent {...scene.route.props}/>;
-    }
+    };
 
     configureTransition = () => {
         return {
             duration: 500,
             easing: Easing.inOut(Easing.ease)
         };
-    }
+    };
 
     render = () => {
         return (
@@ -102,7 +102,7 @@ class Router extends React.Component {
                 configureTransition={this.configureTransition}
             />
         );
-    }
+    };
 }
 
 function mapStateToProps(state) {

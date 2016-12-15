@@ -23,13 +23,18 @@ export function handleRequest(REQUEST, SUCCESS, FAILURE, state, action) {
             status: RequestStatus.SUCCESS,
             error: null
         };
-    case FAILURE:
+    case FAILURE: {
+        let error = action.error;
+        if (error instanceof Error) {
+            error = error.toString();
+        }
+
         return {
             ...state,
             status: RequestStatus.FAILURE,
-            error: action.error
+            error
         };
-
+    }
     default:
         return state;
     }

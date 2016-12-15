@@ -26,13 +26,22 @@ function login(state = initialRequestState(), action) {
 }
 
 function logout(state = initialRequestState(), action) {
-    return handleRequest(
-        UsersTypes.LOGOUT_REQUEST,
-        UsersTypes.LOGOUT_SUCCESS,
-        UsersTypes.LOGOUT_FAILURE,
-        state,
-        action
-    );
+    switch (action.type) {
+    case UsersTypes.LOGOUT_REQUEST:
+        return {...state, status: RequestStatus.STARTED};
+
+    case UsersTypes.LOGOUT_SUCCESS:
+        return {...state, status: RequestStatus.SUCCESS, error: null};
+
+    case UsersTypes.LOGOUT_FAILURE:
+        return {...state, status: RequestStatus.FAILURE, error: action.error};
+
+    case UsersTypes.RESET_LOGOUT_STATE:
+        return initialRequestState();
+
+    default:
+        return state;
+    }
 }
 
 function getProfiles(state = initialRequestState(), action) {

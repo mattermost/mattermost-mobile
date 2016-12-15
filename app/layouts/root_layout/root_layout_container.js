@@ -1,10 +1,11 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import Config from 'config/index';
 
-import Config from 'config';
-
+import {setAppState} from 'service/actions/general';
 import RootLayout from './root_layout';
 
 function mapStateToProps(state, ownProps) {
@@ -22,4 +23,12 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps)(RootLayout);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            setAppState
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RootLayout);

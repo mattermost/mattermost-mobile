@@ -22,8 +22,20 @@ export default class Client {
         };
     }
 
+    getUrl() {
+        return this.url;
+    }
+
     setUrl(url) {
         this.url = url;
+    }
+
+    getToken() {
+        return this.token;
+    }
+
+    setToken(token) {
+        this.token = token;
     }
 
     getBaseRoute() {
@@ -192,6 +204,13 @@ export default class Client {
 
         if (response.headers.has(HEADER_TOKEN)) {
             this.token = response.headers.get(HEADER_TOKEN);
+        } else {
+            // weird case where fetch does not parse the header correctly
+            const parseHeader = response.headers.get(HEADER_CONTENT_TYPE).split('\n');
+            const filter = parseHeader.filter((h) => h.indexOf('Token:') > -1);
+            if (filter.length) {
+                this.token = filter[0].replace('Token: ', '');
+            }
         }
 
         return data;
@@ -239,6 +258,13 @@ export default class Client {
         return this.doFetch(
             `${this.getUserNeededRoute(userId)}/update_roles`,
             {method: 'post', body: JSON.stringify({new_roles: newRoles})}
+        );
+    };
+
+    getMe = async () => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/me`,
+            {method: 'get'}
         );
     };
 

@@ -42,3 +42,17 @@ export function logClientError(message, level = 'ERROR') {
         level
     );
 }
+
+export function setAppState(state) {
+    return async (dispatch, getState) => {
+        dispatch({type: GeneralTypes.RECEIVED_APP_STATE, data: state}, getState);
+    };
+}
+
+export default {
+    getPing,
+    getClientConfig,
+    getLicenseConfig,
+    logClientError,
+    setAppState
+};
