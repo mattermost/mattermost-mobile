@@ -7,7 +7,7 @@ import devTools from 'remote-redux-devtools';
 import thunk from 'redux-thunk';
 
 import serviceReducer from 'service/reducers';
-import deepFreezeAndThrowOnMutation from 'service/utils/deepFreezeAndThrowOnMutation';
+import deepFreezeAndThrowOnMutation from 'service/utils/deep_freeze';
 
 export default function configureServiceStore(preloadedState, appReducer, getAppReducer) {
     const store = createStore(
