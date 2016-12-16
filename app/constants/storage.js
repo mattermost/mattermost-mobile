@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import keymirror from 'keymirror';
+import keyMirror from 'service/utils/key_mirror';
 
-const StorageTypes = keymirror({
+const StorageTypes = keyMirror({
     SAVE_TO_STORAGE: null,
     SAVE_TO_STORAGE_ERROR: null,
     LOAD_FROM_STORAGE: null,
