@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goToFlaggedPosts, goToRecentMentions} from 'app/actions/navigation';
+import {goBack, goToFlaggedPosts, goToRecentMentions} from 'app/actions/navigation';
 import {logout} from 'service/actions/users';
 
 import RightSidebarMenu from './right_sidebar_menu';
@@ -16,6 +16,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            goBack,
             goToFlaggedPosts,
             goToRecentMentions,
             logout
