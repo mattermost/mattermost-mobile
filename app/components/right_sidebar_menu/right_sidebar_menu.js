@@ -39,6 +39,7 @@ const Styles = StyleSheet.create({
 export default class RightSidebarMenu extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
+            goBack: React.PropTypes.func.isRequired,
             goToFlaggedPosts: React.PropTypes.func.isRequired,
             goToRecentMentions: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
@@ -54,6 +55,10 @@ export default class RightSidebarMenu extends React.Component {
     goToFlaggedPosts = () => {
         this.props.onClose();
         this.props.actions.goToFlaggedPosts();
+    }
+
+    goToTeamSelection = () => {
+        this.props.actions.goBack();
     }
 
     render() {
@@ -135,7 +140,7 @@ export default class RightSidebarMenu extends React.Component {
                         defaultMessage='Manage Members'
                     />
                 </Item>
-                <Item>
+                <Item onPress={this.goToTeamSelection}>
                     <Icon
                         style={Styles.icon}
                         name='exchange'
