@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import keymirror from 'keymirror';
+import keyMirror from 'service/utils/key_mirror';
 
-const GeneralTypes = keymirror({
+const GeneralTypes = keyMirror({
     RECEIVED_APP_STATE: null,
     RECEIVED_APP_CREDENTIALS: null,
     REMOVED_APP_CREDENTIALS: null,

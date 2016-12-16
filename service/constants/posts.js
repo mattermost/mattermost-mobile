@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import keymirror from 'keymirror';
+import keyMirror from 'service/utils/key_mirror';
 
-const PostsTypes = keymirror({
+const PostsTypes = keyMirror({
     CREATE_POST_REQUEST: null,
     CREATE_POST_SUCCESS: null,
     CREATE_POST_FAILURE: null,

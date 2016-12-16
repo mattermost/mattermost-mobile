@@ -1,9 +1,9 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import keymirror from 'keymirror';
+import keyMirror from 'service/utils/key_mirror';
 
-const ChannelTypes = keymirror({
+const ChannelTypes = keyMirror({
     CHANNEL_REQUEST: null,
     CHANNEL_SUCCESS: null,
     CHANNEL_FAILURE: null,

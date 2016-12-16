@@ -3,10 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "babel-preset-es2015": "6.18.0",
     "intl": "1.2.5",
     "isomorphic-fetch": "2.2.1",
-    "keymirror": "0.1.1",
     "react": "15.3.2",
     "react-addons-pure-render-mixin": "15.3.2",
     "react-intl": "2.1.5",
@@ -23,6 +21,7 @@
   "devDependencies": {
     "babel-eslint": "7.0.0",
     "babel-plugin-resolver": "1.1.0",
+    "babel-preset-es2015": "6.18.0",
     "babel-preset-react-native": "1.9.0",
     "babel-register": "6.16.3",
     "deep-freeze": "0.0.1",
