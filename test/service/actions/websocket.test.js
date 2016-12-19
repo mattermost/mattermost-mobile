@@ -181,6 +181,7 @@ describe('Actions.Websocket', () => {
     it('Websocket Handle Post Deleted', (done) => {
         TestHelper.initBasic(Client).then(async () => {
             const store = configureStore();
+            await Actions.init()(store.dispatch, store.getState);
             const client = TestHelper.createClient();
             const user = await client.createUserWithInvite(
                 TestHelper.fakeUser(),
@@ -197,7 +198,6 @@ describe('Actions.Websocket', () => {
             await client.login(user.email, 'password1');
             let post = TestHelper.fakePost();
             post.channel_id = TestHelper.basicChannel.id;
-            await Actions.init()(store.dispatch, store.getState);
             post = await client.createPost(TestHelper.basicTeam.id, post);
 
             store.subscribe(async () => {
@@ -205,12 +205,17 @@ describe('Actions.Websocket', () => {
                 const {posts, postsByChannel} = entities.posts;
 
                 if (postsByChannel[TestHelper.basicChannel.id]) {
-                    const postId = postsByChannel[TestHelper.basicChannel.id][0];
-                    assert.strictEqual(posts[postId].state, Constants.POST_DELETED);
+                    const postId = postsByChannel[TestHelper.basicChannel.id].filter((key) => {
+                        return posts[key].state !== undefined; //eslint-disable-line no-undefined
+                    })[0];
 
-                    // we don't need to dispatch when the WS closes
-                    Actions.close()();
-                    done();
+                    if (posts[postId]) {
+                        assert.strictEqual(posts[postId].state, Constants.POST_DELETED);
+
+                        // we don't need to dispatch when the WS closes
+                        Actions.close()();
+                        done();
+                    }
                 }
             });
 
@@ -267,17 +272,19 @@ describe('Actions.Websocket', () => {
             })(store.dispatch, store.getState);
             await Actions.init()(store.dispatch, store.getState);
 
+            let shouldStop = false;
             store.subscribe(async () => {
                 const state = store.getState();
                 const entities = state.entities;
                 const channels = entities.channels;
                 const profilesNotInChannel = entities.users.profilesNotInChannel;
 
-                if (profilesNotInChannel[TestHelper.basicChannel.id]) {
+                if (!shouldStop && profilesNotInChannel[TestHelper.basicChannel.id]) {
                     assert.ok(profilesNotInChannel[TestHelper.basicChannel.id].has(TestHelper.basicUser.id));
                     assert.ifError(channels.channels[TestHelper.basicChannel.id]);
                     assert.ifError(channels.myMembers[TestHelper.basicChannel.id]);
                     Actions.close()();
+                    shouldStop = true;
                     done();
                 }
             });
@@ -304,13 +311,15 @@ describe('Actions.Websocket', () => {
             await client.login(user.email, 'password1');
             await Actions.init()(store.dispatch, store.getState);
 
+            let shouldStop = false;
             store.subscribe(async () => {
                 const state = store.getState();
                 const entities = state.entities;
                 const profiles = entities.users.profiles;
 
-                if (profiles[user.id]) {
+                if (!shouldStop && profiles[user.id]) {
                     assert.strictEqual(profiles[user.id].first_name, 'tester4');
+                    shouldStop = true;
                     Actions.close()();
                     done();
                 }
@@ -426,54 +435,32 @@ describe('Actions.Websocket', () => {
                 null,
                 TestHelper.basicTeam.invite_id
             );
+            await client.login(user.email, 'password1');
+            const dm = await client.createDirectChannel(TestHelper.basicUser.id);
 
+            let shouldStop = false;
             store.subscribe(async () => {
                 const entities = store.getState().entities;
                 const preferences = entities.preferences.myPreferences;
-                const profiles = entities.users.profiles;
-                const statuses = entities.users.statuses;
+                const {profiles, statuses} = entities.users;
 
-                if (Object.keys(statuses).length && Object.keys(preferences).length) {
+                if (!shouldStop && Object.keys(statuses).length &&
+                    Object.keys(profiles).length && Object.keys(preferences).length) {
                     assert.ok(preferences[`${Constants.CATEGORY_DIRECT_CHANNEL_SHOW}--${user.id}`]);
                     assert.ok(profiles[user.id]);
                     assert.ok(statuses[user.id]);
 
                     // we don't need to dispatch when the WS closes
                     Actions.close()();
+                    shouldStop = true;
                     done();
                 }
             });
 
-            await client.login(user.email, 'password1');
-            const dm = await client.createDirectChannel(TestHelper.basicUser.id);
             const post = TestHelper.fakePost();
             post.channel_id = dm.id;
             await Actions.init()(store.dispatch, store.getState);
             client.createPost(TestHelper.basicTeam.id, post);
         });
     }).timeout(2500);
-
-    it('Websocket Handle Status Changed', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-
-            let shouldStop = false;
-            store.subscribe(async () => {
-                const entities = store.getState().entities;
-                const statuses = entities.users.statuses;
-
-                if (!shouldStop && Object.keys(statuses).length) {
-                    assert.strictEqual(statuses[TestHelper.basicUser.id], Constants.AWAY);
-                    shouldStop = true;
-
-                    // we don't need to dispatch when the WS closes
-                    Actions.close()();
-                    done();
-                }
-            });
-
-            await Actions.init()(store.dispatch, store.getState);
-            Client.executeCommand(TestHelper.basicTeam.id, '/away', {channel_id: TestHelper.basicChannel.id});
-        });
-    });
 });
