@@ -134,6 +134,11 @@ function handlePosts(state = {}, action) {
     case PostsTypes.REMOVE_POST:
         return handleRemovePost(state.posts, state.postsByChannel, action);
 
+    case UsersTypes.LOGOUT_SUCCESS:
+        return {
+            posts: {},
+            postsByChannel: {}
+        };
     default:
         return state;
     }
