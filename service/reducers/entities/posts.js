@@ -2,180 +2,146 @@
 // See License.txt for license information.
 
 import {Constants, PostsTypes, UsersTypes} from 'service/constants';
-import {combineReducers} from 'redux';
 
-function isPostListNull(pl) {
-    if (!pl) {
-        return true;
+function handleReceivedPost(posts = {}, postsByChannel = {}, action) {
+    const post = action.data;
+    const channelId = post.channel_id;
+
+    const nextPosts = {
+        ...posts,
+        [post.id]: post
+    };
+
+    let nextPostsByChannel = postsByChannel;
+
+    // Only change postsByChannel if the order of the posts needs to change
+    if (!postsByChannel[channelId] || postsByChannel[channelId].indexOf(post.id) === -1) {
+        // If we don't already have the post, assume it's the most recent one
+        const postsInChannel = postsByChannel[channelId] || [];
+
+        nextPostsByChannel = {...postsByChannel};
+        nextPostsByChannel[channelId] = [
+            post.id,
+            ...postsInChannel
+        ];
     }
 
-    if (!pl.posts) {
-        return true;
-    }
-
-    return !pl.order;
+    return {posts: nextPosts, postsByChannel: nextPostsByChannel};
 }
 
-function makePostListNonNull(pl) {
-    let postList = {...pl};
-    if (!postList) {
-        postList = {order: [], posts: {}};
-    }
-
-    if (!postList.order) {
-        postList.order = [];
-    }
-
-    if (!postList.posts) {
-        postList.posts = {};
-    }
-
-    return postList;
-}
-
-function storePosts(state, action) {
-    const newPosts = action.data;
+function handleReceivedPosts(posts = {}, postsByChannel = {}, action) {
+    const newPosts = action.data.posts;
     const channelId = action.channelId;
 
-    if (isPostListNull(newPosts)) {
-        return state;
-    }
+    const nextPosts = {...posts};
+    const nextPostsByChannel = {...postsByChannel};
+    const postsInChannel = postsByChannel[channelId] ? [...postsByChannel[channelId]] : [];
 
-    const postList = state[channelId] || {};
-    const combinedPosts = makePostListNonNull(postList);
+    for (const newPost of Object.values(newPosts)) {
+        nextPosts[newPost.id] = newPost;
 
-    for (const pid in newPosts.posts) {
-        if (newPosts.posts.hasOwnProperty(pid)) {
-            const np = newPosts.posts[pid];
-            if (np.delete_at === 0) {
-                combinedPosts.posts[pid] = np;
-                if (combinedPosts.order.indexOf(pid) === -1 && newPosts.order.indexOf(pid) !== -1) {
-                    combinedPosts.order.push(pid);
-                }
-            } else if (combinedPosts.posts.hasOwnProperty(pid)) {
-                combinedPosts.posts[pid] = {...np, state: Constants.POST_DELETED, fileIds: []};
-            }
+        if (postsInChannel.indexOf(newPost.id) === -1) {
+            // Just add the post id to the end of the order and we'll sort it out later
+            postsInChannel.push(newPost.id);
         }
     }
 
-    combinedPosts.order.sort((a, b) => {
-        if (combinedPosts.posts[a].create_at > combinedPosts.posts[b].create_at) {
+    // Sort to ensure that the most recent posts are first
+    postsInChannel.sort((a, b) => {
+        if (nextPosts[a].create_at > nextPosts[b].create_at) {
             return -1;
-        }
-        if (combinedPosts.posts[a].create_at < combinedPosts.posts[b].create_at) {
+        } else if (nextPosts[a].create_at < nextPosts[b].create_at) {
             return 1;
         }
 
         return 0;
     });
 
-    return {
-        ...state,
-        [channelId]: combinedPosts
-    };
+    nextPostsByChannel[channelId] = postsInChannel;
+
+    return {posts: nextPosts, postsByChannel: nextPostsByChannel};
 }
 
-function storePost(state, action) {
+function handlePostDeleted(posts = {}, postsByChannel = {}, action) {
     const post = action.data;
-    const channelId = post.channel_id;
 
-    const postList = state[channelId] || {};
-    const combinedPosts = makePostListNonNull(postList);
+    let nextPosts = posts;
 
-    combinedPosts.posts[post.id] = post;
+    // We only need to do something if already have the post
+    if (posts[post.id]) {
+        nextPosts = {...posts};
 
-    if (combinedPosts.order.indexOf(post.id) === -1) {
-        combinedPosts.order.unshift(post.id);
-    }
-
-    return {
-        ...state,
-        [channelId]: combinedPosts
-    };
-}
-
-function deletePost(state, action) {
-    const post = action.data;
-    const channelId = post.channel_id;
-    const postInfo = state[channelId];
-
-    if (!postInfo) {
-        // the post that has been deleted is in a channel that we haven't seen so just ignore it
-        return state;
-    }
-
-    if (isPostListNull(postInfo)) {
-        return state;
-    }
-
-    if (postInfo.posts[post.id]) {
-        const combinedPosts = makePostListNonNull(postInfo);
-
-        combinedPosts.posts = {
-            ...combinedPosts.posts,
-            [post.id]: {
-                ...post,
-                state: Constants.POST_DELETED,
-                file_ids: [],
-                has_reactions: false
-            }
+        nextPosts[post.id] = {
+            ...posts[post.id],
+            state: Constants.POST_DELETED,
+            file_ids: [],
+            has_reactions: false
         };
 
-        return {
-            ...state,
-            [channelId]: combinedPosts
-        };
+        // No changes to the order until the user actually removes the post
     }
 
-    return state;
+    return {posts: nextPosts, postsByChannel};
 }
 
-function removePost(state, action) {
+function handleRemovePost(posts = {}, postsByChannel = {}, action) {
     const post = action.data;
     const channelId = post.channel_id;
-    const postInfo = state[channelId];
 
-    if (!postInfo) {
-        // the post that has been deleted is in a channel that we haven't seen so just ignore it
-        return state;
-    }
+    let nextPosts = posts;
+    let nextPostsByChannel = postsByChannel;
 
-    if (isPostListNull(postInfo)) {
-        return state;
-    }
+    // We only need to do something if already have the post
+    if (nextPosts[post.id]) {
+        nextPosts = {...posts};
+        nextPostsByChannel = {...postsByChannel};
+        const postsInChannel = postsByChannel[channelId] ? [...postsByChannel[channelId]] : [];
 
-    if (postInfo.posts[post.id]) {
-        const combinedPosts = makePostListNonNull(postInfo);
+        // Remove the post itself
+        Reflect.deleteProperty(nextPosts, post.id);
 
-        combinedPosts.order = combinedPosts.order.slice(0);
-        combinedPosts.posts = {...combinedPosts.posts};
-
-        // Remove the post
-        Reflect.deleteProperty(combinedPosts.posts, post.id);
-
-        const index = combinedPosts.order.indexOf(post.id);
+        const index = postsInChannel.indexOf(post.id);
         if (index !== -1) {
-            combinedPosts.order.splice(index, 1);
+            postsInChannel.splice(index, 1);
         }
 
-        // Remove any children of the post
-        for (const pid of Object.keys(combinedPosts.posts)) {
-            if (combinedPosts.posts[pid].root_id === post.id) {
-                Reflect.deleteProperty(combinedPosts.posts, pid);
-                const commentIndex = combinedPosts.order.indexOf(pid);
+        // Remove any of its comments
+        for (const id of postsInChannel) {
+            if (nextPosts[id].root_id === post.id) {
+                Reflect.deleteProperty(nextPosts, id);
+
+                const commentIndex = postsInChannel.indexOf(id);
                 if (commentIndex !== -1) {
-                    combinedPosts.order.splice(commentIndex, 1);
+                    postsInChannel.splice(commentIndex, 1);
                 }
             }
         }
 
-        return {
-            ...state,
-            [channelId]: combinedPosts
-        };
+        nextPostsByChannel[channelId] = postsInChannel;
     }
 
-    return state;
+    return {posts: nextPosts, postsByChannel: nextPostsByChannel};
+}
+
+function handlePosts(state = {}, action) {
+    switch (action.type) {
+    case PostsTypes.RECEIVED_POST:
+        return handleReceivedPost(state.posts, state.postsByChannel, action);
+    case PostsTypes.RECEIVED_POSTS:
+        return handleReceivedPosts(state.posts, state.postsByChannel, action);
+    case PostsTypes.POST_DELETED:
+        return handlePostDeleted(state.posts, state.postsByChannel, action);
+    case PostsTypes.REMOVE_POST:
+        return handleRemovePost(state.posts, state.postsByChannel, action);
+
+    case UsersTypes.LOGOUT_SUCCESS:
+        return {
+            posts: {},
+            postsByChannel: {}
+        };
+    default:
+        return state;
+    }
 }
 
 function selectedPostId(state = '', action) {
@@ -196,31 +162,30 @@ function currentFocusedPostId(state = '', action) {
     }
 }
 
-function postsInfo(state = {}, action) {
-    switch (action.type) {
-    case PostsTypes.RECEIVED_POST:
-        return storePost(state, action);
-    case PostsTypes.RECEIVED_POSTS:
-        return storePosts(state, action);
-    case PostsTypes.POST_DELETED:
-        return deletePost(state, action);
-    case PostsTypes.REMOVE_POST:
-        return removePost(state, action);
-    case UsersTypes.LOGOUT_SUCCESS:
-        return {};
-    default:
+export default function(state = {}, action) {
+    const {posts, postsByChannel} = handlePosts(state, action);
+
+    const nextState = {
+
+        // Object mapping post ids to post objects
+        posts,
+
+        // Object mapping channel ids to an list of posts ids in that channel with the most recent post first
+        postsByChannel,
+
+        // The current selected post
+        selectedPostId: selectedPostId(state.selectedPostId, action),
+
+        // The current selected focused post (permalink view)
+        currentFocusedPostId: currentFocusedPostId(state.currentFocusedPostId, action)
+    };
+
+    if (state.posts === nextState.posts && state.postsByChannel === nextState.postsByChannel &&
+        state.selectedPostId === nextState.selectedPostId &&
+        state.currentFocusedPostId === nextState.currentFocusedPostId) {
+        // None of the children have changed so don't even let the parent object change
         return state;
     }
+
+    return nextState;
 }
-
-export default combineReducers({
-
-    // the current selected post
-    selectedPostId,
-
-    // the current selected focused post (permalink view)
-    currentFocusedPostId,
-
-    // object where every key is the channel id and has and object with the postList
-    postsInfo
-});

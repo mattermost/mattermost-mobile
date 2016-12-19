@@ -3,6 +3,14 @@
 
 import 'react-native';
 
+// Set up a global hooks to make debugging tests less of a pain
+before(() => {
+    process.on('unhandledRejection', (reason) => {
+        // Rethrow so that tests will actually fail and not just timeout
+        throw reason;
+    });
+});
+
 // Ensure that everything is imported correctly for testing
 describe('Sanity test', () => {
     it('Promise', (done) => {
