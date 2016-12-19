@@ -12,6 +12,15 @@ import {forceLogoutIfNecessary} from './helpers';
 import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 
+export function selectChannel(channelId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: ChannelTypes.SELECTED_CHANNEL,
+            data: channelId
+        }, getState);
+    };
+}
+
 export function createChannel(channel, userId) {
     return async (dispatch, getState) => {
         dispatch(batchActions([
@@ -171,8 +180,10 @@ export function updateChannelNotifyProps(userId, teamId, channelId, props) {
         dispatch(batchActions([
             {
                 type: ChannelTypes.RECEIVED_CHANNEL_PROPS,
-                data: notifyProps,
-                channel_id: channelId
+                data: {
+                    channel_id: channelId,
+                    notifyProps
+                }
             },
             {
                 type: ChannelTypes.NOTIFY_PROPS_SUCCESS
@@ -247,14 +258,14 @@ export function fetchMyChannelsAndMembers(teamId) {
         dispatch(batchActions([
             {
                 type: ChannelTypes.RECEIVED_CHANNELS,
-                data: await channels
+                data: channels
             },
             {
                 type: ChannelTypes.CHANNELS_SUCCESS
             },
             {
                 type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS,
-                data: await channelMembers
+                data: channelMembers
             },
             {
                 type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
@@ -278,7 +289,7 @@ export function leaveChannel(teamId, channelId) {
         dispatch(batchActions([
             {
                 type: ChannelTypes.LEAVE_CHANNEL,
-                channel_id: channelId
+                data: channelId
             },
             {
                 type: ChannelTypes.LEAVE_CHANNEL_SUCCESS
@@ -346,7 +357,7 @@ export function deleteChannel(teamId, channelId) {
         dispatch(batchActions([
             {
                 type: ChannelTypes.RECEIVED_CHANNEL_DELETED,
-                channel_id: channelId
+                data: channelId
             },
             {
                 type: ChannelTypes.DELETE_CHANNEL_SUCCESS
@@ -371,8 +382,10 @@ export function updateLastViewedAt(teamId, channelId, active) {
         dispatch(batchActions([
             {
                 type: ChannelTypes.RECEIVED_LAST_VIEWED,
-                channel_id: channelId,
-                last_viewed_at: new Date().getTime()
+                data: {
+                    channel_id: channelId,
+                    last_viewed_at: new Date().getTime()
+                }
             },
             {
                 type: ChannelTypes.UPDATE_LAST_VIEWED_SUCCESS
@@ -461,7 +474,7 @@ export function removeChannelMember(teamId, channelId, userId) {
         dispatch({type: ChannelTypes.REMOVE_CHANNEL_MEMBER_REQUEST}, getState);
 
         try {
-            await Client.addChannelMember(teamId, channelId, userId);
+            await Client.removeChannelMember(teamId, channelId, userId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: ChannelTypes.REMOVE_CHANNEL_MEMBER_FAILURE, error}, getState);
@@ -482,6 +495,7 @@ export function removeChannelMember(teamId, channelId, userId) {
 }
 
 export default {
+    selectChannel,
     createChannel,
     createDirectChannel,
     updateChannel,

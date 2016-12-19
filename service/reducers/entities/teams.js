@@ -48,8 +48,8 @@ function myMembers(state = {}, action) {
 
     case TeamsTypes.LEAVE_TEAM: {
         const nextState = {...state};
-        const data = action.team;
-        Reflect.deleteProperty(nextState, data.team_id);
+        const data = action.data;
+        Reflect.deleteProperty(nextState, data.id);
         return nextState;
     }
     case UsersTypes.LOGOUT_SUCCESS:

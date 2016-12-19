@@ -41,25 +41,23 @@ export default class SelectTeam extends Component {
         for (const id of Object.keys(this.props.teams)) {
             const team = this.props.teams[id];
 
-            // TODO: uncomment when PLT-4167 is merged
-            // if (this.props.myMembers.hasOwnProperty(id)) {
-            teams.push(
-                <Button
-                    key={id}
-                    onPress={() => this.onSelectTeam(team)}
-                    style={GlobalStyles.buttonListItemText}
-                    containerStyle={GlobalStyles.buttonListItem}
-                >
-                    {team.display_name}
-                    <Icon
-                        name='keyboard-arrow-right'
-                        size={24}
-                        color='#777'
-                    />
-                </Button>
-            );
-
-            // }
+            if (this.props.myMembers.hasOwnProperty(id)) {
+                teams.push(
+                    <Button
+                        key={id}
+                        onPress={() => this.onSelectTeam(team)}
+                        style={GlobalStyles.buttonListItemText}
+                        containerStyle={GlobalStyles.buttonListItem}
+                    >
+                        {team.display_name}
+                        <Icon
+                            name='keyboard-arrow-right'
+                            size={24}
+                            color='#777'
+                        />
+                    </Button>
+                );
+            }
         }
 
         return (

@@ -130,7 +130,7 @@ describe('Actions.Users', () => {
                 }
             });
 
-            Actions.getProfiles(0)(store.dispatch, store.getState);
+            Actions.getProfiles(0, 500)(store.dispatch, store.getState);
         });
     });
 
@@ -215,7 +215,7 @@ describe('Actions.Users', () => {
                 }
             });
 
-            Actions.getProfilesNotInChannel(TestHelper.basicTeam.id, TestHelper.basicChannel.id, 0)(store.dispatch, store.getState);
+            Actions.getProfilesNotInChannel(TestHelper.basicTeam.id, TestHelper.basicChannel.id, 0, 500)(store.dispatch, store.getState);
         });
     });
 

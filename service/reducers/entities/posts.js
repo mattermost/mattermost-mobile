@@ -3,6 +3,13 @@
 
 import {Constants, PostsTypes, UsersTypes} from 'service/constants';
 
+function initialState() {
+    return {
+        posts: {},
+        postsByChannel: {}
+    };
+}
+
 function handleReceivedPost(posts = {}, postsByChannel = {}, action) {
     const post = action.data;
     const channelId = post.channel_id;
@@ -123,7 +130,7 @@ function handleRemovePost(posts = {}, postsByChannel = {}, action) {
     return {posts: nextPosts, postsByChannel: nextPostsByChannel};
 }
 
-function handlePosts(state = {}, action) {
+function handlePosts(state = initialState(), action) {
     switch (action.type) {
     case PostsTypes.RECEIVED_POST:
         return handleReceivedPost(state.posts, state.postsByChannel, action);
@@ -135,10 +142,7 @@ function handlePosts(state = {}, action) {
         return handleRemovePost(state.posts, state.postsByChannel, action);
 
     case UsersTypes.LOGOUT_SUCCESS:
-        return {
-            posts: {},
-            postsByChannel: {}
-        };
+        return initialState();
     default:
         return state;
     }
@@ -162,7 +166,7 @@ function currentFocusedPostId(state = '', action) {
     }
 }
 
-export default function(state = {}, action) {
+export default function(state = initialState(), action) {
     const {posts, postsByChannel} = handlePosts(state, action);
 
     const nextState = {

@@ -176,7 +176,7 @@ describe('Actions.Channels', () => {
 
             Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
         });
-    });
+    }).timeout(3000);
 
     it('updateChannelNotifyProps', (done) => {
         TestHelper.initBasic(Client).then(async () => {

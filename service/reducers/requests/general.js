@@ -35,8 +35,19 @@ function license(state = initialRequestState(), action) {
     );
 }
 
+function websocket(state = initialRequestState(), action) {
+    return handleRequest(
+        GeneralTypes.WEBSOCKET_REQUEST,
+        GeneralTypes.WEBSOCKET_SUCCESS,
+        GeneralTypes.WEBSOCKET_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
     server,
     config,
-    license
+    license,
+    websocket
 });

@@ -54,14 +54,15 @@ export function setStoreFromLocalData(data) {
             return;
         }
 
-        // TODO: uncomment and sorround with try/catch when PLT-4167 is merged
-        // const teamMembers = Client.getMyTeamMembers();
-        const teamMembers = Object.keys(teams).map((key) => {
-            return {
-                team_id: key,
-                user_id: user.id
-            };
-        });
+        let teamMembers;
+        dispatch({type: TeamsTypes.MY_TEAM_MEMBERS_REQUEST}, getState);
+        try {
+            teamMembers = await Client.getMyTeamMembers();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: TeamsTypes.MY_TEAM_MEMBERS_FAILURE, error}, getState);
+            return;
+        }
 
         dispatch(batchActions([
             {
