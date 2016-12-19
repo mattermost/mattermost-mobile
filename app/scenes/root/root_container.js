@@ -15,7 +15,8 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         credentials: state.entities.general.credentials,
-        logoutRequest: state.requests.users.logout
+        logoutRequest: state.requests.users.logout,
+        loginRequest: state.requests.users.login
     };
 }
 
