@@ -628,7 +628,8 @@ export default class Client {
     doFetchWithResponse = async (url, options) => {
         const response = await fetch(url, this.getOptions(options));
 
-        const contentType = response.headers.get(HEADER_CONTENT_TYPE);
+        const headers = parseAndMergeNestedHeaders(response.headers);
+        const contentType = headers.get(HEADER_CONTENT_TYPE);
         const isJson = contentType && contentType.indexOf(CONTENT_TYPE_JSON) !== -1;
 
         let data;
@@ -658,4 +659,25 @@ export default class Client {
 
         throw {message: msg, status_code: data.status_code, url};
     };
+}
+
+function parseAndMergeNestedHeaders(originalHeaders) {
+    // TODO: This is a workaround for https://github.com/matthew-andrews/isomorphic-fetch/issues/97
+    // The real solution is to set Access-Control-Expose-Headers on the server
+    const headers = new Map();
+    let nestedHeaders = new Map();
+    originalHeaders.forEach((val, key) => {
+        const capitalizedKey = key.replace(/\b[a-z]/g, (l) => l.toUpperCase());
+        let realVal = val;
+        if (val && val.match(/\n\S+:\s\S+/)) {
+            const nestedHeaderStrings = val.split('\n');
+            realVal = nestedHeaderStrings.shift();
+            const moreNestedHeaders = new Map(
+                nestedHeaderStrings.map((h) => h.split(/:\s/))
+            );
+            nestedHeaders = new Map([...nestedHeaders, ...moreNestedHeaders]);
+        }
+        headers.set(capitalizedKey, realVal);
+    });
+    return new Map([...headers, ...nestedHeaders]);
 }
