@@ -71,13 +71,13 @@ export function createChannel(channel, userId) {
     };
 }
 
-export function createDirectChannel(userId, otherUserId) {
+export function createDirectChannel(teamId, userId, otherUserId) {
     return async (dispatch, getState) => {
         dispatch({type: ChannelTypes.CREATE_CHANNEL_REQUEST}, getState);
 
         let created;
         try {
-            created = await Client.createDirectChannel(otherUserId);
+            created = await Client.createDirectChannel(teamId, otherUserId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
