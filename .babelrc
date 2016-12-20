@@ -1,6 +1,9 @@
 {
   "presets": [ "react-native" ],
   "plugins": [
-    ["resolver", {"resolveDirs": [".", "config", "test"]}]
+    ["module-resolver", {
+      "root": [".", "config", "test"],
+      "alias": {}
+    }]
   ]
 }
