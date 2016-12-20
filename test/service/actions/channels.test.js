@@ -94,7 +94,7 @@ describe('Actions.Channels', () => {
             });
 
             await getProfiles(0)(store.dispatch, store.getState);
-            Actions.createDirectChannel(TestHelper.basicUser.id, user.id)(store.dispatch, store.getState);
+            Actions.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id, user.id)(store.dispatch, store.getState);
         });
     }).timeout(3000);
 

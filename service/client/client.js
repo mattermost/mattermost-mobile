@@ -419,9 +419,9 @@ export default class Client {
         );
     };
 
-    createDirectChannel = async (userId) => {
+    createDirectChannel = async (teamId, userId) => {
         return this.doFetch(
-            `${this.getChannelsRoute('fake')}/create_direct`,
+            `${this.getChannelsRoute(teamId)}/create_direct`,
             {method: 'post', body: JSON.stringify({user_id: userId})}
         );
     };
