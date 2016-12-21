@@ -27,7 +27,8 @@
         "expect": true,
         "before": true,
         "beforeEach": true,
-        "after": true
+        "after": true,
+        "afterEach": true
     },
     "rules": {
         "array-bracket-spacing": [2, "never"],

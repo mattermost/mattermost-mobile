@@ -4,7 +4,8 @@
 import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {Constants, PostsTypes, UsersTypes} from 'service/constants';
+import {Constants, PostsTypes} from 'service/constants';
+import {getProfilesByIds, getStatusesByIds} from './users';
 
 async function getProfilesAndStatusesForPosts(list, dispatch, getState) {
     const {profiles, statuses} = getState().entities.users;
@@ -26,13 +27,11 @@ async function getProfilesAndStatusesForPosts(list, dispatch, getState) {
     });
 
     if (profilesToLoad.length) {
-        const ps = await Client.getProfilesByIds(profilesToLoad);
-        dispatch({type: UsersTypes.RECEIVED_PROFILES, data: ps}, getState);
+        await getProfilesByIds(profilesToLoad)(dispatch, getState);
     }
 
     if (statusesToLoad.length) {
-        const ss = Client.getStatusesByIds(statusesToLoad);
-        dispatch({type: UsersTypes.RECEIVED_STATUSES, data: ss}, getState);
+        await getStatusesByIds(statusesToLoad)(dispatch, getState);
     }
 }
 

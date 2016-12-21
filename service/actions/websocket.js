@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import Client from 'service/client';
-import websocketClient from 'service/client/websocket';
+import websocketClient from 'service/client/websocket_client';
 import {batchActions} from 'redux-batched-actions';
 import {
     Constants,
@@ -14,6 +14,20 @@ import {
     UsersTypes,
     WebsocketEvents
 } from 'service/constants';
+
+import {
+    fetchMyChannelsAndMembers,
+    getChannel,
+    getChannelStats,
+    updateLastViewedAt
+} from 'service/actions/channels';
+
+import {
+    getPosts,
+    getPostsSince
+} from 'service/actions/posts';
+
+import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
 
 export function init(siteUrl, token) {
     return async (dispatch, getState) => {
@@ -43,7 +57,7 @@ export function init(siteUrl, token) {
         websocketClient.setEventCallback(handleEvent);
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
-        websocketClient.initialize(connUrl, authToken, dispatch, getState);
+        return websocketClient.initialize(connUrl, authToken, dispatch, getState);
     };
 }
 
@@ -66,7 +80,7 @@ function handleReconnect(dispatch, getState) {
     const currentChannelId = entities.channels.currentId;
 
     if (currentTeamId) {
-        getChannelsAndMembersHelper(currentTeamId, dispatch, getState);
+        fetchMyChannelsAndMembers(currentTeamId)(dispatch, getState);
 
         if (currentChannelId) {
             loadPostsHelper(currentTeamId, currentChannelId, dispatch, getState);
@@ -135,21 +149,21 @@ function handleNewPostEvent(msg, dispatch, getState) {
     const status = users.statuses[userId];
 
     if (!users.profiles[userId]) {
-        getProfilesHelper([userId], dispatch, getState);
+        getProfilesByIds([userId])(dispatch, getState);
     }
 
     if (status !== Constants.ONLINE) {
-        getStatusesHelper([userId], dispatch, getState);
+        getStatusesByIds([userId])(dispatch, getState);
     }
 
     if (post.channel_id === channels.currentId) {
         if (isActive) {
-            updateLastViewedHelper(teamId, post.channel_id, dispatch, getState);
+            updateLastViewedAt(teamId, post.channel_id)(dispatch, getState);
         } else {
-            getChannelHelper(teamId, post.channel_id, dispatch, getState);
+            getChannel(teamId, post.channel_id)(dispatch, getState);
         }
-    } else if (msg && (teamId === teams.currentId || msg.data.channel_type === Constants.DM_CHANNEL)) {
-        getChannelHelper(teamId, post.channel_id, dispatch, getState);
+    } else if (teamId === teams.currentId || msg.data.channel_type === Constants.DM_CHANNEL) {
+        getChannel(teamId, post.channel_id)(dispatch, getState);
     }
 
     if (post.root_id && !posts[post.root_id]) {
@@ -157,11 +171,11 @@ function handleNewPostEvent(msg, dispatch, getState) {
             const rootUserId = data.posts[post.root_id].user_id;
             const rootStatus = users.statuses[rootUserId];
             if (!users.profiles[rootUserId]) {
-                getProfilesHelper([rootUserId], dispatch, getState);
+                getProfilesByIds([rootUserId])(dispatch, getState);
             }
 
             if (rootStatus !== Constants.ONLINE) {
-                getStatusesHelper([rootUserId], dispatch, getState);
+                getStatusesByIds([rootUserId])(dispatch, getState);
             }
 
             dispatch({
@@ -189,11 +203,12 @@ function handlePostEdited(msg, dispatch, getState) {
     const channels = state.entities.channels;
     const isActive = state.entities.general.appState;
     const data = JSON.parse(msg.data.post);
+
     dispatch({type: PostsTypes.RECEIVED_POST, data}, getState);
 
     if (msg.broadcast.channel_id === channels.currentId && isActive) {
-        // FIXME: Update post should include team_id in the message
-        // updateLastViewedHelper(msg.data.team_id, data.channel_id, dispatch, getState);
+        // FIXME: Update post should include team_id in the message cause its not always the current team
+        // updateLastViewedAt(msg.data.team_id, data.channel_id)(dispatch, getState);
     }
 }
 
@@ -234,11 +249,11 @@ function handleUserAddedEvent(msg, dispatch, getState) {
     const teamId = msg.data.team_id;
 
     if (msg.broadcast.channel_id === channels.currentId) {
-        getChannelStatsHelper(teamId, channels.currentId, dispatch, getState);
+        getChannelStats(teamId, channels.currentId)(dispatch, getState);
     }
 
     if (teamId === teams.currentId && msg.data.user_id === users.currentId) {
-        getChannelHelper(teamId, msg.broadcast.channel_id, dispatch, getState);
+        getChannel(teamId, msg.broadcast.channel_id)(dispatch, getState);
     }
 }
 
@@ -250,9 +265,9 @@ function handleUserRemovedEvent(msg, dispatch, getState) {
     const teamId = teams.currentId;
 
     if (msg.broadcast.user_id === users.currentId && teamId) {
-        getChannelsAndMembersHelper(teamId, dispatch, getState);
+        fetchMyChannelsAndMembers(teamId)(dispatch, getState);
     } else if (msg.broadcast.channel_id === channels.currentId) {
-        getChannelStatsHelper(teamId, channels.currentId, dispatch, getState);
+        getChannelStats(teamId, channels.currentId)(dispatch, getState);
     }
 }
 
@@ -279,29 +294,30 @@ function handleChannelViewedEvent(msg, dispatch, getState) {
 
     if (teams.currentId === msg.broadcast.team_id && channels.currentId !== msg.data.channel_id &&
         users.currentId === msg.broadcast.user_id) {
-        getChannelHelper(teams.currentId, msg.data.channel_id, dispatch, getState);
+        getChannel(teams.currentId, msg.data.channel_id)(dispatch, getState);
     }
 }
 
 function handleChannelDeletedEvent(msg, dispatch, getState) {
-    const state = getState();
-    const channels = state.entities.channels;
-    const teams = state.entities.teams;
-
-    if (msg.data.channel_id === channels.currentId) {
-        let channelId = '';
-        const channel = Object.keys(channels.channels).filter((key) => channels.channels[key].name === Constants.DEFAULT_CHANNEL);
-
-        if (channel.length) {
-            channelId = channel[0];
-        }
-
-        dispatch({type: ChannelTypes.SELECTED_CHANNEL, data: channelId}, getState);
-    }
+    const entities = getState().entities;
+    const {channels, currentId} = entities.channels;
+    const teams = entities.teams;
 
     if (msg.broadcast.team_id === teams.currentId) {
         dispatch({type: ChannelTypes.RECEIVED_CHANNEL_DELETED, data: msg.data.channel_id}, getState);
-        getChannelsAndMembersHelper(teams.currentId, dispatch, getState);
+
+        if (msg.data.channel_id === currentId) {
+            let channelId = '';
+            const channel = Object.keys(channels).filter((key) => channels[key].name === Constants.DEFAULT_CHANNEL);
+
+            if (channel.length) {
+                channelId = channel[0];
+            }
+
+            dispatch({type: ChannelTypes.SELECTED_CHANNEL, data: channelId}, getState);
+        }
+
+        fetchMyChannelsAndMembers(teams.currentId)(dispatch, getState);
     }
 }
 
@@ -309,7 +325,7 @@ function handleDirectAddedEvent(msg, dispatch, getState) {
     const state = getState();
     const teams = state.entities.teams;
 
-    getChannelHelper(teams.currentId, msg.broadcast.channel_id, dispatch, getState);
+    getChannel(teams.currentId, msg.broadcast.channel_id)(dispatch, getState);
 }
 
 function handlePreferenceChangedEvent(msg, dispatch, getState) {
@@ -323,11 +339,11 @@ function handlePreferenceChangedEvent(msg, dispatch, getState) {
         const status = users.statuses[userId];
 
         if (!users.profiles[userId]) {
-            getProfilesHelper([userId], dispatch, getState);
+            getProfilesByIds([userId])(dispatch, getState);
         }
 
         if (status !== Constants.ONLINE) {
-            getStatusesHelper([userId], dispatch, getState);
+            getStatusesByIds([userId])(dispatch, getState);
         }
     }
 }
@@ -343,59 +359,6 @@ function handleStatusChangedEvent(msg, dispatch, getState) {
 
 // Helpers
 
-function getChannelsAndMembersHelper(teamId, dispatch, getState) {
-    Client.getChannels(teamId).then((data) => {
-        dispatch({type: ChannelTypes.RECEIVED_CHANNELS, data}, getState);
-    });
-
-    Client.getMyChannelMembers(teamId).then((data) => {
-        dispatch({type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS, data}, getState);
-    });
-}
-
-function getChannelHelper(teamId, channelId, dispatch, getState) {
-    Client.getChannel(teamId, channelId).then((data) => {
-        dispatch(batchActions([
-            {
-                type: ChannelTypes.RECEIVED_CHANNEL,
-                data: data.channel
-            },
-            {
-                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                data: data.member
-            }
-        ]), getState);
-    });
-}
-
-function getProfilesHelper(userIds, dispatch, getState) {
-    Client.getProfilesByIds(userIds).then((data) => {
-        dispatch({type: UsersTypes.RECEIVED_PROFILES, data}, getState);
-    });
-}
-
-function getStatusesHelper(userIds, dispatch, getState) {
-    Client.getStatusesByIds(userIds).then((data) => {
-        dispatch({type: UsersTypes.RECEIVED_STATUSES, data}, getState);
-    });
-}
-
-function getChannelStatsHelper(teamId, channelId, dispatch, getState) {
-    Client.getChannelStats(teamId, channelId).then((data) => {
-        dispatch({type: ChannelTypes.RECEIVED_CHANNEL_STATS, data}, getState);
-    });
-}
-
-function updateLastViewedHelper(teamId, channelId, dispatch, getState) {
-    Client.updateLastViewedAt(teamId, channelId, false).then(() => {
-        dispatch({
-            type: ChannelTypes.RECEIVED_LAST_VIEWED,
-            channel_id: channelId,
-            last_viewed_at: new Date().getTime()
-        }, getState);
-    });
-}
-
 function loadPostsHelper(teamId, channelId, dispatch, getState) {
     const {posts, postsByChannel} = getState().entities.posts;
     const postsArray = postsByChannel[channelId];
@@ -407,54 +370,8 @@ function loadPostsHelper(teamId, channelId, dispatch, getState) {
     }
 
     if (Object.keys(posts).length === 0 || postsArray.length < Constants.POST_CHUNK_SIZE || latestPostTime === 0) {
-        Client.getPosts(teamId, channelId, 0, Constants.POST_CHUNK_SIZE).then((data) => {
-            getProfilesAndStatusesForPostsHelper(data, dispatch, getState);
-            dispatch({
-                type: PostsTypes.RECEIVED_POSTS,
-                data,
-                channelId
-            }, getState);
-        });
+        getPosts(teamId, channelId)(dispatch, getState);
     } else {
-        Client.getPostsSince(teamId, channelId, latestPostTime).then((data) => {
-            getProfilesAndStatusesForPostsHelper(data, dispatch, getState);
-            dispatch({
-                type: PostsTypes.RECEIVED_POSTS,
-                data,
-                channelId
-            }, getState);
-        });
-    }
-}
-
-function getProfilesAndStatusesForPostsHelper(list, dispatch, getState) {
-    const {profiles, statuses} = getState().entities.users;
-    const posts = list.posts;
-    const profilesToLoad = [];
-    const statusesToLoad = [];
-
-    Object.keys(posts).forEach((key) => {
-        const post = posts[key];
-        const userId = post.user_id;
-
-        if (!profiles[userId]) {
-            profilesToLoad.push(userId);
-        }
-
-        if (!statuses[userId]) {
-            statusesToLoad.push(userId);
-        }
-    });
-
-    if (profilesToLoad.length) {
-        Client.getProfilesByIds(profilesToLoad).then((data) => {
-            dispatch({type: UsersTypes.RECEIVED_PROFILES, data}, getState);
-        });
-    }
-
-    if (statusesToLoad.length) {
-        Client.getStatusesByIds(statusesToLoad).then((data) => {
-            dispatch({type: UsersTypes.RECEIVED_STATUSES, data}, getState);
-        });
+        getPostsSince(teamId, channelId, latestPostTime)(dispatch, getState);
     }
 }

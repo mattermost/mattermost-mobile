@@ -113,7 +113,7 @@ describe('Actions.Users', () => {
     it('getProfiles', (done) => {
         TestHelper.initBasic(Client).then(async () => {
             const store = configureStore();
-            const user = await TestHelper.basicClient.createUser(TestHelper.fakeUser());
+            await TestHelper.basicClient.createUser(TestHelper.fakeUser());
 
             store.subscribe(() => {
                 const profilesRequest = store.getState().requests.users.getProfiles;
@@ -123,14 +123,14 @@ describe('Actions.Users', () => {
                     if (profilesRequest.error) {
                         done(new Error(JSON.stringify(profilesRequest.error)));
                     } else {
-                        assert.ok(profiles[user.id]);
+                        assert.ok(Object.keys(profiles).length);
 
                         done();
                     }
                 }
             });
 
-            Actions.getProfiles(0, 500)(store.dispatch, store.getState);
+            Actions.getProfiles(0)(store.dispatch, store.getState);
         });
     });
 

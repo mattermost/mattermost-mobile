@@ -621,14 +621,6 @@ export default class Client {
         );
     };
 
-    // Command routes
-    executeCommand = async (teamId, command, commandArgs) => {
-        this.doFetch(
-            `${this.getCommandsRoute(teamId)}/execute`,
-            {method: 'post', body: JSON.stringify({command, ...commandArgs})}
-        );
-    };
-
     // Client helpers
     doFetch = async (url, options) => {
         const {data} = await this.doFetchWithResponse(url, options);
