@@ -10,8 +10,8 @@ export const GlobalStyles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: 200,
         backgroundColor: 'white'
     },
     logo: {
