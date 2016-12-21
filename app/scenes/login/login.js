@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
-import {View, Text, TextInput, Image} from 'react-native';
+import {Text, TextInput, Image, KeyboardAvoidingView} from 'react-native';
 
 import Button from 'app/components/button';
 import FormattedText from 'app/components/formatted_text';
@@ -84,7 +84,10 @@ class Login extends Component {
         }
 
         return (
-            <View style={GlobalStyles.container}>
+            <KeyboardAvoidingView
+                behavior='padding'
+                style={GlobalStyles.container}
+            >
                 <Image
                     style={GlobalStyles.logo}
                     source={logo}
@@ -126,7 +129,7 @@ class Login extends Component {
                     />
                 </Button>
                 <ErrorText error={this.props.loginRequest.error}/>
-            </View>
+            </KeyboardAvoidingView>
         );
     }
 }
