@@ -10,7 +10,7 @@ export function login(loginId, password, mfaToken = '') {
     return async (dispatch, getState) => {
         dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
 
-        Client.login(loginId, password, mfaToken).
+        return Client.login(loginId, password, mfaToken).
         then(async (data) => {
             let teamMembers;
             let preferences;

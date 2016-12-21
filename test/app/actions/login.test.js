@@ -7,27 +7,20 @@ import * as Actions from 'app/actions/views/login';
 import configureStore from 'app/store';
 
 describe('Actions.Views.Login', () => {
-    it('handleLoginIdChanged', (done) => {
-        const store = configureStore();
-
-        store.subscribe(() => {
-            const loginId = store.getState().views.login.loginId;
-            assert.equal('email@example.com', loginId);
-            done();
-        });
-
-        Actions.handleLoginIdChanged('email@example.com')(store.dispatch, store.getState);
+    let store;
+    beforeEach(() => {
+        store = configureStore();
     });
 
-    it('handlePasswordChanged', (done) => {
-        const store = configureStore();
+    it('handleLoginIdChanged', async () => {
+        await Actions.handleLoginIdChanged('email@example.com')(store.dispatch, store.getState);
+        const loginId = store.getState().views.login.loginId;
+        assert.equal('email@example.com', loginId);
+    });
 
-        store.subscribe(() => {
-            const password = store.getState().views.login.password;
-            assert.equal('password', password);
-            done();
-        });
-
-        Actions.handlePasswordChanged('password')(store.dispatch, store.getState);
+    it('handlePasswordChanged', async () => {
+        await Actions.handlePasswordChanged('password')(store.dispatch, store.getState);
+        const password = store.getState().views.login.password;
+        assert.equal('password', password);
     });
 });

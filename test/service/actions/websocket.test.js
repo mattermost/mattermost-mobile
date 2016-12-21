@@ -12,14 +12,15 @@ import TestHelper from 'test/test_helper';
 
 describe('Actions.Websocket', () => {
     let store;
-    beforeEach(async () => {
+    before(async () => {
         store = configureStore();
         await TestHelper.initBasic(Client);
         return await Actions.init()(store.dispatch, store.getState);
     });
 
-    afterEach(() => {
+    after(async () => {
         Actions.close()();
+        await TestHelper.basicClient.logout();
     });
 
     it('WebSocket Connect', () => {
@@ -119,7 +120,10 @@ describe('Actions.Websocket', () => {
         await client.addUserToTeam(team.id, TestHelper.basicUser.id);
         await client.addChannelMember(team.id, channel.id, TestHelper.basicUser.id);
 
-        await RootActions.setStoreFromLocalData({url: Client.getUrl(), token: Client.getToken()})(store.dispatch, store.getState);
+        await RootActions.setStoreFromLocalData({
+            url: Client.getUrl(),
+            token: Client.getToken()
+        })(store.dispatch, store.getState);
         await TeamActions.selectTeam(team)(store.dispatch, store.getState);
         await ChannelActions.selectChannel(channel.id)(store.dispatch, store.getState);
         await client.removeUserFromTeam(team.id, TestHelper.basicUser.id);
@@ -138,10 +142,6 @@ describe('Actions.Websocket', () => {
         );
 
         await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
-        await RootActions.setStoreFromLocalData({
-            url: Client.getUrl(),
-            token: Client.getToken()
-        })(store.dispatch, store.getState);
 
         await ChannelActions.addChannelMember(
             TestHelper.basicTeam.id,
@@ -156,22 +156,31 @@ describe('Actions.Websocket', () => {
 
     it('Websocket Handle User Removed', async () => {
         await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
-        await RootActions.setStoreFromLocalData({
-            url: Client.getUrl(),
-            token: Client.getToken()
-        })(store.dispatch, store.getState);
+
+        const user = await TestHelper.basicClient.createUserWithInvite(
+            TestHelper.fakeUser(),
+            null,
+            null,
+            TestHelper.basicTeam.invite_id
+        );
+
+        await ChannelActions.addChannelMember(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id,
+            user.id
+        )(store.dispatch, store.getState);
 
         await ChannelActions.removeChannelMember(
             TestHelper.basicTeam.id,
             TestHelper.basicChannel.id,
-            TestHelper.basicUser.id
+            user.id
         )(store.dispatch, store.getState);
 
         const state = store.getState();
         const entities = state.entities;
         const profilesNotInChannel = entities.users.profilesNotInChannel;
 
-        assert.ok(profilesNotInChannel[TestHelper.basicChannel.id].has(TestHelper.basicUser.id));
+        assert.ok(profilesNotInChannel[TestHelper.basicChannel.id].has(user.id));
     });
 
     it('Websocket Handle User Updated', async () => {
@@ -198,10 +207,6 @@ describe('Actions.Websocket', () => {
     it('Websocket Handle Channel Viewed', (done) => {
         async function test() {
             await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
-            await RootActions.setStoreFromLocalData({
-                url: Client.getUrl(),
-                token: Client.getToken()
-            })(store.dispatch, store.getState);
 
             await Client.updateLastViewedAt(
                 TestHelper.basicTeam.id,
@@ -215,7 +220,7 @@ describe('Actions.Websocket', () => {
                 const {channels} = entities.channels;
                 assert.ok(channels[TestHelper.basicChannel.id]);
                 done();
-            }, 500);
+            }, 1500);
         }
 
         test();
