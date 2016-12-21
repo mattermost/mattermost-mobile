@@ -2,8 +2,7 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
-import {View, TextInput, Image} from 'react-native';
-import KeyboardSpacer from 'react-native-keyboard-spacer';
+import {TextInput, Image, KeyboardAvoidingView} from 'react-native';
 
 import Client from 'service/client';
 import Button from 'app/components/button';
@@ -38,7 +37,10 @@ class SelectServer extends Component {
         const {formatMessage} = this.props.intl;
 
         return (
-            <View style={GlobalStyles.container}>
+            <KeyboardAvoidingView
+                behavior='padding'
+                style={GlobalStyles.container}
+            >
                 <Image
                     style={GlobalStyles.logo}
                     source={logo}
@@ -70,8 +72,7 @@ class SelectServer extends Component {
                     />
                 </Button>
                 <ErrorText error={this.props.server.error}/>
-                <KeyboardSpacer/>
-            </View>
+            </KeyboardAvoidingView>
         );
     }
 }
