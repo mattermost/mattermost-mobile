@@ -5,6 +5,35 @@ import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {Constants, PostsTypes} from 'service/constants';
+import {getProfilesByIds, getStatusesByIds} from './users';
+
+async function getProfilesAndStatusesForPosts(list, dispatch, getState) {
+    const {profiles, statuses} = getState().entities.users;
+    const posts = list.posts;
+    const profilesToLoad = [];
+    const statusesToLoad = [];
+
+    Object.keys(posts).forEach((key) => {
+        const post = posts[key];
+        const userId = post.user_id;
+
+        if (!profiles[userId]) {
+            profilesToLoad.push(userId);
+        }
+
+        if (!statuses[userId]) {
+            statusesToLoad.push(userId);
+        }
+    });
+
+    if (profilesToLoad.length) {
+        await getProfilesByIds(profilesToLoad)(dispatch, getState);
+    }
+
+    if (statusesToLoad.length) {
+        await getStatusesByIds(statusesToLoad)(dispatch, getState);
+    }
+}
 
 export function createPost(teamId, post) {
     return bindClientFunc(
@@ -68,6 +97,7 @@ export function getPost(teamId, channelId, postId) {
         let post;
         try {
             post = await Client.getPost(teamId, channelId, postId);
+            getProfilesAndStatusesForPosts(post, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POST_FAILURE, error}, getState);
@@ -94,6 +124,7 @@ export function getPosts(teamId, channelId, offset = 0, limit = Constants.POST_C
 
         try {
             posts = await Client.getPosts(teamId, channelId, offset, limit);
+            getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_FAILURE, error}, getState);
@@ -120,6 +151,7 @@ export function getPostsSince(teamId, channelId, since) {
         let posts;
         try {
             posts = await Client.getPostsSince(teamId, channelId, since);
+            getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_SINCE_FAILURE, error}, getState);
@@ -146,6 +178,7 @@ export function getPostsBefore(teamId, channelId, postId, offset = 0, limit = Co
         let posts;
         try {
             posts = await Client.getPostsBefore(teamId, channelId, postId, offset, limit);
+            getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_BEFORE_FAILURE, error}, getState);
@@ -172,6 +205,7 @@ export function getPostsAfter(teamId, channelId, postId, offset = 0, limit = Con
         let posts;
         try {
             posts = await Client.getPostsAfter(teamId, channelId, postId, offset, limit);
+            getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_AFTER_FAILURE, error}, getState);

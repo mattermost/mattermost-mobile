@@ -24,7 +24,11 @@ const GeneralTypes = keyMirror({
 
     LOG_CLIENT_ERROR_REQUEST: null,
     LOG_CLIENT_ERROR_SUCCESS: null,
-    LOG_CLIENT_ERROR_FAILURE: null
+    LOG_CLIENT_ERROR_FAILURE: null,
+
+    WEBSOCKET_REQUEST: null,
+    WEBSOCKET_SUCCESS: null,
+    WEBSOCKET_FAILURE: null
 });
 
 export default GeneralTypes;

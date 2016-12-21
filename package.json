@@ -34,14 +34,15 @@
     "react-test-renderer": "15.3.2",
     "redux-logger": "2.7.0",
     "remote-redux-devtools": "0.5.0",
-    "remote-redux-devtools-on-debugger": "0.6.2"
+    "remote-redux-devtools-on-debugger": "0.6.2",
+    "ws": "1.1.1"
   },
   "scripts": {
     "check": "node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .",
     "run-ios": "node node_modules/react-native/local-cli/cli.js run-ios",
     "run-android": "node node_modules/react-native/local-cli/cli.js run-android",
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "mocha --compilers js:babel-register --require babel-polyfill",
+    "test": "NODE_ENV=test mocha --compilers js:babel-register --require babel-polyfill",
     "postinstall": "make post-install"
   }
 }

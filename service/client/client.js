@@ -38,6 +38,10 @@ export default class Client {
         this.token = token;
     }
 
+    getUrlVersion() {
+        return this.urlVersion;
+    }
+
     getBaseRoute() {
         return `${this.url}${this.urlVersion}`;
     }
@@ -581,9 +585,7 @@ export default class Client {
         );
     };
 
-    // Client helpers
     // Preferences routes
-
     getMyPreferences = async () => {
         return this.doFetch(
             `${this.getPreferencesRoute()}/`,
@@ -619,6 +621,7 @@ export default class Client {
         );
     };
 
+    // Client helpers
     doFetch = async (url, options) => {
         const {data} = await this.doFetchWithResponse(url, options);
 

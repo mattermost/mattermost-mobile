@@ -6,6 +6,8 @@ import {combineReducers} from 'redux';
 
 function currentId(state = '', action) {
     switch (action.type) {
+    case ChannelTypes.SELECTED_CHANNEL:
+        return action.data;
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
     default:
@@ -30,6 +32,9 @@ function channels(state = {}, action) {
         }
         return nextState;
     }
+    case ChannelTypes.RECEIVED_CHANNEL_DELETED:
+        Reflect.deleteProperty(nextState, action.data);
+        return nextState;
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
 
@@ -56,26 +61,26 @@ function myMembers(state = {}, action) {
         return nextState;
     }
     case ChannelTypes.RECEIVED_CHANNEL_PROPS: {
-        const member = {...state[action.channel_id]};
-        member.notify_props = action.data;
+        const member = {...state[action.data.channel_id]};
+        member.notify_props = action.data.notifyProps;
 
         return {
             ...state,
-            [action.channel_id]: member
+            [action.data.channel_id]: member
         };
     }
     case ChannelTypes.RECEIVED_LAST_VIEWED: {
-        const member = {...state[action.channel_id]};
-        member.last_viewed_at = action.last_viewed_at;
+        const member = {...state[action.data.channel_id]};
+        member.last_viewed_at = action.data.last_viewed_at;
 
         return {
             ...state,
-            [action.channel_id]: member
+            [action.data.channel_id]: member
         };
     }
     case ChannelTypes.LEAVE_CHANNEL:
     case ChannelTypes.RECEIVED_CHANNEL_DELETED:
-        Reflect.deleteProperty(nextState, action.channel_id);
+        Reflect.deleteProperty(nextState, action.data);
         return nextState;
 
     case UsersTypes.LOGOUT_SUCCESS:

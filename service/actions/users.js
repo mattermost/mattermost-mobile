@@ -3,10 +3,7 @@
 
 import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
-
-// TODO: uncomment when PLT-4167 is merged
-// import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'constants';
-import {Constants, PreferencesTypes, UsersTypes} from 'service/constants';
+import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'service/constants';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 export function login(loginId, password, mfaToken = '') {
@@ -15,16 +12,13 @@ export function login(loginId, password, mfaToken = '') {
 
         Client.login(loginId, password, mfaToken).
         then(async (data) => {
-            // TODO: uncomment when PLT-4167 is merged
-            // let teamMembers;
+            let teamMembers;
             let preferences;
             try {
-                // TODO: uncomment when PLT-4167 is merged
-                // const teamMembersRequest = Client.getMyTeamMembers();
+                const teamMembersRequest = Client.getMyTeamMembers();
                 const preferencesRequest = Client.getMyPreferences();
 
-                // TODO: uncomment when PLT-4167 is merged
-                // teamMembers = await teamMembersRequest;
+                teamMembers = await teamMembersRequest;
                 preferences = await preferencesRequest;
             } catch (err) {
                 dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
@@ -40,12 +34,10 @@ export function login(loginId, password, mfaToken = '') {
                     type: PreferencesTypes.RECEIVED_PREFERENCES,
                     data: await preferences
                 },
-
-                // TODO: uncomment when PLT-4167 is merged
-                // {
-                //     type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
-                //     data: await teamMembers
-                // },
+                {
+                    type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
+                    data: await teamMembers
+                },
                 {
                     type: UsersTypes.LOGIN_SUCCESS
                 }

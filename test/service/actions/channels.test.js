@@ -4,7 +4,6 @@
 import assert from 'assert';
 
 import * as Actions from 'service/actions/channels';
-import {getProfiles} from 'service/actions/users';
 import Client from 'service/client';
 import configureStore from 'app/store';
 import {RequestStatus} from 'service/constants';
@@ -66,7 +65,6 @@ describe('Actions.Channels', () => {
                 const state = store.getState();
                 const channels = state.entities.channels.channels;
                 const members = state.entities.channels.myMembers;
-                const profiles = state.entities.users.profiles;
                 const preferences = state.entities.preferences.myPreferences;
 
                 const createRequest = state.requests.channels.createChannel;
@@ -80,7 +78,6 @@ describe('Actions.Channels', () => {
                     const membersCount = Object.keys(members).length;
                     assert.ok(channels, 'channels is empty');
                     assert.ok(members, 'members is empty');
-                    assert.ok(profiles[user.id], 'profiles does not have userId');
                     assert.ok(Object.keys(preferences).length, 'preferences is empty');
                     assert.ok(channels[Object.keys(members)[0]], 'channels should have the member');
                     assert.ok(members[Object.keys(channels)[0]], 'members should belong to channel');
@@ -93,7 +90,6 @@ describe('Actions.Channels', () => {
                 }
             });
 
-            await getProfiles(0)(store.dispatch, store.getState);
             Actions.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id, user.id)(store.dispatch, store.getState);
         });
     }).timeout(3000);
@@ -176,7 +172,7 @@ describe('Actions.Channels', () => {
 
             Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
         });
-    });
+    }).timeout(3000);
 
     it('updateChannelNotifyProps', (done) => {
         TestHelper.initBasic(Client).then(async () => {

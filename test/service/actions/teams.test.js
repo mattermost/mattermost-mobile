@@ -141,29 +141,28 @@ describe('Actions.Teams', () => {
         });
     });
 
-    // TODO: uncomment when PLT-4167 is merged
-    // it('getMyTeamMembers', (done) => {
-    //     TestHelper.initBasic(Client).then(() => {
-    //         const store = configureStore();
-    //
-    //         store.subscribe(() => {
-    //             const membersRequest = store.getState().requests.teams.getMyTeamMembers;
-    //             const members = store.getState().entities.teams.myMembers;
-    //
-    //             if (membersRequest.status === RequestStatus.SUCCESS || membersRequest.status === RequestStatus.FAILURE) {
-    //                 if (membersRequest.error) {
-    //                     done(new Error(JSON.stringify(membersRequest.error)));
-    //                 } else {
-    //                     assert.ok(members);
-    //                     assert.ok(members[TestHelper.basicTeam.id]);
-    //                     done();
-    //                 }
-    //             }
-    //         });
-    //
-    //         Actions.getMyTeamMembers()(store.dispatch, store.getState);
-    //     });
-    // });
+    it('getMyTeamMembers', (done) => {
+        TestHelper.initBasic(Client).then(() => {
+            const store = configureStore();
+
+            store.subscribe(() => {
+                const membersRequest = store.getState().requests.teams.getMyTeamMembers;
+                const members = store.getState().entities.teams.myMembers;
+
+                if (membersRequest.status === RequestStatus.SUCCESS || membersRequest.status === RequestStatus.FAILURE) {
+                    if (membersRequest.error) {
+                        done(new Error(JSON.stringify(membersRequest.error)));
+                    } else {
+                        assert.ok(members);
+                        assert.ok(members[TestHelper.basicTeam.id]);
+                        done();
+                    }
+                }
+            });
+
+            Actions.getMyTeamMembers()(store.dispatch, store.getState);
+        });
+    });
 
     it('getTeamMember', (done) => {
         TestHelper.initBasic(Client).then(async () => {
@@ -193,7 +192,7 @@ describe('Actions.Teams', () => {
 
             Actions.getTeamMember(TestHelper.basicTeam.id, user.id)(store.dispatch, store.getState);
         });
-    });
+    }).timeout(3000);
 
     it('getTeamMembersByIds', (done) => {
         TestHelper.initBasic(Client).then(async () => {

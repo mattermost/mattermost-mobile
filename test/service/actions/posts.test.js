@@ -156,19 +156,23 @@ describe('Actions.Posts', () => {
                 channelId
             )(store.dispatch, store.getState);
 
+            let shouldStop = false;
             store.subscribe(() => {
                 const state = store.getState();
                 const {posts, postsByChannel} = state.entities.posts;
 
-                assert.ok(posts);
-                assert.ok(postsByChannel);
-                assert.ok(postsByChannel[channelId]);
+                if (!shouldStop) {
+                    assert.ok(posts);
+                    assert.ok(postsByChannel);
+                    assert.ok(postsByChannel[channelId]);
 
-                assert.equal(postsByChannel[channelId].length, 0);
-                assert.ok(!posts[postId]);
-                assert.ok(!posts[post1a.id]);
+                    assert.equal(postsByChannel[channelId].length, 0);
+                    assert.ok(!posts[postId]);
+                    assert.ok(!posts[post1a.id]);
 
-                done();
+                    shouldStop = true;
+                    done();
+                }
             });
 
             Actions.removePost(
@@ -189,30 +193,35 @@ describe('Actions.Posts', () => {
                 TestHelper.fakePost(channelId)
             );
 
+            let shouldStop = false;
             store.subscribe(() => {
                 const state = store.getState();
                 const getRequest = state.requests.posts.getPost;
                 const {posts, postsByChannel} = state.entities.posts;
 
-                if (getRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(posts);
-                    assert.ok(postsByChannel);
-                    assert.ok(postsByChannel[channelId]);
+                if (!shouldStop &&
+                    (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE)) {
+                    if (getRequest.error) {
+                        shouldStop = true;
+                        done(new Error(JSON.stringify(getRequest.error)));
+                    } else {
+                        assert.ok(posts);
+                        assert.ok(postsByChannel);
+                        assert.ok(postsByChannel[channelId]);
 
-                    assert.ok(posts[post.id]);
+                        assert.ok(posts[post.id]);
 
-                    let found = false;
-                    for (const postIdInChannel of postsByChannel[channelId]) {
-                        if (postIdInChannel === post.id) {
-                            found = true;
-                            break;
+                        let found = false;
+                        for (const postIdInChannel of postsByChannel[channelId]) {
+                            if (postIdInChannel === post.id) {
+                                found = true;
+                                break;
+                            }
                         }
+                        assert.ok(found, 'failed to find post in postsByChannel');
+                        shouldStop = true;
+                        done();
                     }
-                    assert.ok(found, 'failed to find post in postsByChannel');
-
-                    done();
-                } else if (getRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(getRequest.error)));
                 }
             });
 
@@ -252,30 +261,36 @@ describe('Actions.Posts', () => {
                 {...TestHelper.fakePost(channelId), root_id: post3.id}
             );
 
+            let shouldStop = false;
             store.subscribe(() => {
                 const state = store.getState();
                 const getRequest = state.requests.posts.getPosts;
                 const {posts, postsByChannel} = state.entities.posts;
 
-                if (getRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(posts);
-                    assert.ok(postsByChannel);
+                if (!shouldStop &&
+                    (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE)) {
+                    if (getRequest.error) {
+                        shouldStop = true;
+                        done(new Error(JSON.stringify(getRequest.error)));
+                    } else {
+                        assert.ok(posts);
+                        assert.ok(postsByChannel);
 
-                    const postsInChannel = postsByChannel[channelId];
-                    assert.ok(postsInChannel);
-                    assert.equal(postsInChannel[0], post3a.id, 'wrong order for post3a');
-                    assert.equal(postsInChannel[1], post3.id, 'wrong order for post3');
-                    assert.equal(postsInChannel[3], post1a.id, 'wrong order for post1a');
+                        const postsInChannel = postsByChannel[channelId];
+                        assert.ok(postsInChannel);
+                        assert.equal(postsInChannel[0], post3a.id, 'wrong order for post3a');
+                        assert.equal(postsInChannel[1], post3.id, 'wrong order for post3');
+                        assert.equal(postsInChannel[3], post1a.id, 'wrong order for post1a');
 
-                    assert.ok(posts[post1.id]);
-                    assert.ok(posts[post1a.id]);
-                    assert.ok(posts[post2.id]);
-                    assert.ok(posts[post3.id]);
-                    assert.ok(posts[post3a.id]);
+                        assert.ok(posts[post1.id]);
+                        assert.ok(posts[post1a.id]);
+                        assert.ok(posts[post2.id]);
+                        assert.ok(posts[post3.id]);
+                        assert.ok(posts[post3a.id]);
 
-                    done();
-                } else if (getRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(getRequest.error)));
+                        shouldStop = true;
+                        done();
+                    }
                 }
             });
 
@@ -314,24 +329,30 @@ describe('Actions.Posts', () => {
                 {...TestHelper.fakePost(channelId), root_id: post3.id}
             );
 
+            let shouldStop = false;
             store.subscribe(() => {
                 const state = store.getState();
                 const getRequest = state.requests.posts.getPostsSince;
                 const {posts, postsByChannel} = state.entities.posts;
 
-                if (getRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(posts);
-                    assert.ok(postsByChannel);
+                if (!shouldStop &&
+                    (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE)) {
+                    if (getRequest.error) {
+                        shouldStop = true;
+                        done(new Error(JSON.stringify(getRequest.error)));
+                    } else {
+                        assert.ok(posts);
+                        assert.ok(postsByChannel);
 
-                    const postsInChannel = postsByChannel[channelId];
-                    assert.ok(postsInChannel);
-                    assert.equal(postsInChannel[0], post3a.id, 'wrong order for post3a');
-                    assert.equal(postsInChannel[1], post3.id, 'wrong order for post3');
-                    assert.equal(postsInChannel.length, 2, 'wrong size');
+                        const postsInChannel = postsByChannel[channelId];
+                        assert.ok(postsInChannel);
+                        assert.equal(postsInChannel[0], post3a.id, 'wrong order for post3a');
+                        assert.equal(postsInChannel[1], post3.id, 'wrong order for post3');
+                        assert.equal(postsInChannel.length, 2, 'wrong size');
 
-                    done();
-                } else if (getRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(getRequest.error)));
+                        shouldStop = true;
+                        done();
+                    }
                 }
             });
 
@@ -371,24 +392,30 @@ describe('Actions.Posts', () => {
                 {...TestHelper.fakePost(channelId), root_id: post3.id}
             );
 
+            let shouldStop = false;
             store.subscribe(() => {
                 const state = store.getState();
                 const getRequest = state.requests.posts.getPostsBefore;
                 const {posts, postsByChannel} = state.entities.posts;
 
-                if (getRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(posts);
-                    assert.ok(postsByChannel);
+                if (!shouldStop &&
+                    (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE)) {
+                    if (getRequest.error) {
+                        shouldStop = true;
+                        done(new Error(JSON.stringify(getRequest.error)));
+                    } else {
+                        assert.ok(posts);
+                        assert.ok(postsByChannel);
 
-                    const postsInChannel = postsByChannel[channelId];
-                    assert.ok(postsInChannel);
-                    assert.equal(postsInChannel[0], post1a.id, 'wrong order for post1a');
-                    assert.equal(postsInChannel[1], post1.id, 'wrong order for post1');
-                    assert.equal(postsInChannel.length, 3, 'wrong size');
+                        const postsInChannel = postsByChannel[channelId];
+                        assert.ok(postsInChannel);
+                        assert.equal(postsInChannel[0], post1a.id, 'wrong order for post1a');
+                        assert.equal(postsInChannel[1], post1.id, 'wrong order for post1');
+                        assert.equal(postsInChannel.length, 3, 'wrong size');
 
-                    done();
-                } else if (getRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(getRequest.error)));
+                        shouldStop = true;
+                        done();
+                    }
                 }
             });
 
@@ -430,24 +457,30 @@ describe('Actions.Posts', () => {
                 {...TestHelper.fakePost(channelId), root_id: post3.id}
             );
 
+            let shouldStop = false;
             store.subscribe(() => {
                 const state = store.getState();
                 const getRequest = state.requests.posts.getPostsAfter;
                 const {posts, postsByChannel} = state.entities.posts;
 
-                if (getRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(posts);
-                    assert.ok(postsByChannel);
+                if (!shouldStop &&
+                    (getRequest.status === RequestStatus.SUCCESS || getRequest.status === RequestStatus.FAILURE)) {
+                    if (getRequest.error) {
+                        shouldStop = true;
+                        done(new Error(JSON.stringify(getRequest.error)));
+                    } else {
+                        assert.ok(posts);
+                        assert.ok(postsByChannel);
 
-                    const postsInChannel = postsByChannel[channelId];
-                    assert.ok(postsInChannel);
-                    assert.equal(postsInChannel[0], post3a.id, 'wrong order for post3a');
-                    assert.equal(postsInChannel[1], post3.id, 'wrong order for post3');
-                    assert.equal(postsInChannel.length, 2, 'wrong size');
+                        const postsInChannel = postsByChannel[channelId];
+                        assert.ok(postsInChannel);
+                        assert.equal(postsInChannel[0], post3a.id, 'wrong order for post3a');
+                        assert.equal(postsInChannel[1], post3.id, 'wrong order for post3');
+                        assert.equal(postsInChannel.length, 2, 'wrong size');
 
-                    done();
-                } else if (getRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(getRequest.error)));
+                        shouldStop = true;
+                        done();
+                    }
                 }
             });
 
