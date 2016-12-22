@@ -204,13 +204,6 @@ export default class Client {
 
         if (response.headers.has(HEADER_TOKEN)) {
             this.token = response.headers.get(HEADER_TOKEN);
-        } else {
-            // weird case where fetch does not parse the header correctly
-            const parseHeader = response.headers.get(HEADER_CONTENT_TYPE).split('\n');
-            const filter = parseHeader.filter((h) => h.indexOf('Token:') > -1);
-            if (filter.length) {
-                this.token = filter[0].replace('Token: ', '');
-            }
         }
 
         return data;
