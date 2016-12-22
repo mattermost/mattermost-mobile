@@ -7,15 +7,11 @@ import * as Actions from 'app/actions/views/select_server';
 import configureStore from 'app/store';
 
 describe('Actions.Views.SelectServer', () => {
-    it('handleServerUrlChanged', (done) => {
+    it('handleServerUrlChanged', async () => {
         const store = configureStore();
 
-        store.subscribe(() => {
-            const serverUrl = store.getState().views.selectServer.serverUrl;
-            assert.equal('https://mattermost.example.com', serverUrl);
-            done();
-        });
-
-        Actions.handleServerUrlChanged('https://mattermost.example.com')(store.dispatch, store.getState);
+        await Actions.handleServerUrlChanged('https://mattermost.example.com')(store.dispatch, store.getState);
+        const serverUrl = store.getState().views.selectServer.serverUrl;
+        assert.equal('https://mattermost.example.com', serverUrl);
     });
 });

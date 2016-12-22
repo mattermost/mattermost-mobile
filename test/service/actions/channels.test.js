@@ -4,508 +4,375 @@
 import assert from 'assert';
 
 import * as Actions from 'service/actions/channels';
+import {getProfilesByIds} from 'service/actions/users';
 import Client from 'service/client';
 import configureStore from 'app/store';
 import {RequestStatus} from 'service/constants';
 import TestHelper from 'test/test_helper';
 
 describe('Actions.Channels', () => {
-    it('createChannel', (done) => {
-        TestHelper.initBasic(Client).then(() => {
-            const store = configureStore();
-
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-
-                const createRequest = store.getState().requests.channels.createChannel;
-                const membersRequest = store.getState().requests.channels.myMembers;
-
-                if (createRequest.status === RequestStatus.SUCCESS && membersRequest.status === RequestStatus.SUCCESS) {
-                    const channelsCount = Object.keys(channels).length;
-                    const membersCount = Object.keys(members).length;
-                    assert.ok(channels);
-                    assert.ok(members);
-                    assert.ok(channels[Object.keys(members)[0]]);
-                    assert.ok(members[Object.keys(channels)[0]]);
-                    assert.equal(members[Object.keys(channels)[0]].user_id, TestHelper.basicUser.id);
-                    assert.equal(channelsCount, membersCount);
-                    assert.equal(channelsCount, 1);
-                    assert.equal(membersCount, 1);
-                    done();
-                } else if (createRequest.status === RequestStatus.FAILURE && membersRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(createRequest.error)));
-                }
-            });
-
-            const channel = {
-                team_id: TestHelper.basicTeam.id,
-                name: 'redux-test',
-                display_name: 'Redux Test',
-                purpose: 'This is to test redux',
-                header: 'MM with Redux',
-                type: 'O'
-            };
-
-            Actions.createChannel(channel, TestHelper.basicUser.id)(store.dispatch, store.getState);
-        });
+    let store;
+    let secondChannel;
+    before(async () => {
+        await TestHelper.initBasic(Client);
     });
 
-    it('createDirectChannel', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            const user = await TestHelper.basicClient.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
-
-            store.subscribe(() => {
-                const state = store.getState();
-                const channels = state.entities.channels.channels;
-                const members = state.entities.channels.myMembers;
-                const preferences = state.entities.preferences.myPreferences;
-
-                const createRequest = state.requests.channels.createChannel;
-
-                if (createRequest.status === RequestStatus.SUCCESS || createRequest.status === RequestStatus.FAILURE) {
-                    if (createRequest.error) {
-                        done(new Error(JSON.stringify(createRequest.error)));
-                    }
-
-                    const channelsCount = Object.keys(channels).length;
-                    const membersCount = Object.keys(members).length;
-                    assert.ok(channels, 'channels is empty');
-                    assert.ok(members, 'members is empty');
-                    assert.ok(Object.keys(preferences).length, 'preferences is empty');
-                    assert.ok(channels[Object.keys(members)[0]], 'channels should have the member');
-                    assert.ok(members[Object.keys(channels)[0]], 'members should belong to channel');
-                    assert.equal(members[Object.keys(channels)[0]].user_id, TestHelper.basicUser.id);
-                    assert.equal(channelsCount, membersCount);
-                    assert.equal(channels[Object.keys(channels)[0]].type, 'D');
-                    assert.equal(channelsCount, 1);
-                    assert.equal(membersCount, 1);
-                    done();
-                }
-            });
-
-            Actions.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id, user.id)(store.dispatch, store.getState);
-        });
-    }).timeout(3000);
-
-    it('updateChannel', (done) => {
-        TestHelper.initBasic(Client).then(() => {
-            const store = configureStore();
-
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const updateRequest = store.getState().requests.channels.updateChannel;
-
-                if (updateRequest.status === RequestStatus.SUCCESS) {
-                    const channelId = Object.keys(channels)[0];
-                    const channel = channels[channelId];
-                    assert.ok(channelId);
-                    assert.ok(channel);
-                    assert.equal(channel.header, 'MM with Redux');
-                    done();
-                } else if (updateRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(updateRequest.error)));
-                }
-            });
-
-            const channel = {
-                ...TestHelper.basicChannel,
-                purpose: 'This is to test redux',
-                header: 'MM with Redux'
-            };
-
-            Actions.updateChannel(channel)(store.dispatch, store.getState);
-        });
+    beforeEach(() => {
+        store = configureStore();
     });
 
-    it('getChannel', (done) => {
-        TestHelper.initBasic(Client).then(() => {
-            const store = configureStore();
-
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-
-                const channelRequest = store.getState().requests.channels.getChannel;
-
-                if (channelRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(channels[TestHelper.basicChannel.id]);
-                    assert.ok(members[TestHelper.basicChannel.id]);
-                    done();
-                } else if (channelRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(channelRequest.error)));
-                }
-            });
-
-            Actions.getChannel(TestHelper.basicTeam.id, TestHelper.basicChannel.id)(store.dispatch, store.getState);
-        });
+    after(async () => {
+        await TestHelper.basicClient.logout();
     });
 
-    it('fetchMyChannelsAndMembers', (done) => {
-        TestHelper.initBasic(Client).then(() => {
-            const store = configureStore();
+    it('createChannel', async () => {
+        const channel = {
+            team_id: TestHelper.basicTeam.id,
+            name: 'redux-test',
+            display_name: 'Redux Test',
+            purpose: 'This is to test redux',
+            header: 'MM with Redux',
+            type: 'O'
+        };
 
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-
-                const channelsRequest = store.getState().requests.channels.getChannels;
-                const membersRequest = store.getState().requests.channels.myMembers;
-
-                if (channelsRequest.status === RequestStatus.SUCCESS && membersRequest.status === RequestStatus.SUCCESS) {
-                    assert.ok(channels);
-                    assert.ok(members);
-                    assert.ok(channels[Object.keys(members)[0]]);
-                    assert.ok(members[Object.keys(channels)[0]]);
-                    assert.equal(Object.keys(channels).length, Object.keys(members).length);
-                    done();
-                } else if (channelsRequest.status === RequestStatus.FAILURE && membersRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(channelsRequest.error)));
-                }
-            });
-
-            Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
-        });
-    }).timeout(3000);
-
-    it('updateChannelNotifyProps', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-
-            store.subscribe(() => {
-                const members = store.getState().entities.channels.myMembers;
-                const updateRequest = store.getState().requests.channels.updateChannelNotifyProps;
-
-                if (updateRequest.status === RequestStatus.SUCCESS) {
-                    const member = members[TestHelper.basicChannel.id];
-                    assert.ok(member);
-                    assert.equal(member.notify_props.mark_unread, 'mention');
-                    assert.equal(member.notify_props.desktop, 'none');
-                    done();
-                } else if (updateRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(updateRequest.error)));
-                }
-            });
-
-            const notifyProps = {
-                mark_unread: 'mention',
-                desktop: 'none'
-            };
-
-            await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
-            Actions.updateChannelNotifyProps(
-                TestHelper.basicUser.id,
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id,
-                notifyProps)(store.dispatch, store.getState);
-        });
+        await Actions.createChannel(channel, TestHelper.basicUser.id)(store.dispatch, store.getState);
+        const {createChannel: createRequest, myMembers: membersRequest} = store.getState().requests.channels;
+        if (createRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(createRequest.error));
+        } else if (membersRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(membersRequest.error));
+        }
+        const {channels, myMembers} = store.getState().entities.channels;
+        const channelsCount = Object.keys(channels).length;
+        const membersCount = Object.keys(myMembers).length;
+        assert.ok(channels);
+        assert.ok(myMembers);
+        assert.ok(channels[Object.keys(myMembers)[0]]);
+        assert.ok(myMembers[Object.keys(channels)[0]]);
+        assert.equal(myMembers[Object.keys(channels)[0]].user_id, TestHelper.basicUser.id);
+        assert.equal(channelsCount, membersCount);
+        assert.equal(channelsCount, 1);
+        assert.equal(membersCount, 1);
     });
 
-    it('leaveChannel', (done) => {
-        TestHelper.initBasic(Client).then(() => {
-            const store = configureStore();
+    it('createDirectChannel', async () => {
+        const user = await TestHelper.basicClient.createUserWithInvite(
+            TestHelper.fakeUser(),
+            null,
+            null,
+            TestHelper.basicTeam.invite_id
+        );
 
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-                const leaveRequest = store.getState().requests.channels.leaveChannel;
+        await getProfilesByIds([user.id])(store.dispatch, store.getState);
+        await Actions.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id, user.id)(store.dispatch, store.getState);
 
-                if (leaveRequest.status === RequestStatus.SUCCESS) {
-                    const channel = channels[TestHelper.basicChannel.id];
-                    const member = members[TestHelper.basicChannel.id];
+        const createRequest = store.getState().requests.channels.createChannel;
+        if (createRequest.status === RequestStatus.FAILURE) {
+            throw new Error(createRequest.error);
+        }
 
-                    assert.ifError(channel);
-                    assert.ifError(member);
-                    done();
-                } else if (leaveRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(leaveRequest.error)));
-                }
-            });
+        const state = store.getState();
+        const {channels, myMembers: members} = state.entities.channels;
+        const profiles = state.entities.users.profiles;
+        const preferences = state.entities.preferences.myPreferences;
+        const channelsCount = Object.keys(channels).length;
+        const membersCount = Object.keys(members).length;
 
-            Actions.leaveChannel(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id)(store.dispatch, store.getState);
-        });
+        assert.ok(channels, 'channels is empty');
+        assert.ok(members, 'members is empty');
+        assert.ok(profiles[user.id], 'profiles does not have userId');
+        assert.ok(Object.keys(preferences).length, 'preferences is empty');
+        assert.ok(channels[Object.keys(members)[0]], 'channels should have the member');
+        assert.ok(members[Object.keys(channels)[0]], 'members should belong to channel');
+        assert.equal(members[Object.keys(channels)[0]].user_id, TestHelper.basicUser.id);
+        assert.equal(channelsCount, membersCount);
+        assert.equal(channels[Object.keys(channels)[0]].type, 'D');
+        assert.equal(channelsCount, 1);
+        assert.equal(membersCount, 1);
     });
 
-    it('joinChannel', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            const secondClient = TestHelper.createClient();
-            const user = await TestHelper.basicClient.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
-            await secondClient.login(user.email, 'password1');
+    it('updateChannel', async () => {
+        const channel = {
+            ...TestHelper.basicChannel,
+            purpose: 'This is to test redux',
+            header: 'MM with Redux'
+        };
 
-            const secondChannel = await secondClient.createChannel(
-                TestHelper.fakeChannel(TestHelper.basicTeam.id));
+        await Actions.updateChannel(channel)(store.dispatch, store.getState);
 
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-                const joinRequest = store.getState().requests.channels.joinChannel;
+        const updateRequest = store.getState().requests.channels.updateChannel;
+        if (updateRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(updateRequest.error));
+        }
 
-                if (joinRequest.status === RequestStatus.SUCCESS) {
-                    const channel = channels[secondChannel.id];
-                    const member = members[secondChannel.id];
-
-                    assert.ok(channel);
-                    assert.ok(member);
-                    done();
-                } else if (joinRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(joinRequest.error)));
-                }
-            });
-
-            Actions.joinChannel(
-                TestHelper.basicUser.id,
-                TestHelper.basicTeam.id,
-                secondChannel.id)(store.dispatch, store.getState);
-        });
-    }).timeout(3000);
-
-    it('joinChannelByName', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            const secondClient = TestHelper.createClient();
-            const user = await TestHelper.basicClient.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
-            await secondClient.login(user.email, 'password1');
-
-            const secondChannel = await secondClient.createChannel(
-                TestHelper.fakeChannel(TestHelper.basicTeam.id));
-
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-                const joinRequest = store.getState().requests.channels.joinChannel;
-
-                if (joinRequest.status === RequestStatus.SUCCESS) {
-                    const channel = channels[secondChannel.id];
-                    const member = members[secondChannel.id];
-
-                    assert.ok(channel);
-                    assert.ok(member);
-                    done();
-                } else if (joinRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(joinRequest.error)));
-                }
-            });
-
-            Actions.joinChannel(
-                TestHelper.basicUser.id,
-                TestHelper.basicTeam.id,
-                null,
-                secondChannel.name)(store.dispatch, store.getState);
-        });
-    }).timeout(3000);
-
-    it('deleteChannel', (done) => {
-        TestHelper.initBasic(Client).then(() => {
-            const store = configureStore();
-
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-                const deleteRequest = store.getState().requests.channels.deleteChannel;
-
-                if (deleteRequest.status === RequestStatus.SUCCESS) {
-                    const channel = channels[TestHelper.basicChannel.id];
-                    const member = members[TestHelper.basicChannel.id];
-
-                    assert.ifError(channel);
-                    assert.ifError(member);
-                    done();
-                } else if (deleteRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(deleteRequest.error)));
-                }
-            });
-
-            Actions.deleteChannel(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id)(store.dispatch, store.getState);
-        });
+        const {channels} = store.getState().entities.channels;
+        const channelId = Object.keys(channels)[0];
+        assert.ok(channelId);
+        assert.ok(channels[channelId]);
+        assert.strictEqual(channels[channelId].header, 'MM with Redux');
     });
 
-    it('updateLastViewedAt', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            let lastViewed;
+    it('getChannel', async () => {
+        await Actions.getChannel(TestHelper.basicTeam.id, TestHelper.basicChannel.id)(store.dispatch, store.getState);
 
-            store.subscribe(() => {
-                const members = store.getState().entities.channels.myMembers;
-                const updateRequest = store.getState().requests.channels.updateLastViewedAt;
-                let member;
+        const channelRequest = store.getState().requests.channels.getChannel;
+        if (channelRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(channelRequest.error));
+        }
 
-                if (updateRequest.status === RequestStatus.STARTED) {
-                    member = members[TestHelper.basicChannel.id];
-                    assert.ok(member);
-                    lastViewed = member.last_viewed_at;
-                } else if (updateRequest.status === RequestStatus.SUCCESS) {
-                    member = members[TestHelper.basicChannel.id];
-                    assert.ok(member.last_viewed_at > lastViewed);
-
-                    done();
-                } else if (updateRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(updateRequest.error)));
-                }
-            });
-
-            await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
-            Actions.updateLastViewedAt(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id, true)(store.dispatch, store.getState);
-        });
+        const {channels, myMembers} = store.getState().entities.channels;
+        assert.ok(channels[TestHelper.basicChannel.id]);
+        assert.ok(myMembers[TestHelper.basicChannel.id]);
     });
 
-    it('getMoreChannels', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            const secondClient = TestHelper.createClient();
-            const user = await TestHelper.basicClient.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
-            await secondClient.login(user.email, 'password1');
+    it('fetchMyChannelsAndMembers', async () => {
+        await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
 
-            const secondChannel = await secondClient.createChannel(
-                TestHelper.fakeChannel(TestHelper.basicTeam.id));
+        const {getChannels: channelsRequest, myMembers: membersRequest} = store.getState().requests.channels;
+        if (channelsRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(channelsRequest.error));
+        } else if (membersRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(membersRequest.error));
+        }
 
-            store.subscribe(() => {
-                const channels = store.getState().entities.channels.channels;
-                const members = store.getState().entities.channels.myMembers;
-                const moreRequest = store.getState().requests.channels.getMoreChannels;
-
-                if (moreRequest.status === RequestStatus.SUCCESS) {
-                    const channel = channels[secondChannel.id];
-
-                    assert.ok(channel);
-                    assert.ifError(members[channel.id]);
-                    done();
-                } else if (moreRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(moreRequest.error)));
-                }
-            });
-
-            Actions.getMoreChannels(TestHelper.basicTeam.id, 0)(store.dispatch, store.getState);
-        });
-    }).timeout(3000);
-
-    it('getChannelStats', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-
-            store.subscribe(() => {
-                const stats = store.getState().entities.channels.stats;
-                const statsRequest = store.getState().requests.channels.getChannelStats;
-
-                if (statsRequest.status === RequestStatus.SUCCESS) {
-                    const stat = stats[TestHelper.basicChannel.id];
-                    assert.ok(stat);
-                    assert.equal(stat.member_count, 1);
-                    done();
-                } else if (statsRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(statsRequest.error)));
-                }
-            });
-
-            Actions.getChannelStats(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id
-            )(store.dispatch, store.getState);
-        });
+        const {channels, myMembers} = store.getState().entities.channels;
+        assert.ok(channels);
+        assert.ok(myMembers);
+        assert.ok(channels[Object.keys(myMembers)[0]]);
+        assert.ok(myMembers[Object.keys(channels)[0]]);
+        assert.equal(Object.keys(channels).length, Object.keys(myMembers).length);
     });
 
-    it('addChannelMember', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            const user = await TestHelper.basicClient.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
+    it('updateChannelNotifyProps', async () => {
+        const notifyProps = {
+            mark_unread: 'mention',
+            desktop: 'none'
+        };
 
-            store.subscribe(() => {
-                const profilesInChannel = store.getState().entities.users.profilesInChannel;
-                const profilesNotInChannel = store.getState().entities.users.profilesNotInChannel;
-                const addRequest = store.getState().requests.channels.addChannelMember;
+        await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
+        await Actions.updateChannelNotifyProps(
+            TestHelper.basicUser.id,
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id,
+            notifyProps)(store.dispatch, store.getState);
 
-                if (addRequest.status === RequestStatus.SUCCESS) {
-                    const channel = profilesInChannel[TestHelper.basicChannel.id];
-                    const notChannel = profilesNotInChannel[TestHelper.basicChannel.id];
-                    assert.ok(channel);
-                    assert.ok(notChannel);
-                    assert.ok(channel.has(user.id));
-                    assert.ifError(notChannel.has(user.id));
-                    done();
-                } else if (addRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(addRequest.error)));
-                }
-            });
+        const updateRequest = store.getState().requests.channels.updateChannelNotifyProps;
+        if (updateRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(updateRequest.error));
+        }
 
-            Actions.addChannelMember(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id,
-                user.id
-            )(store.dispatch, store.getState);
-        });
+        const members = store.getState().entities.channels.myMembers;
+        const member = members[TestHelper.basicChannel.id];
+        assert.ok(member);
+        assert.equal(member.notify_props.mark_unread, 'mention');
+        assert.equal(member.notify_props.desktop, 'none');
     });
 
-    it('removeChannelMember', (done) => {
-        TestHelper.initBasic(Client).then(async () => {
-            const store = configureStore();
-            const user = await TestHelper.basicClient.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
+    it('leaveChannel', async () => {
+        await Actions.leaveChannel(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id
+        )(store.dispatch, store.getState);
 
-            store.subscribe(() => {
-                const profilesInChannel = store.getState().entities.users.profilesInChannel;
-                const profilesNotInChannel = store.getState().entities.users.profilesNotInChannel;
-                const removeRequest = store.getState().requests.channels.removeChannelMember;
+        const leaveRequest = store.getState().requests.channels.leaveChannel;
+        if (leaveRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(leaveRequest.error));
+        }
 
-                if (removeRequest.status === RequestStatus.SUCCESS) {
-                    const channel = profilesInChannel[TestHelper.basicChannel.id];
-                    const notChannel = profilesNotInChannel[TestHelper.basicChannel.id];
-                    assert.ok(channel);
-                    assert.ok(notChannel);
-                    assert.ok(notChannel.has(user.id));
-                    assert.ifError(channel.has(user.id));
-                    done();
-                } else if (removeRequest.status === RequestStatus.FAILURE) {
-                    done(new Error(JSON.stringify(removeRequest.error)));
-                }
-            });
+        const {channels, myMembers} = store.getState().entities.channels;
+        assert.ifError(channels[TestHelper.basicChannel.id]);
+        assert.ifError(myMembers[TestHelper.basicChannel.id]);
+    });
 
-            await Actions.addChannelMember(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id,
-                user.id
-            )(store.dispatch, store.getState);
+    it('joinChannel', async () => {
+        await Actions.joinChannel(
+            TestHelper.basicUser.id,
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id
+        )(store.dispatch, store.getState);
 
-            Actions.removeChannelMember(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id,
-                user.id
-            )(store.dispatch, store.getState);
-        });
+        const joinRequest = store.getState().requests.channels.joinChannel;
+        if (joinRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(joinRequest.error));
+        }
+
+        const {channels, myMembers} = store.getState().entities.channels;
+        assert.ok(channels[TestHelper.basicChannel.id]);
+        assert.ok(myMembers[TestHelper.basicChannel.id]);
+    });
+
+    it('joinChannelByName', async () => {
+        const secondClient = TestHelper.createClient();
+        const user = await TestHelper.basicClient.createUserWithInvite(
+            TestHelper.fakeUser(),
+            null,
+            null,
+            TestHelper.basicTeam.invite_id
+        );
+        await secondClient.login(user.email, 'password1');
+
+        secondChannel = await secondClient.createChannel(
+            TestHelper.fakeChannel(TestHelper.basicTeam.id));
+
+        await Actions.joinChannel(
+            TestHelper.basicUser.id,
+            TestHelper.basicTeam.id,
+            null,
+            secondChannel.name
+        )(store.dispatch, store.getState);
+
+        const joinRequest = store.getState().requests.channels.joinChannel;
+        if (joinRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(joinRequest.error));
+        }
+
+        const {channels, myMembers} = store.getState().entities.channels;
+        assert.ok(channels[secondChannel.id]);
+        assert.ok(myMembers[secondChannel.id]);
+    });
+
+    it('deleteChannel', async () => {
+        await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
+        await Actions.deleteChannel(
+            TestHelper.basicTeam.id,
+            secondChannel.id
+        )(store.dispatch, store.getState);
+
+        const deleteRequest = store.getState().requests.channels.deleteChannel;
+        if (deleteRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(deleteRequest.error));
+        }
+
+        const {channels, myMembers} = store.getState().entities.channels;
+        assert.ifError(channels[secondChannel.id]);
+        assert.ifError(myMembers[secondChannel.id]);
+    });
+
+    it('updateLastViewedAt', async () => {
+        await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
+        let members = store.getState().entities.channels.myMembers;
+        let member = members[TestHelper.basicChannel.id];
+        assert.ok(member);
+        const lastViewed = member.last_viewed_at;
+
+        await Actions.updateLastViewedAt(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id, true)(store.dispatch, store.getState);
+
+        const updateRequest = store.getState().requests.channels.updateLastViewedAt;
+        if (updateRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(updateRequest.error));
+        }
+
+        members = store.getState().entities.channels.myMembers;
+        member = members[TestHelper.basicChannel.id];
+        assert.ok(member.last_viewed_at > lastViewed);
+    });
+
+    it('getMoreChannels', async () => {
+        const userClient = TestHelper.createClient();
+        const user = await TestHelper.basicClient.createUserWithInvite(
+            TestHelper.fakeUser(),
+            null,
+            null,
+            TestHelper.basicTeam.invite_id
+        );
+        await userClient.login(user.email, 'password1');
+
+        const userChannel = await userClient.createChannel(
+            TestHelper.fakeChannel(TestHelper.basicTeam.id)
+        );
+
+        await Actions.getMoreChannels(TestHelper.basicTeam.id, 0)(store.dispatch, store.getState);
+
+        const moreRequest = store.getState().requests.channels.getMoreChannels;
+        if (moreRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(moreRequest.error));
+        }
+
+        const {channels, myMembers} = store.getState().entities.channels;
+        const channel = channels[userChannel.id];
+
+        assert.ok(channel);
+        assert.ifError(myMembers[channel.id]);
+    });
+
+    it('getChannelStats', async () => {
+        await Actions.getChannelStats(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id
+        )(store.dispatch, store.getState);
+
+        const statsRequest = store.getState().requests.channels.getChannelStats;
+        if (statsRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(statsRequest.error));
+        }
+
+        const {stats} = store.getState().entities.channels;
+        const stat = stats[TestHelper.basicChannel.id];
+        assert.ok(stat);
+        assert.equal(stat.member_count, 1);
+    });
+
+    it('addChannelMember', async () => {
+        const user = await TestHelper.basicClient.createUserWithInvite(
+            TestHelper.fakeUser(),
+            null,
+            null,
+            TestHelper.basicTeam.invite_id
+        );
+
+        await Actions.addChannelMember(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id,
+            user.id
+        )(store.dispatch, store.getState);
+
+        const addRequest = store.getState().requests.channels.addChannelMember;
+        if (addRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(addRequest.error));
+        }
+
+        const {profilesInChannel, profilesNotInChannel} = store.getState().entities.users;
+        const channel = profilesInChannel[TestHelper.basicChannel.id];
+        const notChannel = profilesNotInChannel[TestHelper.basicChannel.id];
+        assert.ok(channel);
+        assert.ok(notChannel);
+        assert.ok(channel.has(user.id));
+        assert.ifError(notChannel.has(user.id));
+    });
+
+    it('removeChannelMember', async () => {
+        const user = await TestHelper.basicClient.createUserWithInvite(
+            TestHelper.fakeUser(),
+            null,
+            null,
+            TestHelper.basicTeam.invite_id
+        );
+
+        await Actions.addChannelMember(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id,
+            user.id
+        )(store.dispatch, store.getState);
+
+        await Actions.removeChannelMember(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id,
+            user.id
+        )(store.dispatch, store.getState);
+
+        const removeRequest = store.getState().requests.channels.removeChannelMember;
+        if (removeRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(removeRequest.error));
+        }
+
+        const {profilesInChannel, profilesNotInChannel} = store.getState().entities.users;
+        const channel = profilesInChannel[TestHelper.basicChannel.id];
+        const notChannel = profilesNotInChannel[TestHelper.basicChannel.id];
+        assert.ok(channel);
+        assert.ok(notChannel);
+        assert.ok(notChannel.has(user.id));
+        assert.ifError(channel.has(user.id));
     });
 });
