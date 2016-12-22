@@ -5,7 +5,7 @@ const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
 const HEADER_CONTENT_TYPE = 'Content-Type';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
-const HEADER_TOKEN = 'token';
+const HEADER_TOKEN = 'Token';
 
 const CONTENT_TYPE_JSON = 'application/json';
 
@@ -201,13 +201,13 @@ export default class Client {
             token
         };
 
-        const {response, data} = await this.doFetchWithResponse(
+        const {headers, data} = await this.doFetchWithResponse(
             `${this.getUsersRoute()}/login`,
             {method: 'post', body: JSON.stringify(body)}
         );
 
-        if (response.headers.has(HEADER_TOKEN)) {
-            this.token = response.headers.get(HEADER_TOKEN);
+        if (headers.has(HEADER_TOKEN)) {
+            this.token = headers.get(HEADER_TOKEN);
         }
 
         return data;
@@ -638,6 +638,7 @@ export default class Client {
         if (response.ok) {
             return {
                 response,
+                headers,
                 data
             };
         }
