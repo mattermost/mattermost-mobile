@@ -30,7 +30,7 @@ export default class SelectTeam extends Component {
     componentWillReceiveProps(nextProps) {
         if (this.props.teamsRequest.status === RequestStatus.STARTED &&
             nextProps.teamsRequest.status === RequestStatus.SUCCESS) {
-            const firstTeam = Object.values(nextProps.teams)[0];
+            const firstTeam = Object.values(nextProps.teams).sort((t) => t.name && t.name.trim().toLowerCase())[0];
             if (firstTeam) {
                 this.onSelectTeam(firstTeam);
             }
