@@ -27,6 +27,16 @@ export default class SelectTeam extends Component {
         this.props.actions.fetchTeams();
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.teamsRequest.status === RequestStatus.STARTED &&
+            nextProps.teamsRequest.status === RequestStatus.SUCCESS) {
+            const firstTeam = Object.values(nextProps.teams).sort((t) => t.name && t.name.trim().toLowerCase())[0];
+            if (firstTeam) {
+                this.onSelectTeam(firstTeam);
+            }
+        }
+    }
+
     onSelectTeam(team) {
         this.props.actions.selectTeam(team);
         this.props.actions.goToChannelView();
