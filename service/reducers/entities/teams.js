@@ -9,6 +9,8 @@ function currentId(state = '', action) {
     case TeamsTypes.SELECT_TEAM:
         return action.data;
 
+    case UsersTypes.LOGOUT_SUCCESS:
+        return '';
     default:
         return state;
     }

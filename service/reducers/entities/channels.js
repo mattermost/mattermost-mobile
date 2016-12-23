@@ -6,7 +6,7 @@ import {combineReducers} from 'redux';
 
 function currentId(state = '', action) {
     switch (action.type) {
-    case ChannelTypes.SELECTED_CHANNEL:
+    case ChannelTypes.SELECT_CHANNEL:
         return action.data;
     case UsersTypes.LOGOUT_SUCCESS:
         return '';

@@ -25,6 +25,15 @@ describe('Actions.Channels', () => {
         await TestHelper.basicClient.logout();
     });
 
+    it('selectChannel', async () => {
+        const channelId = TestHelper.generateId();
+
+        await Actions.selectChannel(channelId)(store.dispatch, store.getState);
+
+        const state = store.getState();
+        assert.equal(state.entities.channels.currentId, channelId);
+    });
+
     it('createChannel', async () => {
         const channel = {
             team_id: TestHelper.basicTeam.id,

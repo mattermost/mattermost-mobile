@@ -60,7 +60,7 @@ const ChannelTypes = keyMirror({
     REMOVE_CHANNEL_MEMBER_SUCCESS: null,
     REMOVE_CHANNEL_MEMBER_FAILURE: null,
 
-    SELECTED_CHANNEL: null,
+    SELECT_CHANNEL: null,
     LEAVE_CHANNEL: null,
     RECEIVED_CHANNEL: null,
     RECEIVED_CHANNELS: null,
