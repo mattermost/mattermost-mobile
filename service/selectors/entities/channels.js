@@ -3,7 +3,7 @@
 
 import {createSelector} from 'reselect';
 
-import {getCurrentTeamId} from 'service/selectors/entities/team';
+import {getCurrentTeamId} from 'service/selectors/entities/teams';
 
 function getAllChannels(state) {
     return state.entities.channels.channels;

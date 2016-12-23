@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from 'service/selectors/entities/preferences';
-import {getUser} from 'service/selectors/entities/user';
+import {getUser} from 'service/selectors/entities/users';
 
 import Post from './post';
 

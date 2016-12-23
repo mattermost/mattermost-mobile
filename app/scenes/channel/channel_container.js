@@ -8,7 +8,7 @@ import {loadChannelsIfNecessary, selectInitialChannel} from 'app/actions/views/c
 
 import {getChannelsOnCurrentTeam, getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentTeam} from 'service/selectors/entities/team';
+import {getCurrentTeam} from 'service/selectors/entities/teams';
 
 import Channel from './channel.js';
 
