@@ -26,9 +26,6 @@ describe('Actions.Channels', () => {
     });
 
     it('selectChannel', async () => {
-        await TestHelper.initBasic(Client);
-        const store = configureStore();
-
         const channelId = TestHelper.generateId();
 
         await Actions.selectChannel(channelId)(store.dispatch, store.getState);

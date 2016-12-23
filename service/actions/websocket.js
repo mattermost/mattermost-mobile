@@ -233,7 +233,7 @@ function handleLeaveTeamEvent(msg, dispatch, getState) {
                     data: ''
                 },
                 {
-                    type: ChannelTypes.SELECTED_CHANNEL,
+                    type: ChannelTypes.SELECT_CHANNEL,
                     data: ''
                 }
             ]), getState);
@@ -314,7 +314,7 @@ function handleChannelDeletedEvent(msg, dispatch, getState) {
                 channelId = channel[0];
             }
 
-            dispatch({type: ChannelTypes.SELECTED_CHANNEL, data: channelId}, getState);
+            dispatch({type: ChannelTypes.SELECT_CHANNEL, data: channelId}, getState);
         }
 
         fetchMyChannelsAndMembers(teams.currentId)(dispatch, getState);
