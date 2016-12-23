@@ -10,7 +10,6 @@ import Post from './post';
 
 function mapStateToProps(state, ownProps) {
     return {
-        ...ownProps,
         user: getUser(state, ownProps.post.user_id),
         post: ownProps.post,
         theme: getTheme(state)

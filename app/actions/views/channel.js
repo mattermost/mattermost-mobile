@@ -3,7 +3,6 @@
 
 import {fetchMyChannelsAndMembers, selectChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
-import {getProfilesByIds} from 'service/actions/users';
 import {Constants} from 'service/constants';
 
 export function loadChannelsIfNecessary(teamId) {
@@ -30,18 +29,7 @@ export function loadPostsIfNecessary(channel) {
         const postsInChannel = getState().entities.posts.postsByChannel[channel.id];
 
         if (!postsInChannel) {
-            const posts = await getPosts(channel.team_id, channel.id)(dispatch, getState);
-
-            const userIds = new Set();
-
-            const state = getState();
-            for (const post of Object.values(posts.posts)) {
-                if (!state.entities.users.profiles[post.user_id]) {
-                    userIds.add(post.user_id);
-                }
-            }
-
-            await getProfilesByIds(Array.from(userIds))(dispatch, getState);
+            await getPosts(channel.team_id, channel.id)(dispatch, getState);
         }
     };
 }
@@ -59,8 +47,3 @@ export function selectInitialChannel(teamId) {
         }
     };
 }
-
-export default {
-    loadChannelsIfNecessary,
-    selectInitialChannel
-};
