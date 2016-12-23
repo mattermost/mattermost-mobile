@@ -15,7 +15,7 @@ import Client from 'service/client';
 export function selectChannel(channelId) {
     return async (dispatch, getState) => {
         dispatch({
-            type: ChannelTypes.SELECTED_CHANNEL,
+            type: ChannelTypes.SELECT_CHANNEL,
             data: channelId
         }, getState);
     };

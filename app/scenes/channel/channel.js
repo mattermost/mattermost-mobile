@@ -2,21 +2,24 @@
 // See License.txt for license information.
 
 import React from 'react';
-
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-
-import Drawer from 'react-native-drawer';
-import ChannelSidebar from 'app/components/channel_sidebar';
-import Loading from 'app/components/loading';
-import RightSidebarMenu from 'app/components/right_sidebar_menu';
 import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
+import Drawer from 'react-native-drawer';
+
+import ChannelSidebar from 'app/components/channel_sidebar';
+import RightSidebarMenu from 'app/components/right_sidebar_menu';
+
+import ChannelPostList from './components/channel_post_list';
 
 export default class Channel extends React.Component {
     static propTypes = {
-        actions: React.PropTypes.object.isRequired,
-        currentTeam: React.PropTypes.object,
+        actions: React.PropTypes.shape({
+            loadChannelsIfNecessary: React.PropTypes.func.isRequired,
+            selectInitialChannel: React.PropTypes.func.isRequired
+        }).isRequired,
+        currentTeam: React.PropTypes.object.isRequired,
         currentChannel: React.PropTypes.object,
-        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+        channels: React.PropTypes.array,
         theme: React.PropTypes.object.isRequired
     };
 
@@ -32,12 +35,16 @@ export default class Channel extends React.Component {
     }
 
     componentWillMount() {
-        this.props.actions.fetchMyChannelsAndMembers(this.props.currentTeam.id);
+        this.props.actions.loadChannelsIfNecessary(this.props.currentTeam.id).then(() => {
+            return this.props.actions.selectInitialChannel(this.props.currentTeam.id);
+        });
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.currentTeam && nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
-            this.props.actions.fetchMyChannelsAndMembers(nextProps.currentTeam.id);
+        if (this.props.currentTeam.id !== nextProps.currentTeam.id) {
+            this.props.actions.loadChannelsIfNecessary(nextProps.currentTeam.id).then(() => {
+                this.props.actions.selectInitialChannel(nextProps.currentTeam.id);
+            });
         }
     }
 
@@ -59,14 +66,16 @@ export default class Channel extends React.Component {
 
     render() {
         const {
-            currentChannel,
             currentTeam,
+            currentChannel,
             channels,
             theme
         } = this.props;
 
-        if (!currentChannel) {
-            return <Loading/>;
+        if (!currentTeam) {
+            return <Text>{'Waiting on team'}</Text>;
+        } else if (!currentChannel) {
+            return <Text>{'Waiting on channel'}</Text>;
         }
 
         return (
@@ -109,10 +118,7 @@ export default class Channel extends React.Component {
                                 <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>
                             </TouchableHighlight>
                         </View>
-                        <View style={{flex: 1}}>
-                            <Text style={{color: theme.centerChannelColor}}>{currentTeam.id + ' - ' + currentTeam.name}</Text>
-                            <Text style={{color: theme.centerChannelColor}}>{currentChannel.id + ' - ' + currentChannel.name}</Text>
-                        </View>
+                        <ChannelPostList channel={currentChannel}/>
                     </Drawer>
                 </Drawer>
             </View>

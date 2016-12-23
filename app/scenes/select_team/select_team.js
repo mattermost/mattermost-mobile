@@ -38,8 +38,9 @@ export default class SelectTeam extends Component {
     }
 
     onSelectTeam(team) {
-        this.props.actions.selectTeam(team);
-        this.props.actions.goToChannelView();
+        this.props.actions.selectTeam(team).then(() => {
+            this.props.actions.goToChannelView();
+        });
     }
 
     render() {

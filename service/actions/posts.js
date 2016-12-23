@@ -128,7 +128,7 @@ export function getPosts(teamId, channelId, offset = 0, limit = Constants.POST_C
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_FAILURE, error}, getState);
-            return;
+            return null;
         }
 
         dispatch(batchActions([
@@ -141,6 +141,8 @@ export function getPosts(teamId, channelId, offset = 0, limit = Constants.POST_C
                 type: PostsTypes.GET_POSTS_SUCCESS
             }
         ]), getState);
+
+        return posts;
     };
 }
 

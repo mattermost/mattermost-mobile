@@ -20,6 +20,7 @@ const Constants = {
     DM_CHANNEL: 'D',
 
     POST_DELETED: 'DELETED',
+    SYSTEM_MESSAGE_PREFIX: 'system_',
 
     CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show'
 };

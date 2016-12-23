@@ -5,17 +5,19 @@ import React from 'react';
 
 import {Text, View} from 'react-native';
 
-export default class ChannelSidebar extends React.Component {
+class ChannelSidebar extends React.Component {
     static propTypes = {
+        actions: React.PropTypes.shape({
+            selectChannel: React.PropTypes.func.isRequired
+        }).isRequired,
         currentTeam: React.PropTypes.object.isRequired,
-        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-        onSelectChannel: React.PropTypes.func
+        channels: React.PropTypes.arrayOf(React.PropTypes.object).isRequired
     };
 
     onSelectChannel = (channel) => {
         console.log('clicked channel ' + channel.name); // eslint-disable-line no-console
 
-        // this.props.onSelectChannel(channel);
+        this.props.actions.selectChannel(channel.id);
     }
 
     render() {
@@ -45,3 +47,22 @@ export default class ChannelSidebar extends React.Component {
         );
     }
 }
+
+import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
+
+import {selectChannel} from 'service/actions/channels';
+
+function mapStateToProps(state, ownProps) {
+    return ownProps;
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            selectChannel
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChannelSidebar);
