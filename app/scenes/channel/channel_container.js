@@ -9,7 +9,7 @@ import {
     loadProfilesAndTeamMembersForDMSidebar,
     selectInitialChannel
 } from 'app/actions/views/channel';
-import {openChannelSidebar} from 'app/actions/views/drawer';
+import {openChannelDrawer} from 'app/actions/views/drawer';
 
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -32,7 +32,7 @@ function mapDispatchToProps(dispatch) {
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
             selectInitialChannel,
-            openChannelSidebar
+            openChannelDrawer
         }, dispatch)
     };
 }

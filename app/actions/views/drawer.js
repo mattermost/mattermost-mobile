@@ -3,14 +3,14 @@
 
 import {ViewTypes} from 'app/constants';
 
-export function openChannelSidebar() {
+export function openChannelDrawer() {
     return async (dispatch, getState) => {
-        dispatch({type: ViewTypes.TOGGLE_CHANNEL_SIDEBAR, data: true}, getState);
+        dispatch({type: ViewTypes.TOGGLE_CHANNEL_DRAWER, data: true}, getState);
     };
 }
 
-export function closeChannelSidebar() {
+export function closeChannelDrawer() {
     return async (dispatch, getState) => {
-        dispatch({type: ViewTypes.TOGGLE_CHANNEL_SIDEBAR, data: false}, getState);
+        dispatch({type: ViewTypes.TOGGLE_CHANNEL_DRAWER, data: false}, getState);
     };
 }

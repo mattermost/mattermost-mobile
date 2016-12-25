@@ -13,14 +13,14 @@ export default class ChannelList extends React.Component {
         preferences: React.PropTypes.object.isRequired,
         theme: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func,
-        closeChannelSidebar: React.PropTypes.func
+        closeChannelDrawer: React.PropTypes.func
     };
 
     onSelectChannel = (channel) => {
         console.log('clicked channel ' + channel.name); // eslint-disable-line no-console
 
         this.props.onSelectChannel(channel.id);
-        this.props.closeChannelSidebar();
+        this.props.closeChannelDrawer();
     }
 
     render() {

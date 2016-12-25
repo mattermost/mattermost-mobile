@@ -17,9 +17,9 @@ export default class Channel extends React.Component {
             loadChannelsIfNecessary: React.PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
-            openChannelSidebar: React.PropTypes.func.isRequired
+            openChannelDrawer: React.PropTypes.func.isRequired
         }).isRequired,
-        currentTeam: React.PropTypes.object.isRequired,
+        currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired
     };
@@ -41,7 +41,7 @@ export default class Channel extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.currentTeam.id !== nextProps.currentTeam.id) {
+        if (nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
             const teamId = nextProps.currentTeam.id;
             this.loadChannels(teamId);
         }
@@ -94,7 +94,7 @@ export default class Channel extends React.Component {
                     >
                         <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
                             <TouchableHighlight
-                                onPress={this.props.actions.openChannelSidebar}
+                                onPress={this.props.actions.openChannelDrawer}
                                 style={{height: 50, width: 50}}
                             >
                                 <Text style={{color: theme.sidebarHeaderTextColor}}>{'<'}</Text>

@@ -6,8 +6,8 @@ import {connect} from 'react-redux';
 
 import {selectChannel} from 'service/actions/channels';
 import {getChannelsByCategory} from 'service/selectors/entities/channels';
-import {closeChannelSidebar} from 'app/actions/views/drawer';
-import ChannelSidebar from './channel_drawer';
+import {closeChannelDrawer} from 'app/actions/views/drawer';
+import ChannelDrawer from './channel_drawer';
 
 function mapStateToProps(state, ownProps) {
     const isOpen = state.views.sidebar.channel;
@@ -24,9 +24,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             selectChannel,
-            closeChannelSidebar
+            closeChannelDrawer
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelSidebar);
+export default connect(mapStateToProps, mapDispatchToProps)(ChannelDrawer);

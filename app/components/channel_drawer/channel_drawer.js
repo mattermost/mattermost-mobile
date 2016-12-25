@@ -7,12 +7,12 @@ import PureRenderMixin from 'react-addons-pure-render-mixin';
 import Drawer from 'react-native-drawer';
 import ChannelList from './channel_list';
 
-export default class ChannelSidebar extends React.Component {
+export default class ChannelDrawer extends React.Component {
     static propTypes = {
         children: React.PropTypes.element.isRequired,
         actions: React.PropTypes.shape({
             selectChannel: React.PropTypes.func.isRequired,
-            closeChannelSidebar: React.PropTypes.func.isRequired
+            closeChannelDrawer: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannelId: React.PropTypes.string,
@@ -50,7 +50,7 @@ export default class ChannelSidebar extends React.Component {
                 ref={(ref) => {
                     this.drawer = ref;
                 }}
-                onClose={this.props.actions.closeChannelSidebar}
+                onClose={this.props.actions.closeChannelDrawer}
                 drawerType='displace'
                 openDrawerOffset={100}
                 closedDrawerOffset={0}
@@ -73,7 +73,7 @@ export default class ChannelSidebar extends React.Component {
                         preferences={preferences}
                         theme={theme}
                         onSelectChannel={this.props.actions.selectChannel}
-                        closeChannelSidebar={this.props.actions.closeChannelSidebar}
+                        closeChannelDrawer={this.props.actions.closeChannelDrawer}
                     />
                     }
             >

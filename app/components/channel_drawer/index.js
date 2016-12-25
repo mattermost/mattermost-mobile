@@ -1,6 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import ChannelSidebarContainer from './channel_drawer_container';
+import ChannelDrawerContainer from './channel_drawer_container';
 
-export default ChannelSidebarContainer;
+export default ChannelDrawerContainer;
