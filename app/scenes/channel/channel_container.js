@@ -4,9 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {loadChannelsIfNecessary, selectInitialChannel} from 'app/actions/views/channel';
+import {
+    loadChannelsIfNecessary,
+    loadProfilesAndTeamMembersForDMSidebar,
+    selectInitialChannel
+} from 'app/actions/views/channel';
+import {openChannelSidebar} from 'app/actions/views/drawer';
 
-import {getChannelsOnCurrentTeam, getCurrentChannel} from 'service/selectors/entities/channels';
+import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
@@ -17,7 +22,6 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         currentTeam: getCurrentTeam(state),
         currentChannel: getCurrentChannel(state),
-        channels: getChannelsOnCurrentTeam(state),
         theme: getTheme(state)
     };
 }
@@ -26,7 +30,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadChannelsIfNecessary,
-            selectInitialChannel
+            loadProfilesAndTeamMembersForDMSidebar,
+            selectInitialChannel,
+            openChannelSidebar
         }, dispatch)
     };
 }

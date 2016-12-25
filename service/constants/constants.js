@@ -18,11 +18,17 @@ const Constants = {
 
     DEFAULT_CHANNEL: 'town-square',
     DM_CHANNEL: 'D',
+    OPEN_CHANNEL: 'O',
+    PRIVATE_CHANNEL: 'P',
 
     POST_DELETED: 'DELETED',
     SYSTEM_MESSAGE_PREFIX: 'system_',
 
-    CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show'
+    CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
+    CATEGORY_DISPLAY_SETTINGS: 'display_settings',
+    CATEGORY_FAVORITE_CHANNEL: 'favorite_channel',
+    DISPLAY_PREFER_NICKNAME: 'nickname_full_name',
+    DISPLAY_PREFER_FULL_NAME: 'full_name'
 };
 
 export default Constants;

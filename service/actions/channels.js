@@ -274,6 +274,33 @@ export function fetchMyChannelsAndMembers(teamId) {
     };
 }
 
+export function getMyChannelMembers(teamId) {
+    return async (dispatch, getState) => {
+        dispatch({type: ChannelTypes.CHANNEL_MEMBERS_REQUEST}, getState);
+
+        let channelMembers;
+        try {
+            const channelMembersRequest = Client.getMyChannelMembers(teamId);
+
+            channelMembers = await channelMembersRequest;
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: ChannelTypes.CHANNEL_MEMBERS_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS,
+                data: channelMembers
+            },
+            {
+                type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
+            }
+        ]), getState);
+    };
+}
+
 export function leaveChannel(teamId, channelId) {
     return async (dispatch, getState) => {
         dispatch({type: ChannelTypes.LEAVE_CHANNEL_REQUEST}, getState);
@@ -514,6 +541,7 @@ export default {
     updateChannelNotifyProps,
     getChannel,
     fetchMyChannelsAndMembers,
+    getMyChannelMembers,
     leaveChannel,
     joinChannel,
     deleteChannel,

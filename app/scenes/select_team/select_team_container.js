@@ -4,7 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import * as teamActions from 'service/actions/teams';
+import {selectTeam} from 'service/actions/teams';
+import {init as websocket} from 'service/actions/websocket';
 import {goToChannelView} from 'app/actions/navigation';
 
 import SelectTeamView from './select_team.js';
@@ -21,8 +22,9 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            ...teamActions,
-            goToChannelView
+            goToChannelView,
+            selectTeam,
+            websocket
         }, dispatch)
     };
 }

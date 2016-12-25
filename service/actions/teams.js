@@ -5,6 +5,31 @@ import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {Constants, TeamsTypes} from 'service/constants';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
+import {getProfilesByIds, getStatusesByIds} from './users';
+
+async function getProfilesAndStatusesForMembers(userIds, dispatch, getState) {
+    const {profiles, statuses} = getState().entities.users;
+    const profilesToLoad = [];
+    const statusesToLoad = [];
+
+    userIds.forEach((userId) => {
+        if (!profiles[userId]) {
+            profilesToLoad.push(userId);
+        }
+
+        if (!statuses[userId]) {
+            statusesToLoad.push(userId);
+        }
+    });
+
+    if (profilesToLoad.length) {
+        await getProfilesByIds(profilesToLoad)(dispatch, getState);
+    }
+
+    if (statusesToLoad.length) {
+        await getStatusesByIds(statusesToLoad)(dispatch, getState);
+    }
+}
 
 export function selectTeam(team) {
     return async (dispatch, getState) => {
@@ -101,6 +126,7 @@ export function getTeamMember(teamId, userId) {
         let member;
         try {
             member = await Client.getTeamMember(teamId, userId);
+            getProfilesAndStatusesForMembers([userId], dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: TeamsTypes.TEAM_MEMBERS_FAILURE, error}, getState);
@@ -120,14 +146,28 @@ export function getTeamMember(teamId, userId) {
 }
 
 export function getTeamMembersByIds(teamId, userIds) {
-    return bindClientFunc(
-        Client.getTeamMemberByIds,
-        TeamsTypes.TEAM_MEMBERS_REQUEST,
-        [TeamsTypes.RECEIVED_MEMBERS_IN_TEAM, TeamsTypes.TEAM_MEMBERS_SUCCESS],
-        TeamsTypes.TEAM_MEMBERS_FAILURE,
-        teamId,
-        userIds
-    );
+    return async (dispatch, getState) => {
+        dispatch({type: TeamsTypes.TEAM_MEMBERS_REQUEST}, getState);
+
+        let members;
+        try {
+            members = await Client.getTeamMemberByIds(teamId, userIds);
+            getProfilesAndStatusesForMembers(userIds, dispatch, getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: TeamsTypes.TEAM_MEMBERS_FAILURE}, getState);
+        }
+
+        dispatch(batchActions([
+            {
+                type: TeamsTypes.RECEIVED_MEMBERS_IN_TEAM,
+                data: members
+            },
+            {
+                type: TeamsTypes.TEAM_MEMBERS_SUCCESS
+            }
+        ]), getState);
+    };
 }
 
 export function getTeamStats(teamId) {

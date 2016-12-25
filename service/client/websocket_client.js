@@ -5,16 +5,7 @@ const MAX_WEBSOCKET_FAILS = 7;
 const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
 const MAX_WEBSOCKET_RETRY_TIME = 300000; // 5 mins
 
-/* eslint-disable global-require, no-process-env */
-
 let Socket;
-if (process.env.NODE_ENV === 'test') {
-    Socket = require('ws');
-} else {
-    Socket = WebSocket;
-}
-
-/* eslint-enable global-require, no-process-env */
 
 class WebSocketClient {
     constructor() {
@@ -31,7 +22,7 @@ class WebSocketClient {
         this.getState = null;
     }
 
-    initialize(connectionUrl = this.connectionUrl, token, dispatch, getState) {
+    initialize(connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
         return new Promise((resolve, reject) => {
             if (this.conn) {
                 resolve();
@@ -54,6 +45,7 @@ class WebSocketClient {
                 console.log('websocket connecting to ' + connectionUrl); //eslint-disable-line no-console
             }
 
+            Socket = webSocketConnector;
             this.conn = new Socket(connectionUrl);
             this.connectionUrl = connectionUrl;
             this.dispatch = dispatch;
