@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {Platform, BackAndroid} from 'react-native';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 
 import Drawer from 'react-native-drawer';
@@ -26,6 +27,19 @@ export default class ChannelDrawer extends React.Component {
         super(props);
 
         this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
+        this.handleBackButton = this.handleBackButton.bind(this);
+    }
+
+    componentDidMount() {
+        if (Platform.OS === 'android') {
+            BackAndroid.addEventListener('hardwareBackPress', this.handleBackButton);
+        }
+    }
+
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            BackAndroid.removeEventListener('hardwareBackPress', this.handleBackButton);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -34,6 +48,14 @@ export default class ChannelDrawer extends React.Component {
         } else if (this.props.isOpen && !nextProps.isOpen) {
             this.drawer.close();
         }
+    }
+
+    handleBackButton() {
+        if (this.props.isOpen) {
+            this.props.actions.closeChannelDrawer();
+            return true;
+        }
+        return false;
     }
 
     render() {
