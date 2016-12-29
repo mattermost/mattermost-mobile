@@ -486,10 +486,15 @@ export default class Client {
         );
     };
 
-    updateLastViewedAt = async (teamId, channelId, active) => {
+    viewChannel = async (teamId, channelId, prevChannelId = '') => {
+        const data = {
+            channel_id: channelId,
+            prev_channel_id: prevChannelId
+        };
+
         return this.doFetch(
-            `${this.getChannelNeededRoute(teamId, channelId)}/update_last_viewed_at`,
-            {method: 'post', body: JSON.stringify({active})}
+            `${this.getChannelsRoute(teamId)}/view`,
+            {method: 'post', body: JSON.stringify(data)}
         );
     };
 
