@@ -3,7 +3,6 @@
 
 import {createSelector} from 'reselect';
 import {getCurrentTeamId} from 'service/selectors/entities/teams';
-import {Constants} from 'service/constants';
 import {buildDisplayableChannelList} from 'service/utils/channel_utils';
 
 function getAllChannels(state) {

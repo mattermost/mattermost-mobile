@@ -18,7 +18,7 @@ export default class ChannelDrawer extends React.Component {
         currentTeam: React.PropTypes.object,
         currentChannelId: React.PropTypes.string,
         channels: React.PropTypes.object,
-        preferences: React.PropTypes.object,
+        channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired,
         isOpen: React.PropTypes.bool.isRequired
     };
@@ -63,7 +63,7 @@ export default class ChannelDrawer extends React.Component {
             currentChannelId,
             currentTeam,
             channels,
-            preferences,
+            channelMembers,
             theme
         } = this.props;
 
@@ -73,26 +73,20 @@ export default class ChannelDrawer extends React.Component {
                     this.drawer = ref;
                 }}
                 onClose={this.props.actions.closeChannelDrawer}
-                drawerType='displace'
-                openDrawerOffset={100}
+                type='displace'
+                openDrawerOffset={0.2}
                 closedDrawerOffset={0}
                 panOpenMask={0.1}
-                panCloseMask={0.9}
-                relativeDrag={false}
-                panThreshold={0.25}
-                tweenHandlerOn={false}
-                tweenDuration={350}
-                tweenEasing='linear'
-                acceptTap={false}
+                panCloseMask={0.2}
+                panThreshold={0.2}
                 acceptPan={true}
                 tapToClose={true}
-                negotiatePan={false}
                 content={
                     <ChannelList
                         currentTeam={currentTeam}
                         currentChannelId={currentChannelId}
                         channels={channels}
-                        preferences={preferences}
+                        channelMembers={channelMembers}
                         theme={theme}
                         onSelectChannel={this.props.actions.selectChannel}
                         closeChannelDrawer={this.props.actions.closeChannelDrawer}

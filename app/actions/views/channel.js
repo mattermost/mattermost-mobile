@@ -7,6 +7,7 @@ import {getTeamMembersByIds} from 'service/actions/teams';
 import {Constants, UsersTypes} from 'service/constants';
 import {getChannelByName, getDirectChannelName} from 'service/utils/channel_utils';
 import {getPreferencesByCategory} from 'service/utils/preference_utils';
+import {batchActions} from 'redux-batched-actions';
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
@@ -52,16 +53,21 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 
         await getTeamMembersByIds(teamId, membersToLoad)(dispatch, getState);
 
+        const actions = [];
         for (let i = 0; i < members.length; i++) {
             const channelName = getDirectChannelName(currentUserId, members[i]);
             const channel = getChannelByName(channels, channelName);
             if (channel) {
-                dispatch({
+                actions.push({
                     type: UsersTypes.RECEIVED_PROFILE_IN_CHANNEL,
                     data: {user_id: members[i]},
                     id: channel.id
-                }, getState);
+                });
             }
+        }
+
+        if (actions.length) {
+            dispatch(batchActions(actions), getState);
         }
     };
 }
@@ -71,7 +77,11 @@ export function loadPostsIfNecessary(channel) {
         const postsInChannel = getState().entities.posts.postsByChannel[channel.id];
 
         if (!postsInChannel) {
-            await getPosts(channel.team_id, channel.id)(dispatch, getState);
+            let teamId = channel.team_id;
+            if (!teamId) {
+                teamId = getState().entities.teams.currentId;
+            }
+            await getPosts(teamId, channel.id)(dispatch, getState);
         }
     };
 }

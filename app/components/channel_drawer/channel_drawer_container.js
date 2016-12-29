@@ -10,12 +10,12 @@ import {closeChannelDrawer} from 'app/actions/views/drawer';
 import ChannelDrawer from './channel_drawer';
 
 function mapStateToProps(state, ownProps) {
-    const isOpen = state.views.sidebar.channel;
-    const preferences = state.entities.preferences.myPreferences;
+    const isOpen = state.views.drawer.channel;
+    const channelMembers = state.entities.channels.myMembers;
     return {
         ...ownProps,
-        preferences,
         channels: getChannelsByCategory(state),
+        channelMembers,
         isOpen
     };
 }

@@ -40,7 +40,7 @@ export default class SelectTeam extends Component {
 
     selectFirstTeam(allTeams, myMembers) {
         const teams = Object.keys(myMembers).map((key) => allTeams[key]);
-        const firstTeam = Object.values(teams).sort((t) => t.name && t.name.trim().toLowerCase())[0];
+        const firstTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
         if (firstTeam) {
             this.onSelectTeam(firstTeam);
         }

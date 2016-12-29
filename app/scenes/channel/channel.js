@@ -4,9 +4,10 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 
-import ChannelSidebar from 'app/components/channel_drawer';
+import ChannelDrawer from 'app/components/channel_drawer';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
 import ChannelPostList from './components/channel_post_list';
@@ -78,7 +79,7 @@ export default class Channel extends React.Component {
         return (
             <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
                 <StatusBar barStyle='default'/>
-                <ChannelSidebar
+                <ChannelDrawer
                     currentTeam={currentTeam}
                     currentChannelId={currentChannel.id}
                     theme={theme}
@@ -92,13 +93,24 @@ export default class Channel extends React.Component {
                         onCloseStart={this.closeRightSidebar}
                         openDrawerOffset={0.2}
                     >
-                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
-                            <TouchableHighlight
-                                onPress={this.props.actions.openChannelDrawer}
-                                style={{height: 50, width: 50}}
-                            >
-                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'<'}</Text>
-                            </TouchableHighlight>
+                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'flex-start', marginTop: 20}}>
+                            <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                                <TouchableHighlight
+                                    onPress={this.props.actions.openChannelDrawer}
+                                    style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
+                                >
+                                    <Icon
+                                        name='bars'
+                                        size={25}
+                                        color={theme.sidebarHeaderTextColor}
+                                    />
+                                </TouchableHighlight>
+                            </View>
+                            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
+                                <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
+                                    {currentChannel.display_name}
+                                </Text>
+                            </View>
                             <TouchableHighlight
                                 onPress={this.openRightSidebar}
                                 style={{height: 50, width: 50}}
@@ -108,7 +120,7 @@ export default class Channel extends React.Component {
                         </View>
                         <ChannelPostList channel={currentChannel}/>
                     </Drawer>
-                </ChannelSidebar>
+                </ChannelDrawer>
             </View>
         );
     }

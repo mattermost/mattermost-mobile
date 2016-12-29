@@ -116,7 +116,7 @@ function isDirectChannelForUser(userId, otherUserId, channel) {
     return channel.type === Constants.DM_CHANNEL && getUserIdFromChannelName(userId, channel) === otherUserId;
 }
 
-function getUserIdFromChannelName(userId, channel) {
+export function getUserIdFromChannelName(userId, channel) {
     const ids = channel.name.split('__');
     let otherUserId = '';
     if (ids[0] === userId) {

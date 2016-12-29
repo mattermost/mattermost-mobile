@@ -21,8 +21,8 @@ export function login(loginId, password, mfaToken = '') {
 
                 teamMembers = await teamMembersRequest;
                 preferences = await preferencesRequest;
-            } catch (err) {
-                dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+            } catch (error) {
+                dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
                 return;
             }
 
@@ -30,7 +30,7 @@ export function login(loginId, password, mfaToken = '') {
                 await fetchTeams()(dispatch, getState);
             } catch (error) {
                 forceLogoutIfNecessary(error, dispatch);
-                dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+                dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
                 return;
             }
 
@@ -52,8 +52,8 @@ export function login(loginId, password, mfaToken = '') {
                 }
             ]), getState);
         }).
-        catch((err) => {
-            dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+        catch((error) => {
+            dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
             return;
         });
     };

@@ -15,13 +15,27 @@ import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
+import {Constants} from 'service/constants';
+import {displayUsername} from 'service/utils/user_utils';
+import {getUserIdFromChannelName} from 'service/utils/channel_utils';
+
 import Channel from './channel.js';
 
 function mapStateToProps(state, ownProps) {
+    const channel = getCurrentChannel(state);
+    const currentChannel = {...channel};
+    const {currentId: currentUserId, profiles} = state.entities.users;
+    const {myPreferences} = state.entities.preferences;
+
+    if (channel && channel.type === Constants.DM_CHANNEL) {
+        const otherUserId = getUserIdFromChannelName(currentUserId, currentChannel);
+        currentChannel.display_name = displayUsername(profiles[otherUserId], myPreferences);
+    }
+
     return {
         ...ownProps,
         currentTeam: getCurrentTeam(state),
-        currentChannel: getCurrentChannel(state),
+        currentChannel,
         theme: getTheme(state)
     };
 }
