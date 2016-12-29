@@ -208,10 +208,9 @@ describe('Actions.Websocket', () => {
         async function test() {
             await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
 
-            await Client.updateLastViewedAt(
+            await Client.viewChannel(
                 TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id,
-                false
+                TestHelper.basicChannel.id
             );
 
             setTimeout(() => {

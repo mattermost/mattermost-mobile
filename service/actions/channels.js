@@ -366,27 +366,39 @@ export function deleteChannel(teamId, channelId) {
     };
 }
 
-export function updateLastViewedAt(teamId, channelId, active) {
+export function viewChannel(teamId, channelId, prevChannelId = '') {
     return async (dispatch, getState) => {
         dispatch({type: ChannelTypes.UPDATE_LAST_VIEWED_REQUEST}, getState);
 
         try {
             // this API should return the timestamp that was set
-            await Client.updateLastViewedAt(teamId, channelId, active);
+            await Client.viewChannel(teamId, channelId, prevChannelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: ChannelTypes.UPDATE_LAST_VIEWED_FAILURE, error}, getState);
             return;
         }
 
-        dispatch(batchActions([
-            {
+        const actions = [{
+            type: ChannelTypes.RECEIVED_LAST_VIEWED,
+            data: {
+                channel_id: channelId,
+                last_viewed_at: new Date().getTime()
+            }
+        }];
+
+        if (prevChannelId) {
+            actions.push({
                 type: ChannelTypes.RECEIVED_LAST_VIEWED,
                 data: {
-                    channel_id: channelId,
+                    channel_id: prevChannelId,
                     last_viewed_at: new Date().getTime()
                 }
-            },
+            });
+        }
+
+        dispatch(batchActions([
+            ...actions,
             {
                 type: ChannelTypes.UPDATE_LAST_VIEWED_SUCCESS
             }
@@ -505,7 +517,7 @@ export default {
     leaveChannel,
     joinChannel,
     deleteChannel,
-    updateLastViewedAt,
+    viewChannel,
     getMoreChannels,
     getChannelStats,
     addChannelMember,

@@ -257,16 +257,23 @@ describe('Actions.Channels', () => {
         assert.ifError(myMembers[secondChannel.id]);
     });
 
-    it('updateLastViewedAt', async () => {
+    it('viewChannel', async () => {
+        const userChannel = await Client.createChannel(
+            TestHelper.fakeChannel(TestHelper.basicTeam.id)
+        );
         await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
         let members = store.getState().entities.channels.myMembers;
         let member = members[TestHelper.basicChannel.id];
+        let otherMember = members[userChannel.id];
         assert.ok(member);
+        assert.ok(otherMember);
         const lastViewed = member.last_viewed_at;
 
-        await Actions.updateLastViewedAt(
+        await Actions.viewChannel(
             TestHelper.basicTeam.id,
-            TestHelper.basicChannel.id, true)(store.dispatch, store.getState);
+            TestHelper.basicChannel.id,
+            userChannel.id
+        )(store.dispatch, store.getState);
 
         const updateRequest = store.getState().requests.channels.updateLastViewedAt;
         if (updateRequest.status === RequestStatus.FAILURE) {
@@ -275,7 +282,9 @@ describe('Actions.Channels', () => {
 
         members = store.getState().entities.channels.myMembers;
         member = members[TestHelper.basicChannel.id];
+        otherMember = members[userChannel.id];
         assert.ok(member.last_viewed_at > lastViewed);
+        assert.ok(otherMember.last_viewed_at > lastViewed);
     });
 
     it('getMoreChannels', async () => {
