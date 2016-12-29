@@ -44,14 +44,21 @@ export default class ChannelList extends React.Component {
         channels: React.PropTypes.object.isRequired,
         channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired,
-        onSelectChannel: React.PropTypes.func,
-        closeChannelDrawer: React.PropTypes.func
+        onSelectChannel: React.PropTypes.func.isRequired,
+        onViewChannel: React.PropTypes.func.isRequired,
+        closeChannelDrawer: React.PropTypes.func.isRequired
     };
 
     onSelectChannel = (channel) => {
         console.log('clicked channel ' + channel.name); // eslint-disable-line no-console
 
+        const {
+            currentChannelId,
+            currentTeam
+        } = this.props;
+
         this.props.onSelectChannel(channel.id);
+        this.props.onViewChannel(currentTeam.id, channel.id, currentChannelId);
         this.props.closeChannelDrawer();
     };
 

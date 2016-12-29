@@ -72,8 +72,8 @@ function myMembers(state = {}, action) {
     case ChannelTypes.RECEIVED_LAST_VIEWED: {
         const member = {...state[action.data.channel_id]};
         member.last_viewed_at = action.data.last_viewed_at;
+        member.msg_count = action.data.total_msg_count;
         member.mention_count = 0;
-        member.msg_count = 0;
 
         return {
             ...state,

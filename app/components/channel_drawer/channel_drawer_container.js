@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectChannel} from 'service/actions/channels';
+import {selectChannel, viewChannel} from 'service/actions/channels';
 import {getChannelsByCategory} from 'service/selectors/entities/channels';
 import {closeChannelDrawer} from 'app/actions/views/drawer';
 import ChannelDrawer from './channel_drawer';
@@ -24,6 +24,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             selectChannel,
+            viewChannel,
             closeChannelDrawer
         }, dispatch)
     };

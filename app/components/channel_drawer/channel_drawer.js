@@ -13,6 +13,7 @@ export default class ChannelDrawer extends React.Component {
         children: React.PropTypes.element.isRequired,
         actions: React.PropTypes.shape({
             selectChannel: React.PropTypes.func.isRequired,
+            viewChannel: React.PropTypes.func.isRequired,
             closeChannelDrawer: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
@@ -89,6 +90,7 @@ export default class ChannelDrawer extends React.Component {
                         channelMembers={channelMembers}
                         theme={theme}
                         onSelectChannel={this.props.actions.selectChannel}
+                        onViewChannel={this.props.actions.viewChannel}
                         closeChannelDrawer={this.props.actions.closeChannelDrawer}
                     />
                     }

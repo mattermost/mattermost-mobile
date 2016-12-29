@@ -406,11 +406,14 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
             return;
         }
 
+        const {channels} = getState().entities.channels;
+
         const actions = [{
             type: ChannelTypes.RECEIVED_LAST_VIEWED,
             data: {
                 channel_id: channelId,
-                last_viewed_at: new Date().getTime()
+                last_viewed_at: new Date().getTime(),
+                total_msg_count: channels[channelId].total_msg_count
             }
         }];
 
@@ -419,7 +422,8 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
                 type: ChannelTypes.RECEIVED_LAST_VIEWED,
                 data: {
                     channel_id: prevChannelId,
-                    last_viewed_at: new Date().getTime()
+                    last_viewed_at: new Date().getTime(),
+                    total_msg_count: channels[prevChannelId].total_msg_count
                 }
             });
         }
