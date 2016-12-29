@@ -11,9 +11,10 @@ import {Constants} from 'service/constants';
 export default class ChannelItem extends React.Component {
     static propTypes = {
         channel: React.PropTypes.object.isRequired,
-        member: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
         isActive: React.PropTypes.bool.isRequired,
+        hasUnread: React.PropTypes.bool.isRequired,
+        mentions: React.PropTypes.number.isRequired,
         theme: React.PropTypes.object.isRequired
     };
 
@@ -42,26 +43,18 @@ export default class ChannelItem extends React.Component {
     render() {
         const {
             channel,
-            member,
             theme,
+            mentions,
+            hasUnread,
             isActive
         } = this.props;
 
-        const mentionsCount = member.mention_count;
-        let unreadCount = channel.total_msg_count - member.msg_count;
-
-        if (member.notify_props && member.notify_props.mark_unread === 'mention') {
-            unreadCount = 0;
-        }
-
-        const msgCount = mentionsCount + unreadCount;
-        const unread = msgCount > 0;
         let iconColor = this.changeOpacity(theme.centerChannelColor, 0.7);
         let icon;
         let activeBorder;
         let badge;
 
-        if (mentionsCount && !isActive) {
+        if (mentions && !isActive) {
             const badgeStyle = {
                 position: 'absolute',
                 top: 10,
@@ -79,7 +72,7 @@ export default class ChannelItem extends React.Component {
                 <Badge
                     style={badgeStyle}
                     countStyle={mentionStyle}
-                    count={mentionsCount}
+                    count={mentions}
                     minHeight={20}
                     minWidth={20}
                 />
@@ -108,7 +101,7 @@ export default class ChannelItem extends React.Component {
             position: 'absolute'
         };
 
-        if (unread) {
+        if (hasUnread) {
             style.fontWeight = 'bold';
             style.color = theme.sidebarUnreadText;
             style.opacity = 1;
