@@ -19,7 +19,7 @@ import {
     fetchMyChannelsAndMembers,
     getChannel,
     getChannelStats,
-    updateLastViewedAt
+    viewChannel
 } from 'service/actions/channels';
 
 import {
@@ -158,7 +158,7 @@ function handleNewPostEvent(msg, dispatch, getState) {
 
     if (post.channel_id === channels.currentId) {
         if (isActive) {
-            updateLastViewedAt(teamId, post.channel_id)(dispatch, getState);
+            viewChannel(teamId, post.channel_id)(dispatch, getState);
         } else {
             getChannel(teamId, post.channel_id)(dispatch, getState);
         }
@@ -208,7 +208,7 @@ function handlePostEdited(msg, dispatch, getState) {
 
     if (msg.broadcast.channel_id === channels.currentId && isActive) {
         // FIXME: Update post should include team_id in the message cause its not always the current team
-        // updateLastViewedAt(msg.data.team_id, data.channel_id)(dispatch, getState);
+        // viewChannel(msg.data.team_id, data.channel_id)(dispatch, getState);
     }
 }
 
