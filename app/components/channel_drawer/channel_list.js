@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {ScrollView, StyleSheet, Text, View, findNodeHandle, UIManager} from 'react-native';
+import {StyleSheet, Text, View, ListView} from 'react-native';
 import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
@@ -60,59 +60,51 @@ export default class ChannelList extends React.Component {
 
     constructor(props) {
         super(props);
-
         this.firstUnreadChannel = null;
         this.lastUnreadChannel = null;
-        this.scrollY = 0;
-        this.scrollHeight = 0;
         this.state = {
             showAbove: false,
-            showBelow: false
+            showBelow: false,
+            dataSource: new ListView.DataSource({
+                rowHasChanged: (a, b) => a !== b
+            }).cloneWithRows(props)
         };
     }
 
-    componentDidUpdate() {
-        this.updateUnreadIndicators();
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(this.buildData(nextProps))
+        });
     }
 
-    updateUnreadIndicators = () => {
+    updateUnreadIndicators = (v) => {
+        const data = this.state.dataSource._dataBlob.s1; //eslint-disable-line no-underscore-dangle
+
         if (this.firstUnreadChannel) {
-            const handle = findNodeHandle(this.refs[this.firstUnreadChannel]);
-            UIManager.measure(handle, (frameX, frameY, frameWidth, frameHeight, pageX, pageY) => {
-                if ((this.scrollY - (frameHeight / 2)) >= pageY) {
-                    this.setState({
-                        showAbove: true
-                    });
-                } else if (this.state.showAbove) {
-                    this.setState({
-                        showAbove: false
-                    });
-                }
-            });
+            const index = data.findIndex((obj) => obj.id === this.firstUnreadChannel);
+            if (v.s1[index]) {
+                this.setState({
+                    showAbove: false
+                });
+            } else if (!v.s1[index - 1]) {
+                this.setState({
+                    showAbove: true
+                });
+            }
         }
 
         if (this.lastUnreadChannel) {
-            const handle = findNodeHandle(this.refs[this.lastUnreadChannel]);
-            UIManager.measure(handle, (frameX, frameY, frameWidth, frameHeight, pageX, pageY) => {
-                if (((this.scrollY + this.scrollHeight) - (frameHeight / 2)) <= pageY) {
-                    this.setState({
-                        showBelow: true
-                    });
-                } else if (this.state.showBelow) {
-                    this.setState({
-                        showBelow: false
-                    });
-                }
-            });
+            const index = data.findIndex((obj) => obj.id === this.lastUnreadChannel);
+            if (v.s1[index]) {
+                this.setState({
+                    showBelow: false
+                });
+            } else if (!v.s1[index + 1]) {
+                this.setState({
+                    showBelow: true
+                });
+            }
         }
-    };
-
-    setScrollBounds = () => {
-        const scroll = findNodeHandle(this.refs.scrollContainer);
-        UIManager.measure(scroll, (frameX, frameY, frameWidth, frameHeight, pageX, pageY) => {
-            this.scrollHeight = frameHeight;
-            this.scrollY = pageY;
-        });
     };
 
     onSelectChannel = (channel) => {
@@ -128,24 +120,41 @@ export default class ChannelList extends React.Component {
         this.props.closeChannelDrawer();
     };
 
-    createChannelElement = (channel) => {
+    getUnreadMessages = (channel) => {
         const member = this.props.channelMembers[channel.id];
-        const mentionsCount = member.mention_count;
+        const mentions = member.mention_count;
         let unreadCount = channel.total_msg_count - member.msg_count;
 
         if (member.notify_props && member.notify_props.mark_unread === 'mention') {
             unreadCount = 0;
         }
 
-        const msgCount = mentionsCount + unreadCount;
-        const unread = msgCount > 0;
+        return {
+            mentions,
+            unreadCount
+        };
+    };
 
-        if (unread && channel.id !== this.props.currentChannelId) {
-            if (!this.firstUnreadChannel) {
-                this.firstUnreadChannel = channel.id;
+    findUnreadChannels = (data) => {
+        data.forEach((c) => {
+            if (c.id) {
+                const {mentions, unreadCount} = this.getUnreadMessages(c);
+                const unread = (mentions + unreadCount) > 0;
+
+                if (unread && c.id !== this.props.currentChannelId) {
+                    if (!this.firstUnreadChannel) {
+                        this.firstUnreadChannel = c.id;
+                    }
+                    this.lastUnreadChannel = c.id;
+                }
             }
-            this.lastUnreadChannel = channel.id;
-        }
+        });
+    };
+
+    createChannelElement = (channel) => {
+        const {mentions, unreadCount} = this.getUnreadMessages(channel);
+        const msgCount = mentions + unreadCount;
+        const unread = msgCount > 0;
 
         return (
             <ChannelItem
@@ -153,7 +162,7 @@ export default class ChannelList extends React.Component {
                 key={channel.id}
                 channel={channel}
                 hasUnread={unread}
-                mentions={mentionsCount}
+                mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
                 isActive={channel.id === this.props.currentChannelId}
                 theme={this.props.theme}
@@ -161,8 +170,84 @@ export default class ChannelList extends React.Component {
         );
     };
 
-    handleScroll = () => {
-        this.updateUnreadIndicators();
+    buildData = (props) => {
+        const data = [];
+
+        if (!props.currentChannelId) {
+            return data;
+        }
+
+        const {
+            theme
+        } = props;
+
+        const {
+            favoriteChannels,
+            publicChannels,
+            privateChannels,
+            directChannels,
+            directNonTeamChannels
+        } = props.channels;
+
+        if (favoriteChannels.length) {
+            data.push(
+                <FormattedText
+                    style={[Styles.title, {color: theme.sidebarText}]}
+                    id='sidebar.favorite'
+                    defaultMessage='FAVORITES'
+                />,
+                ...favoriteChannels
+            );
+        }
+
+        data.push(
+            <FormattedText
+                style={[Styles.title, {color: theme.sidebarText}]}
+                id='sidebar.channels'
+                defaultMessage='CHANNELS'
+            />,
+            ...publicChannels
+        );
+        data.push(
+            <FormattedText
+                style={[Styles.title, {color: theme.sidebarText}]}
+                id='sidebar.pg'
+                defaultMessage='PRIVATE GROUPS'
+            />,
+            ...privateChannels
+        );
+        data.push(
+            <FormattedText
+                style={[Styles.title, {color: theme.sidebarText}]}
+                id='sidebar.direct'
+                defaultMessage='DIRECT MESSAGES'
+            />,
+            ...directChannels
+        );
+
+        if (directNonTeamChannels.length) {
+            data.push(
+                <LineDivider
+                    color={theme.sidebarTextActiveBorder}
+                    translationId='sidebar.otherMembers'
+                    translationText='Outside this team'
+                />,
+                ...directNonTeamChannels
+            );
+        }
+
+        this.firstUnreadChannel = null;
+        this.lastUnreadChannel = null;
+        this.findUnreadChannels(data);
+
+        return data;
+    };
+
+    renderRow = (rowData, sectionId, rowId) => {
+        if (rowData && rowData.id) {
+            return this.createChannelElement(rowData, sectionId, rowId);
+        }
+        return rowData;
     };
 
     render() {
@@ -171,52 +256,8 @@ export default class ChannelList extends React.Component {
         }
 
         const {
-            favoriteChannels,
-            publicChannels,
-            privateChannels,
-            directChannels,
-            directNonTeamChannels
-        } = this.props.channels;
-
-        const {
             theme
         } = this.props;
-
-        // keep track of the first and last unread channels so we can use them to set the unread indicators
-        this.firstUnreadChannel = null;
-        this.lastUnreadChannel = null;
-
-        let favoritesTitle;
-        if (favoriteChannels.length) {
-            favoritesTitle = (
-                <FormattedText
-                    style={[Styles.title, {color: theme.sidebarText}]}
-                    id='sidebar.favorite'
-                    defaultMessage='FAVORITES'
-                />
-            );
-        }
-
-        const favoriteChannelsItems = favoriteChannels.map(this.createChannelElement);
-
-        const publicChannelsItems = publicChannels.map(this.createChannelElement);
-
-        const privateChannelsItems = privateChannels.map(this.createChannelElement);
-
-        const directChannelsItems = directChannels.map(this.createChannelElement);
-
-        const directNonTeamChannelsItems = directNonTeamChannels.map(this.createChannelElement);
-
-        let outsideTeamDivider;
-        if (directNonTeamChannels.length) {
-            outsideTeamDivider = (
-                <LineDivider
-                    color={theme.sidebarTextActiveBorder}
-                    translationId='sidebar.otherMembers'
-                    translationText='Outside this team'
-                />
-            );
-        }
 
         let above;
         let below;
@@ -260,36 +301,13 @@ export default class ChannelList extends React.Component {
                         {this.props.currentTeam.display_name}
                     </Text>
                 </View>
-                <ScrollView
+                <ListView
                     ref='scrollContainer'
-                    onScroll={this.handleScroll}
-                    scrollEventThrottle={16}
-                    onLayout={this.setScrollBounds}
                     style={Styles.scrollContainer}
-                >
-                    {favoritesTitle}
-                    {favoriteChannelsItems}
-                    <FormattedText
-                        style={[Styles.title, {color: theme.sidebarText}]}
-                        id='sidebar.channels'
-                        defaultMessage='CHANNELS'
-                    />
-                    {publicChannelsItems}
-                    <FormattedText
-                        style={[Styles.title, {color: theme.sidebarText}]}
-                        id='sidebar.pg'
-                        defaultMessage='PRIVATE GROUPS'
-                    />
-                    {privateChannelsItems}
-                    <FormattedText
-                        style={[Styles.title, {color: theme.sidebarText}]}
-                        id='sidebar.direct'
-                        defaultMessage='DIRECT MESSAGES'
-                    />
-                    {directChannelsItems}
-                    {outsideTeamDivider}
-                    {directNonTeamChannelsItems}
-                </ScrollView>
+                    dataSource={this.state.dataSource}
+                    renderRow={this.renderRow}
+                    onChangeVisibleRows={this.updateUnreadIndicators}
+                />
                 {above}
                 {below}
             </View>
