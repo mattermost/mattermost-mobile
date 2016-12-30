@@ -75,6 +75,10 @@ export default class ChannelList extends React.Component {
         this.setState({
             dataSource: this.state.dataSource.cloneWithRows(this.buildData(nextProps))
         });
+        const container = this.refs.scrollContainer;
+        if (container && container._visibleRows && container._visibleRows.s1) { //eslint-disable-line no-underscore-dangle
+            this.updateUnreadIndicators(container._visibleRows);  //eslint-disable-line no-underscore-dangle
+        }
     }
 
     updateUnreadIndicators = (v) => {
@@ -142,10 +146,11 @@ export default class ChannelList extends React.Component {
                 const unread = (mentions + unreadCount) > 0;
 
                 if (unread && c.id !== this.props.currentChannelId) {
-                    if (!this.firstUnreadChannel) {
+                    if (this.firstUnreadChannel) {
+                        this.lastUnreadChannel = c.id;
+                    } else {
                         this.firstUnreadChannel = c.id;
                     }
-                    this.lastUnreadChannel = c.id;
                 }
             }
         });
