@@ -35,6 +35,17 @@ function channels(state = {}, action) {
     case ChannelTypes.RECEIVED_CHANNEL_DELETED:
         Reflect.deleteProperty(nextState, action.data);
         return nextState;
+    case ChannelTypes.RECEIVED_LAST_VIEWED: {
+        const channelId = action.data.channel_id;
+        const lastUpdatedAt = action.data.last_viewed_at;
+        return {
+            ...state,
+            [channelId]: {
+                ...state[channelId],
+                extra_update_at: lastUpdatedAt
+            }
+        };
+    }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
 
@@ -72,8 +83,8 @@ function myMembers(state = {}, action) {
     case ChannelTypes.RECEIVED_LAST_VIEWED: {
         const member = {...state[action.data.channel_id]};
         member.last_viewed_at = action.data.last_viewed_at;
+        member.msg_count = action.data.total_msg_count;
         member.mention_count = 0;
-        member.msg_count = 0;
 
         return {
             ...state,

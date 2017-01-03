@@ -4,6 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'service/constants';
+import {fetchTeams} from 'service/actions/teams';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 export function login(loginId, password, mfaToken = '') {
@@ -20,8 +21,16 @@ export function login(loginId, password, mfaToken = '') {
 
                 teamMembers = await teamMembersRequest;
                 preferences = await preferencesRequest;
-            } catch (err) {
-                dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+            } catch (error) {
+                dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
+                return;
+            }
+
+            try {
+                await fetchTeams()(dispatch, getState);
+            } catch (error) {
+                forceLogoutIfNecessary(error, dispatch);
+                dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
                 return;
             }
 
@@ -43,10 +52,78 @@ export function login(loginId, password, mfaToken = '') {
                 }
             ]), getState);
         }).
-        catch((err) => {
-            dispatch({type: UsersTypes.LOGIN_FAILURE, error: err}, getState);
+        catch((error) => {
+            dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
             return;
         });
+    };
+}
+
+export function loadMe() {
+    return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
+
+        let user;
+        dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
+        try {
+            user = await Client.getMe();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
+            return;
+        }
+
+        let preferences;
+        dispatch({type: PreferencesTypes.MY_PREFERENCES_REQUEST}, getState);
+        try {
+            preferences = await Client.getMyPreferences();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: PreferencesTypes.MY_PREFERENCES_FAILURE, error}, getState);
+            return;
+        }
+
+        try {
+            await fetchTeams()(dispatch, getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: TeamsTypes.FETCH_TEAMS_FAILURE, error}, getState);
+            return;
+        }
+
+        let teamMembers;
+        dispatch({type: TeamsTypes.MY_TEAM_MEMBERS_REQUEST}, getState);
+        try {
+            teamMembers = await Client.getMyTeamMembers();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: TeamsTypes.MY_TEAM_MEMBERS_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch(batchActions([
+            {
+                type: UsersTypes.RECEIVED_ME,
+                data: user
+            },
+            {
+                type: UsersTypes.LOGIN_SUCCESS
+            },
+            {
+                type: PreferencesTypes.RECEIVED_PREFERENCES,
+                data: preferences
+            },
+            {
+                type: PreferencesTypes.MY_PREFERENCES_SUCCESS
+            },
+            {
+                type: TeamsTypes.RECEIVED_MY_TEAM_MEMBERS,
+                data: teamMembers
+            },
+            {
+                type: TeamsTypes.MY_TEAM_MEMBERS_SUCCESS
+            }
+        ]), getState);
     };
 }
 

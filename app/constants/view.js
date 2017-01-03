@@ -7,7 +7,9 @@ const ViewTypes = keyMirror({
     SERVER_URL_CHANGED: null,
 
     LOGIN_ID_CHANGED: null,
-    PASSWORD_CHANGED: null
+    PASSWORD_CHANGED: null,
+
+    TOGGLE_CHANNEL_DRAWER: null
 });
 
 export default ViewTypes;

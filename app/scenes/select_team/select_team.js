@@ -24,16 +24,25 @@ export default class SelectTeam extends Component {
     };
 
     componentWillMount() {
-        this.props.actions.fetchTeams();
+        this.props.actions.websocket();
+    }
+
+    componentDidMount() {
+        this.selectFirstTeam(this.props.teams, this.props.myMembers);
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.teamsRequest.status === RequestStatus.STARTED &&
             nextProps.teamsRequest.status === RequestStatus.SUCCESS) {
-            const firstTeam = Object.values(nextProps.teams).sort((t) => t.name && t.name.trim().toLowerCase())[0];
-            if (firstTeam) {
-                this.onSelectTeam(firstTeam);
-            }
+            this.selectFirstTeam(nextProps.teams, nextProps.myMembers);
+        }
+    }
+
+    selectFirstTeam(allTeams, myMembers) {
+        const teams = Object.keys(myMembers).map((key) => allTeams[key]);
+        const firstTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
+        if (firstTeam) {
+            this.onSelectTeam(firstTeam);
         }
     }
 

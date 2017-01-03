@@ -29,7 +29,7 @@ import {
 
 import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
 
-export function init(siteUrl, token) {
+export function init(siteUrl, token, optionalWebSocket) {
     return async (dispatch, getState) => {
         dispatch({type: GeneralTypes.WEBSOCKET_REQUEST}, getState);
         const config = getState().entities.general.config;
@@ -57,7 +57,7 @@ export function init(siteUrl, token) {
         websocketClient.setEventCallback(handleEvent);
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
-        return websocketClient.initialize(connUrl, authToken, dispatch, getState);
+        return websocketClient.initialize(connUrl, authToken, dispatch, getState, optionalWebSocket);
     };
 }
 

@@ -43,10 +43,8 @@ class Router extends React.Component {
                 <NavigationExperimental.Card
                     {...cardProps}
                     style={NavigationExperimental.Card.PagerStyleInterpolator.forHorizontal({
-                        ...cardProps,
-                        onNavigateBack: this.props.actions.goBack
+                        ...cardProps
                     })}
-                    onNavigateBack={this.props.actions.goBack}
                     renderScene={this.renderScene}
                     key={scene.key}
                 />

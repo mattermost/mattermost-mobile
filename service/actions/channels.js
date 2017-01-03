@@ -274,6 +274,33 @@ export function fetchMyChannelsAndMembers(teamId) {
     };
 }
 
+export function getMyChannelMembers(teamId) {
+    return async (dispatch, getState) => {
+        dispatch({type: ChannelTypes.CHANNEL_MEMBERS_REQUEST}, getState);
+
+        let channelMembers;
+        try {
+            const channelMembersRequest = Client.getMyChannelMembers(teamId);
+
+            channelMembers = await channelMembersRequest;
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: ChannelTypes.CHANNEL_MEMBERS_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS,
+                data: channelMembers
+            },
+            {
+                type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
+            }
+        ]), getState);
+    };
+}
+
 export function leaveChannel(teamId, channelId) {
     return async (dispatch, getState) => {
         dispatch({type: ChannelTypes.LEAVE_CHANNEL_REQUEST}, getState);
@@ -379,11 +406,14 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
             return;
         }
 
+        const {channels} = getState().entities.channels;
+
         const actions = [{
             type: ChannelTypes.RECEIVED_LAST_VIEWED,
             data: {
                 channel_id: channelId,
-                last_viewed_at: new Date().getTime()
+                last_viewed_at: new Date().getTime(),
+                total_msg_count: channels[channelId].total_msg_count
             }
         }];
 
@@ -392,7 +422,8 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
                 type: ChannelTypes.RECEIVED_LAST_VIEWED,
                 data: {
                     channel_id: prevChannelId,
-                    last_viewed_at: new Date().getTime()
+                    last_viewed_at: new Date().getTime(),
+                    total_msg_count: channels[prevChannelId].total_msg_count
                 }
             });
         }
@@ -514,6 +545,7 @@ export default {
     updateChannelNotifyProps,
     getChannel,
     fetchMyChannelsAndMembers,
+    getMyChannelMembers,
     leaveChannel,
     joinChannel,
     deleteChannel,

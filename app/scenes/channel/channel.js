@@ -4,9 +4,10 @@
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 
-import ChannelSidebar from 'app/components/channel_sidebar';
+import ChannelDrawer from 'app/components/channel_drawer';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
 import ChannelPostList from './components/channel_post_list';
@@ -15,11 +16,12 @@ export default class Channel extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
             loadChannelsIfNecessary: React.PropTypes.func.isRequired,
-            selectInitialChannel: React.PropTypes.func.isRequired
+            loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
+            selectInitialChannel: React.PropTypes.func.isRequired,
+            openChannelDrawer: React.PropTypes.func.isRequired
         }).isRequired,
-        currentTeam: React.PropTypes.object.isRequired,
+        currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
-        channels: React.PropTypes.array,
         theme: React.PropTypes.object.isRequired
     };
 
@@ -35,25 +37,22 @@ export default class Channel extends React.Component {
     }
 
     componentWillMount() {
-        this.props.actions.loadChannelsIfNecessary(this.props.currentTeam.id).then(() => {
-            return this.props.actions.selectInitialChannel(this.props.currentTeam.id);
-        });
+        const teamId = this.props.currentTeam.id;
+        this.loadChannels(teamId);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.currentTeam.id !== nextProps.currentTeam.id) {
-            this.props.actions.loadChannelsIfNecessary(nextProps.currentTeam.id).then(() => {
-                this.props.actions.selectInitialChannel(nextProps.currentTeam.id);
-            });
+        if (nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
+            const teamId = nextProps.currentTeam.id;
+            this.loadChannels(teamId);
         }
     }
 
-    openLeftSidebar = () => {
-        this.setState({leftSidebarOpen: true});
-    };
-
-    closeLeftSidebar = () => {
-        this.setState({leftSidebarOpen: false});
+    loadChannels = (teamId) => {
+        this.props.actions.loadChannelsIfNecessary(teamId).then(() => {
+            this.props.actions.loadProfilesAndTeamMembersForDMSidebar(teamId);
+            return this.props.actions.selectInitialChannel(teamId);
+        });
     };
 
     openRightSidebar = () => {
@@ -68,7 +67,6 @@ export default class Channel extends React.Component {
         const {
             currentTeam,
             currentChannel,
-            channels,
             theme
         } = this.props;
 
@@ -81,19 +79,10 @@ export default class Channel extends React.Component {
         return (
             <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
                 <StatusBar barStyle='default'/>
-                <Drawer
-                    open={this.state.leftSidebarOpen}
-                    type='displace'
-                    content={
-                        <ChannelSidebar
-                            currentTeam={currentTeam}
-                            channels={channels}
-                        />
-                    }
-                    side='left'
-                    tapToClose={true}
-                    onCloseStart={this.closeLeftSidebar}
-                    openDrawerOffset={0.2}
+                <ChannelDrawer
+                    currentTeam={currentTeam}
+                    currentChannelId={currentChannel.id}
+                    theme={theme}
                 >
                     <Drawer
                         open={this.state.rightSidebarOpen}
@@ -104,13 +93,24 @@ export default class Channel extends React.Component {
                         onCloseStart={this.closeRightSidebar}
                         openDrawerOffset={0.2}
                     >
-                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
-                            <TouchableHighlight
-                                onPress={this.openLeftSidebar}
-                                style={{height: 50, width: 50}}
-                            >
-                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'<'}</Text>
-                            </TouchableHighlight>
+                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'flex-start', marginTop: 20}}>
+                            <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                                <TouchableHighlight
+                                    onPress={this.props.actions.openChannelDrawer}
+                                    style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
+                                >
+                                    <Icon
+                                        name='bars'
+                                        size={25}
+                                        color={theme.sidebarHeaderTextColor}
+                                    />
+                                </TouchableHighlight>
+                            </View>
+                            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
+                                <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
+                                    {currentChannel.display_name}
+                                </Text>
+                            </View>
                             <TouchableHighlight
                                 onPress={this.openRightSidebar}
                                 style={{height: 50, width: 50}}
@@ -120,7 +120,7 @@ export default class Channel extends React.Component {
                         </View>
                         <ChannelPostList channel={currentChannel}/>
                     </Drawer>
-                </Drawer>
+                </ChannelDrawer>
             </View>
         );
     }

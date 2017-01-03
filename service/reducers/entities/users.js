@@ -188,13 +188,13 @@ export default combineReducers({
     // object where every key is a user id and has an object with the users details
     profiles,
 
-    // object where every key is a user id and has a Set with the users id that are members of the team
+    // object where every key is a team id and has a Set with the users id that are members of the team
     profilesInTeam,
 
-    // object where every key is a user id and has a Set with the users id that are members of the channel
+    // object where every key is a channel id and has a Set with the users id that are members of the channel
     profilesInChannel,
 
-    // object where every key is a user id and has a Set with the users id that are members of the channel
+    // object where every key is a channel id and has a Set with the users id that are members of the channel
     profilesNotInChannel,
 
     // object where every key is the user id and has a value with the current status of each user

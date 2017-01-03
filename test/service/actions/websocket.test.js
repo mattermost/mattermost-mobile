@@ -1,5 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
+
 import assert from 'assert';
 import * as Actions from 'service/actions/websocket';
 import * as ChannelActions from 'service/actions/channels';
@@ -15,7 +16,12 @@ describe('Actions.Websocket', () => {
     before(async () => {
         store = configureStore();
         await TestHelper.initBasic(Client);
-        return await Actions.init()(store.dispatch, store.getState);
+        const webSocketConnector = require('ws');
+        return await Actions.init(
+            null,
+            null,
+            webSocketConnector
+        )(store.dispatch, store.getState);
     });
 
     after(async () => {
