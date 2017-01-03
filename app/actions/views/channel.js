@@ -33,7 +33,7 @@ export function loadChannelsIfNecessary(teamId) {
 export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {currentId: currentUserId} = state.entities.users;
+        const currentUserId = state.entities.users.currentId;
         const {channels} = state.entities.channels;
         const {myPreferences} = state.entities.preferences;
         const {membersInTeam} = state.entities.teams;

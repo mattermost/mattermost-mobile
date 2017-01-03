@@ -24,11 +24,11 @@ import Channel from './channel.js';
 function mapStateToProps(state, ownProps) {
     const channel = getCurrentChannel(state);
     const currentChannel = {...channel};
-    const {currentId: currentUserId, profiles} = state.entities.users;
+    const {currentId, profiles} = state.entities.users;
     const {myPreferences} = state.entities.preferences;
 
     if (channel && channel.type === Constants.DM_CHANNEL) {
-        const otherUserId = getUserIdFromChannelName(currentUserId, currentChannel);
+        const otherUserId = getUserIdFromChannelName(currentId, currentChannel);
         currentChannel.display_name = displayUsername(profiles[otherUserId], myPreferences);
     }
 

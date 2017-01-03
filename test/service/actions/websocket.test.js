@@ -1,6 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
-global.WebSocket = require('ws');
+
 import assert from 'assert';
 import * as Actions from 'service/actions/websocket';
 import * as ChannelActions from 'service/actions/channels';

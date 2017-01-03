@@ -3,6 +3,8 @@
 
 import 'react-native';
 
+global.WebSocket = require('ws');
+
 // Set up a global hooks to make debugging tests less of a pain
 before(() => {
     process.on('unhandledRejection', (reason) => {

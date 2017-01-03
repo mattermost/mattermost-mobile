@@ -45,7 +45,8 @@ describe('Actions.Channels', () => {
         };
 
         await Actions.createChannel(channel, TestHelper.basicUser.id)(store.dispatch, store.getState);
-        const {createChannel: createRequest, myMembers: membersRequest} = store.getState().requests.channels;
+        const createRequest = store.getState().requests.channels.createChannel;
+        const membersRequest = store.getState().requests.channels.myMembers;
         if (createRequest.status === RequestStatus.FAILURE) {
             throw new Error(JSON.stringify(createRequest.error));
         } else if (membersRequest.status === RequestStatus.FAILURE) {
@@ -81,19 +82,19 @@ describe('Actions.Channels', () => {
         }
 
         const state = store.getState();
-        const {channels, myMembers: members} = state.entities.channels;
+        const {channels, myMembers} = state.entities.channels;
         const profiles = state.entities.users.profiles;
         const preferences = state.entities.preferences.myPreferences;
         const channelsCount = Object.keys(channels).length;
-        const membersCount = Object.keys(members).length;
+        const membersCount = Object.keys(myMembers).length;
 
         assert.ok(channels, 'channels is empty');
-        assert.ok(members, 'members is empty');
+        assert.ok(myMembers, 'members is empty');
         assert.ok(profiles[user.id], 'profiles does not have userId');
         assert.ok(Object.keys(preferences).length, 'preferences is empty');
-        assert.ok(channels[Object.keys(members)[0]], 'channels should have the member');
-        assert.ok(members[Object.keys(channels)[0]], 'members should belong to channel');
-        assert.equal(members[Object.keys(channels)[0]].user_id, TestHelper.basicUser.id);
+        assert.ok(channels[Object.keys(myMembers)[0]], 'channels should have the member');
+        assert.ok(myMembers[Object.keys(channels)[0]], 'members should belong to channel');
+        assert.equal(myMembers[Object.keys(channels)[0]].user_id, TestHelper.basicUser.id);
         assert.equal(channelsCount, membersCount);
         assert.equal(channels[Object.keys(channels)[0]].type, 'D');
         assert.equal(channelsCount, 1);
@@ -137,7 +138,8 @@ describe('Actions.Channels', () => {
     it('fetchMyChannelsAndMembers', async () => {
         await Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
 
-        const {getChannels: channelsRequest, myMembers: membersRequest} = store.getState().requests.channels;
+        const channelsRequest = store.getState().requests.channels.getChannels;
+        const membersRequest = store.getState().requests.channels.myMembers;
         if (channelsRequest.status === RequestStatus.FAILURE) {
             throw new Error(JSON.stringify(channelsRequest.error));
         } else if (membersRequest.status === RequestStatus.FAILURE) {
