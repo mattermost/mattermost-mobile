@@ -10,7 +10,7 @@ import Drawer from 'react-native-drawer';
 import ChannelDrawer from 'app/components/channel_drawer';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
-import ChannelPostList from './components/channel_post_list';
+import ChannelPostList from './channel_post_list';
 
 export default class Channel extends React.Component {
     static propTypes = {
