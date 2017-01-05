@@ -2,8 +2,10 @@
 // See License.txt for license information.
 
 import assert from 'assert';
+
+import Config from 'assets/config.json';
+
 import Client from 'service/client/client';
-import Config from 'config';
 
 const PASSWORD = 'password1';
 

@@ -1,3 +1,6 @@
+assets/override
+dist
+
 # OSX
 #
 .DS_Store
@@ -49,5 +52,3 @@ Session.vim
 .netrwhist
 *~
 tags
-
-config/config.secret.json

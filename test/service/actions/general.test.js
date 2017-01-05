@@ -3,11 +3,14 @@
 
 import assert from 'assert';
 
-import * as Actions from 'service/actions/general';
-import Config from 'config';
-import Client from 'service/client';
 import configureStore from 'app/store';
+
+import Config from 'assets/config.json';
+
+import * as Actions from 'service/actions/general';
+import Client from 'service/client';
 import {RequestStatus} from 'service/constants';
+
 import TestHelper from 'test/test_helper';
 
 describe('Actions.General', () => {

@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {Text, TextInput, Image, KeyboardAvoidingView} from 'react-native';
 
 import Button from 'app/components/button';
@@ -9,9 +10,8 @@ import FormattedText from 'app/components/formatted_text';
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
 import {GlobalStyles} from 'app/styles';
-import logo from 'app/images/logo.png';
 
-import {injectIntl, intlShape} from 'react-intl';
+import logo from 'assets/images/logo.png';
 
 import {RequestStatus} from 'service/constants';
 

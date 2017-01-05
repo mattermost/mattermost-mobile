@@ -2,17 +2,17 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {TextInput, Image, KeyboardAvoidingView} from 'react-native';
 
-import Client from 'service/client';
 import Button from 'app/components/button';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import {GlobalStyles} from 'app/styles';
-import logo from 'app/images/logo.png';
 
-import {injectIntl, intlShape} from 'react-intl';
+import logo from 'assets/images/logo.png';
 
+import Client from 'service/client';
 import RequestStatus from 'service/constants/request_status';
 
 class SelectServer extends Component {

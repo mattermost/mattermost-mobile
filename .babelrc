@@ -2,8 +2,10 @@
   "presets": [ "react-native" ],
   "plugins": [
     ["module-resolver", {
-      "root": [".", "config", "test"],
-      "alias": {}
+      "root": ["."],
+      "alias": {
+        "assets": "./dist/assets"
+      }
     }]
   ]
 }

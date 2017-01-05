@@ -3,8 +3,8 @@
 
 import 'intl';
 
-import en from './en.json';
-import es from './es.json';
+import en from 'assets/i18n/en.json';
+import es from 'assets/i18n/es.json';
 
 const DEFAULT_LOCALE = 'en';
 

@@ -3,9 +3,10 @@
 
 import assert from 'assert';
 
-import Config from 'config';
+import Config from 'assets/config.json';
+import Themes from 'assets/themes.json';
 
-import {Preferences, Themes} from 'service/constants';
+import {Preferences} from 'service/constants';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 describe('Selectors.Preferences', () => {
