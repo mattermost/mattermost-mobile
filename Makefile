@@ -12,15 +12,24 @@
 
 	touch $@
 
-config/config.secret.json:
-	@if ! [ $(shell test -f config/config.secret.json) ]; then \
-		echo "Generating default config/config.secret.json"; \
-		echo '{}' > "config/config.secret.json"; \
+BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
+OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
+dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
+
+	mkdir -p dist
+
+	@if [ -e dist/assets ] ; then \
+		rm -rf dist/assets; \
 	fi
+
+	node scripts/make-dist-assets.js
+
+.PHONY: prepare
+pre-run: .npminstall dist/assets
 
 run: run-ios
 
-run-ios: .npminstall config/config.secret.json
+run-ios: pre-run
 	@if ! [ $(shell command -v xcodebuild) ]; then \
 		echo "xcode is not installed"; \
 		exit 1; \
@@ -35,8 +44,7 @@ run-ios: .npminstall config/config.secret.json
 	npm run run-ios
 	open -a Simulator
 
-
-run-android: .npminstall config/config.secret.json
+run-android: pre-run
 	@if ! [ $(ANDROID_HOME) ]; then \
 		echo "ANDROID_HOME is not set"; \
 		exit 1; \
@@ -58,7 +66,7 @@ run-android: .npminstall config/config.secret.json
 
 	npm run run-android
 
-test: .npminstall config/config.secret.json
+test: pre-run
 	npm test
 
 check-style: .npminstall
@@ -72,6 +80,7 @@ clean:
 	npm cache clean
 	rm -rf node_modules
 	rm -f .npminstall
+	rm -rf dist
 
 post-install:
 	./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver

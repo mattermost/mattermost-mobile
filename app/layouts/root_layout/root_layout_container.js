@@ -3,9 +3,11 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import Config from 'config/index';
+
+import Config from 'assets/config.json';
 
 import {setAppState} from 'service/actions/general';
+
 import RootLayout from './root_layout';
 
 function mapStateToProps(state, ownProps) {

@@ -3,7 +3,8 @@
 
 import {combineReducers} from 'redux';
 
-import Config from 'config/index';
+import Config from 'assets/config.json';
+
 import {UsersTypes} from 'service/constants';
 
 function locale(state = Config.DefaultLocale, action) {

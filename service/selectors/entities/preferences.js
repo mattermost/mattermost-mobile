@@ -1,9 +1,10 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import Config from 'config';
+import Config from 'assets/config.json';
+import {Themes} from 'assets/themes.json';
 
-import {Preferences, Themes} from 'service/constants';
+import {Preferences} from 'service/constants';
 
 export function getTheme(state) {
     const myPreferences = state.entities.preferences.myPreferences;

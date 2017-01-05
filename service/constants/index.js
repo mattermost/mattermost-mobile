@@ -9,7 +9,6 @@ import TeamsTypes from './teams';
 import PostsTypes from './posts';
 import PreferencesTypes from './preferences';
 import RequestStatus from './request_status';
-import Themes from './themes';
 import WebsocketEvents from './websocket';
 
 const Preferences = {
@@ -27,6 +26,5 @@ export {
     PreferencesTypes,
     Preferences,
     RequestStatus,
-    Themes,
     WebsocketEvents
 };

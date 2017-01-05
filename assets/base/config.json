@@ -1,6 +1,5 @@
 {
     "DefaultServerUrl": "http://localhost:8065",
-    "MockFetchInTests": true,
     "DefaultLocale": "en",
     "DefaultTheme": "default"
 }

@@ -2,16 +2,17 @@
 // See License.txt for license information.
 
 import React, {Component, PropTypes} from 'react';
-
 import {View, Image, Text} from 'react-native';
 import Button from 'react-native-button';
-import Loading from 'app/components/loading';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import ErrorText from 'app/components/error_text';
-import {GlobalStyles} from 'app/styles';
-import logo from 'app/images/logo.png';
 import FormattedText from 'app/components/formatted_text';
+import Loading from 'app/components/loading';
+import {GlobalStyles} from 'app/styles';
+
+import logo from 'assets/images/logo.png';
+
 import {RequestStatus} from 'service/constants';
 
 export default class SelectTeam extends Component {
