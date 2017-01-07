@@ -67,7 +67,7 @@ export default class ChannelList extends React.Component {
             showBelow: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(props)
+            }).cloneWithRows(this.buildData(props))
         };
     }
 
@@ -126,13 +126,16 @@ export default class ChannelList extends React.Component {
 
     getUnreadMessages = (channel) => {
         const member = this.props.channelMembers[channel.id];
-        const mentions = member.mention_count;
-        let unreadCount = channel.total_msg_count - member.msg_count;
+        let mentions = 0;
+        let unreadCount = 0;
+        if (member) {
+            mentions = member.mention_count;
+            unreadCount = channel.total_msg_count - member.msg_count;
 
-        if (member.notify_props && member.notify_props.mark_unread === 'mention') {
-            unreadCount = 0;
+            if (member.notify_props && member.notify_props.mark_unread === 'mention') {
+                unreadCount = 0;
+            }
         }
-
         return {
             mentions,
             unreadCount
@@ -164,7 +167,6 @@ export default class ChannelList extends React.Component {
         return (
             <ChannelItem
                 ref={channel.id}
-                key={channel.id}
                 channel={channel}
                 hasUnread={unread}
                 mentions={mentions}
@@ -248,9 +250,9 @@ export default class ChannelList extends React.Component {
         return data;
     };
 
-    renderRow = (rowData, sectionId, rowId) => {
+    renderRow = (rowData) => {
         if (rowData && rowData.id) {
-            return this.createChannelElement(rowData, sectionId, rowId);
+            return this.createChannelElement(rowData);
         }
         return rowData;
     };

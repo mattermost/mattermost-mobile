@@ -51,7 +51,9 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
             membersToLoad = members.filter((m) => !membersInTeam[teamId].has(m));
         }
 
-        await getTeamMembersByIds(teamId, membersToLoad)(dispatch, getState);
+        if (membersToLoad.length) {
+            await getTeamMembersByIds(teamId, membersToLoad)(dispatch, getState);
+        }
 
         const actions = [];
         for (let i = 0; i < members.length; i++) {
