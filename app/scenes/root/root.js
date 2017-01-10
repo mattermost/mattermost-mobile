@@ -11,7 +11,9 @@ export default class Root extends React.Component {
         credentials: React.PropTypes.object,
         logoutRequest: React.PropTypes.object,
         loginRequest: React.PropTypes.object,
+        teams: React.PropTypes.object.isRequired,
         actions: React.PropTypes.shape({
+            goToChannelView: React.PropTypes.func,
             goToSelectServer: React.PropTypes.func,
             goToSelectTeam: React.PropTypes.func,
             loadStorage: React.PropTypes.func,
@@ -52,7 +54,11 @@ export default class Root extends React.Component {
             if (this.props.credentials.token && this.props.credentials.url) {
                 this.props.actions.setStoreFromLocalData(this.props.credentials).then(() => {
                     if (this.props.loginRequest.status === RequestStatus.SUCCESS) {
-                        this.props.actions.goToSelectTeam();
+                        if (this.props.teams.currentId) {
+                            this.props.actions.goToChannelView();
+                        } else {
+                            this.props.actions.goToSelectTeam();
+                        }
                     } else {
                         this.props.actions.goToSelectServer();
                     }
