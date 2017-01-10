@@ -3,11 +3,18 @@
 
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
+import {
+    KeyboardAvoidingView,
+    StatusBar,
+    Text,
+    TouchableHighlight,
+    View
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 
 import ChannelDrawer from 'app/components/channel_drawer';
+import PostTextbox from 'app/components/post_textbox';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
 import ChannelPostList from './channel_post_list';
@@ -32,7 +39,8 @@ export default class Channel extends React.Component {
 
         this.state = {
             leftSidebarOpen: false,
-            rightSidebarOpen: false
+            rightSidebarOpen: false,
+            valuetodo: ''
         };
     }
 
@@ -77,7 +85,10 @@ export default class Channel extends React.Component {
         }
 
         return (
-            <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
+            <KeyboardAvoidingView
+                behavior='padding'
+                style={{flex: 1, backgroundColor: theme.centerChannelBg}}
+            >
                 <StatusBar barStyle='default'/>
                 <ChannelDrawer
                     currentTeam={currentTeam}
@@ -119,9 +130,19 @@ export default class Channel extends React.Component {
                             </TouchableHighlight>
                         </View>
                         <ChannelPostList channel={currentChannel}/>
+                        <PostTextbox
+                            value={this.state.valuetodo}
+                            teamId={currentChannel.team_id}
+                            channelId={currentChannel.id}
+                            onChangeText={this.onChangeTextTodo}
+                        />
                     </Drawer>
                 </ChannelDrawer>
-            </View>
+            </KeyboardAvoidingView>
         );
+    }
+
+    onChangeTextTodo = (text) => {
+        this.setState({valuetodo: text});
     }
 }

@@ -2,11 +2,15 @@
 // See License.txt for license information.
 
 import React from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import Badge from './badge';
 import {TouchableHighlight, Text, View} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
+import {changeOpacity} from 'app/utils/colors';
+
 import {Constants} from 'service/constants';
+
+import Badge from './badge';
 
 export default class ChannelItem extends React.Component {
     static propTypes = {
@@ -18,28 +22,6 @@ export default class ChannelItem extends React.Component {
         theme: React.PropTypes.object.isRequired
     };
 
-    changeOpacity = (oldColor, opacity) => {
-        let color = oldColor;
-        if (color[0] === '#') {
-            color = color.slice(1);
-        }
-
-        if (color.length === 3) {
-            const tempColor = color;
-            color = '';
-
-            color += tempColor[0] + tempColor[0];
-            color += tempColor[1] + tempColor[1];
-            color += tempColor[2] + tempColor[2];
-        }
-
-        const r = parseInt(color.substring(0, 2), 16);
-        const g = parseInt(color.substring(2, 4), 16);
-        const b = parseInt(color.substring(4, 6), 16);
-
-        return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
-    };
-
     render() {
         const {
             channel,
@@ -49,7 +31,7 @@ export default class ChannelItem extends React.Component {
             isActive
         } = this.props;
 
-        let iconColor = this.changeOpacity(theme.centerChannelColor, 0.7);
+        let iconColor = changeOpacity(theme.centerChannelColor, 0.7);
         let icon;
         let activeBorder;
         let badge;
@@ -112,7 +94,7 @@ export default class ChannelItem extends React.Component {
             iconColor = theme.sidebarTextActiveColor;
             style.color = theme.sidebarTextActiveColor;
             style.opacity = 1;
-            itemStyle.backgroundColor = this.changeOpacity(theme.sidebarTextActiveColor, 0.1);
+            itemStyle.backgroundColor = changeOpacity(theme.sidebarTextActiveColor, 0.1);
 
             activeBorder = (
                 <View style={activeStyle}/>
@@ -160,7 +142,7 @@ export default class ChannelItem extends React.Component {
                     <OfflineStatus
                         width={13}
                         height={13}
-                        color={this.changeOpacity(theme.centerChannelColor, 0.7)}
+                        color={changeOpacity(theme.centerChannelColor, 0.7)}
                     />
                 );
                 break;
@@ -169,7 +151,7 @@ export default class ChannelItem extends React.Component {
 
         return (
             <TouchableHighlight
-                underlayColor={this.changeOpacity(theme.sidebarTextHoverBg, 0.3)}
+                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.3)}
                 onPress={() => this.props.onSelectChannel(channel)}
             >
                 <View style={{flex: 1}}>
