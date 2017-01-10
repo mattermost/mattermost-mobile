@@ -17,7 +17,7 @@ export default class ChannelDrawer extends React.Component {
             closeChannelDrawer: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
-        currentChannelId: React.PropTypes.string,
+        currentChannel: React.PropTypes.object,
         channels: React.PropTypes.object,
         channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired,
@@ -61,7 +61,7 @@ export default class ChannelDrawer extends React.Component {
 
     render() {
         const {
-            currentChannelId,
+            currentChannel,
             currentTeam,
             channels,
             channelMembers,
@@ -85,7 +85,7 @@ export default class ChannelDrawer extends React.Component {
                 content={
                     <ChannelList
                         currentTeam={currentTeam}
-                        currentChannelId={currentChannelId}
+                        currentChannel={currentChannel}
                         channels={channels}
                         channelMembers={channelMembers}
                         theme={theme}

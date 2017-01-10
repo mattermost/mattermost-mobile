@@ -81,7 +81,7 @@ export default class Channel extends React.Component {
                 <StatusBar barStyle='default'/>
                 <ChannelDrawer
                     currentTeam={currentTeam}
-                    currentChannelId={currentChannel.id}
+                    currentChannel={currentChannel}
                     theme={theme}
                 >
                     <Drawer

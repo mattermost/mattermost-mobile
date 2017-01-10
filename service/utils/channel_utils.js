@@ -157,7 +157,7 @@ function completeDirectChannelInfo(usersState, myPreferences, channel) {
     });
 }
 
-function buildDisplayNameAndTypeComparable(channel) {
+export function buildDisplayNameAndTypeComparable(channel) {
     return (typeToPrefixMap[channel.type] || defaultPrefix) + channel.display_name + channel.name;
 }
 

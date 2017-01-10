@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import Config from 'assets/config.json';
-import {Themes} from 'assets/themes.json';
+import Themes from 'assets/themes.json';
 
 import {Preferences} from 'service/constants';
 

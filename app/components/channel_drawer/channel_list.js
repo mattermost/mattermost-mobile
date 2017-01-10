@@ -4,6 +4,7 @@
 import React from 'react';
 
 import {StyleSheet, Text, View, ListView} from 'react-native';
+import {buildDisplayNameAndTypeComparable} from 'service/utils/channel_utils';
 import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
@@ -49,7 +50,7 @@ const Styles = StyleSheet.create({
 export default class ChannelList extends React.Component {
     static propTypes = {
         currentTeam: React.PropTypes.object.isRequired,
-        currentChannelId: React.PropTypes.string,
+        currentChannel: React.PropTypes.object,
         channels: React.PropTypes.object.isRequired,
         channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired,
@@ -67,7 +68,7 @@ export default class ChannelList extends React.Component {
             showBelow: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(props)
+            }).cloneWithRows(this.buildData(props))
         };
     }
 
@@ -81,58 +82,71 @@ export default class ChannelList extends React.Component {
         }
     }
 
-    updateUnreadIndicators = (v) => {
+    getRowIndex = (displayName) => {
         const data = this.state.dataSource._dataBlob.s1; //eslint-disable-line no-underscore-dangle
+        return data.findIndex((obj) => obj.display_name === displayName);
+    };
+
+    getAboveAndBelow = (index) => {
+        const channel = this.state.dataSource.getRowData(0, index);
+        const result = buildDisplayNameAndTypeComparable(channel).localeCompare(buildDisplayNameAndTypeComparable(this.props.currentChannel));
+        if (result < 0) {
+            return {above: true, below: false};
+        } else if (result > 0) {
+            return {above: false, below: true};
+        }
+        return {above: false, below: false};
+    };
+
+    updateUnreadIndicators = (v) => {
+        let showAbove = false;
+        let showBelow = false;
 
         if (this.firstUnreadChannel) {
-            const index = data.findIndex((obj) => obj.id === this.firstUnreadChannel);
-            if (v.s1[index]) {
-                this.setState({
-                    showAbove: false
-                });
-            } else if (!v.s1[index - 1]) {
-                this.setState({
-                    showAbove: true
-                });
+            const index = this.getRowIndex(this.firstUnreadChannel);
+            if (index >= 0 && !v.s1[index]) {
+                showAbove = this.getAboveAndBelow(index).above;
             }
         }
 
         if (this.lastUnreadChannel) {
-            const index = data.findIndex((obj) => obj.id === this.lastUnreadChannel);
-            if (v.s1[index]) {
-                this.setState({
-                    showBelow: false
-                });
-            } else if (!v.s1[index + 1]) {
-                this.setState({
-                    showBelow: true
-                });
+            const index = this.getRowIndex(this.lastUnreadChannel);
+            if (index >= 0 && !v.s1[index]) {
+                showBelow = this.getAboveAndBelow(index).below;
             }
         }
+
+        this.setState({
+            showAbove,
+            showBelow
+        });
     };
 
     onSelectChannel = (channel) => {
         console.log('clicked channel ' + channel.name); // eslint-disable-line no-console
 
         const {
-            currentChannelId,
+            currentChannel,
             currentTeam
         } = this.props;
 
         this.props.onSelectChannel(channel.id);
-        this.props.onViewChannel(currentTeam.id, channel.id, currentChannelId);
+        this.props.onViewChannel(currentTeam.id, channel.id, currentChannel.id);
         this.props.closeChannelDrawer();
     };
 
     getUnreadMessages = (channel) => {
         const member = this.props.channelMembers[channel.id];
-        const mentions = member.mention_count;
-        let unreadCount = channel.total_msg_count - member.msg_count;
+        let mentions = 0;
+        let unreadCount = 0;
+        if (member) {
+            mentions = member.mention_count;
+            unreadCount = channel.total_msg_count - member.msg_count;
 
-        if (member.notify_props && member.notify_props.mark_unread === 'mention') {
-            unreadCount = 0;
+            if (member.notify_props && member.notify_props.mark_unread === 'mention') {
+                unreadCount = 0;
+            }
         }
-
         return {
             mentions,
             unreadCount
@@ -145,12 +159,11 @@ export default class ChannelList extends React.Component {
                 const {mentions, unreadCount} = this.getUnreadMessages(c);
                 const unread = (mentions + unreadCount) > 0;
 
-                if (unread && c.id !== this.props.currentChannelId) {
-                    if (this.firstUnreadChannel) {
-                        this.lastUnreadChannel = c.id;
-                    } else {
-                        this.firstUnreadChannel = c.id;
+                if (unread && c.id !== this.props.currentChannel.id) {
+                    if (!this.firstUnreadChannel) {
+                        this.firstUnreadChannel = c.display_name;
                     }
+                    this.lastUnreadChannel = c.display_name;
                 }
             }
         });
@@ -164,12 +177,11 @@ export default class ChannelList extends React.Component {
         return (
             <ChannelItem
                 ref={channel.id}
-                key={channel.id}
                 channel={channel}
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
-                isActive={channel.id === this.props.currentChannelId}
+                isActive={channel.id === this.props.currentChannel.id}
                 theme={this.props.theme}
             />
         );
@@ -178,7 +190,7 @@ export default class ChannelList extends React.Component {
     buildData = (props) => {
         const data = [];
 
-        if (!props.currentChannelId) {
+        if (!props.currentChannel) {
             return data;
         }
 
@@ -248,15 +260,15 @@ export default class ChannelList extends React.Component {
         return data;
     };
 
-    renderRow = (rowData, sectionId, rowId) => {
+    renderRow = (rowData) => {
         if (rowData && rowData.id) {
-            return this.createChannelElement(rowData, sectionId, rowId);
+            return this.createChannelElement(rowData);
         }
         return rowData;
     };
 
     render() {
-        if (!this.props.currentChannelId) {
+        if (!this.props.currentChannel) {
             return <Text>{'Loading'}</Text>;
         }
 
