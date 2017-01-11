@@ -6,17 +6,15 @@ import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {
     KeyboardAvoidingView,
     StatusBar,
-    Text,
-    TouchableHighlight,
-    View
+    Text
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 
 import ChannelDrawer from 'app/components/channel_drawer';
 import PostTextbox from 'app/components/post_textbox';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
+import ChannelHeader from './channel_header';
 import ChannelPostList from './channel_post_list';
 
 export default class Channel extends React.Component {
@@ -104,31 +102,11 @@ export default class Channel extends React.Component {
                         onCloseStart={this.closeRightSidebar}
                         openDrawerOffset={0.2}
                     >
-                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'flex-start', marginTop: 20}}>
-                            <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-                                <TouchableHighlight
-                                    onPress={this.props.actions.openChannelDrawer}
-                                    style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
-                                >
-                                    <Icon
-                                        name='bars'
-                                        size={25}
-                                        color={theme.sidebarHeaderTextColor}
-                                    />
-                                </TouchableHighlight>
-                            </View>
-                            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
-                                <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
-                                    {currentChannel.display_name}
-                                </Text>
-                            </View>
-                            <TouchableHighlight
-                                onPress={this.openRightSidebar}
-                                style={{height: 50, width: 50}}
-                            >
-                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>
-                            </TouchableHighlight>
-                        </View>
+                        <ChannelHeader
+                            currentChannel={currentChannel}
+                            openLeftSidebar={this.props.actions.openChannelDrawer}
+                            openRightSidebar={this.openRightSidebar}
+                        />
                         <ChannelPostList channel={currentChannel}/>
                         <PostTextbox
                             value={this.state.valuetodo}
