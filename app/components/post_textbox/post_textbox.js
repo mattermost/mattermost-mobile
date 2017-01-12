@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {TouchableHighlight, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -13,7 +12,7 @@ import {changeOpacity} from 'app/utils/colors';
 
 const MAX_CONTENT_HEIGHT = 100;
 
-export default class PostTextbox extends React.Component {
+export default class PostTextbox extends React.PureComponent {
     static propTypes = {
         currentUserId: React.PropTypes.string.isRequired,
         teamId: React.PropTypes.string.isRequired,
@@ -33,8 +32,6 @@ export default class PostTextbox extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
 
         this.state = {
             contentHeight: 0

@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {
     Text,
     TouchableHighlight,
@@ -10,18 +9,12 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-export default class ChannelHeader extends React.Component {
+export default class ChannelHeader extends React.PureComponent {
     static propTypes = {
         displayName: React.PropTypes.string.isRequired,
         theme: React.PropTypes.object.isRequired,
         openLeftDrawer: React.PropTypes.func.isRequired,
         openRightDrawer: React.PropTypes.func.isRequired
-    }
-
-    constructor(props) {
-        super(props);
-
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
     }
 
     render() {

@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {
     KeyboardAvoidingView,
     StatusBar,
@@ -17,7 +16,7 @@ import RightSidebarMenu from 'app/components/right_sidebar_menu';
 import ChannelHeader from './channel_header';
 import ChannelPostList from './channel_post_list';
 
-export default class Channel extends React.Component {
+export default class Channel extends React.PureComponent {
     static propTypes = {
         actions: React.PropTypes.shape({
             loadChannelsIfNecessary: React.PropTypes.func.isRequired,
@@ -34,8 +33,6 @@ export default class Channel extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
 
         this.state = {
             leftSidebarOpen: false,
