@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
+import {StatusBar, Text, TouchableHighlight, TouchableOpacity, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 
@@ -107,16 +107,31 @@ export default class Channel extends React.Component {
                                 </TouchableHighlight>
                             </View>
                             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
-                                <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
-                                    {currentChannel.display_name}
-                                </Text>
+                                <TouchableOpacity style={{flexDirection: 'row'}} onPress={() => true}>
+                                    <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
+                                        {currentChannel.display_name}
+                                    </Text>
+                                    <Icon
+                                        name='chevron-down'
+                                        size={16}
+                                        color={theme.sidebarHeaderTextColor}
+                                        style={{marginLeft: 10}}
+                                    />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableHighlight
-                                onPress={this.openRightSidebar}
-                                style={{height: 50, width: 50}}
-                            >
-                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>
-                            </TouchableHighlight>
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <TouchableHighlight
+                                    onPress={this.openRightSidebar}
+                                    style={{height: 50, width: 50, alignItems: 'center', justifyContent: 'center'}}
+                                >
+                                    <Icon
+                                        name='ellipsis-v'
+                                        size={16}
+                                        color={theme.sidebarHeaderTextColor}
+                                        style={{marginRight: 10}}
+                                    />
+                                </TouchableHighlight>
+                            </View>
                         </View>
                         <ChannelPostList channel={currentChannel}/>
                     </Drawer>
