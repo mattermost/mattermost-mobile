@@ -11,6 +11,7 @@ import ChannelDrawer from 'app/components/channel_drawer';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
 import ChannelPostList from './components/channel_post_list';
+import ChannelDropdown from './components/channel_dropdown';
 
 export default class Channel extends React.Component {
     static propTypes = {
@@ -32,7 +33,8 @@ export default class Channel extends React.Component {
 
         this.state = {
             leftSidebarOpen: false,
-            rightSidebarOpen: false
+            rightSidebarOpen: false,
+            channelDropdownVisible: true
         };
     }
 
@@ -133,6 +135,7 @@ export default class Channel extends React.Component {
                                 </TouchableHighlight>
                             </View>
                         </View>
+                        <ChannelDropdown visible={this.state.channelDropdownVisible}/>
                         <ChannelPostList channel={currentChannel}/>
                     </Drawer>
                 </ChannelDrawer>
