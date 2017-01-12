@@ -14,8 +14,8 @@ export default class ChannelHeader extends React.Component {
     static propTypes = {
         displayName: React.PropTypes.string.isRequired,
         theme: React.PropTypes.object.isRequired,
-        openLeftSidebar: React.PropTypes.func.isRequired,
-        openRightSidebar: React.PropTypes.func.isRequired
+        openLeftDrawer: React.PropTypes.func.isRequired,
+        openRightDrawer: React.PropTypes.func.isRequired
     }
 
     constructor(props) {
@@ -34,7 +34,7 @@ export default class ChannelHeader extends React.Component {
             <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'flex-start', marginTop: 20}}>
                 <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
                     <TouchableHighlight
-                        onPress={this.props.openLeftSidebar}
+                        onPress={this.props.openLeftDrawer}
                         style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
                     >
                         <Icon
@@ -50,7 +50,7 @@ export default class ChannelHeader extends React.Component {
                     </Text>
                 </View>
                 <TouchableHighlight
-                    onPress={this.props.openRightSidebar}
+                    onPress={this.props.openRightDrawer}
                     style={{height: 50, width: 50}}
                 >
                     <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>

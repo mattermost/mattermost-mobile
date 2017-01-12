@@ -7,7 +7,8 @@ import {connect} from 'react-redux';
 import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar,
-    selectInitialChannel
+    selectInitialChannel,
+    handlePostDraftChanged
 } from 'app/actions/views/channel';
 import {openChannelDrawer} from 'app/actions/views/drawer';
 
@@ -20,6 +21,7 @@ import Channel from './channel';
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
+        ...state.views.channel,
         currentTeam: getCurrentTeam(state),
         currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
@@ -32,7 +34,8 @@ function mapDispatchToProps(dispatch) {
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
             selectInitialChannel,
-            openChannelDrawer
+            openChannelDrawer,
+            handlePostDraftChanged
         }, dispatch)
     };
 }

@@ -23,10 +23,12 @@ export default class Channel extends React.Component {
             loadChannelsIfNecessary: React.PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
-            openChannelDrawer: React.PropTypes.func.isRequired
+            openChannelDrawer: React.PropTypes.func.isRequired,
+            handlePostDraftChanged: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
+        postDraft: React.PropTypes.string.isRequired,
         theme: React.PropTypes.object.isRequired
     };
 
@@ -37,8 +39,7 @@ export default class Channel extends React.Component {
 
         this.state = {
             leftSidebarOpen: false,
-            rightSidebarOpen: false,
-            valuetodo: ''
+            rightSidebarOpen: false
         };
     }
 
@@ -62,12 +63,18 @@ export default class Channel extends React.Component {
     };
 
     openRightSidebar = () => {
+        this.refs.postTextbox.getWrappedInstance().blur();
         this.setState({rightSidebarOpen: true});
     };
 
     closeRightSidebar = () => {
         this.setState({rightSidebarOpen: false});
     };
+
+    openChannelDrawer = () => {
+        this.refs.postTextbox.getWrappedInstance().blur();
+        this.props.actions.openChannelDrawer();
+    }
 
     render() {
         const {
@@ -104,23 +111,21 @@ export default class Channel extends React.Component {
                     >
                         <ChannelHeader
                             currentChannel={currentChannel}
-                            openLeftSidebar={this.props.actions.openChannelDrawer}
-                            openRightSidebar={this.openRightSidebar}
+                            openLeftDrawer={this.openChannelDrawer}
+                            openRightDrawer={this.openRightSidebar}
                         />
                         <ChannelPostList channel={currentChannel}/>
+                        <Text value={this.props.postDraft}/>
                         <PostTextbox
-                            value={this.state.valuetodo}
+                            ref='postTextbox'
+                            value={this.props.postDraft}
                             teamId={currentChannel.team_id}
                             channelId={currentChannel.id}
-                            onChangeText={this.onChangeTextTodo}
+                            onChangeText={this.props.actions.handlePostDraftChanged}
                         />
                     </Drawer>
                 </ChannelDrawer>
             </KeyboardAvoidingView>
         );
-    }
-
-    onChangeTextTodo = (text) => {
-        this.setState({valuetodo: text});
     }
 }

@@ -3,17 +3,17 @@
 
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
-import {injectIntl, intlShape} from 'react-intl';
-import {TextInput, TouchableHighlight, View} from 'react-native';
+import {TouchableHighlight, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity} from 'app/utils/colors';
 
 // import PaperClipIcon from './components/paper_clip_icon.js';
 
 const MAX_CONTENT_HEIGHT = 100;
 
-class PostTextbox extends React.Component {
+export default class PostTextbox extends React.Component {
     static propTypes = {
         currentUserId: React.PropTypes.string.isRequired,
         teamId: React.PropTypes.string.isRequired,
@@ -24,8 +24,7 @@ class PostTextbox extends React.Component {
         theme: React.PropTypes.object.isRequired,
         actions: React.PropTypes.shape({
             createPost: React.PropTypes.func.isRequired
-        }).isRequired,
-        intl: intlShape.isRequired
+        }).isRequired
     };
 
     static defaultProps = {
@@ -40,6 +39,10 @@ class PostTextbox extends React.Component {
         this.state = {
             contentHeight: 0
         };
+    }
+
+    blur = () => {
+        this.refs.input.getWrappedInstance().blur();
     }
 
     handleContentSizeChange = (e) => {
@@ -70,9 +73,9 @@ class PostTextbox extends React.Component {
 
         let placeholder;
         if (this.props.rootId) {
-            placeholder = this.props.intl.formatMessage({id: 'create_comment.addComment', defaultMessage: 'Add a comment...'});
+            placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
         } else {
-            placeholder = this.props.intl.formatMessage({id: 'create_post.write', defaultMessage: 'Write a message...'});
+            placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
         }
 
         return (
@@ -100,7 +103,8 @@ class PostTextbox extends React.Component {
                         />
                     </TouchableHighlight>
                     <View style={{width: 7}}/>*/}
-                    <TextInput
+                    <TextInputWithLocalizedPlaceholder
+                        ref='input'
                         value={this.props.value}
                         onChangeText={this.props.onChangeText}
                         onContentSizeChange={this.handleContentSizeChange}
@@ -142,5 +146,3 @@ class PostTextbox extends React.Component {
         );
     }
 }
-
-export default injectIntl(PostTextbox);

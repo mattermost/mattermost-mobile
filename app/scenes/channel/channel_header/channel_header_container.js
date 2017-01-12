@@ -28,6 +28,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
+        ...ownProps,
         displayName,
         theme: getTheme(state)
     };

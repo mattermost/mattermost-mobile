@@ -26,4 +26,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PostTextbox);
+export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(PostTextbox);
