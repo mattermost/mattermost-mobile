@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Drawer from 'react-native-drawer';
 
 import ChannelDrawer from 'app/components/channel_drawer';
+import ChannelModal from 'app/components/channel_modal';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
 import ChannelPostList from './components/channel_post_list';
@@ -34,7 +35,7 @@ export default class Channel extends React.Component {
         this.state = {
             leftSidebarOpen: false,
             rightSidebarOpen: false,
-            channelDropdownVisible: true
+            channelDropdownOpen: false
         };
     }
 
@@ -63,6 +64,10 @@ export default class Channel extends React.Component {
 
     closeRightSidebar = () => {
         this.setState({rightSidebarOpen: false});
+    };
+
+    toggleChannelDropdown = () => {
+        this.setState({channelDropdownOpen: !this.state.channelDropdownOpen});
     };
 
     render() {
@@ -109,7 +114,10 @@ export default class Channel extends React.Component {
                                 </TouchableHighlight>
                             </View>
                             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
-                                <TouchableOpacity style={{flexDirection: 'row'}} onPress={() => true}>
+                                <TouchableOpacity
+                                    style={{flexDirection: 'row'}}
+                                    onPress={this.toggleChannelDropdown}
+                                >
                                     <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
                                         {currentChannel.display_name}
                                     </Text>
@@ -135,10 +143,16 @@ export default class Channel extends React.Component {
                                 </TouchableHighlight>
                             </View>
                         </View>
-                        <ChannelDropdown visible={this.state.channelDropdownVisible}/>
                         <ChannelPostList channel={currentChannel}/>
                     </Drawer>
                 </ChannelDrawer>
+                <ChannelModal
+                    visible={this.state.channelDropdownOpen}
+                    theme={theme}
+                    topOffset={70}
+                >
+                    <ChannelDropdown close={this.toggleChannelDropdown}/>
+                </ChannelModal>
             </View>
         );
     }

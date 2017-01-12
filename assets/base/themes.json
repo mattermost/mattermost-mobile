@@ -21,7 +21,7 @@
         "mentionHighlightBg": "#fff2bb",
         "mentionHighlightLink": "#2f81b7",
         "codeTheme": "github",
-        "modalDropdownBg": "#000000"
+        "channelDropdownBg": "#000"
     },
     "mattermost": {
         "sidebarBg": "#fafafa",
@@ -44,7 +44,8 @@
         "buttonColor": "#FFFFFF",
         "mentionHighlightBg": "#fff2bb",
         "mentionHighlightLink": "#2f81b7",
-        "codeTheme": "github"
+        "codeTheme": "github",
+        "channelDropdownBg": "#000"
     },
     "mattermostDark": {
         "sidebarBg": "#1B2C3E",
