@@ -1,7 +1,6 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import AsyncStorage from 'react-native';
 import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {Constants, TeamsTypes} from 'service/constants';
@@ -33,15 +32,10 @@ async function getProfilesAndStatusesForMembers(userIds, dispatch, getState) {
 }
 
 export function selectTeam(team) {
-    return async (dispatch, getState) => {
-        const storageData = JSON.parse(await AsyncStorage.getItem('storage'));
-        Object.assign(storageData, {currentTeamId: team.id});
-        AsyncStorage.setItem('storage', JSON.stringify(storageData));
-        dispatch({
-            type: TeamsTypes.SELECT_TEAM,
-            data: team.id
-        }, getState);
-    };
+    return async (dispatch, getState) => dispatch({
+        type: TeamsTypes.SELECT_TEAM,
+        data: team.id
+    }, getState);
 }
 
 export function fetchTeams() {

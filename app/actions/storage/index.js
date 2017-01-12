@@ -23,15 +23,17 @@ export function loadStorage() {
     };
 }
 
-export function saveStorage() {
+export function saveStorage(data = {}) {
     return async (dispatch, getState) => {
         try {
-            const data = {
+            const clientData = {
                 token: Client.getToken(),
                 url: Client.getUrl()
             };
 
-            await AsyncStorage.setItem('storage', JSON.stringify(data));
+            const mergedStorageData = Object.assign({}, data, clientData);
+
+            await AsyncStorage.setItem('storage', JSON.stringify(mergedStorageData));
             dispatch({type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data}, getState);
         } catch (error) {
             // Error saving data

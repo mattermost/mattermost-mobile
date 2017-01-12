@@ -16,6 +16,7 @@ function mapStateToProps(state) {
         config: state.entities.general.config,
         teamsRequest: state.requests.teams.allTeams,
         teams: state.entities.teams.teams,
+        currentTeamId: state.entities.teams.currentId,
         myMembers: state.entities.teams.myMembers
     };
 }
