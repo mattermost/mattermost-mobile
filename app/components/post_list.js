@@ -28,12 +28,18 @@ export default class PostList extends React.Component {
     }
 
     renderPost(post) {
-        return <Post post={post}/>;
+        return (
+            <Post
+                style={{transform: [{rotate: '180deg'}]}}
+                post={post}
+            />
+        );
     }
 
     render() {
         return (
             <ListView
+                style={{transform: [{rotate: '180deg'}]}}
                 enableEmptySections={true}
                 dataSource={this.state.dataSource}
                 renderRow={this.renderPost}
