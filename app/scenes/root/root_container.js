@@ -6,7 +6,8 @@ import {connect} from 'react-redux';
 
 import {loadStorage, removeStorage} from 'app/actions/storage';
 import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
-import {goToSelectTeam} from 'app/actions/navigation';
+import {goToSelectTeam, goToChannelView} from 'app/actions/navigation';
+import * as teamActions from 'service/actions/teams';
 import {resetLogout} from 'service/actions/users';
 
 import Root from './root';
@@ -16,13 +17,16 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         credentials: state.entities.general.credentials,
         logoutRequest: state.requests.users.logout,
-        loginRequest: state.requests.users.login
+        loginRequest: state.requests.users.login,
+        teams: state.entities.teams.teams
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            ...teamActions,
+            goToChannelView,
             goToSelectServer,
             goToSelectTeam,
             loadStorage,
