@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import Channel from './channel/channel_container.js';
+import Channel from './channel';
 import Login from './login/login_container.js';
 import Root from './root/root_container.js';
 import Search from './search/search_container.js';

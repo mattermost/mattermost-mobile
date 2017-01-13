@@ -1,13 +1,16 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {batchActions} from 'redux-batched-actions';
+
+import {ViewTypes} from 'app/constants';
+
 import {fetchMyChannelsAndMembers, getMyChannelMembers, selectChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
 import {getTeamMembersByIds} from 'service/actions/teams';
 import {Constants, UsersTypes} from 'service/constants';
 import {getChannelByName, getDirectChannelName} from 'service/utils/channel_utils';
 import {getPreferencesByCategory} from 'service/utils/preference_utils';
-import {batchActions} from 'redux-batched-actions';
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
@@ -99,5 +102,14 @@ export function selectInitialChannel(teamId) {
                 break;
             }
         }
+    };
+}
+
+export function handlePostDraftChanged(postDraft) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: ViewTypes.POST_DRAFT_CHANGED,
+            postDraft
+        }, getState);
     };
 }

@@ -2,33 +2,37 @@
 // See License.txt for license information.
 
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
-import {StatusBar, Text, TouchableHighlight, View} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import {
+    KeyboardAvoidingView,
+    StatusBar,
+    Text
+} from 'react-native';
 import Drawer from 'react-native-drawer';
 
 import ChannelDrawer from 'app/components/channel_drawer';
+import PostTextbox from 'app/components/post_textbox';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
-import ChannelPostList from './components/channel_post_list';
+import ChannelHeader from './channel_header';
+import ChannelPostList from './channel_post_list';
 
-export default class Channel extends React.Component {
+export default class Channel extends React.PureComponent {
     static propTypes = {
         actions: React.PropTypes.shape({
             loadChannelsIfNecessary: React.PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
-            openChannelDrawer: React.PropTypes.func.isRequired
+            openChannelDrawer: React.PropTypes.func.isRequired,
+            handlePostDraftChanged: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
+        postDraft: React.PropTypes.string.isRequired,
         theme: React.PropTypes.object.isRequired
     };
 
     constructor(props) {
         super(props);
-
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
 
         this.state = {
             leftSidebarOpen: false,
@@ -56,12 +60,18 @@ export default class Channel extends React.Component {
     };
 
     openRightSidebar = () => {
+        this.refs.postTextbox.getWrappedInstance().blur();
         this.setState({rightSidebarOpen: true});
     };
 
     closeRightSidebar = () => {
         this.setState({rightSidebarOpen: false});
     };
+
+    openChannelDrawer = () => {
+        this.refs.postTextbox.getWrappedInstance().blur();
+        this.props.actions.openChannelDrawer();
+    }
 
     render() {
         const {
@@ -77,7 +87,10 @@ export default class Channel extends React.Component {
         }
 
         return (
-            <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
+            <KeyboardAvoidingView
+                behavior='padding'
+                style={{flex: 1, backgroundColor: theme.centerChannelBg}}
+            >
                 <StatusBar barStyle='default'/>
                 <ChannelDrawer
                     currentTeam={currentTeam}
@@ -93,35 +106,23 @@ export default class Channel extends React.Component {
                         onCloseStart={this.closeRightSidebar}
                         openDrawerOffset={0.2}
                     >
-                        <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'flex-start', marginTop: 20}}>
-                            <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-                                <TouchableHighlight
-                                    onPress={this.props.actions.openChannelDrawer}
-                                    style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
-                                >
-                                    <Icon
-                                        name='bars'
-                                        size={25}
-                                        color={theme.sidebarHeaderTextColor}
-                                    />
-                                </TouchableHighlight>
-                            </View>
-                            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
-                                <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
-                                    {currentChannel.display_name}
-                                </Text>
-                            </View>
-                            <TouchableHighlight
-                                onPress={this.openRightSidebar}
-                                style={{height: 50, width: 50}}
-                            >
-                                <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>
-                            </TouchableHighlight>
-                        </View>
+                        <ChannelHeader
+                            currentChannel={currentChannel}
+                            openLeftDrawer={this.openChannelDrawer}
+                            openRightDrawer={this.openRightSidebar}
+                        />
                         <ChannelPostList channel={currentChannel}/>
+                        <Text value={this.props.postDraft}/>
+                        <PostTextbox
+                            ref='postTextbox'
+                            value={this.props.postDraft}
+                            teamId={currentChannel.team_id}
+                            channelId={currentChannel.id}
+                            onChangeText={this.props.actions.handlePostDraftChanged}
+                        />
                     </Drawer>
                 </ChannelDrawer>
-            </View>
+            </KeyboardAvoidingView>
         );
     }
 }

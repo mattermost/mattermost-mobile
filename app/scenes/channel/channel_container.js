@@ -7,7 +7,8 @@ import {connect} from 'react-redux';
 import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar,
-    selectInitialChannel
+    selectInitialChannel,
+    handlePostDraftChanged
 } from 'app/actions/views/channel';
 import {openChannelDrawer} from 'app/actions/views/drawer';
 
@@ -15,27 +16,14 @@ import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
-import {Constants} from 'service/constants';
-import {displayUsername} from 'service/utils/user_utils';
-import {getUserIdFromChannelName} from 'service/utils/channel_utils';
-
-import Channel from './channel.js';
+import Channel from './channel';
 
 function mapStateToProps(state, ownProps) {
-    const channel = getCurrentChannel(state);
-    const currentChannel = {...channel};
-    const {currentId, profiles} = state.entities.users;
-    const {myPreferences} = state.entities.preferences;
-
-    if (channel && channel.type === Constants.DM_CHANNEL) {
-        const otherUserId = getUserIdFromChannelName(currentId, currentChannel);
-        currentChannel.display_name = displayUsername(profiles[otherUserId], myPreferences);
-    }
-
     return {
         ...ownProps,
+        ...state.views.channel,
         currentTeam: getCurrentTeam(state),
-        currentChannel,
+        currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
     };
 }
@@ -46,7 +34,8 @@ function mapDispatchToProps(dispatch) {
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
             selectInitialChannel,
-            openChannelDrawer
+            openChannelDrawer,
+            handlePostDraftChanged
         }, dispatch)
     };
 }

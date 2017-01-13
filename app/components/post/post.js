@@ -11,6 +11,7 @@ import {isSystemMessage} from 'service/utils/post_utils.js';
 
 export default class Post extends React.Component {
     static propTypes = {
+        style: React.PropTypes.object,
         post: React.PropTypes.object.isRequired,
         user: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired
@@ -32,7 +33,7 @@ export default class Post extends React.Component {
         }
 
         return (
-            <View>
+            <View style={this.props.style}>
                 <Text>
                     {'['}
                     <FormattedTime value={this.props.post.create_at}/>
