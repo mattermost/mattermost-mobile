@@ -5,6 +5,7 @@ import React from 'react';
 import {
     Text,
     TouchableHighlight,
+    TouchableOpacity,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -14,7 +15,8 @@ export default class ChannelHeader extends React.PureComponent {
         displayName: React.PropTypes.string.isRequired,
         theme: React.PropTypes.object.isRequired,
         openLeftDrawer: React.PropTypes.func.isRequired,
-        openRightDrawer: React.PropTypes.func.isRequired
+        openRightDrawer: React.PropTypes.func.isRequired,
+        toggleChannelDropdown: React.PropTypes.func.isRequired
     }
 
     render() {
@@ -38,16 +40,33 @@ export default class ChannelHeader extends React.PureComponent {
                     </TouchableHighlight>
                 </View>
                 <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
-                    <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
-                        {displayName}
-                    </Text>
+                    <TouchableOpacity
+                        style={{flexDirection: 'row', alignItems: 'center'}}
+                        onPress={this.props.toggleChannelDropdown}
+                    >
+                        <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
+                            {displayName}
+                        </Text>
+                        <Icon
+                            name='chevron-down'
+                            size={16}
+                            color={theme.sidebarHeaderTextColor}
+                            style={{marginLeft: 10}}
+                        />
+                    </TouchableOpacity>
                 </View>
-                <TouchableHighlight
-                    onPress={this.props.openRightDrawer}
-                    style={{height: 50, width: 50}}
-                >
-                    <Text style={{color: theme.sidebarHeaderTextColor}}>{'>'}</Text>
-                </TouchableHighlight>
+                <View style={{flexDirection: 'row'}}>
+                    <TouchableOpacity
+                        style={{height: 50, width: 50, alignItems: 'center', justifyContent: 'center'}}
+                        onPress={this.props.openRightDrawer}
+                    >
+                        <Icon
+                            name='ellipsis-v'
+                            size={16}
+                            color={theme.sidebarHeaderTextColor}
+                        />
+                    </TouchableOpacity>
+                </View>
             </View>
         );
     }
