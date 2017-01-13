@@ -12,8 +12,9 @@ export function loadStorage() {
             const data = JSON.parse(await AsyncStorage.getItem('storage'));
             const {token, url, currentTeamId} = data;
             const credentials = {token, url};
+
             dispatch(batchActions([
-                {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, credentials},
+                {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
                 {type: TeamsTypes.SELECT_TEAM, data: currentTeamId}
             ]), getState);
         } catch (error) {

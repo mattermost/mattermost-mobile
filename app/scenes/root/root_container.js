@@ -18,6 +18,7 @@ function mapStateToProps(state, ownProps) {
         credentials: state.entities.general.credentials,
         logoutRequest: state.requests.users.logout,
         loginRequest: state.requests.users.login,
+        currentTeamId: state.entities.teams.currentId,
         teams: state.entities.teams.teams
     };
 }
