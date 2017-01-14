@@ -1,18 +1,18 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component, PropTypes} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {Animated, Dimensions} from 'react-native';
 
-const AnimatedView = Animated.View;
+const {View: AnimatedView} = Animated;
 const {width: deviceWidth, height: deviceHeight} = Dimensions.get('window');
 
-export default class ChannelModal extends Component {
+export default class ChannelModal extends PureComponent {
     static propTypes = {
-        children: PropTypes.node,
-        duration: PropTypes.number,
-        topOffset: PropTypes.number,
-        theme: React.PropTypes.object.isRequired,
+        children: PropTypes.node.isRequired,
+        duration: PropTypes.number.isRequired,
+        topOffset: PropTypes.number.isRequired,
+        theme: PropTypes.object.isRequired,
         visible: PropTypes.bool.isRequired
     }
 
@@ -22,13 +22,9 @@ export default class ChannelModal extends Component {
         visible: false
     }
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            top: new Animated.Value(deviceHeight)
-        };
-    }
+    state = {
+        top: new Animated.Value(deviceHeight)
+    };
 
     componentWillReceiveProps(nextProps) {
         if (this.props.visible === nextProps.visible) {
@@ -45,7 +41,7 @@ export default class ChannelModal extends Component {
 
     render() {
         return (
-            <AnimatedView style={{flex: 1, position: 'absolute', top: this.state.top, left: 0, height: (deviceHeight - this.props.topOffset), width: deviceWidth, backgroundColor: '#000', opacity: 0.95, overflow: 'hidden'}}>
+            <AnimatedView style={{flex: 1, position: 'absolute', top: this.state.top, left: 0, height: (deviceHeight - this.props.topOffset), width: deviceWidth, backgroundColor: this.props.theme.channelDropdownBg, opacity: 0.95, overflow: 'hidden'}}>
                 {this.props.children}
             </AnimatedView>
         );
