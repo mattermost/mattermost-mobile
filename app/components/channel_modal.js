@@ -7,7 +7,7 @@ import {Animated, Dimensions} from 'react-native';
 const AnimatedView = Animated.View;
 const {width: deviceWidth, height: deviceHeight} = Dimensions.get('window');
 
-export default class ChannelModel extends Component {
+export default class ChannelModal extends Component {
     static propTypes = {
         children: PropTypes.node,
         duration: PropTypes.number,
