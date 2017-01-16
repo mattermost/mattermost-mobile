@@ -21,7 +21,7 @@ export default class SelectTeam extends Component {
         teams: PropTypes.object.isRequired,
         myMembers: PropTypes.object.isRequired,
         teamsRequest: PropTypes.object.isRequired,
-        currentTeamId: PropTypes.string,
+        currentTeam: PropTypes.object,
         actions: PropTypes.object.isRequired
     };
 
@@ -30,11 +30,11 @@ export default class SelectTeam extends Component {
     }
 
     componentDidMount() {
-        const {currentTeamId, myMembers, teams} = this.props;
+        const {currentTeam, myMembers, teams} = this.props;
 
-        if (currentTeamId && teams[currentTeamId]) {
-            this.onSelectTeam(teams[currentTeamId]);
-        } else if (!currentTeamId && !(currentTeamId in teams)) {
+        if (currentTeam) {
+            this.onSelectTeam(currentTeam);
+        } else if (!currentTeam) {
             this.selectFirstTeam(teams, myMembers);
         }
     }

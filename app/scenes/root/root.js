@@ -11,8 +11,6 @@ export default class Root extends React.Component {
         credentials: React.PropTypes.object,
         logoutRequest: React.PropTypes.object,
         loginRequest: React.PropTypes.object,
-        currentTeamId: React.PropTypes.string,
-        teams: React.PropTypes.object.isRequired,
         actions: React.PropTypes.shape({
             goToChannelView: React.PropTypes.func,
             goToSelectServer: React.PropTypes.func,
