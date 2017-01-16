@@ -5,7 +5,7 @@ import React, {Component, PropTypes} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {Text, TextInput, Image, KeyboardAvoidingView} from 'react-native';
 
-import Button from 'app/components/button';
+import Button from 'react-native-button';
 import FormattedText from 'app/components/formatted_text';
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
@@ -86,10 +86,9 @@ class Login extends Component {
         return (
             <KeyboardAvoidingView
                 behavior='padding'
-                style={GlobalStyles.container}
+                style={[GlobalStyles.container, GlobalStyles.signupContainer]}
             >
                 <Image
-                    style={GlobalStyles.logo}
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
@@ -122,13 +121,18 @@ class Login extends Component {
                     returnKeyType='go'
                     onSubmitEditing={this.signIn.bind(this)}
                 />
-                <Button onPress={this.signIn.bind(this)}>
+                <Button
+                    onPress={this.signIn.bind(this)}
+                    containerStyle={GlobalStyles.signupButton}
+                >
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'
+                        style={GlobalStyles.signupButtonText}
                     />
                 </Button>
                 <ErrorText error={this.props.loginRequest.error}/>
+                <KeyboardAvoidingView style={GlobalStyles.pagePush}/>
             </KeyboardAvoidingView>
         );
     }

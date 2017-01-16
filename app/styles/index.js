@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 /* eslint-disable
-  no-magic-numbers */
+no-magic-numbers */
 
 import {StyleSheet} from 'react-native';
 
@@ -14,17 +14,40 @@ export const GlobalStyles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'white'
     },
-    logo: {
-        marginBottom: 10
+    signupContainer: {
+        paddingRight: 15,
+        paddingLeft: 15
+    },
+    pagePush: {
+        height: 50
     },
     header: {
-        fontSize: 36,
+        marginTop: 15,
+        marginBottom: 15,
+        fontSize: 32,
         fontWeight: '600'
     },
     subheader: {
-        fontSize: 18,
+        textAlign: 'center',
+        fontSize: 16,
         fontWeight: '300',
-        color: '#777'
+        color: '#777',
+        marginBottom: 15,
+        lineHeight: 22
+    },
+    signupButton: {
+        borderRadius: 3,
+        borderColor: '#2389D7',
+        borderWidth: 1,
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        marginTop: 10,
+        padding: 15
+    },
+    signupButtonText: {
+        textAlign: 'center',
+        color: '#2389D7',
+        fontSize: 17
     },
     buttonListItemText: {
         textAlign: 'left',
@@ -57,29 +80,32 @@ export const GlobalStyles = StyleSheet.create({
     },
 
     label: {
-        paddingTop: 5,
-        paddingBottom: 5,
-        fontSize: 18
+        fontSize: 20,
+        fontWeight: '400'
     },
 
     errorLabel: {
         color: 'red',
-        margin: 5,
-        paddingTop: 5,
-        paddingBottom: 5,
-        fontSize: 11
+        marginTop: 15,
+        marginBottom: 15,
+        fontSize: 12
+    },
+
+    switchUp: {
+        padding: 0,
+        backgroundColor: 'green',
+        paddingBottom: 50,
+        alignItems: 'center'
     },
 
     inputBox: {
-        fontSize: 18,
-        height: 40,
+        fontSize: 16,
+        height: 45,
         borderColor: 'gainsboro',
         borderWidth: 1,
-        marginLeft: 15,
-        marginRight: 15,
         marginTop: 5,
         marginBottom: 5,
-        padding: 3,
+        padding: 15,
         alignSelf: 'stretch',
         borderRadius: 3
     }
