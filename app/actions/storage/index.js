@@ -2,14 +2,21 @@
 // See License.txt for license information.
 
 import {AsyncStorage} from 'react-native';
-import {GeneralTypes, UsersTypes} from 'service/constants';
+import {batchActions} from 'redux-batched-actions';
+import {GeneralTypes, TeamsTypes, UsersTypes} from 'service/constants';
 import Client from 'service/client';
 
 export function loadStorage() {
     return async (dispatch, getState) => {
         try {
             const data = JSON.parse(await AsyncStorage.getItem('storage'));
-            dispatch({type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data}, getState);
+            const {token, url, currentTeamId} = data;
+            const credentials = {token, url};
+
+            dispatch(batchActions([
+                {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
+                {type: TeamsTypes.SELECT_TEAM, data: currentTeamId}
+            ]), getState);
         } catch (error) {
             // Error loading data
             dispatch({type: GeneralTypes.REMOVED_APP_CREDENTIALS, error}, getState);
@@ -17,15 +24,17 @@ export function loadStorage() {
     };
 }
 
-export function saveStorage() {
+export function saveStorage(data = {}) {
     return async (dispatch, getState) => {
         try {
-            const data = {
+            const clientData = {
                 token: Client.getToken(),
                 url: Client.getUrl()
             };
 
-            await AsyncStorage.setItem('storage', JSON.stringify(data));
+            const mergedStorageData = Object.assign({}, data, clientData);
+
+            await AsyncStorage.setItem('storage', JSON.stringify(mergedStorageData));
             dispatch({type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data}, getState);
         } catch (error) {
             // Error saving data

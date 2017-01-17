@@ -12,6 +12,7 @@ export default class Root extends React.Component {
         logoutRequest: React.PropTypes.object,
         loginRequest: React.PropTypes.object,
         actions: React.PropTypes.shape({
+            goToChannelView: React.PropTypes.func,
             goToSelectServer: React.PropTypes.func,
             goToSelectTeam: React.PropTypes.func,
             loadStorage: React.PropTypes.func,

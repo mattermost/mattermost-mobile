@@ -32,12 +32,10 @@ async function getProfilesAndStatusesForMembers(userIds, dispatch, getState) {
 }
 
 export function selectTeam(team) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: TeamsTypes.SELECT_TEAM,
-            data: team.id
-        }, getState);
-    };
+    return async (dispatch, getState) => dispatch({
+        type: TeamsTypes.SELECT_TEAM,
+        data: team.id
+    }, getState);
 }
 
 export function fetchTeams() {

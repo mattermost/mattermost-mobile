@@ -21,6 +21,7 @@ export default class SelectTeam extends Component {
         teams: PropTypes.object.isRequired,
         myMembers: PropTypes.object.isRequired,
         teamsRequest: PropTypes.object.isRequired,
+        currentTeam: PropTypes.object,
         actions: PropTypes.object.isRequired
     };
 
@@ -29,7 +30,13 @@ export default class SelectTeam extends Component {
     }
 
     componentDidMount() {
-        this.selectFirstTeam(this.props.teams, this.props.myMembers);
+        const {currentTeam, myMembers, teams} = this.props;
+
+        if (currentTeam) {
+            this.onSelectTeam(currentTeam);
+        } else if (!currentTeam) {
+            this.selectFirstTeam(teams, myMembers);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -49,7 +56,8 @@ export default class SelectTeam extends Component {
 
     onSelectTeam(team) {
         this.props.actions.selectTeam(team).then(() => {
-            this.props.actions.goToChannelView();
+            this.props.actions.saveStorage({currentTeamId: team.id}).
+                then(this.props.actions.goToChannelView());
         });
     }
 
