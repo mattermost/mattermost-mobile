@@ -49,11 +49,6 @@ class SelectServer extends Component {
                     id='mobile.components.select_server_view.enterServerUrl'
                     defaultMessage='Enter Server URL'
                 />
-                <FormattedText
-                    style={GlobalStyles.subheader}
-                    id='mobile.components.select_server_view.enterServerUrlHelp'
-                    defaultMessage='This is the URL you use to sign in to Mattermost'
-                />
                 <TextInput
                     value={this.props.serverUrl}
                     onChangeText={this.props.actions.handleServerUrlChanged}
