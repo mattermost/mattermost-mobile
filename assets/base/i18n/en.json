@@ -1482,7 +1482,7 @@
   "members_popover.title": "Members",
   "mobile.components.channels_list_view.yourChannels": "Your channels:",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",
-  "mobile.components.select_server_view.proceed": "Proceed",
+  "mobile.components.select_server_view.continue": "Continue",
   "mobile.components.select_server_view.siteUrlPlaceholder": "https://mattermost.example.com",
   "mobile.routes.channels": "Channels",
   "mobile.routes.enterServerUrl": "Enter Server URL",
