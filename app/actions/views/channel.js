@@ -95,12 +95,13 @@ export function selectInitialChannel(teamId) {
     return async (dispatch, getState) => {
         const channels = getState().entities.channels.channels;
 
-        for (const channel of Object.values(channels)) {
-            // TODO figure out how to handle when we can't find the town square
-            if (channel.team_id === teamId && channel.name === Constants.DEFAULT_CHANNEL) {
-                await selectChannel(channel.id)(dispatch, getState);
-                break;
-            }
+        const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === Constants.DEFAULT_CHANNEL);
+        if (channel) {
+            await selectChannel(channel.id)(dispatch, getState);
+        } else {
+            // Handle case when the default channel cannot be found
+            const firstChannel = Object.values(channels)[0];
+            await selectChannel(firstChannel.id)(dispatch, getState);
         }
     };
 }
