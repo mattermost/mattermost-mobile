@@ -76,69 +76,66 @@ export default class PostTextbox extends React.PureComponent {
         }
 
         return (
-            <View>
-                <View
+            <View
+                style={{
+                    alignItems: 'flex-end',
+                    backgroundColor: theme.centerChannelBg,
+                    flexDirection: 'row',
+                    padding: 7
+                }}
+            >
+                {/*<TouchableHighlight
                     style={{
-                        alignItems: 'flex-end',
-                        backgroundColor: theme.centerChannelBg,
-                        flex: 1,
-                        flexDirection: 'row',
-                        padding: 7
+                        height: 36,
+                        padding: 9,
+                        width: 36
                     }}
                 >
-                    {/*<TouchableHighlight
+                    <PaperClipIcon
+                        width={18}
+                        height={18}
+                        color={changeOpacity(theme.centerChannelColor, 0.9)}
+                    />
+                </TouchableHighlight>
+                <View style={{width: 7}}/>*/}
+                <TextInputWithLocalizedPlaceholder
+                    ref='input'
+                    value={this.props.value}
+                    onChangeText={this.props.onChangeText}
+                    onContentSizeChange={this.handleContentSizeChange}
+                    placeholder={placeholder}
+                    onSubmitEditing={this.sendMessage}
+                    multiline={true}
+                    style={{
+                        borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+                        borderWidth: 1,
+                        color: theme.centerChannelColor,
+                        flex: 1,
+                        fontSize: 14,
+                        height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT),
+                        paddingBottom: 8,
+                        paddingLeft: 12,
+                        paddingRight: 12,
+                        paddingTop: 6
+                    }}
+                />
+                <View style={{width: 7}}/>
+                <TouchableHighlight
+                    onPress={this.sendMessage}
+                    style={{
+                        height: 36,
+                        width: 36
+                    }}
+                >
+                    <Icon
+                        name='paper-plane'
+                        size={18}
                         style={{
-                            height: 36,
-                            padding: 9,
-                            width: 36
-                        }}
-                    >
-                        <PaperClipIcon
-                            width={18}
-                            height={18}
-                            color={changeOpacity(theme.centerChannelColor, 0.9)}
-                        />
-                    </TouchableHighlight>
-                    <View style={{width: 7}}/>*/}
-                    <TextInputWithLocalizedPlaceholder
-                        ref='input'
-                        value={this.props.value}
-                        onChangeText={this.props.onChangeText}
-                        onContentSizeChange={this.handleContentSizeChange}
-                        placeholder={placeholder}
-                        onSubmitEditing={this.sendMessage}
-                        multiline={true}
-                        style={{
-                            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-                            borderWidth: 1,
-                            color: theme.centerChannelColor,
-                            flex: 1,
-                            fontSize: 14,
-                            height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT),
-                            paddingBottom: 8,
-                            paddingLeft: 12,
-                            paddingRight: 12,
-                            paddingTop: 6
+                            color: theme.linkColor,
+                            padding: 9
                         }}
                     />
-                    <View style={{width: 7}}/>
-                    <TouchableHighlight
-                        onPress={this.sendMessage}
-                        style={{
-                            height: 36,
-                            width: 36
-                        }}
-                    >
-                        <Icon
-                            name='paper-plane'
-                            size={18}
-                            style={{
-                                color: theme.linkColor,
-                                padding: 9
-                            }}
-                        />
-                    </TouchableHighlight>
-                </View>
+                </TouchableHighlight>
             </View>
         );
     }

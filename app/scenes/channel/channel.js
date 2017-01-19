@@ -112,7 +112,6 @@ export default class Channel extends React.PureComponent {
                             openRightDrawer={this.openRightSidebar}
                         />
                         <ChannelPostList channel={currentChannel}/>
-                        <Text value={this.props.postDraft}/>
                         <PostTextbox
                             ref='postTextbox'
                             value={this.props.postDraft}
