@@ -147,7 +147,7 @@ function completeDirectChannelInfo(usersState, myPreferences, channel) {
         return channel;
     }
 
-    const dmChannelClone = JSON.parse(JSON.stringify(channel));
+    const dmChannelClone = {...channel};
     const teammateId = getUserIdFromChannelName(usersState.currentId, channel);
 
     return Object.assign(dmChannelClone, {

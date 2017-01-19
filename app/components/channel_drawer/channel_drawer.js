@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Platform, BackAndroid} from 'react-native';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
+import deepEqual from 'deep-equal';
 
 import Drawer from 'react-native-drawer';
 import ChannelList from './channel_list';
@@ -27,7 +27,6 @@ export default class ChannelDrawer extends React.Component {
     constructor(props) {
         super(props);
 
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
         this.handleBackButton = this.handleBackButton.bind(this);
     }
 
@@ -41,6 +40,9 @@ export default class ChannelDrawer extends React.Component {
         if (Platform.OS === 'android') {
             BackAndroid.removeEventListener('hardwareBackPress', this.handleBackButton);
         }
+    }
+    shouldComponentUpdate(nextProps) {
+        return !deepEqual(this.props, nextProps, {strict: true});
     }
 
     componentWillReceiveProps(nextProps) {

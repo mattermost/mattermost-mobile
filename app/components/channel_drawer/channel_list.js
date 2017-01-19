@@ -9,6 +9,7 @@ import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
 import UnreadIndicator from './unread_indicator';
+import deepEqual from 'deep-equal';
 
 const Styles = StyleSheet.create({
     container: {
@@ -72,9 +73,21 @@ export default class ChannelList extends React.Component {
         };
     }
 
+    shouldComponentUpdate(nextProps) {
+        return !deepEqual(this.props, nextProps, {strict: true});
+    }
+
     componentWillReceiveProps(nextProps) {
+        let dataSource;
+        if (this.props.currentChannel.id === nextProps.currentChannel.id) {
+            dataSource = this.state.dataSource.cloneWithRows(this.buildData(nextProps));
+        } else {
+            dataSource = new ListView.DataSource({
+                rowHasChanged: (a, b) => a !== b
+            }).cloneWithRows(this.buildData(nextProps));
+        }
         this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(this.buildData(nextProps))
+            dataSource
         });
         const container = this.refs.scrollContainer;
         if (container && container._visibleRows && container._visibleRows.s1) { //eslint-disable-line no-underscore-dangle
