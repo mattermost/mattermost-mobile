@@ -73,21 +73,13 @@ export default class ChannelList extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps) {
-        return !deepEqual(this.props, nextProps, {strict: true});
+    shouldComponentUpdate(nextProps, nextState) {
+        return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
     componentWillReceiveProps(nextProps) {
-        let dataSource;
-        if (this.props.currentChannel.id === nextProps.currentChannel.id) {
-            dataSource = this.state.dataSource.cloneWithRows(this.buildData(nextProps));
-        } else {
-            dataSource = new ListView.DataSource({
-                rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(this.buildData(nextProps));
-        }
         this.setState({
-            dataSource
+            dataSource: this.state.dataSource.cloneWithRows(this.buildData(nextProps))
         });
         const container = this.refs.scrollContainer;
         if (container && container._visibleRows && container._visibleRows.s1) { //eslint-disable-line no-underscore-dangle
@@ -194,7 +186,7 @@ export default class ChannelList extends React.Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
-                isActive={channel.id === this.props.currentChannel.id}
+                isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
         );
