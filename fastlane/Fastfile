@@ -1,0 +1,395 @@
+update_fastlane
+fastlane_version '2.9.0'
+skip_docs
+
+platform :ios do
+  before_all do |lane|
+    if lane == :beta or lane == :release
+      ensure_git_branch(
+          branch: 'master'
+      )
+      sh "git checkout -b ios-#{lane}"
+    end
+  end
+
+  after_all do |lane|
+    if lane == :beta or lane == :release
+      reset_git_repo(
+          force: true,
+          skip_clean: true
+      )
+
+      sh 'git checkout master'
+      sh "git branch -D ios-#{lane}"
+    end
+  end
+
+  desc 'Build Release file'
+  desc 'This will also make sure the profile is up to date'
+  lane :dev do
+    match(type: 'adhoc')
+
+    build_ios({
+              release: false,
+              increment_build: false,
+              ensure_git_status_clean: false
+          })
+  end
+
+  desc 'Submit a new Beta Build to Apple TestFlight'
+  desc 'This will also make sure the profile is up to date'
+  lane :beta do
+    match(type: 'appstore')
+
+    build_ios({
+              release: true,
+              increment_build: true,
+              ensure_git_status_clean: true,
+              branch_name: 'ios-beta'
+          })
+
+    # pilot
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      testflight_url = ENV['TESTFLIGHT_URL']
+      send_message_for_ios(
+          '#### New iOS beta published on TestFlight',
+          '',
+          "#ios-beta in #{testflight_url.nil? ? 'TestFlight' : "[TestFlight](#{testflight_url})"} on [#{Time.new.utc.to_s}]",
+          [],
+          true
+      )
+    end
+  end
+
+  desc 'Deploy a new version to the App Store'
+  lane :release do
+    match(type: 'appstore')
+
+    # snapshot
+
+    build_ios({
+              release: true,
+              increment_build: true,
+              ensure_git_status_clean: true,
+              branch_name: 'ios-release'
+          })
+
+    deliver(force: true)
+
+    # frameit
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      appstore_url = ENV['APPSTORE_URL']
+      send_message_for_ios(
+          '#### New iOS release published on the App Store',
+          '',
+          "#ios-release in #{appstore_url.nil? ? 'App Store' : "[App Store](#{appstore_url})"} on [#{Time.new.utc.to_s}]",
+          [],
+          true
+      )
+    end
+  end
+
+  error do |lane, exception|
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      send_message_for_ios('', 'Unsuccessful Build', exception.message, [:lane], false)
+    end
+  end
+
+  def build_ios(options)
+    if options[:ensure_git_status_clean]
+      ensure_git_status_clean
+    end
+
+    if options[:increment_build]
+      increment_build_number(
+          xcodeproj: './ios/Mattermost.xcodeproj',
+          build_number: latest_testflight_build_number + 1
+      )
+      commit_version_bump(xcodeproj: './ios/Mattermost.xcodeproj')
+      commit = last_git_commit
+
+      push_to_git_remote(
+          remote: 'origin',
+          local_branch: options[:branch_name],
+          force: false,
+          tags: false
+      )
+
+      unless ENV['GITHUB_TOKEN'].nil?
+        create_pull_request(
+            api_token: ENV['GITHUB_TOKEN'],
+            repo: 'mattermost/mattermost-mobile',
+            head: "mattermost:#{options[:branch_name]}",
+            base: 'master',
+            title: "IOS #{commit[:message]}"
+        )
+      end
+    end
+
+    update_project_team(
+        path: './ios/Mattermost.xcodeproj',
+        teamid: ENV['FASTLANE_TEAM_ID']
+    )
+
+    gym(
+        clean: true,
+        scheme: 'Mattermost',
+        configuration: (options[:release] ? 'Release' : 'Debug'),
+        project: './ios/Mattermost.xcodeproj'
+    )
+  end
+
+  def send_message_for_ios(pretext, title, msg, default_payloads, success)
+    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    mattermost(
+        pretext: pretext,
+        message: msg,
+        default_payloads: default_payloads,
+        username: 'Fastlane',
+        icon_url: 'https://s3-eu-west-1.amazonaws.com/fastlane.tools/fastlane.png',
+        payload: {},
+        attachment_properties: {
+            title: title,
+            thumb_url: 'https://lh3.googleusercontent.com/Nkbo3QohCOU8bGqSYtwB88o03XxUwRAxRHNdXPB9zFvYFzTwD7naYa-GYJaelBp-OIc=w300',
+            fields: [{
+                         title: 'Version',
+                         value: version,
+                         short: true
+                     },
+                     {
+                         title: 'Build Number',
+                         value: build_number,
+                         short: true
+                     },
+                     {
+                         title: 'Built by',
+                         value: 'Jenkins',
+                         short: true
+                     }]
+        },
+        success: success
+    )
+  end
+end
+
+platform :android do
+  before_all do |lane|
+    if lane == :beta or lane == :release
+      ensure_git_branch(
+          branch: 'master'
+      )
+      sh "git checkout -b android-#{lane}"
+    end
+  end
+
+  after_all do |lane|
+    if lane == :beta or lane == :release
+      reset_git_repo(
+          force: true,
+          skip_clean: true
+      )
+      sh 'git checkout master'
+      sh "git branch -D android-#{lane}"
+    end
+  end
+
+  desc 'Build Release file'
+  lane :dev do
+    build_android({release: true})
+  end
+
+  desc 'Submit a new Beta Build to Google Play'
+  lane :beta do
+    build_android({
+        release: true,
+        increment_build: true,
+        ensure_git_status_clean: true,
+        branch_name: 'android-beta'
+          })
+
+    supply(
+        track: 'beta',
+        apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
+    )
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      beta_url = ENV['GOOGLE_PLAY_BETA_URL']
+      send_message_for_android(
+          '#### New Android beta published for Beta Testing',
+          '',
+          "#android-beta in #{beta_url.nil? ? 'Google Play Beta Program' : "[Google Play Beta Program](#{beta_url})"} on [#{Time.new.utc.to_s}]",
+          [],
+          true
+      )
+    end
+  end
+
+  desc 'Deploy a new version to Google Play'
+  lane :release do
+    build_android({
+        release: true,
+        increment_build: true,
+        ensure_git_status_clean: true,
+        branch_name: 'android-release'
+          })
+
+    supply(
+        track: "production",
+        apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
+    )
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      google_play_url = ENV['GOOGLE_PLAY_URL']
+      send_message_for_android(
+          '#### New Android beta published for Production',
+          '',
+          "#android-beta in #{google_play_url.nil? ? 'Google Play' : "[Google Play](#{google_play_url})"} on [#{Time.new.utc.to_s}]",
+          [],
+          true
+      )
+    end
+  end
+
+  error do |lane, exception|
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      send_message_for_android('', 'Unsuccessful Build', exception.message, [:lane], false)
+    end
+  end
+
+  def build_android(options)
+    if options[:ensure_git_status_clean]
+      ensure_git_status_clean
+    end
+
+    if options[:increment_build]
+      increment_version_code(app_folder_name: 'android/app')
+      commit_android_version_bump(
+          app_folder_name: 'android/app',
+          force: true
+      )
+      commit = last_git_commit
+
+      push_to_git_remote(
+          remote: 'origin',
+          local_branch: options[:branch_name],
+          force: false,
+          tags: false
+      )
+
+      unless ENV['GITHUB_TOKEN'].nil?
+        create_pull_request(
+            api_token: ENV['GITHUB_TOKEN'],
+            repo: 'mattermost/mattermost-mobile',
+            head: "mattermost:#{options[:branch_name]}",
+            base: 'master',
+            title: "IOS #{commit[:message]}"
+        )
+      end
+    end
+
+    gradle(
+        task: 'assemble',
+        build_type: (options[:release] ? 'Release' : 'Debug'),
+        project_dir: 'android/'
+    )
+  end
+
+  def get_version_code(app_folder_name)
+    version_code = '0'
+
+    Dir.glob("../#{app_folder_name}/build.gradle") do |path|
+      begin
+        UI.message(" -> Found a build.gradle file at path: (#{path})!")
+        file = File.new(path, 'r')
+        while (line = file.gets)
+          if line.include? 'versionCode'
+            versionComponents = line.strip.split(' ')
+            version_code = versionComponents[1].tr("\"",'')
+            break
+          end
+        end
+        file.close
+      rescue => err
+        UI.error("An exception occured while reading gradle file: #{err}")
+        err
+      end
+    end
+
+    if version_code == '0'
+      UI.user_error!("Impossible to find the version code in the current project folder #{app_folder_name} 😭")
+    else
+      # Store the version name in the shared hash
+      Actions.lane_context['VERSION_CODE']=version_code
+      UI.success("👍 Version name found: #{version_code}")
+    end
+
+    return version_code
+  end
+
+  def get_version_name(app_folder_name)
+    version_name = '0'
+
+    Dir.glob("../#{app_folder_name}/build.gradle") do |path|
+      begin
+        file = File.new(path, 'r')
+        while (line = file.gets)
+          if line.include? 'versionName'
+            versionComponents = line.strip.split(' ')
+            version_name = versionComponents[1].tr("\"",'')
+            break
+          end
+        end
+        file.close
+      rescue => err
+        UI.error("An exception occured while readinf gradle file: #{err}")
+        err
+      end
+    end
+
+    if version_name == '0'
+      UI.user_error!("Impossible to find the version name in the current project folder #{app_folder_name} 😭")
+    else
+      # Store the version name in the shared hash
+      Actions.lane_context['VERSION_NAME']=version_name
+      UI.success("👍 Version name found: #{version_name}")
+    end
+
+    return version_name
+  end
+
+  def send_message_for_android(pretext, title, msg, default_payloads, success)
+    build_number = get_version_code('android/app')
+    version_name = get_version_name('android/app')
+    mattermost(
+        pretext: pretext,
+        message: msg,
+        default_payloads: default_payloads,
+        username: 'Fastlane',
+        icon_url: 'https://s3-eu-west-1.amazonaws.com/fastlane.tools/fastlane.png',
+        payload: {},
+        attachment_properties: {
+            title: title,
+            thumb_url: 'http://www.concretesolutions.com.br/blog/wp-content/uploads/2015/04/Android1.png',
+            fields: [{
+                         title: 'Version',
+                         value: version_name,
+                         short: true
+                     },
+                     {
+                         title: 'Build Number',
+                         value: build_number,
+                         short: true
+                     },
+                     {
+                         title: 'Built by',
+                         value: 'Jenkins',
+                         short: true
+                     }]
+        },
+        success: success
+    )
+  end
+end

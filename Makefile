@@ -1,4 +1,9 @@
 .PHONY: run run-ios run-android check-style test clean post-install
+.PHONY: check-ios-target prepare-ios-build build-ios after-ios-build
+.PHONY: check-android-target prepare-android-build build-android after-android-build
+
+ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
+android_target := $(filter-out build-android,$(MAKECMDGOALS))
 
 .npminstall: package.json
 	@if ! [ $(shell command -v npm) ]; then \
@@ -24,7 +29,6 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 
 	node scripts/make-dist-assets.js
 
-.PHONY: prepare
 pre-run: .npminstall dist/assets
 
 run: run-ios
@@ -91,3 +95,55 @@ post-install:
 	sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-messageformat/package.json
 	sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
 	sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
+
+check-ios-target:
+ifneq ($(ios_target), $(filter $(ios_target), dev beta release))
+	@echo "Try running make build-ios TARGET\nWhere TARGET is one of dev, beta or release"
+	@exit 1
+endif
+
+prepare-ios-build:
+	# We need to do this as the react-native packager minifies the output and that is causing issues
+	@sed -i'' -e 's|--dev $$DEV|--dev true|g' ./node_modules/react-native/packager/react-native-xcode.sh
+
+	@node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID
+
+do-build-ios:
+	@echo "Building ios $(ios_target) app"
+	@cd fastlane && fastlane ios $(ios_target)
+
+after-ios-build:
+	@echo Cleaning up
+	@sed -i'' -e 's|--dev true|--dev $$DEV|g' ./node_modules/react-native/packager/react-native-xcode.sh
+	@kill -9 `cat server.PID` && rm server.PID
+
+build-ios: | check-ios-target pre-run check-style prepare-ios-build do-build-ios after-ios-build
+
+check-android-target:
+ifneq ($(android_target), $(filter $(android_target), dev beta release))
+	@echo "Try running make build-android TARGET\nWhere TARGET is one of dev, beta or release"
+	@exit 1
+endif
+
+prepare-android-build:
+	@rm -rf ./node_modules/react-native/local-cli/templates/HelloWorld
+	@sed -i'' -e 's|def devEnabled = !targetName.toLowerCase().contains("release")|def devEnabled = true|g' ./node_modules/react-native/react.gradle
+
+do-build-android:
+	@echo "Building android $(android_target) app"
+	@cd fastlane && fastlane android $(android_target)
+
+after-android-build:
+	@echo Cleaning up
+	@sed -i'' -e 's|def devEnabled = true|def devEnabled = !targetName.toLowerCase().contains("release")|g' ./node_modules/react-native/react.gradle
+
+build-android: | check-android-target pre-run check-style prepare-android-build do-build-android after-android-build
+
+dev:
+	@:
+
+beta:
+	@:
+
+release:
+	@:
