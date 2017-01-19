@@ -15,6 +15,7 @@ import {openChannelDrawer} from 'app/actions/views/drawer';
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
+import {goToChannelInfo} from 'app/actions/navigation';
 
 import Channel from './channel';
 
@@ -35,7 +36,8 @@ function mapDispatchToProps(dispatch) {
             loadProfilesAndTeamMembersForDMSidebar,
             selectInitialChannel,
             openChannelDrawer,
-            handlePostDraftChanged
+            handlePostDraftChanged,
+            goToChannelInfo
         }, dispatch)
     };
 }

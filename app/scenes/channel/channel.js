@@ -23,7 +23,8 @@ export default class Channel extends React.PureComponent {
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
             openChannelDrawer: React.PropTypes.func.isRequired,
-            handlePostDraftChanged: React.PropTypes.func.isRequired
+            handlePostDraftChanged: React.PropTypes.func.isRequired,
+            goToChannelInfo: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
@@ -110,6 +111,7 @@ export default class Channel extends React.PureComponent {
                             currentChannel={currentChannel}
                             openLeftDrawer={this.openChannelDrawer}
                             openRightDrawer={this.openRightSidebar}
+                            goToChannelInfo={this.props.actions.goToChannelInfo}
                         />
                         <ChannelPostList channel={currentChannel}/>
                         <PostTextbox

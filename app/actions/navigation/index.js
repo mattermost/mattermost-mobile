@@ -66,3 +66,12 @@ export function goToFlaggedPosts() {
         }, getState);
     };
 }
+
+export function goToChannelInfo() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelInfo
+        }, getState);
+    };
+}

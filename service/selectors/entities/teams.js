@@ -3,6 +3,8 @@
 
 import {createSelector} from 'reselect';
 
+import {getCurrentUrl} from './general';
+
 export function getCurrentTeamId(state) {
     return state.entities.teams.currentId;
 }
@@ -19,3 +21,10 @@ export const getCurrentTeam = createSelector(
     }
 );
 
+export const getCurrentTeamUrl = createSelector(
+    getCurrentUrl,
+    getCurrentTeam,
+    (currentUrl, currentTeam) => {
+        return `${currentUrl}/${currentTeam.name}`;
+    }
+);
