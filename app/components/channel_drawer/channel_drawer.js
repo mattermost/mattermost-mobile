@@ -12,7 +12,8 @@ export default class ChannelDrawer extends React.Component {
     static propTypes = {
         children: React.PropTypes.element.isRequired,
         actions: React.PropTypes.shape({
-            selectChannel: React.PropTypes.func.isRequired,
+            updateStorage: React.PropTypes.func.isRequired,
+            handleSelectChannel: React.PropTypes.func.isRequired,
             viewChannel: React.PropTypes.func.isRequired,
             closeDMChannel: React.PropTypes.func.isRequired,
             closeChannelDrawer: React.PropTypes.func.isRequired
@@ -29,6 +30,7 @@ export default class ChannelDrawer extends React.Component {
         super(props);
 
         this.handleBackButton = this.handleBackButton.bind(this);
+        this.selectChannel = this.selectChannel.bind(this);
     }
 
     componentDidMount() {
@@ -62,6 +64,10 @@ export default class ChannelDrawer extends React.Component {
         return false;
     }
 
+    selectChannel(channelId) {
+        this.props.actions.handleSelectChannel(channelId);
+    }
+
     render() {
         const {
             currentChannel,
@@ -92,7 +98,7 @@ export default class ChannelDrawer extends React.Component {
                         channels={channels}
                         channelMembers={channelMembers}
                         theme={theme}
-                        onSelectChannel={this.props.actions.selectChannel}
+                        onSelectChannel={this.selectChannel}
                         onViewChannel={this.props.actions.viewChannel}
                         handleCloseDM={this.props.actions.closeDMChannel}
                         closeChannelDrawer={this.props.actions.closeChannelDrawer}
