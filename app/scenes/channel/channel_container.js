@@ -4,13 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {openChannelDrawer} from 'app/actions/navigation';
 import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar,
     selectInitialChannel,
     handlePostDraftChanged
 } from 'app/actions/views/channel';
-import {openChannelDrawer} from 'app/actions/views/drawer';
 
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';

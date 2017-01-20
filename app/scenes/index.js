@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import Channel from './channel';
+import ChannelDrawer from './channel_drawer';
 import Login from './login/login_container.js';
 import Root from './root/root_container.js';
 import Search from './search/search_container.js';
@@ -15,6 +16,7 @@ const scenes = {
     Login,
     SelectTeam,
     ChannelView: Channel, // Special case the name for this one to avoid ambiguity
+    ChannelDrawer,
     Search,
     ChannelInfo
 };

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import Drawer from 'react-native-drawer';
 
-import ChannelDrawer from 'app/components/channel_drawer';
 import PostTextbox from 'app/components/post_textbox';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
@@ -93,11 +92,16 @@ export default class Channel extends React.PureComponent {
                 style={{flex: 1, backgroundColor: theme.centerChannelBg}}
             >
                 <StatusBar barStyle='default'/>
-                <ChannelDrawer
-                    currentTeam={currentTeam}
-                    currentChannel={currentChannel}
-                    theme={theme}
+                <Drawer
+                    open={this.state.rightSidebarOpen}
+                    type='displace'
+                    content={<RightSidebarMenu onClose={this.closeRightSidebar}/>}
+                    side='right'
+                    tapToClose={true}
+                    onCloseStart={this.closeRightSidebar}
+                    openDrawerOffset={0.2}
                 >
+<<<<<<< e0eb79656eca6156e147cac1d24931842014280a
                     <Drawer
                         open={this.state.rightSidebarOpen}
                         type='displace'
@@ -123,6 +127,22 @@ export default class Channel extends React.PureComponent {
                         />
                     </Drawer>
                 </ChannelDrawer>
+=======
+                    <ChannelHeader
+                        currentChannel={currentChannel}
+                        openLeftDrawer={this.openChannelDrawer}
+                        openRightDrawer={this.openRightSidebar}
+                    />
+                    <ChannelPostList channel={currentChannel}/>
+                    <PostTextbox
+                        ref='postTextbox'
+                        value={this.props.postDraft}
+                        teamId={currentChannel.team_id}
+                        channelId={currentChannel.id}
+                        onChangeText={this.props.actions.handlePostDraftChanged}
+                    />
+                </Drawer>
+>>>>>>> Moved ChannelDrawer into its own scene
             </KeyboardAvoidingView>
         );
     }

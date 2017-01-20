@@ -2,16 +2,20 @@
 // See License.txt for license information.
 
 import React from 'react';
-
-import {bindActionCreators} from 'redux';
+import {
+    Easing,
+    NavigationExperimental,
+    View
+} from 'react-native';
+import Drawer from 'react-native-drawer';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {goBack} from 'app/actions/navigation';
-
+import FormattedText from 'app/components/formatted_text';
 import {getComponentForScene} from 'app/scenes';
 
-import {Easing, NavigationExperimental, View} from 'react-native';
-import FormattedText from 'app/components/formatted_text';
+import {RouteTransitions, RouteTypes} from 'app/navigation/routes';
 
 class Router extends React.Component {
     static propTypes = {
@@ -21,7 +25,7 @@ class Router extends React.Component {
         }).isRequired
     };
 
-    renderTransition = (transitionProps) => {
+    renderTransition = (transitionProps, prevTransitionProps) => {
         let title;
         if (transitionProps.scene.route.title) {
             title = (
@@ -33,28 +37,63 @@ class Router extends React.Component {
             );
         }
 
-        const renderedScenes = transitionProps.scenes.map((scene) => {
+        const renderedScenes = transitionProps.scenes.filter((scene) => {
+            const route = scene.route;
+
+            // Drawer scenes are rendered separately
+            return !(route.type === RouteTypes.LeftDrawer || route.type === RouteTypes.RightDrawer);
+        }).map((scene) => {
             const cardProps = {
                 ...transitionProps,
                 scene
             };
 
+            let style;
+            if (scene.route.transition === RouteTransitions.Horizontal) {
+                style = NavigationExperimental.Card.PagerStyleInterpolator.forHorizontal({
+                    ...cardProps
+                });
+            } else {
+                style = {};
+            }
+
             return (
                 <NavigationExperimental.Card
                     {...cardProps}
-                    style={NavigationExperimental.Card.PagerStyleInterpolator.forHorizontal({
-                        ...cardProps
-                    })}
+                    style={style}
                     renderScene={this.renderScene}
                     key={scene.key}
                 />
             );
         });
 
+        let drawerContent;
+        if (transitionProps.scene.route.type === RouteTypes.LeftDrawer) {
+            drawerContent = this.renderScene({scene: transitionProps.scene});
+        } else if (prevTransitionProps && prevTransitionProps.scene.route.type === RouteTypes.LeftDrawer) {
+            // Render the drawer scene that's transitioning out
+            drawerContent = this.renderScene({scene: prevTransitionProps.scene});
+        }
+
+        // Render only the main scene inside of the drawer so that the other scenes don't appear when
+        // the drawer opens or closes
+        const currentMainScene = renderedScenes[renderedScenes.length - 1];
+        renderedScenes.pop();
+
         return (
-            <View style={{flex: 1, flexDirection: 'column-reverse'}}>
+            <View style={{flex: 1}}>
                 <View style={{flex: 1}}>
                     {renderedScenes}
+                    <Drawer
+                        open={transitionProps.scene.route.type === RouteTypes.LeftDrawer}
+                        type='displace'
+                        content={drawerContent}
+                        tapToClose={true}
+                        onCloseStart={this.props.actions.goBack}
+                        openDrawerOffset={0.2}
+                    >
+                        {currentMainScene}
+                    </Drawer>
                 </View>
                 {title}
             </View>

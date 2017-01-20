@@ -269,9 +269,6 @@ const state = {
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl
-        },
-        drawer: {
-            channel: false
         }
     }
 };

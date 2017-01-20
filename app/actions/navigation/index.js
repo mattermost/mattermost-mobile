@@ -72,6 +72,15 @@ export function goToChannelInfo() {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: Routes.ChannelInfo
+        });
+    }
+}
+
+export function openChannelDrawer() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelDrawer
         }, getState);
     };
 }
