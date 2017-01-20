@@ -143,7 +143,6 @@ export default class ChannelList extends React.Component {
     };
 
     handleClose = (channel) => {
-        console.log('click to remove DM', channel.display_name); //eslint-disable-line no-console
         this.props.handleCloseDM(channel);
     };
 

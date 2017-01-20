@@ -7,7 +7,7 @@ import {ViewTypes} from 'app/constants';
 
 import {fetchMyChannelsAndMembers, getMyChannelMembers, selectChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
-import {savePreferences} from 'service/actions/preferences';
+import {savePreferences, deletePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
 import {Constants, UsersTypes} from 'service/constants';
 import {getChannelByName, getDirectChannelName} from 'service/utils/channel_utils';
@@ -121,7 +121,7 @@ export function closeDMChannel(channel) {
         const state = getState();
         const userId = state.entities.users.currentId;
 
-        const preferences = [{
+        const dm = [{
             user_id: userId,
             category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW,
             name: channel.teammate_id,
@@ -129,13 +129,14 @@ export function closeDMChannel(channel) {
         }];
 
         if (channel.isFavorite) {
-            preferences.push({
+            const fav = [{
                 user_id: userId,
                 category: Constants.CATEGORY_FAVORITE_CHANNEL,
                 name: channel.id
-            });
+            }];
+            deletePreferences(fav)(dispatch, getState);
         }
-        savePreferences(preferences)(dispatch, getState).then(() => {
+        savePreferences(dm)(dispatch, getState).then(() => {
             if (channel.isCurrent) {
                 selectInitialChannel(state.entities.teams.currentId)(dispatch, getState);
             }
