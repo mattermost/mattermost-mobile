@@ -9,6 +9,10 @@ function getAllChannels(state) {
     return state.entities.channels.channels;
 }
 
+function getAllChannelStats(state) {
+    return state.entities.channels.stats;
+}
+
 export function getCurrentChannelId(state) {
     return state.entities.channels.currentId;
 }
@@ -18,6 +22,14 @@ export const getCurrentChannel = createSelector(
     getCurrentChannelId,
     (allChannels, currentChannelId) => {
         return allChannels[currentChannelId];
+    }
+);
+
+export const getCurrentChannelStats = createSelector(
+    getAllChannelStats,
+    getCurrentChannelId,
+    (allChannelStats, currentChannelId) => {
+        return allChannelStats[currentChannelId];
     }
 );
 

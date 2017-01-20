@@ -14,7 +14,8 @@ export default class ChannelHeader extends React.PureComponent {
         displayName: React.PropTypes.string.isRequired,
         theme: React.PropTypes.object.isRequired,
         openLeftDrawer: React.PropTypes.func.isRequired,
-        openRightDrawer: React.PropTypes.func.isRequired
+        openRightDrawer: React.PropTypes.func.isRequired,
+        goToChannelInfo: React.PropTypes.func.isRequired
     }
 
     render() {
@@ -38,9 +39,13 @@ export default class ChannelHeader extends React.PureComponent {
                     </TouchableHighlight>
                 </View>
                 <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: theme.sidebarHeaderBg}}>
-                    <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
-                        {displayName}
-                    </Text>
+                    <TouchableHighlight onPress={this.props.goToChannelInfo}>
+                        <View>
+                            <Text style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
+                                {displayName}
+                            </Text>
+                        </View>
+                    </TouchableHighlight>
                 </View>
                 <TouchableHighlight
                     onPress={this.props.openRightDrawer}

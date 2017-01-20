@@ -22,5 +22,9 @@ export default {
     },
     Search: {
         key: 'Search'
+    },
+    ChannelInfo: {
+        key: 'ChannelInfo',
+        title: {id: 'mobile.routes.channelInfo', defaultMessage: 'Info'}
     }
 };
