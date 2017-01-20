@@ -9,6 +9,7 @@ import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
 import UnreadIndicator from './unread_indicator';
+import deepEqual from 'deep-equal';
 
 const Styles = StyleSheet.create({
     container: {
@@ -70,6 +71,10 @@ export default class ChannelList extends React.Component {
                 rowHasChanged: (a, b) => a !== b
             }).cloneWithRows(this.buildData(props))
         };
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
     componentWillReceiveProps(nextProps) {
@@ -181,7 +186,7 @@ export default class ChannelList extends React.Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
-                isActive={channel.id === this.props.currentChannel.id}
+                isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
         );

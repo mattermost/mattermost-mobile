@@ -75,16 +75,20 @@ function membersInTeam(state = {}, action) {
     }
     case TeamsTypes.RECEIVED_MEMBERS_IN_TEAM: {
         const data = action.data;
-        const teamId = data[0].team_id;
-        const members = new Set(state[teamId]);
-        for (const member of data) {
-            members.add(member.user_id);
+        if (data.length) {
+            const teamId = data[0].team_id;
+            const members = new Set(state[teamId]);
+            for (const member of data) {
+                members.add(member.user_id);
+            }
+
+            return {
+                ...state,
+                [teamId]: members
+            };
         }
 
-        return {
-            ...state,
-            [teamId]: members
-        };
+        return state;
     }
     case TeamsTypes.REMOVE_MEMBER_FROM_TEAM: {
         const data = action.data;
