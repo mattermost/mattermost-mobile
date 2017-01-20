@@ -6,8 +6,8 @@ Mattermost is secure, workplace messaging from behind your firewall.
 - Personalize your experience with custom colors, formatting and fonts
 - Connect in-house systems with webhooks and Slack-compatible integrations
 
-To use this app, you need a "Team URL" from a Mattermost server. To host your own server go to http://www.mattermost.org/download/
+To use this app, you need a "Server URL" from a Mattermost server. To host your own server go to http://www.mattermost.org/download/
 
 Find the Terms of Service for this app here: https://about.mattermost.com/terms
 
-This is a reference implementation of an open source Mattermost Android app available at: https://github.com/mattermost/android
+This is a reference implementation of an open source Mattermost Android app available at: https://github.com/mattermost/mattermost-mobile
