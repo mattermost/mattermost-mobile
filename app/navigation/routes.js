@@ -13,30 +13,6 @@ export const RouteTypes = keyMirror({
 });
 
 export const Routes = {
-    Root: {
-        key: 'Root'
-    },
-    SelectServer: {
-        key: 'SelectServer',
-        title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}
-    },
-    Login: {
-        key: 'Login',
-        title: {id: 'mobile.routes.login', defaultMessage: 'Login'},
-        transition: RouteTransitions.Horizontal
-    },
-    SelectTeam: {
-        key: 'SelectTeam',
-        title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'},
-        transition: RouteTransitions.Horizontal
-    },
-    ChannelView: {
-        key: 'ChannelView'
-    },
-    Search: {
-        key: 'Search',
-        transition: 'horizontal'
-    },
     ChannelInfo: {
         key: 'ChannelInfo',
         title: {id: 'mobile.routes.channelInfo', defaultMessage: 'Info'}
@@ -44,6 +20,34 @@ export const Routes = {
     ChannelDrawer: {
         key: 'ChannelDrawer',
         type: RouteTypes.LeftDrawer
+    },
+    ChannelView: {
+        key: 'ChannelView'
+    },
+    Login: {
+        key: 'Login',
+        title: {id: 'mobile.routes.login', defaultMessage: 'Login'},
+        transition: RouteTransitions.Horizontal
+    },
+    RightSideMenu: {
+        key: 'RightSideMenu',
+        type: RouteTypes.RightDrawer
+    },
+    Root: {
+        key: 'Root'
+    },
+    Search: {
+        key: 'Search',
+        transition: 'horizontal'
+    },
+    SelectServer: {
+        key: 'SelectServer',
+        title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}
+    },
+    SelectTeam: {
+        key: 'SelectTeam',
+        title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'},
+        transition: RouteTransitions.Horizontal
     }
 };
 

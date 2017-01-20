@@ -67,12 +67,20 @@ class Router extends React.Component {
             );
         });
 
-        let drawerContent;
+        let leftDrawerContent;
         if (transitionProps.scene.route.type === RouteTypes.LeftDrawer) {
-            drawerContent = this.renderScene({scene: transitionProps.scene});
+            leftDrawerContent = this.renderScene({scene: transitionProps.scene});
         } else if (prevTransitionProps && prevTransitionProps.scene.route.type === RouteTypes.LeftDrawer) {
             // Render the drawer scene that's transitioning out
-            drawerContent = this.renderScene({scene: prevTransitionProps.scene});
+            leftDrawerContent = this.renderScene({scene: prevTransitionProps.scene});
+        }
+
+        let rightDrawerContent;
+        if (transitionProps.scene.route.type === RouteTypes.RightDrawer) {
+            rightDrawerContent = this.renderScene({scene: transitionProps.scene});
+        } else if (prevTransitionProps && prevTransitionProps.scene.route.type === RouteTypes.RightDrawer) {
+            // Render the drawer scene that's transitioning out
+            rightDrawerContent = this.renderScene({scene: prevTransitionProps.scene});
         }
 
         // Render only the main scene inside of the drawer so that the other scenes don't appear when
@@ -87,12 +95,22 @@ class Router extends React.Component {
                     <Drawer
                         open={transitionProps.scene.route.type === RouteTypes.LeftDrawer}
                         type='displace'
-                        content={drawerContent}
+                        content={leftDrawerContent}
                         tapToClose={true}
                         onCloseStart={this.props.actions.goBack}
                         openDrawerOffset={0.2}
                     >
-                        {currentMainScene}
+                        <Drawer
+                            open={transitionProps.scene.route.type === RouteTypes.RightDrawer}
+                            type='displace'
+                            side='right'
+                            content={rightDrawerContent}
+                            tapToClose={true}
+                            onCloseStart={this.props.actions.goBack}
+                            openDrawerOffset={0.2}
+                        >
+                            {currentMainScene}
+                        </Drawer>
                     </Drawer>
                 </View>
                 {title}

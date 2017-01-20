@@ -3,22 +3,24 @@
 
 import Channel from './channel';
 import ChannelDrawer from './channel_drawer';
+import ChannelInfo from './channel_info';
 import Login from './login/login_container.js';
+import RightSideMenu from './right_side_menu';
 import Root from './root/root_container.js';
 import Search from './search/search_container.js';
 import SelectServer from './select_server/select_server_container.js';
 import SelectTeam from './select_team/select_team_container.js';
-import ChannelInfo from './channel_info';
 
 const scenes = {
-    Root,
-    SelectServer,
-    Login,
-    SelectTeam,
     ChannelView: Channel, // Special case the name for this one to avoid ambiguity
     ChannelDrawer,
+    ChannelInfo,
+    Login,
+    RightSideMenu,
+    Root,
     Search,
-    ChannelInfo
+    SelectServer,
+    SelectTeam
 };
 
 export function getComponentForScene(key) {

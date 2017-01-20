@@ -72,8 +72,8 @@ export function goToChannelInfo() {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: Routes.ChannelInfo
-        });
-    }
+        }, getState);
+    };
 }
 
 export function openChannelDrawer() {
@@ -81,6 +81,15 @@ export function openChannelDrawer() {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: Routes.ChannelDrawer
+        }, getState);
+    };
+}
+
+export function openRightSideMenu() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.RightSideMenu
         }, getState);
     };
 }
