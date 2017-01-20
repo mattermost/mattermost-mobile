@@ -13,7 +13,9 @@ import ChannelDrawer from 'app/components/channel_drawer';
 import PostTextbox from 'app/components/post_textbox';
 import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
+import ChannelDropdown from './channel_dropdown';
 import ChannelHeader from './channel_header';
+import ChannelModal from 'app/components/channel_modal';
 import ChannelPostList from './channel_post_list';
 
 export default class Channel extends React.PureComponent {
@@ -36,7 +38,8 @@ export default class Channel extends React.PureComponent {
 
         this.state = {
             leftSidebarOpen: false,
-            rightSidebarOpen: false
+            rightSidebarOpen: false,
+            channelDropdownOpen: false
         };
     }
 
@@ -71,6 +74,10 @@ export default class Channel extends React.PureComponent {
     openChannelDrawer = () => {
         this.refs.postTextbox.getWrappedInstance().blur();
         this.props.actions.openChannelDrawer();
+    }
+
+    toggleChannelDropdown = () => {
+        this.setState({channelDropdownOpen: !this.state.channelDropdownOpen});
     }
 
     render() {
@@ -110,6 +117,7 @@ export default class Channel extends React.PureComponent {
                             currentChannel={currentChannel}
                             openLeftDrawer={this.openChannelDrawer}
                             openRightDrawer={this.openRightSidebar}
+                            toggleChannelDropdown={this.toggleChannelDropdown}
                         />
                         <ChannelPostList channel={currentChannel}/>
                         <PostTextbox
@@ -121,6 +129,14 @@ export default class Channel extends React.PureComponent {
                         />
                     </Drawer>
                 </ChannelDrawer>
+                <ChannelModal
+                    visible={this.state.channelDropdownOpen}
+                    theme={theme}
+                    topOffset={70}
+                >
+                    <ChannelDropdown close={this.toggleChannelDropdown}/>
+                </ChannelModal>
+
             </KeyboardAvoidingView>
         );
     }
