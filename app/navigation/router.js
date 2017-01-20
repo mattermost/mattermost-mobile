@@ -91,6 +91,7 @@ class Router extends React.Component {
         return (
             <View style={{flex: 1}}>
                 <View style={{flex: 1}}>
+                    {title}
                     {renderedScenes}
                     <Drawer
                         open={transitionProps.scene.route.type === RouteTypes.LeftDrawer}
@@ -113,7 +114,6 @@ class Router extends React.Component {
                         </Drawer>
                     </Drawer>
                 </View>
-                {title}
             </View>
         );
     };
