@@ -98,7 +98,8 @@ function isDirectChannelVisible(userId, myPreferences, channel) {
 
 function isFavoriteChannel(myPreferences, channel) {
     const fav = myPreferences[`${Constants.CATEGORY_FAVORITE_CHANNEL}--${channel.id}`];
-    return fav && fav.value === 'true';
+    channel.isFavorite = fav && fav.value === 'true';
+    return channel.isFavorite;
 }
 
 function createMissingDirectChannels(currentUserId, allChannels, myPreferences) {

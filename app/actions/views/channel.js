@@ -7,6 +7,7 @@ import {ViewTypes} from 'app/constants';
 
 import {fetchMyChannelsAndMembers, getMyChannelMembers, selectChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
+import {savePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
 import {Constants, UsersTypes} from 'service/constants';
 import {getChannelByName, getDirectChannelName} from 'service/utils/channel_utils';
@@ -112,5 +113,32 @@ export function handlePostDraftChanged(postDraft) {
             type: ViewTypes.POST_DRAFT_CHANGED,
             postDraft
         }, getState);
+    };
+}
+
+export function closeDMChannel(channel) {
+    return async(dispatch, getState) => {
+        const state = getState();
+        const userId = state.entities.users.currentId;
+
+        const preferences = [{
+            user_id: userId,
+            category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW,
+            name: channel.teammate_id,
+            value: 'false'
+        }];
+
+        if (channel.isFavorite) {
+            preferences.push({
+                user_id: userId,
+                category: Constants.CATEGORY_FAVORITE_CHANNEL,
+                name: channel.id
+            });
+        }
+        savePreferences(preferences)(dispatch, getState).then(() => {
+            if (channel.isCurrent) {
+                selectInitialChannel(state.entities.teams.currentId)(dispatch, getState);
+            }
+        });
     };
 }

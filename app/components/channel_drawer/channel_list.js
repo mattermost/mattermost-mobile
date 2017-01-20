@@ -5,6 +5,7 @@ import React from 'react';
 
 import {StyleSheet, Text, View, ListView} from 'react-native';
 import {buildDisplayNameAndTypeComparable} from 'service/utils/channel_utils';
+import {Constants} from 'service/constants';
 import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
@@ -57,6 +58,7 @@ export default class ChannelList extends React.Component {
         theme: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
         onViewChannel: React.PropTypes.func.isRequired,
+        handleCloseDM: React.PropTypes.func.isRequired,
         closeChannelDrawer: React.PropTypes.func.isRequired
     };
 
@@ -140,6 +142,11 @@ export default class ChannelList extends React.Component {
         this.props.closeChannelDrawer();
     };
 
+    handleClose = (channel) => {
+        console.log('click to remove DM', channel.display_name); //eslint-disable-line no-console
+        this.props.handleCloseDM(channel);
+    };
+
     getUnreadMessages = (channel) => {
         const member = this.props.channelMembers[channel.id];
         let mentions = 0;
@@ -186,6 +193,7 @@ export default class ChannelList extends React.Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
+                handleClose={channel.type === Constants.DM_CHANNEL ? this.handleClose : null}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
