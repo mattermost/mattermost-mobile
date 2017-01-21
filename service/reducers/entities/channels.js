@@ -46,6 +46,26 @@ function channels(state = {}, action) {
             }
         };
     }
+    case ChannelTypes.UPDATE_CHANNEL_HEADER: {
+        const {channelId, header} = action.data;
+        return {
+            ...state,
+            [channelId]: {
+                ...state[channelId],
+                header
+            }
+        };
+    }
+    case ChannelTypes.UPDATE_CHANNEL_PURPOSE: {
+        const {channelId, purpose} = action.data;
+        return {
+            ...state,
+            [channelId]: {
+                ...state[channelId],
+                purpose
+            }
+        };
+    }
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
 

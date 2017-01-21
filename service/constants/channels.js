@@ -70,7 +70,9 @@ const ChannelTypes = keyMirror({
     RECEIVED_CHANNEL_STATS: null,
     RECEIVED_CHANNEL_PROPS: null,
     RECEIVED_CHANNEL_DELETED: null,
-    RECEIVED_LAST_VIEWED: null
+    RECEIVED_LAST_VIEWED: null,
+    UPDATE_CHANNEL_HEADER: null,
+    UPDATE_CHANNEL_PURPOSE: null
 });
 
 export default ChannelTypes;

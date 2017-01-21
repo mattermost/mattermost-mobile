@@ -28,7 +28,10 @@ const Constants = {
     CATEGORY_DISPLAY_SETTINGS: 'display_settings',
     CATEGORY_FAVORITE_CHANNEL: 'favorite_channel',
     DISPLAY_PREFER_NICKNAME: 'nickname_full_name',
-    DISPLAY_PREFER_FULL_NAME: 'full_name'
+    DISPLAY_PREFER_FULL_NAME: 'full_name',
+
+    POST_HEADER_CHANGE: 'system_header_change',
+    POST_PURPOSE_CHANGE: 'system_purpose_change'
 };
 
 export default Constants;
