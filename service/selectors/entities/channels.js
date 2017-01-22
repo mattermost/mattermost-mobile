@@ -52,15 +52,16 @@ export const getChannelsOnCurrentTeam = createSelector(
 export const getChannelsByCategory = createSelector(
     getCurrentChannelId,
     getChannelsOnCurrentTeam,
+    (state) => state.entities.channels.myMembers,
     (state) => state.entities.users,
     (state) => state.entities.preferences.myPreferences,
     (state) => state.entities.teams,
-    (currentChannelId, channels, usersState, myPreferences, teamsState) => {
+    (currentChannelId, channels, myMembers, usersState, myPreferences, teamsState) => {
         const allChannels = channels.map((c) => {
             const channel = {...c};
             channel.isCurrent = c.id === currentChannelId;
             return channel;
-        });
+        }).filter((c) => myMembers.hasOwnProperty(c.id));
 
         return buildDisplayableChannelList(usersState, teamsState, allChannels, myPreferences);
     }
