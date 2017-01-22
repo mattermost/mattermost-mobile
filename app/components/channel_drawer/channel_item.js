@@ -16,7 +16,7 @@ export default class ChannelItem extends React.Component {
     static propTypes = {
         channel: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
-        handleClose: React.PropTypes.func,
+        onLongPress: React.PropTypes.func,
         isActive: React.PropTypes.bool.isRequired,
         hasUnread: React.PropTypes.bool.isRequired,
         mentions: React.PropTypes.number.isRequired,
@@ -29,8 +29,7 @@ export default class ChannelItem extends React.Component {
             theme,
             mentions,
             hasUnread,
-            isActive,
-            handleClose
+            isActive
         } = this.props;
 
         let iconColor = changeOpacity(theme.centerChannelColor, 0.7);
@@ -152,37 +151,14 @@ export default class ChannelItem extends React.Component {
             }
         }
 
-        let closeButton = null;
-        if (handleClose && !badge) {
-            const closeStyle = {
-                position: 'absolute',
-                justifyContent: 'center',
-                alignItems: 'center',
-                opacity: 0.4,
-                width: 50,
-                height: 50,
-                right: 0,
-                flexDirection: 'row'
-            };
-
-            closeButton = (
-                <TouchableHighlight
-                    style={closeStyle}
-                    onPress={() => handleClose(channel)}
-                >
-                    <Icon
-                        name='times'
-                        size={13}
-                        color={theme.sidebarText}
-                    />
-                </TouchableHighlight>
-            );
-        }
-
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.3)}
                 onPress={() => this.props.onSelectChannel(channel)}
+                delayLongPress={1000}
+                onLongPress={() => {
+                    this.props.onLongPress(channel);
+                }}
             >
                 <View style={{flex: 1}}>
                     {activeBorder}
@@ -196,7 +172,6 @@ export default class ChannelItem extends React.Component {
                             {channel.display_name}
                         </Text>
                         {badge}
-                        {closeButton}
                     </View>
                 </View>
             </TouchableHighlight>
