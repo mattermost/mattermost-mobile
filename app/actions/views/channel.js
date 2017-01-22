@@ -129,17 +129,37 @@ export function closeDMChannel(channel) {
         }];
 
         if (channel.isFavorite) {
-            const fav = [{
-                user_id: userId,
-                category: Constants.CATEGORY_FAVORITE_CHANNEL,
-                name: channel.id
-            }];
-            deletePreferences(fav)(dispatch, getState);
+            unmarkFavorite(channel.id)(dispatch, getState);
         }
         savePreferences(dm)(dispatch, getState).then(() => {
             if (channel.isCurrent) {
                 selectInitialChannel(state.entities.teams.currentId)(dispatch, getState);
             }
         });
+    };
+}
+
+export function markFavorite(channelId) {
+    return async (dispatch, getState) => {
+        const userId = getState().entities.users.currentId;
+        const fav = [{
+            user_id: userId,
+            category: Constants.CATEGORY_FAVORITE_CHANNEL,
+            name: channelId,
+            value: 'true'
+        }];
+        savePreferences(fav)(dispatch, getState);
+    };
+}
+
+export function unmarkFavorite(channelId) {
+    return async (dispatch, getState) => {
+        const userId = getState().entities.users.currentId;
+        const fav = [{
+            user_id: userId,
+            category: Constants.CATEGORY_FAVORITE_CHANNEL,
+            name: channelId
+        }];
+        deletePreferences(fav)(dispatch, getState);
     };
 }

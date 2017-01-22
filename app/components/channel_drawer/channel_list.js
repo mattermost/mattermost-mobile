@@ -12,6 +12,7 @@ import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
 import UnreadIndicator from './unread_indicator';
 import deepEqual from 'deep-equal';
+import ModalOptions from 'app/components/modal_options';
 
 const Styles = StyleSheet.create({
     container: {
@@ -61,7 +62,11 @@ class ChannelList extends React.Component {
         onSelectChannel: React.PropTypes.func.isRequired,
         onViewChannel: React.PropTypes.func.isRequired,
         handleCloseDM: React.PropTypes.func.isRequired,
-        closeChannelDrawer: React.PropTypes.func.isRequired
+        handleLeaveChannel: React.PropTypes.func.isRequired,
+        closeChannelDrawer: React.PropTypes.func.isRequired,
+        handleDisableDrawer: React.PropTypes.func.isRequired,
+        markFavorite: React.PropTypes.func.isRequired,
+        unmarkFavorite: React.PropTypes.func.isRequired
     };
 
     constructor(props) {
@@ -132,8 +137,6 @@ class ChannelList extends React.Component {
     };
 
     onSelectChannel = (channel) => {
-        console.log('clicked channel ' + channel.name); // eslint-disable-line no-console
-
         const {
             currentChannel,
             currentTeam
@@ -147,20 +150,144 @@ class ChannelList extends React.Component {
     handleClose = (channel) => {
         const {formatMessage} = this.props.intl;
         Alert.alert(
-            formatMessage({id: 'mobile.channel_list.alertTitleCloseDM', defaultMessage: 'Close Direct Message'}),
+            formatMessage({id: 'mobile.channel_list.alertTitleRemoveDM', defaultMessage: 'Remove Direct Message'}),
             formatMessage({
-                id: 'mobile.channel_list.alertMessageCloseDM',
-                defaultMessage: 'Are you sure you want to close the DM with {username}'
+                id: 'mobile.channel_list.alertMessageRemoveDM',
+                defaultMessage: 'Are you sure you want to remove the DM with {username} from the list?'
             }, {
                 username: channel.display_name
             }),
-            [
-                {text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})},
-                {
-                    text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
-                    onPress: () => this.props.handleCloseDM(channel)
-                }]
+            [{
+                text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})
+            }, {
+                text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
+                onPress: () => {
+                    this.setState({showOptions: false});
+                    this.props.handleCloseDM(channel);
+                }
+            }]
         );
+    };
+
+    handleLeave = (channel, term) => {
+        const {formatMessage} = this.props.intl;
+        Alert.alert(
+            formatMessage({id: 'mobile.channel_list.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'}, {term}),
+            formatMessage({
+                id: 'mobile.channel_list.alertMessageLeaveChannel',
+                defaultMessage: 'Are you sure you want to leave the {term} with {name}?'
+            }, {
+                term: term.toLowerCase(),
+                name: channel.display_name
+            }),
+            [{
+                text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})
+            }, {
+                text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
+                onPress: () => {
+                    this.setState({showOptions: false});
+                    this.props.handleLeaveChannel(channel.team_id, channel.id);
+                }
+            }]
+        );
+    };
+
+    onShowModal = (channel) => {
+        const {formatMessage} = this.props.intl;
+        let open;
+        let close;
+        let favorite;
+        let modalTitle;
+
+        this.props.handleDisableDrawer(true);
+
+        if (channel.type === Constants.DM_CHANNEL) {
+            modalTitle = formatMessage({
+                id: 'mobile.channel_list.modalTitle',
+                defaultMessage: 'Select an action for the {term} {name}'},
+                {
+                    name: channel.display_name,
+                    term: formatMessage({id: 'mobile.channel_list.dm', defaultMessage: 'Direct Message'}).toLowerCase()
+                });
+
+            open = {
+                action: () => {
+                    this.setState({showOptions: false});
+                    this.onSelectChannel(channel);
+                },
+                text: formatMessage({id: 'mobile.channel_list.openDM', defaultMessage: 'Open Direct Message'})
+            };
+
+            close = {
+                action: () => {
+                    this.handleClose(channel);
+                },
+                text: formatMessage({id: 'sidebar.removeList', defaultMessage: 'Remove from list'}),
+                textStyle: {
+                    color: '#CC3239'
+                }
+            };
+        } else {
+            const term = channel.type === Constants.OPEN_CHANNEL ?
+                formatMessage({id: 'mobile.channel_list.publicChannel', defaultMessage: 'Public Channel'}) :
+                formatMessage({id: 'mobile.channel_list.privateChannel', defaultMessage: 'Private Channel'});
+
+            modalTitle = formatMessage({
+                id: 'mobile.channel_list.modalTitle',
+                defaultMessage: 'Select an action for the {term} {name}'},
+                {
+                    name: channel.display_name,
+                    term: term.toLowerCase()
+                });
+
+            open = {
+                action: () => {
+                    this.setState({showOptions: false});
+                    this.onSelectChannel(channel);
+                },
+                text: formatMessage({id: 'mobile.channel_list.openChannel', defaultMessage: 'Open {term}'}, {
+                    term
+                })
+            };
+
+            if (channel.name !== Constants.DEFAULT_CHANNEL) {
+                close = {
+                    action: () => {
+                        this.handleLeave(channel, term);
+                    },
+                    text: formatMessage({id: 'channel_header.leave', defaultMessage: 'Leave {term}'}, {
+                        term
+                    }),
+                    textStyle: {
+                        color: '#CC3239'
+                    }
+                };
+            }
+        }
+
+        if (channel.isFavorite) {
+            favorite = {
+                action: () => {
+                    this.setState({showOptions: false});
+                    this.props.unmarkFavorite(channel.id);
+                },
+                text: formatMessage({id: 'channelHeader.removeFromFavorites', defaultMessage: 'Remove from Favorites'})
+            };
+        } else {
+            favorite = {
+                action: () => {
+                    this.setState({showOptions: false});
+                    this.props.markFavorite(channel.id);
+                },
+                text: formatMessage({id: 'channelHeader.addToFavorites', defaultMessage: 'Add to Favorites'})
+            };
+        }
+
+        const options = [open, favorite];
+        if (close) {
+            options.push(close);
+        }
+        this.setState({options, modalTitle, showOptions: true});
     };
 
     getUnreadMessages = (channel) => {
@@ -209,7 +336,7 @@ class ChannelList extends React.Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
-                handleClose={channel.type === Constants.DM_CHANNEL ? this.handleClose : null}
+                onLongPress={this.onShowModal}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
@@ -336,8 +463,27 @@ class ChannelList extends React.Component {
             );
         }
 
+        const modalOptions = (
+            <ModalOptions
+                title={this.state.modalTitle}
+                options={this.state.options}
+                visible={this.state.showOptions}
+                onChange={(option) => {
+                    this.props.handleDisableDrawer(false);
+                    if (option) {
+                        option.action();
+                    } else {
+                        this.setState({
+                            showOptions: false
+                        });
+                    }
+                }}
+            />
+        );
+
         return (
             <View style={[Styles.container, {backgroundColor: theme.sidebarBg}]}>
+                {modalOptions}
                 <View style={[Styles.headerContainer, {backgroundColor: theme.sidebarHeaderBg}]}>
                     <Text
                         ellipsizeMode='tail'

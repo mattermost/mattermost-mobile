@@ -4,7 +4,7 @@
 import {combineReducers} from 'redux';
 import {ViewTypes} from 'app/constants';
 
-function channel(state = false, action) {
+function channelDrawerOpened(state = false, action) {
     switch (action.type) {
     case ViewTypes.TOGGLE_CHANNEL_DRAWER:
         return action.data;
@@ -14,7 +14,18 @@ function channel(state = false, action) {
     }
 }
 
+function channelDrawerDisabled(state = false, action) {
+    switch (action.type) {
+    case ViewTypes.TOGGLE_CHANNEL_DRAWER_DISABLED:
+        return action.data;
+
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
-    channel
+    channelDrawerOpened,
+    channelDrawerDisabled
 });
 

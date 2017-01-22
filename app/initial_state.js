@@ -271,7 +271,8 @@ const state = {
             serverUrl: Config.DefaultServerUrl
         },
         drawer: {
-            channel: false
+            channelDrawerOpened: false,
+            channelDrawerDisabled: false
         }
     }
 };

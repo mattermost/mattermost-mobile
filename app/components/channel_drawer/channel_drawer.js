@@ -15,20 +15,26 @@ export default class ChannelDrawer extends React.Component {
             selectChannel: React.PropTypes.func.isRequired,
             viewChannel: React.PropTypes.func.isRequired,
             closeDMChannel: React.PropTypes.func.isRequired,
-            closeChannelDrawer: React.PropTypes.func.isRequired
+            leaveChannel: React.PropTypes.func.isRequired,
+            closeChannelDrawer: React.PropTypes.func.isRequired,
+            shouldDisableChannelDrawer: React.PropTypes.func.isRequired,
+            markFavorite: React.PropTypes.func.isRequired,
+            unmarkFavorite: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
         channels: React.PropTypes.object,
         channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired,
-        isOpen: React.PropTypes.bool.isRequired
+        channelDrawerOpened: React.PropTypes.bool.isRequired,
+        channelDrawerDisabled: React.PropTypes.bool.isRequired
     };
 
     constructor(props) {
         super(props);
 
         this.handleBackButton = this.handleBackButton.bind(this);
+        this.handleDisableDrawer = this.handleDisableDrawer.bind(this);
     }
 
     componentDidMount() {
@@ -42,24 +48,29 @@ export default class ChannelDrawer extends React.Component {
             BackAndroid.removeEventListener('hardwareBackPress', this.handleBackButton);
         }
     }
+
     shouldComponentUpdate(nextProps) {
         return !deepEqual(this.props, nextProps, {strict: true});
     }
 
     componentWillReceiveProps(nextProps) {
-        if (!this.props.isOpen && nextProps.isOpen) {
+        if (!this.props.channelDrawerOpened && nextProps.channelDrawerOpened) {
             this.drawer.open();
-        } else if (this.props.isOpen && !nextProps.isOpen) {
+        } else if (this.props.channelDrawerOpened && !nextProps.channelDrawerOpened) {
             this.drawer.close();
         }
     }
 
     handleBackButton() {
-        if (this.props.isOpen) {
+        if (this.props.channelDrawerOpened) {
             this.props.actions.closeChannelDrawer();
             return true;
         }
         return false;
+    }
+
+    handleDisableDrawer(value) {
+        this.props.actions.shouldDisableChannelDrawer(value);
     }
 
     render() {
@@ -85,6 +96,8 @@ export default class ChannelDrawer extends React.Component {
                 panThreshold={0.2}
                 acceptPan={true}
                 tapToClose={true}
+                negotiatePan={true}
+                disabled={this.props.channelDrawerDisabled}
                 content={
                     <ChannelList
                         currentTeam={currentTeam}
@@ -95,7 +108,11 @@ export default class ChannelDrawer extends React.Component {
                         onSelectChannel={this.props.actions.selectChannel}
                         onViewChannel={this.props.actions.viewChannel}
                         handleCloseDM={this.props.actions.closeDMChannel}
+                        handleLeaveChannel={this.props.actions.leaveChannel}
                         closeChannelDrawer={this.props.actions.closeChannelDrawer}
+                        handleDisableDrawer={this.handleDisableDrawer}
+                        markFavorite={this.props.actions.markFavorite}
+                        unmarkFavorite={this.props.actions.unmarkFavorite}
                     />
                     }
             >

@@ -14,3 +14,9 @@ export function closeChannelDrawer() {
         dispatch({type: ViewTypes.TOGGLE_CHANNEL_DRAWER, data: false}, getState);
     };
 }
+
+export function shouldDisableChannelDrawer(value) {
+    return async (dispatch, getState) => {
+        dispatch({type: ViewTypes.TOGGLE_CHANNEL_DRAWER_DISABLED, data: value}, getState);
+    };
+}

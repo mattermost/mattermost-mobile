@@ -4,20 +4,20 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectChannel, viewChannel} from 'service/actions/channels';
-import {closeDMChannel} from 'app/actions/views/channel';
+import {selectChannel, viewChannel, leaveChannel} from 'service/actions/channels';
+import {closeDMChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 import {getChannelsByCategory} from 'service/selectors/entities/channels';
-import {closeChannelDrawer} from 'app/actions/views/drawer';
+import {closeChannelDrawer, shouldDisableChannelDrawer} from 'app/actions/views/drawer';
 import ChannelDrawer from './channel_drawer';
 
 function mapStateToProps(state, ownProps) {
-    const isOpen = state.views.drawer.channel;
     const channelMembers = state.entities.channels.myMembers;
+
     return {
         ...ownProps,
+        ...state.views.drawer,
         channels: getChannelsByCategory(state),
-        channelMembers,
-        isOpen
+        channelMembers
     };
 }
 
@@ -27,7 +27,11 @@ function mapDispatchToProps(dispatch) {
             selectChannel,
             viewChannel,
             closeDMChannel,
-            closeChannelDrawer
+            closeChannelDrawer,
+            shouldDisableChannelDrawer,
+            markFavorite,
+            unmarkFavorite,
+            leaveChannel
         }, dispatch)
     };
 }
