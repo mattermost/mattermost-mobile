@@ -395,4 +395,42 @@ describe('Actions.Channels', () => {
         assert.ok(notChannel.has(user.id));
         assert.ifError(channel.has(user.id));
     });
+
+    it('updateChannelHeader', async () => {
+        await Actions.getChannel(TestHelper.basicTeam.id, TestHelper.basicChannel.id)(store.dispatch, store.getState);
+
+        const channelRequest = store.getState().requests.channels.getChannel;
+        if (channelRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(channelRequest.error));
+        }
+
+        const header = 'this is an updated test header';
+        await Actions.updateChannelHeader(
+            TestHelper.basicChannel.id,
+            header
+        )(store.dispatch, store.getState);
+        const {channels} = store.getState().entities.channels;
+        const channel = channels[TestHelper.basicChannel.id];
+        assert.ok(channel);
+        assert.deepEqual(channel.header, header);
+    });
+
+    it('updateChannelPurpose', async () => {
+        await Actions.getChannel(TestHelper.basicTeam.id, TestHelper.basicChannel.id)(store.dispatch, store.getState);
+
+        const channelRequest = store.getState().requests.channels.getChannel;
+        if (channelRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(channelRequest.error));
+        }
+
+        const purpose = 'this is an updated test purpose';
+        await Actions.updateChannelPurpose(
+            TestHelper.basicChannel.id,
+            purpose
+        )(store.dispatch, store.getState);
+        const {channels} = store.getState().entities.channels;
+        const channel = channels[TestHelper.basicChannel.id];
+        assert.ok(channel);
+        assert.deepEqual(channel.purpose, purpose);
+    });
 });
