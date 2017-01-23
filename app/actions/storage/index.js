@@ -60,7 +60,7 @@ async function saveStorage(data) {
     try {
         await AsyncStorage.setItem('storage', JSON.stringify(data));
     } catch (error) {
-        // TODO: Need to handle this error
+        throw error;
     }
 }
 
