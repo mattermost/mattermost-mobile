@@ -11,14 +11,19 @@ export default class Drawer extends BaseDrawer {
         onRequestClose: React.PropTypes.func.isRequired
     };
 
-    close = (type, callback) => {
-        this.props.onRequestClose();
+    processTapGestures = () => {
+        // Note that we explicitly don't support tap to open or double tap because I didn't copy them over
 
-        if (typeof type === 'function') {
-            // This function can be called with only a callback as its only argument
-            type();
-        } else if (callback) {
-            callback();
+        if (this._activeTween) { // eslint-disable-line no-underscore-dangle
+            return false;
         }
-    }
+
+        if (this.props.tapToClose && this._open) { // eslint-disable-line no-underscore-dangle
+            this.props.onRequestClose();
+
+            return true;
+        }
+
+        return false;
+    };
 }

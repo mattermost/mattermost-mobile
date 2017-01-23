@@ -7,15 +7,14 @@ import {
     NavigationExperimental,
     View
 } from 'react-native';
-import Drawer from 'react-native-drawer';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {goBack} from 'app/actions/navigation';
+import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
-import {getComponentForScene} from 'app/scenes';
-
 import {RouteTransitions, RouteTypes} from 'app/navigation/routes';
+import {getComponentForScene} from 'app/scenes';
 
 class Router extends React.Component {
     static propTypes = {
@@ -83,37 +82,29 @@ class Router extends React.Component {
             rightDrawerContent = this.renderScene({scene: prevTransitionProps.scene});
         }
 
-        // Render only the main scene inside of the drawer so that the other scenes don't appear when
-        // the drawer opens or closes
-        const currentMainScene = renderedScenes[renderedScenes.length - 1];
-        renderedScenes.pop();
-
         return (
             <View style={{flex: 1}}>
-                <View style={{flex: 1}}>
-                    {title}
-                    {renderedScenes}
+                <Drawer
+                    open={transitionProps.scene.route.type === RouteTypes.LeftDrawer}
+                    type='displace'
+                    content={leftDrawerContent}
+                    tapToClose={true}
+                    openDrawerOffset={0.2}
+                    onRequestClose={this.props.actions.goBack}
+                >
                     <Drawer
-                        open={transitionProps.scene.route.type === RouteTypes.LeftDrawer}
+                        open={transitionProps.scene.route.type === RouteTypes.RightDrawer}
                         type='displace'
-                        content={leftDrawerContent}
+                        side='right'
+                        content={rightDrawerContent}
                         tapToClose={true}
-                        onCloseStart={this.props.actions.goBack}
                         openDrawerOffset={0.2}
+                        onRequestClose={this.props.actions.goBack}
                     >
-                        <Drawer
-                            open={transitionProps.scene.route.type === RouteTypes.RightDrawer}
-                            type='displace'
-                            side='right'
-                            content={rightDrawerContent}
-                            tapToClose={true}
-                            onCloseStart={this.props.actions.goBack}
-                            openDrawerOffset={0.2}
-                        >
-                            {currentMainScene}
-                        </Drawer>
+                        {title}
+                        {renderedScenes}
                     </Drawer>
-                </View>
+                </Drawer>
             </View>
         );
     };

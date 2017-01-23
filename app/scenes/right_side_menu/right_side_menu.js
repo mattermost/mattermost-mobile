@@ -40,32 +40,17 @@ const Styles = StyleSheet.create({
 export default class RightSideMenu extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
-            goBack: React.PropTypes.func.isRequired,
             goToFlaggedPosts: React.PropTypes.func.isRequired,
             goToRecentMentions: React.PropTypes.func.isRequired,
+            goToSelectTeam: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
-        }).isRequired,
-        onClose: React.PropTypes.func.isRequired
-    }
-
-    goToRecentMentions = () => {
-        this.props.onClose();
-        this.props.actions.goToRecentMentions();
-    }
-
-    goToFlaggedPosts = () => {
-        this.props.onClose();
-        this.props.actions.goToFlaggedPosts();
-    }
-
-    goToTeamSelection = () => {
-        this.props.actions.goBack();
+        }).isRequired
     }
 
     render() {
         return (
             <ScrollView style={Styles.container}>
-                <RightSideMenuItem onPress={this.goToRecentMentions}>
+                <RightSideMenuItem onPress={this.props.actions.goToRecentMentions}>
                     <Text style={[Styles.icon, Styles.mentionIcon]}>{'@'}</Text>
                     <FormattedText
                         style={Styles.itemText}
@@ -73,7 +58,7 @@ export default class RightSideMenu extends React.Component {
                         defaultMessage='Recent Mentions'
                     />
                 </RightSideMenuItem>
-                <RightSideMenuItem onPress={this.goToFlaggedPosts}>
+                <RightSideMenuItem onPress={this.props.actions.goToFlaggedPosts}>
                     <Icon
                         style={Styles.icon}
                         name='flag'
@@ -141,7 +126,7 @@ export default class RightSideMenu extends React.Component {
                         defaultMessage='Manage Members'
                     />
                 </RightSideMenuItem>
-                <RightSideMenuItem onPress={this.goToTeamSelection}>
+                <RightSideMenuItem onPress={this.props.actions.goToSelectTeam}>
                     <Icon
                         style={Styles.icon}
                         name='exchange'

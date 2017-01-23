@@ -8,6 +8,7 @@ const NavigationTypes = keyMirror({
     NAVIGATION_POP: null,
     NAVIGATION_JUMP: null,
     NAVIGATION_JUMP_TO_INDEX: null,
+    NAVIGATION_REPLACE: null,
     NAVIGATION_RESET: null
 });
 

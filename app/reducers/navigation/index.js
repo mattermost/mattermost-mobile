@@ -32,6 +32,9 @@ export default function(state = initialState, action) {
     case NavigationTypes.NAVIGATION_RESET:
         return NavigationExperimental.StateUtils.reset(state, action.routes, action.index);
 
+    case NavigationTypes.NAVIGATION_REPLACE:
+        return NavigationExperimental.StateUtils.replaceAtIndex(state, state.index, action.route);
+
     case UsersTypes.LOGOUT_SUCCESS:
         return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);
 
