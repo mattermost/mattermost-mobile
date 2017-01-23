@@ -12,6 +12,14 @@ export function goBack() {
     };
 }
 
+export function closeDrawers() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_CLOSE_DRAWERS
+        }, getState);
+    };
+}
+
 export function goToLogin() {
     return async (dispatch, getState) => {
         dispatch({
@@ -39,34 +47,6 @@ export function goToSelectTeam() {
     };
 }
 
-export function goToRecentMentions() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: {
-                ...Routes.Search,
-                props: {
-                    searchType: 'recent_mentions'
-                }
-            }
-        }, getState);
-    };
-}
-
-export function goToFlaggedPosts() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: {
-                ...Routes.Search,
-                props: {
-                    searchType: 'flagged_posts'
-                }
-            }
-        }, getState);
-    };
-}
-
 export function goToChannelInfo() {
     return async (dispatch, getState) => {
         dispatch({
@@ -79,7 +59,7 @@ export function goToChannelInfo() {
 export function openChannelDrawer() {
     return async (dispatch, getState) => {
         dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
+            type: NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER,
             route: Routes.ChannelDrawer
         }, getState);
     };
@@ -88,7 +68,7 @@ export function openChannelDrawer() {
 export function openRightSideMenu() {
     return async (dispatch, getState) => {
         dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
+            type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
             route: Routes.RightSideMenu
         }, getState);
     };

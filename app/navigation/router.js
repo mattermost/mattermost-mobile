@@ -10,21 +10,22 @@ import {
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {goBack} from 'app/actions/navigation';
+import {closeDrawers, goBack} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
-import {RouteTransitions, RouteTypes} from 'app/navigation/routes';
+import {RouteTransitions} from 'app/navigation/routes';
 import {getComponentForScene} from 'app/scenes';
 
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
         actions: React.PropTypes.shape({
-            goBack: React.PropTypes.func
+            closeDrawers: React.PropTypes.func.isRequired,
+            goBack: React.PropTypes.func.isRequired
         }).isRequired
     };
 
-    renderTransition = (transitionProps, prevTransitionProps) => {
+    renderTransition = (transitionProps) => {
         let title;
         if (transitionProps.scene.route.title) {
             title = (
@@ -36,12 +37,7 @@ class Router extends React.Component {
             );
         }
 
-        const renderedScenes = transitionProps.scenes.filter((scene) => {
-            const route = scene.route;
-
-            // Drawer scenes are rendered separately
-            return !(route.type === RouteTypes.LeftDrawer || route.type === RouteTypes.RightDrawer);
-        }).map((scene) => {
+        const renderedScenes = transitionProps.scenes.map((scene) => {
             const cardProps = {
                 ...transitionProps,
                 scene
@@ -66,45 +62,10 @@ class Router extends React.Component {
             );
         });
 
-        let leftDrawerContent;
-        if (transitionProps.scene.route.type === RouteTypes.LeftDrawer) {
-            leftDrawerContent = this.renderScene({scene: transitionProps.scene});
-        } else if (prevTransitionProps && prevTransitionProps.scene.route.type === RouteTypes.LeftDrawer) {
-            // Render the drawer scene that's transitioning out
-            leftDrawerContent = this.renderScene({scene: prevTransitionProps.scene});
-        }
-
-        let rightDrawerContent;
-        if (transitionProps.scene.route.type === RouteTypes.RightDrawer) {
-            rightDrawerContent = this.renderScene({scene: transitionProps.scene});
-        } else if (prevTransitionProps && prevTransitionProps.scene.route.type === RouteTypes.RightDrawer) {
-            // Render the drawer scene that's transitioning out
-            rightDrawerContent = this.renderScene({scene: prevTransitionProps.scene});
-        }
-
         return (
             <View style={{flex: 1}}>
-                <Drawer
-                    open={transitionProps.scene.route.type === RouteTypes.LeftDrawer}
-                    type='displace'
-                    content={leftDrawerContent}
-                    tapToClose={true}
-                    openDrawerOffset={0.2}
-                    onRequestClose={this.props.actions.goBack}
-                >
-                    <Drawer
-                        open={transitionProps.scene.route.type === RouteTypes.RightDrawer}
-                        type='displace'
-                        side='right'
-                        content={rightDrawerContent}
-                        tapToClose={true}
-                        openDrawerOffset={0.2}
-                        onRequestClose={this.props.actions.goBack}
-                    >
-                        {title}
-                        {renderedScenes}
-                    </Drawer>
-                </Drawer>
+                {title}
+                {renderedScenes}
             </View>
         );
     };
@@ -127,10 +88,14 @@ class Router extends React.Component {
     };
 
     renderScene = ({scene}) => {
-        const SceneComponent = getComponentForScene(scene.route.key);
-
-        return <SceneComponent {...scene.route.props}/>;
+        return this.renderRoute(scene.route);
     };
+
+    renderRoute = (route) => {
+        const SceneComponent = getComponentForScene(route.key);
+
+        return <SceneComponent {...route.props}/>;
+    }
 
     configureTransition = () => {
         return {
@@ -140,13 +105,49 @@ class Router extends React.Component {
     };
 
     render = () => {
+        const {
+            leftDrawerOpen,
+            leftDrawerRoute,
+            rightDrawerOpen,
+            rightDrawerRoute
+        } = this.props.navigation;
+
+        let leftDrawerContent;
+        if (leftDrawerRoute) {
+            leftDrawerContent = this.renderRoute(leftDrawerRoute);
+        }
+
+        let rightDrawerContent;
+        if (rightDrawerRoute) {
+            rightDrawerContent = this.renderRoute(rightDrawerRoute);
+        }
+
         return (
-            <NavigationExperimental.Transitioner
-                style={{flex: 1}}
-                navigationState={this.props.navigation}
-                render={this.renderTransition}
-                configureTransition={this.configureTransition}
-            />
+            <Drawer
+                open={leftDrawerOpen}
+                type='displace'
+                content={leftDrawerContent}
+                tapToClose={true}
+                openDrawerOffset={0.2}
+                onRequestClose={this.props.actions.closeDrawers}
+            >
+                <Drawer
+                    open={rightDrawerOpen}
+                    type='displace'
+                    side='right'
+                    content={rightDrawerContent}
+                    tapToClose={true}
+                    openDrawerOffset={0.2}
+                    onRequestClose={this.props.actions.closeDrawers}
+                >
+                    <NavigationExperimental.Transitioner
+                        style={{flex: 1}}
+                        navigationState={this.props.navigation}
+                        render={this.renderTransition}
+                        configureTransition={this.configureTransition}
+                    />
+                </Drawer>
+            </Drawer>
         );
     };
 }
@@ -160,6 +161,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closeDrawers,
             goBack
         }, dispatch)
     };

@@ -12,7 +12,7 @@ export default class ChannelDrawer extends React.PureComponent {
             selectChannel: React.PropTypes.func.isRequired,
             viewChannel: React.PropTypes.func.isRequired,
             closeDMChannel: React.PropTypes.func.isRequired,
-            goBack: React.PropTypes.func.isRequired
+            closeDrawers: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
@@ -20,6 +20,11 @@ export default class ChannelDrawer extends React.PureComponent {
         channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired
     };
+
+    selectChannel = (id) => {
+        this.props.actions.selectChannel(id);
+        this.props.actions.closeDrawers();
+    }
 
     render() {
         const {
@@ -43,10 +48,9 @@ export default class ChannelDrawer extends React.PureComponent {
                     channels={channels}
                     channelMembers={channelMembers}
                     theme={theme}
-                    onSelectChannel={this.props.actions.selectChannel}
+                    onSelectChannel={this.selectChannel}
                     onViewChannel={this.props.actions.viewChannel}
                     handleCloseDM={this.props.actions.closeDMChannel}
-                    closeChannelDrawer={this.props.actions.goBack}
                 />
             </View>
         );

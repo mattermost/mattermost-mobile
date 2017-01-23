@@ -7,22 +7,18 @@ export const RouteTransitions = keyMirror({
     Horizontal: null
 });
 
-export const RouteTypes = keyMirror({
-    LeftDrawer: null,
-    RightDrawer: null
-});
-
 export const Routes = {
     ChannelInfo: {
         key: 'ChannelInfo',
-        title: {id: 'mobile.routes.channelInfo', defaultMessage: 'Info'}
+        title: {id: 'mobile.routes.channelInfo', defaultMessage: 'Info'},
+        transition: RouteTransitions.Horizontal
     },
     ChannelDrawer: {
-        key: 'ChannelDrawer',
-        type: RouteTypes.LeftDrawer
+        key: 'ChannelDrawer'
     },
     ChannelView: {
-        key: 'ChannelView'
+        key: 'ChannelView',
+        transition: RouteTransitions.Horizontal
     },
     LoadTeam: {
         key: 'LoadTeam'
@@ -33,15 +29,14 @@ export const Routes = {
         transition: RouteTransitions.Horizontal
     },
     RightSideMenu: {
-        key: 'RightSideMenu',
-        type: RouteTypes.RightDrawer
+        key: 'RightSideMenu'
     },
     Root: {
         key: 'Root'
     },
     Search: {
         key: 'Search',
-        transition: 'horizontal'
+        transition: RouteTransitions.Horizontal
     },
     SelectServer: {
         key: 'SelectServer',

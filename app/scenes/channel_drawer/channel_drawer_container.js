@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goBack} from 'app/actions/navigation';
+import {closeDrawers} from 'app/actions/navigation';
 import {closeDMChannel} from 'app/actions/views/channel';
 
 import {selectChannel, viewChannel} from 'service/actions/channels';
@@ -30,7 +30,7 @@ function mapDispatchToProps(dispatch) {
             selectChannel,
             viewChannel,
             closeDMChannel,
-            goBack
+            closeDrawers
         }, dispatch)
     };
 }
