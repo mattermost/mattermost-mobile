@@ -80,6 +80,8 @@ class ChannelList extends React.Component {
                 rowHasChanged: (a, b) => a !== b
             }).cloneWithRows(this.buildData(props))
         };
+
+        this.modalOnChange = this.modalOnChange.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -415,6 +417,17 @@ class ChannelList extends React.Component {
         return data;
     };
 
+    modalOnChange(option) {
+        this.props.handleDisableDrawer(false);
+        if (option) {
+            option.action();
+        } else {
+            this.setState({
+                showOptions: false
+            });
+        }
+    }
+
     renderRow = (rowData) => {
         if (rowData && rowData.id) {
             return this.createChannelElement(rowData);
@@ -467,16 +480,7 @@ class ChannelList extends React.Component {
                 title={this.state.modalTitle}
                 options={this.state.options}
                 visible={this.state.showOptions}
-                onChange={(option) => {
-                    this.props.handleDisableDrawer(false);
-                    if (option) {
-                        option.action();
-                    } else {
-                        this.setState({
-                            showOptions: false
-                        });
-                    }
-                }}
+                onChange={this.modalOnChange}
             />
         );
 
