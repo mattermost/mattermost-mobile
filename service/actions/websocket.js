@@ -266,6 +266,10 @@ function handleUserRemovedEvent(msg, dispatch, getState) {
 
     if (msg.broadcast.user_id === users.currentId && teamId) {
         fetchMyChannelsAndMembers(teamId)(dispatch, getState);
+        dispatch({
+            type: ChannelTypes.LEAVE_CHANNEL,
+            data: msg.data.channel_id
+        }, getState);
     } else if (msg.broadcast.channel_id === channels.currentId) {
         getChannelStats(teamId, channels.currentId)(dispatch, getState);
     }
