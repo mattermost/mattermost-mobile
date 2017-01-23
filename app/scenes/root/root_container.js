@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {loadStorage, removeStorage} from 'app/actions/storage';
 import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
-import {goToSelectTeam, goToChannelView} from 'app/actions/navigation';
+import {goToLoadTeam} from 'app/actions/navigation';
 import {resetLogout} from 'service/actions/users';
 
 import Root from './root';
@@ -23,9 +23,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goToChannelView,
+            goToLoadTeam,
             goToSelectServer,
-            goToSelectTeam,
             loadStorage,
             removeStorage,
             setStoreFromLocalData,

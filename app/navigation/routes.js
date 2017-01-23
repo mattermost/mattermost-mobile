@@ -24,6 +24,9 @@ export const Routes = {
     ChannelView: {
         key: 'ChannelView'
     },
+    LoadTeam: {
+        key: 'LoadTeam'
+    },
     Login: {
         key: 'Login',
         title: {id: 'mobile.routes.login', defaultMessage: 'Login'},

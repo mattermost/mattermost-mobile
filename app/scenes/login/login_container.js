@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {getClientConfig, getLicenseConfig} from 'service/actions/general';
 import LoginActions from 'app/actions/views/login';
 import * as StorageActions from 'app/actions/storage';
-import {goToSelectTeam} from 'app/actions/navigation';
+import {goToLoadTeam} from 'app/actions/navigation';
 import {login} from 'service/actions/users';
 
 import Login from './login.js';
@@ -31,7 +31,7 @@ function mapDispatchToProps(dispatch) {
             login,
             getClientConfig,
             getLicenseConfig,
-            goToSelectTeam
+            goToLoadTeam
         }, dispatch)
     };
 }

@@ -4,6 +4,7 @@
 import Channel from './channel';
 import ChannelDrawer from './channel_drawer';
 import ChannelInfo from './channel_info';
+import LoadTeam from './load_team';
 import Login from './login/login_container.js';
 import RightSideMenu from './right_side_menu';
 import Root from './root/root_container.js';
@@ -15,6 +16,7 @@ const scenes = {
     ChannelView: Channel, // Special case the name for this one to avoid ambiguity
     ChannelDrawer,
     ChannelInfo,
+    LoadTeam,
     Login,
     RightSideMenu,
     Root,

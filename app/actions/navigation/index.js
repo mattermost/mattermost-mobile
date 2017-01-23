@@ -21,20 +21,20 @@ export function goToLogin() {
     };
 }
 
+export function goToLoadTeam() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.LoadTeam
+        }, getState);
+    };
+}
+
 export function goToSelectTeam() {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: Routes.SelectTeam
-        }, getState);
-    };
-}
-
-export function goToChannelView() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.ChannelView
         }, getState);
     };
 }
