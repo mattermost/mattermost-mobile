@@ -55,10 +55,7 @@ export default class SelectTeam extends Component {
     }
 
     onSelectTeam(team) {
-        this.props.actions.selectTeam(team).then(() => {
-            this.props.actions.saveStorage({currentTeamId: team.id}).
-                then(this.props.actions.goToChannelView());
-        });
+        this.props.actions.handleTeamChange(team).then(this.props.actions.goToChannelView);
     }
 
     render() {

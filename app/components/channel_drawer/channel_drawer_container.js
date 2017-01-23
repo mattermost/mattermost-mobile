@@ -4,10 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectChannel, viewChannel} from 'service/actions/channels';
-import {closeDMChannel} from 'app/actions/views/channel';
+import {viewChannel} from 'service/actions/channels';
 import {getChannelsByCategory} from 'service/selectors/entities/channels';
+import {closeDMChannel, handleSelectChannel} from 'app/actions/views/channel';
 import {closeChannelDrawer} from 'app/actions/views/drawer';
+import {updateStorage} from 'app/actions/storage';
 import ChannelDrawer from './channel_drawer';
 
 function mapStateToProps(state, ownProps) {
@@ -24,7 +25,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            selectChannel,
+            updateStorage,
+            handleSelectChannel,
             viewChannel,
             closeDMChannel,
             closeChannelDrawer
