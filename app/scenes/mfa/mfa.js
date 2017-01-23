@@ -16,11 +16,16 @@ import RequestStatus from 'service/constants/request_status';
 
 class Mfa extends Component {
     static propTypes = {
+        actions: React.PropTypes.shape({
+            goBack: React.PropTypes.func.isRequired,
+            goToSelectTeam: React.PropTypes.func.isRequired,
+            handleSuccessfulLogin: React.PropTypes.func.isRequired,
+            login: React.PropTypes.func.isRequired
+        }).isRequired,
         intl: intlShape.isRequired,
         loginId: React.PropTypes.string.isRequired,
         password: React.PropTypes.string.isRequired,
-        loginRequest: React.PropTypes.object.isRequired,
-        actions: React.PropTypes.object.isRequired
+        loginRequest: React.PropTypes.object.isRequired
     };
 
     componentWillMount() {
