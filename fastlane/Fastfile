@@ -48,7 +48,7 @@ platform :ios do
               branch_name: 'ios-beta'
           })
 
-    # pilot
+    pilot
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       testflight_url = ENV['TESTFLIGHT_URL']
@@ -285,7 +285,7 @@ platform :android do
             repo: 'mattermost/mattermost-mobile',
             head: "mattermost:#{options[:branch_name]}",
             base: 'master',
-            title: "IOS #{commit[:message]}"
+            title: "Android #{commit[:message]}"
         )
       end
     end
