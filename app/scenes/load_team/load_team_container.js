@@ -4,10 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {saveStorage} from 'app/actions/storage';
 import {goToChannelView} from 'app/actions/views/load_team';
+import {handleTeamChange} from 'app/actions/views/select_team';
 
-import {selectTeam} from 'service/actions/teams';
 import {init} from 'service/actions/websocket';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
@@ -27,8 +26,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goToChannelView,
-            saveStorage,
-            selectTeam,
+            handleTeamChange,
             initWebsocket: init
         }, dispatch)
     };

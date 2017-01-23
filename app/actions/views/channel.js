@@ -4,6 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
+import {updateStorage} from 'app/actions/storage';
 
 import {fetchMyChannelsAndMembers, getMyChannelMembers, selectChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
@@ -94,7 +95,14 @@ export function loadPostsIfNecessary(channel) {
 
 export function selectInitialChannel(teamId) {
     return async (dispatch, getState) => {
-        const channels = getState().entities.channels.channels;
+        const state = getState();
+        const channels = state.entities.channels.channels;
+        const currentChannelId = state.entities.channels.currentId;
+
+        if (channels[currentChannelId] && channels[currentChannelId].team_id === teamId) {
+            await selectChannel(currentChannelId)(dispatch, getState);
+            return;
+        }
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === Constants.DEFAULT_CHANNEL);
         if (channel) {
@@ -104,6 +112,14 @@ export function selectInitialChannel(teamId) {
             const firstChannel = Object.values(channels)[0];
             await selectChannel(firstChannel.id)(dispatch, getState);
         }
+    };
+}
+
+export function handleSelectChannel(channelId) {
+    return async (dispatch, getState) => {
+        const currentTeamId = getState().entities.teams.currentId;
+        await updateStorage(currentTeamId, {currentChannelId: channelId});
+        await selectChannel(channelId)(dispatch, getState);
     };
 }
 

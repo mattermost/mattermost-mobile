@@ -18,17 +18,12 @@ export default class SelectTeam extends React.Component {
         myMembers: React.PropTypes.object.isRequired,
         actions: React.PropTypes.shape({
             goBackToChannelView: React.PropTypes.func.isRequired,
-            saveStorage: React.PropTypes.func.isRequired,
-            selectTeam: React.PropTypes.func.isRequired
+            handleTeamChange: React.PropTypes.func.isRequired
         }).isRequired
     };
 
     onSelectTeam(team) {
-        this.props.actions.selectTeam(team).then(() => {
-            return this.props.actions.saveStorage({currentTeamId: team.id});
-        }).then(() => {
-            return this.props.actions.goBackToChannelView();
-        });
+        this.props.actions.handleTeamChange(team).then(this.props.actions.goBackToChannelView);
     }
 
     render() {

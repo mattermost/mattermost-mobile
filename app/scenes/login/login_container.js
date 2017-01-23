@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 
 import {getClientConfig, getLicenseConfig} from 'service/actions/general';
 import LoginActions from 'app/actions/views/login';
-import * as StorageActions from 'app/actions/storage';
 import {goToLoadTeam} from 'app/actions/navigation';
 import {login} from 'service/actions/users';
 
@@ -27,7 +26,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             ...LoginActions,
-            ...StorageActions,
             login,
             getClientConfig,
             getLicenseConfig,

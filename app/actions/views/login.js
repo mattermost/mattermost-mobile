@@ -2,6 +2,8 @@
 // See License.txt for license information.
 
 import {ViewTypes} from 'app/constants';
+import {updateStorage} from 'app/actions/storage';
+import Client from 'service/client';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -21,7 +23,17 @@ export function handlePasswordChanged(password) {
     };
 }
 
+export function handleSuccessfulLogin() {
+    return async () => {
+        await updateStorage(null, {
+            url: Client.getUrl(),
+            token: Client.getToken()
+        });
+    };
+}
+
 export default {
     handleLoginIdChanged,
-    handlePasswordChanged
+    handlePasswordChanged,
+    handleSuccessfulLogin
 };

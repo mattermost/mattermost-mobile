@@ -15,8 +15,7 @@ export default class LoadTeam extends React.Component {
         currentTeam: React.PropTypes.object,
         actions: React.PropTypes.shape({
             goToChannelView: React.PropTypes.func.isRequired,
-            saveStorage: React.PropTypes.func.isRequired,
-            selectTeam: React.PropTypes.func.isRequired,
+            handleTeamChange: React.PropTypes.func.isRequired,
             initWebsocket: React.PropTypes.func.isRequired
         }).isRequired
     };
@@ -52,9 +51,7 @@ export default class LoadTeam extends React.Component {
     }
 
     onSelectTeam(team) {
-        this.props.actions.selectTeam(team).then(() => {
-            return this.props.actions.saveStorage({currentTeamId: team.id});
-        }).then(this.props.actions.goToChannelView());
+        this.props.actions.handleTeamChange(team).then(this.props.actions.goToChannelView);
     }
 
     render() {

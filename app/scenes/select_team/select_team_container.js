@@ -5,9 +5,8 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goBack} from 'app/actions/navigation';
-import {saveStorage} from 'app/actions/storage';
+import {handleTeamChange} from 'app/actions/views/select_team';
 
-import {selectTeam} from 'service/actions/teams';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
 import SelectTeam from './select_team.js';
@@ -26,8 +25,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goBackToChannelView: goBack,
-            saveStorage,
-            selectTeam
+            handleTeamChange
         }, dispatch)
     };
 }
