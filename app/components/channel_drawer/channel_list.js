@@ -3,8 +3,10 @@
 
 import React from 'react';
 
-import {StyleSheet, Text, View, ListView} from 'react-native';
+import {Alert, StyleSheet, Text, View, ListView} from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 import {buildDisplayNameAndTypeComparable} from 'service/utils/channel_utils';
+import {Constants} from 'service/constants';
 import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
@@ -48,8 +50,9 @@ const Styles = StyleSheet.create({
     }
 });
 
-export default class ChannelList extends React.Component {
+class ChannelList extends React.Component {
     static propTypes = {
+        intl: intlShape.isRequired,
         currentTeam: React.PropTypes.object.isRequired,
         currentChannel: React.PropTypes.object,
         channels: React.PropTypes.object.isRequired,
@@ -57,6 +60,7 @@ export default class ChannelList extends React.Component {
         theme: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
         onViewChannel: React.PropTypes.func.isRequired,
+        handleCloseDM: React.PropTypes.func.isRequired,
         closeChannelDrawer: React.PropTypes.func.isRequired
     };
 
@@ -140,6 +144,25 @@ export default class ChannelList extends React.Component {
         this.props.closeChannelDrawer();
     };
 
+    handleClose = (channel) => {
+        const {formatMessage} = this.props.intl;
+        Alert.alert(
+            formatMessage({id: 'mobile.channel_list.alertTitleCloseDM', defaultMessage: 'Close Direct Message'}),
+            formatMessage({
+                id: 'mobile.channel_list.alertMessageCloseDM',
+                defaultMessage: 'Are you sure you want to close the DM with {username}'
+            }, {
+                username: channel.display_name
+            }),
+            [
+                {text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})},
+                {
+                    text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
+                    onPress: () => this.props.handleCloseDM(channel)
+                }]
+        );
+    };
+
     getUnreadMessages = (channel) => {
         const member = this.props.channelMembers[channel.id];
         let mentions = 0;
@@ -186,6 +209,7 @@ export default class ChannelList extends React.Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
+                handleClose={channel.type === Constants.DM_CHANNEL ? this.handleClose : null}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
@@ -336,3 +360,5 @@ export default class ChannelList extends React.Component {
         );
     }
 }
+
+export default injectIntl(ChannelList);

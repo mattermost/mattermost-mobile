@@ -16,6 +16,7 @@ export default class ChannelItem extends React.Component {
     static propTypes = {
         channel: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
+        handleClose: React.PropTypes.func,
         isActive: React.PropTypes.bool.isRequired,
         hasUnread: React.PropTypes.bool.isRequired,
         mentions: React.PropTypes.number.isRequired,
@@ -28,7 +29,8 @@ export default class ChannelItem extends React.Component {
             theme,
             mentions,
             hasUnread,
-            isActive
+            isActive,
+            handleClose
         } = this.props;
 
         let iconColor = changeOpacity(theme.centerChannelColor, 0.7);
@@ -39,7 +41,7 @@ export default class ChannelItem extends React.Component {
         if (mentions && !isActive) {
             const badgeStyle = {
                 position: 'absolute',
-                top: 10,
+                top: 12,
                 right: 10,
                 flexDirection: 'row',
                 backgroundColor: theme.mentionBj
@@ -63,7 +65,7 @@ export default class ChannelItem extends React.Component {
 
         const itemStyle = {
             alignItems: 'center',
-            height: 40,
+            height: 45,
             paddingLeft: 20,
             paddingRight: 10,
             flex: 1,
@@ -73,12 +75,13 @@ export default class ChannelItem extends React.Component {
         const style = {
             marginLeft: 5,
             opacity: 0.6,
+            fontSize: 15,
             color: theme.sidebarText
         };
 
         const activeStyle = {
             width: 5,
-            height: 40,
+            height: 45,
             backgroundColor: theme.sidebarTextActiveBorder,
             position: 'absolute'
         };
@@ -149,6 +152,33 @@ export default class ChannelItem extends React.Component {
             }
         }
 
+        let closeButton = null;
+        if (handleClose && !badge) {
+            const closeStyle = {
+                position: 'absolute',
+                justifyContent: 'center',
+                alignItems: 'center',
+                opacity: 0.4,
+                width: 50,
+                height: 50,
+                right: 0,
+                flexDirection: 'row'
+            };
+
+            closeButton = (
+                <TouchableHighlight
+                    style={closeStyle}
+                    onPress={() => handleClose(channel)}
+                >
+                    <Icon
+                        name='times'
+                        size={13}
+                        color={theme.sidebarText}
+                    />
+                </TouchableHighlight>
+            );
+        }
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.3)}
@@ -166,6 +196,7 @@ export default class ChannelItem extends React.Component {
                             {channel.display_name}
                         </Text>
                         {badge}
+                        {closeButton}
                     </View>
                 </View>
             </TouchableHighlight>
