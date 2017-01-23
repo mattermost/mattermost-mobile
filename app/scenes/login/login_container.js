@@ -6,19 +6,23 @@ import {connect} from 'react-redux';
 
 import {getClientConfig, getLicenseConfig} from 'service/actions/general';
 import LoginActions from 'app/actions/views/login';
-import {goToLoadTeam} from 'app/actions/navigation';
-import {login} from 'service/actions/users';
+import {goToMfa, goToLoadTeam} from 'app/actions/navigation';
+import {checkMfa, login} from 'service/actions/users';
 
 import Login from './login.js';
 
 function mapStateToProps(state) {
+    const {config, license} = state.entities.general;
+    const {config: configRequest, license: licenseRequest} = state.requests.general;
+    const {checkMfa: checkMfaRequest, login: loginRequest} = state.requests.users;
     return {
         ...state.views.login,
-        loginRequest: state.requests.users.login,
-        configRequest: state.requests.general.config,
-        licenseRequest: state.requests.general.license,
-        config: state.entities.general.config,
-        license: state.entities.general.license
+        checkMfaRequest,
+        loginRequest,
+        configRequest,
+        licenseRequest,
+        config,
+        license
     };
 }
 
@@ -26,9 +30,11 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             ...LoginActions,
+            checkMfa,
             login,
             getClientConfig,
             getLicenseConfig,
+            goToMfa,
             goToLoadTeam
         }, dispatch)
     };

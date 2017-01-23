@@ -194,6 +194,13 @@ export default class Client {
         );
     };
 
+    checkMfa = async (loginId) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/mfa`,
+            {method: 'post', body: JSON.stringify({login_id: loginId})}
+        );
+    };
+
     login = async (loginId, password, token = '') => {
         const body = {
             login_id: loginId,

@@ -29,6 +29,15 @@ export function goToLogin() {
     };
 }
 
+export function goToMfa() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.Mfa
+        }, getState);
+    };
+}
+
 export function goToLoadTeam() {
     return async (dispatch, getState) => {
         dispatch({

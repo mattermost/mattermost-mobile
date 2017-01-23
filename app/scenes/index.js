@@ -6,6 +6,7 @@ import ChannelDrawer from './channel_drawer';
 import ChannelInfo from './channel_info';
 import LoadTeam from './load_team';
 import Login from './login/login_container.js';
+import Mfa from './mfa';
 import RightMenuDrawer from './right_menu_drawer';
 import Root from './root/root_container.js';
 import Search from './search/search_container.js';
@@ -18,6 +19,7 @@ const scenes = {
     ChannelInfo,
     LoadTeam,
     Login,
+    Mfa,
     RightMenuDrawer,
     Root,
     Search,

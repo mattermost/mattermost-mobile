@@ -8,7 +8,7 @@ import {ViewTypes} from 'app/constants';
 function loginId(state = '', action) {
     switch (action.type) {
     case ViewTypes.LOGIN_ID_CHANGED:
-        return action.loginId;
+        return action.loginId.trim();
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
     default:
