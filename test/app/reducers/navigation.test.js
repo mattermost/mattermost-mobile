@@ -22,7 +22,11 @@ describe('Reducers.Navigation', () => {
 
         assert.deepEqual(state, {
             index: 0,
-            routes: [Routes.Root]
+            routes: [Routes.Root],
+            leftDrawerOpen: false,
+            leftDrawerRoute: null,
+            rightDrawerOpen: false,
+            rightDrawerRoute: null
         }, 'initial state');
     });
 
@@ -31,44 +35,38 @@ describe('Reducers.Navigation', () => {
 
         it('first push', () => {
             state = reduceAndFreeze(state, {
-                type: NavigationTypes.PUSH,
+                type: NavigationTypes.NAVIGATION_PUSH,
                 route: {key: 'fake'}
             });
 
-            assert.deepEqual(state, {
-                index: 1,
-                routes: [Routes.Root, {key: 'fake'}]
-            });
+            assert.equal(state.index, 1);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}]);
         });
 
         it('second push', () => {
             state = reduceAndFreeze(state, {
-                type: NavigationTypes.PUSH,
+                type: NavigationTypes.NAVIGATION_PUSH,
                 route: {key: 'fake2'}
             });
 
-            assert.deepEqual(state, {
-                index: 1,
-                routes: [Routes.Root, {key: 'fake'}, {key: 'fake2'}]
-            });
+            assert.equal(state.index, 2);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake2'}]);
+        });
+
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_JUMP,
+            key: Routes.Root.key
         });
 
         it('push when not at head of stack', () => {
             state = reduceAndFreeze(state, {
-                type: NavigationTypes.JUMP,
-                key: Routes.key.root
-            });
-
-            state = reduceAndFreeze(state, {
-                type: NavigationTypes.PUSH,
+                type: NavigationTypes.NAVIGATION_PUSH,
                 route: {key: 'fake3'}
             });
 
             // The next route on the stack is replaced, but anything past that is left unchanged
-            assert.deepEqual(state, {
-                index: 1,
-                routes: [Routes.Root, {key: 'fake3'}, {key: 'fake2'}]
-            });
+            assert.equal(state.index, 1);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake3'}, {key: 'fake2'}]);
         });
     });
 
@@ -76,45 +74,146 @@ describe('Reducers.Navigation', () => {
         let state = initialState();
 
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake'}
         });
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake2'}
         });
 
         it('first pop', () => {
             state = reduceAndFreeze(state, {
-                type: NavigationTypes.POP
+                type: NavigationTypes.NAVIGATION_POP
             });
 
-            assert.deepEqual(state, {
-                index: 1,
-                routes: [Routes.Root, {key: 'fake'}]
-            });
+            assert.equal(state.index, 1);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}]);
         });
 
         it('second pop', () => {
             state = reduceAndFreeze(state, {
-                type: NavigationTypes.POP
+                type: NavigationTypes.NAVIGATION_POP
             });
 
-            assert.deepEqual(state, {
-                index: 0,
-                routes: [Routes.Root]
-            });
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
         });
 
         it('pop last entry on stack', () => {
             state = reduceAndFreeze(state, {
-                type: NavigationTypes.POP
+                type: NavigationTypes.NAVIGATION_POP
             });
 
-            assert.deepEqual(state, {
-                index: 0,
-                routes: [Routes.Root]
+            // Nothing happens
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
+        });
+
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {key: 'fake3'}
+        });
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER,
+            route: {key: 'fake'}
+        });
+
+        it('popping to close left drawer', () => {
+            state.reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_POP
             });
+
+            // Routes not popped, but drawer closed
+            assert.equal(state.index, 1);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake3'}]);
+            assert.equal(state.leftDrawerOpen, false);
+            assert.equal(state.rightDrawerOpen, false);
+        });
+
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
+            route: {key: 'fake'}
+        });
+
+        it('popping to close right drawer', () => {
+            state.reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_POP
+            });
+
+            // Routes not popped, but drawer closed
+            assert.equal(state.index, 1);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}]);
+            assert.equal(state.leftDrawerOpen, false);
+            assert.equal(state.rightDrawerOpen, false);
+        });
+    });
+
+    it('NAVIGATION_OPEN_LEFT_DRAWER', () => {
+        let state = initialState();
+
+        it('open left drawer', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER,
+                route: {key: 'fake'}
+            });
+
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
+            assert.equal(state.leftDrawerOpen, true);
+            assert.deepEqual(state.leftDrawerRoute, {key: 'fake'});
+            assert.equal(state.rightDrawerOpen, false);
+        });
+    });
+
+    it('NAVIGATION_OPEN_RIGHT_DRAWER', () => {
+        let state = initialState();
+
+        it('open right drawer', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
+                route: {key: 'fake'}
+            });
+
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
+            assert.equal(state.leftDrawerOpen, false);
+            assert.equal(state.rightDrawerOpen, true);
+            assert.deepEqual(state.rightDrawerRoute, {key: 'fake'});
+        });
+    });
+
+    it('NAVIGATION_CLOSE_DRAWERS', () => {
+        let state = initialState();
+
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER,
+            route: {key: 'fake'}
+        });
+
+        it('close left drawer', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_CLOSE_DRAWERS
+            });
+
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
+            assert.equal(state.leftDrawerOpen, false);
+        });
+
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
+            route: {key: 'fake'}
+        });
+
+        it('close right drawer', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_CLOSE_DRAWERS
+            });
+
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
+            assert.equal(state.rightDrawerOpen, false);
         });
     });
 
@@ -122,11 +221,11 @@ describe('Reducers.Navigation', () => {
         let state = initialState();
 
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake'}
         });
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake2'}
         });
 
@@ -137,10 +236,8 @@ describe('Reducers.Navigation', () => {
             });
 
             // The rest of the stack is preserved
-            assert.deepEqual(state, {
-                index: 0,
-                routes: [Routes.Root, {key: 'fake'}, {key: 'fake2'}]
-            });
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}, {key: 'fake2'}]);
         });
 
         it('jump forward', () => {
@@ -149,10 +246,8 @@ describe('Reducers.Navigation', () => {
                 key: 'fake'
             });
 
-            assert.deepEqual(state, {
-                index: 2,
-                routes: [Routes.Root, {key: 'fake'}, {key: 'fake2'}]
-            });
+            assert.equal(state.index, 2);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}, {key: 'fake2'}]);
         });
     });
 
@@ -160,11 +255,11 @@ describe('Reducers.Navigation', () => {
         let state = initialState();
 
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake'}
         });
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake2'}
         });
 
@@ -175,10 +270,8 @@ describe('Reducers.Navigation', () => {
             });
 
             // The rest of the stack is preserved
-            assert.deepEqual(state, {
-                index: 0,
-                routes: [Routes.Root, {key: 'fake'}, {key: 'fake2'}]
-            });
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}, {key: 'fake2'}]);
         });
 
         it('jump forward', () => {
@@ -187,10 +280,8 @@ describe('Reducers.Navigation', () => {
                 index: 2
             });
 
-            assert.deepEqual(state, {
-                index: 2,
-                routes: [Routes.Root, {key: 'fake'}, {key: 'fake2'}]
-            });
+            assert.equal(state.index, 2);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}, {key: 'fake2'}]);
         });
     });
 
@@ -198,11 +289,11 @@ describe('Reducers.Navigation', () => {
         let state = initialState();
 
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake'}
         });
         state = reduceAndFreeze(state, {
-            type: NavigationTypes.PUSH,
+            type: NavigationTypes.NAVIGATION_PUSH,
             route: {key: 'fake2'}
         });
 
@@ -216,7 +307,65 @@ describe('Reducers.Navigation', () => {
             // The navigation state is wiped out and replaced with the new state
             assert.deepEqual(state, {
                 index: 1,
+                routes: [{key: 'fake3'}, {key: 'fake4'}],
+                leftDrawerOpen: false,
+                leftDrawerRoute: null,
+                rightDrawerOpen: false,
+                rightDrawerRoute: null
+            });
+        });
+
+        state = initialState();
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {key: 'fake'}
+        });
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER,
+            route: {key: 'fake2'}
+        });
+
+        it('reset with left drawer open', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_RESET,
+                index: 1,
                 routes: [{key: 'fake3'}, {key: 'fake4'}]
+            });
+
+            assert.deepEqual(state, {
+                index: 1,
+                routes: [{key: 'fake3'}, {key: 'fake4'}],
+                leftDrawerOpen: false,
+                leftDrawerRoute: {key: 'fake2'}, // Leave drawer routes in tact so that the close animation still works
+                rightDrawerOpen: false,
+                rightDrawerRoute: null
+            });
+        });
+
+        state = initialState();
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {key: 'fake'}
+        });
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
+            route: {key: 'fake2'}
+        });
+
+        it('reset with left drawer open', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_RESET,
+                index: 1,
+                routes: [{key: 'fake3'}, {key: 'fake4'}]
+            });
+
+            assert.deepEqual(state, {
+                index: 1,
+                routes: [{key: 'fake3'}, {key: 'fake4'}],
+                leftDrawerOpen: false,
+                leftDrawerRoute: null,
+                rightDrawerOpen: false,
+                rightDrawerRoute: {key: 'fake2'} // Leave drawer routes in tact so that the close animation still works
             });
         });
     });

@@ -63,7 +63,12 @@ export default function(state = initialState, action) {
         return NavigationExperimental.StateUtils.jumpToIndex(state, action.index);
 
     case NavigationTypes.NAVIGATION_RESET:
-        return NavigationExperimental.StateUtils.reset(state, action.routes, action.index);
+        return {
+            ...state,
+            ...NavigationExperimental.StateUtils.reset(state, action.routes, action.index),
+            leftDrawerOpen: false,
+            rightDrawerOpen: false
+        };
 
     case NavigationTypes.NAVIGATION_REPLACE:
         return NavigationExperimental.StateUtils.replaceAtIndex(state, state.index, action.route);
