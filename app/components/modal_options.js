@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component, PropTypes} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 
 import {
     View,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class ModalOptions extends Component {
+export default class ModalOptions extends PureComponent {
     static propTypes = {
         title: PropTypes.string,
         options: PropTypes.array,
