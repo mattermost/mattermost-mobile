@@ -12,7 +12,11 @@ const initialState = {
     index: 0,
     routes: [
         Routes.Root
-    ]
+    ],
+    leftDrawerOpen: false,
+    leftDrawerRoute: null,
+    rightDrawerOpen: false,
+    rightDrawerRoute: null
 };
 
 export default function(state = initialState, action) {
@@ -21,7 +25,36 @@ export default function(state = initialState, action) {
         return NavigationExperimental.StateUtils.push(state, action.route);
 
     case NavigationTypes.NAVIGATION_POP:
+        if (state.leftDrawerOpen || state.rightDrawerOpen) {
+            return {
+                ...state,
+                leftDrawerOpen: false,
+                rightDrawerOpen: false
+            };
+        }
+
         return NavigationExperimental.StateUtils.pop(state);
+
+    case NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER:
+        return {
+            ...state,
+            leftDrawerOpen: true,
+            leftDrawerRoute: action.route
+        };
+
+    case NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER:
+        return {
+            ...state,
+            rightDrawerOpen: true,
+            rightDrawerRoute: action.route
+        };
+
+    case NavigationTypes.NAVIGATION_CLOSE_DRAWERS:
+        return {
+            ...state,
+            leftDrawerOpen: false,
+            rightDrawerOpen: false
+        };
 
     case NavigationTypes.NAVIGATION_JUMP:
         return NavigationExperimental.StateUtils.jumpTo(state, action.key);
@@ -30,7 +63,15 @@ export default function(state = initialState, action) {
         return NavigationExperimental.StateUtils.jumpToIndex(state, action.index);
 
     case NavigationTypes.NAVIGATION_RESET:
-        return NavigationExperimental.StateUtils.reset(state, action.routes, action.index);
+        return {
+            ...state,
+            ...NavigationExperimental.StateUtils.reset(state, action.routes, action.index),
+            leftDrawerOpen: false,
+            rightDrawerOpen: false
+        };
+
+    case NavigationTypes.NAVIGATION_REPLACE:
+        return NavigationExperimental.StateUtils.replaceAtIndex(state, state.index, action.route);
 
     case UsersTypes.LOGOUT_SUCCESS:
         return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);

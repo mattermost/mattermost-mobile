@@ -4,10 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goBack, goToFlaggedPosts, goToRecentMentions} from 'app/actions/navigation';
+import {goBack} from 'app/actions/navigation';
+import {goToFlaggedPosts, goToRecentMentions, goToSelectTeam} from 'app/actions/views/right_menu_drawer';
+
 import {logout} from 'service/actions/users';
 
-import RightSidebarMenu from './right_sidebar_menu';
+import RightMenuDrawer from './right_menu_drawer';
 
 function mapStateToProps(state, ownProps) {
     return ownProps;
@@ -19,9 +21,10 @@ function mapDispatchToProps(dispatch) {
             goBack,
             goToFlaggedPosts,
             goToRecentMentions,
+            goToSelectTeam,
             logout
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RightSidebarMenu);
+export default connect(mapStateToProps, mapDispatchToProps)(RightMenuDrawer);

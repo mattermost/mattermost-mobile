@@ -5,17 +5,20 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
+    goToChannelInfo,
+    openChannelDrawer,
+    openRightMenuDrawer
+} from 'app/actions/navigation';
+import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar,
     selectInitialChannel,
     handlePostDraftChanged
 } from 'app/actions/views/channel';
-import {openChannelDrawer} from 'app/actions/views/drawer';
 
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
-import {goToChannelInfo} from 'app/actions/navigation';
 
 import Channel from './channel';
 
@@ -36,6 +39,7 @@ function mapDispatchToProps(dispatch) {
             loadProfilesAndTeamMembersForDMSidebar,
             selectInitialChannel,
             openChannelDrawer,
+            openRightMenuDrawer,
             handlePostDraftChanged,
             goToChannelInfo
         }, dispatch)

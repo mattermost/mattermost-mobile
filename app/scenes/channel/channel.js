@@ -7,11 +7,8 @@ import {
     StatusBar,
     Text
 } from 'react-native';
-import Drawer from 'react-native-drawer';
 
-import ChannelDrawer from 'app/components/channel_drawer';
 import PostTextbox from 'app/components/post_textbox';
-import RightSidebarMenu from 'app/components/right_sidebar_menu';
 
 import ChannelHeader from './channel_header';
 import ChannelPostList from './channel_post_list';
@@ -23,6 +20,7 @@ export default class Channel extends React.PureComponent {
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
             openChannelDrawer: React.PropTypes.func.isRequired,
+            openRightMenuDrawer: React.PropTypes.func.isRequired,
             handlePostDraftChanged: React.PropTypes.func.isRequired,
             goToChannelInfo: React.PropTypes.func.isRequired
         }).isRequired,
@@ -60,18 +58,14 @@ export default class Channel extends React.PureComponent {
         });
     };
 
-    openRightSidebar = () => {
-        this.refs.postTextbox.getWrappedInstance().blur();
-        this.setState({rightSidebarOpen: true});
-    };
-
-    closeRightSidebar = () => {
-        this.setState({rightSidebarOpen: false});
-    };
-
     openChannelDrawer = () => {
         this.refs.postTextbox.getWrappedInstance().blur();
         this.props.actions.openChannelDrawer();
+    }
+
+    openRightMenuDrawer = () => {
+        this.refs.postTextbox.getWrappedInstance().blur();
+        this.props.actions.openRightMenuDrawer();
     }
 
     render() {
@@ -93,36 +87,20 @@ export default class Channel extends React.PureComponent {
                 style={{flex: 1, backgroundColor: theme.centerChannelBg}}
             >
                 <StatusBar barStyle='default'/>
-                <ChannelDrawer
-                    currentTeam={currentTeam}
+                <ChannelHeader
                     currentChannel={currentChannel}
-                    theme={theme}
-                >
-                    <Drawer
-                        open={this.state.rightSidebarOpen}
-                        type='displace'
-                        content={<RightSidebarMenu onClose={this.closeRightSidebar}/>}
-                        side='right'
-                        tapToClose={true}
-                        onCloseStart={this.closeRightSidebar}
-                        openDrawerOffset={0.2}
-                    >
-                        <ChannelHeader
-                            currentChannel={currentChannel}
-                            openLeftDrawer={this.openChannelDrawer}
-                            openRightDrawer={this.openRightSidebar}
-                            goToChannelInfo={this.props.actions.goToChannelInfo}
-                        />
-                        <ChannelPostList channel={currentChannel}/>
-                        <PostTextbox
-                            ref='postTextbox'
-                            value={this.props.postDraft}
-                            teamId={currentChannel.team_id}
-                            channelId={currentChannel.id}
-                            onChangeText={this.props.actions.handlePostDraftChanged}
-                        />
-                    </Drawer>
-                </ChannelDrawer>
+                    openLeftDrawer={this.openChannelDrawer}
+                    openRightDrawer={this.openRightMenuDrawer}
+                    goToChannelInfo={this.props.actions.goToChannelInfo}
+                />
+                <ChannelPostList channel={currentChannel}/>
+                <PostTextbox
+                    ref='postTextbox'
+                    value={this.props.postDraft}
+                    teamId={currentChannel.team_id}
+                    channelId={currentChannel.id}
+                    onChangeText={this.props.actions.handlePostDraftChanged}
+                />
             </KeyboardAvoidingView>
         );
     }

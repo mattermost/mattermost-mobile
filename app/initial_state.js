@@ -257,7 +257,11 @@ const state = {
             {
                 key: 'Root'
             }
-        ]
+        ],
+        leftDrawerOpen: false,
+        leftDrawerRoute: null,
+        rightDrawerOpen: false,
+        rightDrawerRoute: null
     },
     views: {
         i18n: {
@@ -269,9 +273,6 @@ const state = {
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl
-        },
-        drawer: {
-            channel: false
         }
     }
 };

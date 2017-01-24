@@ -12,9 +12,8 @@ export default class Root extends React.Component {
         logoutRequest: React.PropTypes.object,
         loginRequest: React.PropTypes.object,
         actions: React.PropTypes.shape({
-            goToChannelView: React.PropTypes.func,
+            goToLoadTeam: React.PropTypes.func,
             goToSelectServer: React.PropTypes.func,
-            goToSelectTeam: React.PropTypes.func,
             loadStorage: React.PropTypes.func,
             removeStorage: React.PropTypes.func,
             setStoreFromLocalData: React.PropTypes.func,
@@ -24,7 +23,6 @@ export default class Root extends React.Component {
 
     componentDidMount() {
         // Any initialization logic for navigation, setting up the client, etc should go here
-
         this.init();
     }
 
@@ -53,7 +51,7 @@ export default class Root extends React.Component {
             if (this.props.credentials.token && this.props.credentials.url) {
                 this.props.actions.setStoreFromLocalData(this.props.credentials).then(() => {
                     if (this.props.loginRequest.status === RequestStatus.SUCCESS) {
-                        this.props.actions.goToSelectTeam();
+                        this.props.actions.goToLoadTeam();
                     } else {
                         this.props.actions.goToSelectServer();
                     }

@@ -16,7 +16,7 @@ const Styles = StyleSheet.create({
     }
 });
 
-export default class Item extends React.Component {
+export default class MainMenuItem extends React.Component {
     static propTypes = {
         children: React.PropTypes.node,
         onPress: React.PropTypes.func,

@@ -2,22 +2,26 @@
 // See License.txt for license information.
 
 import React from 'react';
-
-import {bindActionCreators} from 'redux';
+import {
+    Easing,
+    NavigationExperimental,
+    View
+} from 'react-native';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
-import {goBack} from 'app/actions/navigation';
-
-import {getComponentForScene} from 'app/scenes';
-
-import {Easing, NavigationExperimental, View} from 'react-native';
+import {closeDrawers, goBack} from 'app/actions/navigation';
+import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
+import {RouteTransitions} from 'app/navigation/routes';
+import {getComponentForScene} from 'app/scenes';
 
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
         actions: React.PropTypes.shape({
-            goBack: React.PropTypes.func
+            closeDrawers: React.PropTypes.func.isRequired,
+            goBack: React.PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -39,12 +43,19 @@ class Router extends React.Component {
                 scene
             };
 
+            let style;
+            if (scene.route.transition === RouteTransitions.Horizontal) {
+                style = NavigationExperimental.Card.PagerStyleInterpolator.forHorizontal({
+                    ...cardProps
+                });
+            } else {
+                style = {};
+            }
+
             return (
                 <NavigationExperimental.Card
                     {...cardProps}
-                    style={NavigationExperimental.Card.PagerStyleInterpolator.forHorizontal({
-                        ...cardProps
-                    })}
+                    style={style}
                     renderScene={this.renderScene}
                     key={scene.key}
                 />
@@ -52,11 +63,9 @@ class Router extends React.Component {
         });
 
         return (
-            <View style={{flex: 1, flexDirection: 'column-reverse'}}>
-                <View style={{flex: 1}}>
-                    {renderedScenes}
-                </View>
+            <View style={{flex: 1}}>
                 {title}
+                {renderedScenes}
             </View>
         );
     };
@@ -79,10 +88,14 @@ class Router extends React.Component {
     };
 
     renderScene = ({scene}) => {
-        const SceneComponent = getComponentForScene(scene.route.key);
-
-        return <SceneComponent {...scene.route.props}/>;
+        return this.renderRoute(scene.route);
     };
+
+    renderRoute = (route) => {
+        const SceneComponent = getComponentForScene(route.key);
+
+        return <SceneComponent {...route.props}/>;
+    }
 
     configureTransition = () => {
         return {
@@ -92,13 +105,49 @@ class Router extends React.Component {
     };
 
     render = () => {
+        const {
+            leftDrawerOpen,
+            leftDrawerRoute,
+            rightDrawerOpen,
+            rightDrawerRoute
+        } = this.props.navigation;
+
+        let leftDrawerContent;
+        if (leftDrawerRoute) {
+            leftDrawerContent = this.renderRoute(leftDrawerRoute);
+        }
+
+        let rightDrawerContent;
+        if (rightDrawerRoute) {
+            rightDrawerContent = this.renderRoute(rightDrawerRoute);
+        }
+
         return (
-            <NavigationExperimental.Transitioner
-                style={{flex: 1}}
-                navigationState={this.props.navigation}
-                render={this.renderTransition}
-                configureTransition={this.configureTransition}
-            />
+            <Drawer
+                open={leftDrawerOpen}
+                type='displace'
+                content={leftDrawerContent}
+                tapToClose={true}
+                openDrawerOffset={0.2}
+                onRequestClose={this.props.actions.closeDrawers}
+            >
+                <Drawer
+                    open={rightDrawerOpen}
+                    type='displace'
+                    side='right'
+                    content={rightDrawerContent}
+                    tapToClose={true}
+                    openDrawerOffset={0.2}
+                    onRequestClose={this.props.actions.closeDrawers}
+                >
+                    <NavigationExperimental.Transitioner
+                        style={{flex: 1}}
+                        navigationState={this.props.navigation}
+                        render={this.renderTransition}
+                        configureTransition={this.configureTransition}
+                    />
+                </Drawer>
+            </Drawer>
         );
     };
 }
@@ -112,6 +161,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closeDrawers,
             goBack
         }, dispatch)
     };

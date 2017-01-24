@@ -60,8 +60,7 @@ class ChannelList extends React.Component {
         theme: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
         onViewChannel: React.PropTypes.func.isRequired,
-        handleCloseDM: React.PropTypes.func.isRequired,
-        closeChannelDrawer: React.PropTypes.func.isRequired
+        handleCloseDM: React.PropTypes.func.isRequired
     };
 
     constructor(props) {
@@ -141,7 +140,6 @@ class ChannelList extends React.Component {
 
         this.props.onSelectChannel(channel.id);
         this.props.onViewChannel(currentTeam.id, channel.id, currentChannel.id);
-        this.props.closeChannelDrawer();
     };
 
     handleClose = (channel) => {

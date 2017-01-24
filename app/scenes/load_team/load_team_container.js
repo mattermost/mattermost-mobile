@@ -1,15 +1,16 @@
-// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goBack} from 'app/actions/navigation';
+import {goToChannelView} from 'app/actions/views/load_team';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
+import {init} from 'service/actions/websocket';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
-import SelectTeam from './select_team.js';
+import LoadTeam from './load_team.js';
 
 function mapStateToProps(state) {
     return {
@@ -24,10 +25,11 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goBackToChannelView: goBack,
-            handleTeamChange
+            goToChannelView,
+            handleTeamChange,
+            initWebsocket: init
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectTeam);
+export default connect(mapStateToProps, mapDispatchToProps)(LoadTeam);
