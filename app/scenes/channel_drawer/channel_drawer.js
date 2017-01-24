@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
 
 import ChannelList from 'app/components/channel_drawer/channel_list';
 
@@ -36,23 +35,16 @@ export default class ChannelDrawer extends React.PureComponent {
         } = this.props;
 
         return (
-            <View
-                style={{
-                    width: 400,
-                    height: 800
-                }}
-            >
-                <ChannelList
-                    currentTeam={currentTeam}
-                    currentChannel={currentChannel}
-                    channels={channels}
-                    channelMembers={channelMembers}
-                    theme={theme}
-                    onSelectChannel={this.selectChannel}
-                    onViewChannel={this.props.actions.viewChannel}
-                    handleCloseDM={this.props.actions.closeDMChannel}
-                />
-            </View>
+            <ChannelList
+                currentTeam={currentTeam}
+                currentChannel={currentChannel}
+                channels={channels}
+                channelMembers={channelMembers}
+                theme={theme}
+                onSelectChannel={this.selectChannel}
+                onViewChannel={this.props.actions.viewChannel}
+                handleCloseDM={this.props.actions.closeDMChannel}
+            />
         );
     }
 }
