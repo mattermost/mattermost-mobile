@@ -65,11 +65,11 @@ export function openChannelDrawer() {
     };
 }
 
-export function openRightSideMenu() {
+export function openRightMenuDrawer() {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
-            route: Routes.RightSideMenu
+            route: Routes.RightMenuDrawer
         }, getState);
     };
 }

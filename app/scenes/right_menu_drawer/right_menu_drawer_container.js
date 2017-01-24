@@ -5,11 +5,11 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goBack} from 'app/actions/navigation';
-import {goToFlaggedPosts, goToRecentMentions, goToSelectTeam} from 'app/actions/views/right_side_menu';
+import {goToFlaggedPosts, goToRecentMentions, goToSelectTeam} from 'app/actions/views/right_menu_drawer';
 
 import {logout} from 'service/actions/users';
 
-import RightSideMenu from './right_side_menu';
+import RightMenuDrawer from './right_menu_drawer';
 
 function mapStateToProps(state, ownProps) {
     return ownProps;
@@ -27,4 +27,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RightSideMenu);
+export default connect(mapStateToProps, mapDispatchToProps)(RightMenuDrawer);

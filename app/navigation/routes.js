@@ -28,8 +28,8 @@ export const Routes = {
         title: {id: 'mobile.routes.login', defaultMessage: 'Login'},
         transition: RouteTransitions.Horizontal
     },
-    RightSideMenu: {
-        key: 'RightSideMenu'
+    RightMenuDrawer: {
+        key: 'RightMenuDrawer'
     },
     Root: {
         key: 'Root'

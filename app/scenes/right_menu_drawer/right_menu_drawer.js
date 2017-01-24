@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
 
-import RightSideMenuItem from './right_side_menu_item';
+import RightMenuDrawerItem from './right_menu_drawer_item';
 
 const Styles = StyleSheet.create({
     container: {
@@ -37,7 +37,7 @@ const Styles = StyleSheet.create({
     }
 });
 
-export default class RightSideMenu extends React.Component {
+export default class RightMenuDrawer extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
             goToFlaggedPosts: React.PropTypes.func.isRequired,
@@ -50,15 +50,15 @@ export default class RightSideMenu extends React.Component {
     render() {
         return (
             <ScrollView style={Styles.container}>
-                <RightSideMenuItem onPress={this.props.actions.goToRecentMentions}>
+                <RightMenuDrawerItem onPress={this.props.actions.goToRecentMentions}>
                     <Text style={[Styles.icon, Styles.mentionIcon]}>{'@'}</Text>
                     <FormattedText
                         style={Styles.itemText}
                         id='sidebar_right_menu.recentMentions'
                         defaultMessage='Recent Mentions'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem onPress={this.props.actions.goToFlaggedPosts}>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem onPress={this.props.actions.goToFlaggedPosts}>
                     <Icon
                         style={Styles.icon}
                         name='flag'
@@ -68,9 +68,9 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.flagged'
                         defaultMessage='Flagged Posts'
                     />
-                </RightSideMenuItem>
+                </RightMenuDrawerItem>
                 <Divider/>
-                <RightSideMenuItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='cog'
@@ -80,8 +80,8 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.accountSettings'
                         defaultMessage='Account Settings'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='user-plus'
@@ -91,8 +91,8 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.inviteNew'
                         defaultMessage='Invite New Member'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='link'
@@ -102,9 +102,9 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.teamLink'
                         defaultMessage='Get Team Invite Link'
                     />
-                </RightSideMenuItem>
+                </RightMenuDrawerItem>
                 <Divider/>
-                <RightSideMenuItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='globe'
@@ -114,8 +114,8 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.teamSettings'
                         defaultMessage='Team Settings'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='users'
@@ -125,8 +125,8 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.manageMembers'
                         defaultMessage='Manage Members'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem onPress={this.props.actions.goToSelectTeam}>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem onPress={this.props.actions.goToSelectTeam}>
                     <Icon
                         style={Styles.icon}
                         name='exchange'
@@ -136,9 +136,9 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.switch_team'
                         defaultMessage='Team Selection'
                     />
-                </RightSideMenuItem>
+                </RightMenuDrawerItem>
                 <Divider/>
-                <RightSideMenuItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='question'
@@ -148,8 +148,8 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.help'
                         defaultMessage='Help'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='phone'
@@ -159,8 +159,8 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.report'
                         defaultMessage='Report a Problem'
                     />
-                </RightSideMenuItem>
-                <RightSideMenuItem>
+                </RightMenuDrawerItem>
+                <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
                         name='info'
@@ -170,9 +170,9 @@ export default class RightSideMenu extends React.Component {
                         id='navbar_dropdown.about'
                         defaultMessage='About Mattermost'
                     />
-                </RightSideMenuItem>
+                </RightMenuDrawerItem>
                 <Divider/>
-                <RightSideMenuItem onPress={this.props.actions.logout}>
+                <RightMenuDrawerItem onPress={this.props.actions.logout}>
                     <Icon
                         style={Styles.icon}
                         name='sign-out'
@@ -182,7 +182,7 @@ export default class RightSideMenu extends React.Component {
                         id='sidebar_right_menu.logout'
                         defaultMessage='Logout'
                     />
-                </RightSideMenuItem>
+                </RightMenuDrawerItem>
             </ScrollView>
         );
     }

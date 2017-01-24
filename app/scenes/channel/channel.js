@@ -20,7 +20,7 @@ export default class Channel extends React.PureComponent {
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
             openChannelDrawer: React.PropTypes.func.isRequired,
-            openRightSideMenu: React.PropTypes.func.isRequired,
+            openRightMenuDrawer: React.PropTypes.func.isRequired,
             handlePostDraftChanged: React.PropTypes.func.isRequired,
             goToChannelInfo: React.PropTypes.func.isRequired
         }).isRequired,
@@ -63,9 +63,9 @@ export default class Channel extends React.PureComponent {
         this.props.actions.openChannelDrawer();
     }
 
-    openRightSideMenu = () => {
+    openRightMenuDrawer = () => {
         this.refs.postTextbox.getWrappedInstance().blur();
-        this.props.actions.openRightSideMenu();
+        this.props.actions.openRightMenuDrawer();
     }
 
     render() {
@@ -90,7 +90,7 @@ export default class Channel extends React.PureComponent {
                 <ChannelHeader
                     currentChannel={currentChannel}
                     openLeftDrawer={this.openChannelDrawer}
-                    openRightDrawer={this.openRightSideMenu}
+                    openRightDrawer={this.openRightMenuDrawer}
                     goToChannelInfo={this.props.actions.goToChannelInfo}
                 />
                 <ChannelPostList channel={currentChannel}/>

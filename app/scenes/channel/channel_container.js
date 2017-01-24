@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {
     goToChannelInfo,
     openChannelDrawer,
-    openRightSideMenu
+    openRightMenuDrawer
 } from 'app/actions/navigation';
 import {
     loadChannelsIfNecessary,
@@ -39,7 +39,7 @@ function mapDispatchToProps(dispatch) {
             loadProfilesAndTeamMembersForDMSidebar,
             selectInitialChannel,
             openChannelDrawer,
-            openRightSideMenu,
+            openRightMenuDrawer,
             handlePostDraftChanged,
             goToChannelInfo
         }, dispatch)
