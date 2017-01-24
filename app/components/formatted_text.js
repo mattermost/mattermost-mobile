@@ -11,8 +11,12 @@ class FormattedText extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         id: PropTypes.string.isRequired,
-        defaultMessage: PropTypes.string.isRequired,
+        defaultMessage: PropTypes.string,
         values: PropTypes.object
+    };
+
+    static defaultProps = {
+        defaultMessage: ''
     };
 
     render() {

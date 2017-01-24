@@ -2,35 +2,36 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
-import {injectIntl, intlShape} from 'react-intl';
-import {TextInput, Image, KeyboardAvoidingView} from 'react-native';
+import {Image, KeyboardAvoidingView} from 'react-native';
 
 import Button from 'react-native-button';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
 
 import RequestStatus from 'service/constants/request_status';
 
-class Mfa extends Component {
+export default class Mfa extends Component {
     static propTypes = {
         actions: React.PropTypes.shape({
             goBack: React.PropTypes.func.isRequired,
             login: React.PropTypes.func.isRequired
         }).isRequired,
-        intl: intlShape.isRequired,
         loginId: React.PropTypes.string.isRequired,
         password: React.PropTypes.string.isRequired,
         loginRequest: React.PropTypes.object.isRequired
     };
 
-    componentWillMount() {
-        this.setState({
+    constructor(props) {
+        super(props);
+
+        this.state = {
             token: '',
             error: null
-        });
+        };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -51,10 +52,10 @@ class Mfa extends Component {
     submit = () => {
         if (!this.state.token) {
             this.setState({
-                error: this.props.intl.formatMessage({
+                error: {
                     id: 'login_mfa.tokenReq',
                     defaultMessage: 'Please enter an MFA token'
-                })
+                }
             });
             return;
         }
@@ -63,8 +64,6 @@ class Mfa extends Component {
     };
 
     render() {
-        const {formatMessage} = this.props.intl;
-
         return (
             <KeyboardAvoidingView
                 behavior='padding'
@@ -79,7 +78,7 @@ class Mfa extends Component {
                     defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
                 />
                 <ErrorText error={this.state.error}/>
-                <TextInput
+                <TextInputWithLocalizedPlaceholder
                     value={this.state.token}
                     onChangeText={this.handleInput}
                     onSubmitEditing={this.submit}
@@ -87,7 +86,7 @@ class Mfa extends Component {
                     autoCapitalize='none'
                     autoCorrect={false}
                     keyboardType='numeric'
-                    placeholder={formatMessage({id: 'login_mfa.token', defaultMessage: 'MFA Token'})}
+                    placeholder={{id: 'login_mfa.token', defaultMessage: 'MFA Token'}}
                     returnKeyType='go'
                     underlineColorAndroid='transparent'
                 />
@@ -102,10 +101,7 @@ class Mfa extends Component {
                         defaultMessage='Proceed'
                     />
                 </Button>
-                <KeyboardAvoidingView style={GlobalStyles.pagePush}/>
             </KeyboardAvoidingView>
         );
     }
 }
-
-export default injectIntl(Mfa);
