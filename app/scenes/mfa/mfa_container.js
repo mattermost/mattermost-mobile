@@ -4,8 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goBack, goToSelectTeam} from 'app/actions/navigation';
-import {handleSuccessfulLogin} from 'app/actions/views/login';
+import {goBack} from 'app/actions/navigation';
 import {login} from 'service/actions/users';
 
 import Mfa from './mfa';
@@ -24,8 +23,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goBack,
-            goToSelectTeam,
-            handleSuccessfulLogin,
             login
         }, dispatch)
     };

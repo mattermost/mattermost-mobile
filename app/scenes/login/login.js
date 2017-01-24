@@ -27,7 +27,7 @@ class Login extends Component {
             getClientConfig: React.PropTypes.func.isRequired,
             getLicenseConfig: React.PropTypes.func.isRequired,
             goToMfa: React.PropTypes.func.isRequired,
-            goToSelectTeam: React.PropTypes.func.isRequired
+            goToLoadTeam: React.PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,

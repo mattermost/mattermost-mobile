@@ -18,8 +18,6 @@ class Mfa extends Component {
     static propTypes = {
         actions: React.PropTypes.shape({
             goBack: React.PropTypes.func.isRequired,
-            goToSelectTeam: React.PropTypes.func.isRequired,
-            handleSuccessfulLogin: React.PropTypes.func.isRequired,
             login: React.PropTypes.func.isRequired
         }).isRequired,
         intl: intlShape.isRequired,

@@ -63,9 +63,11 @@ class Router extends React.Component {
         });
 
         return (
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, flexDirection: 'column-reverse'}}>
+                <View style={{flex: 1}}>
+                    {renderedScenes}
+                </View>
                 {title}
-                {renderedScenes}
             </View>
         );
     };
