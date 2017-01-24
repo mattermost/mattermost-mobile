@@ -187,7 +187,7 @@ class ChannelList extends React.Component {
                 text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
                     this.setState({showOptions: false});
-                    this.props.handleLeaveChannel(channel.team_id, channel.id);
+                    this.props.handleLeaveChannel(channel);
                 }
             }]
         );
