@@ -537,6 +537,30 @@ export function removeChannelMember(teamId, channelId, userId) {
     };
 }
 
+export function updateChannelHeader(channelId, header) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: ChannelTypes.UPDATE_CHANNEL_HEADER,
+            data: {
+                channelId,
+                header
+            }
+        }, getState);
+    };
+}
+
+export function updateChannelPurpose(channelId, purpose) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: ChannelTypes.UPDATE_CHANNEL_PURPOSE,
+            data: {
+                channelId,
+                purpose
+            }
+        }, getState);
+    };
+}
+
 export default {
     selectChannel,
     createChannel,
@@ -553,5 +577,7 @@ export default {
     getMoreChannels,
     getChannelStats,
     addChannelMember,
-    removeChannelMember
+    removeChannelMember,
+    updateChannelHeader,
+    updateChannelPurpose
 };

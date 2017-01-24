@@ -19,7 +19,9 @@ import {
     fetchMyChannelsAndMembers,
     getChannel,
     getChannelStats,
-    viewChannel
+    viewChannel,
+    updateChannelHeader,
+    updateChannelPurpose
 } from 'service/actions/channels';
 
 import {
@@ -159,6 +161,14 @@ function handleNewPostEvent(msg, dispatch, getState) {
     if (post.channel_id === channels.currentId) {
         if (isActive) {
             viewChannel(teamId, post.channel_id)(dispatch, getState);
+            switch (post.type) {
+            case Constants.POST_HEADER_CHANGE:
+                updateChannelHeader(post.channel_id, post.props.new_header)(dispatch, getState);
+                break;
+            case Constants.POST_PURPOSE_CHANGE:
+                updateChannelPurpose(post.channel_id, post.props.new_purpose)(dispatch, getState);
+                break;
+            }
         } else {
             getChannel(teamId, post.channel_id)(dispatch, getState);
         }
