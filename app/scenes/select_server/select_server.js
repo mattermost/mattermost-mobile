@@ -73,7 +73,6 @@ class SelectServer extends Component {
                     />
                 </Button>
                 <ErrorText error={this.props.server.error}/>
-                <KeyboardAvoidingView style={GlobalStyles.pagePush}/>
             </KeyboardAvoidingView>
         );
     }

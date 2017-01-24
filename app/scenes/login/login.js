@@ -18,15 +18,34 @@ import {RequestStatus} from 'service/constants';
 class Login extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
+        actions: React.PropTypes.shape({
+            handleLoginIdChanged: React.PropTypes.func.isRequired,
+            handlePasswordChanged: React.PropTypes.func.isRequired,
+            handleSuccessfulLogin: React.PropTypes.func.isRequired,
+            checkMfa: React.PropTypes.func.isRequired,
+            login: React.PropTypes.func.isRequired,
+            getClientConfig: React.PropTypes.func.isRequired,
+            getLicenseConfig: React.PropTypes.func.isRequired,
+            goToMfa: React.PropTypes.func.isRequired,
+            goToLoadTeam: React.PropTypes.func.isRequired
+        }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        actions: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
+        checkMfaRequest: PropTypes.object.isRequired,
         loginRequest: PropTypes.object.isRequired,
         configRequest: PropTypes.object.isRequired,
         licenseRequest: PropTypes.object.isRequired
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            error: null
+        };
+    }
 
     componentWillMount() {
         this.props.actions.getClientConfig();
@@ -39,11 +58,58 @@ class Login extends Component {
         }
     }
 
-    signIn() {
+    preSignIn = () => {
+        this.setState({error: null});
+        if (!this.props.loginId) {
+            // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
+            let msgId = 'login.no';
+            if (this.props.config.EnableSignInWithEmail === 'true') {
+                msgId += 'Email';
+            }
+            if (this.props.config.EnableSignInWithUsername === 'true') {
+                msgId += 'Username';
+            }
+            if (this.props.license.IsLicensed === 'true' && this.props.config.EnableLdap === 'true') {
+                msgId += 'LdapUsername';
+            }
+
+            this.setState({
+                error: {
+                    id: msgId,
+                    defaultMessage: '',
+                    values: {
+                        ldapUsername: this.props.config.LdapLoginFieldName ||
+                            this.props.intl.formatMessage({id: 'login.ldapUsernameLower', defaultMessage: 'AD/LDAP username'})
+                    }
+                }
+            });
+            return;
+        }
+
+        if (!this.props.password) {
+            this.setState({
+                error: {id: 'login.noPassword', defaultMessage: 'Please enter your password'}
+            });
+            return;
+        }
+        if (this.props.config.EnableMultifactorAuthentication === 'true') {
+            this.props.actions.checkMfa(this.props.loginId).then((result) => {
+                if (result.mfa_required === 'true') {
+                    this.props.actions.goToMfa();
+                } else {
+                    this.signIn();
+                }
+            });
+        } else {
+            this.signIn();
+        }
+    };
+
+    signIn = () => {
         if (this.props.loginRequest.status !== RequestStatus.STARTED) {
             this.props.actions.login(this.props.loginId, this.props.password);
         }
-    }
+    };
 
     createLoginPlaceholder() {
         const {formatMessage} = this.props.intl;
@@ -99,6 +165,7 @@ class Login extends Component {
                     id='web.root.signup_info'
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
+                <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
                 <TextInput
                     ref='loginId'
                     value={this.props.loginId}
@@ -119,10 +186,10 @@ class Login extends Component {
                     autoCapitalize='none'
                     underlineColorAndroid='transparent'
                     returnKeyType='go'
-                    onSubmitEditing={this.signIn.bind(this)}
+                    onSubmitEditing={this.preSignIn}
                 />
                 <Button
-                    onPress={this.signIn.bind(this)}
+                    onPress={this.preSignIn}
                     containerStyle={GlobalStyles.signupButton}
                 >
                     <FormattedText
@@ -131,8 +198,6 @@ class Login extends Component {
                         style={GlobalStyles.signupButtonText}
                     />
                 </Button>
-                <ErrorText error={this.props.loginRequest.error}/>
-                <KeyboardAvoidingView style={GlobalStyles.pagePush}/>
             </KeyboardAvoidingView>
         );
     }

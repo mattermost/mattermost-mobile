@@ -1491,6 +1491,7 @@
   "mobile.routes.channels": "Channels",
   "mobile.routes.enterServerUrl": "Enter Server URL",
   "mobile.routes.login": "Login",
+  "mobile.routes.mfa": "Multi-factor Authentication",
   "mobile.routes.postsList": "Posts List",
   "mobile.routes.selectTeam": "Select Team",
   "mobile.routes.channelInfo": "Info",

@@ -7,6 +7,20 @@ import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'service/const
 import {fetchTeams} from 'service/actions/teams';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
+export function checkMfa(loginId) {
+    return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.CHECK_MFA_REQUEST}, getState);
+        try {
+            const mfa = await Client.checkMfa(loginId);
+            dispatch({type: UsersTypes.CHECK_MFA_SUCCESS}, getState);
+            return mfa;
+        } catch (error) {
+            dispatch({type: UsersTypes.CHECK_MFA_FAILURE, error}, getState);
+            return null;
+        }
+    };
+}
+
 export function login(loginId, password, mfaToken = '') {
     return async (dispatch, getState) => {
         dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
@@ -61,8 +75,6 @@ export function login(loginId, password, mfaToken = '') {
 
 export function loadMe() {
     return async (dispatch, getState) => {
-        dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
-
         let user;
         dispatch({type: UsersTypes.LOGIN_REQUEST}, getState);
         try {
@@ -288,6 +300,7 @@ export function getAudits(userId) {
 }
 
 export default {
+    checkMfa,
     login,
     logout,
     getProfiles,

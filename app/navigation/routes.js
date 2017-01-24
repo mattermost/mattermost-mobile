@@ -28,6 +28,11 @@ export const Routes = {
         title: {id: 'mobile.routes.login', defaultMessage: 'Login'},
         transition: RouteTransitions.Horizontal
     },
+    Mfa: {
+        key: 'Mfa',
+        title: {id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'},
+        transition: RouteTransitions.Horizontal
+    },
     RightMenuDrawer: {
         key: 'RightMenuDrawer'
     },

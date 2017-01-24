@@ -6,6 +6,25 @@ import {UsersTypes, RequestStatus} from 'service/constants';
 
 import {combineReducers} from 'redux';
 
+function checkMfa(state = initialRequestState(), action) {
+    switch (action.type) {
+    case UsersTypes.CHECK_MFA_REQUEST:
+        return {...state, status: RequestStatus.STARTED};
+
+    case UsersTypes.CHECK_MFA_SUCCESS:
+        return {...state, status: RequestStatus.SUCCESS, error: null};
+
+    case UsersTypes.CHECK_MFA_FAILURE:
+        return {...state, status: RequestStatus.FAILURE, error: action.error};
+
+    case UsersTypes.LOGOUT_SUCCESS:
+        return {...state, status: RequestStatus.NOT_STARTED, error: null};
+
+    default:
+        return state;
+    }
+}
+
 function login(state = initialRequestState(), action) {
     switch (action.type) {
     case UsersTypes.LOGIN_REQUEST:
@@ -125,6 +144,7 @@ function getAudits(state = initialRequestState(), action) {
 }
 
 export default combineReducers({
+    checkMfa,
     login,
     logout,
     getProfiles,

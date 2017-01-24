@@ -3,6 +3,7 @@
 
 import React, {Component, PropTypes} from 'react';
 import {Text} from 'react-native';
+import FormattedText from 'app/components/formatted_text';
 
 import {GlobalStyles} from 'app/styles';
 
@@ -16,6 +17,18 @@ export default class ErrorText extends Component {
     render() {
         if (!this.props.error) {
             return null;
+        }
+
+        if (this.props.error.hasOwnProperty('id')) {
+            const {error} = this.props;
+            return (
+                <FormattedText
+                    id={error.id}
+                    defaultMessage={error.defaultMessage}
+                    values={error.values}
+                    style={GlobalStyles.errorLabel}
+                />
+            );
         }
 
         return (

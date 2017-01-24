@@ -44,6 +44,10 @@ const UserTypes = keyMirror({
     AUDITS_SUCCESS: null,
     AUDITS_FAILURE: null,
 
+    CHECK_MFA_REQUEST: null,
+    CHECK_MFA_SUCCESS: null,
+    CHECK_MFA_FAILURE: null,
+
     RECEIVED_ME: null,
     RECEIVED_PROFILES: null,
     RECEIVED_PROFILES_IN_TEAM: null,
