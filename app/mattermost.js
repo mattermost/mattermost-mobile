@@ -1,6 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import 'harmony-reflect';
 import React from 'react';
 import {Provider} from 'react-redux';
 
