@@ -8,16 +8,27 @@ import {
     PreferencesTypes,
     UsersTypes
 } from 'service/constants';
-import {forceLogoutIfNecessary} from './helpers';
 import {batchActions} from 'redux-batched-actions';
+
 import Client from 'service/client';
+
+import {generalError} from './errors';
+import {forceLogoutIfNecessary} from './helpers';
 
 export function selectChannel(channelId) {
     return async (dispatch, getState) => {
-        dispatch({
-            type: ChannelTypes.SELECT_CHANNEL,
-            data: channelId
-        }, getState);
+        try {
+            dispatch({
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId
+            }, getState);
+
+            throw new Error('Trouble switching channels. Something should be done about this!');
+        } catch (error) {
+            setTimeout(() => {
+                generalError(error)(dispatch);
+            }, 5000);
+        }
     };
 }
 

@@ -3,6 +3,7 @@
 
 import Constants from './constants';
 import ChannelTypes from './channels';
+import ErrorTypes from './errors';
 import GeneralTypes from './general';
 import UsersTypes from './users';
 import TeamsTypes from './teams';
@@ -19,6 +20,7 @@ const Preferences = {
 
 export {
     Constants,
+    ErrorTypes,
     GeneralTypes,
     UsersTypes,
     TeamsTypes,
