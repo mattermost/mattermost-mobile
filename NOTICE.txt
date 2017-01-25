@@ -49,6 +49,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
+## harmony-reflect
+
+This product contains a modified portion of 'harmony-reflect', a shim for ECMAScript 6 Reflect and Proxy objects.
+
+* HOMEPAGE:
+  * https://github.com/tvcutsem/harmony-reflect
+
+* LICENSE:
+
+Copyright (C) 2011-2014 Software Languages Lab, Vrije Universiteit Brussel
+Copyright (C) 2015 Tom Van Cutsem
+
+This code is dual-licensed under both the Apache License and the MPL
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Version: MPL 1.1
+
+The contents of this file are subject to the Mozilla Public License Version
+1.1 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+  http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis,
+WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+for the specific language governing rights and limitations under the
+License.
+
+---
+
 ## intl
 
 This product contains a modified portion of 'Intl.js', to bring long overdue localization methods to ECMAScript implementations by Andy Earnshaw.
