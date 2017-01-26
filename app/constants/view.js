@@ -9,8 +9,6 @@ const ViewTypes = keyMirror({
     LOGIN_ID_CHANGED: null,
     PASSWORD_CHANGED: null,
 
-    TOGGLE_CHANNEL_DRAWER: null,
-    TOGGLE_CHANNEL_DRAWER_DISABLED: null,
     POST_DRAFT_CHANGED: null
 });
 

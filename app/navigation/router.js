@@ -97,7 +97,7 @@ class Router extends React.Component {
         const SceneComponent = getComponentForScene(route.key);
 
         return <SceneComponent {...route.props}/>;
-    }
+    };
 
     configureTransition = () => {
         return {
@@ -111,11 +111,14 @@ class Router extends React.Component {
             leftDrawerOpen,
             leftDrawerRoute,
             rightDrawerOpen,
-            rightDrawerRoute
+            rightDrawerRoute,
+            leftDrawerDisabled
         } = this.props.navigation;
 
         let leftDrawerContent;
         if (leftDrawerRoute) {
+            // TODO: We should make it so that this is availabe once we login
+            // son when sliding it renders correctly without the neeed to open using the top-bar
             leftDrawerContent = this.renderRoute(leftDrawerRoute);
         }
 
@@ -128,10 +131,16 @@ class Router extends React.Component {
             <Drawer
                 open={leftDrawerOpen}
                 type='displace'
+                disabled={leftDrawerDisabled}
                 content={leftDrawerContent}
                 tapToClose={true}
                 openDrawerOffset={0.2}
                 onRequestClose={this.props.actions.closeDrawers}
+                panOpenMask={0.1}
+                panCloseMask={0.2}
+                panThreshold={0.2}
+                acceptPan={true}
+                negotiatePan={true}
             >
                 <Drawer
                     open={rightDrawerOpen}

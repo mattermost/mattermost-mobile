@@ -1484,8 +1484,6 @@
   "members_popover.title": "Members",
   "mobile.channel_list.alertTitleLeaveChannel": "Leave {term}",
   "mobile.channel_list.alertMessageLeaveChannel": "Are you sure you want to leave the {term} with {name}?",
-  "mobile.channel_list.alertTitleRemoveDM": "Remove Direct Message",
-  "mobile.channel_list.alertMessageRemoveDM": "Are you sure you want to remove the DM with {username} from the list?",
   "mobile.channel_list.alertNo": "No",
   "mobile.channel_list.alertYes": "Yes",
   "mobile.channel_list.open": "Open {term}",

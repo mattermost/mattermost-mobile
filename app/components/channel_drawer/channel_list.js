@@ -63,7 +63,6 @@ class ChannelList extends React.Component {
         onViewChannel: React.PropTypes.func.isRequired,
         handleCloseDM: React.PropTypes.func.isRequired,
         handleLeaveChannel: React.PropTypes.func.isRequired,
-        closeChannelDrawer: React.PropTypes.func.isRequired,
         handleDisableDrawer: React.PropTypes.func.isRequired,
         markFavorite: React.PropTypes.func.isRequired,
         unmarkFavorite: React.PropTypes.func.isRequired
@@ -149,25 +148,8 @@ class ChannelList extends React.Component {
     };
 
     handleClose = (channel) => {
-        const {formatMessage} = this.props.intl;
-        Alert.alert(
-            formatMessage({id: 'mobile.channel_list.alertTitleRemoveDM', defaultMessage: 'Remove Direct Message'}),
-            formatMessage({
-                id: 'mobile.channel_list.alertMessageRemoveDM',
-                defaultMessage: 'Are you sure you want to remove the DM with {username} from the list?'
-            }, {
-                username: channel.display_name
-            }),
-            [{
-                text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})
-            }, {
-                text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
-                onPress: () => {
-                    this.setState({showOptions: false});
-                    this.props.handleCloseDM(channel);
-                }
-            }]
-        );
+        this.setState({showOptions: false});
+        this.props.handleCloseDM(channel);
     };
 
     handleLeave = (channel, term) => {
@@ -460,6 +442,7 @@ class ChannelList extends React.Component {
                 />
             );
         }
+
         if (this.state.showBelow) {
             below = (
                 <UnreadIndicator

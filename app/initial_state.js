@@ -261,7 +261,8 @@ const state = {
         leftDrawerOpen: false,
         leftDrawerRoute: null,
         rightDrawerOpen: false,
-        rightDrawerRoute: null
+        rightDrawerRoute: null,
+        leftDrawerDisabled: false
     },
     views: {
         i18n: {
