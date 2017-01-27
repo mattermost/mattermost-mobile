@@ -82,9 +82,3 @@ export function openRightMenuDrawer() {
         }, getState);
     };
 }
-
-export function shouldDisableChannelDrawer(value) {
-    return async (dispatch, getState) => {
-        dispatch({type: NavigationTypes.NAVIGATION_LEFT_DRAWER_DISABLED, data: value}, getState);
-    };
-}

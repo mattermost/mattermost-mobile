@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {closeDrawers, shouldDisableChannelDrawer} from 'app/actions/navigation';
+import {closeDrawers} from 'app/actions/navigation';
 import {closeDMChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 
 import {selectChannel, viewChannel} from 'service/actions/channels';
@@ -33,8 +33,7 @@ function mapDispatchToProps(dispatch) {
             closeDrawers,
             leaveChannel,
             markFavorite,
-            unmarkFavorite,
-            shouldDisableChannelDrawer
+            unmarkFavorite
         }, dispatch)
     };
 }

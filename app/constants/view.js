@@ -9,7 +9,9 @@ const ViewTypes = keyMirror({
     LOGIN_ID_CHANGED: null,
     PASSWORD_CHANGED: null,
 
-    POST_DRAFT_CHANGED: null
+    POST_DRAFT_CHANGED: null,
+
+    MODAL_OPTIONS_CHANGED: null
 });
 
 export default ViewTypes;

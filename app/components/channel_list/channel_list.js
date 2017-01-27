@@ -12,7 +12,6 @@ import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
 import UnreadIndicator from './unread_indicator';
 import deepEqual from 'deep-equal';
-import ModalOptions from 'app/components/modal_options';
 
 const Styles = StyleSheet.create({
     container: {
@@ -60,12 +59,15 @@ class ChannelList extends React.Component {
         channelMembers: React.PropTypes.object,
         theme: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
-        onViewChannel: React.PropTypes.func.isRequired,
-        handleCloseDM: React.PropTypes.func.isRequired,
-        handleLeaveChannel: React.PropTypes.func.isRequired,
-        handleDisableDrawer: React.PropTypes.func.isRequired,
-        markFavorite: React.PropTypes.func.isRequired,
-        unmarkFavorite: React.PropTypes.func.isRequired
+        actions: React.PropTypes.shape({
+            viewChannel: React.PropTypes.func.isRequired,
+            closeDMChannel: React.PropTypes.func.isRequired,
+            leaveChannel: React.PropTypes.func.isRequired,
+            markFavorite: React.PropTypes.func.isRequired,
+            unmarkFavorite: React.PropTypes.func.isRequired,
+            openModal: React.PropTypes.func.isRequired,
+            closeModal: React.PropTypes.func.isRequired
+        }).isRequired
     };
 
     constructor(props) {
@@ -79,8 +81,6 @@ class ChannelList extends React.Component {
                 rowHasChanged: (a, b) => a !== b
             }).cloneWithRows(this.buildData(props))
         };
-
-        this.modalOnChange = this.modalOnChange.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -144,12 +144,12 @@ class ChannelList extends React.Component {
         } = this.props;
 
         this.props.onSelectChannel(channel.id);
-        this.props.onViewChannel(currentTeam.id, channel.id, currentChannel.id);
+        this.props.actions.viewChannel(currentTeam.id, channel.id, currentChannel.id);
     };
 
     handleClose = (channel) => {
         this.setState({showOptions: false});
-        this.props.handleCloseDM(channel);
+        this.props.actions.closeDMChannel(channel);
     };
 
     handleLeave = (channel, term) => {
@@ -169,7 +169,7 @@ class ChannelList extends React.Component {
                 text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
                     this.setState({showOptions: false});
-                    this.props.handleLeaveChannel(channel);
+                    this.props.actions.leaveChannel(channel);
                 }
             }]
         );
@@ -180,12 +180,10 @@ class ChannelList extends React.Component {
         let open;
         let close;
         let favorite;
-        let modalTitle;
-
-        this.props.handleDisableDrawer(true);
+        let title;
 
         if (channel.type === Constants.DM_CHANNEL) {
-            modalTitle = formatMessage({
+            title = formatMessage({
                 id: 'mobile.channel_list.modalTitle',
                 defaultMessage: 'Select an action for the {term} {name}'},
                 {
@@ -195,7 +193,7 @@ class ChannelList extends React.Component {
 
             open = {
                 action: () => {
-                    this.setState({showOptions: false});
+                    this.props.actions.closeModal();
                     this.onSelectChannel(channel);
                 },
                 text: formatMessage({id: 'mobile.channel_list.openDM', defaultMessage: 'Open Direct Message'})
@@ -215,7 +213,7 @@ class ChannelList extends React.Component {
                 formatMessage({id: 'mobile.channel_list.publicChannel', defaultMessage: 'Public Channel'}) :
                 formatMessage({id: 'mobile.channel_list.privateChannel', defaultMessage: 'Private Channel'});
 
-            modalTitle = formatMessage({
+            title = formatMessage({
                 id: 'mobile.channel_list.modalTitle',
                 defaultMessage: 'Select an action for the {term} {name}'},
                 {
@@ -225,7 +223,7 @@ class ChannelList extends React.Component {
 
             open = {
                 action: () => {
-                    this.setState({showOptions: false});
+                    this.props.actions.closeModal();
                     this.onSelectChannel(channel);
                 },
                 text: formatMessage({id: 'mobile.channel_list.openChannel', defaultMessage: 'Open {term}'}, {
@@ -251,16 +249,16 @@ class ChannelList extends React.Component {
         if (channel.isFavorite) {
             favorite = {
                 action: () => {
-                    this.setState({showOptions: false});
-                    this.props.unmarkFavorite(channel.id);
+                    this.props.actions.closeModal();
+                    this.props.actions.unmarkFavorite(channel.id);
                 },
                 text: formatMessage({id: 'channelHeader.removeFromFavorites', defaultMessage: 'Remove from Favorites'})
             };
         } else {
             favorite = {
                 action: () => {
-                    this.setState({showOptions: false});
-                    this.props.markFavorite(channel.id);
+                    this.props.actions.closeModal();
+                    this.props.actions.markFavorite(channel.id);
                 },
                 text: formatMessage({id: 'channelHeader.addToFavorites', defaultMessage: 'Add to Favorites'})
             };
@@ -270,7 +268,7 @@ class ChannelList extends React.Component {
         if (close) {
             options.push(close);
         }
-        this.setState({options, modalTitle, showOptions: true});
+        this.props.actions.openModal(title, options);
     };
 
     getUnreadMessages = (channel) => {
@@ -320,6 +318,7 @@ class ChannelList extends React.Component {
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
                 onLongPress={this.onShowModal}
+                handleClose={this.handleClose}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
@@ -399,17 +398,6 @@ class ChannelList extends React.Component {
         return data;
     };
 
-    modalOnChange(option) {
-        this.props.handleDisableDrawer(false);
-        if (option) {
-            option.action();
-        } else {
-            this.setState({
-                showOptions: false
-            });
-        }
-    }
-
     renderRow = (rowData) => {
         if (rowData && rowData.id) {
             return this.createChannelElement(rowData);
@@ -458,18 +446,8 @@ class ChannelList extends React.Component {
             );
         }
 
-        const modalOptions = (
-            <ModalOptions
-                title={this.state.modalTitle}
-                options={this.state.options}
-                visible={this.state.showOptions}
-                onChange={this.modalOnChange}
-            />
-        );
-
         return (
             <View style={[Styles.container, {backgroundColor: theme.sidebarBg}]}>
-                {modalOptions}
                 <View style={[Styles.headerContainer, {backgroundColor: theme.sidebarHeaderBg}]}>
                     <Text
                         ellipsizeMode='tail'

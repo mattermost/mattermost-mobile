@@ -16,8 +16,7 @@ const initialState = {
     leftDrawerOpen: false,
     leftDrawerRoute: null,
     rightDrawerOpen: false,
-    rightDrawerRoute: null,
-    leftDrawerDisabled: false
+    rightDrawerRoute: null
 };
 
 export default function(state = initialState, action) {
@@ -55,12 +54,6 @@ export default function(state = initialState, action) {
             ...state,
             leftDrawerOpen: false,
             rightDrawerOpen: false
-        };
-
-    case NavigationTypes.NAVIGATION_LEFT_DRAWER_DISABLED:
-        return {
-            ...state,
-            leftDrawerDisabled: action.data
         };
 
     case NavigationTypes.NAVIGATION_JUMP:

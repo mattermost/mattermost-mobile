@@ -261,8 +261,7 @@ const state = {
         leftDrawerOpen: false,
         leftDrawerRoute: null,
         rightDrawerOpen: false,
-        rightDrawerRoute: null,
-        leftDrawerDisabled: false
+        rightDrawerRoute: null
     },
     views: {
         i18n: {
@@ -271,6 +270,11 @@ const state = {
         login: {
             loginId: '',
             password: ''
+        },
+        modalOptions: {
+            title: '',
+            options: [],
+            visible: false
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl

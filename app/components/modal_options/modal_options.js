@@ -85,14 +85,17 @@ export default class ModalOptions extends PureComponent {
         title: PropTypes.string,
         options: PropTypes.array,
         visible: PropTypes.bool,
-        onChange: PropTypes.func,
+        onOptionSelected: PropTypes.func,
         style: View.propTypes.style,
         titleStyle: View.propTypes.style,
         titleTextStyle: View.propTypes.style,
         cancelStyle: View.propTypes.style,
         cancelTextStyle: Text.propTypes.style,
         overlayStyle: View.propTypes.style,
-        cancelText: PropTypes.string
+        cancelText: PropTypes.string,
+        actions: React.PropTypes.shape({
+            closeModal: React.PropTypes.func.isRequired
+        }).isRequired
     };
 
     static defaultProps = {
@@ -113,19 +116,19 @@ export default class ModalOptions extends PureComponent {
 
         this.state = {
             animationType: 'slide',
-            modalVisible: false,
             transparent: false
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.visible !== this.props.visible) {
-            this.setState({modalVisible: nextProps.visible});
+    onOptionSelected = (option) => {
+        // do not change the way this is event handler as its necessary to properly display any alert boxes
+        // that needs to be shown by selecting an option from the modal.
+        // By hiding the modal previous to that will cause a rendering bug.
+        if (option) {
+            option.action();
+        } else {
+            this.props.actions.closeModal();
         }
-    }
-
-    onChange = (option) => {
-        this.props.onChange(option);
     };
 
     renderOption = (option, index) => {
@@ -149,7 +152,7 @@ export default class ModalOptions extends PureComponent {
         return (
             <TouchableOpacity
                 key={index}
-                onPress={() => this.onChange(option)}
+                onPress={() => this.onOptionSelected(option)}
             >
                 <View style={optionStyle}>
                     {text}
@@ -185,7 +188,7 @@ export default class ModalOptions extends PureComponent {
                     </ScrollView>
                 </View>
                 <View>
-                    <TouchableOpacity onPress={() => this.onChange(null)}>
+                    <TouchableOpacity onPress={() => this.onOptionSelected(null)}>
                         <View style={[styles.cancelStyle, this.props.cancelStyle]}>
                             <Text style={[styles.cancelTextStyle, this.props.cancelTextStyle]}>
                                 {this.props.cancelText}
@@ -198,23 +201,23 @@ export default class ModalOptions extends PureComponent {
     };
 
     render() {
-        const modalOptions = (
-            <Modal
-                transparent={true}
-                visible={this.state.modalVisible}
-                onRequestClose={() => this.onChange(null)}
-                animationType={this.state.animationType}
-            >
-                <TouchableWithoutFeedback onPress={() => this.onChange(null)}>
-                    {this.renderOptionList()}
-                </TouchableWithoutFeedback>
-            </Modal>
-        );
+        if (this.props.options.length) {
+            return (
+                <View style={this.props.style}>
+                    <Modal
+                        transparent={true}
+                        visible={this.props.visible}
+                        onRequestClose={() => this.onOptionSelected(null)}
+                        animationType={this.state.animationType}
+                    >
+                        <TouchableWithoutFeedback onPress={() => this.onOptionSelected(null)}>
+                            {this.renderOptionList()}
+                        </TouchableWithoutFeedback>
+                    </Modal>
+                </View>
+            );
+        }
 
-        return (
-            <View style={this.props.style}>
-                {modalOptions}
-            </View>
-        );
+        return null;
     }
 }

@@ -13,12 +13,14 @@ import {bindActionCreators} from 'redux';
 import {closeDrawers, goBack} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
+import ModalOptions from 'app/components/modal_options';
 import {RouteTransitions} from 'app/navigation/routes';
 import {getComponentForScene} from 'app/scenes';
 
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
+        modalVisible: React.PropTypes.bool.isRequired,
         actions: React.PropTypes.shape({
             closeDrawers: React.PropTypes.func.isRequired,
             goBack: React.PropTypes.func.isRequired
@@ -111,8 +113,7 @@ class Router extends React.Component {
             leftDrawerOpen,
             leftDrawerRoute,
             rightDrawerOpen,
-            rightDrawerRoute,
-            leftDrawerDisabled
+            rightDrawerRoute
         } = this.props.navigation;
 
         let leftDrawerContent;
@@ -127,11 +128,13 @@ class Router extends React.Component {
             rightDrawerContent = this.renderRoute(rightDrawerRoute);
         }
 
+        const {modalVisible} = this.props;
+
         return (
             <Drawer
                 open={leftDrawerOpen}
                 type='displace'
-                disabled={leftDrawerDisabled}
+                disabled={modalVisible}
                 content={leftDrawerContent}
                 tapToClose={true}
                 openDrawerOffset={0.2}
@@ -146,6 +149,7 @@ class Router extends React.Component {
                     open={rightDrawerOpen}
                     type='displace'
                     side='right'
+                    disabled={modalVisible}
                     content={rightDrawerContent}
                     tapToClose={true}
                     openDrawerOffset={0.2}
@@ -157,6 +161,7 @@ class Router extends React.Component {
                         render={this.renderTransition}
                         configureTransition={this.configureTransition}
                     />
+                    <ModalOptions/>
                 </Drawer>
             </Drawer>
         );
@@ -164,8 +169,10 @@ class Router extends React.Component {
 }
 
 function mapStateToProps(state) {
+    const modalVisible = state.views.modalOptions.visible;
     return {
-        navigation: state.navigation
+        navigation: state.navigation,
+        modalVisible
     };
 }
 

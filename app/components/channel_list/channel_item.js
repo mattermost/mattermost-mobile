@@ -16,6 +16,7 @@ export default class ChannelItem extends React.Component {
     static propTypes = {
         channel: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
+        handleClose: React.PropTypes.func,
         onLongPress: React.PropTypes.func,
         isActive: React.PropTypes.bool.isRequired,
         hasUnread: React.PropTypes.bool.isRequired,
@@ -29,10 +30,12 @@ export default class ChannelItem extends React.Component {
             theme,
             mentions,
             hasUnread,
-            isActive
+            isActive,
+            handleClose
         } = this.props;
 
         let iconColor = changeOpacity(theme.centerChannelColor, 0.7);
+        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
         let icon;
         let activeBorder;
         let badge;
@@ -151,6 +154,33 @@ export default class ChannelItem extends React.Component {
             }
         }
 
+        let closeButton = null;
+        if (isDirectMessage && !badge) {
+            const closeStyle = {
+                position: 'absolute',
+                justifyContent: 'center',
+                alignItems: 'center',
+                opacity: 0.4,
+                width: 50,
+                height: 50,
+                right: 0,
+                flexDirection: 'row'
+            };
+
+            closeButton = (
+                <TouchableHighlight
+                    style={closeStyle}
+                    onPress={() => handleClose(channel)}
+                >
+                    <Icon
+                        name='times'
+                        size={13}
+                        color={theme.sidebarText}
+                    />
+                </TouchableHighlight>
+            );
+        }
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.3)}
@@ -172,6 +202,7 @@ export default class ChannelItem extends React.Component {
                             {channel.display_name}
                         </Text>
                         {badge}
+                        {closeButton}
                     </View>
                 </View>
             </TouchableHighlight>

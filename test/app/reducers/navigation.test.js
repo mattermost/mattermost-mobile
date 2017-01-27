@@ -26,8 +26,7 @@ describe('Reducers.Navigation', () => {
             leftDrawerOpen: false,
             leftDrawerRoute: null,
             rightDrawerOpen: false,
-            rightDrawerRoute: null,
-            leftDrawerDisabled: false
+            rightDrawerRoute: null
         }, 'initial state');
     });
 
@@ -216,28 +215,6 @@ describe('Reducers.Navigation', () => {
             assert.deepEqual(state.routes, [Routes.Root]);
             assert.equal(state.rightDrawerOpen, false);
         });
-    });
-
-    it('NAVIGATION_LEFT_DRAWER_DISABLED', () => {
-        let state = initialState();
-
-        state = reduceAndFreeze(state, {
-            type: NavigationTypes.NAVIGATION_LEFT_DRAWER_DISABLED,
-            data: true
-        });
-
-        assert.equal(state.index, 0);
-        assert.deepEqual(state.routes, [Routes.Root]);
-        assert.equal(state.leftDrawerDisabled, true);
-
-        state = reduceAndFreeze(state, {
-            type: NavigationTypes.NAVIGATION_LEFT_DRAWER_DISABLED,
-            data: false
-        });
-
-        assert.equal(state.index, 0);
-        assert.deepEqual(state.routes, [Routes.Root]);
-        assert.equal(state.leftDrawerDisabled, false);
     });
 
     it('NAVIGATION_JUMP', () => {
