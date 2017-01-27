@@ -65,6 +65,15 @@ export function goToChannelInfo() {
     };
 }
 
+export function goToChannelMembers() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelMembers
+        }, getState);
+    };
+}
+
 export function openChannelDrawer() {
     return async (dispatch, getState) => {
         dispatch({

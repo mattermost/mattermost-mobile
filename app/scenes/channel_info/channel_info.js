@@ -40,7 +40,8 @@ export default class ChannelInfo extends PureComponent {
         isFavorite: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            getChannelStats: PropTypes.func.isRequired
+            getChannelStats: PropTypes.func.isRequired,
+            goToChannelMembers: PropTypes.func.isRequired
         })
     }
 
@@ -91,7 +92,7 @@ export default class ChannelInfo extends PureComponent {
                         <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
                     </View>
                     <ChannelInfoRow
-                        action={() => true}
+                        action={this.props.actions.goToChannelMembers}
                         defaultMessage='Manage Members'
                         detail={currentChannelMemberCount}
                         icon='users'
