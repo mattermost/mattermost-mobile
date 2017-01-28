@@ -22,7 +22,9 @@ export default class Channel extends React.PureComponent {
             openChannelDrawer: React.PropTypes.func.isRequired,
             openRightMenuDrawer: React.PropTypes.func.isRequired,
             handlePostDraftChanged: React.PropTypes.func.isRequired,
-            goToChannelInfo: React.PropTypes.func.isRequired
+            goToChannelInfo: React.PropTypes.func.isRequired,
+            initWebSocket: React.PropTypes.func.isRequired,
+            closeWebSocket: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
@@ -30,17 +32,9 @@ export default class Channel extends React.PureComponent {
         theme: React.PropTypes.object.isRequired
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            leftSidebarOpen: false,
-            rightSidebarOpen: false
-        };
-    }
-
     componentWillMount() {
         const teamId = this.props.currentTeam.id;
+        this.props.actions.initWebSocket();
         this.loadChannels(teamId);
     }
 
@@ -49,6 +43,10 @@ export default class Channel extends React.PureComponent {
             const teamId = nextProps.currentTeam.id;
             this.loadChannels(teamId);
         }
+    }
+
+    componentWillUnmount() {
+        this.props.actions.closeWebSocket();
     }
 
     loadChannels = (teamId) => {
@@ -61,12 +59,12 @@ export default class Channel extends React.PureComponent {
     openChannelDrawer = () => {
         this.refs.postTextbox.getWrappedInstance().blur();
         this.props.actions.openChannelDrawer();
-    }
+    };
 
     openRightMenuDrawer = () => {
         this.refs.postTextbox.getWrappedInstance().blur();
         this.props.actions.openRightMenuDrawer();
-    }
+    };
 
     render() {
         const {

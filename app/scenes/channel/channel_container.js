@@ -20,6 +20,11 @@ import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
+import {
+    init as initWebSocket,
+    close as closeWebSocket
+} from 'service/actions/websocket';
+
 import Channel from './channel';
 
 function mapStateToProps(state, ownProps) {
@@ -41,7 +46,9 @@ function mapDispatchToProps(dispatch) {
             openChannelDrawer,
             openRightMenuDrawer,
             handlePostDraftChanged,
-            goToChannelInfo
+            goToChannelInfo,
+            initWebSocket,
+            closeWebSocket
         }, dispatch)
     };
 }
