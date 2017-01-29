@@ -8,7 +8,7 @@ import {ViewTypes} from 'app/constants';
 
 function title(state = '', action) {
     switch (action.type) {
-    case ViewTypes.MODAL_OPTIONS_CHANGED:
+    case ViewTypes.OPTIONS_MODAL_CHANGED:
         return action.data.title;
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
@@ -19,7 +19,7 @@ function title(state = '', action) {
 
 function options(state = [], action) {
     switch (action.type) {
-    case ViewTypes.MODAL_OPTIONS_CHANGED:
+    case ViewTypes.OPTIONS_MODAL_CHANGED:
         return action.data.options;
     case UsersTypes.LOGOUT_SUCCESS:
         return [];
@@ -30,7 +30,7 @@ function options(state = [], action) {
 
 function visible(state = false, action) {
     switch (action.type) {
-    case ViewTypes.MODAL_OPTIONS_CHANGED:
+    case ViewTypes.OPTIONS_MODAL_CHANGED:
         return action.data.visible;
     case UsersTypes.LOGOUT_SUCCESS:
         return false;

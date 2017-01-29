@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {openModal, closeModal} from 'app/actions/views/modal_options';
+import {openModal, closeModal} from 'app/actions/views/options_modal';
 import {closeDMChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 
 import {viewChannel} from 'service/actions/channels';

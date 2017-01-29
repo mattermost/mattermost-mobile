@@ -271,7 +271,7 @@ const state = {
             loginId: '',
             password: ''
         },
-        modalOptions: {
+        optionsModal: {
             title: '',
             options: [],
             visible: false

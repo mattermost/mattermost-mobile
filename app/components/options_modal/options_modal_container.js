@@ -4,13 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {closeModal} from 'app/actions/views/modal_options';
-import ModalOptions from './modal_options';
+import {closeModal} from 'app/actions/views/options_modal';
+import OptionsModal from './options_modal';
 
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        ...state.views.modalOptions
+        ...state.views.optionsModal
     };
 }
 
@@ -22,4 +22,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ModalOptions);
+export default connect(mapStateToProps, mapDispatchToProps)(OptionsModal);

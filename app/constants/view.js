@@ -11,7 +11,7 @@ const ViewTypes = keyMirror({
 
     POST_DRAFT_CHANGED: null,
 
-    MODAL_OPTIONS_CHANGED: null
+    OPTIONS_MODAL_CHANGED: null
 });
 
 export default ViewTypes;

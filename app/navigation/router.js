@@ -13,7 +13,7 @@ import {bindActionCreators} from 'redux';
 import {closeDrawers, goBack} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
-import ModalOptions from 'app/components/modal_options';
+import OptionsModal from 'app/components/options_modal';
 import {RouteTransitions} from 'app/navigation/routes';
 import {getComponentForScene} from 'app/scenes';
 
@@ -161,7 +161,7 @@ class Router extends React.Component {
                         render={this.renderTransition}
                         configureTransition={this.configureTransition}
                     />
-                    <ModalOptions/>
+                    <OptionsModal/>
                 </Drawer>
             </Drawer>
         );
@@ -169,7 +169,7 @@ class Router extends React.Component {
 }
 
 function mapStateToProps(state) {
-    const modalVisible = state.views.modalOptions.visible;
+    const modalVisible = state.views.optionsModal.visible;
     return {
         navigation: state.navigation,
         modalVisible

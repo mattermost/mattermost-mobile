@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class ModalOptions extends PureComponent {
+export default class OptionsModal extends PureComponent {
     static propTypes = {
         title: PropTypes.string,
         options: PropTypes.array,

@@ -6,7 +6,7 @@ import {ViewTypes} from 'app/constants';
 export function openModal(title, options) {
     return async (dispatch, getState) => {
         dispatch({
-            type: ViewTypes.MODAL_OPTIONS_CHANGED,
+            type: ViewTypes.OPTIONS_MODAL_CHANGED,
             data: {
                 title,
                 options,
@@ -19,7 +19,7 @@ export function openModal(title, options) {
 export function closeModal() {
     return async (dispatch, getState) => {
         dispatch({
-            type: ViewTypes.MODAL_OPTIONS_CHANGED,
+            type: ViewTypes.OPTIONS_MODAL_CHANGED,
             data: {
                 title: '',
                 options: [],
