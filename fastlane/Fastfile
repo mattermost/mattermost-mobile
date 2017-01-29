@@ -198,7 +198,7 @@ platform :android do
 
   desc 'Build Release file'
   lane :dev do
-    build_android({release: true})
+    build_android({release: false})
   end
 
   desc 'Submit a new Beta Build to Google Play'
