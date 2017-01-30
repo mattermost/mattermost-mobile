@@ -7,8 +7,9 @@ import serviceReducer from 'service/reducers';
 import thunk from 'redux-thunk';
 
 export default function configureServiceStore(preloadedState, appReducer) {
+    const baseReducer = combineReducers(Object.assign({}, serviceReducer, appReducer));
     return createStore(
-        enableBatching(combineReducers({serviceReducer, appReducer})),
+        enableBatching(baseReducer),
         preloadedState,
         applyMiddleware(thunk)
     );
