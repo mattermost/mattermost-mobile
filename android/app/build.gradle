@@ -100,10 +100,12 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(MATTERMOST_RELEASE_STORE_FILE)
-            storePassword MATTERMOST_RELEASE_PASSWORD
-            keyAlias MATTERMOST_RELEASE_KEY_ALIAS
-            keyPassword MATTERMOST_RELEASE_PASSWORD
+            if (project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')) {
+                storeFile file(MATTERMOST_RELEASE_STORE_FILE)
+                storePassword MATTERMOST_RELEASE_PASSWORD
+                keyAlias MATTERMOST_RELEASE_KEY_ALIAS
+                keyPassword MATTERMOST_RELEASE_PASSWORD
+            }
         }
     }
     splits {
@@ -119,6 +121,10 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             signingConfig signingConfigs.release
+        }
+        debug {
+            minifyEnabled enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
     // applicationVariants are e.g. debug, release
