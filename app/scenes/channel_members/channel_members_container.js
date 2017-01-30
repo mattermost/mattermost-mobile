@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
+import {getMyPreferences} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 import {getProfilesInCurrentChannel} from 'service/selectors/entities/users';
 import {getProfilesInChannel} from 'service/actions/users';
@@ -18,7 +19,8 @@ function mapStateToProps(state) {
         currentChannel: getCurrentChannel(state),
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentChannelMemberCount,
-        currentTeam: getCurrentTeam(state)
+        currentTeam: getCurrentTeam(state),
+        preferences: getMyPreferences(state)
     };
 }
 

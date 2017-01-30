@@ -4,6 +4,8 @@
 import {createSelector} from 'reselect';
 
 import {getCurrentChannelId} from './channels';
+import {getMyPreferences} from './preferences';
+import {displayUsername} from 'service/utils/user_utils';
 
 export function getCurrentUserId(state) {
     return state.entities.users.currentId;
@@ -45,7 +47,8 @@ export const getProfilesInCurrentChannel = createSelector(
     getUsers,
     getUserStatuses,
     getProfileSetInCurrentChannel,
-    (profiles, statuses, currentChannelProfileSet) => {
+    getMyPreferences,
+    (profiles, statuses, currentChannelProfileSet, preferences) => {
         const currentProfiles = [];
         if (typeof currentChannelProfileSet === 'undefined') {
             return currentProfiles;
@@ -60,8 +63,8 @@ export const getProfilesInCurrentChannel = createSelector(
 
         // We could get rid of this if server side sorting is a possibility
         const sortedCurrentProfiles = currentProfiles.sort((a, b) => {
-            const nameA = a.first ? a.first : a.username;
-            const nameB = b.first ? b.first : b.username;
+            const nameA = displayUsername(a, preferences);
+            const nameB = displayUsername(b, preferences);
 
             if (nameA.toUpperCase() < nameB.toUpperCase()) {
                 return -1;

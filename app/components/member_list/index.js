@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import Client from 'service/client';
+import {displayUsername} from 'service/utils/user_utils';
 
 import MemberListRow from './member_list_row';
 
@@ -38,12 +39,13 @@ export default class MemberList extends PureComponent {
         onRowPress: PropTypes.func,
         onListEndReached: PropTypes.func,
         onListEndReachedThreshold: PropTypes.number,
-        sections: PropTypes.bool
+        sections: PropTypes.bool,
+        preferences: PropTypes.object
     }
 
     static defaultProps = {
         onListEndReached: () => true,
-        onListEndThreshold: 100,
+        onListEndThreshold: 10,
         sections: true
     }
 
@@ -71,7 +73,7 @@ export default class MemberList extends PureComponent {
     createSections = (data) => {
         const sections = {};
         data.forEach((d) => {
-            const name = (d.first_name && d.last_name) ? d.first_name : d.username;
+            const name = displayUsername(d, this.props.preferences);
             const sectionKey = name.substring(0, 1).toUpperCase();
 
             if (!sections[sectionKey]) {
@@ -93,8 +95,8 @@ export default class MemberList extends PureComponent {
     }
 
     renderRow = (data) => {
-        const {id, first_name: firstName, last_name: lastName, username, status} = data;
-        const displayName = (firstName && lastName) ? `${firstName} ${lastName}` : username;
+        const {id, username, status} = data;
+        const displayName = displayUsername(data, this.props.preferences);
         const pictureURL = Client.getProfilePictureUrl(data.id);
 
         return (

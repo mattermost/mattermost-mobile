@@ -20,6 +20,7 @@ export default class ChannelMembers extends PureComponent {
         currentChannel: PropTypes.object,
         currentChannelMembers: PropTypes.array.isRequired,
         currentTeam: PropTypes.object,
+        preferences: PropTypes.object,
         actions: PropTypes.shape({
             getProfilesInChannel: PropTypes.func.isRequired
         })
@@ -49,6 +50,7 @@ export default class ChannelMembers extends PureComponent {
                 <MemberList
                     members={this.props.currentChannelMembers}
                     onListEndReached={this.loadMoreMembers}
+                    preferences={this.props.preferences}
                 />
             </View>
         );
