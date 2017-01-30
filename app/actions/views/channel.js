@@ -6,7 +6,11 @@ import {batchActions} from 'redux-batched-actions';
 import {ViewTypes} from 'app/constants';
 import {updateStorage} from 'app/actions/storage';
 
-import {fetchMyChannelsAndMembers, getMyChannelMembers, selectChannel} from 'service/actions/channels';
+import {
+    fetchMyChannelsAndMembers,
+    getMyChannelMembers,
+    selectChannel,
+    leaveChannel as serviceLeaveChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
 import {savePreferences, deletePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
@@ -96,10 +100,10 @@ export function loadPostsIfNecessary(channel) {
 export function selectInitialChannel(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const channels = state.entities.channels.channels;
+        const {channels, myMembers} = state.entities.channels;
         const currentChannelId = state.entities.channels.currentId;
 
-        if (channels[currentChannelId] && channels[currentChannelId].team_id === teamId) {
+        if (channels[currentChannelId] && myMembers[currentChannelId] && channels[currentChannelId].team_id === teamId) {
             await selectChannel(currentChannelId)(dispatch, getState);
             return;
         }
@@ -109,7 +113,9 @@ export function selectInitialChannel(teamId) {
             await selectChannel(channel.id)(dispatch, getState);
         } else {
             // Handle case when the default channel cannot be found
-            const firstChannel = Object.values(channels)[0];
+            // so we need to get the first available channel of the team
+            const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
+            const firstChannel = channelsInTeam[0].id;
             await selectChannel(firstChannel.id)(dispatch, getState);
         }
     };
@@ -145,16 +151,47 @@ export function closeDMChannel(channel) {
         }];
 
         if (channel.isFavorite) {
-            const fav = [{
-                user_id: userId,
-                category: Constants.CATEGORY_FAVORITE_CHANNEL,
-                name: channel.id
-            }];
-            deletePreferences(fav)(dispatch, getState);
+            unmarkFavorite(channel.id)(dispatch, getState);
         }
         savePreferences(dm)(dispatch, getState).then(() => {
             if (channel.isCurrent) {
                 selectInitialChannel(state.entities.teams.currentId)(dispatch, getState);
+            }
+        });
+    };
+}
+
+export function markFavorite(channelId) {
+    return async (dispatch, getState) => {
+        const userId = getState().entities.users.currentId;
+        const fav = [{
+            user_id: userId,
+            category: Constants.CATEGORY_FAVORITE_CHANNEL,
+            name: channelId,
+            value: 'true'
+        }];
+        savePreferences(fav)(dispatch, getState);
+    };
+}
+
+export function unmarkFavorite(channelId) {
+    return async (dispatch, getState) => {
+        const userId = getState().entities.users.currentId;
+        const fav = [{
+            user_id: userId,
+            category: Constants.CATEGORY_FAVORITE_CHANNEL,
+            name: channelId
+        }];
+        deletePreferences(fav)(dispatch, getState);
+    };
+}
+
+export function leaveChannel(channel) {
+    return async (dispatch, getState) => {
+        const {currentId: teamId} = getState().entities.teams;
+        serviceLeaveChannel(teamId, channel.id)(dispatch, getState).then(() => {
+            if (channel.isCurrent) {
+                selectInitialChannel(teamId)(dispatch, getState);
             }
         });
     };

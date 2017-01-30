@@ -17,6 +17,7 @@ export default class ChannelItem extends React.Component {
         channel: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,
         handleClose: React.PropTypes.func,
+        onLongPress: React.PropTypes.func,
         isActive: React.PropTypes.bool.isRequired,
         hasUnread: React.PropTypes.bool.isRequired,
         mentions: React.PropTypes.number.isRequired,
@@ -34,6 +35,7 @@ export default class ChannelItem extends React.Component {
         } = this.props;
 
         let iconColor = changeOpacity(theme.centerChannelColor, 0.7);
+        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
         let icon;
         let activeBorder;
         let badge;
@@ -153,7 +155,7 @@ export default class ChannelItem extends React.Component {
         }
 
         let closeButton = null;
-        if (handleClose && !badge) {
+        if (isDirectMessage && !badge) {
             const closeStyle = {
                 position: 'absolute',
                 justifyContent: 'center',
@@ -183,6 +185,10 @@ export default class ChannelItem extends React.Component {
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.3)}
                 onPress={() => this.props.onSelectChannel(channel)}
+                delayLongPress={1000}
+                onLongPress={() => {
+                    this.props.onLongPress(channel);
+                }}
             >
                 <View style={{flex: 1}}>
                     {activeBorder}

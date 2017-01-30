@@ -13,12 +13,14 @@ import {bindActionCreators} from 'redux';
 import {closeDrawers, goBack} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
+import OptionsModal from 'app/components/options_modal';
 import {RouteTransitions} from 'app/navigation/routes';
 import {getComponentForScene} from 'app/scenes';
 
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
+        modalVisible: React.PropTypes.bool.isRequired,
         actions: React.PropTypes.shape({
             closeDrawers: React.PropTypes.func.isRequired,
             goBack: React.PropTypes.func.isRequired
@@ -97,7 +99,7 @@ class Router extends React.Component {
         const SceneComponent = getComponentForScene(route.key);
 
         return <SceneComponent {...route.props}/>;
-    }
+    };
 
     configureTransition = () => {
         return {
@@ -116,6 +118,8 @@ class Router extends React.Component {
 
         let leftDrawerContent;
         if (leftDrawerRoute) {
+            // TODO: We should make it so that this is availabe once we login
+            // son when sliding it renders correctly without the neeed to open using the top-bar
             leftDrawerContent = this.renderRoute(leftDrawerRoute);
         }
 
@@ -124,19 +128,28 @@ class Router extends React.Component {
             rightDrawerContent = this.renderRoute(rightDrawerRoute);
         }
 
+        const {modalVisible} = this.props;
+
         return (
             <Drawer
                 open={leftDrawerOpen}
                 type='displace'
+                disabled={modalVisible}
                 content={leftDrawerContent}
                 tapToClose={true}
                 openDrawerOffset={0.2}
                 onRequestClose={this.props.actions.closeDrawers}
+                panOpenMask={0.1}
+                panCloseMask={0.2}
+                panThreshold={0.2}
+                acceptPan={true}
+                negotiatePan={true}
             >
                 <Drawer
                     open={rightDrawerOpen}
                     type='displace'
                     side='right'
+                    disabled={modalVisible}
                     content={rightDrawerContent}
                     tapToClose={true}
                     openDrawerOffset={0.2}
@@ -148,6 +161,7 @@ class Router extends React.Component {
                         render={this.renderTransition}
                         configureTransition={this.configureTransition}
                     />
+                    <OptionsModal/>
                 </Drawer>
             </Drawer>
         );
@@ -155,8 +169,10 @@ class Router extends React.Component {
 }
 
 function mapStateToProps(state) {
+    const modalVisible = state.views.optionsModal.visible;
     return {
-        navigation: state.navigation
+        navigation: state.navigation,
+        modalVisible
     };
 }
 

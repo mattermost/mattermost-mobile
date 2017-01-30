@@ -271,6 +271,11 @@ const state = {
             loginId: '',
             password: ''
         },
+        optionsModal: {
+            title: '',
+            options: [],
+            visible: false
+        },
         selectServer: {
             serverUrl: Config.DefaultServerUrl
         }
