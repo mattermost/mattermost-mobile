@@ -16,6 +16,11 @@ export const Routes = {
     ChannelDrawer: {
         key: 'ChannelDrawer'
     },
+    ChannelMembers: {
+        key: 'ChannelMembers',
+        title: {id: 'channel_header.manageMembers', defaultMessage: 'Manage Members'},
+        transition: RouteTransitions.Horizontal
+    },
     ChannelView: {
         key: 'ChannelView',
         transition: RouteTransitions.Horizontal
