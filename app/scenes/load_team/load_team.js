@@ -15,14 +15,9 @@ export default class LoadTeam extends React.Component {
         currentTeam: React.PropTypes.object,
         actions: React.PropTypes.shape({
             goToChannelView: React.PropTypes.func.isRequired,
-            handleTeamChange: React.PropTypes.func.isRequired,
-            initWebsocket: React.PropTypes.func.isRequired
+            handleTeamChange: React.PropTypes.func.isRequired
         }).isRequired
     };
-
-    componentWillMount() {
-        this.props.actions.initWebsocket();
-    }
 
     componentDidMount() {
         const {currentTeam, myMembers, teams} = this.props;

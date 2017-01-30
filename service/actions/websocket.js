@@ -33,7 +33,6 @@ import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
 
 export function init(siteUrl, token, optionalWebSocket) {
     return async (dispatch, getState) => {
-        dispatch({type: GeneralTypes.WEBSOCKET_REQUEST}, getState);
         const config = getState().entities.general.config;
         let connUrl = siteUrl || Client.getUrl();
         const authToken = token || Client.getToken();
@@ -59,6 +58,7 @@ export function init(siteUrl, token, optionalWebSocket) {
         websocketClient.setEventCallback(handleEvent);
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
+        websocketClient.setConnectingCallback(handleConnecting);
         return websocketClient.initialize(connUrl, authToken, dispatch, getState, optionalWebSocket);
     };
 }
@@ -70,6 +70,10 @@ export function close() {
             dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'}, getState);
         }
     };
+}
+
+function handleConnecting(dispatch, getState) {
+    dispatch({type: GeneralTypes.WEBSOCKET_REQUEST}, getState);
 }
 
 function handleFirstConnect(dispatch, getState) {

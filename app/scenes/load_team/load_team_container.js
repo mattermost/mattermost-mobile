@@ -6,8 +6,6 @@ import {connect} from 'react-redux';
 
 import {goToChannelView} from 'app/actions/views/load_team';
 import {handleTeamChange} from 'app/actions/views/select_team';
-
-import {init} from 'service/actions/websocket';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
 import LoadTeam from './load_team.js';
@@ -26,8 +24,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goToChannelView,
-            handleTeamChange,
-            initWebsocket: init
+            handleTeamChange
         }, dispatch)
     };
 }

@@ -11,6 +11,7 @@ class WebSocketClient {
     constructor() {
         this.conn = null;
         this.connectionUrl = null;
+        this.token = null;
         this.sequence = 1;
         this.connectFailCount = 0;
         this.eventCallback = null;
@@ -18,6 +19,7 @@ class WebSocketClient {
         this.reconnectCallback = null;
         this.errorCallback = null;
         this.closeCallback = null;
+        this.connectingCallback = null;
         this.dispatch = null;
         this.getState = null;
     }
@@ -46,8 +48,12 @@ class WebSocketClient {
             }
 
             Socket = webSocketConnector;
+            if (this.connectingCallback) {
+                this.connectingCallback(dispatch, getState);
+            }
             this.conn = new Socket(connectionUrl);
             this.connectionUrl = connectionUrl;
+            this.token = token;
             this.dispatch = dispatch;
             this.getState = getState;
 
@@ -87,7 +93,7 @@ class WebSocketClient {
 
                 // If we've failed a bunch of connections then start backing off
                 if (this.connectFailCount > MAX_WEBSOCKET_FAILS) {
-                    retryTime = MIN_WEBSOCKET_RETRY_TIME * this.connectFailCount * this.connectFailCount;
+                    retryTime = MIN_WEBSOCKET_RETRY_TIME * this.connectFailCount;
                     if (retryTime > MAX_WEBSOCKET_RETRY_TIME) {
                         retryTime = MAX_WEBSOCKET_RETRY_TIME;
                     }
@@ -95,7 +101,7 @@ class WebSocketClient {
 
                 setTimeout(
                     () => {
-                        this.initialize(connectionUrl, token);
+                        this.initialize(connectionUrl, token, dispatch, getState, webSocketConnector);
                     },
                     retryTime
                 );
@@ -123,6 +129,10 @@ class WebSocketClient {
                 }
             };
         });
+    }
+
+    setConnectingCallback(callback) {
+        this.connectingCallback = callback;
     }
 
     setEventCallback(callback) {
@@ -167,7 +177,7 @@ class WebSocketClient {
             this.conn.send(JSON.stringify(msg));
         } else if (!this.conn || this.conn.readyState === Socket.CLOSED) {
             this.conn = null;
-            this.initialize();
+            this.initialize(this.connectionUrl, this.token, this.dispatch, this.getState);
         }
     }
 
