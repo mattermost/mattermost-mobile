@@ -8,6 +8,11 @@ import {updateStorage} from 'app/actions/storage';
 
 export function handleTeamChange(team) {
     return async (dispatch, getState) => {
+        const currentTeamId = getState().entities.teams.currentId;
+        if (currentTeamId === team.id) {
+            return;
+        }
+
         const storage = await updateStorage('currentTeamId', team.id);
         const lastChannelForTeam = storage[team.id] ? storage[team.id].currentChannelId : '';
 
