@@ -8,7 +8,7 @@ This document includes a list of open source components used in Mattermost Mobil
 
 --------
 
-This product contains 'fbjs', a collection of JavaScript utilities by Facebook, Inc.
+This product contains a modified portion of 'fbjs', a collection of JavaScript utilities by Facebook, Inc.
 
 * HOMEPAGE: 
   * https://github.com/facebook/fbjs
