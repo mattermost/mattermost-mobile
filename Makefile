@@ -1,6 +1,6 @@
 .PHONY: run run-ios run-android check-style test clean post-install
 .PHONY: check-ios-target prepare-ios-build build-ios after-ios-build
-.PHONY: check-android-target prepare-android-build build-android after-android-build
+.PHONY: check-android-target prepare-android-build build-android
 
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
@@ -103,9 +103,6 @@ ifneq ($(ios_target), $(filter $(ios_target), dev beta release))
 endif
 
 prepare-ios-build:
-	# We need to do this as the react-native packager minifies the output and that is causing issues
-	@sed -i'' -e 's|--dev $$DEV|--dev true|g' ./node_modules/react-native/packager/react-native-xcode.sh
-
 	@node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID
 
 do-build-ios:
@@ -114,7 +111,6 @@ do-build-ios:
 
 after-ios-build:
 	@echo Cleaning up
-	@sed -i'' -e 's|--dev true|--dev $$DEV|g' ./node_modules/react-native/packager/react-native-xcode.sh
 	@kill -9 `cat server.PID` && rm server.PID
 
 build-ios: | check-ios-target pre-run check-style prepare-ios-build do-build-ios after-ios-build
@@ -127,17 +123,12 @@ endif
 
 prepare-android-build:
 	@rm -rf ./node_modules/react-native/local-cli/templates/HelloWorld
-	@sed -i'' -e 's|def devEnabled = !targetName.toLowerCase().contains("release")|def devEnabled = true|g' ./node_modules/react-native/react.gradle
 
 do-build-android:
 	@echo "Building android $(android_target) app"
 	@cd fastlane && fastlane android $(android_target)
 
-after-android-build:
-	@echo Cleaning up
-	@sed -i'' -e 's|def devEnabled = true|def devEnabled = !targetName.toLowerCase().contains("release")|g' ./node_modules/react-native/react.gradle
-
-build-android: | check-android-target pre-run check-style prepare-android-build do-build-android after-android-build
+build-android: | check-android-target pre-run check-style prepare-android-build do-build-android
 
 dev:
 	@:
