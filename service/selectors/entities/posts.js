@@ -3,7 +3,7 @@
 
 import {createSelector} from 'reselect';
 
-function getPosts(state) {
+export function getAllPosts(state) {
     return state.entities.posts.posts;
 }
 
@@ -12,7 +12,7 @@ function getPostIdsInCurrentChannel(state) {
 }
 
 export const getPostsInCurrentChannel = createSelector(
-    getPosts,
+    getAllPosts,
     getPostIdsInCurrentChannel,
     (posts, postIds) => {
         return postIds.map((id) => posts[id]);

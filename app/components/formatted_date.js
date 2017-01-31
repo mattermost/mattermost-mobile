@@ -29,7 +29,7 @@ class FormattedDate extends Component {
             return children(formattedDate);
         }
 
-        return <Text>{formattedDate}</Text>;
+        return <Text {...props}>{formattedDate}</Text>;
     }
 }
 

@@ -6,7 +6,7 @@ import {TouchableHighlight, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {changeOpacity} from 'app/utils/colors';
+import {changeOpacity} from 'app/utils/theme';
 
 // import PaperClipIcon from './components/paper_clip_icon.js';
 
