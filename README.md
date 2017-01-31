@@ -8,6 +8,29 @@ We'll post updates to our [Forums](http://forum.mattermost.org/) and [Twitter](h
 
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 11 languages. Learn more at https://mattermost.com.
 
+# How to Contribute
+
+### Testing
+
+The apps are currently under development with a beta release planned for March. We cut a new build every Monday, so people can test it our and see what's new.
+
+If you would like to help with testing the apps, you can:
+
+1. [Sign up for our team site](https://pre-release.mattermost.com/signup_user_complete/?id=f1924a8db44ff3bb41c96424cdc20676)
+2. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new
+3. Ask to be added as a beta tester by sending a direct message to `@lindsay` with your email address and device OS (iOS or Android)
+4. Install the `Mattermost RN` app
+5. Check the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) or search for `#rnchangelog` for an outline of the latest changes (example [here](https://pre-release.mattermost.com/core/pl/tepdema9yirupdzjjamxk6wj3c))
+5. File any bugs you find by posting in the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) with:
+  - Device information
+  - Repro steps
+  - Observed behavior (including screenshot / video when possible)
+  - Expected behavior
+
+### Contribute Code 
+
+We're not quite ready to accept external contributions yet - when things are ready, issues with a [Help Wanted] title will be posted in the [GitHub Issues section](https://github.com/mattermost/mattermost-mobile/issues).
+
 # Installing Dependencies
 Follow the [React Native Getting Started Guide](https://facebook.github.io/react-native/docs/getting-started.html) for detailed instructions on setting up your local machine for development.
 
