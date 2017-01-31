@@ -29,7 +29,9 @@ export default class SearchBarIos extends PureComponent {
         searchBarStyle: 'default',
         placeholder: 'Search',
         showCancelButton: true,
-        hideBackground: true
+        hideBackground: true,
+        onFocus: () => true,
+        onBlur: () => true
     };
 
     constructor(props) {
@@ -46,9 +48,7 @@ export default class SearchBarIos extends PureComponent {
             this.setState({displayCancelButton: true});
         }
 
-        if (onFocus) {
-            onFocus(event);
-        }
+        onFocus(event);
     };
 
     onBlur = (event) => {
@@ -57,9 +57,7 @@ export default class SearchBarIos extends PureComponent {
             this.setState({displayCancelButton: false});
         }
 
-        if (onBlur) {
-            onBlur(event);
-        }
+        onBlur(event);
     };
 
     render() {

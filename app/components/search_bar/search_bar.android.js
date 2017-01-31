@@ -45,7 +45,12 @@ export default class SearchBarAndroid extends PureComponent {
         placeholder: 'Search',
         showCancelButton: true,
         placeholderTextColor: '#bdbdbd',
-        textColor: '#212121'
+        textColor: '#212121',
+        onSearchButtonPress: () => true,
+        onCancelButtonPress: () => true,
+        onChangeText: () => true,
+        onFocus: () => true,
+        onBlur: () => true
     };
 
     constructor(props) {
@@ -63,7 +68,7 @@ export default class SearchBarAndroid extends PureComponent {
 
     onSearchButtonPress() {
         const onSearchButtonPress = this.props.onSearchButtonPress;
-        if (onSearchButtonPress && this.state.value) {
+        if (this.state.value) {
             onSearchButtonPress(this.state.value);
         }
     }
@@ -75,34 +80,26 @@ export default class SearchBarAndroid extends PureComponent {
             value: ''
         });
 
-        if (onCancelButtonPress) {
-            onCancelButtonPress();
-        }
+        onCancelButtonPress();
         this.dismissKeyboard();
     }
 
     onChangeText(value) {
         const onChangeText = this.props.onChangeText;
         this.setState({value});
-        if (onChangeText) {
-            onChangeText(value);
-        }
+        onChangeText(value);
     }
 
     onFocus() {
         const onFocus = this.props.onFocus;
         this.setState({isOnFocus: true});
-        if (onFocus) {
-            onFocus();
-        }
+        onFocus();
     }
 
     onBlur() {
         const onBlur = this.props.onBlur;
         this.setState({isOnFocus: false});
-        if (onBlur) {
-            onBlur();
-        }
+        onBlur();
         this.dismissKeyboard();
     }
 
