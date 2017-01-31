@@ -8,6 +8,8 @@ This document includes a list of open source components used in Mattermost Mobil
 
 --------
 
+## fbjs
+
 This product contains a modified portion of 'fbjs', a collection of JavaScript utilities by Facebook, Inc.
 
 * HOMEPAGE: 
@@ -51,7 +53,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## react-native-search-bar
 
-This product contains a modified portion of 'react-native-search-bar', a high-quality iOS native search bar for react native.
+This product contains a modified portion of 'react-native-search-bar', a high-quality iOS native search bar for react native by Zhao Han.
+
+* HOMEPAGE: 
+  * https://github.com/umhan35/react-native-search-bar
+  
+* LICENSE:
 
 The MIT License (MIT)
 
