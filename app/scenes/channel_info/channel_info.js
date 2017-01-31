@@ -42,12 +42,14 @@ class ChannelInfo extends PureComponent {
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
         isFavorite: PropTypes.bool.isRequired,
+        leaveChannelRequest: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
+            goBack: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired
         })
     }
@@ -62,8 +64,17 @@ class ChannelInfo extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const isFavorite = nextProps.isFavorite;
+        const {leaveChannelRequest, actions} = nextProps;
         if (isFavorite !== this.state.isFavorite) {
             this.setState({isFavorite});
+        }
+
+        if (
+            leaveChannelRequest !== this.props.leaveChannelRequest &&
+            leaveChannelRequest.status === 'success'
+        ) {
+            actions.goBack();
+            actions.selectInitialChannel(this.props.currentChannel.team_id);
         }
     }
 
