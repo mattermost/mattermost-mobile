@@ -51,7 +51,7 @@ export default class ChannelInfo extends PureComponent {
         this.props.actions.getChannelStats(this.props.currentChannel.team_id, this.props.currentChannel.id);
     }
 
-    handleFavorite() {
+    handleFavorite = () => {
         const {isFavorite, actions, currentChannel} = this.props;
         const {markFavorite, unmarkFavorite} = actions;
         const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
@@ -81,7 +81,7 @@ export default class ChannelInfo extends PureComponent {
                         purpose={currentChannel.purpose}
                     />
                     <ChannelInfoRow
-                        action={() => this.handleFavorite()}
+                        action={this.handleFavorite}
                         defaultMessage='Favorite'
                         detail={isFavorite}
                         icon='star-o'
