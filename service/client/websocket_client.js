@@ -51,7 +51,9 @@ class WebSocketClient {
             if (this.connectingCallback) {
                 this.connectingCallback(dispatch, getState);
             }
-            this.conn = new Socket(connectionUrl);
+
+            const url = new URL(connectionUrl);
+            this.conn = new Socket(connectionUrl, null, {origin: url.origin});
             this.connectionUrl = connectionUrl;
             this.token = token;
             this.dispatch = dispatch;
