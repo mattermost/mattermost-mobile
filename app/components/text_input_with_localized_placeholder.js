@@ -14,16 +14,24 @@ class TextInputWithLocalizedPlaceholder extends React.PureComponent {
 
     blur = () => {
         this.refs.input.blur();
-    }
+    };
+
+    focus = () => {
+        this.refs.input.focus();
+    };
 
     render() {
         const {intl, placeholder, ...otherProps} = this.props;
+        let placeholderString = '';
+        if (placeholder.id) {
+            placeholderString = intl.formatMessage(placeholder);
+        }
 
         return (
             <TextInput
                 ref='input'
                 {...otherProps}
-                placeholder={intl.formatMessage(placeholder)}
+                placeholder={placeholderString}
             />
         );
     }

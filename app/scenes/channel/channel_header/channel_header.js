@@ -4,6 +4,7 @@
 import React from 'react';
 import {
     Text,
+    Platform,
     TouchableHighlight,
     View
 } from 'react-native';
@@ -24,8 +25,19 @@ export default class ChannelHeader extends React.PureComponent {
             theme
         } = this.props;
 
+        const containerStyle = {
+            backgroundColor: theme.sidebarHeaderBg,
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            ...Platform.select({
+                ios: {
+                    marginTop: 20
+                }
+            })
+        };
+
         return (
-            <View style={{backgroundColor: theme.sidebarHeaderBg, flexDirection: 'row', justifyContent: 'flex-start', marginTop: 20}}>
+            <View style={containerStyle}>
                 <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
                     <TouchableHighlight
                         onPress={this.props.openLeftDrawer}

@@ -3,7 +3,14 @@
 
 import React, {Component, PropTypes} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {Text, TextInput, Image, KeyboardAvoidingView} from 'react-native';
+import {
+    Image,
+    KeyboardAvoidingView,
+    Text,
+    TextInput,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
 
 import Button from 'react-native-button';
 import FormattedText from 'app/components/formatted_text';
@@ -57,6 +64,11 @@ class Login extends Component {
             this.props.actions.handleSuccessfulLogin().then(this.props.actions.goToLoadTeam);
         }
     }
+
+    blur = () => {
+        this.loginId.blur();
+        this.passwd.blur();
+    };
 
     preSignIn = () => {
         this.setState({error: null});
@@ -152,52 +164,67 @@ class Login extends Component {
         return (
             <KeyboardAvoidingView
                 behavior='padding'
-                style={[GlobalStyles.container, GlobalStyles.signupContainer]}
+                style={{flex: 1}}
+                keyboardVerticalOffset={65}
             >
-                <Image
-                    source={logo}
-                />
-                <Text style={GlobalStyles.header}>
-                    {this.props.config.SiteName}
-                </Text>
-                <FormattedText
-                    style={GlobalStyles.subheader}
-                    id='web.root.signup_info'
-                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                />
-                <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
-                <TextInput
-                    ref='loginId'
-                    value={this.props.loginId}
-                    onChangeText={this.props.actions.handleLoginIdChanged}
-                    style={GlobalStyles.inputBox}
-                    placeholder={this.createLoginPlaceholder()}
-                    autoCorrect={false}
-                    autoCapitalize='none'
-                    underlineColorAndroid='transparent'
-                />
-                <TextInput
-                    value={this.props.password}
-                    onChangeText={this.props.actions.handlePasswordChanged}
-                    style={GlobalStyles.inputBox}
-                    placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                    secureTextEntry={true}
-                    autoCorrect={false}
-                    autoCapitalize='none'
-                    underlineColorAndroid='transparent'
-                    returnKeyType='go'
-                    onSubmitEditing={this.preSignIn}
-                />
-                <Button
-                    onPress={this.preSignIn}
-                    containerStyle={GlobalStyles.signupButton}
-                >
-                    <FormattedText
-                        id='login.signIn'
-                        defaultMessage='Sign in'
-                        style={GlobalStyles.signupButtonText}
-                    />
-                </Button>
+                <TouchableWithoutFeedback onPress={this.blur}>
+                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                        <Image
+                            source={logo}
+                        />
+                        <Text style={GlobalStyles.header}>
+                            {this.props.config.SiteName}
+                        </Text>
+                        <FormattedText
+                            style={GlobalStyles.subheader}
+                            id='web.root.signup_info'
+                            defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                        />
+                        <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
+                        <TextInput
+                            ref={(ref) => {
+                                this.loginId = ref;
+                            }}
+                            value={this.props.loginId}
+                            onChangeText={this.props.actions.handleLoginIdChanged}
+                            style={GlobalStyles.inputBox}
+                            placeholder={this.createLoginPlaceholder()}
+                            autoCorrect={false}
+                            autoCapitalize='none'
+                            keyboardType='email-address'
+                            returnKeyType='next'
+                            underlineColorAndroid='transparent'
+                            onSubmitEditing={() => {
+                                this.passwd.focus();
+                            }}
+                        />
+                        <TextInput
+                            ref={(ref) => {
+                                this.passwd = ref;
+                            }}
+                            value={this.props.password}
+                            onChangeText={this.props.actions.handlePasswordChanged}
+                            style={GlobalStyles.inputBox}
+                            placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            secureTextEntry={true}
+                            autoCorrect={false}
+                            autoCapitalize='none'
+                            underlineColorAndroid='transparent'
+                            returnKeyType='go'
+                            onSubmitEditing={this.preSignIn}
+                        />
+                        <Button
+                            onPress={this.preSignIn}
+                            containerStyle={GlobalStyles.signupButton}
+                        >
+                            <FormattedText
+                                id='login.signIn'
+                                defaultMessage='Sign in'
+                                style={GlobalStyles.signupButtonText}
+                            />
+                        </Button>
+                    </View>
+                </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
         );
     }

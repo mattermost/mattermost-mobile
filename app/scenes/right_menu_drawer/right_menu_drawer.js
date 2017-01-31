@@ -6,6 +6,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    Platform,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -18,7 +19,11 @@ const Styles = StyleSheet.create({
     container: {
         backgroundColor: '#2071a7',
         flex: 1,
-        paddingTop: 20
+        ...Platform.select({
+            ios: {
+                marginTop: 20
+            }
+        })
     },
     itemText: {
         color: 'white'
