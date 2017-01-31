@@ -52,8 +52,9 @@ class WebSocketClient {
                 this.connectingCallback(dispatch, getState);
             }
 
-            const url = new URL(connectionUrl);
-            this.conn = new Socket(connectionUrl, null, {origin: url.origin});
+            const captured = (/^(?:https?|wss?):\/\/[^/]*/).exec(connectionUrl);
+            const origin = captured ? captured[0] : null;
+            this.conn = new Socket(connectionUrl, null, {origin});
             this.connectionUrl = connectionUrl;
             this.token = token;
             this.dispatch = dispatch;
