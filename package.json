@@ -45,7 +45,7 @@
     "check": "node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .",
     "run-ios": "node node_modules/react-native/local-cli/cli.js run-ios",
     "run-android": "node node_modules/react-native/local-cli/cli.js run-android",
-    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "start": "node node_modules/react-native/local-cli/cli.js start -- --reset-cache",
     "test": "NODE_ENV=test mocha --compilers js:babel-register --require babel-polyfill",
     "postinstall": "make post-install"
   }
