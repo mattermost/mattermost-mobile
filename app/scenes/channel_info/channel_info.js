@@ -51,7 +51,8 @@ class ChannelInfo extends PureComponent {
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
-            leaveChannel: PropTypes.func.isRequired
+            leaveChannel: PropTypes.func.isRequired,
+            deleteChannel: PropTypes.func.isRequired
         })
     };
 
@@ -114,6 +115,8 @@ class ChannelInfo extends PureComponent {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
                     this.props.actions.leaveChannel(channel, true);
+
+                    // this.props.actions.deleteChannel(channel.team_id, channel.id);
                 }
             }]
         );
@@ -198,7 +201,7 @@ class ChannelInfo extends PureComponent {
                     />
                     <View style={style.footer}>
                         <ChannelInfoRow
-                            action={() => true}
+                            action={() => this.handleDelete()}
                             defaultMessage='Delete Channel'
                             icon='trash'
                             iconColor='#DA4A4A'

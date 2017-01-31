@@ -7,7 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goToChannelMembers, goToChannelAddMembers, goBack} from 'app/actions/navigation';
 import {getChannelStats} from 'service/actions/channels';
-import {markFavorite, unmarkFavorite, leaveChannel} from 'app/actions/views/channel';
+import {markFavorite, unmarkFavorite, leaveChannel, deleteChannel} from 'app/actions/views/channel';
 import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getUser, getCurrentUserRoles} from 'service/selectors/entities/users';
@@ -47,7 +47,8 @@ function mapDispatchToProps(dispatch) {
             markFavorite,
             unmarkFavorite,
             leaveChannel,
-            goBack
+            goBack,
+            deleteChannel
         }, dispatch)
     };
 }
