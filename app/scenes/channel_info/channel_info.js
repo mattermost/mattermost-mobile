@@ -41,12 +41,21 @@ export default class ChannelInfo extends PureComponent {
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
-            goToChannelMembers: PropTypes.func.isRequired
+            goToChannelMembers: PropTypes.func.isRequired,
+            markFavorite: PropTypes.func.isRequired,
+            unmarkFavorite: PropTypes.func.isRequired
         })
     }
 
     componentDidMount() {
         this.props.actions.getChannelStats(this.props.currentChannel.team_id, this.props.currentChannel.id);
+    }
+
+    handleFavorite() {
+        const {isFavorite, actions, currentChannel} = this.props;
+        const {markFavorite, unmarkFavorite} = actions;
+        const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
+        toggleFavorite(currentChannel.id);
     }
 
     render() {
@@ -72,7 +81,7 @@ export default class ChannelInfo extends PureComponent {
                         purpose={currentChannel.purpose}
                     />
                     <ChannelInfoRow
-                        action={() => true}
+                        action={() => this.handleFavorite()}
                         defaultMessage='Favorite'
                         detail={isFavorite}
                         icon='star-o'
