@@ -12,11 +12,16 @@ import {
 import Client from 'service/client';
 import {displayUsername} from 'service/utils/user_utils';
 
+import FormattedText from 'app/components/formatted_text';
+
 import MemberListRow from './member_list_row';
 
 const style = StyleSheet.create({
     listView: {
         flex: 1
+    },
+    loadingText: {
+        opacity: 0.6
     },
     sectionContainer: {
         backgroundColor: '#eaeaea',
@@ -40,12 +45,13 @@ export default class MemberList extends PureComponent {
         onListEndReached: PropTypes.func,
         onListEndReachedThreshold: PropTypes.number,
         sections: PropTypes.bool,
-        preferences: PropTypes.object
+        preferences: PropTypes.object,
+        loadingMembers: PropTypes.bool
     }
 
     static defaultProps = {
         onListEndReached: () => true,
-        onListEndThreshold: 10,
+        onListEndThreshold: 100,
         sections: true
     }
 
@@ -73,7 +79,7 @@ export default class MemberList extends PureComponent {
     createSections = (data) => {
         const sections = {};
         data.forEach((d) => {
-            const name = displayUsername(d, this.props.preferences);
+            const name = d.username;
             const sectionKey = name.substring(0, 1).toUpperCase();
 
             if (!sections[sectionKey]) {
@@ -87,6 +93,10 @@ export default class MemberList extends PureComponent {
     }
 
     renderSectionHeader = (sectionData, sectionId) => {
+        if (!this.props.sections) {
+            return null;
+        }
+
         return (
             <View style={style.sectionContainer}>
                 <Text style={style.sectionText}>{sectionId}</Text>
@@ -111,12 +121,30 @@ export default class MemberList extends PureComponent {
         );
     }
 
-    renderSeparator(sectionId, rowId) {
+    renderSeparator = (sectionId, rowId) => {
         return (
             <View
                 key={`${sectionId}-${rowId}`}
                 style={style.separator}
             />
+        );
+    }
+
+    renderFooter = () => {
+        if (!this.props.loadingMembers) {
+            return null;
+        }
+
+        const backgroundColor = this.props.members.length > 0 ? '#fff' : '#0000';
+
+        return (
+            <View style={{height: 70, backgroundColor, alignItems: 'center', justifyContent: 'center'}}>
+                <FormattedText
+                    id='mobile.components.member_list.loading_members'
+                    defaultMessage='Loading Members...'
+                    style={style.loadingText}
+                />
+            </View>
         );
     }
 
@@ -128,9 +156,13 @@ export default class MemberList extends PureComponent {
                 renderRow={this.renderRow}
                 renderSectionHeader={this.renderSectionHeader}
                 renderSeparator={this.renderSeparator}
+                renderFooter={this.renderFooter}
                 enableEmptySections={true}
                 onEndReached={this.props.onListEndReached}
                 onEndReachedThreshold={this.props.onListEndReachedThreshold}
+                pageSize={10}
+                initialListSize={10}
+                scrollRenderAheadDistance={200}
             />
         );
     }
