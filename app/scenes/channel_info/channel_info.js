@@ -2,7 +2,9 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {
+    Alert,
     ScrollView,
     StyleSheet,
     View
@@ -10,6 +12,7 @@ import {
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
+import {Constants} from 'service/constants';
 
 const style = StyleSheet.create({
     container: {
@@ -32,8 +35,9 @@ const style = StyleSheet.create({
     }
 });
 
-export default class ChannelInfo extends PureComponent {
+class ChannelInfo extends PureComponent {
     static propTypes = {
+        intl: intlShape.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
@@ -43,7 +47,8 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
-            unmarkFavorite: PropTypes.func.isRequired
+            unmarkFavorite: PropTypes.func.isRequired,
+            leaveChannel: PropTypes.func.isRequired
         })
     }
 
@@ -72,6 +77,34 @@ export default class ChannelInfo extends PureComponent {
         const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
         this.setState({isFavorite: !isFavorite});
         toggleFavorite(currentChannel.id);
+    }
+
+    handleLeave() {
+        const {formatMessage} = this.props.intl;
+        const channel = this.props.currentChannel;
+        const term = channel.type === Constants.OPEN_CHANNEL ?
+            formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
+            formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
+
+        Alert.alert(
+            formatMessage({id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'}, {term}),
+            formatMessage({
+                id: 'mobile.channel_info.alertMessageLeaveChannel',
+                defaultMessage: 'Are you sure you want to leave the {term} with {name}?'
+            }, {
+                term: term.toLowerCase(),
+                name: channel.display_name
+            }),
+            [{
+                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
+            }, {
+                text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
+                onPress: () => {
+                    this.setState({showOptions: false});
+                    this.props.actions.leaveChannel(channel);
+                }
+            }]
+        );
     }
 
     render() {
@@ -135,7 +168,7 @@ export default class ChannelInfo extends PureComponent {
                         <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
                     </View>
                     <ChannelInfoRow
-                        action={() => true}
+                        action={() => this.handleLeave()}
                         defaultMessage='Leave Channel'
                         icon='sign-out'
                         textId='navbar.leave'
@@ -155,3 +188,5 @@ export default class ChannelInfo extends PureComponent {
         );
     }
 }
+
+export default injectIntl(ChannelInfo);
