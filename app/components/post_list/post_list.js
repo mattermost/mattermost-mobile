@@ -72,7 +72,6 @@ export default class PostList extends React.Component {
     render() {
         return (
             <ListView
-                ref='list'
                 style={style.container}
                 enableEmptySections={true}
                 dataSource={this.state.dataSource}
