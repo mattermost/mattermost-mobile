@@ -15,22 +15,27 @@ import deepEqual from 'deep-equal';
 
 const Styles = StyleSheet.create({
     container: {
-        flex: 1,
-        ...Platform.select({
-            ios: {
-                marginTop: 20
-            }
-        })
+        flex: 1
     },
     scrollContainer: {
         flex: 1
     },
     headerContainer: {
-        justifyContent: 'center',
         flexDirection: 'column',
-        height: 50,
+        ...Platform.select({
+            ios: {
+                height: 64,
+                justifyContent: 'flex-end'
+            },
+            android: {
+                height: 56,
+                justifyContent: 'center',
+                paddingTop: 10
+            }
+        }),
         width: 300,
-        paddingLeft: 10
+        paddingLeft: 10,
+        paddingBottom: 12
     },
     header: {
         fontSize: 18,

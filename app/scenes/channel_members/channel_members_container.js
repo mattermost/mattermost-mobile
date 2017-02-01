@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+
+import navigationSceneConnect from '../navigationSceneConnect';
 
 import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
 import {getMyPreferences} from 'service/selectors/entities/preferences';
@@ -33,4 +34,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelMembers);
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(ChannelMembers);

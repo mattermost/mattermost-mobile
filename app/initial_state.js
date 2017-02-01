@@ -3,6 +3,8 @@
 
 import Config from 'assets/config.json';
 
+import Routes from 'app/navigation/routes';
+
 const state = {
     entities: {
         general: {
@@ -255,7 +257,7 @@ const state = {
         index: 0,
         routes: [
             {
-                key: 'Root'
+                ...Routes.Root
             }
         ],
         leftDrawerOpen: false,

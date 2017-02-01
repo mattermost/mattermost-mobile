@@ -1,6 +1,21 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {
+    ChannelView,
+    ChannelDrawer,
+    ChannelInfo,
+    ChannelMembers,
+    LoadTeam,
+    Login,
+    Mfa,
+    RightMenuDrawer,
+    Root,
+    Search,
+    SelectServer,
+    SelectTeam
+} from 'app/scenes';
+
 import keyMirror from 'service/utils/key_mirror';
 
 export const RouteTransitions = keyMirror({
@@ -10,52 +25,76 @@ export const RouteTransitions = keyMirror({
 export const Routes = {
     ChannelInfo: {
         key: 'ChannelInfo',
-        title: {id: 'mobile.routes.channelInfo', defaultMessage: 'Info'},
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: ChannelInfo,
+        navigationProps: {
+            title: {id: 'mobile.routes.channelInfo', defaultMessage: 'Info'}
+        }
     },
     ChannelDrawer: {
-        key: 'ChannelDrawer'
+        key: 'ChannelDrawer',
+        component: ChannelDrawer
     },
     ChannelMembers: {
         key: 'ChannelMembers',
-        title: {id: 'channel_header.manageMembers', defaultMessage: 'Manage Members'},
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: ChannelMembers,
+        navigationProps: {
+            title: {id: 'channel_header.manageMembers', defaultMessage: 'Manage Members'}
+        }
     },
     ChannelView: {
         key: 'ChannelView',
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: ChannelView
     },
     LoadTeam: {
-        key: 'LoadTeam'
+        key: 'LoadTeam',
+        component: LoadTeam
     },
     Login: {
         key: 'Login',
-        title: {id: 'mobile.routes.login', defaultMessage: 'Login'},
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: Login,
+        navigationProps: {
+            title: {id: 'mobile.routes.login', defaultMessage: 'Login'}
+        }
     },
     Mfa: {
         key: 'Mfa',
-        title: {id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'},
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: Mfa,
+        navigationProps: {
+            title: {id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}
+        }
     },
     RightMenuDrawer: {
-        key: 'RightMenuDrawer'
+        key: 'RightMenuDrawer',
+        component: RightMenuDrawer
     },
     Root: {
-        key: 'Root'
+        key: 'Root',
+        component: Root
     },
     Search: {
         key: 'Search',
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: Search
     },
     SelectServer: {
         key: 'SelectServer',
-        title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}
+        component: SelectServer,
+        navigationProps: {
+            title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}
+        }
     },
     SelectTeam: {
         key: 'SelectTeam',
-        title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'},
-        transition: RouteTransitions.Horizontal
+        transition: RouteTransitions.Horizontal,
+        component: SelectTeam,
+        navigationProps: {
+            title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}
+        }
     }
 };
 

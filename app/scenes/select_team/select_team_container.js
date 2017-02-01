@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+
+import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
@@ -30,4 +31,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectTeam);
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(SelectTeam);

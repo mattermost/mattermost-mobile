@@ -21,7 +21,10 @@ const Styles = StyleSheet.create({
         flex: 1,
         ...Platform.select({
             ios: {
-                marginTop: 20
+                paddingTop: 20
+            },
+            android: {
+                paddingTop: 5
             }
         })
     },
