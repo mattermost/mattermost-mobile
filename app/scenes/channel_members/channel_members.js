@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    InteractionManager,
     StyleSheet,
     View
 } from 'react-native';
@@ -19,29 +20,25 @@ export default class ChannelMembers extends PureComponent {
     static propTypes = {
         currentChannel: PropTypes.object,
         currentChannelMembers: PropTypes.array.isRequired,
+        currentChannelMemberCount: PropTypes.number.isRequired,
         currentTeam: PropTypes.object,
         preferences: PropTypes.object,
+        requestStatus: PropTypes.string,
         actions: PropTypes.shape({
             getProfilesInChannel: PropTypes.func.isRequired
         })
     }
 
-    state = {
-        currentChannelMemberCount: 0
-    }
-
     componentDidMount() {
-        this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, 0);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.setState({
-            currentChannelMemberCount: this.state.currentChannelMemberCount + nextProps.currentChannelMembers.length
+        InteractionManager.runAfterInteractions(() => {
+            this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, 0);
         });
     }
 
     loadMoreMembers = () => {
-        this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.state.currentChannelMemberCount);
+        if (this.props.requestStatus !== 'started' && this.props.currentChannelMembers.length < this.props.currentChannelMemberCount) {
+            this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.props.currentChannelMembers.length);
+        }
     }
 
     render() {
@@ -51,6 +48,7 @@ export default class ChannelMembers extends PureComponent {
                     members={this.props.currentChannelMembers}
                     onListEndReached={this.loadMoreMembers}
                     preferences={this.props.preferences}
+                    loadingMembers={this.props.requestStatus === 'started'}
                 />
             </View>
         );

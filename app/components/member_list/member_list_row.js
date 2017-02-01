@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+const placeholder = require('assets/images/profile.jpg');
+
 const style = StyleSheet.create({
     avatar: {
         height: 40,
@@ -96,6 +98,7 @@ function MemberListRow(props) {
                 <Image
                     style={style.avatar}
                     source={{uri: pictureURL}}
+                    defaultSource={placeholder}
                 />
                 <View style={[style.statusContainer, style[status]]}>
                     {StatusComponent}

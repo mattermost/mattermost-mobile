@@ -20,7 +20,8 @@ function mapStateToProps(state) {
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentChannelMemberCount,
         currentTeam: getCurrentTeam(state),
-        preferences: getMyPreferences(state)
+        preferences: getMyPreferences(state),
+        requestStatus: state.requests.users.getProfilesInChannel.status
     };
 }
 
