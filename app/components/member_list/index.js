@@ -46,13 +46,19 @@ export default class MemberList extends PureComponent {
         onListEndReachedThreshold: PropTypes.number,
         sections: PropTypes.bool,
         preferences: PropTypes.object,
-        loadingMembers: PropTypes.bool
+        loadingMembers: PropTypes.bool,
+        listPageSize: PropTypes.number,
+        listInitialSize: PropTypes.number,
+        listScrollRenderAheadDistance: PropTypes.number
     }
 
     static defaultProps = {
         onListEndReached: () => true,
-        onListEndThreshold: 100,
-        sections: true
+        onListEndThreshold: 50,
+        sections: true,
+        listPageSize: 10,
+        listInitialSize: 10,
+        listScrollRenderAheadDistance: 200
     }
 
     constructor(props) {
@@ -160,9 +166,9 @@ export default class MemberList extends PureComponent {
                 enableEmptySections={true}
                 onEndReached={this.props.onListEndReached}
                 onEndReachedThreshold={this.props.onListEndReachedThreshold}
-                pageSize={10}
-                initialListSize={10}
-                scrollRenderAheadDistance={200}
+                pageSize={this.props.listPageSize}
+                initialListSize={this.props.listInitialSize}
+                scrollRenderAheadDistance={this.props.listScrollRenderAheadDistance}
             />
         );
     }

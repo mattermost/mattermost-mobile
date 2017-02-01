@@ -64,14 +64,7 @@ export const getProfilesInCurrentChannel = createSelector(
             const nameA = a.username;
             const nameB = b.username;
 
-            if (nameA.toUpperCase() < nameB.toUpperCase()) {
-                return -1;
-            }
-            if (nameA.toUpperCase() > nameB.toUpperCase()) {
-                return 1;
-            }
-
-            return 0;
+            return nameA.localeCompare(nameB);
         });
 
         return sortedCurrentProfiles;

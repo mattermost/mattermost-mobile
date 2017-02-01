@@ -31,7 +31,7 @@ export default class ChannelMembers extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-            this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, 0, 200);
+            this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, 0);
         });
     }
 
