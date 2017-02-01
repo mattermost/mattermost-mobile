@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {Alert, StyleSheet, Text, View, ListView} from 'react-native';
+import {Alert, ListView, Platform, StyleSheet, Text, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import {buildDisplayNameAndTypeComparable} from 'service/utils/channel_utils';
 import {Constants} from 'service/constants';
@@ -16,7 +16,11 @@ import deepEqual from 'deep-equal';
 const Styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: 20
+        ...Platform.select({
+            ios: {
+                marginTop: 20
+            }
+        })
     },
     scrollContainer: {
         flex: 1

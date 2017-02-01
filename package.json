@@ -14,6 +14,7 @@
     "react-native-button": "1.7.1",
     "react-native-drawer": "2.3.0",
     "react-native-keyboard-spacer": "0.3.1",
+    "react-native-search-bar": "enahum/react-native-search-bar.git",
     "react-native-svg": "4.5.0",
     "react-native-vector-icons": "4.0.0",
     "react-redux": "5.0.1",
@@ -45,7 +46,7 @@
     "check": "node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .",
     "run-ios": "node node_modules/react-native/local-cli/cli.js run-ios",
     "run-android": "node node_modules/react-native/local-cli/cli.js run-android",
-    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "start": "node node_modules/react-native/local-cli/cli.js start -- --reset-cache",
     "test": "NODE_ENV=test mocha --compilers js:babel-register --require babel-polyfill",
     "postinstall": "make post-install"
   }

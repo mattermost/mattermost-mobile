@@ -40,12 +40,38 @@ export default class ChannelInfo extends PureComponent {
         isFavorite: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            getChannelStats: PropTypes.func.isRequired
+            getChannelStats: PropTypes.func.isRequired,
+            goToChannelMembers: PropTypes.func.isRequired,
+            markFavorite: PropTypes.func.isRequired,
+            unmarkFavorite: PropTypes.func.isRequired
         })
+    }
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isFavorite: this.props.isFavorite
+        };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const isFavorite = nextProps.isFavorite;
+        if (isFavorite !== this.state.isFavorite) {
+            this.setState({isFavorite});
+        }
     }
 
     componentDidMount() {
         this.props.actions.getChannelStats(this.props.currentChannel.team_id, this.props.currentChannel.id);
+    }
+
+    handleFavorite = () => {
+        const {isFavorite, actions, currentChannel} = this.props;
+        const {markFavorite, unmarkFavorite} = actions;
+        const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
+        this.setState({isFavorite: !isFavorite});
+        toggleFavorite(currentChannel.id);
     }
 
     render() {
@@ -53,7 +79,6 @@ export default class ChannelInfo extends PureComponent {
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
-            isFavorite,
             theme
         } = this.props;
 
@@ -71,9 +96,9 @@ export default class ChannelInfo extends PureComponent {
                         purpose={currentChannel.purpose}
                     />
                     <ChannelInfoRow
-                        action={() => true}
+                        action={this.handleFavorite}
                         defaultMessage='Favorite'
-                        detail={isFavorite}
+                        detail={this.state.isFavorite}
                         icon='star-o'
                         textId='mobile.routes.channelInfo.favorite'
                         togglable={true}
@@ -91,7 +116,7 @@ export default class ChannelInfo extends PureComponent {
                         <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
                     </View>
                     <ChannelInfoRow
-                        action={() => true}
+                        action={this.props.actions.goToChannelMembers}
                         defaultMessage='Manage Members'
                         detail={currentChannelMemberCount}
                         icon='users'

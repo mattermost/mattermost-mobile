@@ -1,6 +1,7 @@
-.PHONY: run run-ios run-android check-style test clean post-install
-.PHONY: check-ios-target prepare-ios-build build-ios after-ios-build
+.PHONY: run run-ios run-android check-style test clean post-install stop
+.PHONY: check-ios-target build-ios
 .PHONY: check-android-target prepare-android-build build-android
+.PHONY: start-packager stop-packager
 
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
@@ -33,7 +34,9 @@ pre-run: .npminstall dist/assets
 
 run: run-ios
 
-run-ios: pre-run
+stop: stop-packager
+
+run-ios: | pre-run start-packager
 	@if ! [ $(shell command -v xcodebuild) ]; then \
 		echo "xcode is not installed"; \
 		exit 1; \
@@ -48,7 +51,7 @@ run-ios: pre-run
 	npm run run-ios
 	open -a Simulator
 
-run-android: pre-run
+run-android: | pre-run start-packager
 	@if ! [ $(ANDROID_HOME) ]; then \
 		echo "ANDROID_HOME is not set"; \
 		exit 1; \
@@ -96,24 +99,25 @@ post-install:
 	sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
 	sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 
+start-packager:
+	@node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID
+
+stop-packager:
+	@echo Stopping packager server
+	@kill -9 `cat server.PID` && rm server.PID
+
 check-ios-target:
 ifneq ($(ios_target), $(filter $(ios_target), dev beta release))
 	@echo "Try running make build-ios TARGET\nWhere TARGET is one of dev, beta or release"
 	@exit 1
 endif
 
-prepare-ios-build:
-	@node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID
-
 do-build-ios:
 	@echo "Building ios $(ios_target) app"
 	@cd fastlane && fastlane ios $(ios_target)
 
-after-ios-build:
-	@echo Cleaning up
-	@kill -9 `cat server.PID` && rm server.PID
 
-build-ios: | check-ios-target pre-run check-style prepare-ios-build do-build-ios after-ios-build
+build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
 
 check-android-target:
 ifneq ($(android_target), $(filter $(android_target), dev beta release))
@@ -123,6 +127,7 @@ endif
 
 prepare-android-build:
 	@rm -rf ./node_modules/react-native/local-cli/templates/HelloWorld
+	@cd android && ./gradlew clean
 
 do-build-android:
 	@echo "Building android $(android_target) app"

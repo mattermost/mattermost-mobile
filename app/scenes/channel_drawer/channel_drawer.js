@@ -9,7 +9,7 @@ export default class ChannelDrawer extends React.PureComponent {
     static propTypes = {
         actions: React.PropTypes.shape({
             closeDrawers: React.PropTypes.func.isRequired,
-            selectChannel: React.PropTypes.func.isRequired
+            handleSelectChannel: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
@@ -19,7 +19,7 @@ export default class ChannelDrawer extends React.PureComponent {
     };
 
     selectChannel = (id) => {
-        this.props.actions.selectChannel(id);
+        this.props.actions.handleSelectChannel(id);
         this.props.actions.closeDrawers();
     };
 

@@ -4,7 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {goToChannelMembers} from 'app/actions/navigation';
 import {getChannelStats} from 'service/actions/channels';
+import {markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getUser} from 'service/selectors/entities/users';
@@ -32,7 +34,10 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getChannelStats
+            getChannelStats,
+            goToChannelMembers,
+            markFavorite,
+            unmarkFavorite
         }, dispatch)
     };
 }

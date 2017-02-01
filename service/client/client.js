@@ -342,6 +342,10 @@ export default class Client {
         );
     };
 
+    getProfilePictureUrl = (userId) => {
+        return `${this.getUsersRoute()}/${userId}/image`;
+    };
+
     // Team routes
 
     createTeam = async (team) => {
