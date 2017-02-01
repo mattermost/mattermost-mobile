@@ -14,7 +14,8 @@ const styles = StyleSheet.create({
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
+        margin: 8
     },
     searchBarInput: {
         flex: 1,
@@ -126,48 +127,46 @@ export default class SearchBarAndroid extends PureComponent {
         };
 
         return (
-            <View style={{margin: 8}}>
-                <View
-                    style={[styles.searchBar, searchBarStyle]}
-                >
-                    {this.state.isOnFocus && this.props.showCancelButton ?
-                        <TouchableOpacity onPress={this.onCancelButtonPress}>
-                            <Icon
-                                name='arrow-back'
-                                size={height}
-                                color={placeholderTextColor}
-                            />
-                        </TouchableOpacity> :
+            <View
+                style={[styles.searchBar, searchBarStyle]}
+            >
+                {this.state.isOnFocus && this.props.showCancelButton ?
+                    <TouchableOpacity onPress={this.onCancelButtonPress}>
                         <Icon
-                            name={'search'}
+                            name='arrow-back'
                             size={height}
                             color={placeholderTextColor}
                         />
-                    }
-                    <TextInput
-                        value={this.state.value}
-                        returnKeyType='search'
-                        onFocus={this.onFocus}
-                        onBlur={this.onBlur}
-                        onChange={this.props.onChange}
-                        onChangeText={this.onChangeText}
-                        onSubmitEditing={this.onSearchButtonPress}
-                        placeholder={placeholder}
-                        placeholderTextColor={placeholderTextColor}
-                        underlineColorAndroid='transparent'
-                        style={[styles.searchBarInput, inputStyle]}
+                    </TouchableOpacity> :
+                    <Icon
+                        name={'search'}
+                        size={height}
+                        color={placeholderTextColor}
                     />
-                    {this.state.isOnFocus && this.state.value ?
-                        <TouchableOpacity onPress={() => this.setState({value: ''})}>
-                            <Icon
-                                style={{paddingRight: (height * 0.2)}}
-                                name='close'
-                                size={height}
-                                color={placeholderTextColor}
-                            />
-                        </TouchableOpacity> : null
-                    }
-                </View>
+                }
+                <TextInput
+                    value={this.state.value}
+                    returnKeyType='search'
+                    onFocus={this.onFocus}
+                    onBlur={this.onBlur}
+                    onChange={this.props.onChange}
+                    onChangeText={this.onChangeText}
+                    onSubmitEditing={this.onSearchButtonPress}
+                    placeholder={placeholder}
+                    placeholderTextColor={placeholderTextColor}
+                    underlineColorAndroid='transparent'
+                    style={[styles.searchBarInput, inputStyle]}
+                />
+                {this.state.isOnFocus && this.state.value ?
+                    <TouchableOpacity onPress={() => this.setState({value: ''})}>
+                        <Icon
+                            style={{paddingRight: (height * 0.2)}}
+                            name='close'
+                            size={height}
+                            color={placeholderTextColor}
+                        />
+                    </TouchableOpacity> : null
+                }
             </View>
         );
     }
