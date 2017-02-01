@@ -111,11 +111,14 @@ class ChannelInfo extends PureComponent {
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
-                    this.setState({showOptions: false});
                     this.props.actions.leaveChannel(channel);
                 }
             }]
         );
+    }
+
+    renderLeaveChannelRow() {
+        return this.props.currentChannel.name !== Constants.DEFAULT_CHANNEL;
     }
 
     render() {
@@ -183,6 +186,7 @@ class ChannelInfo extends PureComponent {
                         defaultMessage='Leave Channel'
                         icon='sign-out'
                         textId='navbar.leave'
+                        isRender={this.renderLeaveChannelRow()}
                     />
                     <View style={style.footer}>
                         <ChannelInfoRow
