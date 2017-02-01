@@ -62,23 +62,25 @@ class ChannelInfo extends PureComponent {
         };
     }
 
+    componentDidMount() {
+        this.props.actions.getChannelStats(this.props.currentChannel.team_id, this.props.currentChannel.id);
+    }
+
     componentWillReceiveProps(nextProps) {
         const isFavorite = nextProps.isFavorite;
-        const {leaveChannelRequest, actions} = nextProps;
         if (isFavorite !== this.state.isFavorite) {
             this.setState({isFavorite});
         }
+        this.navigateAfterLeave(nextProps.leaveChannelRequest);
+    }
 
+    navigateAfterLeave(leaveChannelRequest) {
         if (
             leaveChannelRequest !== this.props.leaveChannelRequest &&
             leaveChannelRequest.status === 'success'
         ) {
-            actions.goBack();
+            this.props.actions.goBack();
         }
-    }
-
-    componentDidMount() {
-        this.props.actions.getChannelStats(this.props.currentChannel.team_id, this.props.currentChannel.id);
     }
 
     handleFavorite = () => {
