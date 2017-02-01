@@ -119,7 +119,10 @@ class ChannelInfo extends PureComponent {
     }
 
     renderLeaveChannelRow() {
-        return this.props.currentChannel.name !== Constants.DEFAULT_CHANNEL;
+        const channel = this.props.currentChannel;
+        const isDefaultChannel = channel.name === Constants.DEFAULT_CHANNEL;
+        const isDirectMessage = channel.type === 'D';
+        return !isDefaultChannel && !isDirectMessage;
     }
 
     render() {
