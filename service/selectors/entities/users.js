@@ -70,3 +70,7 @@ export const getProfilesInCurrentChannel = createSelector(
         return sortedCurrentProfiles;
     }
 );
+
+export function getStatusForUserId(state, userId) {
+    return getUserStatuses(state)[userId];
+}

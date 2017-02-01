@@ -78,6 +78,7 @@ export default class PostList extends React.Component {
                 dataSource={this.state.dataSource}
                 renderSectionHeader={this.renderSectionHeader}
                 renderRow={this.renderRow}
+                showsVerticalScrollIndicator={false}
             />
         );
     }

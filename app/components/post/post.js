@@ -23,7 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row'
         },
         rightColumn: {
-            flex: 1,
+            flexGrow: 1,
             flexDirection: 'column',
             marginRight: 12
         },
@@ -35,13 +35,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         messageContainerWithReplyBar: {
             flexDirection: 'row'
         },
-        profilePicture: {
-            borderRadius: 16,
-            height: 32,
+        profilePictureContainer: {
             marginBottom: 10,
             marginRight: 10,
             marginLeft: 12,
-            marginTop: 10,
+            marginTop: 10
+        },
+        profilePicture: {
+            borderRadius: 16,
+            height: 32,
             width: 32
         },
         replyBar: {
@@ -101,9 +103,13 @@ export default class Post extends React.Component {
             return null;
         }
 
-        let displayName = this.props.commentedOnDisplayName;
-        if (!displayName) {
-            displayName = (
+        const displayName = this.props.commentedOnDisplayName;
+
+        let name;
+        if (displayName) {
+            name = displayName;
+        } else {
+            name = (
                 <FormattedText
                     id='channel_loader.someone'
                     defaultMessage='Someone'
@@ -112,7 +118,7 @@ export default class Post extends React.Component {
         }
 
         let apostrophe;
-        if (displayName.slice(-1) === 's') {
+        if (displayName && displayName.slice(-1) === 's') {
             apostrophe = '\'';
         } else {
             apostrophe = '\'s';
@@ -123,7 +129,7 @@ export default class Post extends React.Component {
                 id='post_body.commentedOn'
                 defaultMessage='Commented on {name}{apostrophe} message: '
                 values={{
-                    name: displayName,
+                    name,
                     apostrophe
                 }}
                 style={style.commentedOn}
@@ -179,6 +185,7 @@ export default class Post extends React.Component {
                 <ProfilePicture
                     style={style.profilePicture}
                     user={this.props.user}
+                    size={32}
                 />
             );
 
@@ -199,7 +206,9 @@ export default class Post extends React.Component {
         if (this.props.commentedOnPost) {
             return (
                 <View style={[style.container, this.props.style]}>
-                    {profilePicture}
+                    <View style={style.profilePictureContainer}>
+                        {profilePicture}
+                    </View>
                     <View style={style.rightColumn}>
                         <View style={style.postInfoContainer}>
                             <Text style={style.displayName}>
@@ -225,7 +234,9 @@ export default class Post extends React.Component {
 
         return (
             <View style={[style.container, this.props.style]}>
-                {profilePicture}
+                <View style={style.profilePictureContainer}>
+                    {profilePicture}
+                </View>
                 {this.renderReplyBar(style)}
                 <View style={style.rightColumn}>
                     <View style={style.postInfoContainer}>
