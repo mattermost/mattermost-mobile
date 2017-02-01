@@ -63,7 +63,7 @@ function channelInfoRow(props) {
             <Text style={style.detail}>{detail}</Text>
             {togglable ?
                 <Switch
-                    action={action}
+                    onValueChange={action}
                     value={detail}
                 /> :
                 <Icon
