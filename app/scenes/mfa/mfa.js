@@ -2,7 +2,12 @@
 // See License.txt for license information.
 
 import React, {Component} from 'react';
-import {Image, KeyboardAvoidingView} from 'react-native';
+import {
+    Image,
+    KeyboardAvoidingView,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
 
 import Button from 'react-native-button';
 import ErrorText from 'app/components/error_text';
@@ -49,6 +54,10 @@ export default class Mfa extends Component {
         });
     };
 
+    blur = () => {
+        this.textInput.refs.wrappedInstance.blur();
+    };
+
     submit = () => {
         if (!this.state.token) {
             this.setState({
@@ -67,40 +76,48 @@ export default class Mfa extends Component {
         return (
             <KeyboardAvoidingView
                 behavior='padding'
-                style={[GlobalStyles.container, GlobalStyles.signupContainer]}
+                style={{flex: 1}}
+                keyboardVerticalOffset={0}
             >
-                <Image
-                    source={logo}
-                />
-                <FormattedText
-                    style={[GlobalStyles.header, GlobalStyles.label]}
-                    id='login_mfa.enterToken'
-                    defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
-                />
-                <ErrorText error={this.state.error}/>
-                <TextInputWithLocalizedPlaceholder
-                    value={this.state.token}
-                    onChangeText={this.handleInput}
-                    onSubmitEditing={this.submit}
-                    style={GlobalStyles.inputBox}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    keyboardType='numeric'
-                    placeholder={{id: 'login_mfa.token', defaultMessage: 'MFA Token'}}
-                    returnKeyType='go'
-                    underlineColorAndroid='transparent'
-                />
-                <Button
-                    onPress={this.submit}
-                    loading={false}
-                    containerStyle={GlobalStyles.signupButton}
-                >
-                    <FormattedText
-                        style={GlobalStyles.signupButtonText}
-                        id='mobile.components.select_server_view.proceed'
-                        defaultMessage='Proceed'
-                    />
-                </Button>
+                <TouchableWithoutFeedback onPress={this.blur}>
+                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                        <Image
+                            source={logo}
+                        />
+                        <FormattedText
+                            style={[GlobalStyles.header, GlobalStyles.label]}
+                            id='login_mfa.enterToken'
+                            defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
+                        />
+                        <ErrorText error={this.state.error}/>
+                        <TextInputWithLocalizedPlaceholder
+                            ref={(ref) => {
+                                this.textInput = ref;
+                            }}
+                            value={this.state.token}
+                            onChangeText={this.handleInput}
+                            onSubmitEditing={this.submit}
+                            style={GlobalStyles.inputBox}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            keyboardType='numeric'
+                            placeholder={{id: 'login_mfa.token', defaultMessage: 'MFA Token'}}
+                            returnKeyType='go'
+                            underlineColorAndroid='transparent'
+                        />
+                        <Button
+                            onPress={this.submit}
+                            loading={false}
+                            containerStyle={GlobalStyles.signupButton}
+                        >
+                            <FormattedText
+                                style={GlobalStyles.signupButtonText}
+                                id='mobile.components.select_server_view.proceed'
+                                defaultMessage='Proceed'
+                            />
+                        </Button>
+                    </View>
+                </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
         );
     }
