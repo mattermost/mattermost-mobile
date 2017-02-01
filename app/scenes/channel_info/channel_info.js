@@ -74,7 +74,6 @@ class ChannelInfo extends PureComponent {
             leaveChannelRequest.status === 'success'
         ) {
             actions.goBack();
-            actions.selectInitialChannel(this.props.currentChannel.team_id);
         }
     }
 
@@ -111,7 +110,7 @@ class ChannelInfo extends PureComponent {
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
-                    this.props.actions.leaveChannel(channel);
+                    this.props.actions.leaveChannel(channel, true);
                 }
             }]
         );
