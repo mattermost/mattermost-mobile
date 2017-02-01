@@ -41,11 +41,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 12,
             marginTop: 10
         },
-        profilePicture: {
-            borderRadius: 16,
-            height: 32,
-            width: 32
-        },
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
@@ -183,7 +178,6 @@ export default class Post extends React.Component {
         } else {
             profilePicture = (
                 <ProfilePicture
-                    style={style.profilePicture}
                     user={this.props.user}
                     size={32}
                 />

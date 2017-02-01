@@ -9,7 +9,6 @@ import {
     View
 } from 'react-native';
 
-import Client from 'service/client';
 import {displayUsername} from 'service/utils/user_utils';
 
 import FormattedText from 'app/components/formatted_text';
@@ -110,18 +109,16 @@ export default class MemberList extends PureComponent {
         );
     }
 
-    renderRow = (data) => {
-        const {id, username, status} = data;
-        const displayName = displayUsername(data, this.props.preferences);
-        const pictureURL = Client.getProfilePictureUrl(data.id);
+    renderRow = (user) => {
+        const {id, username} = user;
+        const displayName = displayUsername(user, this.props.preferences);
 
         return (
             <MemberListRow
                 id={id}
-                pictureURL={pictureURL}
+                user={user}
                 displayName={displayName}
                 username={username}
-                status={status}
                 onPress={this.props.onRowPress}
             />
         );

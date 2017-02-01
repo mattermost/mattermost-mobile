@@ -47,8 +47,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const statusToIcon = {
-    away: 'minus',
-    online: 'check'
+    online: 'check',
+    away: 'minus'
 };
 
 export default class ProfilePicture extends React.PureComponent {
