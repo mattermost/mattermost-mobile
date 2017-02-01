@@ -57,6 +57,10 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
     $ make run
     ```
 
+- Stop the packager server
+    ```bash
+    $ make stop
+    ```
 ## Linux:
 
 - General requiriments:
