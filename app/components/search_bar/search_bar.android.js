@@ -81,7 +81,7 @@ export default class SearchBarAndroid extends PureComponent {
         });
 
         onCancelButtonPress();
-        this.dismissKeyboard();
+        Keyboard.dismiss();
     }
 
     onChangeText(value) {
@@ -100,10 +100,6 @@ export default class SearchBarAndroid extends PureComponent {
         const onBlur = this.props.onBlur;
         this.setState({isOnFocus: false});
         onBlur();
-        this.dismissKeyboard();
-    }
-
-    dismissKeyboard() {
         Keyboard.dismiss();
     }
 
