@@ -1,6 +1,20 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+export function makeStyleSheetFromTheme(getStyleFromTheme) {
+    let lastTheme = null;
+    let style = null;
+
+    return (theme) => {
+        if (theme !== lastTheme) {
+            style = getStyleFromTheme(theme);
+            lastTheme = theme;
+        }
+
+        return style;
+    };
+}
+
 export function changeOpacity(oldColor, opacity) {
     let color = oldColor;
     if (color[0] === '#') {

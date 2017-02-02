@@ -6,7 +6,7 @@ import {TouchableHighlight, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
-import {changeOpacity} from 'app/utils/colors';
+import {changeOpacity} from 'app/utils/theme';
 
 import {Constants} from 'service/constants';
 

@@ -4,7 +4,6 @@
 import {createSelector} from 'reselect';
 
 import {getCurrentChannelId} from './channels';
-import {getMyPreferences} from './preferences';
 
 export function getCurrentUserId(state) {
     return state.entities.users.currentId;
@@ -44,20 +43,15 @@ export const getProfileSetInCurrentChannel = createSelector(
 
 export const getProfilesInCurrentChannel = createSelector(
     getUsers,
-    getUserStatuses,
     getProfileSetInCurrentChannel,
-    getMyPreferences,
-    (profiles, statuses, currentChannelProfileSet) => {
+    (profiles, currentChannelProfileSet) => {
         const currentProfiles = [];
         if (typeof currentChannelProfileSet === 'undefined') {
             return currentProfiles;
         }
 
         currentChannelProfileSet.forEach((p) => {
-            currentProfiles.push({
-                ...profiles[p],
-                status: statuses[p]
-            });
+            currentProfiles.push(profiles[p]);
         });
 
         const sortedCurrentProfiles = currentProfiles.sort((a, b) => {
@@ -70,3 +64,7 @@ export const getProfilesInCurrentChannel = createSelector(
         return sortedCurrentProfiles;
     }
 );
+
+export function getStatusForUserId(state, userId) {
+    return getUserStatuses(state)[userId];
+}

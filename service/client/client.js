@@ -342,8 +342,13 @@ export default class Client {
         );
     };
 
-    getProfilePictureUrl = (userId) => {
-        return `${this.getUsersRoute()}/${userId}/image`;
+    getProfilePictureUrl = (userId, lastPictureUpdate) => {
+        let params = '';
+        if (lastPictureUpdate) {
+            params = `?time=${lastPictureUpdate}`;
+        }
+
+        return `${this.getUsersRoute()}/${userId}/image${params}`;
     };
 
     // Team routes
