@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goToChannelMembers} from 'app/actions/navigation';
+import {goToChannelMembers, goBack} from 'app/actions/navigation';
 import {getChannelStats} from 'service/actions/channels';
-import {markFavorite, unmarkFavorite} from 'app/actions/views/channel';
+import {markFavorite, unmarkFavorite, leaveChannel} from 'app/actions/views/channel';
 import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getUser} from 'service/selectors/entities/users';
@@ -20,6 +20,7 @@ function mapStateToProps(state, ownProps) {
     const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
     const favoriteChannels = getChannelsByCategory(state).favoriteChannels.map((f) => f.id);
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
+    const leaveChannelRequest = state.requests.channels.leaveChannel;
 
     return {
         ...ownProps,
@@ -27,6 +28,7 @@ function mapStateToProps(state, ownProps) {
         currentChannelCreatorName,
         currentChannelMemberCount,
         isFavorite,
+        leaveChannelRequest,
         theme: getTheme(state)
     };
 }
@@ -37,7 +39,9 @@ function mapDispatchToProps(dispatch) {
             getChannelStats,
             goToChannelMembers,
             markFavorite,
-            unmarkFavorite
+            unmarkFavorite,
+            leaveChannel,
+            goBack
         }, dispatch)
     };
 }

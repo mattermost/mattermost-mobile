@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-
 import {ViewTypes} from 'app/constants';
 import {updateStorage} from 'app/actions/storage';
 
@@ -186,11 +185,11 @@ export function unmarkFavorite(channelId) {
     };
 }
 
-export function leaveChannel(channel) {
+export function leaveChannel(channel, reset = false) {
     return async (dispatch, getState) => {
         const {currentId: teamId} = getState().entities.teams;
         serviceLeaveChannel(teamId, channel.id)(dispatch, getState).then(() => {
-            if (channel.isCurrent) {
+            if (channel.isCurrent || reset) {
                 selectInitialChannel(teamId)(dispatch, getState);
             }
         });
