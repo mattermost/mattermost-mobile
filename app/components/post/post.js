@@ -23,7 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row'
         },
         rightColumn: {
-            flexGrow: 1,
+            flex: 1,
             flexDirection: 'column',
             marginRight: 12
         },
