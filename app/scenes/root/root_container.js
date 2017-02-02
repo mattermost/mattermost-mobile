@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+
+import navigationSceneConnect from '../navigationSceneConnect';
 
 import {loadStorage, removeStorage} from 'app/actions/storage';
 import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
@@ -33,4 +34,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Root);
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(Root);

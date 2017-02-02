@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+
+import navigationSceneConnect from '../navigationSceneConnect';
 
 import {getPing} from 'service/actions/general';
 import {goToLogin} from 'app/actions/navigation';
@@ -27,4 +28,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SelectServer);
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(SelectServer);

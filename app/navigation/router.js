@@ -15,7 +15,6 @@ import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
 import OptionsModal from 'app/components/options_modal';
 import {RouteTransitions} from 'app/navigation/routes';
-import {getComponentForScene} from 'app/scenes';
 
 class Router extends React.Component {
     static propTypes = {
@@ -27,14 +26,53 @@ class Router extends React.Component {
         }).isRequired
     };
 
+    headerEventSubscriptions = {};
+
+    emitHeaderEvent = (event) => {
+        const subscription = this.headerEventSubscriptions[event];
+        if (subscription) {
+            subscription();
+        }
+    }
+
+    subscribeToHeaderEvent = (event, callback) => {
+        this.headerEventSubscriptions[event] = callback;
+    }
+
+    unsubscribeFromHeaderEvent = (event) => {
+        if (this.headerEventSubscriptions[event]) {
+            Reflect.deleteProperty(this.headerEventSubscriptions, event);
+        }
+    }
+
+    wrapHeaderComponent = (fx) => (props) => {
+        if (fx && props.scene.isActive) {
+            return fx(props, this.emitHeaderEvent);
+        }
+
+        return null;
+    }
+
+    extractNavigationProps = (route) => {
+        return Object.assign({}, route.navigationProps, route.component.navigationProps);
+    }
+
     renderTransition = (transitionProps) => {
-        let title;
-        if (transitionProps.scene.route.title) {
-            title = (
+        const navigationProps = this.extractNavigationProps(transitionProps.scene.route);
+        let navBar = null;
+        if (!navigationProps.hideNavBar) {
+            const renderLeftComponent = transitionProps.navigationState.index > 0 ? this.wrapHeaderComponent(navigationProps.renderBackButton) : this.wrapHeaderComponent(navigationProps.renderLeftComponent);
+            const renderTitleComponent = navigationProps.renderTitleComponent ? this.wrapHeaderComponent(navigationProps.renderTitleComponent) : this.renderTitle;
+            const renderRightComponent = this.wrapHeaderComponent(navigationProps.renderRightComponent);
+
+            navBar = (
                 <NavigationExperimental.Header
                     {...transitionProps}
                     onNavigateBack={this.props.actions.goBack}
-                    renderTitleComponent={this.renderTitle}
+                    renderLeftComponent={renderLeftComponent}
+                    renderTitleComponent={renderTitleComponent}
+                    renderRightComponent={renderRightComponent}
+                    style={navigationProps.headerStyle}
                 />
             );
         }
@@ -57,6 +95,7 @@ class Router extends React.Component {
             return (
                 <NavigationExperimental.Card
                     {...cardProps}
+                    panHandlers={null}
                     style={style}
                     renderScene={this.renderScene}
                     key={scene.key}
@@ -69,13 +108,14 @@ class Router extends React.Component {
                 <View style={{flex: 1}}>
                     {renderedScenes}
                 </View>
-                {title}
+                {navBar}
             </View>
         );
     };
 
     renderTitle = ({scene}) => {
-        const title = scene.route.title;
+        const navigationProps = this.extractNavigationProps(scene.route);
+        const title = navigationProps.title;
 
         if (!title) {
             return null;
@@ -96,9 +136,15 @@ class Router extends React.Component {
     };
 
     renderRoute = (route) => {
-        const SceneComponent = getComponentForScene(route.key);
+        const SceneComponent = route.component;
 
-        return <SceneComponent {...route.props}/>;
+        return (
+            <SceneComponent
+                subscribeToHeaderEvent={this.subscribeToHeaderEvent}
+                unsubscribeFromHeaderEvent={this.unsubscribeFromHeaderEvent}
+                {...route.props}
+            />
+        );
     };
 
     configureTransition = () => {
@@ -110,11 +156,14 @@ class Router extends React.Component {
 
     render = () => {
         const {
+            index,
             leftDrawerOpen,
             leftDrawerRoute,
             rightDrawerOpen,
-            rightDrawerRoute
+            rightDrawerRoute,
+            routes
         } = this.props.navigation;
+        const navigationProps = this.extractNavigationProps(routes[index]);
 
         let leftDrawerContent;
         if (leftDrawerRoute) {
@@ -142,7 +191,7 @@ class Router extends React.Component {
                 panOpenMask={0.1}
                 panCloseMask={0.2}
                 panThreshold={0.2}
-                acceptPan={true}
+                acceptPan={navigationProps.allowSwipe}
                 negotiatePan={true}
             >
                 <Drawer

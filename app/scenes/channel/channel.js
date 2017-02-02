@@ -10,7 +10,9 @@ import {
 
 import PostTextbox from 'app/components/post_textbox';
 
-import ChannelHeader from './channel_header';
+import ChannelDrawerButton from './channel_drawer_button';
+import ChannelMenuButton from './channel_menu_button';
+import ChannelTitle from './channel_title';
 import ChannelPostList from './channel_post_list';
 
 export default class Channel extends React.PureComponent {
@@ -29,10 +31,37 @@ export default class Channel extends React.PureComponent {
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
         postDraft: React.PropTypes.string.isRequired,
-        theme: React.PropTypes.object.isRequired
+        theme: React.PropTypes.object.isRequired,
+        subscribeToHeaderEvent: React.PropTypes.func,
+        unsubscribeFromHeaderEvent: React.PropTypes.func
     };
 
+    static navigationProps = {
+        allowSwipe: true,
+        renderLeftComponent: (props, emitter) => {
+            return <ChannelDrawerButton emitter={emitter}/>;
+        },
+        renderTitleComponent: (props, emitter) => {
+            return <ChannelTitle emitter={emitter}/>;
+        },
+        renderRightComponent: (props, emitter) => {
+            return <ChannelMenuButton emitter={emitter}/>;
+        }
+    }
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            leftSidebarOpen: false,
+            rightSidebarOpen: false
+        };
+    }
+
     componentWillMount() {
+        this.props.subscribeToHeaderEvent('open_channel_drawer', this.openChannelDrawer);
+        this.props.subscribeToHeaderEvent('open_right_menu', this.openRightMenuDrawer);
+        this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
         const teamId = this.props.currentTeam.id;
         this.props.actions.initWebSocket();
         this.loadChannels(teamId);
@@ -47,6 +76,7 @@ export default class Channel extends React.PureComponent {
 
     componentWillUnmount() {
         this.props.actions.closeWebSocket();
+        this.props.unsubscribeFromHeaderEvent('open_channel_drawer');
     }
 
     loadChannels = (teamId) => {
@@ -57,14 +87,18 @@ export default class Channel extends React.PureComponent {
     };
 
     openChannelDrawer = () => {
-        this.refs.postTextbox.getWrappedInstance().blur();
+        this.postTextbox.getWrappedInstance().blur();
         this.props.actions.openChannelDrawer();
     };
 
     openRightMenuDrawer = () => {
-        this.refs.postTextbox.getWrappedInstance().blur();
+        this.postTextbox.getWrappedInstance().blur();
         this.props.actions.openRightMenuDrawer();
     };
+
+    attachPostTextbox = (c) => {
+        this.postTextbox = c;
+    }
 
     render() {
         const {
@@ -84,16 +118,10 @@ export default class Channel extends React.PureComponent {
                 behavior='padding'
                 style={{flex: 1, backgroundColor: theme.centerChannelBg}}
             >
-                <StatusBar barStyle='default'/>
-                <ChannelHeader
-                    currentChannel={currentChannel}
-                    openLeftDrawer={this.openChannelDrawer}
-                    openRightDrawer={this.openRightMenuDrawer}
-                    goToChannelInfo={this.props.actions.goToChannelInfo}
-                />
+                <StatusBar barStyle='light-content'/>
                 <ChannelPostList channel={currentChannel}/>
                 <PostTextbox
-                    ref='postTextbox'
+                    ref={this.attachPostTextbox}
                     value={this.props.postDraft}
                     teamId={currentChannel.team_id}
                     channelId={currentChannel.id}
