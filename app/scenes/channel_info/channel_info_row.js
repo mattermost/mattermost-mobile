@@ -45,9 +45,9 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, textColor, textId, togglable, isRender = true} = props;
+    const {action, defaultMessage, detail, icon, iconColor, textColor, textId, togglable, shouldRender = true} = props;
 
-    if (!isRender) {
+    if (!shouldRender) {
         return null;
     }
     const RowComponent = (

@@ -190,7 +190,7 @@ class ChannelInfo extends PureComponent {
                         defaultMessage='Leave Channel'
                         icon='sign-out'
                         textId='navbar.leave'
-                        isRender={this.renderLeaveChannelRow()}
+                        shouldRender={this.renderLeaveChannelRow()}
                     />
                     <View style={style.footer}>
                         <ChannelInfoRow
