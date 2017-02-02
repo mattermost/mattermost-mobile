@@ -40,7 +40,6 @@ class Router extends React.Component {
     }
 
     unsubscribeFromHeaderEvent = (event) => {
-        console.log(event);
         if (this.headerEventSubscriptions[event]) {
             Reflect.deleteProperty(this.headerEventSubscriptions, event);
         }

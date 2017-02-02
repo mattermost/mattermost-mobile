@@ -256,9 +256,7 @@ const state = {
     navigation: {
         index: 0,
         routes: [
-            {
-                ...Routes.Root
-            }
+            Routes.Root
         ],
         leftDrawerOpen: false,
         leftDrawerRoute: null,

@@ -1,8 +1,10 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+/* eslint-disable */
+
 import {connect} from 'react-redux';
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {
     Platform,
     TouchableOpacity,
