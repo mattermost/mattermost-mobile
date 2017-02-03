@@ -93,18 +93,19 @@ class ChannelInfo extends PureComponent {
         toggleFavorite(currentChannel.id);
     };
 
-    handleLeave() {
+    handleDeleteOrLeave(eventType) {
         const {formatMessage} = this.props.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === Constants.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
             formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
+        const titleCaseEventType = `${eventType.charAt(0).toUpperCase()}${eventType.slice(1)}`;
 
         Alert.alert(
-            formatMessage({id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'}, {term}),
+            formatMessage({id: `mobile.channel_info.alertTitle${titleCaseEventType}Channel`, defaultMessage: `${titleCaseEventType} {term}`}, {term}),
             formatMessage({
-                id: 'mobile.channel_info.alertMessageLeaveChannel',
-                defaultMessage: 'Are you sure you want to leave the {term} with {name}?'
+                id: `mobile.channel_info.alertMessage${titleCaseEventType}Channel`,
+                defaultMessage: `Are you sure you want to ${eventType} the {term} with {name}?`
             }, {
                 term: term.toLowerCase(),
                 name: channel.display_name
@@ -114,15 +115,17 @@ class ChannelInfo extends PureComponent {
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
-                    this.props.actions.leaveChannel(channel, true);
-
-                    // this.props.actions.deleteChannel(channel.team_id, channel.id);
+                    if (eventType === 'leave') {
+                        this.props.actions.leaveChannel(channel, true);
+                    } else if (eventType === 'delete') {
+                        this.props.actions.deleteChannel(channel.team_id, channel.id);
+                    }
                 }
             }]
         );
     }
 
-    renderLeaveChannelRow() {
+    renderLeaveOrDeleteChannelRow() {
         const channel = this.props.currentChannel;
         const isDefaultChannel = channel.name === Constants.DEFAULT_CHANNEL;
         const isDirectMessage = channel.type === Constants.DM_CHANNEL;
@@ -193,20 +196,21 @@ class ChannelInfo extends PureComponent {
                         </View>
                     }
                     <ChannelInfoRow
-                        action={() => this.handleLeave()}
+                        action={() => this.handleDeleteOrLeave('leave')}
                         defaultMessage='Leave Channel'
                         icon='sign-out'
                         textId='navbar.leave'
-                        shouldRender={this.renderLeaveChannelRow()}
+                        shouldRender={this.renderLeaveOrDeleteChannelRow()}
                     />
                     <View style={style.footer}>
                         <ChannelInfoRow
-                            action={() => this.handleDelete()}
+                            action={() => this.handleDeleteOrLeave('delete')}
                             defaultMessage='Delete Channel'
                             icon='trash'
                             iconColor='#DA4A4A'
                             textId='mobile.routes.channelInfo.delete_channel'
                             textColor='#DA4A4A'
+                            shouldRender={this.renderLeaveOrDeleteChannelRow()}
                         />
                     </View>
                 </ScrollView>
