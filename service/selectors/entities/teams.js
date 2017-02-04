@@ -13,6 +13,10 @@ export function getTeams(state) {
     return state.entities.teams.teams;
 }
 
+export function getTeamStats(state) {
+    return state.entities.teams.stats;
+}
+
 export const getCurrentTeam = createSelector(
     getTeams,
     getCurrentTeamId,
@@ -26,5 +30,13 @@ export const getCurrentTeamUrl = createSelector(
     getCurrentTeam,
     (currentUrl, currentTeam) => {
         return `${currentUrl}/${currentTeam.name}`;
+    }
+);
+
+export const getCurrentTeamStats = createSelector(
+    getCurrentTeamId,
+    getTeamStats,
+    (currentTeamId, teamStats) => {
+        return teamStats[currentTeamId];
     }
 );

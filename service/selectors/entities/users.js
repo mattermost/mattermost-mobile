@@ -13,6 +13,10 @@ export function getProfilesInChannel(state) {
     return state.entities.users.profilesInChannel;
 }
 
+export function getProfilesNotInChannel(state) {
+    return state.entities.users.profilesNotInChannel;
+}
+
 export function getUserStatuses(state) {
     return state.entities.users.statuses;
 }
@@ -41,28 +45,44 @@ export const getProfileSetInCurrentChannel = createSelector(
     }
 );
 
+export const getProfileSetNotInCurrentChannel = createSelector(
+    getCurrentChannelId,
+    getProfilesNotInChannel,
+    (currentChannel, channelProfiles) => {
+        return channelProfiles[currentChannel];
+    }
+);
+
+function sortAndInjectProfiles(profiles, profileSet) {
+    const currentProfiles = [];
+    if (typeof profileSet === 'undefined') {
+        return currentProfiles;
+    }
+
+    profileSet.forEach((p) => {
+        currentProfiles.push(profiles[p]);
+    });
+
+    const sortedCurrentProfiles = currentProfiles.sort((a, b) => {
+        const nameA = a.username;
+        const nameB = b.username;
+
+        return nameA.localeCompare(nameB);
+    });
+
+    return sortedCurrentProfiles;
+}
+
 export const getProfilesInCurrentChannel = createSelector(
     getUsers,
     getProfileSetInCurrentChannel,
-    (profiles, currentChannelProfileSet) => {
-        const currentProfiles = [];
-        if (typeof currentChannelProfileSet === 'undefined') {
-            return currentProfiles;
-        }
+    (profiles, currentChannelProfileSet) => sortAndInjectProfiles(profiles, currentChannelProfileSet)
+);
 
-        currentChannelProfileSet.forEach((p) => {
-            currentProfiles.push(profiles[p]);
-        });
-
-        const sortedCurrentProfiles = currentProfiles.sort((a, b) => {
-            const nameA = a.username;
-            const nameB = b.username;
-
-            return nameA.localeCompare(nameB);
-        });
-
-        return sortedCurrentProfiles;
-    }
+export const getProfilesNotInCurrentChannel = createSelector(
+    getUsers,
+    getProfileSetNotInCurrentChannel,
+    (profiles, notInCurrentChannelProfileSet) => sortAndInjectProfiles(profiles, notInCurrentChannelProfileSet)
 );
 
 export function getStatusForUserId(state, userId) {

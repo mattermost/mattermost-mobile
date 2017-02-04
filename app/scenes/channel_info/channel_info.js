@@ -47,6 +47,7 @@ class ChannelInfo extends PureComponent {
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
+            goToChannelAddMembers: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
@@ -177,7 +178,7 @@ class ChannelInfo extends PureComponent {
                         <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
                     </View>
                     <ChannelInfoRow
-                        action={() => true}
+                        action={this.props.actions.goToChannelAddMembers}
                         defaultMessage='Add Members'
                         icon='user-plus'
                         textId='channel_header.addMembers'

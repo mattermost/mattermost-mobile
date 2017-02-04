@@ -74,6 +74,15 @@ export function goToChannelMembers() {
     };
 }
 
+export function goToChannelAddMembers() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelAddMembers
+        }, getState);
+    };
+}
+
 export function openChannelDrawer() {
     return async (dispatch, getState) => {
         dispatch({

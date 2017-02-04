@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {goToChannelMembers, goBack} from 'app/actions/navigation';
+import {goToChannelMembers, goToChannelAddMembers, goBack} from 'app/actions/navigation';
 import {getChannelStats} from 'service/actions/channels';
 import {markFavorite, unmarkFavorite, leaveChannel} from 'app/actions/views/channel';
 import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory} from 'service/selectors/entities/channels';
@@ -39,6 +39,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getChannelStats,
             goToChannelMembers,
+            goToChannelAddMembers,
             markFavorite,
             unmarkFavorite,
             leaveChannel,
