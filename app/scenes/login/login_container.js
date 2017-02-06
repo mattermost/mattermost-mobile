@@ -12,15 +12,12 @@ import {checkMfa, login} from 'service/actions/users';
 import Login from './login.js';
 
 function mapStateToProps(state) {
-    const {config, license} = state.entities.general;
-    const {config: configRequest, license: licenseRequest} = state.requests.general;
     const {checkMfa: checkMfaRequest, login: loginRequest} = state.requests.users;
+    const {config, license} = state.entities.general;
     return {
         ...state.views.login,
         checkMfaRequest,
         loginRequest,
-        configRequest,
-        licenseRequest,
         config,
         license
     };

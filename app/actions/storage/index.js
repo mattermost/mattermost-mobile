@@ -20,7 +20,7 @@ export function loadStorage() {
             const actions = [
                 {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
                 {type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion},
-                {type: TeamsTypes.SELECT_TEAM, data: currentTeamId},
+                {type: TeamsTypes.SELECT_TEAM, data: (currentTeamId || '')},
                 {type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId}
             ];
 

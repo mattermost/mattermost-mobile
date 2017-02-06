@@ -143,6 +143,8 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-cookies')
+    compile project(':react-native-cookie')
     compile project(':react-native-vector-icons')
     compile project(':react-native-svg')
     compile fileTree(dir: "libs", include: ["*.jar"])

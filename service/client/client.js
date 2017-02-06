@@ -240,6 +240,7 @@ export default class Client {
         if (response.ok) {
             this.token = '';
         }
+        this.serverVersion = '';
         return response;
     };
 

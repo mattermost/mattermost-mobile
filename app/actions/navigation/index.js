@@ -31,11 +31,29 @@ export function goToLogin() {
     };
 }
 
+export function goToLoginOptions() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.LoginOptions
+        }, getState);
+    };
+}
+
 export function goToMfa() {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: Routes.Mfa
+        }, getState);
+    };
+}
+
+export function goToSaml() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.Saml
         }, getState);
     };
 }

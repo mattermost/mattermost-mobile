@@ -5,16 +5,25 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {getPing} from 'service/actions/general';
-import {goToLogin} from 'app/actions/navigation';
+import {getPing, resetPing} from 'service/actions/general';
+import {RequestStatus} from 'service/constants';
 import * as SelectServerActions from 'app/actions/views/select_server';
 
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
+    const {config: configRequest, license: licenseRequest} = state.requests.general;
+    const {server} = state.requests.general;
+
+    const success = RequestStatus.SUCCESS;
+    const transition = (server.status === success && configRequest.status === success && licenseRequest.status === success);
+
     return {
         ...state.views.selectServer,
-        server: state.requests.general.server
+        server,
+        configRequest,
+        licenseRequest,
+        transition
     };
 }
 
@@ -23,7 +32,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             ...SelectServerActions,
             getPing,
-            goToLogin
+            resetPing
         }, dispatch)
     };
 }
