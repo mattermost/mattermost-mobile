@@ -19,7 +19,7 @@ const style = StyleSheet.create({
 
 export default class PostList extends React.Component {
     static propTypes = {
-        posts: React.PropTypes.object.isRequired,
+        posts: React.PropTypes.array.isRequired,
         theme: React.PropTypes.object.isRequired
     };
 
@@ -35,7 +35,7 @@ export default class PostList extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            dataSource: this.state.dataSource.cloneWithRowsAndSections(nextProps.posts)
+            dataSource: this.state.dataSource.cloneWithRows(nextProps.posts)
         });
     }
 
@@ -45,7 +45,7 @@ export default class PostList extends React.Component {
         }
 
         return this.renderPost(row);
-    }
+    };
 
     renderDateHeader = (date) => {
         return (
@@ -55,7 +55,7 @@ export default class PostList extends React.Component {
                 date={date}
             />
         );
-    }
+    };
 
     renderPost = (post) => {
         return (

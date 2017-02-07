@@ -11,8 +11,8 @@ export default class ChannelPostList extends React.Component {
             loadPostsIfNecessary: React.PropTypes.func.isRequired
         }).isRequired,
         channel: React.PropTypes.object.isRequired,
-        posts: React.PropTypes.object.isRequired
-    }
+        posts: React.PropTypes.array.isRequired
+    };
 
     componentDidMount() {
         this.props.actions.loadPostsIfNecessary(this.props.channel);

@@ -5,7 +5,6 @@ import React from 'react';
 
 import {Alert, ListView, Platform, StyleSheet, Text, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import {buildDisplayNameAndTypeComparable} from 'service/utils/channel_utils';
 import {Constants} from 'service/constants';
 import LineDivider from 'app/components/line_divider';
 import ChannelItem from './channel_item';
@@ -79,6 +78,11 @@ class ChannelList extends React.Component {
         }).isRequired
     };
 
+    static defaultProps = {
+        currentTeam: {},
+        currentChannel: {}
+    };
+
     constructor(props) {
         super(props);
         this.firstUnreadChannel = null;
@@ -111,39 +115,34 @@ class ChannelList extends React.Component {
         return data.findIndex((obj) => obj.display_name === displayName);
     };
 
-    getAboveAndBelow = (index) => {
-        const channel = this.state.dataSource.getRowData(0, index);
-        const result = buildDisplayNameAndTypeComparable(channel).localeCompare(buildDisplayNameAndTypeComparable(this.props.currentChannel));
-        if (result < 0) {
-            return {above: true, below: false};
-        } else if (result > 0) {
-            return {above: false, below: true};
-        }
-        return {above: false, below: false};
-    };
-
     updateUnreadIndicators = (v) => {
         let showAbove = false;
         let showBelow = false;
 
-        if (this.firstUnreadChannel) {
-            const index = this.getRowIndex(this.firstUnreadChannel);
-            if (index >= 0 && !v.s1[index]) {
-                showAbove = this.getAboveAndBelow(index).above;
-            }
-        }
+        if (v.s1) {
+            const visibleIndexes = Object.keys(v.s1);
+            const firstVisible = parseInt(visibleIndexes[0], 10);
+            const lastVisible = parseInt(visibleIndexes[visibleIndexes.length - 1], 10);
 
-        if (this.lastUnreadChannel) {
-            const index = this.getRowIndex(this.lastUnreadChannel);
-            if (index >= 0 && !v.s1[index]) {
-                showBelow = this.getAboveAndBelow(index).below;
+            if (this.firstUnreadChannel) {
+                const index = this.getRowIndex(this.firstUnreadChannel);
+                if (index < firstVisible) {
+                    showAbove = true;
+                }
             }
-        }
 
-        this.setState({
-            showAbove,
-            showBelow
-        });
+            if (this.lastUnreadChannel) {
+                const index = this.getRowIndex(this.lastUnreadChannel);
+                if (index > lastVisible) {
+                    showBelow = true;
+                }
+            }
+
+            this.setState({
+                showAbove,
+                showBelow
+            });
+        }
     };
 
     onSelectChannel = (channel) => {

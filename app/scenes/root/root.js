@@ -23,7 +23,7 @@ export default class Root extends React.Component {
 
     static navigationProps = {
         hideNavBar: true
-    }
+    };
 
     componentDidMount() {
         // Any initialization logic for navigation, setting up the client, etc should go here

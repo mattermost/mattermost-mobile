@@ -2,8 +2,8 @@
 // See License.txt for license information.
 
 import Client from 'service/client';
+import EventEmitter from 'service/utils/event_emitter';
 import websocketClient from 'service/client/websocket_client';
-import {batchActions} from 'redux-batched-actions';
 import {
     Constants,
     ChannelTypes,
@@ -241,16 +241,7 @@ function handleLeaveTeamEvent(msg, dispatch, getState) {
 
         // if they are on the team being removed deselect the current team and channel
         if (teams.currentId === msg.data.team_id) {
-            dispatch(batchActions([
-                {
-                    type: TeamsTypes.SELECT_TEAM,
-                    data: ''
-                },
-                {
-                    type: ChannelTypes.SELECT_CHANNEL,
-                    data: ''
-                }
-            ]), getState);
+            EventEmitter.emit('leave_team');
         }
     }
 }

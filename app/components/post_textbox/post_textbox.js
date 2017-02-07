@@ -40,13 +40,13 @@ export default class PostTextbox extends React.PureComponent {
 
     blur = () => {
         this.refs.input.getWrappedInstance().blur();
-    }
+    };
 
     handleContentSizeChange = (e) => {
         this.setState({
             contentHeight: e.nativeEvent.contentSize.height
         });
-    }
+    };
 
     sendMessage = () => {
         if (this.props.value.trim().length === 0) {
@@ -63,7 +63,7 @@ export default class PostTextbox extends React.PureComponent {
 
         this.props.actions.createPost(this.props.teamId, post);
         this.props.onChangeText('');
-    }
+    };
 
     render() {
         const theme = this.props.theme;
@@ -104,8 +104,10 @@ export default class PostTextbox extends React.PureComponent {
                     onChangeText={this.props.onChangeText}
                     onContentSizeChange={this.handleContentSizeChange}
                     placeholder={placeholder}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onSubmitEditing={this.sendMessage}
                     multiline={true}
+                    underlineColorAndroid='transparent'
                     style={{
                         borderColor: changeOpacity(theme.centerChannelColor, 0.2),
                         borderWidth: 1,

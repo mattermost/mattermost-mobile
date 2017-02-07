@@ -16,6 +16,7 @@ import {
     selectInitialChannel,
     handlePostDraftChanged
 } from 'app/actions/views/channel';
+import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -43,6 +44,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
+            selectFirstAvailableTeam,
             selectInitialChannel,
             openChannelDrawer,
             openRightMenuDrawer,

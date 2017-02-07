@@ -51,8 +51,7 @@ const defaults = {
     },
     headerStyle: {
         flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#367FB0'
+        alignItems: 'center'
     },
     allowSwipe: false
 };

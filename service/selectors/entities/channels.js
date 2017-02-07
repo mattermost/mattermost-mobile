@@ -3,7 +3,7 @@
 
 import {createSelector} from 'reselect';
 import {getCurrentTeamId} from 'service/selectors/entities/teams';
-import {buildDisplayableChannelList} from 'service/utils/channel_utils';
+import {buildDisplayableChannelList, completeDirectChannelInfo} from 'service/utils/channel_utils';
 
 function getAllChannels(state) {
     return state.entities.channels.channels;
@@ -20,8 +20,14 @@ export function getCurrentChannelId(state) {
 export const getCurrentChannel = createSelector(
     getAllChannels,
     getCurrentChannelId,
-    (allChannels, currentChannelId) => {
-        return allChannels[currentChannelId];
+    (state) => state.entities.users,
+    (state) => state.entities.preferences.myPreferences,
+    (allChannels, currentChannelId, users, myPreferences) => {
+        const channel = allChannels[currentChannelId];
+        if (channel) {
+            return completeDirectChannelInfo(users, myPreferences, channel);
+        }
+        return channel;
     }
 );
 
