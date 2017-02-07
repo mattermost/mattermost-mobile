@@ -206,8 +206,6 @@ export function leaveChannel(channel, reset = false) {
 
 export function deleteChannel(teamId, channelId) {
     return async (dispatch, getState) => {
-        serviceDeleteChannel(teamId, channelId)(dispatch, getState).then(() => {
-            selectInitialChannel(teamId)(dispatch, getState);
-        });
+        await serviceDeleteChannel(teamId, channelId)(dispatch, getState);
     };
 }

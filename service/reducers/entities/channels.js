@@ -33,8 +33,7 @@ function channels(state = {}, action) {
         return nextState;
     }
     case ChannelTypes.RECEIVED_CHANNEL_DELETED:
-        // TODO: if currentChannel is delted channel set currentChannel to default
-        // Reflect.deleteProperty(nextState, action.data);
+        Reflect.deleteProperty(nextState, action.data);
         return nextState;
     case ChannelTypes.RECEIVED_LAST_VIEWED: {
         const channelId = action.data.channel_id;

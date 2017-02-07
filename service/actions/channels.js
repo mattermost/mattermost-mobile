@@ -369,7 +369,7 @@ export function joinChannel(userId, teamId, channelId, channelName) {
     };
 }
 
-export function deleteChannel(teamId, channelId) {
+export function deleteChannel(teamId, channelId, beforeDelete) {
     return async (dispatch, getState) => {
         dispatch({type: ChannelTypes.DELETE_CHANNEL_REQUEST}, getState);
 
@@ -379,6 +379,11 @@ export function deleteChannel(teamId, channelId) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: ChannelTypes.DELETE_CHANNEL_FAILURE, error}, getState);
             return;
+        }
+
+        if (beforeDelete) {
+            const {action, args, _dispatch, _state} = beforeDelete;
+            action(...args)(_dispatch, _state);
         }
 
         dispatch(batchActions([
