@@ -44,6 +44,7 @@ class ChannelInfo extends PureComponent {
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
         isAdmin: PropTypes.bool.isRequired,
+        deleteChannelRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
@@ -73,14 +74,23 @@ class ChannelInfo extends PureComponent {
         if (isFavorite !== this.state.isFavorite) {
             this.setState({isFavorite});
         }
-        this.navigateAfterLeave(nextProps.leaveChannelRequest);
+        this.navigateAfterLeave(nextProps.leaveChannelRequest, nextProps.deleteChannelRequest);
     }
 
-    navigateAfterLeave(leaveChannelRequest) {
-        if (
+    deleteOrLeaveRequestSuccessful(leaveChannelRequest, deleteChannelRequest) {
+        return (
+            leaveChannelRequest &&
             leaveChannelRequest !== this.props.leaveChannelRequest &&
             leaveChannelRequest.status === 'success'
-        ) {
+        ) || (
+            deleteChannelRequest &&
+            deleteChannelRequest !== this.props.deleteChannelRequest &&
+            deleteChannelRequest.status === 'success'
+        );
+    }
+
+    navigateAfterLeave(leaveChannelRequest, deleteChannelRequest) {
+        if (this.deleteOrLeaveRequestSuccessful(leaveChannelRequest, deleteChannelRequest)) {
             this.props.actions.goBack();
         }
     }
@@ -105,7 +115,7 @@ class ChannelInfo extends PureComponent {
             formatMessage({id: `mobile.channel_info.alertTitle${titleCaseEventType}Channel`, defaultMessage: `${titleCaseEventType} {term}`}, {term}),
             formatMessage({
                 id: `mobile.channel_info.alertMessage${titleCaseEventType}Channel`,
-                defaultMessage: `Are you sure you want to ${eventType} the {term} with {name}?`
+                defaultMessage: `Are you sure you want to ${eventType} the {term} {name}?`
             }, {
                 term: term.toLowerCase(),
                 name: channel.display_name
@@ -118,7 +128,7 @@ class ChannelInfo extends PureComponent {
                     if (eventType === 'leave') {
                         this.props.actions.leaveChannel(channel, true);
                     } else if (eventType === 'delete') {
-                        this.props.actions.deleteChannel(channel.team_id, channel.id);
+                        this.props.actions.deleteChannel(channel.team_id, channel.id, true);
                     }
                 }
             }]

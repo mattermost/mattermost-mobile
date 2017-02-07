@@ -23,8 +23,8 @@ function mapStateToProps(state, ownProps) {
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
     const leaveChannelRequest = state.requests.channels.leaveChannel;
     const currentUserRoles = getCurrentUserRoles(state);
-
     const isAdmin = currentUserRoles.includes('_admin');
+    const deleteChannelRequest = state.requests.channels.deleteChannel;
 
     return {
         ...ownProps,
@@ -34,7 +34,8 @@ function mapStateToProps(state, ownProps) {
         isFavorite,
         leaveChannelRequest,
         theme: getTheme(state),
-        isAdmin
+        isAdmin,
+        deleteChannelRequest
     };
 }
 
@@ -47,8 +48,8 @@ function mapDispatchToProps(dispatch) {
             markFavorite,
             unmarkFavorite,
             leaveChannel,
-            goBack,
-            deleteChannel
+            deleteChannel,
+            goBack
         }, dispatch)
     };
 }
