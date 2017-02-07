@@ -1,5 +1,7 @@
 # Mattermost Mobile (unreleased) 
 
+**Supported Server Versions:** v3.6 and Higher
+
 This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is not yet stable, and the instructions are for internal use currently (i.e. probably out-of-date until we stablize). 
 
 We'll post updates to our [Forums](http://forum.mattermost.org/) and [Twitter](https://twitter.com/mattermosthq) when we're ready to bring in more community contributors. 
@@ -12,7 +14,7 @@ Mattermost is an open source Slack-alternative used by thousands of companies ar
 
 ### Testing
 
-The apps are currently under development with a beta release planned for March. We cut a new build every Monday, so people can test it our and see what's new.
+The apps are currently under development with a beta release planned for March. We cut a new build every Monday, so people can test it out and see what's new.
 
 If you would like to help with testing the apps, you can:
 
@@ -20,6 +22,7 @@ If you would like to help with testing the apps, you can:
 2. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new
 3. Ask to be added as a beta tester by sending a direct message to `@lindsay` with your email address and device OS (iOS or Android)
 4. Install the `Mattermost RN` app
+  - Note: You need server version 3.6 or higher to test the new app - if your server is a lower version, you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
 5. Check the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) or search for `#rnchangelog` for an outline of the latest changes (example [here](https://pre-release.mattermost.com/core/pl/tepdema9yirupdzjjamxk6wj3c))
 5. File any bugs you find by posting in the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) with:
   - Device information
