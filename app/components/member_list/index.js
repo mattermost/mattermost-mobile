@@ -86,17 +86,19 @@ export default class MemberList extends PureComponent {
     componentWillReceiveProps(nextProps) {
         const {members, showSections} = nextProps;
 
-        let data = members;
-        if (showSections) {
-            data = this.createSections(members);
-        }
+        if (members !== this.props.members || showSections !== this.props.showSections) {
+            let data = members;
+            if (showSections) {
+                data = this.createSections(members);
+            }
 
-        const mergedData = Object.assign({}, data, this.state.data);
-        const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(mergedData) : this.state.dataSource.cloneWithRows(mergedData);
-        this.setState({
-            data: mergedData,
-            dataSource
-        });
+            const mergedData = Object.assign({}, data, this.state.data);
+            const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(mergedData) : this.state.dataSource.cloneWithRows(mergedData);
+            this.setState({
+                data: mergedData,
+                dataSource
+            });
+        }
     }
 
     createSections = (data) => {
@@ -116,7 +118,7 @@ export default class MemberList extends PureComponent {
     }
 
     handleRowSelect = (sectionId, rowId) => {
-        const data = {...this.state.data};
+        const data = this.state.data;
         const section = [...data[sectionId]];
 
         section[rowId] = Object.assign({}, section[rowId], {selected: !section[rowId].selected});
