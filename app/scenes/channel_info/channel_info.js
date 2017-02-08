@@ -89,29 +89,40 @@ class ChannelInfo extends PureComponent {
         const term = channel.type === Constants.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
             formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
-        const titleCaseEventType = `${eventType.charAt(0).toUpperCase()}${eventType.slice(1)}`;
+        let title;
+        let message;
+        let onPressAction;
+        if (eventType === 'leave') {
+            title = {id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'};
+            message = {
+                id: 'mobile.channel_info.alertMessageLeaveChannel',
+                defaultMessage: 'Are you sure you want to leave the {term} {name}?'
+            };
+            onPressAction = () => this.props.actions.leaveChannel(channel, true);
+        } else if (eventType === 'delete') {
+            title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Delete {term}'};
+            message = {
+                id: 'mobile.channel_info.alertMessageDeleteChannel',
+                defaultMessage: 'Are you sure you want to delete the {term} {name}?'
+            };
+            onPressAction = () => this.props.actions.deleteChannel(channel.team_id, channel.id, true);
+        }
 
         Alert.alert(
-            formatMessage({id: `mobile.channel_info.alertTitle${titleCaseEventType}Channel`, defaultMessage: `${titleCaseEventType} {term}`}, {term}),
-            formatMessage({
-                id: `mobile.channel_info.alertMessage${titleCaseEventType}Channel`,
-                defaultMessage: `Are you sure you want to ${eventType} the {term} {name}?`
-            }, {
-                term: term.toLowerCase(),
-                name: channel.display_name
-            }),
+            formatMessage(title, {term}),
+            formatMessage(
+                message,
+                {
+                    term: term.toLowerCase(),
+                    name: channel.display_name
+                }
+            ),
             [{
                 text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                onPress: () => {
-                    if (eventType === 'leave') {
-                        this.props.actions.leaveChannel(channel, true);
-                    } else if (eventType === 'delete') {
-                        this.props.actions.deleteChannel(channel.team_id, channel.id, true);
-                    }
-                }
-            }]
+                onPress: onPressAction
+            }],
         );
     }
 
