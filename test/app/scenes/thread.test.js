@@ -30,19 +30,19 @@ describe('Thread.makeGetPostsForThread', () => {
     it('should return single post with no children', () => {
         const getPostsForThread = makeGetPostsForThread();
 
-        assert.deepEqual(getPostsForThread(testState, {channelId: '1', postId: 'f'}), [posts.f]);
+        assert.deepEqual(getPostsForThread(testState, {channelId: '1', rootId: 'f'}), [posts.f]);
     });
 
     it('should return post with children', () => {
         const getPostsForThread = makeGetPostsForThread();
 
-        assert.deepEqual(getPostsForThread(testState, {channelId: '1', postId: 'a'}), [posts.a, posts.c, posts.e]);
+        assert.deepEqual(getPostsForThread(testState, {channelId: '1', rootId: 'a'}), [posts.a, posts.c, posts.e]);
     });
 
     it('should return memoized result for identical props', () => {
         const getPostsForThread = makeGetPostsForThread();
 
-        const props = {channelId: '1', postId: 'a'};
+        const props = {channelId: '1', rootId: 'a'};
         const result = getPostsForThread(testState, props);
 
         assert.equal(result, getPostsForThread(testState, props));
@@ -51,20 +51,20 @@ describe('Thread.makeGetPostsForThread', () => {
     it('should return different result for different props', () => {
         const getPostsForThread = makeGetPostsForThread();
 
-        const result = getPostsForThread(testState, {channelId: '1', postId: 'a'});
+        const result = getPostsForThread(testState, {channelId: '1', rootId: 'a'});
 
-        assert.notEqual(result, getPostsForThread(testState, {channelId: '1', postId: 'a'}));
-        assert.deepEqual(result, getPostsForThread(testState, {channelId: '1', postId: 'a'}));
+        assert.notEqual(result, getPostsForThread(testState, {channelId: '1', rootId: 'a'}));
+        assert.deepEqual(result, getPostsForThread(testState, {channelId: '1', rootId: 'a'}));
     });
 
     it('should return memoized result for multiple selectors with different props', () => {
         const getPostsForThread1 = makeGetPostsForThread();
         const getPostsForThread2 = makeGetPostsForThread();
 
-        const props1 = {channelId: '1', postId: 'a'};
+        const props1 = {channelId: '1', rootId: 'a'};
         const result1 = getPostsForThread1(testState, props1);
 
-        const props2 = {channelId: '1', postId: 'b'};
+        const props2 = {channelId: '1', rootId: 'b'};
         const result2 = getPostsForThread2(testState, props2);
 
         assert.equal(result1, getPostsForThread1(testState, props1));
