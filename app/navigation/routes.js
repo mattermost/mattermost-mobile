@@ -6,6 +6,7 @@ import {
     ChannelDrawer,
     ChannelInfo,
     ChannelMembers,
+    ChannelAddMembers,
     LoadTeam,
     Login,
     Mfa,
@@ -41,6 +42,14 @@ export const Routes = {
         component: ChannelMembers,
         navigationProps: {
             title: {id: 'channel_header.manageMembers', defaultMessage: 'Manage Members'}
+        }
+    },
+    ChannelAddMembers: {
+        key: 'ChannelAddMembers',
+        transition: RouteTransitions.Horizontal,
+        component: ChannelAddMembers,
+        navigationProps: {
+            title: {id: 'channel_header.addMembers', defaultMessage: 'Add Members'}
         }
     },
     ChannelView: {

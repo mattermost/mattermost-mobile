@@ -43,21 +43,26 @@ export default class MemberList extends PureComponent {
         onRowPress: PropTypes.func,
         onListEndReached: PropTypes.func,
         onListEndReachedThreshold: PropTypes.number,
-        sections: PropTypes.bool,
         preferences: PropTypes.object,
         loadingMembers: PropTypes.bool,
         listPageSize: PropTypes.number,
         listInitialSize: PropTypes.number,
-        listScrollRenderAheadDistance: PropTypes.number
+        listScrollRenderAheadDistance: PropTypes.number,
+        showSections: PropTypes.bool,
+        selectable: PropTypes.bool,
+        onRowSelect: PropTypes.func,
+        renderRow: PropTypes.func
     }
 
     static defaultProps = {
         onListEndReached: () => true,
         onListEndThreshold: 50,
-        sections: true,
         listPageSize: 10,
         listInitialSize: 10,
-        listScrollRenderAheadDistance: 200
+        listScrollRenderAheadDistance: 200,
+        selectable: false,
+        onRowSelect: () => true,
+        showSections: true
     }
 
     constructor(props) {
@@ -67,18 +72,33 @@ export default class MemberList extends PureComponent {
             rowHasChanged: (r1, r2) => r1 !== r2,
             sectionHeaderHasChanged: (s1, s2) => s1 !== s2
         });
-        const dataSource = props.sections ? ds.cloneWithRowsAndSections(this.createSections(props.members)) : ds.cloneWithRows(props.members);
+        let data = props.members;
+        if (props.showSections) {
+            data = this.createSections(props.members);
+        }
+        const dataSource = ds.cloneWithRowsAndSections(data);
         this.state = {
+            data,
             dataSource
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        const {members, sections} = nextProps;
-        const dataSource = sections ? this.state.dataSource.cloneWithRowsAndSections(this.createSections(members)) : this.state.dataSource.cloneWithRows(members);
-        this.setState({
-            dataSource
-        });
+        const {members, showSections} = nextProps;
+
+        if (members !== this.props.members || showSections !== this.props.showSections) {
+            let data = members;
+            if (showSections) {
+                data = this.createSections(members);
+            }
+
+            const mergedData = Object.assign({}, data, this.state.data);
+            const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(mergedData) : this.state.dataSource.cloneWithRows(mergedData);
+            this.setState({
+                data: mergedData,
+                dataSource
+            });
+        }
     }
 
     createSections = (data) => {
@@ -97,11 +117,23 @@ export default class MemberList extends PureComponent {
         return sections;
     }
 
-    renderSectionHeader = (sectionData, sectionId) => {
-        if (!this.props.sections) {
-            return null;
-        }
+    handleRowSelect = (sectionId, rowId) => {
+        const data = this.state.data;
+        const section = [...data[sectionId]];
 
+        section[rowId] = Object.assign({}, section[rowId], {selected: !section[rowId].selected});
+        const mergedData = Object.assign({}, data, {[sectionId]: section});
+
+        const id = section[rowId].id;
+
+        const dataSource = this.state.dataSource.cloneWithRowsAndSections(mergedData);
+        this.setState({
+            data: mergedData,
+            dataSource
+        }, () => this.props.onRowSelect(id));
+    }
+
+    renderSectionHeader = (sectionData, sectionId) => {
         return (
             <View style={style.sectionContainer}>
                 <Text style={style.sectionText}>{sectionId}</Text>
@@ -109,9 +141,13 @@ export default class MemberList extends PureComponent {
         );
     }
 
-    renderRow = (user) => {
+    renderRow = (user, sectionId, rowId) => {
         const {id, username} = user;
         const displayName = displayUsername(user, this.props.preferences);
+        let onRowSelect = null;
+        if (this.props.selectable) {
+            onRowSelect = () => this.handleRowSelect(sectionId, rowId);
+        }
 
         return (
             <MemberListRow
@@ -120,6 +156,9 @@ export default class MemberList extends PureComponent {
                 displayName={displayName}
                 username={username}
                 onPress={this.props.onRowPress}
+                selectable={this.props.selectable}
+                selected={user.selected}
+                onRowSelect={onRowSelect}
             />
         );
     }
@@ -152,11 +191,13 @@ export default class MemberList extends PureComponent {
     }
 
     render() {
+        const renderRow = this.props.renderRow || this.renderRow;
+
         return (
             <ListView
                 style={style.listView}
                 dataSource={this.state.dataSource}
-                renderRow={this.renderRow}
+                renderRow={renderRow}
                 renderSectionHeader={this.renderSectionHeader}
                 renderSeparator={this.renderSeparator}
                 renderFooter={this.renderFooter}

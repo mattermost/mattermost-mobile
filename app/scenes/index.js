@@ -5,6 +5,7 @@ import Channel from './channel';
 import ChannelDrawer from './channel_drawer';
 import ChannelInfo from './channel_info';
 import ChannelMembers from './channel_members';
+import ChannelAddMembers from './channel_add_members';
 import LoadTeam from './load_team';
 import Login from './login/login_container.js';
 import Mfa from './mfa';
@@ -19,6 +20,7 @@ module.exports = {
     ChannelDrawer,
     ChannelInfo,
     ChannelMembers,
+    ChannelAddMembers,
     LoadTeam,
     Login,
     Mfa,
