@@ -2,24 +2,25 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 
-import {closeModal} from 'app/actions/views/options_modal';
+import navigationSceneConnect from '../navigationSceneConnect';
+
+import {goBack} from 'app/actions/navigation';
 import OptionsModal from './options_modal';
 
 function mapStateToProps(state, ownProps) {
     return {
-        ...ownProps,
-        ...state.views.optionsModal
+        ...state.views.optionsModal,
+        ...ownProps
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            closeModal
+            closeModal: goBack
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(OptionsModal);
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(OptionsModal);

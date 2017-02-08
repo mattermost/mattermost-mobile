@@ -6,17 +6,6 @@ import {batchActions} from 'redux-batched-actions';
 import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
 
-export function goToSelectTeam() {
-    return async (dispatch, getState) => {
-        dispatch(batchActions([{
-            type: NavigationTypes.NAVIGATION_CLOSE_DRAWERS
-        }, {
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.SelectTeam
-        }]), getState);
-    };
-}
-
 export function goToRecentMentions() {
     return async (dispatch, getState) => {
         dispatch(batchActions([{

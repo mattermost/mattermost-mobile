@@ -23,6 +23,11 @@ describe('Reducers.Navigation', () => {
         assert.deepEqual(state, {
             index: 0,
             routes: [Routes.Root],
+            modal: {
+                index: 0,
+                routes: []
+            },
+            isModal: false,
             leftDrawerOpen: false,
             leftDrawerRoute: null,
             rightDrawerOpen: false,

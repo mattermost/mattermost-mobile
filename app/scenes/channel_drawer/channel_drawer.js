@@ -18,9 +18,13 @@ export default class ChannelDrawer extends React.PureComponent {
         theme: React.PropTypes.object.isRequired
     };
 
+    static defaultProps = {
+        currentTeam: {},
+        currentChannel: {}
+    }
+
     selectChannel = (id) => {
         this.props.actions.handleSelectChannel(id);
-        this.props.actions.closeDrawers();
     };
 
     render() {

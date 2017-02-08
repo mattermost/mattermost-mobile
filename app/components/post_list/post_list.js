@@ -2,7 +2,10 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {ListView, StyleSheet} from 'react-native';
+import {
+    ListView,
+    StyleSheet
+} from 'react-native';
 
 import Post from 'app/components/post';
 

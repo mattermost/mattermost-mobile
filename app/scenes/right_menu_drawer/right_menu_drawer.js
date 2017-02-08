@@ -12,37 +12,40 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import RightMenuDrawerItem from './right_menu_drawer_item';
 
-const Styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#2071a7',
-        flex: 1,
-        ...Platform.select({
-            ios: {
-                paddingTop: 20
-            },
-            android: {
-                paddingTop: 5
-            }
-        })
-    },
-    itemText: {
-        color: 'white'
-    },
-    icon: {
-        color: 'white',
-        width: 25
-    },
-    mentionIcon: {
-        fontSize: 17,
-        fontWeight: 'bold'
-    },
-    divider: {
-        borderColor: 'rgba(255, 255, 255, 0.6)',
-        borderTopWidth: StyleSheet.hairlineWidth
-    }
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.sidebarBg,
+            flex: 1,
+            ...Platform.select({
+                ios: {
+                    paddingTop: 20
+                },
+                android: {
+                    paddingTop: 5
+                }
+            })
+        },
+        itemText: {
+            color: 'white'
+        },
+        icon: {
+            color: 'white',
+            width: 25
+        },
+        mentionIcon: {
+            fontSize: 17,
+            fontWeight: 'bold'
+        },
+        divider: {
+            borderColor: 'rgba(255, 255, 255, 0.6)',
+            borderTopWidth: StyleSheet.hairlineWidth
+        }
+    });
 });
 
 export default class RightMenuDrawer extends React.Component {
@@ -50,12 +53,15 @@ export default class RightMenuDrawer extends React.Component {
         actions: React.PropTypes.shape({
             goToFlaggedPosts: React.PropTypes.func.isRequired,
             goToRecentMentions: React.PropTypes.func.isRequired,
-            goToSelectTeam: React.PropTypes.func.isRequired,
+            goToModalSelectTeam: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
-        }).isRequired
+        }).isRequired,
+        theme: React.PropTypes.object
     }
 
     render() {
+        const Styles = getStyleSheet(this.props.theme);
+
         return (
             <ScrollView style={Styles.container}>
                 <RightMenuDrawerItem onPress={this.props.actions.goToRecentMentions}>
@@ -77,7 +83,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Flagged Posts'
                     />
                 </RightMenuDrawerItem>
-                <Divider/>
+                <Divider style={Styles.divider}/>
                 <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
@@ -111,7 +117,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Get Team Invite Link'
                     />
                 </RightMenuDrawerItem>
-                <Divider/>
+                <Divider style={Styles.divider}/>
                 <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
@@ -134,7 +140,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Manage Members'
                     />
                 </RightMenuDrawerItem>
-                <RightMenuDrawerItem onPress={this.props.actions.goToSelectTeam}>
+                <RightMenuDrawerItem onPress={this.props.actions.goToModalSelectTeam}>
                     <Icon
                         style={Styles.icon}
                         name='exchange'
@@ -145,7 +151,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Team Selection'
                     />
                 </RightMenuDrawerItem>
-                <Divider/>
+                <Divider style={Styles.divider}/>
                 <RightMenuDrawerItem>
                     <Icon
                         style={Styles.icon}
@@ -179,7 +185,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='About Mattermost'
                     />
                 </RightMenuDrawerItem>
-                <Divider/>
+                <Divider style={Styles.divider}/>
                 <RightMenuDrawerItem onPress={this.props.actions.logout}>
                     <Icon
                         style={Styles.icon}
@@ -196,6 +202,6 @@ export default class RightMenuDrawer extends React.Component {
     }
 }
 
-function Divider() {
-    return <View style={Styles.divider}/>;
+function Divider(props) {
+    return <View {...props}/>;
 }

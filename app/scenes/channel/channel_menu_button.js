@@ -14,14 +14,12 @@ import {getTheme} from 'service/selectors/entities/preferences';
 function ChannelMenuButton(props) {
     return (
         <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1}}>
-            <TouchableOpacity
-                onPress={() => props.emitter('open_right_menu')}
-                style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
-            >
+            <TouchableOpacity onPress={() => props.emitter('open_right_menu')}>
                 <Icon
                     name='ellipsis-v'
                     size={25}
                     color={props.theme.sidebarHeaderTextColor}
+                    style={{paddingHorizontal: 20}}
                 />
             </TouchableOpacity>
         </View>

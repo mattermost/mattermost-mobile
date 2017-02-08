@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {openModal, closeModal} from 'app/actions/views/options_modal';
+import {showOptionsModal, closeModal} from 'app/actions/navigation';
 import {closeDMChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 
 import {viewChannel} from 'service/actions/channels';
@@ -24,8 +24,8 @@ function mapDispatchToProps(dispatch) {
             leaveChannel,
             markFavorite,
             unmarkFavorite,
-            openModal,
-            closeModal
+            showOptionsModal,
+            closeOptionsModal: closeModal
         }, dispatch)
     };
 }

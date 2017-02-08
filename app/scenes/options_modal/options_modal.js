@@ -7,7 +7,6 @@ import {
     View,
     StyleSheet,
     Dimensions,
-    Modal,
     Text,
     ScrollView,
     TouchableOpacity,
@@ -84,7 +83,6 @@ export default class OptionsModal extends PureComponent {
     static propTypes = {
         title: PropTypes.string,
         options: PropTypes.array,
-        visible: PropTypes.bool,
         onOptionSelected: PropTypes.func,
         style: View.propTypes.style,
         titleStyle: View.propTypes.style,
@@ -101,7 +99,6 @@ export default class OptionsModal extends PureComponent {
     static defaultProps = {
         title: '',
         options: [],
-        visible: false,
         style: {},
         cancelStyle: {},
         cancelTextStyle: {},
@@ -203,17 +200,10 @@ export default class OptionsModal extends PureComponent {
     render() {
         if (this.props.options.length) {
             return (
-                <View style={this.props.style}>
-                    <Modal
-                        transparent={true}
-                        visible={this.props.visible}
-                        onRequestClose={() => this.onOptionSelected(null)}
-                        animationType={this.state.animationType}
-                    >
-                        <TouchableWithoutFeedback onPress={() => this.onOptionSelected(null)}>
-                            {this.renderOptionList()}
-                        </TouchableWithoutFeedback>
-                    </Modal>
+                <View style={[{flex: 1}, this.props.style]}>
+                    <TouchableWithoutFeedback onPress={() => this.onOptionSelected(null)}>
+                        {this.renderOptionList()}
+                    </TouchableWithoutFeedback>
                 </View>
             );
         }

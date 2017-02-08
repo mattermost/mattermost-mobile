@@ -4,6 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 import {ViewTypes} from 'app/constants';
 import {updateStorage} from 'app/actions/storage';
+import {closeDrawers} from 'app/actions/navigation';
 
 import {
     fetchMyChannelsAndMembers,
@@ -125,8 +126,12 @@ export function selectInitialChannel(teamId) {
 export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const currentTeamId = getState().entities.teams.currentId;
+
         await updateStorage(currentTeamId, {currentChannelId: channelId});
         await selectChannel(channelId)(dispatch, getState);
+        setTimeout(async () => {
+            await closeDrawers()(dispatch, getState); // trying to smooth out channel switch transitions
+        }, 200);
     };
 }
 

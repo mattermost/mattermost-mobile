@@ -4,15 +4,19 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goBack} from 'app/actions/navigation';
-import {goToFlaggedPosts, goToRecentMentions, goToSelectTeam} from 'app/actions/views/right_menu_drawer';
+import {goBack, goToModalSelectTeam} from 'app/actions/navigation';
+import {goToFlaggedPosts, goToRecentMentions} from 'app/actions/views/right_menu_drawer';
 
 import {logout} from 'service/actions/users';
+import {getTheme} from 'service/selectors/entities/preferences';
 
 import RightMenuDrawer from './right_menu_drawer';
 
 function mapStateToProps(state, ownProps) {
-    return ownProps;
+    return {
+        ...ownProps,
+        theme: getTheme(state)
+    };
 }
 
 function mapDispatchToProps(dispatch) {
@@ -21,7 +25,7 @@ function mapDispatchToProps(dispatch) {
             goBack,
             goToFlaggedPosts,
             goToRecentMentions,
-            goToSelectTeam,
+            goToModalSelectTeam,
             logout
         }, dispatch)
     };

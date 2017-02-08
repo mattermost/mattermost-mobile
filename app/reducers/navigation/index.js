@@ -13,6 +13,11 @@ const initialState = {
     routes: [
         Routes.Root
     ],
+    modal: {
+        index: 0,
+        routes: []
+    },
+    isModal: false,
     leftDrawerOpen: false,
     leftDrawerRoute: null,
     rightDrawerOpen: false,
@@ -21,15 +26,34 @@ const initialState = {
 
 export default function(state = initialState, action) {
     switch (action.type) {
-    case NavigationTypes.NAVIGATION_PUSH:
+    case NavigationTypes.NAVIGATION_PUSH: {
+        if (state.isModal) {
+            const modalState = NavigationExperimental.StateUtils.push(state.modal, {props: action.props, ...action.route});
+            return {
+                ...state,
+                modal: modalState
+            };
+        }
         return NavigationExperimental.StateUtils.push(state, action.route);
+    }
 
     case NavigationTypes.NAVIGATION_POP:
-        if (state.leftDrawerOpen || state.rightDrawerOpen) {
+        if (!state.isModal && (state.leftDrawerOpen || state.rightDrawerOpen)) {
             return {
                 ...state,
                 leftDrawerOpen: false,
                 rightDrawerOpen: false
+            };
+        }
+
+        if (state.isModal) {
+            return {
+                ...state,
+                modal: {
+                    index: 0,
+                    routes: []
+                },
+                isModal: false
             };
         }
 
@@ -56,22 +80,81 @@ export default function(state = initialState, action) {
             rightDrawerOpen: false
         };
 
-    case NavigationTypes.NAVIGATION_JUMP:
-        return NavigationExperimental.StateUtils.jumpTo(state, action.key);
+    case NavigationTypes.NAVIGATION_JUMP: {
+        if (state.isModal) {
+            const modalState = NavigationExperimental.StateUtils.jumpTo(state.modal, action.key);
+            return {
+                ...state,
+                modal: modalState
+            };
+        }
 
-    case NavigationTypes.NAVIGATION_JUMP_TO_INDEX:
+        return NavigationExperimental.StateUtils.jumpTo(state, action.key);
+    }
+
+    case NavigationTypes.NAVIGATION_JUMP_TO_INDEX: {
+        if (state.isModal) {
+            const modalState = NavigationExperimental.StateUtils.jumpToIndex(state.modal, action.index);
+            return {
+                ...state,
+                modal: modalState
+            };
+        }
+
         return NavigationExperimental.StateUtils.jumpToIndex(state, action.index);
+    }
 
     case NavigationTypes.NAVIGATION_RESET:
         return {
             ...state,
             ...NavigationExperimental.StateUtils.reset(state, action.routes, action.index),
+            modal: {
+                index: 0,
+                routes: []
+            },
+            isModal: false,
             leftDrawerOpen: false,
             rightDrawerOpen: false
         };
 
-    case NavigationTypes.NAVIGATION_REPLACE:
+    case NavigationTypes.NAVIGATION_REPLACE: {
+        if (state.isModal) {
+            const modalState = NavigationExperimental.StateUtils.replaceAtIndex(state.modal, state.modal.index, action.index);
+            return {
+                ...state,
+                modal: modalState
+            };
+        }
+
         return NavigationExperimental.StateUtils.replaceAtIndex(state, state.index, action.route);
+    }
+
+    case NavigationTypes.NAVIGATION_MODAL: {
+        const modal = {
+            index: 0,
+            routes: [
+                {
+                    ...action.route,
+                    props: action.props
+                }
+            ]
+        };
+        return {
+            ...state,
+            modal,
+            isModal: true
+        };
+    }
+
+    case NavigationTypes.NAVIGATION_CLOSE_MODAL:
+        return {
+            ...state,
+            modal: {
+                index: 0,
+                routes: []
+            },
+            isModal: false
+        };
 
     case UsersTypes.LOGOUT_SUCCESS:
         return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);
