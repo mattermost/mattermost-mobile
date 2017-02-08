@@ -5,25 +5,21 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
+import {goToThread} from 'app/actions/navigation';
 import {loadPostsIfNecessary} from 'app/actions/views/channel';
 
 import {getAllPosts, getPostsInCurrentChannel} from 'service/selectors/entities/posts';
 
 import ChannelPostList from './channel_post_list';
 
-const getPostsInCurrentChannelGroupedByDay = createSelector(
-    getPostsInCurrentChannel,
+const getPostsInCurrentChannelWithReplyProps = createSelector(
     getAllPosts,
-    (postsInChannel, allPosts) => {
-        const postsByDay = {};
+    getPostsInCurrentChannel,
+    (allPosts, postsInChannel) => {
+        const posts = [];
 
         for (let i = 0; i < postsInChannel.length; i++) {
             let post = postsInChannel[i];
-            const dateString = new Date(post.create_at).toDateString();
-
-            if (!postsByDay[dateString]) {
-                postsByDay[dateString] = [];
-            }
 
             if (post.root_id) {
                 let isFirstReply = false;
@@ -59,18 +55,7 @@ const getPostsInCurrentChannelGroupedByDay = createSelector(
                 };
             }
 
-            postsByDay[dateString].push(post);
-        }
-
-        let posts = [];
-
-        // Push the date on after the posts so that it's rendered first
-        for (const dateString in postsByDay) {
-            if (postsByDay.hasOwnProperty(dateString)) {
-                postsByDay[dateString].push(new Date(dateString));
-            }
-
-            posts = posts.concat(postsByDay[dateString]);
+            posts.push(post);
         }
 
         return posts;
@@ -80,14 +65,15 @@ const getPostsInCurrentChannelGroupedByDay = createSelector(
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        posts: getPostsInCurrentChannelGroupedByDay(state)
+        posts: getPostsInCurrentChannelWithReplyProps(state)
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            loadPostsIfNecessary
+            loadPostsIfNecessary,
+            goToThread
         }, dispatch)
     };
 }

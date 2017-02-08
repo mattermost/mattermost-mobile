@@ -27,7 +27,7 @@
  */
 export default function deepFreezeAndThrowOnMutation(object) {
     if (typeof object !== 'object' || object === null || Object.isFrozen(object) || Object.isSealed(object)) {
-        return;
+        return object;
     }
 
     for (const key in object) {
@@ -45,6 +45,8 @@ export default function deepFreezeAndThrowOnMutation(object) {
             deepFreezeAndThrowOnMutation(object[key]);
         }
     }
+
+    return object;
 }
 
 function throwOnImmutableMutation(key, value) {

@@ -5,6 +5,7 @@ import React from 'react';
 import {
     StyleSheet,
     Text,
+    TouchableHighlight,
     View
 } from 'react-native';
 
@@ -86,15 +87,23 @@ export default class Post extends React.Component {
         post: React.PropTypes.object.isRequired,
         user: React.PropTypes.object,
         displayName: React.PropTypes.string,
+        renderReplies: React.PropTypes.bool,
         isFirstReply: React.PropTypes.bool,
         isLastReply: React.PropTypes.bool,
         commentedOnPost: React.PropTypes.object,
         commentedOnDisplayName: React.PropTypes.string,
-        theme: React.PropTypes.object.isRequired
+        theme: React.PropTypes.object.isRequired,
+        onPress: React.PropTypes.func
     };
 
+    handlePress = () => {
+        if (this.props.onPress) {
+            this.props.onPress(this.props.post);
+        }
+    }
+
     renderCommentedOnMessage = (style) => {
-        if (!this.props.commentedOnPost) {
+        if (!this.props.renderReplies || !this.props.commentedOnPost) {
             return null;
         }
 
@@ -133,7 +142,7 @@ export default class Post extends React.Component {
     }
 
     renderReplyBar = (style) => {
-        if (!this.props.post.root_id) {
+        if (!this.props.renderReplies || !this.props.post.root_id) {
             return null;
         }
 
@@ -197,8 +206,9 @@ export default class Post extends React.Component {
             messageStyle = style.message;
         }
 
+        let contents;
         if (this.props.commentedOnPost) {
-            return (
+            contents = (
                 <View style={[style.container, this.props.style]}>
                     <View style={style.profilePictureContainer}>
                         {profilePicture}
@@ -224,30 +234,40 @@ export default class Post extends React.Component {
                     </View>
                 </View>
             );
+        } else {
+            contents = (
+                <View style={[style.container, this.props.style]}>
+                    <View style={style.profilePictureContainer}>
+                        {profilePicture}
+                    </View>
+                    {this.renderReplyBar(style)}
+                    <View style={style.rightColumn}>
+                        <View style={style.postInfoContainer}>
+                            <Text style={style.displayName}>
+                                {displayName}
+                            </Text>
+                            <Text style={style.time}>
+                                <FormattedTime value={this.props.post.create_at}/>
+                            </Text>
+                        </View>
+                        <View style={style.messageContainer}>
+                            <Text style={messageStyle}>
+                                {this.props.post.message}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+            );
         }
 
-        return (
-            <View style={[style.container, this.props.style]}>
-                <View style={style.profilePictureContainer}>
-                    {profilePicture}
-                </View>
-                {this.renderReplyBar(style)}
-                <View style={style.rightColumn}>
-                    <View style={style.postInfoContainer}>
-                        <Text style={style.displayName}>
-                            {displayName}
-                        </Text>
-                        <Text style={style.time}>
-                            <FormattedTime value={this.props.post.create_at}/>
-                        </Text>
-                    </View>
-                    <View style={style.messageContainer}>
-                        <Text style={messageStyle}>
-                            {this.props.post.message}
-                        </Text>
-                    </View>
-                </View>
-            </View>
-        );
+        if (this.props.onPress) {
+            return (
+                <TouchableHighlight onPress={this.handlePress}>
+                    {contents}
+                </TouchableHighlight>
+            );
+        }
+
+        return contents;
     }
 }
