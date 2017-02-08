@@ -17,11 +17,23 @@ export function getTeamStats(state) {
     return state.entities.teams.stats;
 }
 
+export function getTeamMemberships(state) {
+    return state.entities.teams.myMembers;
+}
+
 export const getCurrentTeam = createSelector(
     getTeams,
     getCurrentTeamId,
     (teams, currentTeamId) => {
         return teams[currentTeamId];
+    }
+);
+
+export const getCurrentTeamMembership = createSelector(
+    getCurrentTeamId,
+    getTeamMemberships,
+    (currentTeamId, teamMemberships) => {
+        return teamMemberships[currentTeamId];
     }
 );
 

@@ -3,7 +3,8 @@
 
 import {createSelector} from 'reselect';
 
-import {getCurrentChannelId} from './channels';
+import {getCurrentChannelId, getCurrentChannelMembership} from './channels';
+import {getCurrentTeamMembership} from './teams';
 
 export function getCurrentUserId(state) {
     return state.entities.users.currentId;
@@ -34,6 +35,15 @@ export const getCurrentUser = createSelector(
     getCurrentUserId,
     (profiles, currentUserId) => {
         return profiles[currentUserId];
+    }
+);
+
+export const getCurrentUserRoles = createSelector(
+    getCurrentChannelMembership,
+    getCurrentTeamMembership,
+    getCurrentUser,
+    (currentChannelMembership, currentTeamMembership, currentUser) => {
+        return `${currentTeamMembership.roles} ${currentChannelMembership.roles} ${currentUser.roles}`;
     }
 );
 
