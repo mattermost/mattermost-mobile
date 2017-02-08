@@ -15,10 +15,12 @@ import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
 import OptionsModal from 'app/components/options_modal';
 import {RouteTransitions} from 'app/navigation/routes';
+import {getTheme} from 'service/selectors/entities/preferences';
 
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
+        theme: React.PropTypes.object,
         modalVisible: React.PropTypes.bool.isRequired,
         actions: React.PropTypes.shape({
             closeDrawers: React.PropTypes.func.isRequired,
@@ -72,7 +74,10 @@ class Router extends React.Component {
                     renderLeftComponent={renderLeftComponent}
                     renderTitleComponent={renderTitleComponent}
                     renderRightComponent={renderRightComponent}
-                    style={navigationProps.headerStyle}
+                    style={[
+                        navigationProps.headerStyle,
+                        {backgroundColor: this.props.theme.sidebarHeaderBg}
+                    ]}
                 />
             );
         }
@@ -221,6 +226,7 @@ function mapStateToProps(state) {
     const modalVisible = state.views.optionsModal.visible;
     return {
         navigation: state.navigation,
+        theme: getTheme(state),
         modalVisible
     };
 }

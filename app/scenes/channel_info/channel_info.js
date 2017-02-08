@@ -43,7 +43,6 @@ class ChannelInfo extends PureComponent {
         currentChannelMemberCount: PropTypes.number,
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
@@ -53,7 +52,7 @@ class ChannelInfo extends PureComponent {
             goBack: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired
         })
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -90,7 +89,7 @@ class ChannelInfo extends PureComponent {
         const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
         this.setState({isFavorite: !isFavorite});
         toggleFavorite(currentChannel.id);
-    }
+    };
 
     handleLeave() {
         const {formatMessage} = this.props.intl;
@@ -122,7 +121,7 @@ class ChannelInfo extends PureComponent {
     renderLeaveChannelRow() {
         const channel = this.props.currentChannel;
         const isDefaultChannel = channel.name === Constants.DEFAULT_CHANNEL;
-        const isDirectMessage = channel.type === 'D';
+        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
         return !isDefaultChannel && !isDirectMessage;
     }
 
@@ -130,15 +129,13 @@ class ChannelInfo extends PureComponent {
         const {
             currentChannel,
             currentChannelCreatorName,
-            currentChannelMemberCount,
-            theme
+            currentChannelMemberCount
         } = this.props;
 
         return (
             <View style={style.container}>
                 <ScrollView
                     style={style.scrollView}
-                    contentContainerStyle={{backgroundColor: theme.centerChannelBg}}
                 >
                     <ChannelInfoHeader
                         createAt={currentChannel.create_at}
@@ -156,7 +153,7 @@ class ChannelInfo extends PureComponent {
                         togglable={true}
                     />
                     <View style={style.separatorContainer}>
-                        <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
+                        <View style={style.separator}/>
                     </View>
                     <ChannelInfoRow
                         action={() => true}
@@ -165,7 +162,7 @@ class ChannelInfo extends PureComponent {
                         textId='channel_header.notificationPreferences'
                     />
                     <View style={style.separatorContainer}>
-                        <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
+                        <View style={style.separator}/>
                     </View>
                     <ChannelInfoRow
                         action={this.props.actions.goToChannelMembers}
@@ -175,7 +172,7 @@ class ChannelInfo extends PureComponent {
                         textId='channel_header.manageMembers'
                     />
                     <View style={style.separatorContainer}>
-                        <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
+                        <View style={style.separator}/>
                     </View>
                     <ChannelInfoRow
                         action={this.props.actions.goToChannelAddMembers}
@@ -184,7 +181,7 @@ class ChannelInfo extends PureComponent {
                         textId='channel_header.addMembers'
                     />
                     <View style={style.separatorContainer}>
-                        <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
+                        <View style={style.separator}/>
                     </View>
                     <ChannelInfoRow
                         action={() => this.handleLeave()}

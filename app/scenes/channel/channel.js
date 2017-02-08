@@ -8,7 +8,9 @@ import {
     Text
 } from 'react-native';
 
+import {Constants} from 'service/constants';
 import PostTextbox from 'app/components/post_textbox';
+import EventEmitter from 'service/utils/event_emitter';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelMenuButton from './channel_menu_button';
@@ -20,6 +22,7 @@ export default class Channel extends React.PureComponent {
         actions: React.PropTypes.shape({
             loadChannelsIfNecessary: React.PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: React.PropTypes.func.isRequired,
+            selectFirstAvailableTeam: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
             openChannelDrawer: React.PropTypes.func.isRequired,
             openRightMenuDrawer: React.PropTypes.func.isRequired,
@@ -47,21 +50,13 @@ export default class Channel extends React.PureComponent {
         renderRightComponent: (props, emitter) => {
             return <ChannelMenuButton emitter={emitter}/>;
         }
-    }
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            leftSidebarOpen: false,
-            rightSidebarOpen: false
-        };
-    }
+    };
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('open_channel_drawer', this.openChannelDrawer);
         this.props.subscribeToHeaderEvent('open_right_menu', this.openRightMenuDrawer);
         this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
+        EventEmitter.on('leave_team', this.handleLeaveTeam);
         const teamId = this.props.currentTeam.id;
         this.props.actions.initWebSocket();
         this.loadChannels(teamId);
@@ -77,6 +72,7 @@ export default class Channel extends React.PureComponent {
     componentWillUnmount() {
         this.props.actions.closeWebSocket();
         this.props.unsubscribeFromHeaderEvent('open_channel_drawer');
+        EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
     loadChannels = (teamId) => {
@@ -96,9 +92,13 @@ export default class Channel extends React.PureComponent {
         this.props.actions.openRightMenuDrawer();
     };
 
-    attachPostTextbox = (c) => {
-        this.postTextbox = c;
-    }
+    attachPostTextbox = (ref) => {
+        this.postTextbox = ref;
+    };
+
+    handleLeaveTeam = () => {
+        this.props.actions.selectFirstAvailableTeam();
+    };
 
     render() {
         const {
@@ -113,17 +113,23 @@ export default class Channel extends React.PureComponent {
             return <Text>{'Waiting on channel'}</Text>;
         }
 
+        let teamId = currentChannel.team_id;
+        if (currentChannel.type === Constants.DM_CHANNEL) {
+            teamId = currentTeam.id;
+        }
+
         return (
             <KeyboardAvoidingView
                 behavior='padding'
                 style={{flex: 1, backgroundColor: theme.centerChannelBg}}
+                keyboardVerticalOffset={65}
             >
                 <StatusBar barStyle='light-content'/>
                 <ChannelPostList channel={currentChannel}/>
                 <PostTextbox
                     ref={this.attachPostTextbox}
                     value={this.props.postDraft}
-                    teamId={currentChannel.team_id}
+                    teamId={teamId}
                     channelId={currentChannel.id}
                     onChangeText={this.props.actions.handlePostDraftChanged}
                 />

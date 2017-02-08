@@ -9,7 +9,6 @@ import {goToChannelMembers, goToChannelAddMembers, goBack} from 'app/actions/nav
 import {getChannelStats} from 'service/actions/channels';
 import {markFavorite, unmarkFavorite, leaveChannel} from 'app/actions/views/channel';
 import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
 import {getUser} from 'service/selectors/entities/users';
 
 import ChannelInfo from './channel_info';
@@ -29,8 +28,7 @@ function mapStateToProps(state, ownProps) {
         currentChannelCreatorName,
         currentChannelMemberCount,
         isFavorite,
-        leaveChannelRequest,
-        theme: getTheme(state)
+        leaveChannelRequest
     };
 }
 

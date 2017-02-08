@@ -62,14 +62,18 @@ const getPostsInCurrentChannelGroupedByDay = createSelector(
             postsByDay[dateString].push(post);
         }
 
+        let posts = [];
+
         // Push the date on after the posts so that it's rendered first
         for (const dateString in postsByDay) {
             if (postsByDay.hasOwnProperty(dateString)) {
                 postsByDay[dateString].push(new Date(dateString));
             }
+
+            posts = posts.concat(postsByDay[dateString]);
         }
 
-        return postsByDay;
+        return posts;
     }
 );
 

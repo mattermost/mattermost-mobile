@@ -134,8 +134,8 @@ describe('Actions.Websocket', () => {
         await ChannelActions.selectChannel(channel.id)(store.dispatch, store.getState);
         await client.removeUserFromTeam(team.id, TestHelper.basicUser.id);
 
-        const {currentId} = store.getState().entities.teams;
-        assert.strictEqual(currentId, '');
+        const {myMembers} = store.getState().entities.teams;
+        assert.ifError(myMembers[team.id]);
     });
 
     it('Websocket Handle User Added', async () => {

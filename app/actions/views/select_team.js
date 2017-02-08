@@ -23,6 +23,19 @@ export function handleTeamChange(team) {
     };
 }
 
+export function selectFirstAvailableTeam() {
+    return async (dispatch, getState) => {
+        const {teams: allTeams, myMembers} = getState().entities.teams;
+        const teams = Object.keys(myMembers).map((key) => allTeams[key]);
+        const firstTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
+
+        if (firstTeam) {
+            handleTeamChange(firstTeam)(dispatch, getState);
+        }
+    };
+}
+
 export default {
-    handleTeamChange
+    handleTeamChange,
+    selectFirstAvailableTeam
 };

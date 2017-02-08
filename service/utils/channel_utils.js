@@ -143,7 +143,7 @@ function createFakeChannelCurried(userId) {
     return (otherUserId) => createFakeChannel(userId, otherUserId);
 }
 
-function completeDirectChannelInfo(usersState, myPreferences, channel) {
+export function completeDirectChannelInfo(usersState, myPreferences, channel) {
     if (!isDirectChannel(channel)) {
         return channel;
     }

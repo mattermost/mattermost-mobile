@@ -101,8 +101,10 @@ export function selectInitialChannel(teamId) {
         const state = getState();
         const {channels, myMembers} = state.entities.channels;
         const currentChannelId = state.entities.channels.currentId;
+        const currentChannel = channels[currentChannelId];
 
-        if (channels[currentChannelId] && myMembers[currentChannelId] && channels[currentChannelId].team_id === teamId) {
+        if (currentChannel && myMembers[currentChannelId] &&
+            (currentChannel.team_id === teamId || currentChannel.type === Constants.DM_CHANNEL)) {
             await selectChannel(currentChannelId)(dispatch, getState);
             return;
         }
