@@ -43,7 +43,6 @@ class ChannelInfo extends PureComponent {
         currentChannelMemberCount: PropTypes.number,
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
         isAdmin: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
@@ -186,7 +185,7 @@ class ChannelInfo extends PureComponent {
                                 textId='channel_header.addMembers'
                             />
                             <View style={style.separatorContainer}>
-                                <View style={[style.separator, {backgroundColor: this.props.theme.centerChannelBg}]}/>
+                                <View style={style.separator}/>
                             </View>
                         </View>
                     }

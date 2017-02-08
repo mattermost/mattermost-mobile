@@ -76,13 +76,13 @@ class ChannelMembers extends PureComponent {
             Alert.alert(
                 formatMessage({
                     id: 'mobile.routes.channel_members.action',
-                    defaultMessage: 'Remove Members'
+                    defaultMessage: '{term} Members'
                 }, {
                     term: 'Remove'
                 }),
                 formatMessage({
                     id: 'mobile.routes.channel_members.action_message',
-                    defaultMessage: 'You must select at least one member to remove from the channel.'
+                    defaultMessage: 'You must select at least one member to {term} {prep} the channel.'
                 }, {
                     term: 'remove',
                     prep: 'from'
@@ -94,13 +94,16 @@ class ChannelMembers extends PureComponent {
         Alert.alert(
             formatMessage({
                 id: 'mobile.routes.channel_members.action',
-                defaultMessage: 'Remove Members'
+                defaultMessage: '{term} Members'
             }, {
                 term: 'Remove'
             }),
             formatMessage({
                 id: 'mobile.routes.channel_members.action_message_confirm',
-                defaultMessage: 'Are you sure you want to remove the selected members from the channel?'
+                defaultMessage: 'Are you sure you want to {term} the selected members {prep} the channel?'
+            }, {
+                term: 'remove',
+                prep: 'from'
             }),
             [{
                 text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})
