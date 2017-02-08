@@ -39,7 +39,7 @@ export const getCurrentChannelMembership = createSelector(
     getCurrentChannelId,
     getChannelMemberships,
     (currentChannelId, channelMemberships) => {
-        return channelMemberships[currentChannelId];
+        return channelMemberships[currentChannelId] || {};
     }
 );
 
