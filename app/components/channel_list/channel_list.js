@@ -283,7 +283,7 @@ class ChannelList extends React.Component {
         const member = this.props.channelMembers[channel.id];
         let mentions = 0;
         let unreadCount = 0;
-        if (member) {
+        if (member && channel) {
             mentions = member.mention_count;
             unreadCount = channel.total_msg_count - member.msg_count;
 
