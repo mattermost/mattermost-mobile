@@ -43,6 +43,7 @@ class ChannelInfo extends PureComponent {
         currentChannelMemberCount: PropTypes.number,
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
+        isAdmin: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
@@ -129,7 +130,8 @@ class ChannelInfo extends PureComponent {
         const {
             currentChannel,
             currentChannelCreatorName,
-            currentChannelMemberCount
+            currentChannelMemberCount,
+            isAdmin
         } = this.props;
 
         return (
@@ -166,23 +168,27 @@ class ChannelInfo extends PureComponent {
                     </View>
                     <ChannelInfoRow
                         action={this.props.actions.goToChannelMembers}
-                        defaultMessage='Manage Members'
+                        defaultMessage={isAdmin ? 'Manage Members' : 'View Members'}
                         detail={currentChannelMemberCount}
                         icon='users'
-                        textId='channel_header.manageMembers'
+                        textId={isAdmin ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                     />
                     <View style={style.separatorContainer}>
                         <View style={style.separator}/>
                     </View>
-                    <ChannelInfoRow
-                        action={this.props.actions.goToChannelAddMembers}
-                        defaultMessage='Add Members'
-                        icon='user-plus'
-                        textId='channel_header.addMembers'
-                    />
-                    <View style={style.separatorContainer}>
-                        <View style={style.separator}/>
-                    </View>
+                    {isAdmin &&
+                        <View>
+                            <ChannelInfoRow
+                                action={this.props.actions.goToChannelAddMembers}
+                                defaultMessage='Add Members'
+                                icon='user-plus'
+                                textId='channel_header.addMembers'
+                            />
+                            <View style={style.separatorContainer}>
+                                <View style={style.separator}/>
+                            </View>
+                        </View>
+                    }
                     <ChannelInfoRow
                         action={() => this.handleLeave()}
                         defaultMessage='Leave Channel'

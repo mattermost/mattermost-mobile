@@ -102,7 +102,6 @@ export default class ChannelAddMembers extends PureComponent {
                     loadingMembers={this.props.loadMoreRequestStatus === 'started'}
                     selectable={true}
                     onRowSelect={this.handleRowSelect}
-                    showSections={true}
                 />
             </View>
         );

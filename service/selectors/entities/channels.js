@@ -17,6 +17,10 @@ export function getCurrentChannelId(state) {
     return state.entities.channels.currentId;
 }
 
+export function getChannelMemberships(state) {
+    return state.entities.channels.myMembers;
+}
+
 export const getCurrentChannel = createSelector(
     getAllChannels,
     getCurrentChannelId,
@@ -28,6 +32,14 @@ export const getCurrentChannel = createSelector(
             return completeDirectChannelInfo(users, myPreferences, channel);
         }
         return channel;
+    }
+);
+
+export const getCurrentChannelMembership = createSelector(
+    getCurrentChannelId,
+    getChannelMemberships,
+    (currentChannelId, channelMemberships) => {
+        return channelMemberships[currentChannelId];
     }
 );
 
