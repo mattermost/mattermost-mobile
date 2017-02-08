@@ -10,6 +10,7 @@ import {
     LoadTeam,
     Login,
     Mfa,
+    OptionsModal,
     RightMenuDrawer,
     Root,
     Search,
@@ -75,6 +76,13 @@ export const Routes = {
         component: Mfa,
         navigationProps: {
             title: {id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}
+        }
+    },
+    OptionsModal: {
+        key: 'OptionsModal',
+        component: OptionsModal,
+        navigationProps: {
+            hideNavBar: true
         }
     },
     RightMenuDrawer: {

@@ -73,8 +73,8 @@ class ChannelList extends React.Component {
             leaveChannel: React.PropTypes.func.isRequired,
             markFavorite: React.PropTypes.func.isRequired,
             unmarkFavorite: React.PropTypes.func.isRequired,
-            openModal: React.PropTypes.func.isRequired,
-            closeModal: React.PropTypes.func.isRequired
+            showOptionsModal: React.PropTypes.func.isRequired,
+            closeOptionsModal: React.PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -176,7 +176,7 @@ class ChannelList extends React.Component {
             }, {
                 text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
                 onPress: () => {
-                    this.setState({showOptions: false});
+                    this.props.actions.closeOptionsModal();
                     this.props.actions.leaveChannel(channel);
                 }
             }]
@@ -201,7 +201,7 @@ class ChannelList extends React.Component {
 
             open = {
                 action: () => {
-                    this.props.actions.closeModal();
+                    this.props.actions.closeOptionsModal();
                     this.onSelectChannel(channel);
                 },
                 text: formatMessage({id: 'mobile.channel_list.openDM', defaultMessage: 'Open Direct Message'})
@@ -231,7 +231,7 @@ class ChannelList extends React.Component {
 
             open = {
                 action: () => {
-                    this.props.actions.closeModal();
+                    this.props.actions.closeOptionsModal();
                     this.onSelectChannel(channel);
                 },
                 text: formatMessage({id: 'mobile.channel_list.openChannel', defaultMessage: 'Open {term}'}, {
@@ -257,7 +257,7 @@ class ChannelList extends React.Component {
         if (channel.isFavorite) {
             favorite = {
                 action: () => {
-                    this.props.actions.closeModal();
+                    this.props.actions.closeOptionsModal();
                     this.props.actions.unmarkFavorite(channel.id);
                 },
                 text: formatMessage({id: 'channelHeader.removeFromFavorites', defaultMessage: 'Remove from Favorites'})
@@ -265,7 +265,7 @@ class ChannelList extends React.Component {
         } else {
             favorite = {
                 action: () => {
-                    this.props.actions.closeModal();
+                    this.props.actions.closeOptionsModal();
                     this.props.actions.markFavorite(channel.id);
                 },
                 text: formatMessage({id: 'channelHeader.addToFavorites', defaultMessage: 'Add to Favorites'})
@@ -276,7 +276,7 @@ class ChannelList extends React.Component {
         if (close) {
             options.push(close);
         }
-        this.props.actions.openModal(title, options);
+        this.props.actions.showOptionsModal(title, options);
     };
 
     getUnreadMessages = (channel) => {

@@ -258,8 +258,13 @@ const state = {
         routes: [
             Routes.Root
         ],
+        modal: {
+            index: 0,
+            routes: []
+        },
+        isModal: false,
         leftDrawerOpen: false,
-        leftDrawerRoute: null,
+        leftDrawerRoute: Routes.ChannelDrawer,
         rightDrawerOpen: false,
         rightDrawerRoute: null
     },

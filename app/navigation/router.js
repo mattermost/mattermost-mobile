@@ -13,15 +13,15 @@ import {bindActionCreators} from 'redux';
 import {closeDrawers, goBack} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
-import OptionsModal from 'app/components/options_modal';
 import {RouteTransitions} from 'app/navigation/routes';
 import {getTheme} from 'service/selectors/entities/preferences';
+
+import NavigationModal from './navigation_modal';
 
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
         theme: React.PropTypes.object,
-        modalVisible: React.PropTypes.bool.isRequired,
         actions: React.PropTypes.shape({
             closeDrawers: React.PropTypes.func.isRequired,
             goBack: React.PropTypes.func.isRequired
@@ -49,7 +49,7 @@ class Router extends React.Component {
 
     wrapHeaderComponent = (fx) => (props) => {
         if (fx && props.scene.isActive) {
-            return fx(props, this.emitHeaderEvent);
+            return fx(props, this.emitHeaderEvent, this.props.theme);
         }
 
         return null;
@@ -74,10 +74,7 @@ class Router extends React.Component {
                     renderLeftComponent={renderLeftComponent}
                     renderTitleComponent={renderTitleComponent}
                     renderRightComponent={renderRightComponent}
-                    style={[
-                        navigationProps.headerStyle,
-                        {backgroundColor: this.props.theme.sidebarHeaderBg}
-                    ]}
+                    style={[{backgroundColor: this.props.theme.sidebarHeaderBg}, navigationProps.headerStyle]}
                 />
             );
         }
@@ -94,7 +91,14 @@ class Router extends React.Component {
                     ...cardProps
                 });
             } else {
-                style = {};
+                // have to override shadow props for transparent modals
+                style = {
+                    backgroundColor: 'transparent',
+                    shadowColor: null,
+                    shadowOffset: null,
+                    shadowOpacity: null,
+                    shadowRadius: null
+                };
             }
 
             return (
@@ -154,7 +158,7 @@ class Router extends React.Component {
 
     configureTransition = () => {
         return {
-            duration: 500,
+            duration: 300,
             easing: Easing.inOut(Easing.ease)
         };
     };
@@ -166,14 +170,13 @@ class Router extends React.Component {
             leftDrawerRoute,
             rightDrawerOpen,
             rightDrawerRoute,
-            routes
+            routes,
+            isModal: modalVisible
         } = this.props.navigation;
         const navigationProps = this.extractNavigationProps(routes[index]);
 
         let leftDrawerContent;
         if (leftDrawerRoute) {
-            // TODO: We should make it so that this is availabe once we login
-            // son when sliding it renders correctly without the neeed to open using the top-bar
             leftDrawerContent = this.renderRoute(leftDrawerRoute);
         }
 
@@ -182,52 +185,58 @@ class Router extends React.Component {
             rightDrawerContent = this.renderRoute(rightDrawerRoute);
         }
 
-        const {modalVisible} = this.props;
-
         return (
-            <Drawer
-                open={leftDrawerOpen}
-                type='displace'
-                disabled={modalVisible}
-                content={leftDrawerContent}
-                tapToClose={true}
-                openDrawerOffset={0.2}
-                onRequestClose={this.props.actions.closeDrawers}
-                panOpenMask={0.1}
-                panCloseMask={0.2}
-                panThreshold={0.2}
-                acceptPan={navigationProps.allowSwipe}
-                negotiatePan={true}
-            >
+            <View style={{flex: 1}}>
                 <Drawer
-                    open={rightDrawerOpen}
+                    open={leftDrawerOpen}
                     type='displace'
-                    side='right'
                     disabled={modalVisible}
-                    content={rightDrawerContent}
+                    content={leftDrawerContent}
                     tapToClose={true}
                     openDrawerOffset={0.2}
                     onRequestClose={this.props.actions.closeDrawers}
+                    panOpenMask={0.1}
+                    panCloseMask={0.2}
+                    panThreshold={0.2}
+                    acceptPan={navigationProps.allowSwipe}
+                    negotiatePan={true}
+                    useInteractionManager={true}
                 >
+                    <Drawer
+                        open={rightDrawerOpen}
+                        type='displace'
+                        side='right'
+                        disabled={modalVisible}
+                        content={rightDrawerContent}
+                        tapToClose={true}
+                        openDrawerOffset={0.2}
+                        onRequestClose={this.props.actions.closeDrawers}
+                    >
+                        <NavigationExperimental.Transitioner
+                            style={{flex: 1}}
+                            navigationState={this.props.navigation}
+                            render={this.renderTransition}
+                            configureTransition={this.configureTransition}
+                        />
+                    </Drawer>
+                </Drawer>
+                <NavigationModal show={modalVisible}>
                     <NavigationExperimental.Transitioner
                         style={{flex: 1}}
-                        navigationState={this.props.navigation}
+                        navigationState={this.props.navigation.modal}
                         render={this.renderTransition}
                         configureTransition={this.configureTransition}
                     />
-                    <OptionsModal/>
-                </Drawer>
-            </Drawer>
+                </NavigationModal>
+            </View>
         );
     };
 }
 
 function mapStateToProps(state) {
-    const modalVisible = state.views.optionsModal.visible;
     return {
         navigation: state.navigation,
-        theme: getTheme(state),
-        modalVisible
+        theme: getTheme(state)
     };
 }
 

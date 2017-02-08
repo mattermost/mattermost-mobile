@@ -47,10 +47,10 @@ export function goToLoadTeam() {
     };
 }
 
-export function goToSelectTeam() {
+export function goToModalSelectTeam() {
     return async (dispatch, getState) => {
         dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
+            type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.SelectTeam
         }, getState);
     };
@@ -97,6 +97,27 @@ export function openRightMenuDrawer() {
         dispatch({
             type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
             route: Routes.RightMenuDrawer
+        }, getState);
+    };
+}
+
+export function showOptionsModal(title, options) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: Routes.OptionsModal,
+            props: {
+                title,
+                options
+            }
+        }, getState);
+    };
+}
+
+export function closeModal() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_CLOSE_MODAL
         }, getState);
     };
 }

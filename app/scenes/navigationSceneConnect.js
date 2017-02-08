@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import FormattedText from 'app/components/formatted_text';
 
 const defaults = {
-    renderBackButton: (props) => {
+    renderBackButton: (props, emitter, theme) => {
         return (
             <TouchableOpacity
                 style={{flexDirection: 'row', ...Platform.select({ios: {marginTop: 10}, android: {marginTop: 15}}), marginLeft: 15, alignItems: 'center'}}
@@ -24,17 +24,17 @@ const defaults = {
                 <Icon
                     name='angle-left'
                     size={25}
-                    color='#fff'
+                    color={theme.sidebarHeaderTextColor}
                 />
                 <FormattedText
                     id='mobile.routes.back'
                     defaultMessage='Back'
-                    style={{color: '#fff', marginLeft: 10}}
+                    style={{color: theme.sidebarHeaderTextColor, marginLeft: 10}}
                 />
             </TouchableOpacity>
         );
     },
-    renderTitleComponent: (props) => {
+    renderTitleComponent: (props, emitter, theme) => {
         const navProps = props.scene.route.navigationProps || {};
         const title = navProps.title;
         if (title) {
@@ -43,7 +43,7 @@ const defaults = {
                     <FormattedText
                         id={title.id}
                         defaultMessage={title.defaultMessage}
-                        style={{color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
+                        style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}
                     />
                 </View>
             );

@@ -2,7 +2,12 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {View, Image, Text} from 'react-native';
+import {
+    Image,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -16,11 +21,38 @@ export default class SelectTeam extends React.Component {
         config: React.PropTypes.object.isRequired,
         teams: React.PropTypes.object.isRequired,
         myMembers: React.PropTypes.object.isRequired,
+        subscribeToHeaderEvent: React.PropTypes.func.isRequired,
+        unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
         actions: React.PropTypes.shape({
             goBackToChannelView: React.PropTypes.func.isRequired,
             handleTeamChange: React.PropTypes.func.isRequired
         }).isRequired
     };
+
+    static navigationProps = {
+        renderLeftComponent: (props, emitter, theme) => {
+            return (
+                <TouchableOpacity
+                    style={{flex: 1, paddingHorizontal: 15, justifyContent: 'center'}}
+                    onPress={() => emitter('close')}
+                >
+                    <FormattedText
+                        id='admin.select_team.close'
+                        defaultMessage='Close'
+                        style={{color: theme.sidebarHeaderTextColor}}
+                    />
+                </TouchableOpacity>
+            );
+        }
+    }
+
+    componentWillMount() {
+        this.props.subscribeToHeaderEvent('close', this.props.actions.goBackToChannelView);
+    }
+
+    componentWillUnmount() {
+        this.props.unsubscribeFromHeaderEvent('close');
+    }
 
     onSelectTeam(team) {
         this.props.actions.handleTeamChange(team).then(this.props.actions.goBackToChannelView);
