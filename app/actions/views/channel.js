@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-import {ViewTypes} from 'app/constants';
+import {ViewTypes, NavigationTypes} from 'app/constants';
 import {updateStorage} from 'app/actions/storage';
 import {closeDrawers} from 'app/actions/navigation';
 
@@ -204,8 +204,11 @@ export function leaveChannel(channel, reset = false) {
     };
 }
 
-export function deleteChannel(teamId, channelId) {
+export function deleteChannel(teamId, channelId, shouldGoBack = false) {
     return async (dispatch, getState) => {
         await serviceDeleteChannel(teamId, channelId)(dispatch, getState);
+        if (shouldGoBack) {
+            dispatch({type: NavigationTypes.NAVIGATION_POP}, getState);
+        }
     };
 }

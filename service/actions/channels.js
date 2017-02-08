@@ -369,7 +369,7 @@ export function joinChannel(userId, teamId, channelId, channelName) {
     };
 }
 
-export function deleteChannel(teamId, channelId, beforeDelete) {
+export function deleteChannel(teamId, channelId) {
     return async (dispatch, getState) => {
         dispatch({type: ChannelTypes.DELETE_CHANNEL_REQUEST}, getState);
 
@@ -381,9 +381,16 @@ export function deleteChannel(teamId, channelId, beforeDelete) {
             return;
         }
 
-        if (beforeDelete) {
-            const {action, args, _dispatch, _state} = beforeDelete;
-            action(...args)(_dispatch, _state);
+        const entities = getState().entities;
+        const {channels, currentId} = entities.channels;
+        if (channelId === currentId) {
+            const channel = Object.keys(channels).filter((key) => channels[key].name === Constants.DEFAULT_CHANNEL);
+            let defaultChannelId = '';
+            if (channel.length) {
+                defaultChannelId = channel[0];
+            }
+
+            dispatch({type: ChannelTypes.SELECT_CHANNEL, data: defaultChannelId}, getState);
         }
 
         dispatch(batchActions([
@@ -412,7 +419,6 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
         }
 
         const {channels} = getState().entities.channels;
-
         const actions = [{
             type: ChannelTypes.RECEIVED_LAST_VIEWED,
             data: {

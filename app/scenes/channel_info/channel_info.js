@@ -51,7 +51,6 @@ class ChannelInfo extends PureComponent {
             goToChannelAddMembers: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
-            goBack: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired
         })
@@ -73,25 +72,6 @@ class ChannelInfo extends PureComponent {
         const isFavorite = nextProps.isFavorite;
         if (isFavorite !== this.state.isFavorite) {
             this.setState({isFavorite});
-        }
-        this.navigateAfterLeave(nextProps.leaveChannelRequest, nextProps.deleteChannelRequest);
-    }
-
-    deleteOrLeaveRequestSuccessful(leaveChannelRequest, deleteChannelRequest) {
-        return (
-            leaveChannelRequest &&
-            leaveChannelRequest !== this.props.leaveChannelRequest &&
-            leaveChannelRequest.status === 'success'
-        ) || (
-            deleteChannelRequest &&
-            deleteChannelRequest !== this.props.deleteChannelRequest &&
-            deleteChannelRequest.status === 'success'
-        );
-    }
-
-    navigateAfterLeave(leaveChannelRequest, deleteChannelRequest) {
-        if (this.deleteOrLeaveRequestSuccessful(leaveChannelRequest, deleteChannelRequest)) {
-            this.props.actions.goBack();
         }
     }
 
