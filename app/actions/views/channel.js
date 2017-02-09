@@ -10,8 +10,7 @@ import {
     fetchMyChannelsAndMembers,
     getMyChannelMembers,
     selectChannel,
-    leaveChannel as serviceLeaveChannel,
-    deleteChannel as serviceDeleteChannel} from 'service/actions/channels';
+    leaveChannel as serviceLeaveChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
 import {savePreferences, deletePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
@@ -199,18 +198,6 @@ export function leaveChannel(channel, reset = false) {
         await serviceLeaveChannel(teamId, channel.id)(dispatch, getState);
         if (channel.isCurrent || reset) {
             await selectInitialChannel(teamId)(dispatch, getState);
-        }
-        if (reset) {
-            dispatch({type: NavigationTypes.NAVIGATION_POP}, getState);
-        }
-    };
-}
-
-export function deleteChannel(teamId, channelId, shouldGoBack = false) {
-    return async (dispatch, getState) => {
-        await serviceDeleteChannel(teamId, channelId)(dispatch, getState);
-        if (shouldGoBack) {
-            dispatch({type: NavigationTypes.NAVIGATION_POP}, getState);
         }
     };
 }

@@ -44,10 +44,10 @@ class ChannelInfo extends PureComponent {
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
         isAdmin: PropTypes.bool.isRequired,
-        deleteChannelRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
+            goBack: PropTypes.func.isRequired,
             goToChannelAddMembers: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
@@ -98,14 +98,18 @@ class ChannelInfo extends PureComponent {
                 id: 'mobile.channel_info.alertMessageLeaveChannel',
                 defaultMessage: 'Are you sure you want to leave the {term} {name}?'
             };
-            onPressAction = () => this.props.actions.leaveChannel(channel, true);
+            onPressAction = () => {
+                this.props.actions.leaveChannel(channel, true).then(this.props.actions.goBack);
+            };
         } else if (eventType === 'delete') {
             title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Delete {term}'};
             message = {
                 id: 'mobile.channel_info.alertMessageDeleteChannel',
                 defaultMessage: 'Are you sure you want to delete the {term} {name}?'
             };
-            onPressAction = () => this.props.actions.deleteChannel(channel.team_id, channel.id, true);
+            onPressAction = () => {
+                this.props.actions.deleteChannel(channel.team_id, channel.id).then(this.props.actions.goBack);
+            };
         }
 
         Alert.alert(
