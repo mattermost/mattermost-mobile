@@ -44,6 +44,10 @@ export function login(loginId, password, mfaToken = '') {
                 await fetchTeams()(dispatch, getState);
             } catch (error) {
                 forceLogoutIfNecessary(error, dispatch);
+                dispatch(batchActions([
+                    {type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error},
+                    generalErrorObject(error)
+                ]), getState);
                 dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
                 return;
             }

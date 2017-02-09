@@ -14,6 +14,7 @@ import {
     markChannelAsUnread,
     markChannelAsRead
 } from 'service/actions/channels';
+import {generalErrorObject} from './errors';
 import {
     getPosts,
     getPostsSince
@@ -80,7 +81,12 @@ export function close() {
     return async (dispatch, getState) => {
         websocketClient.close(true);
         if (dispatch) {
-            dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'}, getState);
+            dispatch(batchActions([
+                {type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'},
+                // TODO: this should probably be a different error type
+                // perhaps generalErrorObject should take in error type?
+                generalErrorObject({error: 'Closed'})
+            ]), getState);
         }
     };
 }
@@ -110,7 +116,10 @@ function handleReconnect(dispatch, getState) {
 }
 
 function handleClose(connectFailCount, dispatch, getState) {
-    dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: connectFailCount}, getState);
+    dispatch(batchActions([
+        {type: GeneralTypes.WEBSOCKET_FAILURE, error: connectFailCount},
+        generalErrorObject({error: connectFailCount})
+    ]), getState);
 }
 
 function handleEvent(msg, dispatch, getState) {
