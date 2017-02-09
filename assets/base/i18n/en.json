@@ -1486,6 +1486,8 @@
   "mobile.channel_info.privateChannel": "Private Channel",
   "mobile.channel_info.alertTitleLeaveChannel": "Leave {term}",
   "mobile.channel_info.alertMessageLeaveChannel": "Are you sure you want to leave the {term} with {name}?",
+  "mobile.channel_info.alertTitleDeleteChannel": "Delete {term}",
+  "mobile.channel_info.alertMessageDeleteChannel": "Are you sure you want to delete the {term} with {name}?",
   "mobile.channel_info.alertNo": "No",
   "mobile.channel_info.alertYes": "Yes",
   "mobile.channel_list.alertTitleLeaveChannel": "Leave {term}",

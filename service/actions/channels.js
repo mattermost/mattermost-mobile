@@ -381,6 +381,18 @@ export function deleteChannel(teamId, channelId) {
             return;
         }
 
+        const entities = getState().entities;
+        const {channels, currentId} = entities.channels;
+        if (channelId === currentId) {
+            const channel = Object.keys(channels).filter((key) => channels[key].name === Constants.DEFAULT_CHANNEL);
+            let defaultChannelId = '';
+            if (channel.length) {
+                defaultChannelId = channel[0];
+            }
+
+            dispatch({type: ChannelTypes.SELECT_CHANNEL, data: defaultChannelId}, getState);
+        }
+
         dispatch(batchActions([
             {
                 type: ChannelTypes.RECEIVED_CHANNEL_DELETED,
@@ -407,23 +419,30 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
         }
 
         const {channels} = getState().entities.channels;
-
+        let totalMsgCount = 0;
+        if (channels[channelId]) {
+            totalMsgCount = channels[channelId].total_msg_count;
+        }
         const actions = [{
             type: ChannelTypes.RECEIVED_LAST_VIEWED,
             data: {
                 channel_id: channelId,
                 last_viewed_at: new Date().getTime(),
-                total_msg_count: channels[channelId].total_msg_count
+                total_msg_count: totalMsgCount
             }
         }];
 
         if (prevChannelId) {
+            let prevTotalMsgCount = 0;
+            if (channels[channelId]) {
+                prevTotalMsgCount = channels[channelId].total_msg_count;
+            }
             actions.push({
                 type: ChannelTypes.RECEIVED_LAST_VIEWED,
                 data: {
                     channel_id: prevChannelId,
                     last_viewed_at: new Date().getTime(),
-                    total_msg_count: channels[prevChannelId].total_msg_count
+                    total_msg_count: prevTotalMsgCount
                 }
             });
         }

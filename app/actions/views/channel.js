@@ -195,10 +195,9 @@ export function unmarkFavorite(channelId) {
 export function leaveChannel(channel, reset = false) {
     return async (dispatch, getState) => {
         const {currentId: teamId} = getState().entities.teams;
-        serviceLeaveChannel(teamId, channel.id)(dispatch, getState).then(() => {
-            if (channel.isCurrent || reset) {
-                selectInitialChannel(teamId)(dispatch, getState);
-            }
-        });
+        await serviceLeaveChannel(teamId, channel.id)(dispatch, getState);
+        if (channel.isCurrent || reset) {
+            await selectInitialChannel(teamId)(dispatch, getState);
+        }
     };
 }

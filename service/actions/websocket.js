@@ -313,8 +313,6 @@ function handleChannelDeletedEvent(msg, dispatch, getState) {
     const teams = entities.teams;
 
     if (msg.broadcast.team_id === teams.currentId) {
-        dispatch({type: ChannelTypes.RECEIVED_CHANNEL_DELETED, data: msg.data.channel_id}, getState);
-
         if (msg.data.channel_id === currentId) {
             let channelId = '';
             const channel = Object.keys(channels).filter((key) => channels[key].name === Constants.DEFAULT_CHANNEL);
@@ -325,6 +323,7 @@ function handleChannelDeletedEvent(msg, dispatch, getState) {
 
             dispatch({type: ChannelTypes.SELECT_CHANNEL, data: channelId}, getState);
         }
+        dispatch({type: ChannelTypes.RECEIVED_CHANNEL_DELETED, data: msg.data.channel_id}, getState);
 
         fetchMyChannelsAndMembers(teams.currentId)(dispatch, getState);
     }

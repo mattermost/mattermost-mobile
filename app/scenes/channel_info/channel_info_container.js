@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goToChannelMembers, goToChannelAddMembers, goBack} from 'app/actions/navigation';
-import {getChannelStats} from 'service/actions/channels';
+import {getChannelStats, deleteChannel} from 'service/actions/channels';
 import {markFavorite, unmarkFavorite, leaveChannel} from 'app/actions/views/channel';
 import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -23,7 +23,6 @@ function mapStateToProps(state, ownProps) {
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
     const leaveChannelRequest = state.requests.channels.leaveChannel;
     const currentUserRoles = getCurrentUserRoles(state);
-
     const isAdmin = currentUserRoles.includes('_admin');
 
     return {
@@ -47,6 +46,7 @@ function mapDispatchToProps(dispatch) {
             markFavorite,
             unmarkFavorite,
             leaveChannel,
+            deleteChannel,
             goBack
         }, dispatch)
     };

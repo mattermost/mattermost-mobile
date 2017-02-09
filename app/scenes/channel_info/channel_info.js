@@ -47,11 +47,12 @@ class ChannelInfo extends PureComponent {
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
+            goBack: PropTypes.func.isRequired,
             goToChannelAddMembers: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
-            goBack: PropTypes.func.isRequired,
-            leaveChannel: PropTypes.func.isRequired
+            leaveChannel: PropTypes.func.isRequired,
+            deleteChannel: PropTypes.func.isRequired
         })
     };
 
@@ -72,16 +73,6 @@ class ChannelInfo extends PureComponent {
         if (isFavorite !== this.state.isFavorite) {
             this.setState({isFavorite});
         }
-        this.navigateAfterLeave(nextProps.leaveChannelRequest);
-    }
-
-    navigateAfterLeave(leaveChannelRequest) {
-        if (
-            leaveChannelRequest !== this.props.leaveChannelRequest &&
-            leaveChannelRequest.status === 'success'
-        ) {
-            this.props.actions.goBack();
-        }
     }
 
     handleFavorite = () => {
@@ -92,34 +83,54 @@ class ChannelInfo extends PureComponent {
         toggleFavorite(currentChannel.id);
     };
 
-    handleLeave() {
+    handleDeleteOrLeave(eventType) {
         const {formatMessage} = this.props.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === Constants.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
             formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
+        let title;
+        let message;
+        let onPressAction;
+        if (eventType === 'leave') {
+            title = {id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'};
+            message = {
+                id: 'mobile.channel_info.alertMessageLeaveChannel',
+                defaultMessage: 'Are you sure you want to leave the {term} {name}?'
+            };
+            onPressAction = () => {
+                this.props.actions.leaveChannel(channel, true).then(this.props.actions.goBack);
+            };
+        } else if (eventType === 'delete') {
+            title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Delete {term}'};
+            message = {
+                id: 'mobile.channel_info.alertMessageDeleteChannel',
+                defaultMessage: 'Are you sure you want to delete the {term} {name}?'
+            };
+            onPressAction = () => {
+                this.props.actions.deleteChannel(channel.team_id, channel.id).then(this.props.actions.goBack);
+            };
+        }
 
         Alert.alert(
-            formatMessage({id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'}, {term}),
-            formatMessage({
-                id: 'mobile.channel_info.alertMessageLeaveChannel',
-                defaultMessage: 'Are you sure you want to leave the {term} with {name}?'
-            }, {
-                term: term.toLowerCase(),
-                name: channel.display_name
-            }),
+            formatMessage(title, {term}),
+            formatMessage(
+                message,
+                {
+                    term: term.toLowerCase(),
+                    name: channel.display_name
+                }
+            ),
             [{
                 text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                onPress: () => {
-                    this.props.actions.leaveChannel(channel, true);
-                }
-            }]
+                onPress: onPressAction
+            }],
         );
     }
 
-    renderLeaveChannelRow() {
+    renderLeaveOrDeleteChannelRow() {
         const channel = this.props.currentChannel;
         const isDefaultChannel = channel.name === Constants.DEFAULT_CHANNEL;
         const isDirectMessage = channel.type === Constants.DM_CHANNEL;
@@ -190,20 +201,21 @@ class ChannelInfo extends PureComponent {
                         </View>
                     }
                     <ChannelInfoRow
-                        action={() => this.handleLeave()}
+                        action={() => this.handleDeleteOrLeave('leave')}
                         defaultMessage='Leave Channel'
                         icon='sign-out'
                         textId='navbar.leave'
-                        shouldRender={this.renderLeaveChannelRow()}
+                        shouldRender={this.renderLeaveOrDeleteChannelRow()}
                     />
                     <View style={style.footer}>
                         <ChannelInfoRow
-                            action={() => true}
+                            action={() => this.handleDeleteOrLeave('delete')}
                             defaultMessage='Delete Channel'
                             icon='trash'
                             iconColor='#DA4A4A'
                             textId='mobile.routes.channelInfo.delete_channel'
                             textColor='#DA4A4A'
+                            shouldRender={this.renderLeaveOrDeleteChannelRow()}
                         />
                     </View>
                 </ScrollView>
