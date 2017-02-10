@@ -351,6 +351,13 @@ export default class Client {
         return `${this.getUsersRoute()}/${userId}/image${params}`;
     };
 
+    autocompleteUsersInChannel = (teamId, channelId, term) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/users/autocomplete?term=${encodeURIComponent(term)}`,
+            {method: 'get'}
+        );
+    }
+
     // Team routes
 
     createTeam = async (team) => {

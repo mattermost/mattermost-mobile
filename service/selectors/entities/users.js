@@ -30,6 +30,10 @@ export function getUsers(state) {
     return state.entities.users.profiles;
 }
 
+export function getAutocompleteUsersInChannel(state) {
+    return state.entities.users.autocompleteUsersInChannel;
+}
+
 export const getCurrentUser = createSelector(
     getUsers,
     getCurrentUserId,
@@ -98,3 +102,11 @@ export const getProfilesNotInCurrentChannel = createSelector(
 export function getStatusForUserId(state, userId) {
     return getUserStatuses(state)[userId];
 }
+
+export const getAutocompleteUsersInCurrentChannel = createSelector(
+    getCurrentChannelId,
+    getAutocompleteUsersInChannel,
+    (currentChannelId, autocompleteUsersInChannel) => {
+        return autocompleteUsersInChannel[currentChannelId] || {};
+    }
+);

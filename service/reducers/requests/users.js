@@ -143,6 +143,16 @@ function getAudits(state = initialRequestState(), action) {
     );
 }
 
+function autocompleteUsersInChannel(state = initialRequestState(), action) {
+    return handleRequest(
+        UsersTypes.AUTOCOMPLETE_IN_CHANNEL_REQUEST,
+        UsersTypes.AUTOCOMPLETE_IN_CHANNEL_SUCCESS,
+        UsersTypes.AUTOCOMPLETE_IN_CHANNEL_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
     checkMfa,
     login,
@@ -154,5 +164,6 @@ export default combineReducers({
     getStatusesByIds,
     getSessions,
     revokeSession,
-    getAudits
+    getAudits,
+    autocompleteUsersInChannel
 });

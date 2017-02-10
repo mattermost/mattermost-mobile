@@ -48,6 +48,10 @@ const UserTypes = keyMirror({
     CHECK_MFA_SUCCESS: null,
     CHECK_MFA_FAILURE: null,
 
+    AUTOCOMPLETE_IN_CHANNEL_REQUEST: null,
+    AUTOCOMPLETE_IN_CHANNEL_SUCCESS: null,
+    AUTOCOMPLETE_IN_CHANNEL_FAILURE: null,
+
     RECEIVED_ME: null,
     RECEIVED_PROFILES: null,
     RECEIVED_PROFILES_IN_TEAM: null,
@@ -59,6 +63,7 @@ const UserTypes = keyMirror({
     RECEIVED_REVOKED_SESSION: null,
     RECEIVED_AUDITS: null,
     RECEIVED_STATUSES: null,
+    RECEIVED_AUTOCOMPLETE_IN_CHANNEL: null,
     RESET_LOGOUT_STATE: null
 });
 
