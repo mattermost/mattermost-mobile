@@ -269,6 +269,9 @@ const state = {
         rightDrawerRoute: null
     },
     views: {
+        channel: {
+            drafts: {}
+        },
         i18n: {
             locale: ''
         },
