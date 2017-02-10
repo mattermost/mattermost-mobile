@@ -211,6 +211,12 @@ class Router extends React.Component {
                         tapToClose={true}
                         openDrawerOffset={0.2}
                         onRequestClose={this.props.actions.closeDrawers}
+                        panOpenMask={0.1}
+                        panCloseMask={0.2}
+                        panThreshold={0.2}
+                        acceptPan={navigationProps.allowSwipe}
+                        negotiatePan={true}
+                        useInteractionManager={true}
                     >
                         <NavigationExperimental.Transitioner
                             style={{flex: 1}}
