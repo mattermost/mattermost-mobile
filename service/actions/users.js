@@ -299,6 +299,32 @@ export function getAudits(userId) {
     );
 }
 
+export function autocompleteUsersInChannel(teamId, channelId, term) {
+    return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.AUTOCOMPLETE_IN_CHANNEL_REQUEST}, getState);
+
+        let data;
+        try {
+            data = await Client.autocompleteUsersInChannel(teamId, channelId, term);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: UsersTypes.AUTOCOMPLETE_IN_CHANNEL_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch(batchActions([
+            {
+                type: UsersTypes.RECEIVED_AUTOCOMPLETE_IN_CHANNEL,
+                data,
+                channelId
+            },
+            {
+                type: UsersTypes.AUTOCOMPLETE_IN_CHANNEL_SUCCESS
+            }
+        ]), getState);
+    };
+}
+
 export default {
     checkMfa,
     login,

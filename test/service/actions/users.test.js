@@ -268,4 +268,23 @@ describe('Actions.Users', () => {
         assert.ok(audits.length);
         assert.equal(audits[0].user_id, TestHelper.basicUser.id);
     });
+
+    it('autocompleteUsersInChannel', async () => {
+        await Actions.autocompleteUsersInChannel(
+            TestHelper.basicTeam.id,
+            TestHelper.basicChannel.id,
+            ''
+        )(store.dispatch, store.getState);
+
+        const autocompleteRequest = store.getState().requests.users.autocompleteUsersInChannel;
+        const data = store.getState().entities.users.autocompleteUsersInChannel;
+
+        if (autocompleteRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(autocompleteRequest.error));
+        }
+
+        assert.ok(data[TestHelper.basicChannel.id]);
+        assert.ok(data[TestHelper.basicChannel.id].in_channel);
+        assert.ok(data[TestHelper.basicChannel.id].out_of_channel);
+    });
 });

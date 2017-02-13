@@ -4,6 +4,7 @@
 import {createSelector} from 'reselect';
 import {getCurrentTeamId} from 'service/selectors/entities/teams';
 import {buildDisplayableChannelList, completeDirectChannelInfo} from 'service/utils/channel_utils';
+import {Constants} from 'service/constants';
 
 function getAllChannels(state) {
     return state.entities.channels.channels;
@@ -82,5 +83,13 @@ export const getChannelsByCategory = createSelector(
         }).filter((c) => myMembers.hasOwnProperty(c.id));
 
         return buildDisplayableChannelList(usersState, teamsState, allChannels, myPreferences);
+    }
+);
+
+export const getDefaultChannel = createSelector(
+    getAllChannels,
+    getCurrentTeamId,
+    (channels, teamId) => {
+        return Object.values(channels).find((c) => c.team_id === teamId && c.name === Constants.DEFAULT_CHANNEL);
     }
 );
