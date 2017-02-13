@@ -50,7 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
-            goToFlaggedPosts: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
         }).isRequired,
