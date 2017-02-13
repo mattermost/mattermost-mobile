@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes} from 'react';
+import React from 'react';
 import {
     StyleSheet,
     View,
@@ -17,7 +17,7 @@ const style = StyleSheet.create({
     }
 });
 
-function ConnectionError(props) {
+function ConnectionError() {
     return (
         <View style={style.container}>
             <Text>{'I am a general error'}</Text>

@@ -5,6 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'service/constants';
 import {fetchTeams} from 'service/actions/teams';
+import {generalErrorObject} from 'service/actions/errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 
 export function checkMfa(loginId) {

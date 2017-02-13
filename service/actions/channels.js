@@ -22,6 +22,8 @@ export function selectChannel(channelId) {
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId
             }, getState);
+
+            throw new Error('This is an error!!!')
         } catch (error) {
             generalError(error)(dispatch);
         }

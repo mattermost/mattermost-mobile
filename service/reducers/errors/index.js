@@ -13,7 +13,7 @@ export default (state = [], action) => {
     }
     case ErrorTypes.GENERAL_ERROR: {
         const nextState = [...state];
-        const {type, ...errorProps} = action;
+        const {...errorProps} = action;
 
         nextState.push(errorProps);
 

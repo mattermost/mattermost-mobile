@@ -65,7 +65,7 @@ export default class RightMenuDrawer extends React.Component {
     openErrorEmail = () => {
         Linking.openURL(
             `mailto:feedback@mattermost.com?subject=Errors&body=${this.errorEmailBody()}`
-        ).catch(err => console.warn('An error occurred', err));
+        );
     }
 
     errorEmailBody = () => {
