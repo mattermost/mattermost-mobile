@@ -135,10 +135,11 @@ export function handleSelectChannel(channelId) {
     };
 }
 
-export function handlePostDraftChanged(postDraft) {
+export function handlePostDraftChanged(channelId, postDraft) {
     return async (dispatch, getState) => {
         dispatch({
             type: ViewTypes.POST_DRAFT_CHANGED,
+            channelId,
             postDraft
         }, getState);
     };

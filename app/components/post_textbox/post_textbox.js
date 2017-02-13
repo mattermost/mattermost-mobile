@@ -62,8 +62,12 @@ export default class PostTextbox extends React.PureComponent {
         };
 
         this.props.actions.createPost(this.props.teamId, post);
-        this.props.onChangeText('');
+        this.handleTextChange('');
     };
+
+    handleTextChange = (text) => {
+        this.props.onChangeText(this.props.channelId, text);
+    }
 
     render() {
         const theme = this.props.theme;
@@ -101,7 +105,7 @@ export default class PostTextbox extends React.PureComponent {
                 <TextInputWithLocalizedPlaceholder
                     ref='input'
                     value={this.props.value}
-                    onChangeText={this.props.onChangeText}
+                    onChangeText={this.handleTextChange}
                     onContentSizeChange={this.handleContentSizeChange}
                     placeholder={placeholder}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}

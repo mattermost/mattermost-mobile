@@ -7,17 +7,30 @@ import {ViewTypes} from 'app/constants';
 
 import {ChannelTypes} from 'service/constants';
 
-function postDraft(state = '', action) {
+function drafts(state = {}, action) {
     switch (action.type) {
-    case ViewTypes.POST_DRAFT_CHANGED:
-        return action.postDraft;
-    case ChannelTypes.SELECT_CHANNEL:
-        return '';
+    case ViewTypes.POST_DRAFT_CHANGED: {
+        return {
+            ...state,
+            [action.channelId]: action.postDraft
+        };
+    }
+    case ChannelTypes.SELECT_CHANNEL: {
+        let data = {...state};
+        if (!data[action.data]) {
+            data = {
+                ...state,
+                [action.data]: ''
+            };
+        }
+
+        return data;
+    }
     default:
         return state;
     }
 }
 
 export default combineReducers({
-    postDraft
+    drafts
 });

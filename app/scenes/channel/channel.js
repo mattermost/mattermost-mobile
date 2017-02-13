@@ -33,7 +33,7 @@ export default class Channel extends React.PureComponent {
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
-        postDraft: React.PropTypes.string.isRequired,
+        drafts: React.PropTypes.object.isRequired,
         theme: React.PropTypes.object.isRequired,
         subscribeToHeaderEvent: React.PropTypes.func,
         unsubscribeFromHeaderEvent: React.PropTypes.func
@@ -128,7 +128,7 @@ export default class Channel extends React.PureComponent {
                 <ChannelPostList channel={currentChannel}/>
                 <PostTextbox
                     ref={this.attachPostTextbox}
-                    value={this.props.postDraft}
+                    value={this.props.drafts[this.props.currentChannel.id]}
                     teamId={teamId}
                     channelId={currentChannel.id}
                     onChangeText={this.props.actions.handlePostDraftChanged}
