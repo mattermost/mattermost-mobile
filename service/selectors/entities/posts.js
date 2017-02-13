@@ -18,3 +18,27 @@ export const getPostsInCurrentChannel = createSelector(
         return postIds.map((id) => posts[id]);
     }
 );
+
+// Returns a function that creates a creates a selector that will get the posts for a given thread.
+// That selector will take a props object (containing a channelId field and a rootId field) as its
+// only argument and will be memoized based on that argument.
+export function makeGetPostsForThread() {
+    return createSelector(
+        getAllPosts,
+        (state, props) => state.entities.posts.postsByChannel[props.channelId],
+        (state, props) => props,
+        (posts, postIds, {rootId}) => {
+            const thread = [];
+
+            for (const id of postIds) {
+                const post = posts[id];
+
+                if (id === rootId || post.root_id === rootId) {
+                    thread.push(post);
+                }
+            }
+
+            return thread;
+        }
+    );
+}

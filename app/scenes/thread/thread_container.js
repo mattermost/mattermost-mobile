@@ -2,36 +2,14 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {createSelector} from 'reselect';
 
 import {handleCommentDraftChanged} from 'app/actions/views/thread';
 
-import {getAllPosts} from 'service/selectors/entities/posts';
+import {makeGetPostsForThread} from 'service/selectors/entities/posts';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 import Thread from './thread';
-
-export function makeGetPostsForThread() {
-    return createSelector(
-        getAllPosts,
-        (state, props) => state.entities.posts.postsByChannel[props.channelId],
-        (state, props) => props,
-        (posts, postIds, {rootId}) => {
-            const thread = [];
-
-            for (const id of postIds) {
-                const post = posts[id];
-
-                if (id === rootId || post.root_id === rootId) {
-                    thread.push(post);
-                }
-            }
-
-            return thread;
-        }
-    );
-}
 
 function makeMapStateToProps() {
     // Create a getPostsForThread selector for each instance of Thread so that each Thread
