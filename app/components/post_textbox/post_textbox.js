@@ -31,7 +31,8 @@ export default class PostTextbox extends React.PureComponent {
     };
 
     static defaultProps = {
-        rootId: ''
+        rootId: '',
+        onSelectionChange: () => true
     };
 
     constructor(props) {
@@ -73,6 +74,16 @@ export default class PostTextbox extends React.PureComponent {
         this.props.onChangeText(this.props.channelId, text);
     }
 
+    handleSelectionChange = (event) => {
+        if (this.autocomplete) {
+            this.autocomplete.handleSelectionChange(event);
+        }
+    }
+
+    attachAutocomplete = (c) => {
+        this.autocomplete = c;
+    }
+
     render() {
         const theme = this.props.theme;
 
@@ -85,7 +96,7 @@ export default class PostTextbox extends React.PureComponent {
 
         return (
             <View style={{padding: 7}}>
-                <Autocomplete/>
+                <Autocomplete ref={this.attachAutocomplete}/>
                 <View
                     style={{
                         alignItems: 'flex-end',
@@ -111,6 +122,7 @@ export default class PostTextbox extends React.PureComponent {
                         ref='input'
                         value={this.props.value}
                         onChangeText={this.handleTextChange}
+                        onSelectionChange={this.handleSelectionChange}
                         onContentSizeChange={this.handleContentSizeChange}
                         placeholder={placeholder}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}

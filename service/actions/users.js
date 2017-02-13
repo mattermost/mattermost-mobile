@@ -319,7 +319,7 @@ export function autocompleteUsersInChannel(teamId, channelId, term) {
                 channelId
             },
             {
-                type: UsersTypes.PROFILES_NOT_IN_CHANNEL_SUCCESS
+                type: UsersTypes.AUTOCOMPLETE_IN_CHANNEL_SUCCESS
             }
         ]), getState);
     };

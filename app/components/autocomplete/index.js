@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {Component} from 'react';
 import {
     StyleSheet,
     View
@@ -20,12 +20,24 @@ const style = StyleSheet.create({
     }
 });
 
-export default function Autocomplete() {
-    return (
-        <View>
-            <View style={style.container}>
-                <AtMention/>
+export default class Autocomplete extends Component {
+    state = {
+        cursorPosition: 0
+    }
+
+    handleSelectionChange = (event) => {
+        this.setState({
+            cursorPosition: event.nativeEvent.selection.end
+        });
+    }
+
+    render() {
+        return (
+            <View>
+                <View style={style.container}>
+                    <AtMention cursorPosition={this.state.cursorPosition}/>
+                </View>
             </View>
-        </View>
-    );
+        );
+    }
 }

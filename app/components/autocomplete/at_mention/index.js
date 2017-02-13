@@ -7,6 +7,7 @@ import {connect} from 'react-redux';
 import {handlePostDraftChanged} from 'app/actions/views/channel';
 import {autocompleteUsersInChannel} from 'service/actions/users';
 import {getTheme} from 'service/selectors/entities/preferences';
+import {getDefaultChannel} from 'service/selectors/entities/channels';
 import {getAutocompleteUsersInCurrentChannel} from 'service/selectors/entities/users';
 
 import AtMention from './at_mention';
@@ -17,9 +18,10 @@ function mapStateToProps(state) {
     return {
         currentChannelId,
         currentTeamId: state.entities.teams.currentId,
+        defaultChannel: getDefaultChannel(state),
         postDraft,
         autocompleteUsersInCurrentChannel: getAutocompleteUsersInCurrentChannel(state),
-        requestStatus: state.requests.users.getProfilesInChannel.status,
+        requestStatus: state.requests.users.autocompleteUsersInChannel.status,
         theme: getTheme(state)
     };
 }
