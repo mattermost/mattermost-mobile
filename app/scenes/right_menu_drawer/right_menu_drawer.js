@@ -5,7 +5,6 @@ import React from 'react';
 import {
     ScrollView,
     StyleSheet,
-    Text,
     Platform,
     View
 } from 'react-native';
