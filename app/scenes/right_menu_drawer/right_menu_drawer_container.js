@@ -15,7 +15,9 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         theme: getTheme(state),
-        errors: state.errors
+        errors: state.errors,
+        currentUserId: state.entities.users.currentId,
+        currentTeamId: state.entities.teams.currentId
     };
 }
 
