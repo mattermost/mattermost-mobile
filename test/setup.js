@@ -22,6 +22,10 @@ m._load = function hookedLoader(request, parent, isMain) {
         return {uri: request};
     }
 
+    if (request === './search_bar') {
+        request = './search_bar.ios';
+    }
+
     return originalLoader(request, parent, isMain);
 };
 
