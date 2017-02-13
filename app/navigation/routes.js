@@ -15,7 +15,8 @@ import {
     Root,
     Search,
     SelectServer,
-    SelectTeam
+    SelectTeam,
+    Thread
 } from 'app/scenes';
 
 import keyMirror from 'service/utils/key_mirror';
@@ -112,6 +113,11 @@ export const Routes = {
         navigationProps: {
             title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}
         }
+    },
+    Thread: {
+        key: 'Thread',
+        transition: RouteTransitions.Horizontal,
+        component: Thread
     }
 };
 

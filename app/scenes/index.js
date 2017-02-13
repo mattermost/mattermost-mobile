@@ -15,6 +15,7 @@ import Root from './root/root_container.js';
 import Search from './search/search_container.js';
 import SelectServer from './select_server/select_server_container.js';
 import SelectTeam from './select_team/select_team_container.js';
+import Thread from './thread';
 
 module.exports = {
     ChannelView: Channel, // Special case the name for this one to avoid ambiguity
@@ -30,5 +31,6 @@ module.exports = {
     Root,
     Search,
     SelectServer,
-    SelectTeam
+    SelectTeam,
+    Thread
 };

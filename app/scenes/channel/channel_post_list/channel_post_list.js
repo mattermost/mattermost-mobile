@@ -8,7 +8,8 @@ import PostList from 'app/components/post_list';
 export default class ChannelPostList extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
-            loadPostsIfNecessary: React.PropTypes.func.isRequired
+            loadPostsIfNecessary: React.PropTypes.func.isRequired,
+            goToThread: React.PropTypes.func.isRequired
         }).isRequired,
         channel: React.PropTypes.object.isRequired,
         posts: React.PropTypes.array.isRequired
@@ -24,11 +25,21 @@ export default class ChannelPostList extends React.Component {
         }
     }
 
+    goToThread = (post) => {
+        this.props.actions.goToThread(post.channel_id, post.root_id || post.id);
+    }
+
     render() {
         if (!this.props.posts) {
             return <Text>{'waiting on posts'}</Text>;
         }
 
-        return <PostList posts={this.props.posts}/>;
+        return (
+            <PostList
+                posts={this.props.posts}
+                onPostPress={this.goToThread}
+                renderReplies={true}
+            />
+        );
     }
 }

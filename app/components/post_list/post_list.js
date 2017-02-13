@@ -9,6 +9,8 @@ import {
 
 import Post from 'app/components/post';
 
+import {addDatesToPostList} from 'service/utils/post_utils';
+
 import DateHeader from './date_header';
 
 const style = StyleSheet.create({
@@ -23,7 +25,9 @@ const style = StyleSheet.create({
 export default class PostList extends React.Component {
     static propTypes = {
         posts: React.PropTypes.array.isRequired,
-        theme: React.PropTypes.object.isRequired
+        theme: React.PropTypes.object.isRequired,
+        onPostPress: React.PropTypes.func,
+        renderReplies: React.PropTypes.bool
     };
 
     constructor(props) {
@@ -32,14 +36,16 @@ export default class PostList extends React.Component {
         this.state = {
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(this.props.posts)
+            }).cloneWithRows(addDatesToPostList(this.props.posts))
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(nextProps.posts)
-        });
+        if (nextProps.posts !== this.props.posts) {
+            this.setState({
+                dataSource: this.state.dataSource.cloneWithRows(addDatesToPostList(nextProps.posts))
+            });
+        }
     }
 
     renderRow = (row) => {
@@ -65,9 +71,11 @@ export default class PostList extends React.Component {
             <Post
                 style={style.row}
                 post={post}
+                renderReplies={this.props.renderReplies}
                 isFirstReply={post.isFirstReply}
                 isLastReply={post.isLastReply}
                 commentedOnPost={post.commentedOnPost}
+                onPress={this.props.onPostPress}
             />
         );
     };

@@ -83,6 +83,22 @@ export function goToChannelAddMembers() {
     };
 }
 
+export function goToThread(channelId, rootId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {
+                ...Routes.Thread,
+                key: Routes.Thread.key + rootId,
+                props: {
+                    channelId,
+                    rootId
+                }
+            }
+        }, getState);
+    };
+}
+
 export function openChannelDrawer() {
     return async (dispatch, getState) => {
         dispatch({

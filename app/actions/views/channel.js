@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
+
 import {ViewTypes} from 'app/constants';
 import {updateStorage} from 'app/actions/storage';
 import {closeDrawers} from 'app/actions/navigation';
