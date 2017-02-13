@@ -14,7 +14,8 @@ import RightMenuDrawer from './right_menu_drawer';
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        theme: getTheme(state)
+        theme: getTheme(state),
+        errors: state.errors
     };
 }
 

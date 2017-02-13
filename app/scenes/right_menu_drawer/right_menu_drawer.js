@@ -6,7 +6,8 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    View
+    View,
+    Linking
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -49,12 +50,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
+        errors: React.PropTypes.object.isRequired,
         actions: React.PropTypes.shape({
             goToModalAccountSettings: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
+            sendFeedbackErrors: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
         }).isRequired,
         theme: React.PropTypes.object
+    }
+
+    openErrorEmail = () => {
+        Linking.openURL(
+            `mailto:feedback@mattermost.com?subject=Errors&body=${JSON.stringify(this.props.errors)}`
+        ).catch(err => console.warn('An error occurred', err));
     }
 
     render() {
@@ -98,7 +107,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Help'
                     />
                 </RightMenuDrawerItem>
-                <RightMenuDrawerItem>
+                <RightMenuDrawerItem onPress={this.openErrorEmail}>
                     <Icon
                         style={Styles.icon}
                         name='phone'
