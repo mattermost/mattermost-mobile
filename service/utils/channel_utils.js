@@ -90,7 +90,7 @@ function isDirectChannel(channel) {
     return channel.type === Constants.DM_CHANNEL;
 }
 
-function isDirectChannelVisible(userId, myPreferences, channel) {
+export function isDirectChannelVisible(userId, myPreferences, channel) {
     const channelId = getUserIdFromChannelName(userId, channel);
     const dm = myPreferences[`${Constants.CATEGORY_DIRECT_CHANNEL_SHOW}--${channelId}`];
     return dm && dm.value === 'true';

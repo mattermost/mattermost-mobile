@@ -60,9 +60,16 @@ export default class SearchBarIos extends PureComponent {
         onBlur(event);
     };
 
+    blur = () => {
+        this.searchBar.blur();
+    };
+
     render() {
         return (
             <SearchBar
+                ref={(ref) => {
+                    this.searchBar = ref;
+                }}
                 barStyle={this.props.barStyle}
                 searchBarStyle={this.props.searchBarStyle}
                 text={this.props.text}

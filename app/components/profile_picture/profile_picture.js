@@ -53,10 +53,14 @@ const statusToIcon = {
 
 export default class ProfilePicture extends React.PureComponent {
     static propTypes = {
-        size: React.PropTypes.number.isRequired,
+        size: React.PropTypes.number,
         user: React.PropTypes.object,
         status: React.PropTypes.string,
         theme: React.PropTypes.object.isRequired
+    };
+
+    static defaultProps = {
+        size: 128
     };
 
     render() {

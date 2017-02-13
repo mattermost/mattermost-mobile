@@ -358,6 +358,13 @@ export default class Client {
         );
     }
 
+    searchProfiles = (term, options) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/search`,
+            {method: 'post', body: JSON.stringify({term, ...options})}
+        );
+    };
+
     // Team routes
 
     createTeam = async (team) => {

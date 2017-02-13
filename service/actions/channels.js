@@ -99,7 +99,7 @@ export function createDirectChannel(teamId, userId, otherUserId) {
                     error
                 }
             ]), getState);
-            return;
+            return null;
         }
 
         const member = {
@@ -130,6 +130,8 @@ export function createDirectChannel(teamId, userId, otherUserId) {
                 type: ChannelTypes.CREATE_CHANNEL_SUCCESS
             }
         ]), getState);
+
+        return created;
     };
 }
 

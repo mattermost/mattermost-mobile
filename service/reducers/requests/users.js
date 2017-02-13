@@ -153,6 +153,16 @@ function autocompleteUsersInChannel(state = initialRequestState(), action) {
     );
 }
 
+function searchProfiles(state = initialRequestState(), action) {
+    return handleRequest(
+        UsersTypes.SEARCH_PROFILES_REQUEST,
+        UsersTypes.SEARCH_PROFILES_SUCCESS,
+        UsersTypes.SEARCH_PROFILES_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
     checkMfa,
     login,
@@ -165,5 +175,6 @@ export default combineReducers({
     getSessions,
     revokeSession,
     getAudits,
-    autocompleteUsersInChannel
+    autocompleteUsersInChannel,
+    searchProfiles
 });

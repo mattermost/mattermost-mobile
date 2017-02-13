@@ -110,3 +110,13 @@ export const getAutocompleteUsersInCurrentChannel = createSelector(
         return autocompleteUsersInChannel[currentChannelId] || {};
     }
 );
+
+export function searchedProfiles(state) {
+    const profiles = {...state.entities.users.search};
+    return Object.values(profiles).sort((a, b) => {
+        const nameA = a.username;
+        const nameB = b.username;
+
+        return nameA.localeCompare(nameB);
+    }).filter((p) => p.id !== state.entities.users.currentId);
+}
