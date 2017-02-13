@@ -6,6 +6,7 @@ import {ErrorTypes} from 'service/constants';
 export function dismissErrorObject(index) {
     return {
         type: ErrorTypes.DISMISS_ERROR,
+        displayable: false,
         index
     };
 }
@@ -16,19 +17,20 @@ export function dismissError(index) {
     };
 }
 
-export function generalErrorObject(error) {
+export function generalErrorObject(error, displayable = false) {
     return {
         type: ErrorTypes.GENERAL_ERROR,
+        displayable,
         errorType: 'general',
         message: error.message
     };
 }
 
-export function generalError(error) {
+export function generalError(error, displayable = false) {
     return async (dispatch) => {
         // do something with the incoming error
         // like sending it to analytics
 
-        dispatch(generalErrorObject(error));
+        dispatch(generalErrorObject(error, displayable));
     };
 }

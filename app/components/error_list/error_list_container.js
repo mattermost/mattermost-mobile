@@ -10,7 +10,7 @@ import ErrorList from './error_list';
 
 function mapStateToProps(state) {
     return {
-        errors: state.errors
+        errors: state.errors.filter((error) => error.displayable)
     };
 }
 
