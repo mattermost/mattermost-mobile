@@ -25,7 +25,7 @@ export default class FileAttachment extends Component {
         const {file} = this.props;
         return (
             <View>
-                <Text>{Utils.getTrimmedFilename(file)}</Text>
+                <Text>{Utils.getTruncatedFilename(file)}</Text>
                 <View>
                     <Icon
                         name='file-download'

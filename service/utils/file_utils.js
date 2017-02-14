@@ -6,8 +6,8 @@
 
 import {Constants} from 'service/constants';
 
-export function getTrimmedFilename(file) {
-    const fileName = file.name;
+export function getTruncatedFilename(file) {
+    const fileName = file.name.trim();
     if (fileName.length > 35) {
         return fileName.substring(0, Math.min(35, fileName.length)) + '...';
     }
