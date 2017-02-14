@@ -449,6 +449,10 @@ class ChannelList extends Component {
         return rowData;
     };
 
+    setScrollContainer = (ref) => {
+        this.scrollContainer = ref;
+    };
+
     render() {
         if (!this.props.currentChannel) {
             return <Text>{'Loading'}</Text>;
@@ -502,9 +506,7 @@ class ChannelList extends Component {
                     </Text>
                 </View>
                 <ListView
-                    ref={(ref) => {
-                        this.scrollContainer = ref;
-                    }}
+                    ref={this.setScrollContainer}
                     style={Styles.scrollContainer}
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRow}

@@ -14,7 +14,6 @@ import FormattedText from 'app/components/formatted_text';
 import MemberList from 'app/components/member_list';
 import SearchBar from 'app/components/search_bar';
 
-import MoreDirectChannelsTitle from './more_dms_title';
 import {Constants, RequestStatus} from 'service/constants';
 import {changeOpacity} from 'app/utils/theme';
 
@@ -58,9 +57,6 @@ class MoreDirectMessages extends PureComponent {
                     />
                 </TouchableOpacity>
             );
-        },
-        renderTitleComponent: () => {
-            return <MoreDirectChannelsTitle/>;
         }
     };
 
