@@ -4,7 +4,9 @@
 import React, {Component} from 'react';
 import {
     Image,
+    Keyboard,
     KeyboardAvoidingView,
+    Platform,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -32,9 +34,14 @@ export default class SelectServer extends Component {
 
         this.props.actions.getPing().then(() => {
             if (this.props.server.status === RequestStatus.SUCCESS) {
+                Keyboard.dismiss();
                 this.props.actions.goToLogin();
             }
         });
+    };
+
+    inputRef = (ref) => {
+        this.textInput = ref;
     };
 
     blur = () => {
@@ -42,51 +49,57 @@ export default class SelectServer extends Component {
     };
 
     render() {
+        const scene = (
+            <TouchableWithoutFeedback onPress={this.blur}>
+                <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                    <Image
+                        source={logo}
+                    />
+                    <FormattedText
+                        style={[GlobalStyles.header, GlobalStyles.label]}
+                        id='mobile.components.select_server_view.enterServerUrl'
+                        defaultMessage='Enter Server URL'
+                    />
+                    <TextInputWithLocalizedPlaceholder
+                        ref={this.inputRef}
+                        value={this.props.serverUrl}
+                        onChangeText={this.props.actions.handleServerUrlChanged}
+                        onSubmitEditing={this.onClick}
+                        style={GlobalStyles.inputBox}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        keyboardType='url'
+                        placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
+                        returnKeyType='go'
+                        underlineColorAndroid='transparent'
+                    />
+                    <Button
+                        onPress={this.onClick}
+                        loading={this.props.server.loading}
+                        containerStyle={GlobalStyles.signupButton}
+                    >
+                        <FormattedText
+                            style={GlobalStyles.signupButtonText}
+                            id='mobile.components.select_server_view.proceed'
+                            defaultMessage='Proceed'
+                        />
+                    </Button>
+                    <ErrorText error={this.props.server.error}/>
+                </View>
+            </TouchableWithoutFeedback>
+        );
+
+        if (Platform.OS === 'android') {
+            return scene;
+        }
+
         return (
             <KeyboardAvoidingView
                 behavior='padding'
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
             >
-                <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                        <Image
-                            source={logo}
-                        />
-                        <FormattedText
-                            style={[GlobalStyles.header, GlobalStyles.label]}
-                            id='mobile.components.select_server_view.enterServerUrl'
-                            defaultMessage='Enter Server URL'
-                        />
-                        <TextInputWithLocalizedPlaceholder
-                            ref={(ref) => {
-                                this.textInput = ref;
-                            }}
-                            value={this.props.serverUrl}
-                            onChangeText={this.props.actions.handleServerUrlChanged}
-                            onSubmitEditing={this.onClick}
-                            style={GlobalStyles.inputBox}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
-                            placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                        />
-                        <Button
-                            onPress={this.onClick}
-                            loading={this.props.server.loading}
-                            containerStyle={GlobalStyles.signupButton}
-                        >
-                            <FormattedText
-                                style={GlobalStyles.signupButtonText}
-                                id='mobile.components.select_server_view.proceed'
-                                defaultMessage='Proceed'
-                            />
-                        </Button>
-                        <ErrorText error={this.props.server.error}/>
-                    </View>
-                </TouchableWithoutFeedback>
+                {scene}
             </KeyboardAvoidingView>
         );
     }

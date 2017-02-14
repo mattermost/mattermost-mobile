@@ -4,8 +4,10 @@
 import React from 'react';
 import {
     KeyboardAvoidingView,
+    Platform,
     StatusBar,
-    StyleSheet
+    StyleSheet,
+    View
 } from 'react-native';
 
 import PostList from 'app/components/post_list';
@@ -36,25 +38,58 @@ export default class Thread extends React.Component {
 
     handleDraftChanged = (value) => {
         this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
-    }
+    };
+
+    renderAndroid = (children) => {
+        const style = getStyle(this.props.theme);
+
+        return (
+            <View style={style.container}>
+                {children}
+            </View>
+        );
+    };
 
     render() {
         const style = getStyle(this.props.theme);
+
+        const status = (
+            <StatusBar
+                key='statusBar'
+                barStyle='light-content'
+            />
+        );
+        const postList = (
+            <PostList
+                key='postList'
+                posts={this.props.posts}
+            />
+        );
+
+        const postTextBox = (
+            <PostTextbox
+                key='postTextBox'
+                rootId={this.props.rootId}
+                value={this.props.draft}
+                teamId={this.props.teamId}
+                channelId={this.props.channelId}
+                onChangeText={this.handleDraftChanged}
+            />
+        );
+
+        if (Platform.OS === 'android') {
+            return this.renderAndroid([status, postList, postTextBox]);
+        }
 
         return (
             <KeyboardAvoidingView
                 behavior='padding'
                 style={style.container}
+                keyboardVerticalOffset={65}
             >
-                <StatusBar barStyle='light-content'/>
-                <PostList posts={this.props.posts}/>
-                <PostTextbox
-                    rootId={this.props.rootId}
-                    value={this.props.draft}
-                    teamId={this.props.teamId}
-                    channelId={this.props.channelId}
-                    onChangeText={this.handleDraftChanged}
-                />
+                {status}
+                {postList}
+                {postTextBox}
             </KeyboardAvoidingView>
         );
     }
