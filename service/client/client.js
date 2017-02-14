@@ -613,6 +613,13 @@ export default class Client {
         );
     };
 
+    getFileInfosForPost = async (teamId, channelId, postId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/posts/${postId}/get_file_infos`,
+            {method: 'get'}
+        );
+    };
+
     // Preferences routes
     getMyPreferences = async () => {
         return this.doFetch(

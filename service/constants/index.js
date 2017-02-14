@@ -7,6 +7,7 @@ import GeneralTypes from './general';
 import UsersTypes from './users';
 import TeamsTypes from './teams';
 import PostsTypes from './posts';
+import FilesTypes from './files';
 import PreferencesTypes from './preferences';
 import RequestStatus from './request_status';
 import WebsocketEvents from './websocket';
@@ -23,6 +24,7 @@ export {
     TeamsTypes,
     ChannelTypes,
     PostsTypes,
+    FilesTypes,
     PreferencesTypes,
     Preferences,
     RequestStatus,
