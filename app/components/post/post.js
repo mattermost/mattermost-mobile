@@ -13,6 +13,7 @@ import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import MattermostIcon from 'app/components/mattermost_icon';
 import ProfilePicture from 'app/components/profile_picture';
+import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {isSystemMessage} from 'service/utils/post_utils.js';
@@ -160,6 +161,16 @@ export default class Post extends React.Component {
         return <View style={replyBarStyle}/>;
     }
 
+    renderFileAttachments() {
+        const {post} = this.props;
+        const fileIds = post.file_ids || [];
+        let attachments;
+        if (fileIds.length > 0) {
+            attachments = (<FileAttachmentList post={post}/>);
+        }
+        return attachments;
+    }
+
     render() {
         const style = getStyleSheet(this.props.theme);
 
@@ -228,6 +239,7 @@ export default class Post extends React.Component {
                         </View>
                         <View style={style.messageContainerWithReplyBar}>
                             {this.renderReplyBar(style)}
+                            {this.renderFileAttachments()}
                             <Text style={messageStyle}>
                                 {this.props.post.message}
                             </Text>
@@ -252,6 +264,7 @@ export default class Post extends React.Component {
                             </Text>
                         </View>
                         <View style={style.messageContainer}>
+                            {this.renderFileAttachments()}
                             <Text style={messageStyle}>
                                 {this.props.post.message}
                             </Text>
