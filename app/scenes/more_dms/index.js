@@ -9,7 +9,7 @@ import {goBack} from 'app/actions/navigation';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getProfiles, searchProfiles} from 'service/actions/users';
 import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
-import {searchedProfiles} from 'service/selectors/entities/users';
+import {searchProfiles as searchSelector} from 'service/selectors/entities/users';
 
 import MoreDirectMessages from './more_dms';
 
@@ -32,7 +32,7 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         preferences: getMyPreferences(state),
         profiles: getUsers(),
-        search: searchedProfiles(state),
+        search: searchSelector(state),
         theme: getTheme(state),
         requestStatus,
         searchRequest

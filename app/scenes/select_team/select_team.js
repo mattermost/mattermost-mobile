@@ -56,7 +56,7 @@ export default class SelectTeam extends React.Component {
         this.props.unsubscribeFromHeaderEvent('close');
     }
 
-    onSelectTeam(team) {
+    onSelectTeam = async (team) => {
         const {
             goBackToChannelView,
             closeDrawers,
@@ -64,10 +64,10 @@ export default class SelectTeam extends React.Component {
 
         } = this.props.actions;
 
-        handleTeamChange(team).
-        then(InteractionManager.runAfterInteractions(goBackToChannelView)).
-        then(InteractionManager.runAfterInteractions(() => setTimeout(closeDrawers, 200)));
-    }
+        await handleTeamChange(team);
+        await InteractionManager.runAfterInteractions(goBackToChannelView);
+        InteractionManager.runAfterInteractions(() => setTimeout(closeDrawers, 200));
+    };
 
     render() {
         const teams = [];
