@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {getFilesForPost} from 'service/selectors/entities/files';
 import {loadFilesForPostsIfNecessary} from 'app/actions/views/channel';
 
 import FileAttachmentList from './file_attachment_list';
@@ -17,9 +18,8 @@ function mapDispatchToProps(dispatch) {
 }
 
 function mapStateToProps(state, ownProps) {
-    return {
-        ...ownProps,
-        files: state.entities.files
+    return {...ownProps,
+        files: getFilesForPost(state, ownProps)
     };
 }
 
