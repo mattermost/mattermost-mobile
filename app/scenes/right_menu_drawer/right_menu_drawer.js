@@ -5,7 +5,6 @@ import React from 'react';
 import {
     ScrollView,
     StyleSheet,
-    Text,
     Platform,
     View
 } from 'react-native';
@@ -51,8 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
-            goToFlaggedPosts: React.PropTypes.func.isRequired,
-            goToRecentMentions: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
         }).isRequired,
@@ -64,25 +61,6 @@ export default class RightMenuDrawer extends React.Component {
 
         return (
             <ScrollView style={Styles.container}>
-                <RightMenuDrawerItem onPress={this.props.actions.goToRecentMentions}>
-                    <Text style={[Styles.icon, Styles.mentionIcon]}>{'@'}</Text>
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.recentMentions'
-                        defaultMessage='Recent Mentions'
-                    />
-                </RightMenuDrawerItem>
-                <RightMenuDrawerItem onPress={this.props.actions.goToFlaggedPosts}>
-                    <Icon
-                        style={Styles.icon}
-                        name='flag'
-                    />
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.flagged'
-                        defaultMessage='Flagged Posts'
-                    />
-                </RightMenuDrawerItem>
                 <Divider style={Styles.divider}/>
                 <RightMenuDrawerItem>
                     <Icon
@@ -95,51 +73,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Account Settings'
                     />
                 </RightMenuDrawerItem>
-                <RightMenuDrawerItem>
-                    <Icon
-                        style={Styles.icon}
-                        name='user-plus'
-                    />
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.inviteNew'
-                        defaultMessage='Invite New Member'
-                    />
-                </RightMenuDrawerItem>
-                <RightMenuDrawerItem>
-                    <Icon
-                        style={Styles.icon}
-                        name='link'
-                    />
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.teamLink'
-                        defaultMessage='Get Team Invite Link'
-                    />
-                </RightMenuDrawerItem>
                 <Divider style={Styles.divider}/>
-                <RightMenuDrawerItem>
-                    <Icon
-                        style={Styles.icon}
-                        name='globe'
-                    />
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.teamSettings'
-                        defaultMessage='Team Settings'
-                    />
-                </RightMenuDrawerItem>
-                <RightMenuDrawerItem>
-                    <Icon
-                        style={Styles.icon}
-                        name='users'
-                    />
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.manageMembers'
-                        defaultMessage='Manage Members'
-                    />
-                </RightMenuDrawerItem>
                 <RightMenuDrawerItem onPress={this.props.actions.goToModalSelectTeam}>
                     <Icon
                         style={Styles.icon}

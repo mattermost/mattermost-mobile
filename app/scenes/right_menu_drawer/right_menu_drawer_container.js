@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goBack, goToModalSelectTeam} from 'app/actions/navigation';
-import {goToFlaggedPosts, goToRecentMentions} from 'app/actions/views/right_menu_drawer';
 
 import {logout} from 'service/actions/users';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -23,8 +22,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goBack,
-            goToFlaggedPosts,
-            goToRecentMentions,
             goToModalSelectTeam,
             logout
         }, dispatch)
