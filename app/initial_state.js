@@ -21,7 +21,8 @@ const state = {
             profilesInTeam: {},
             profilesInChannel: {},
             profilesNotInChannel: {},
-            statuses: {}
+            statuses: {},
+            search: {}
         },
         teams: {
             currentId: '',

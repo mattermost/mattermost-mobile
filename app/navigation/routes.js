@@ -10,6 +10,7 @@ import {
     LoadTeam,
     Login,
     Mfa,
+    MoreDirectMessages,
     OptionsModal,
     RightMenuDrawer,
     Root,
@@ -79,6 +80,13 @@ export const Routes = {
             title: {id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}
         }
     },
+    MoreDirectMessages: {
+        key: 'MoreDirectMessages',
+        component: MoreDirectMessages,
+        navigationProps: {
+            title: {id: 'more_direct_channels.title', defaultMessage: 'Direct Messages'}
+        }
+    },
     OptionsModal: {
         key: 'OptionsModal',
         component: OptionsModal,
@@ -108,7 +116,6 @@ export const Routes = {
     },
     SelectTeam: {
         key: 'SelectTeam',
-        transition: RouteTransitions.Horizontal,
         component: SelectTeam,
         navigationProps: {
             title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}

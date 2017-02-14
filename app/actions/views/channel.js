@@ -16,7 +16,7 @@ import {getPosts} from 'service/actions/posts';
 import {savePreferences, deletePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
 import {Constants, UsersTypes} from 'service/constants';
-import {getChannelByName, getDirectChannelName} from 'service/utils/channel_utils';
+import {getChannelByName, getDirectChannelName, isDirectChannelVisible} from 'service/utils/channel_utils';
 import {getPreferencesByCategory} from 'service/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
@@ -103,10 +103,13 @@ export function selectInitialChannel(teamId) {
         const state = getState();
         const {channels, myMembers} = state.entities.channels;
         const currentChannelId = state.entities.channels.currentId;
+        const currentUserId = state.entities.users.currentId;
         const currentChannel = channels[currentChannelId];
+        const {myPreferences} = state.entities.preferences;
 
         if (currentChannel && myMembers[currentChannelId] &&
-            (currentChannel.team_id === teamId || currentChannel.type === Constants.DM_CHANNEL)) {
+            (currentChannel.team_id === teamId || (currentChannel.type === Constants.DM_CHANNEL &&
+            isDirectChannelVisible(currentUserId, myPreferences, currentChannel)))) {
             await selectChannel(currentChannelId)(dispatch, getState);
             return;
         }
@@ -146,22 +149,31 @@ export function handlePostDraftChanged(channelId, postDraft) {
     };
 }
 
-export function closeDMChannel(channel) {
-    return async(dispatch, getState) => {
+export function toggleDMChannel(otherUserId, visible) {
+    return async (dispatch, getState) => {
         const state = getState();
         const userId = state.entities.users.currentId;
 
         const dm = [{
             user_id: userId,
             category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW,
-            name: channel.teammate_id,
-            value: 'false'
+            name: otherUserId,
+            value: visible
         }];
+
+        return savePreferences(dm)(dispatch, getState);
+    };
+}
+
+export function closeDMChannel(channel) {
+    return async(dispatch, getState) => {
+        const state = getState();
 
         if (channel.isFavorite) {
             unmarkFavorite(channel.id)(dispatch, getState);
         }
-        savePreferences(dm)(dispatch, getState).then(() => {
+
+        toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState).then(() => {
             if (channel.isCurrent) {
                 selectInitialChannel(state.entities.teams.currentId)(dispatch, getState);
             }

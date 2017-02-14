@@ -1,9 +1,17 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, Component} from 'react';
 
-import {Alert, ListView, Platform, StyleSheet, Text, View} from 'react-native';
+import {
+    Alert,
+    ListView,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableHighlight,
+    View
+} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import {Constants} from 'service/constants';
 import LineDivider from 'app/components/line_divider';
@@ -11,6 +19,7 @@ import ChannelItem from './channel_item';
 import FormattedText from 'app/components/formatted_text';
 import UnreadIndicator from './unread_indicator';
 import deepEqual from 'deep-equal';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Styles = StyleSheet.create({
     container: {
@@ -58,23 +67,24 @@ const Styles = StyleSheet.create({
     }
 });
 
-class ChannelList extends React.Component {
+class ChannelList extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
-        currentTeam: React.PropTypes.object.isRequired,
-        currentChannel: React.PropTypes.object,
-        channels: React.PropTypes.object.isRequired,
-        channelMembers: React.PropTypes.object,
-        theme: React.PropTypes.object.isRequired,
-        onSelectChannel: React.PropTypes.func.isRequired,
-        actions: React.PropTypes.shape({
-            viewChannel: React.PropTypes.func.isRequired,
-            closeDMChannel: React.PropTypes.func.isRequired,
-            leaveChannel: React.PropTypes.func.isRequired,
-            markFavorite: React.PropTypes.func.isRequired,
-            unmarkFavorite: React.PropTypes.func.isRequired,
-            showOptionsModal: React.PropTypes.func.isRequired,
-            closeOptionsModal: React.PropTypes.func.isRequired
+        currentTeam: PropTypes.object.isRequired,
+        currentChannel: PropTypes.object,
+        channels: PropTypes.object.isRequired,
+        channelMembers: PropTypes.object,
+        theme: PropTypes.object.isRequired,
+        onSelectChannel: PropTypes.func.isRequired,
+        actions: PropTypes.shape({
+            viewChannel: PropTypes.func.isRequired,
+            closeDMChannel: PropTypes.func.isRequired,
+            leaveChannel: PropTypes.func.isRequired,
+            markFavorite: PropTypes.func.isRequired,
+            unmarkFavorite: PropTypes.func.isRequired,
+            showOptionsModal: PropTypes.func.isRequired,
+            showDirectMessagesModal: PropTypes.func.isRequired,
+            closeOptionsModal: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -379,12 +389,38 @@ class ChannelList extends React.Component {
             />,
             ...privateChannels
         );
+
+        const moreDmStyle = {
+            position: 'absolute',
+            opacity: 0.6,
+            right: 0,
+            width: 50,
+            height: 30,
+            alignItems: 'center',
+            justifyContent: 'center'
+        };
+
+        const moreDms = (
+            <TouchableHighlight
+                style={moreDmStyle}
+                onPress={this.props.actions.showDirectMessagesModal}
+            >
+                <Icon
+                    name='plus-circle'
+                    size={18}
+                    color={theme.sidebarText}
+                />
+            </TouchableHighlight>
+        );
         data.push(
-            <FormattedText
-                style={[Styles.title, {color: theme.sidebarText}]}
-                id='sidebar.direct'
-                defaultMessage='DIRECT MESSAGES'
-            />,
+            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                <FormattedText
+                    style={[Styles.title, {color: theme.sidebarText}]}
+                    id='sidebar.direct'
+                    defaultMessage='DIRECT MESSAGES'
+                />
+                {moreDms}
+            </View>,
             ...directChannels
         );
 
@@ -411,6 +447,10 @@ class ChannelList extends React.Component {
             return this.createChannelElement(rowData);
         }
         return rowData;
+    };
+
+    setScrollContainer = (ref) => {
+        this.scrollContainer = ref;
     };
 
     render() {
@@ -466,7 +506,7 @@ class ChannelList extends React.Component {
                     </Text>
                 </View>
                 <ListView
-                    ref='scrollContainer'
+                    ref={this.setScrollContainer}
                     style={Styles.scrollContainer}
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRow}

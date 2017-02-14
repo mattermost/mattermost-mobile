@@ -149,14 +149,30 @@ export function logout() {
 }
 
 export function getProfiles(offset, limit = Constants.PROFILE_CHUNK_SIZE) {
-    return bindClientFunc(
-        Client.getProfiles,
-        UsersTypes.PROFILES_REQUEST,
-        [UsersTypes.RECEIVED_PROFILES, UsersTypes.PROFILES_SUCCESS],
-        UsersTypes.PROFILES_FAILURE,
-        offset,
-        limit
-    );
+    return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.PROFILES_REQUEST}, getState);
+
+        let profiles;
+        try {
+            profiles = await Client.getProfiles(offset, limit);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: UsersTypes.PROFILES_FAILURE, error}, getState);
+            return null;
+        }
+
+        dispatch(batchActions([
+            {
+                type: UsersTypes.RECEIVED_PROFILES,
+                data: profiles
+            },
+            {
+                type: UsersTypes.PROFILES_SUCCESS
+            }
+        ]), getState);
+
+        return profiles;
+    };
 }
 
 export function getProfilesByIds(userIds) {
@@ -325,6 +341,17 @@ export function autocompleteUsersInChannel(teamId, channelId, term) {
     };
 }
 
+export function searchProfiles(term, options) {
+    return bindClientFunc(
+        Client.searchProfiles,
+        UsersTypes.SEARCH_PROFILES_REQUEST,
+        [UsersTypes.RECEIVED_SEARCH_PROFILES, UsersTypes.SEARCH_PROFILES_SUCCESS],
+        UsersTypes.SEARCH_PROFILES_FAILURE,
+        term,
+        options
+    );
+}
+
 export default {
     checkMfa,
     login,
@@ -337,5 +364,6 @@ export default {
     getStatusesByIds,
     getSessions,
     revokeSession,
-    getAudits
+    getAudits,
+    searchProfiles
 };

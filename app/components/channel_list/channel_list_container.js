@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {showOptionsModal, closeModal} from 'app/actions/navigation';
+import {showDirectMessagesModal, showOptionsModal, closeModal} from 'app/actions/navigation';
 import {closeDMChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 
 import {viewChannel} from 'service/actions/channels';
@@ -25,6 +25,7 @@ function mapDispatchToProps(dispatch) {
             markFavorite,
             unmarkFavorite,
             showOptionsModal,
+            showDirectMessagesModal,
             closeOptionsModal: closeModal
         }, dispatch)
     };

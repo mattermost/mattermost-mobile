@@ -9,6 +9,7 @@ import ChannelAddMembers from './channel_add_members';
 import LoadTeam from './load_team';
 import Login from './login/login_container.js';
 import Mfa from './mfa';
+import MoreDirectMessages from './more_dms';
 import OptionsModal from './options_modal';
 import RightMenuDrawer from './right_menu_drawer';
 import Root from './root/root_container.js';
@@ -26,6 +27,7 @@ module.exports = {
     LoadTeam,
     Login,
     Mfa,
+    MoreDirectMessages,
     OptionsModal,
     RightMenuDrawer,
     Root,

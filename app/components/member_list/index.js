@@ -40,6 +40,7 @@ const style = StyleSheet.create({
 export default class MemberList extends PureComponent {
     static propTypes = {
         members: PropTypes.array.isRequired,
+        searching: PropTypes.bool,
         onRowPress: PropTypes.func,
         onListEndReached: PropTypes.func,
         onListEndReachedThreshold: PropTypes.number,
@@ -52,41 +53,32 @@ export default class MemberList extends PureComponent {
         selectable: PropTypes.bool,
         onRowSelect: PropTypes.func,
         renderRow: PropTypes.func
-    }
+    };
 
     static defaultProps = {
+        searching: false,
         onListEndReached: () => true,
-        onListEndThreshold: 50,
+        onListEndReachedThreshold: 50,
         listPageSize: 10,
         listInitialSize: 10,
         listScrollRenderAheadDistance: 200,
         selectable: false,
         onRowSelect: () => true,
         showSections: true
-    }
+    };
 
     constructor(props) {
         super(props);
 
-        const ds = new ListView.DataSource({
-            rowHasChanged: (r1, r2) => r1 !== r2,
-            sectionHeaderHasChanged: (s1, s2) => s1 !== s2
-        });
-        let data = props.members;
-        if (props.showSections) {
-            data = this.createSections(props.members);
-        }
-        const dataSource = ds.cloneWithRowsAndSections(data);
-        this.state = {
-            data,
-            dataSource
-        };
+        this.state = this.buildDataSource(props);
     }
 
     componentWillReceiveProps(nextProps) {
-        const {members, showSections} = nextProps;
+        const {members, showSections, searching} = nextProps;
 
-        if (members !== this.props.members || showSections !== this.props.showSections) {
+        if (searching || searching !== this.props.searching) {
+            this.setState(this.buildDataSource(nextProps));
+        } else if (members !== this.props.members || showSections !== this.props.showSections) {
             let data = members;
             if (showSections) {
                 data = this.createSections(members);
@@ -100,6 +92,22 @@ export default class MemberList extends PureComponent {
             });
         }
     }
+
+    buildDataSource = (props) => {
+        const ds = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2,
+            sectionHeaderHasChanged: (s1, s2) => s1 !== s2
+        });
+        let data = props.members;
+        if (props.showSections) {
+            data = this.createSections(props.members);
+        }
+        const dataSource = ds.cloneWithRowsAndSections(data);
+        return {
+            data,
+            dataSource
+        };
+    };
 
     createSections = (data) => {
         const sections = {};
@@ -115,7 +123,7 @@ export default class MemberList extends PureComponent {
         });
 
         return sections;
-    }
+    };
 
     handleRowSelect = (sectionId, rowId) => {
         const data = this.state.data;
@@ -131,7 +139,7 @@ export default class MemberList extends PureComponent {
             data: mergedData,
             dataSource
         }, () => this.props.onRowSelect(id));
-    }
+    };
 
     renderSectionHeader = (sectionData, sectionId) => {
         return (
@@ -139,7 +147,7 @@ export default class MemberList extends PureComponent {
                 <Text style={style.sectionText}>{sectionId}</Text>
             </View>
         );
-    }
+    };
 
     renderRow = (user, sectionId, rowId) => {
         const {id, username} = user;
@@ -161,7 +169,7 @@ export default class MemberList extends PureComponent {
                 onRowSelect={onRowSelect}
             />
         );
-    }
+    };
 
     renderSeparator = (sectionId, rowId) => {
         return (
@@ -170,7 +178,7 @@ export default class MemberList extends PureComponent {
                 style={style.separator}
             />
         );
-    }
+    };
 
     renderFooter = () => {
         if (!this.props.loadingMembers) {
@@ -188,7 +196,7 @@ export default class MemberList extends PureComponent {
                 />
             </View>
         );
-    }
+    };
 
     render() {
         const renderRow = this.props.renderRow || this.renderRow;

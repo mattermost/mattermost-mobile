@@ -104,6 +104,10 @@ export default class SearchBarAndroid extends PureComponent {
         Keyboard.dismiss();
     }
 
+    blur = () => {
+        this.onBlur();
+    };
+
     render() {
         const {
             height,

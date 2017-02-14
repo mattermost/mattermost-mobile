@@ -4,6 +4,7 @@
 import React from 'react';
 import {
     Image,
+    InteractionManager,
     Text,
     TouchableOpacity,
     View
@@ -25,6 +26,7 @@ export default class SelectTeam extends React.Component {
         unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
         actions: React.PropTypes.shape({
             goBackToChannelView: React.PropTypes.func.isRequired,
+            closeDrawers: React.PropTypes.func.isRequired,
             handleTeamChange: React.PropTypes.func.isRequired
         }).isRequired
     };
@@ -44,7 +46,7 @@ export default class SelectTeam extends React.Component {
                 </TouchableOpacity>
             );
         }
-    }
+    };
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('close', this.props.actions.goBackToChannelView);
@@ -54,9 +56,18 @@ export default class SelectTeam extends React.Component {
         this.props.unsubscribeFromHeaderEvent('close');
     }
 
-    onSelectTeam(team) {
-        this.props.actions.handleTeamChange(team).then(this.props.actions.goBackToChannelView);
-    }
+    onSelectTeam = async (team) => {
+        const {
+            goBackToChannelView,
+            closeDrawers,
+            handleTeamChange
+
+        } = this.props.actions;
+
+        await handleTeamChange(team);
+        await InteractionManager.runAfterInteractions(goBackToChannelView);
+        InteractionManager.runAfterInteractions(() => setTimeout(closeDrawers, 200));
+    };
 
     render() {
         const teams = [];
