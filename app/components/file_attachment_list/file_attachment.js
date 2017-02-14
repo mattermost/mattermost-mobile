@@ -32,7 +32,7 @@ export default class FileAttachment extends Component {
                         size={18}
                     />
                     <Text>{file.extension.toUpperCase()}</Text>
-                    <Text>{Utils.fileSizeToString(file.size)}</Text>
+                    <Text>{Utils.getFormattedFileSize(file)}</Text>
                 </View>
             </View>
         );
