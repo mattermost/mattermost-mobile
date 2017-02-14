@@ -4,10 +4,19 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getFilesForPost} from 'service/selectors/entities/files';
+import {makeGetFilesForPost} from 'service/selectors/entities/files';
 import {loadFilesForPostsIfNecessary} from 'app/actions/views/channel';
 
 import FileAttachmentList from './file_attachment_list';
+
+function makeMapStateToProps() {
+    const getFilesForPost = makeGetFilesForPost();
+    return function mapStateToProps(state, ownProps) {
+        return {...ownProps,
+            files: getFilesForPost(state, ownProps)
+        };
+    };
+}
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -17,10 +26,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-function mapStateToProps(state, ownProps) {
-    return {...ownProps,
-        files: getFilesForPost(state, ownProps)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(FileAttachmentList);
+export default connect(makeMapStateToProps, mapDispatchToProps)(FileAttachmentList);

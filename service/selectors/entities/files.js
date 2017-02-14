@@ -11,10 +11,11 @@ function getFilesIdsForPost(state, props) {
     return state.entities.files.fileIdsByPostId[props.post.id] || [];
 }
 
-export const getFilesForPost = createSelector(
-    getAllFiles,
-    getFilesIdsForPost,
-    (allFiles, fileIdsForPost) => {
-        return fileIdsForPost.map((id) => allFiles[id]);
-    }
-);
+export function makeGetFilesForPost() {
+    return createSelector(
+        [getAllFiles, getFilesIdsForPost],
+        (allFiles, fileIdsForPost) => {
+            return fileIdsForPost.map((id) => allFiles[id]);
+        }
+    );
+}
