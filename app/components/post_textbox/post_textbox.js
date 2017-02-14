@@ -71,7 +71,7 @@ export default class PostTextbox extends React.PureComponent {
     };
 
     handleTextChange = (text) => {
-        this.props.onChangeText(this.props.channelId, text);
+        this.props.onChangeText(text);
     }
 
     handleSelectionChange = (event) => {
