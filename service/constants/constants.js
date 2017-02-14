@@ -58,7 +58,7 @@ const FileConstants = {
     PDF_TYPES: ['pdf'],
     PATCH_TYPES: ['patch'],
 
-    ICON_FROM_TYPE: {
+    ICON_PATH_FROM_FILE_TYPE: {
         audio: audioIcon,
         video: videoIcon,
         spreadsheet: excelIcon,

@@ -27,17 +27,10 @@ export function fileSizeToString(bytes) {
     return bytes + 'B';
 }
 
-export function getFileIconPath(fileInfo) {
-    const fileType = getFileType(fileInfo);
-
-    let icon;
-    if (fileType in Constants.ICON_FROM_TYPE) {
-        icon = Constants.ICON_FROM_TYPE[fileType];
-    } else {
-        icon = Constants.ICON_FROM_TYPE.other;
-    }
-
-    return icon;
+export function getFileIconPath(file) {
+    const fileType = getFileType(file);
+    return Constants.ICON_PATH_FROM_FILE_TYPE[fileType] ||
+        Constants.ICON_PATH_FROM_FILE_TYPE.other;
 }
 
 function getFileType(file) {
