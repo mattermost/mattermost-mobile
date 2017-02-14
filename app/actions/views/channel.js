@@ -13,6 +13,7 @@ import {
     selectChannel,
     leaveChannel as serviceLeaveChannel} from 'service/actions/channels';
 import {getPosts} from 'service/actions/posts';
+import {getFilesForPost} from 'service/actions/files';
 import {savePreferences, deletePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
 import {Constants, UsersTypes} from 'service/constants';
@@ -94,6 +95,18 @@ export function loadPostsIfNecessary(channel) {
                 teamId = getState().entities.teams.currentId;
             }
             await getPosts(teamId, channel.id)(dispatch, getState);
+        }
+    };
+}
+
+export function loadFilesForPostsIfNecessary(post) {
+    return async (dispatch, getState) => {
+        const {files, teams} = getState().entities;
+        const filesForPost = files.filesByPostId[post.id];
+
+        if (!filesForPost) {
+            const teamId = teams.currentId;
+            await getFilesForPost(teamId, post.channel_id, post.id)(dispatch, getState);
         }
     };
 }
