@@ -360,7 +360,7 @@ export default class Client {
             `${this.getChannelNeededRoute(teamId, channelId)}/users/autocomplete?term=${encodeURIComponent(term)}`,
             {method: 'get'}
         );
-    }
+    };
 
     searchProfiles = (term, options) => {
         return this.doFetch(
@@ -566,6 +566,13 @@ export default class Client {
             {method: 'post', body: JSON.stringify({user_id: userId})}
         );
     };
+
+    autocompleteChannels = async (teamId, term) => {
+        return this.doFetch(
+            `${this.getChannelsRoute(teamId)}/autocomplete?term=${encodeURIComponent(term)}`,
+            {method: 'get'}
+        );
+    }
 
     // Post routes
     createPost = async (teamId, post) => {

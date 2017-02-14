@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import AtMention from './at_mention';
+import ChannelMention from './channel_mention';
 
 const style = StyleSheet.create({
     container: {
@@ -36,6 +37,7 @@ export default class Autocomplete extends Component {
             <View>
                 <View style={style.container}>
                     <AtMention cursorPosition={this.state.cursorPosition}/>
+                    <ChannelMention cursorPosition={this.state.cursorPosition}/>
                 </View>
             </View>
         );
