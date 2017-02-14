@@ -23,16 +23,21 @@ export default class FileAttachment extends Component {
 
     renderFileInfo() {
         const {file} = this.props;
+        const textStyle = {fontSize: 14, color: '#333'};
         return (
             <View>
-                <Text>{Utils.getTruncatedFilename(file)}</Text>
-                <View>
+                <Text style={textStyle}>
+                    {Utils.getTruncatedFilename(file)}
+                </Text>
+                <View style={{flex: 1, flexDirection: 'row'}}>
                     <Icon
                         name='file-download'
-                        size={18}
+                        size={16}
+                        color='#333'
                     />
-                    <Text>{file.extension.toUpperCase()}</Text>
-                    <Text>{Utils.getFormattedFileSize(file)}</Text>
+                    <Text style={textStyle}>
+                        {`${file.extension.toUpperCase()} ${Utils.getFormattedFileSize(file)}`}
+                    </Text>
                 </View>
             </View>
         );
@@ -41,7 +46,7 @@ export default class FileAttachment extends Component {
     render() {
         const file = this.props.file;
         return (
-            <View>
+            <View style={{flex: 1, flexDirection: 'row'}}>
                 <Image source={Utils.getFileIconPath(file)}/>
                 {this.renderFileInfo()}
             </View>
