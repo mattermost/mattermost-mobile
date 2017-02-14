@@ -18,7 +18,7 @@ export default class FileAttachmentList extends Component {
         post: PropTypes.object.isRequired,
         files: PropTypes.shape({
             files: PropTypes.object.isRequired,
-            filesByPostId: PropTypes.object.isRequired
+            fileIdsByPostId: PropTypes.object.isRequired
         }).isRequired
     };
 
@@ -28,8 +28,10 @@ export default class FileAttachmentList extends Component {
     }
 
     render() {
-        const files = this.props.files.filesByPostId[this.props.post.id] || [];
-        const postFiles = files.map((file, i) => (
+        const {files: allFiles, fileIdsByPostId} = this.props.files;
+        const fileIdsForPost = fileIdsByPostId[this.props.post.id] || [];
+        const filesForPost = fileIdsForPost.map((fileId) => allFiles[fileId]);
+        const fileAttachments = filesForPost.map((file, i) => (
             <FileAttachment
                 key={file.id}
                 index={i}
@@ -39,7 +41,7 @@ export default class FileAttachmentList extends Component {
 
         return (
             <View>
-                {postFiles}
+                {fileAttachments}
             </View>
         );
     }

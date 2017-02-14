@@ -18,13 +18,14 @@ function files(state = {}, action) {
     }
 }
 
-function filesByPostId(state = {}, action) {
+function fileIdsByPostId(state = {}, action) {
     switch (action.type) {
     case FilesTypes.RECEIVED_FILES_FOR_POST: {
+        const filesIdsForPost = Object.keys(action.data);
         const filesForPost = Object.values(action.data);
         const postId = filesForPost[0].post_id;
         return {...state,
-            [postId]: filesForPost
+            [postId]: filesIdsForPost
         };
     }
 
@@ -37,5 +38,5 @@ function filesByPostId(state = {}, action) {
 
 export default combineReducers({
     files,
-    filesByPostId
+    fileIdsByPostId
 });
