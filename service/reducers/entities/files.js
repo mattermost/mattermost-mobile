@@ -11,13 +11,8 @@ function files(state = {}, action) {
             ...action.data
         };
 
-    case FilesTypes.FETCH_FILES_FOR_POST_FAILURE:
-        console.warn('FETCH_FILES_FOR_POST_FAILURE', action);
-        return state;
-
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
-
     default:
         return state;
     }
@@ -35,7 +30,6 @@ function filesByPostId(state = {}, action) {
 
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
-
     default:
         return state;
     }
