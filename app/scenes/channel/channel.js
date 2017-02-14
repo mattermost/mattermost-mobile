@@ -4,8 +4,10 @@
 import React from 'react';
 import {
     KeyboardAvoidingView,
+    Platform,
     StatusBar,
-    Text
+    Text,
+    View
 } from 'react-native';
 
 import {Constants} from 'service/constants';
@@ -100,6 +102,15 @@ export default class Channel extends React.PureComponent {
         this.props.actions.selectFirstAvailableTeam();
     };
 
+    renderAndroid = (children) => {
+        const {theme} = this.props;
+        return (
+            <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
+                {children}
+            </View>
+        );
+    };
+
     render() {
         const {
             currentTeam,
@@ -118,21 +129,42 @@ export default class Channel extends React.PureComponent {
             teamId = currentTeam.id;
         }
 
+        const status = (
+            <StatusBar
+                key='statusBar'
+                barStyle='light-content'
+            />
+        );
+        const postList = (
+            <ChannelPostList
+                key='postList'
+                channel={currentChannel}
+            />
+        );
+        const postTextBox = (
+            <PostTextbox
+                ref={this.attachPostTextbox}
+                key='postTextBox'
+                value={this.props.drafts[this.props.currentChannel.id]}
+                teamId={teamId}
+                channelId={currentChannel.id}
+                onChangeText={this.props.actions.handlePostDraftChanged}
+            />
+        );
+
+        if (Platform.OS === 'android') {
+            return this.renderAndroid([status, postList, postTextBox]);
+        }
+
         return (
             <KeyboardAvoidingView
                 behavior='padding'
                 style={{flex: 1, backgroundColor: theme.centerChannelBg}}
                 keyboardVerticalOffset={65}
             >
-                <StatusBar barStyle='light-content'/>
-                <ChannelPostList channel={currentChannel}/>
-                <PostTextbox
-                    ref={this.attachPostTextbox}
-                    value={this.props.drafts[this.props.currentChannel.id]}
-                    teamId={teamId}
-                    channelId={currentChannel.id}
-                    onChangeText={this.props.actions.handlePostDraftChanged}
-                />
+                {status}
+                {postList}
+                {postTextBox}
             </KeyboardAvoidingView>
         );
     }
