@@ -98,6 +98,10 @@ export default class Channel extends React.PureComponent {
         this.postTextbox = ref;
     };
 
+    handleDraftChanged = (value) => {
+        this.props.actions.handlePostDraftChanged(this.props.currentChannel.id, value);
+    };
+
     handleLeaveTeam = () => {
         this.props.actions.selectFirstAvailableTeam();
     };
@@ -148,7 +152,7 @@ export default class Channel extends React.PureComponent {
                 value={this.props.drafts[this.props.currentChannel.id]}
                 teamId={teamId}
                 channelId={currentChannel.id}
-                onChangeText={this.props.actions.handlePostDraftChanged}
+                onChangeText={this.handleDraftChanged}
             />
         );
 
