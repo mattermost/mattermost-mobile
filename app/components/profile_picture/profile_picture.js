@@ -71,16 +71,14 @@ export default class ProfilePicture extends React.PureComponent {
             pictureUrl = Client.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
         }
 
-        let status;
+        let statusIcon;
         if (this.props.status && statusToIcon[this.props.status]) {
-            status = (
-                <View style={[style.statusContainer, style[this.props.status]]}>
-                    <Icon
-                        style={style.status}
-                        name={statusToIcon[this.props.status]}
-                        size={8}
-                    />
-                </View>
+            statusIcon = (
+                <Icon
+                    style={style.status}
+                    name={statusToIcon[this.props.status]}
+                    size={8}
+                />
             );
         }
 
@@ -91,7 +89,9 @@ export default class ProfilePicture extends React.PureComponent {
                     source={{uri: pictureUrl}}
                     defaultSource={placeholder}
                 />
-                {status}
+                <View style={[style.statusContainer, style[this.props.status]]}>
+                    {statusIcon}
+                </View>
             </View>
         );
     }
