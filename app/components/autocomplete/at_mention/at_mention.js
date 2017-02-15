@@ -157,15 +157,15 @@ export default class AtMention extends Component {
             if (membersInChannel.length > 0) {
                 data = Object.assign({}, data, {inChannel: membersInChannel});
             }
+            if (this.checkSpecialMentions(matchTerm)) {
+                data = Object.assign({}, data, {specialMentions: this.getSpecialMentions()});
+            }
             if (membersOutOfChannel.length > 0) {
                 data = Object.assign({}, data, {notInChannel: membersOutOfChannel});
             }
-            if (data.inChannel || data.notInChannel || this.checkSpecialMentions(matchTerm)) {
-                data = Object.assign({}, data, {specialMentions: this.getSpecialMentions()});
-            }
 
             this.setState({
-                active: data.hasOwnProperty('inChannel') || data.hasOwnProperty('notInChannel') || data.hasOwnProperty('specialMentions'),
+                active: data.hasOwnProperty('inChannel') || data.hasOwnProperty('specialMentions') || data.hasOwnProperty('notInChannel'),
                 dataSource: this.state.dataSource.cloneWithRowsAndSections(data)
             });
         }

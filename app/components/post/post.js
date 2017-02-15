@@ -46,7 +46,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
             marginRight: 10,
-            width: 3
+            width: 3,
+            flexBasis: 3
         },
         replyBarFirst: {
             marginTop: 10
