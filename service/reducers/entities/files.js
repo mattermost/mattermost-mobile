@@ -21,9 +21,8 @@ function files(state = {}, action) {
 function fileIdsByPostId(state = {}, action) {
     switch (action.type) {
     case FilesTypes.RECEIVED_FILES_FOR_POST: {
-        const filesIdsForPost = Object.keys(action.data);
-        const filesForPost = Object.values(action.data);
-        const postId = filesForPost[0].post_id;
+        const {data, postId} = action;
+        const filesIdsForPost = Object.keys(data);
         return {...state,
             [postId]: filesIdsForPost
         };
