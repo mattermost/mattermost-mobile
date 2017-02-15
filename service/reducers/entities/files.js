@@ -6,10 +6,16 @@ import {FilesTypes, UsersTypes} from 'service/constants';
 
 function files(state = {}, action) {
     switch (action.type) {
-    case FilesTypes.RECEIVED_FILES_FOR_POST:
+    case FilesTypes.RECEIVED_FILES_FOR_POST: {
+        const filesById = action.data.reduce((filesMap, file) => {
+            return {...filesMap,
+                [file.id]: file
+            };
+        }, {});
         return {...state,
-            ...action.data
+            ...filesById
         };
+    }
 
     case UsersTypes.LOGOUT_SUCCESS:
         return {};
@@ -22,7 +28,7 @@ function fileIdsByPostId(state = {}, action) {
     switch (action.type) {
     case FilesTypes.RECEIVED_FILES_FOR_POST: {
         const {data, postId} = action;
-        const filesIdsForPost = Object.keys(data);
+        const filesIdsForPost = data.map((file) => file.id);
         return {...state,
             [postId]: filesIdsForPost
         };
