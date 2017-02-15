@@ -1,6 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import fs from 'fs';
 import assert from 'assert';
 
 import * as Actions from 'service/actions/files';
@@ -24,7 +25,11 @@ describe('Actions.Files', () => {
     });
 
     it('getFilesForPost', async () => {
-        const {basicTeam, basicChannel, basicPost} = TestHelper;
+        const {basicClient, basicTeam, basicChannel, basicPost} = TestHelper;
+        const testImgData = fs.readFileSync('test/assets/images/test.png');
+
+        const fileUploadResp = await basicClient.uploadFile(basicTeam.id, testImgData);
+        const fileId = fileUploadResp.file_infos[0];
 
         await Actions.getFilesForPost(
             basicTeam.id, basicChannel.id, basicPost.id
@@ -38,6 +43,7 @@ describe('Actions.Files', () => {
         }
 
         assert.ok(allFiles);
+        assert.ok(allFiles[fileId]);
         assert.ok(fileIdsByPostId[basicPost.id]);
     });
 });

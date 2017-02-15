@@ -620,6 +620,19 @@ export default class Client {
         );
     };
 
+    uploadFile = async (teamId, imageData) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(teamId)}/files/upload`,
+            {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                body: imageData
+            }
+        );
+    };
+
     // Preferences routes
     getMyPreferences = async () => {
         return this.doFetch(
