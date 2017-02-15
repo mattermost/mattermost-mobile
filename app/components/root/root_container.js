@@ -8,7 +8,7 @@ import Config from 'assets/config.json';
 
 import {setAppState} from 'service/actions/general';
 
-import RootLayout from './root_layout';
+import Root from './root';
 
 function mapStateToProps(state, ownProps) {
     const users = state.entities.users;
@@ -33,4 +33,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RootLayout);
+export default connect(mapStateToProps, mapDispatchToProps)(Root);
