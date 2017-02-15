@@ -1,6 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import imageIcon from 'assets/images/icons/image.png';
 import audioIcon from 'assets/images/icons/audio.png';
 import videoIcon from 'assets/images/icons/video.png';
 import excelIcon from 'assets/images/icons/excel.png';
@@ -59,6 +60,7 @@ const FileConstants = {
     PATCH_TYPES: ['patch'],
 
     ICON_PATH_FROM_FILE_TYPE: {
+        image: imageIcon,
         audio: audioIcon,
         video: videoIcon,
         spreadsheet: excelIcon,
