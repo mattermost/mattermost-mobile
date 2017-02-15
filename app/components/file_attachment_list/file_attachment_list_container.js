@@ -6,14 +6,17 @@ import {connect} from 'react-redux';
 
 import {makeGetFilesForPost} from 'service/selectors/entities/files';
 import {loadFilesForPostsIfNecessary} from 'app/actions/views/channel';
+import {getTheme} from 'service/selectors/entities/preferences';
 
 import FileAttachmentList from './file_attachment_list';
 
 function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
     return function mapStateToProps(state, ownProps) {
-        return {...ownProps,
-            files: getFilesForPost(state, ownProps)
+        return {
+            ...ownProps,
+            files: getFilesForPost(state, ownProps),
+            theme: getTheme(state)
         };
     };
 }

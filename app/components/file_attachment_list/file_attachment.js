@@ -9,33 +9,78 @@ import React, {
 import {
     Text,
     View,
-    Image
+    Image,
+    StyleSheet
 } from 'react-native';
 
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'service/utils/file_utils.js';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        downloadIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.7),
+            marginRight: 5
+        },
+        fileDownloadContainer: {
+            flexDirection: 'row',
+            marginTop: 3
+        },
+        fileInfo: {
+            marginLeft: 2,
+            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        fileInfoContainer: {
+            padding: 5,
+            flex: 1
+        },
+        fileName: {
+            marginLeft: 2,
+            fontSize: 14,
+            color: theme.centerChannelColor,
+            flexDirection: 'column',
+            flexWrap: 'wrap'
+        },
+        filePreview: {
+            width: 100,
+            height: 100
+        },
+        fileWrapper: {
+            flex: 1,
+            flexDirection: 'row',
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            maxWidth: 250,
+            marginTop: 10
+        }
+    });
+});
 
 export default class FileAttachment extends Component {
     static propTypes = {
-        file: PropTypes.object.isRequired
+        file: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     renderFileInfo() {
-        const {file} = this.props;
-        const textStyle = {fontSize: 14, color: '#333'};
+        const {file, theme} = this.props;
+        const style = getStyleSheet(theme);
+
         return (
-            <View>
-                <Text style={textStyle}>
+            <View style={style.fileInfoContainer}>
+                <Text style={style.fileName}>
                     {Utils.getTruncatedFilename(file)}
                 </Text>
-                <View style={{flex: 1, flexDirection: 'row'}}>
+                <View style={style.fileDownloadContainer}>
                     <Icon
-                        name='file-download'
+                        name='download'
                         size={16}
-                        color='#333'
+                        style={style.downloadIcon}
                     />
-                    <Text style={textStyle}>
+                    <Text style={style.fileInfo}>
                         {`${file.extension.toUpperCase()} ${Utils.getFormattedFileSize(file)}`}
                     </Text>
                 </View>
@@ -44,10 +89,15 @@ export default class FileAttachment extends Component {
     }
 
     render() {
-        const file = this.props.file;
+        const {file, theme} = this.props;
+        const style = getStyleSheet(theme);
+
         return (
-            <View style={{flex: 1, flexDirection: 'row'}}>
-                <Image source={Utils.getFileIconPath(file)}/>
+            <View style={style.fileWrapper}>
+                <Image
+                    style={style.filePreview}
+                    source={Utils.getFileIconPath(file)}
+                />
                 {this.renderFileInfo()}
             </View>
         );

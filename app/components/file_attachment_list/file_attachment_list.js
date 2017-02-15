@@ -16,7 +16,8 @@ export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
-        files: PropTypes.array.isRequired
+        files: PropTypes.array.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     componentDidMount() {
@@ -30,6 +31,7 @@ export default class FileAttachmentList extends Component {
                 key={file.id}
                 index={i}
                 file={file}
+                theme={this.props.theme}
             />
         ));
 
