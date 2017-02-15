@@ -27,8 +27,9 @@ describe('Actions.Files', () => {
     it('getFilesForPost', async () => {
         const {basicClient, basicTeam, basicChannel, basicPost} = TestHelper;
         const testImgData = fs.readFileSync('test/assets/images/test.png');
-
-        const fileUploadResp = await basicClient.uploadFile(basicTeam.id, testImgData);
+        const clientId = TestHelper.generateId();
+        const fileUploadResp = await basicClient.
+            uploadFile(basicTeam.id, basicChannel.id, clientId, testImgData);
         const fileId = fileUploadResp.file_infos[0];
 
         await Actions.getFilesForPost(
