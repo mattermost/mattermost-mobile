@@ -4,6 +4,7 @@
 import Client from 'service/client';
 import {bindClientFunc} from './helpers.js';
 import {GeneralTypes} from 'service/constants';
+import {getMyChannelMembers} from './channels';
 
 export function getPing() {
     return bindClientFunc(
@@ -46,6 +47,13 @@ export function logClientError(message, level = 'ERROR') {
 export function setAppState(state) {
     return async (dispatch, getState) => {
         dispatch({type: GeneralTypes.RECEIVED_APP_STATE, data: state}, getState);
+
+        if (state) {
+            const teamId = getState().entities.teams.currentId;
+            if (teamId) {
+                getMyChannelMembers(teamId)(dispatch, getState);
+            }
+        }
     };
 }
 

@@ -19,9 +19,10 @@ import {
     fetchMyChannelsAndMembers,
     getChannel,
     getChannelStats,
-    viewChannel,
     updateChannelHeader,
-    updateChannelPurpose
+    updateChannelPurpose,
+    markChannelAsUnread,
+    markChannelAsRead
 } from 'service/actions/channels';
 
 import {
@@ -124,9 +125,6 @@ function handleEvent(msg, dispatch, getState) {
     case WebsocketEvents.USER_UPDATED:
         handleUserUpdatedEvent(msg, dispatch, getState);
         break;
-    case WebsocketEvents.CHANNEL_VIEWED:
-        handleChannelViewedEvent(msg, dispatch, getState);
-        break;
     case WebsocketEvents.CHANNEL_DELETED:
         handleChannelDeletedEvent(msg, dispatch, getState);
         break;
@@ -142,13 +140,11 @@ function handleEvent(msg, dispatch, getState) {
     }
 }
 
-function handleNewPostEvent(msg, dispatch, getState) {
+async function handleNewPostEvent(msg, dispatch, getState) {
     const state = getState();
+    const currentChannelId = state.entities.channels.currentId;
     const users = state.entities.users;
-    const channels = state.entities.channels;
-    const teams = state.entities.teams;
     const {posts} = state.entities.posts;
-    const isActive = state.entities.general.appState;
     const post = JSON.parse(msg.data.post);
     const userId = post.user_id;
     const teamId = msg.data.team_id;
@@ -162,26 +158,17 @@ function handleNewPostEvent(msg, dispatch, getState) {
         getStatusesByIds([userId])(dispatch, getState);
     }
 
-    if (post.channel_id === channels.currentId) {
-        if (isActive) {
-            viewChannel(teamId, post.channel_id)(dispatch, getState);
-            switch (post.type) {
-            case Constants.POST_HEADER_CHANGE:
-                updateChannelHeader(post.channel_id, post.props.new_header)(dispatch, getState);
-                break;
-            case Constants.POST_PURPOSE_CHANGE:
-                updateChannelPurpose(post.channel_id, post.props.new_purpose)(dispatch, getState);
-                break;
-            }
-        } else {
-            getChannel(teamId, post.channel_id)(dispatch, getState);
-        }
-    } else if (teamId === teams.currentId || msg.data.channel_type === Constants.DM_CHANNEL) {
-        getChannel(teamId, post.channel_id)(dispatch, getState);
+    switch (post.type) {
+    case Constants.POST_HEADER_CHANGE:
+        updateChannelHeader(post.channel_id, post.props.new_header)(dispatch, getState);
+        break;
+    case Constants.POST_PURPOSE_CHANGE:
+        updateChannelPurpose(post.channel_id, post.props.new_purpose)(dispatch, getState);
+        break;
     }
 
     if (post.root_id && !posts[post.root_id]) {
-        Client.getPost(teamId, post.channel_id, post.root_id).then((data) => {
+        await Client.getPost(teamId, post.channel_id, post.root_id).then((data) => {
             const rootUserId = data.posts[post.root_id].user_id;
             const rootStatus = users.statuses[rootUserId];
             if (!users.profiles[rootUserId]) {
@@ -210,20 +197,18 @@ function handleNewPostEvent(msg, dispatch, getState) {
         },
         channelId: post.channel_id
     }, getState);
+
+    if (userId === users.currentId || post.channel_id === currentChannelId) {
+        markChannelAsRead(post.channel_id);
+    } else {
+        markChannelAsUnread(post.channel_id, msg.data.mentions)(dispatch, getState);
+    }
 }
 
 function handlePostEdited(msg, dispatch, getState) {
-    const state = getState();
-    const channels = state.entities.channels;
-    const isActive = state.entities.general.appState;
     const data = JSON.parse(msg.data.post);
 
     dispatch({type: PostsTypes.RECEIVED_POST, data}, getState);
-
-    if (msg.broadcast.channel_id === channels.currentId && isActive) {
-        // FIXME: Update post should include team_id in the message cause its not always the current team
-        // viewChannel(msg.data.team_id, data.channel_id)(dispatch, getState);
-    }
 }
 
 function handlePostDeleted(msg, dispatch, getState) {
@@ -292,18 +277,6 @@ function handleUserUpdatedEvent(msg, dispatch, getState) {
                 [user.id]: user
             }
         }, getState);
-    }
-}
-
-function handleChannelViewedEvent(msg, dispatch, getState) {
-    const state = getState();
-    const channels = state.entities.channels;
-    const teams = state.entities.teams;
-    const users = state.entities.users;
-
-    if (teams.currentId === msg.broadcast.team_id && channels.currentId !== msg.data.channel_id &&
-        users.currentId === msg.broadcast.user_id) {
-        getChannel(teams.currentId, msg.data.channel_id)(dispatch, getState);
     }
 }
 

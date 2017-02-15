@@ -78,6 +78,7 @@ class ChannelList extends Component {
         onSelectChannel: PropTypes.func.isRequired,
         actions: PropTypes.shape({
             viewChannel: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired,
             closeDMChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
@@ -162,7 +163,8 @@ class ChannelList extends Component {
         } = this.props;
 
         this.props.onSelectChannel(channel.id);
-        this.props.actions.viewChannel(currentTeam.id, channel.id, currentChannel.id);
+        this.props.actions.viewChannel(currentTeam.id, channel.id);
+        this.props.actions.markChannelAsRead(channel.id, currentChannel.id);
     };
 
     handleClose = (channel) => {
@@ -297,7 +299,7 @@ class ChannelList extends Component {
             mentions = member.mention_count;
             unreadCount = channel.total_msg_count - member.msg_count;
 
-            if (member.notify_props && member.notify_props.mark_unread === 'mention') {
+            if (member.notify_props && member.notify_props.mark_unread === Constants.MENTION) {
                 unreadCount = 0;
             }
         }

@@ -7,6 +7,8 @@ const Constants = {
     CHANNELS_CHUNK_SIZE: 50,
     SEARCH_TIMEOUT_MILLISECONDS: 100,
 
+    MENTION: 'mention',
+
     OFFLINE: 'offline',
     AWAY: 'away',
     ONLINE: 'online',

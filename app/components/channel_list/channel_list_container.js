@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {showDirectMessagesModal, showOptionsModal, closeModal} from 'app/actions/navigation';
 import {closeDMChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
 
-import {viewChannel} from 'service/actions/channels';
+import {viewChannel, markChannelAsRead} from 'service/actions/channels';
 import ChannelList from './channel_list';
 
 function mapStateToProps(state, ownProps) {
@@ -20,6 +20,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             viewChannel,
+            markChannelAsRead,
             closeDMChannel,
             leaveChannel,
             markFavorite,
