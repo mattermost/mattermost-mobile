@@ -115,7 +115,7 @@ class ChannelList extends Component {
         this.setState({
             dataSource: this.state.dataSource.cloneWithRows(this.buildData(nextProps))
         });
-        const container = this.refs.scrollContainer;
+        const container = this.scrollContainer;
         if (container && container._visibleRows && container._visibleRows.s1) { //eslint-disable-line no-underscore-dangle
             this.updateUnreadIndicators(container._visibleRows);  //eslint-disable-line no-underscore-dangle
         }
@@ -165,6 +165,11 @@ class ChannelList extends Component {
         this.props.onSelectChannel(channel.id);
         this.props.actions.viewChannel(currentTeam.id, channel.id);
         this.props.actions.markChannelAsRead(channel.id, currentChannel.id);
+    };
+
+    onLayout = (event) => {
+        const {width} = event.nativeEvent.layout;
+        this.width = width;
     };
 
     handleClose = (channel) => {
@@ -303,6 +308,7 @@ class ChannelList extends Component {
                 unreadCount = 0;
             }
         }
+
         return {
             mentions,
             unreadCount
@@ -469,7 +475,7 @@ class ChannelList extends Component {
         if (this.state.showAbove) {
             above = (
                 <UnreadIndicator
-                    style={{top: 55, backgroundColor: theme.mentionBj}}
+                    style={{top: 55, backgroundColor: theme.mentionBj, width: (this.width - 40)}}
                     text={(
                         <FormattedText
                             style={[Styles.indicatorText, {color: theme.mentionColor}]}
@@ -484,7 +490,7 @@ class ChannelList extends Component {
         if (this.state.showBelow) {
             below = (
                 <UnreadIndicator
-                    style={{bottom: 15, backgroundColor: theme.mentionBj}}
+                    style={{bottom: 15, backgroundColor: theme.mentionBj, width: (this.width - 40)}}
                     text={(
                         <FormattedText
                             style={[Styles.indicatorText, {color: theme.mentionColor}]}
@@ -497,7 +503,10 @@ class ChannelList extends Component {
         }
 
         return (
-            <View style={[Styles.container, {backgroundColor: theme.sidebarBg}]}>
+            <View
+                style={[Styles.container, {backgroundColor: theme.sidebarBg}]}
+                onLayout={this.onLayout}
+            >
                 <View style={[Styles.headerContainer, {backgroundColor: theme.sidebarHeaderBg}]}>
                     <Text
                         ellipsizeMode='tail'
