@@ -210,27 +210,6 @@ describe('Actions.Websocket', () => {
         });
     });
 
-    it('Websocket Handle Channel Viewed', (done) => {
-        async function test() {
-            await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
-
-            await Client.viewChannel(
-                TestHelper.basicTeam.id,
-                TestHelper.basicChannel.id
-            );
-
-            setTimeout(() => {
-                const state = store.getState();
-                const entities = state.entities;
-                const {channels} = entities.channels;
-                assert.ok(channels[TestHelper.basicChannel.id]);
-                done();
-            }, 1500);
-        }
-
-        test();
-    });
-
     it('Websocket Handle Channel Deleted', (done) => {
         async function test() {
             await ChannelActions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
@@ -255,30 +234,29 @@ describe('Actions.Websocket', () => {
     });
 
     it('Websocket Handle Direct Channel', (done) => {
-        // TODO: Uncomment once fixed on platform
-        // const test = async () => {
-        //     const client = TestHelper.createClient();
-        //     const user = await client.createUserWithInvite(
-        //         TestHelper.fakeUser(),
-        //         null,
-        //         null,
-        //         TestHelper.basicTeam.invite_id
-        //     );
-        //
-        //     await client.login(user.email, 'password1');
-        //     await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
-        //
-        //     store.subscribe(() => {
-        //         const entities = store.getState().entities;
-        //         const {channels} = entities.channels;
-        //         assert.ok(Object.keys(channels).length);
-        //         done();
-        //     });
-        //
-        //     await client.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id);
-        // };
-        // test();
-        done();
+        async function test() {
+            const client = TestHelper.createClient();
+            const user = await client.createUserWithInvite(
+                TestHelper.fakeUser(),
+                null,
+                null,
+                TestHelper.basicTeam.invite_id
+            );
+
+            await client.login(user.email, 'password1');
+            await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
+
+            setTimeout(() => {
+                const entities = store.getState().entities;
+                const {channels} = entities.channels;
+                assert.ok(Object.keys(channels).length);
+                done();
+            }, 500);
+
+            await client.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id);
+        }
+
+        test();
     });
 
     it('Websocket Handle Preferences Changed', (done) => {

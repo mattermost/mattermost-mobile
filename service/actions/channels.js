@@ -407,8 +407,16 @@ export function deleteChannel(teamId, channelId) {
     };
 }
 
-export function viewChannel(teamId, channelId, prevChannelId = '') {
+export function viewChannel(teamId, channelId) {
     return async (dispatch, getState) => {
+        const state = getState();
+        const {currentId} = state.entities.channels;
+        let prevChannelId = '';
+
+        if (channelId !== currentId) {
+            prevChannelId = currentId;
+        }
+
         dispatch({type: ChannelTypes.UPDATE_LAST_VIEWED_REQUEST}, getState);
 
         try {
@@ -420,41 +428,7 @@ export function viewChannel(teamId, channelId, prevChannelId = '') {
             return;
         }
 
-        const {channels} = getState().entities.channels;
-        let totalMsgCount = 0;
-        if (channels[channelId]) {
-            totalMsgCount = channels[channelId].total_msg_count;
-        }
-        const actions = [{
-            type: ChannelTypes.RECEIVED_LAST_VIEWED,
-            data: {
-                channel_id: channelId,
-                last_viewed_at: new Date().getTime(),
-                total_msg_count: totalMsgCount
-            }
-        }];
-
-        if (prevChannelId) {
-            let prevTotalMsgCount = 0;
-            if (channels[channelId]) {
-                prevTotalMsgCount = channels[channelId].total_msg_count;
-            }
-            actions.push({
-                type: ChannelTypes.RECEIVED_LAST_VIEWED,
-                data: {
-                    channel_id: prevChannelId,
-                    last_viewed_at: new Date().getTime(),
-                    total_msg_count: prevTotalMsgCount
-                }
-            });
-        }
-
-        dispatch(batchActions([
-            ...actions,
-            {
-                type: ChannelTypes.UPDATE_LAST_VIEWED_SUCCESS
-            }
-        ]), getState);
+        dispatch({type: ChannelTypes.UPDATE_LAST_VIEWED_SUCCESS}, getState);
     };
 }
 
@@ -582,6 +556,76 @@ export function updateChannelPurpose(channelId, purpose) {
     };
 }
 
+export function markChannelAsRead(channelId, prevChannelId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+
+        const {channels} = state.entities.channels;
+        let totalMsgCount = 0;
+        if (channels[channelId]) {
+            totalMsgCount = channels[channelId].total_msg_count;
+        }
+        const actions = [{
+            type: ChannelTypes.RECEIVED_LAST_VIEWED,
+            data: {
+                channel_id: channelId,
+                last_viewed_at: new Date().getTime(),
+                total_msg_count: totalMsgCount
+            }
+        }];
+
+        if (prevChannelId) {
+            let prevTotalMsgCount = 0;
+            if (channels[prevChannelId]) {
+                prevTotalMsgCount = channels[prevChannelId].total_msg_count;
+            }
+            actions.push({
+                type: ChannelTypes.RECEIVED_LAST_VIEWED,
+                data: {
+                    channel_id: prevChannelId,
+                    last_viewed_at: new Date().getTime(),
+                    total_msg_count: prevTotalMsgCount
+                }
+            });
+        }
+
+        dispatch(batchActions([...actions]), getState);
+    };
+}
+
+export function markChannelAsUnread(channelId, mentionsArray) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {channels, myMembers} = state.entities.channels;
+        const currentUserId = state.entities.users.currentId;
+        const channel = {...channels[channelId]};
+        const member = {...myMembers[channelId]};
+
+        if (channel && member) {
+            channel.total_msg_count++;
+            if (member.notify_props && member.notify_props.mark_unread === Constants.MENTION) {
+                member.msg_count++;
+            }
+
+            let mentions = [];
+            if (mentionsArray) {
+                mentions = JSON.parse(mentionsArray);
+                if (mentions.indexOf(currentUserId) !== -1) {
+                    member.mention_count++;
+                }
+            }
+
+            dispatch(batchActions([{
+                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+                data: member
+            }, {
+                type: ChannelTypes.RECEIVED_CHANNEL,
+                data: channel
+            }]), getState);
+        }
+    };
+}
+
 export default {
     selectChannel,
     createChannel,
@@ -600,5 +644,7 @@ export default {
     addChannelMember,
     removeChannelMember,
     updateChannelHeader,
-    updateChannelPurpose
+    updateChannelPurpose,
+    markChannelAsRead,
+    markChannelAsUnread
 };

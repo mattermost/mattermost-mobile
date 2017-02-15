@@ -5,9 +5,8 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {closeDrawers} from 'app/actions/navigation';
-import {closeDMChannel, handleSelectChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
+import {handleSelectChannel} from 'app/actions/views/channel';
 
-import {viewChannel} from 'service/actions/channels';
 import {getChannelsByCategory, getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
@@ -27,12 +26,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            viewChannel,
-            closeDMChannel,
             closeDrawers,
-            leaveChannel,
-            markFavorite,
-            unmarkFavorite,
             handleSelectChannel
         }, dispatch)
     };
