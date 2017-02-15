@@ -89,6 +89,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 export default class AtMention extends Component {
     static propTypes = {
+        currentUserId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
@@ -115,10 +116,7 @@ export default class AtMention extends Component {
             sectionHeaderHasChanged: (s1, s2) => s1 !== s2,
             rowHasChanged: (r1, r2) => r1 !== r2
         });
-        const data = {
-            inChannel: [],
-            notInChannel: []
-        };
+        const data = {};
         this.state = {
             active: false,
             dataSource: ds.cloneWithRowsAndSections(data)
@@ -128,10 +126,11 @@ export default class AtMention extends Component {
     componentWillReceiveProps(nextProps) {
         const match = nextProps.postDraft.substring(0, this.props.cursorPosition).match(AT_MENTION_REGEX);
 
-        if (!match) {
+        if (!match || this.state.mentionComplete) {
             this.setState({
                 active: false,
-                matchTerm: null
+                matchTerm: null,
+                mentionComplete: false
             });
             return;
         }
@@ -148,28 +147,66 @@ export default class AtMention extends Component {
         }
 
         if (nextProps.requestStatus !== RequestStatus.STARTED) {
-            const membersInChannel = nextProps.autocompleteUsersInCurrentChannel.in_channel || [];
+            let membersInChannel = nextProps.autocompleteUsersInCurrentChannel.in_channel || [];
             const membersOutOfChannel = nextProps.autocompleteUsersInCurrentChannel.out_of_channel || [];
-            const data = {
-                inChannel: membersInChannel,
-                notInChannel: membersOutOfChannel
-            };
+
+            // filter the current user out
+            membersInChannel = membersInChannel.filter((m) => m.id !== this.props.currentUserId);
+
+            let data = {};
+            if (membersInChannel.length > 0) {
+                data = Object.assign({}, data, {inChannel: membersInChannel});
+            }
+            if (this.checkSpecialMentions(matchTerm)) {
+                data = Object.assign({}, data, {specialMentions: this.getSpecialMentions()});
+            }
+            if (membersOutOfChannel.length > 0) {
+                data = Object.assign({}, data, {notInChannel: membersOutOfChannel});
+            }
+
             this.setState({
-                active: true,
+                active: data.hasOwnProperty('inChannel') || data.hasOwnProperty('specialMentions') || data.hasOwnProperty('notInChannel'),
                 dataSource: this.state.dataSource.cloneWithRowsAndSections(data)
             });
         }
     }
 
+    getSpecialMentions = () => {
+        return [{
+            completeHandle: 'all',
+            id: 'suggestion.mention.all',
+            defaultMessage: 'Notifies everyone in the channel, use in {townsquare} to notify the whole team',
+            values: {
+                townsquare: this.props.defaultChannel.display_name
+            }
+        }, {
+            completeHandle: 'channel',
+            id: 'suggestion.mention.channel',
+            defaultMessage: 'Notifies everyone in the channel'
+        }, {
+            completeHandle: 'here',
+            id: 'suggestions.mention.here',
+            defaultMessage: 'Notifies everyone in the channel and online'
+        }];
+    }
+
+    checkSpecialMentions = (term) => {
+        return this.getSpecialMentions().filter((m) => m.completeHandle.includes(term)).length > 0;
+    }
+
     completeMention = (mention) => {
         const mentionPart = this.props.postDraft.substring(0, this.props.cursorPosition);
 
-        let completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention}`);
+        let completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
         if (this.props.postDraft.length > this.props.cursorPosition) {
             completedDraft += this.props.postDraft.substring(this.props.cursorPosition);
         }
 
         this.props.actions.changePostDraft(this.props.currentChannelId, completedDraft);
+        this.setState({
+            active: false,
+            mentionComplete: true
+        });
     }
 
     renderSectionHeader = (sectionData, sectionId) => {
@@ -183,6 +220,10 @@ export default class AtMention extends Component {
             notInChannel: {
                 id: 'suggestion.mention.nonmembers',
                 defaultMessage: 'Not in Channel'
+            },
+            specialMentions: {
+                id: 'suggestion.mention.special',
+                defaultMessage: 'Special Mentions'
             }
         };
 
@@ -199,7 +240,11 @@ export default class AtMention extends Component {
         );
     }
 
-    renderRow = (data) => {
+    renderRow = (data, sectionId) => {
+        if (sectionId === 'specialMentions') {
+            return this.renderSpecialMentions(data);
+        }
+
         const style = getStyleFromTheme(this.props.theme);
         const hasFullName = data.first_name.length > 0 && data.last_name.length > 0;
 
@@ -223,96 +268,47 @@ export default class AtMention extends Component {
         );
     }
 
-    renderFooter = () => {
+    renderSpecialMentions = (data) => {
         const style = getStyleFromTheme(this.props.theme);
 
         return (
-            <View>
-                <View style={style.section}>
-                    <FormattedText
-                        id='suggestion.mention.special'
-                        defaultMessage='Special Mentions'
-                        style={style.sectionText}
+            <TouchableOpacity
+                onPress={() => this.completeMention(data.completeHandle)}
+                style={style.row}
+            >
+                <View style={style.rowPicture}>
+                    <Icon
+                        name='users'
+                        style={style.rowIcon}
                     />
                 </View>
-                <TouchableOpacity
-                    onPress={() => this.completeMention('all')}
-                    style={style.row}
-                >
-                    <View style={style.rowPicture}>
-                        <Icon
-                            name='users'
-                            style={style.rowIcon}
-                        />
-                    </View>
-                    <Text style={style.textWrapper}>
-                        <Text style={style.rowUsername}>{'@all'}</Text>
-                        <Text style={style.rowUsername}>{' - '}</Text>
-                        <FormattedText
-                            id='suggestion.mention.all'
-                            defaultMessage='Notifies everyone in the channel, use in {townsquare} to notify the whole team'
-                            values={{townsquare: this.props.defaultChannel.display_name}}
-                            style={[style.rowFullname, {flex: 1}]}
-                        />
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => this.completeMention('channel')}
-                    style={style.row}
-                >
-                    <View style={style.rowPicture}>
-                        <Icon
-                            name='users'
-                            style={style.rowIcon}
-                        />
-                    </View>
-                    <Text style={style.textWrapper}>
-                        <Text style={style.rowUsername}>{'@channel'}</Text>
-                        <Text style={style.rowUsername}>{' - '}</Text>
-                        <FormattedText
-                            id='suggestion.mention.channel'
-                            defaultMessage='Notifies everyone in the channel'
-                            style={style.rowFullname}
-                        />
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => this.completeMention('here')}
-                    style={style.row}
-                >
-                    <View style={style.rowPicture}>
-                        <Icon
-                            name='users'
-                            style={style.rowIcon}
-                        />
-                    </View>
-                    <Text style={style.textWrapper}>
-                        <Text style={style.rowUsername}>{'@here'}</Text>
-                        <Text style={style.rowUsername}>{' - '}</Text>
-                        <FormattedText
-                            id='suggestion.mention.here'
-                            defaultMessage='Notifies everyone in the channel and online'
-                            style={style.rowFullname}
-                        />
-                    </Text>
-                </TouchableOpacity>
-            </View>
+                <Text style={style.textWrapper}>
+                    <Text style={style.rowUsername}>{`@${data.completeHandle}`}</Text>
+                    <Text style={style.rowUsername}>{' - '}</Text>
+                    <FormattedText
+                        id={data.id}
+                        defaultMessage={data.defaultMessage}
+                        values={data.values}
+                        style={[style.rowFullname, {flex: 1}]}
+                    />
+                </Text>
+            </TouchableOpacity>
         );
     }
 
     render() {
-        if (!this.state.active) {
+        const {autocompleteUsersInCurrentChannel, requestStatus} = this.props;
+        if (!this.state.active && (requestStatus !== RequestStatus.STARTED || requestStatus !== RequestStatus.SUCCESS)) {
             // If we are not in an active state return null so nothing is rendered
             // other components are not blocked.
             return null;
         }
 
         const style = getStyleFromTheme(this.props.theme);
-        const {autocompleteUsersInCurrentChannel, requestStatus} = this.props;
 
         if (
-            (!autocompleteUsersInCurrentChannel.in_channel || !autocompleteUsersInCurrentChannel.in_channel.length) &&
-            (!autocompleteUsersInCurrentChannel.out_of_channel || !autocompleteUsersInCurrentChannel.out_of_channel.length) &&
+            !autocompleteUsersInCurrentChannel.in_channel &&
+            !autocompleteUsersInCurrentChannel.out_of_channel &&
             requestStatus === RequestStatus.STARTED
         ) {
             return (

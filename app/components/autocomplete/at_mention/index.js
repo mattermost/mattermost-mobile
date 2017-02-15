@@ -16,6 +16,7 @@ function mapStateToProps(state) {
     const currentChannelId = state.entities.channels.currentId;
     const postDraft = state.views.channel.drafts[currentChannelId];
     return {
+        currentUserId: state.entities.users.currentId,
         currentChannelId,
         currentTeamId: state.entities.teams.currentId,
         defaultChannel: getDefaultChannel(state),
