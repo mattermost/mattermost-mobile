@@ -128,8 +128,11 @@ export default class Client {
         }
 
         return {
-            headers,
-            ...options
+            ...options,
+            headers: {
+                ...headers,
+                ...(options.headers || {})
+            }
         };
     }
 
