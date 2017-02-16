@@ -127,7 +127,7 @@ class MoreDirectMessages extends PureComponent {
         let {page} = this.state;
         if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
             page = page + 1;
-            this.props.actions.getProfiles(page, Constants.PROFILE_CHUNK_SIZE).
+            this.props.actions.getProfiles(page * Constants.PROFILE_CHUNK_SIZE, Constants.PROFILE_CHUNK_SIZE).
             then((data) => {
                 if (Object.keys(data).length) {
                     this.setState({
