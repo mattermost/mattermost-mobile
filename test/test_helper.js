@@ -110,7 +110,7 @@ class TestHelper {
     };
 
     initBasic = async (client = this.createClient()) => {
-        client.setUrl(Config.DefaultServerUrl);
+        client.setUrl(Config.TestServerUrl || Config.DefaultServerUrl);
         this.basicClient = client;
 
         this.basicUser = await client.createUser(this.fakeUser());
