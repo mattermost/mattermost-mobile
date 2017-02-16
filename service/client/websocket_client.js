@@ -22,9 +22,14 @@ class WebSocketClient {
         this.connectingCallback = null;
         this.dispatch = null;
         this.getState = null;
+        this.stop = false;
     }
 
-    initialize(connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
+    initialize(forceConnection = true, connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
+        if (forceConnection) {
+            this.stop = false;
+        }
+
         return new Promise((resolve, reject) => {
             if (this.conn) {
                 resolve();
@@ -104,7 +109,10 @@ class WebSocketClient {
 
                 setTimeout(
                     () => {
-                        this.initialize(connectionUrl, token, dispatch, getState, webSocketConnector);
+                        if (this.stop) {
+                            return;
+                        }
+                        this.initialize(false, connectionUrl, token, dispatch, getState, webSocketConnector);
                     },
                     retryTime
                 );
@@ -158,7 +166,8 @@ class WebSocketClient {
         this.closeCallback = callback;
     }
 
-    close() {
+    close(stop = false) {
+        this.stop = stop;
         this.connectFailCount = 0;
         this.sequence = 1;
         if (this.conn && this.conn.readyState === Socket.OPEN) {
@@ -180,7 +189,7 @@ class WebSocketClient {
             this.conn.send(JSON.stringify(msg));
         } else if (!this.conn || this.conn.readyState === Socket.CLOSED) {
             this.conn = null;
-            this.initialize(this.connectionUrl, this.token, this.dispatch, this.getState);
+            this.initialize(false, this.connectionUrl, this.token, this.dispatch, this.getState);
         }
     }
 

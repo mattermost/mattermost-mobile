@@ -60,13 +60,13 @@ export function init(siteUrl, token, optionalWebSocket) {
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
         websocketClient.setConnectingCallback(handleConnecting);
-        return websocketClient.initialize(connUrl, authToken, dispatch, getState, optionalWebSocket);
+        return websocketClient.initialize(true, connUrl, authToken, dispatch, getState, optionalWebSocket);
     };
 }
 
 export function close() {
     return async (dispatch, getState) => {
-        websocketClient.close();
+        websocketClient.close(true);
         if (dispatch) {
             dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'}, getState);
         }
