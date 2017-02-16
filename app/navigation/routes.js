@@ -124,7 +124,10 @@ export const Routes = {
     Thread: {
         key: 'Thread',
         transition: RouteTransitions.Horizontal,
-        component: Thread
+        component: Thread,
+        navigationProps: {
+            title: {id: 'mobile.routes.thread', defaultMessage: 'Thread'}
+        }
     }
 };
 
