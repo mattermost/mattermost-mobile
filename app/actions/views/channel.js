@@ -11,8 +11,9 @@ import {
     fetchMyChannelsAndMembers,
     getMyChannelMembers,
     selectChannel,
-    leaveChannel as serviceLeaveChannel} from 'service/actions/channels';
-import {getPosts} from 'service/actions/posts';
+    leaveChannel as serviceLeaveChannel
+} from 'service/actions/channels';
+import {getPosts, getPostsSince} from 'service/actions/posts';
 import {getFilesForPost} from 'service/actions/files';
 import {savePreferences, deletePreferences} from 'service/actions/preferences';
 import {getTeamMembersByIds} from 'service/actions/teams';
@@ -87,15 +88,20 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 
 export function loadPostsIfNecessary(channel) {
     return async (dispatch, getState) => {
-        const postsInChannel = getState().entities.posts.postsByChannel[channel.id];
+        const state = getState();
+        const postsInChannel = state.entities.posts.postsByChannel[channel.id];
 
-        if (!postsInChannel) {
-            let teamId = channel.team_id;
-            if (!teamId) {
-                teamId = getState().entities.teams.currentId;
-            }
-            await getPosts(teamId, channel.id)(dispatch, getState);
+        // Make sure we include a team id for DM channels
+        const teamId = channel.team_id || state.entities.teams.currentId;
+
+        // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+        if (!postsInChannel || postsInChannel.length < Constants.POST_CHUNK_SIZE) {
+            return getPosts(teamId, channel.id)(dispatch, getState);
         }
+
+        const latestPostInChannel = state.entities.posts.posts[postsInChannel[0]];
+
+        return getPostsSince(teamId, channel.id, latestPostInChannel.create_at)(dispatch, getState);
     };
 }
 

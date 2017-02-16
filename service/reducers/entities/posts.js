@@ -38,7 +38,10 @@ function handleReceivedPosts(posts = {}, postsByChannel = {}, action) {
     const postsInChannel = postsByChannel[channelId] ? [...postsByChannel[channelId]] : [];
 
     for (const newPost of Object.values(newPosts)) {
-        nextPosts[newPost.id] = newPost;
+        // Only change the stored post if it's changed since we last received it
+        if (!nextPosts[newPost.id] || nextPosts[newPost.id].update_at > newPost.update_at) {
+            nextPosts[newPost.id] = newPost;
+        }
 
         if (postsInChannel.indexOf(newPost.id) === -1) {
             // Just add the post id to the end of the order and we'll sort it out later
