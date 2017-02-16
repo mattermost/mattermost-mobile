@@ -22,6 +22,7 @@ class WebSocketClient {
         this.connectingCallback = null;
         this.dispatch = null;
         this.getState = null;
+        this.stop = false;
     }
 
     initialize(connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
@@ -104,6 +105,9 @@ class WebSocketClient {
 
                 setTimeout(
                     () => {
+                        if (this.stop) {
+                            return;
+                        }
                         this.initialize(connectionUrl, token, dispatch, getState, webSocketConnector);
                     },
                     retryTime
@@ -158,7 +162,8 @@ class WebSocketClient {
         this.closeCallback = callback;
     }
 
-    close() {
+    close(stop = false) {
+        this.stop = stop;
         this.connectFailCount = 0;
         this.sequence = 1;
         if (this.conn && this.conn.readyState === Socket.OPEN) {

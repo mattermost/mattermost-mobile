@@ -66,7 +66,7 @@ export function init(siteUrl, token, optionalWebSocket) {
 
 export function close() {
     return async (dispatch, getState) => {
-        websocketClient.close();
+        websocketClient.close(true);
         if (dispatch) {
             dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'}, getState);
         }
