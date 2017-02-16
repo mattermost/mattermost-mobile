@@ -60,6 +60,10 @@ describe('Actions.Files', () => {
 
         assert.ok(allFiles);
         assert.ok(allFiles[fileId]);
+        assert.equal(allFiles[fileId].id, fileId);
+
+        assert.ok(fileIdsByPostId);
         assert.ok(fileIdsByPostId[basicPost.id]);
+        assert.equal(fileIdsByPostId[basicPost.id][0], fileId);
     });
 });
