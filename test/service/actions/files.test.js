@@ -28,7 +28,7 @@ describe('Actions.Files', () => {
     });
 
     it('getFilesForPost', async () => {
-        const {basicClient, basicTeam, basicChannel, basicPost} = TestHelper;
+        const {basicClient, basicTeam, basicChannel} = TestHelper;
 
         const testImageData = fs.readFileSync('test/assets/images/test.png');
         const clientId = TestHelper.generateId();
@@ -43,16 +43,19 @@ describe('Actions.Files', () => {
             uploadFile(basicTeam.id, basicChannel.id, clientId, imageFormData, formBoundary);
         const fileId = fileUploadResp.file_infos[0];
 
-        const post = TestHelper.fakePost(basicChannel.id);
-        post.file_ids = [fileId];
-        await PostActions.createPost(basicTeam.id, post)(store.dispatch, store.getState);
+        const fakePostForFile = TestHelper.fakePost(basicChannel.id);
+        fakePostForFile.file_ids = [fileId];
+        const postForFile = await PostActions.createPost(
+            basicTeam.id,
+            fakePostForFile
+        )(store.dispatch, store.getState);
         const postRequest = store.getState().requests.posts.createPost;
         if (postRequest.status === RequestStatus.FAILURE) {
             throw new Error(JSON.stringify(postRequest.error));
         }
 
         await Actions.getFilesForPost(
-            basicTeam.id, basicChannel.id, basicPost.id
+            basicTeam.id, basicChannel.id, postForFile.id
         )(store.dispatch, store.getState);
 
         const filesRequest = store.getState().requests.files.getFilesForPost;
@@ -67,7 +70,7 @@ describe('Actions.Files', () => {
         assert.equal(allFiles[fileId].id, fileId);
 
         assert.ok(fileIdsByPostId);
-        assert.ok(fileIdsByPostId[basicPost.id]);
-        assert.equal(fileIdsByPostId[basicPost.id][0], fileId);
+        assert.ok(fileIdsByPostId[postForFile.id]);
+        assert.equal(fileIdsByPostId[postForFile.id][0], fileId);
     });
 });
