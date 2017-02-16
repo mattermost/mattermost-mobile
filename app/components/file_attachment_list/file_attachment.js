@@ -34,7 +34,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5)
         },
         fileInfoContainer: {
-            padding: 5,
+            paddingVertical: 5,
+            paddingHorizontal: 8,
             flex: 1
         },
         fileName: {
@@ -45,15 +46,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexWrap: 'wrap'
         },
         filePreview: {
+            width: 60,
+            height: 60
+        },
+        filePreviewWrapper: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 100,
             width: 100,
-            height: 100
+            backgroundColor: theme.centerChannelColor
         },
         fileWrapper: {
             flex: 1,
             flexDirection: 'row',
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            maxWidth: 250,
             marginTop: 10
         }
     });
@@ -94,10 +101,12 @@ export default class FileAttachment extends Component {
 
         return (
             <View style={style.fileWrapper}>
-                <Image
-                    style={style.filePreview}
-                    source={Utils.getFileIconPath(file)}
-                />
+                <View style={style.filePreviewWrapper}>
+                    <Image
+                        style={style.filePreview}
+                        source={Utils.getFileIconPath(file)}
+                    />
+                </View>
                 {this.renderFileInfo()}
             </View>
         );
