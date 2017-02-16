@@ -13,7 +13,6 @@ const Styles = StyleSheet.create({
         position: 'absolute',
         borderRadius: 15,
         marginHorizontal: 15,
-        flex: 1,
         height: 25
     }
 });
