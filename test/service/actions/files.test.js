@@ -28,8 +28,8 @@ describe('Actions.Files', () => {
 
     it('getFilesForPost', async () => {
         const {basicClient, basicTeam, basicChannel} = TestHelper;
-
-        const testImageData = fs.createReadStream('test/assets/images/test.png');
+        const testFileName = 'test.png';
+        const testImageData = fs.createReadStream(`test/assets/images/${testFileName}`);
         const clientId = TestHelper.generateId();
 
         const imageFormData = new FormData();
@@ -60,6 +60,7 @@ describe('Actions.Files', () => {
         assert.ok(allFiles);
         assert.ok(allFiles[fileId]);
         assert.equal(allFiles[fileId].id, fileId);
+        assert.equal(allFiles[fileId].name, testFileName);
 
         assert.ok(fileIdsByPostId);
         assert.ok(fileIdsByPostId[postForFile.id]);
