@@ -258,29 +258,4 @@ describe('Actions.Websocket', () => {
 
         test();
     });
-
-    it('Websocket Handle Preferences Changed', (done) => {
-        async function test() {
-            const client = TestHelper.createClient();
-            const user = await client.createUserWithInvite(
-                TestHelper.fakeUser(),
-                null,
-                null,
-                TestHelper.basicTeam.invite_id
-            );
-            await client.login(user.email, 'password1');
-            const dm = await client.createDirectChannel(TestHelper.basicTeam.id, TestHelper.basicUser.id);
-            const post = {...TestHelper.fakePost(), channel_id: dm.id};
-            await client.createPost(TestHelper.basicTeam.id, post);
-
-            setTimeout(() => {
-                const entities = store.getState().entities;
-                const preferences = entities.preferences.myPreferences;
-                assert.ok(preferences[`${Constants.CATEGORY_DIRECT_CHANNEL_SHOW}--${user.id}`]);
-                done();
-            }, 500);
-        }
-
-        test();
-    });
 });
