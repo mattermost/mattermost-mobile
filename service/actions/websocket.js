@@ -60,7 +60,7 @@ export function init(siteUrl, token, optionalWebSocket) {
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
         websocketClient.setConnectingCallback(handleConnecting);
-        return websocketClient.initialize(connUrl, authToken, dispatch, getState, optionalWebSocket);
+        return websocketClient.initialize(true, connUrl, authToken, dispatch, getState, optionalWebSocket);
     };
 }
 

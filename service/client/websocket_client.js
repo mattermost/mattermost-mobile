@@ -25,7 +25,11 @@ class WebSocketClient {
         this.stop = false;
     }
 
-    initialize(connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
+    initialize(forceConnection = true, connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
+        if (forceConnection) {
+            this.stop = false;
+        }
+
         return new Promise((resolve, reject) => {
             if (this.conn) {
                 resolve();
@@ -108,7 +112,7 @@ class WebSocketClient {
                         if (this.stop) {
                             return;
                         }
-                        this.initialize(connectionUrl, token, dispatch, getState, webSocketConnector);
+                        this.initialize(false, connectionUrl, token, dispatch, getState, webSocketConnector);
                     },
                     retryTime
                 );
@@ -185,7 +189,7 @@ class WebSocketClient {
             this.conn.send(JSON.stringify(msg));
         } else if (!this.conn || this.conn.readyState === Socket.CLOSED) {
             this.conn = null;
-            this.initialize(this.connectionUrl, this.token, this.dispatch, this.getState);
+            this.initialize(false, this.connectionUrl, this.token, this.dispatch, this.getState);
         }
     }
 
