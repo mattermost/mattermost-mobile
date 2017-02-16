@@ -4,6 +4,8 @@
 import fs from 'fs';
 import assert from 'assert';
 
+const FormData = require('form-data');
+
 import * as Actions from 'service/actions/files';
 import Client from 'service/client';
 import configureStore from 'app/store';
@@ -26,10 +28,17 @@ describe('Actions.Files', () => {
 
     it('getFilesForPost', async () => {
         const {basicClient, basicTeam, basicChannel, basicPost} = TestHelper;
-        const testImgData = fs.readFileSync('test/assets/images/test.png');
+        const testImageData = fs.readFileSync('test/assets/images/test.png');
         const clientId = TestHelper.generateId();
+
+        const imageFormData = new FormData();
+        imageFormData.append('files', testImageData);
+        imageFormData.append('channel_id', basicChannel.id);
+        imageFormData.append('client_ids', clientId);
+        const formBoundary = imageFormData.getBoundary();
+
         const fileUploadResp = await basicClient.
-            uploadFile(basicTeam.id, basicChannel.id, clientId, testImgData);
+            uploadFile(basicTeam.id, basicChannel.id, clientId, imageFormData, formBoundary);
         const fileId = fileUploadResp.file_infos[0];
 
         await Actions.getFilesForPost(

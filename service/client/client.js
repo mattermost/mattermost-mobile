@@ -623,20 +623,15 @@ export default class Client {
         );
     };
 
-    uploadFile = async (teamId, channelId, clientId, imageData) => {
-        const imageFormData = new FormData();
-        imageFormData.append('files', imageData);
-        imageFormData.append('channel_id', channelId);
-        imageFormData.append('client_ids', clientId);
-
+    uploadFile = async (teamId, channelId, clientId, fileFormData, formBoundary) => {
         return this.doFetch(
             `${this.getTeamNeededRoute(teamId)}/files/upload`,
             {
                 method: 'post',
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': `multipart/form-data; boundary=${formBoundary}`
                 },
-                body: imageFormData
+                body: fileFormData
             }
         );
     };
