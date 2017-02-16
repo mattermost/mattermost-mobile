@@ -7,7 +7,6 @@ import assert from 'assert';
 const FormData = require('form-data');
 
 import * as Actions from 'service/actions/files';
-import * as PostActions from 'service/actions/posts';
 import Client from 'service/client';
 import configureStore from 'app/store';
 import {RequestStatus} from 'service/constants';
@@ -45,14 +44,7 @@ describe('Actions.Files', () => {
 
         const fakePostForFile = TestHelper.fakePost(basicChannel.id);
         fakePostForFile.file_ids = [fileId];
-        const postForFile = await PostActions.createPost(
-            basicTeam.id,
-            fakePostForFile
-        )(store.dispatch, store.getState);
-        const postRequest = store.getState().requests.posts.createPost;
-        if (postRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(postRequest.error));
-        }
+        const postForFile = await Client.createPost(basicTeam.id, fakePostForFile);
 
         await Actions.getFilesForPost(
             basicTeam.id, basicChannel.id, postForFile.id
