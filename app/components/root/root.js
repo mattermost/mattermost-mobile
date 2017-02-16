@@ -6,7 +6,7 @@ import {AppState} from 'react-native';
 import {getTranslations} from 'service/i18n';
 import {IntlProvider} from 'react-intl';
 
-export default class RootLayout extends React.Component {
+export default class Root extends React.Component {
     static propTypes = {
         children: React.PropTypes.node,
         locale: React.PropTypes.string.isRequired,

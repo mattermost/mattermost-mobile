@@ -2,14 +2,9 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {
-    KeyboardAvoidingView,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    View
-} from 'react-native';
+import {StatusBar, StyleSheet} from 'react-native';
 
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -40,57 +35,25 @@ export default class Thread extends React.Component {
         this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
     };
 
-    renderAndroid = (children) => {
-        const style = getStyle(this.props.theme);
-
-        return (
-            <View style={style.container}>
-                {children}
-            </View>
-        );
-    };
-
     render() {
         const style = getStyle(this.props.theme);
 
-        const status = (
-            <StatusBar
-                key='statusBar'
-                barStyle='light-content'
-            />
-        );
-        const postList = (
-            <PostList
-                key='postList'
-                posts={this.props.posts}
-            />
-        );
-
-        const postTextBox = (
-            <PostTextbox
-                key='postTextBox'
-                rootId={this.props.rootId}
-                value={this.props.draft}
-                teamId={this.props.teamId}
-                channelId={this.props.channelId}
-                onChangeText={this.handleDraftChanged}
-            />
-        );
-
-        if (Platform.OS === 'android') {
-            return this.renderAndroid([status, postList, postTextBox]);
-        }
-
         return (
-            <KeyboardAvoidingView
+            <KeyboardLayout
                 behavior='padding'
                 style={style.container}
                 keyboardVerticalOffset={65}
             >
-                {status}
-                {postList}
-                {postTextBox}
-            </KeyboardAvoidingView>
+                <StatusBar barStyle='light-content'/>
+                <PostList posts={this.props.posts}/>
+                <PostTextbox
+                    rootId={this.props.rootId}
+                    value={this.props.draft}
+                    teamId={this.props.teamId}
+                    channelId={this.props.channelId}
+                    onChangeText={this.handleDraftChanged}
+                />
+            </KeyboardLayout>
         );
     }
 }

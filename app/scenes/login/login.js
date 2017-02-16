@@ -6,17 +6,16 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Image,
     Keyboard,
-    KeyboardAvoidingView,
-    Platform,
     Text,
     TextInput,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-
 import Button from 'react-native-button';
-import FormattedText from 'app/components/formatted_text';
+
 import ErrorText from 'app/components/error_text';
+import FormattedText from 'app/components/formatted_text';
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import {GlobalStyles} from 'app/styles';
 
@@ -176,73 +175,65 @@ class Login extends Component {
             return <Loading/>;
         }
 
-        const scene = (
-            <TouchableWithoutFeedback onPress={this.blur}>
-                <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                    <Image
-                        source={logo}
-                    />
-                    <Text style={GlobalStyles.header}>
-                        {this.props.config.SiteName}
-                    </Text>
-                    <FormattedText
-                        style={GlobalStyles.subheader}
-                        id='web.root.signup_info'
-                        defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                    />
-                    <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
-                    <TextInput
-                        ref={this.loginRef}
-                        value={this.props.loginId}
-                        onChangeText={this.props.actions.handleLoginIdChanged}
-                        style={GlobalStyles.inputBox}
-                        placeholder={this.createLoginPlaceholder()}
-                        autoCorrect={false}
-                        autoCapitalize='none'
-                        keyboardType='email-address'
-                        returnKeyType='next'
-                        underlineColorAndroid='transparent'
-                        onSubmitEditing={this.passwordFocus}
-                    />
-                    <TextInput
-                        ref={this.passwordRef}
-                        value={this.props.password}
-                        onChangeText={this.props.actions.handlePasswordChanged}
-                        style={GlobalStyles.inputBox}
-                        placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                        secureTextEntry={true}
-                        autoCorrect={false}
-                        autoCapitalize='none'
-                        underlineColorAndroid='transparent'
-                        returnKeyType='go'
-                        onSubmitEditing={this.preSignIn}
-                    />
-                    <Button
-                        onPress={this.preSignIn}
-                        containerStyle={GlobalStyles.signupButton}
-                    >
-                        <FormattedText
-                            id='login.signIn'
-                            defaultMessage='Sign in'
-                            style={GlobalStyles.signupButtonText}
-                        />
-                    </Button>
-                </View>
-            </TouchableWithoutFeedback>
-        );
-
-        if (Platform.OS === 'android') {
-            return scene;
-        }
-
         return (
-            <KeyboardAvoidingView
+            <KeyboardLayout
                 behavior='padding'
                 style={{flex: 1}}
                 keyboardVerticalOffset={65}
             >
-                {scene}
-            </KeyboardAvoidingView>
+                <TouchableWithoutFeedback onPress={this.blur}>
+                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                        <Image
+                            source={logo}
+                        />
+                        <Text style={GlobalStyles.header}>
+                            {this.props.config.SiteName}
+                        </Text>
+                        <FormattedText
+                            style={GlobalStyles.subheader}
+                            id='web.root.signup_info'
+                            defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                        />
+                        <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
+                        <TextInput
+                            ref={this.loginRef}
+                            value={this.props.loginId}
+                            onChangeText={this.props.actions.handleLoginIdChanged}
+                            style={GlobalStyles.inputBox}
+                            placeholder={this.createLoginPlaceholder()}
+                            autoCorrect={false}
+                            autoCapitalize='none'
+                            keyboardType='email-address'
+                            returnKeyType='next'
+                            underlineColorAndroid='transparent'
+                            onSubmitEditing={this.passwordFocus}
+                        />
+                        <TextInput
+                            ref={this.passwordRef}
+                            value={this.props.password}
+                            onChangeText={this.props.actions.handlePasswordChanged}
+                            style={GlobalStyles.inputBox}
+                            placeholder={this.props.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            secureTextEntry={true}
+                            autoCorrect={false}
+                            autoCapitalize='none'
+                            underlineColorAndroid='transparent'
+                            returnKeyType='go'
+                            onSubmitEditing={this.preSignIn}
+                        />
+                        <Button
+                            onPress={this.preSignIn}
+                            containerStyle={GlobalStyles.signupButton}
+                        >
+                            <FormattedText
+                                id='login.signIn'
+                                defaultMessage='Sign in'
+                                style={GlobalStyles.signupButtonText}
+                            />
+                        </Button>
+                    </View>
+                </TouchableWithoutFeedback>
+            </KeyboardLayout>
         );
     }
 }
