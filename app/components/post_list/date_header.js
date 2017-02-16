@@ -48,6 +48,10 @@ export default class DateHeader extends React.Component {
                     <FormattedDate
                         style={style.date}
                         value={this.props.date}
+                        weekday='short'
+                        day='2-digit'
+                        month='short'
+                        year='numeric'
                     />
                 </View>
                 <View style={style.line}/>
