@@ -46,6 +46,10 @@ describe('Actions.Files', () => {
         const post = TestHelper.fakePost(basicChannel.id);
         post.file_ids = [fileId];
         await PostActions.createPost(basicTeam.id, post)(store.dispatch, store.getState);
+        const postRequest = store.getState().requests.posts.createPost;
+        if (postRequest.status === RequestStatus.FAILURE) {
+            throw new Error(JSON.stringify(postRequest.error));
+        }
 
         await Actions.getFilesForPost(
             basicTeam.id, basicChannel.id, basicPost.id
