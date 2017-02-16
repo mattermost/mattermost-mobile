@@ -29,7 +29,7 @@ describe('Actions.Files', () => {
     it('getFilesForPost', async () => {
         const {basicClient, basicTeam, basicChannel} = TestHelper;
 
-        const testImageData = fs.readFileSync('test/assets/images/test.png');
+        const testImageData = fs.createReadStream('test/assets/images/test.png');
         const clientId = TestHelper.generateId();
 
         const imageFormData = new FormData();
@@ -40,11 +40,11 @@ describe('Actions.Files', () => {
 
         const fileUploadResp = await basicClient.
             uploadFile(basicTeam.id, basicChannel.id, clientId, imageFormData, formBoundary);
-        const fileId = fileUploadResp.file_infos[0];
+        const fileId = fileUploadResp.file_infos[0].id;
 
         const fakePostForFile = TestHelper.fakePost(basicChannel.id);
         fakePostForFile.file_ids = [fileId];
-        const postForFile = await Client.createPost(basicTeam.id, fakePostForFile);
+        const postForFile = await basicClient.createPost(basicTeam.id, fakePostForFile);
 
         await Actions.getFilesForPost(
             basicTeam.id, basicChannel.id, postForFile.id
