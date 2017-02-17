@@ -12,38 +12,33 @@ import {
     StyleSheet
 } from 'react-native';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'service/utils/file_utils.js';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        fileIcon: {
-            width: 60,
-            height: 60
-        },
-        fileIconWrapper: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 100,
-            height: 100,
-            backgroundColor: theme.centerChannelColor
-        }
-    });
+const styles = StyleSheet.create({
+    fileIcon: {
+        width: 60,
+        height: 60
+    },
+    fileIconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 100,
+        height: 100,
+        backgroundColor: '#fff'
+    }
 });
 
 export default class FileAttachmentIcon extends Component {
     static propTypes = {
-        file: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        file: PropTypes.object.isRequired
     };
 
     render() {
-        const {file, theme} = this.props;
-        const style = getStyleSheet(theme);
+        const {file} = this.props;
         return (
-            <View style={style.fileIconWrapper}>
+            <View style={styles.fileIconWrapper}>
                 <Image
-                    style={style.fileIcon}
+                    style={styles.fileIcon}
                     source={Utils.getFileIconPath(file)}
                 />
             </View>
