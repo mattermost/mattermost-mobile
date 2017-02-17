@@ -1,12 +1,15 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import Client from 'service/client';
-
-import {PreferencesTypes} from 'service/constants';
-import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-
 import {batchActions} from 'redux-batched-actions';
+
+import Client from 'service/client';
+import {Preferences, PreferencesTypes} from 'service/constants';
+import {getMyPreferences as getMyPreferencesSelector} from 'service/selectors/entities/preferences';
+import {getCurrentUserId} from 'service/selectors/entities/users';
+import {getPreferenceKey} from 'service/utils/preference_utils';
+
+import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 export function getMyPreferences() {
     return bindClientFunc(
@@ -65,8 +68,23 @@ export function deletePreferences(preferences) {
     };
 }
 
-export default {
-    getMyPreferences,
-    savePreferences,
-    deletePreferences
-};
+export function makeDirectChannelVisibleIfNecessary(otherUserId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const myPreferences = getMyPreferencesSelector(state);
+        const currentUserId = getCurrentUserId(state);
+
+        let preference = myPreferences[getPreferenceKey(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, otherUserId)];
+
+        if (!preference || preference.value === 'false') {
+            preference = {
+                user_id: currentUserId,
+                category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW,
+                name: otherUserId,
+                value: 'true'
+            };
+
+            await savePreferences([preference])(dispatch, getState);
+        }
+    };
+}

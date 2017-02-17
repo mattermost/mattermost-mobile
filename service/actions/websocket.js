@@ -1,9 +1,23 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
 import Client from 'service/client';
-import EventEmitter from 'service/utils/event_emitter';
 import websocketClient from 'service/client/websocket_client';
+import {
+    fetchMyChannelsAndMembers,
+    getChannel,
+    getChannelStats,
+    updateChannelHeader,
+    updateChannelPurpose,
+    markChannelAsUnread,
+    markChannelAsRead
+} from 'service/actions/channels';
+import {
+    getPosts,
+    getPostsSince
+} from 'service/actions/posts';
+import {makeDirectChannelVisibleIfNecessary} from 'service/actions/preferences';
 import {
     Constants,
     ChannelTypes,
@@ -14,23 +28,8 @@ import {
     UsersTypes,
     WebsocketEvents
 } from 'service/constants';
-
-import {
-    fetchMyChannelsAndMembers,
-    getChannel,
-    getChannelStats,
-    updateChannelHeader,
-    updateChannelPurpose,
-    markChannelAsUnread,
-    markChannelAsRead
-} from 'service/actions/channels';
-
-import {
-    getPosts,
-    getPostsSince
-} from 'service/actions/posts';
-
-import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
+import {getUserIdFromChannelName} from 'service/utils/channel_utils';
+import EventEmitter from 'service/utils/event_emitter';
 
 export function init(siteUrl, token, optionalWebSocket) {
     return async (dispatch, getState) => {
@@ -165,6 +164,12 @@ async function handleNewPostEvent(msg, dispatch, getState) {
     case Constants.POST_PURPOSE_CHANGE:
         updateChannelPurpose(post.channel_id, post.props.new_purpose)(dispatch, getState);
         break;
+    }
+
+    if (msg.data.channel_type === Constants.DM_CHANNEL) {
+        const otherUserId = getUserIdFromChannelName(users.currentId, msg.data.channel_name);
+
+        makeDirectChannelVisibleIfNecessary(otherUserId)(dispatch, getState);
     }
 
     if (post.root_id && !posts[post.root_id]) {

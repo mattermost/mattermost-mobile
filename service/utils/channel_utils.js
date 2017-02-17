@@ -91,7 +91,7 @@ function isDirectChannel(channel) {
 }
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
-    const channelId = getUserIdFromChannelName(userId, channel);
+    const channelId = getUserIdFromChannelName(userId, channel.name);
     const dm = myPreferences[`${Constants.CATEGORY_DIRECT_CHANNEL_SHOW}--${channelId}`];
     return dm && dm.value === 'true';
 }
@@ -114,11 +114,11 @@ function createMissingDirectChannels(currentUserId, allChannels, myPreferences) 
 }
 
 function isDirectChannelForUser(userId, otherUserId, channel) {
-    return channel.type === Constants.DM_CHANNEL && getUserIdFromChannelName(userId, channel) === otherUserId;
+    return channel.type === Constants.DM_CHANNEL && getUserIdFromChannelName(userId, channel.name) === otherUserId;
 }
 
-export function getUserIdFromChannelName(userId, channel) {
-    const ids = channel.name.split('__');
+export function getUserIdFromChannelName(userId, channelName) {
+    const ids = channelName.split('__');
     let otherUserId = '';
     if (ids[0] === userId) {
         otherUserId = ids[1];
@@ -149,7 +149,7 @@ export function completeDirectChannelInfo(usersState, myPreferences, channel) {
     }
 
     const dmChannelClone = {...channel};
-    const teammateId = getUserIdFromChannelName(usersState.currentId, channel);
+    const teammateId = getUserIdFromChannelName(usersState.currentId, channel.name);
 
     return Object.assign(dmChannelClone, {
         display_name: displayUsername(usersState.profiles[teammateId], myPreferences),
