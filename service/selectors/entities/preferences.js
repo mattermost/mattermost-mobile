@@ -7,6 +7,7 @@ import Config from 'assets/config.json';
 import Themes from 'assets/themes.json';
 
 import {Preferences} from 'service/constants';
+import {getPreferenceKey} from 'service/utils/preference_utils';
 
 import {getCurrentTeamId} from './teams';
 
@@ -21,11 +22,11 @@ export const getTheme = createSelector(
         // Prefer the user's current team-specific theme over the user's current global theme over the default theme
         let themePreference;
         if (currentTeamId) {
-            themePreference = myPreferences[`${Preferences.CATEGORY_THEME}--${currentTeamId}`];
+            themePreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME, currentTeamId)];
         }
 
         if (!themePreference) {
-            themePreference = myPreferences[`${Preferences.CATEGORY_THEME}--`];
+            themePreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME, '')];
         }
 
         let theme;
