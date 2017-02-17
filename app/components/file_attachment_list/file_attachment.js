@@ -35,23 +35,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5)
         },
         fileInfoContainer: {
-            paddingVertical: 5,
+            flex: 1,
             paddingHorizontal: 8,
-            flex: 1
+            paddingVertical: 5,
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         fileName: {
+            flexDirection: 'column',
+            flexWrap: 'wrap',
             marginLeft: 2,
             fontSize: 14,
-            color: theme.centerChannelColor,
-            flexDirection: 'column',
-            flexWrap: 'wrap'
+            color: theme.centerChannelColor
         },
         fileWrapper: {
             flex: 1,
             flexDirection: 'row',
+            marginTop: 10,
             borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            marginTop: 10
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2)
         }
     });
 });
