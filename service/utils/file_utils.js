@@ -25,13 +25,13 @@ export function getFileType(file) {
     const fileExt = file.extension.toLowerCase();
     const fileTypes = [
         'image',
-        'audio',
-        'video',
-        'spreadsheet',
         'code',
+        'pdf',
+        'video',
+        'audio',
+        'spreadsheet',
         'word',
         'presentation',
-        'pdf',
         'patch'
     ];
     return fileTypes.find((fileType) => {
