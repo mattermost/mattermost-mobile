@@ -22,7 +22,7 @@ export default class FileAttachmentList extends Component {
 
     componentDidMount() {
         const {post} = this.props;
-        this.props.actions.loadFilesForPostsIfNecessary(post);
+        this.props.actions.loadFilesForPostIfNecessary(post);
     }
 
     render() {

@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {makeGetFilesForPost} from 'service/selectors/entities/files';
-import {loadFilesForPostsIfNecessary} from 'app/actions/views/channel';
+import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 import FileAttachmentList from './file_attachment_list';
@@ -24,7 +24,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            loadFilesForPostsIfNecessary
+            loadFilesForPostIfNecessary
         }, dispatch)
     };
 }

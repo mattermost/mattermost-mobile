@@ -99,7 +99,7 @@ export function loadPostsIfNecessary(channel) {
     };
 }
 
-export function loadFilesForPostsIfNecessary(post) {
+export function loadFilesForPostIfNecessary(post) {
     return async (dispatch, getState) => {
         const {files, teams} = getState().entities;
         const fileIdsForPost = files.fileIdsByPostId[post.id];
