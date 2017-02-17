@@ -34,3 +34,9 @@ export function generalError(error, displayable = false) {
         dispatch(generalErrorObject(error, displayable));
     };
 }
+
+export function clearErrors() {
+    return async (dispatch) => {
+        dispatch({type: ErrorTypes.CLEAR_ERRORS});
+    };
+}

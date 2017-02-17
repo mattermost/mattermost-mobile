@@ -55,7 +55,7 @@ function GeneralError(props) {
 
 GeneralError.propTypes = {
     dismiss: PropTypes.func.isRequired,
-    message: PropTypes.string
+    message: PropTypes.string.isRequired
 };
 
 export default GeneralError;

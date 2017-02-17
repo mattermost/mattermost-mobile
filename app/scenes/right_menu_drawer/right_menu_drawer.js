@@ -50,13 +50,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
-        errors: React.PropTypes.object.isRequired,
-        currentUserId: React.PropTypes.number,
-        currentTeamId: React.PropTypes.number,
+        errors: React.PropTypes.array.isRequired,
+        currentUserId: React.PropTypes.string.isRequired,
+        currentTeamId: React.PropTypes.string.isRequired,
         actions: React.PropTypes.shape({
             goToModalAccountSettings: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
-            sendFeedbackErrors: React.PropTypes.func.isRequired,
+            clearErrors: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
         }).isRequired,
         theme: React.PropTypes.object
@@ -66,6 +66,7 @@ export default class RightMenuDrawer extends React.Component {
         Linking.openURL(
             `mailto:feedback@mattermost.com?subject=Errors&body=${this.errorEmailBody()}`
         );
+        this.props.actions.clearErrors();
     }
 
     errorEmailBody = () => {

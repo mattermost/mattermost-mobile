@@ -19,6 +19,9 @@ export default (state = [], action) => {
 
         return nextState;
     }
+    case ErrorTypes.CLEAR_ERRORS: {
+        return [];
+    }
     default:
         return state;
     }

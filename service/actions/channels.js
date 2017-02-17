@@ -25,7 +25,7 @@ export function selectChannel(channelId) {
 
             throw new Error('This is an error!!!')
         } catch (error) {
-            generalError(error)(dispatch);
+            generalError(error, true)(dispatch);
         }
     };
 }

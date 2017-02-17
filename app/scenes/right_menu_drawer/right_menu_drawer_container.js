@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goToModalAccountSettings, goBack, goToModalSelectTeam} from 'app/actions/navigation';
+import {clearErrors} from 'service/actions/errors';
 
 import {logout} from 'service/actions/users';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -27,6 +28,7 @@ function mapDispatchToProps(dispatch) {
             goToModalAccountSettings,
             goBack,
             goToModalSelectTeam,
+            clearErrors,
             logout
         }, dispatch)
     };
