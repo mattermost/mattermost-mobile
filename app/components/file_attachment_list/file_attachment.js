@@ -9,7 +9,6 @@ import React, {
 import {
     Text,
     View,
-    Image,
     StyleSheet
 } from 'react-native';
 
@@ -17,6 +16,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'service/utils/file_utils.js';
+
+import FileAttachmentIcon from './file_attachment_icon';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -44,17 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             flexDirection: 'column',
             flexWrap: 'wrap'
-        },
-        filePreview: {
-            width: 60,
-            height: 60
-        },
-        filePreviewWrapper: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 100,
-            width: 100,
-            backgroundColor: theme.centerChannelColor
         },
         fileWrapper: {
             flex: 1,
@@ -104,12 +94,10 @@ export default class FileAttachment extends Component {
 
         return (
             <View style={style.fileWrapper}>
-                <View style={style.filePreviewWrapper}>
-                    <Image
-                        style={style.filePreview}
-                        source={Utils.getFileIconPath(file)}
-                    />
-                </View>
+                <FileAttachmentIcon
+                    file={file}
+                    theme={theme}
+                />
                 {this.renderFileInfo()}
             </View>
         );
