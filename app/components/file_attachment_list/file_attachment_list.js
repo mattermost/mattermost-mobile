@@ -26,10 +26,9 @@ export default class FileAttachmentList extends Component {
     }
 
     render() {
-        const fileAttachments = this.props.files.map((file, i) => (
+        const fileAttachments = this.props.files.map((file) => (
             <FileAttachment
                 key={file.id}
-                index={i}
                 file={file}
                 theme={this.props.theme}
             />
