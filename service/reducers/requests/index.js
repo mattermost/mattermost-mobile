@@ -4,6 +4,7 @@
 import {combineReducers} from 'redux';
 
 import channels from './channels';
+import files from './files';
 import general from './general';
 import posts from './posts';
 import teams from './teams';
@@ -12,6 +13,7 @@ import preferences from './preferences';
 
 export default combineReducers({
     channels,
+    files,
     general,
     posts,
     teams,

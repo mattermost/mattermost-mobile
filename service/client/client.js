@@ -127,9 +127,13 @@ export default class Client {
             headers[HEADER_AUTH] = `${HEADER_BEARER} ${this.token}`;
         }
 
+        if (options.headers) {
+            Object.assign(headers, options.headers);
+        }
+
         return {
-            headers,
-            ...options
+            ...options,
+            headers
         };
     }
 
@@ -610,6 +614,26 @@ export default class Client {
         return this.doFetch(
             `${this.getPostsRoute(teamId, channelId)}/${postId}/after/${offset}/${limit}`,
             {method: 'get'}
+        );
+    };
+
+    getFileInfosForPost = async (teamId, channelId, postId) => {
+        return this.doFetch(
+            `${this.getChannelNeededRoute(teamId, channelId)}/posts/${postId}/get_file_infos`,
+            {method: 'get'}
+        );
+    };
+
+    uploadFile = async (teamId, channelId, clientId, fileFormData, formBoundary) => {
+        return this.doFetch(
+            `${this.getTeamNeededRoute(teamId)}/files/upload`,
+            {
+                method: 'post',
+                headers: {
+                    'Content-Type': `multipart/form-data; boundary=${formBoundary}`
+                },
+                body: fileFormData
+            }
         );
     };
 
