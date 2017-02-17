@@ -21,13 +21,7 @@ export function getFormattedFileSize(file) {
     return `${bytes} B`;
 }
 
-export function getFileIconPath(file) {
-    const fileType = getFileType(file);
-    return Constants.ICON_PATH_FROM_FILE_TYPE[fileType] ||
-        Constants.ICON_PATH_FROM_FILE_TYPE.other;
-}
-
-function getFileType(file) {
+export function getFileType(file) {
     const fileExt = file.extension.toLowerCase();
     const fileTypes = [
         'image',
