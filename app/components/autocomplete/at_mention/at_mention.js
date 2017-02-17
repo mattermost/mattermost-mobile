@@ -26,7 +26,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         sectionText: {
             fontSize: 12,
@@ -38,11 +42,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         listView: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderTopWidth: 0,
-            borderBottomWidth: 0
+            backgroundColor: theme.centerChannelBg
         },
         loading: {
             alignItems: 'center',
@@ -59,7 +59,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         rowIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
@@ -124,7 +128,7 @@ export default class AtMention extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const match = nextProps.postDraft.substring(0, this.props.cursorPosition).match(AT_MENTION_REGEX);
+        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(AT_MENTION_REGEX);
 
         if (!match || this.state.mentionComplete) {
             this.setState({
@@ -191,7 +195,7 @@ export default class AtMention extends Component {
     }
 
     checkSpecialMentions = (term) => {
-        return this.getSpecialMentions().filter((m) => m.completeHandle.includes(term)).length > 0;
+        return this.getSpecialMentions().filter((m) => m.completeHandle.startsWith(term)).length > 0;
     }
 
     completeMention = (mention) => {

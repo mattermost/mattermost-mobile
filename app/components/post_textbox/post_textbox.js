@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    Platform,
     TouchableHighlight,
     View
 } from 'react-native';
@@ -143,19 +144,21 @@ export default class PostTextbox extends React.PureComponent {
                         }}
                     />
                     <View style={{width: 7}}/>
-                    <TouchableHighlight
-                        onPress={this.sendMessage}
-                        style={{
-                            height: 36,
-                            width: 36
-                        }}
-                    >
+                    <TouchableHighlight onPress={this.sendMessage}>
                         <Icon
                             name='paper-plane'
                             size={18}
                             style={{
                                 color: theme.linkColor,
-                                padding: 9
+                                ...Platform.select({
+                                    ios: {
+                                        paddingVertical: 8
+                                    },
+                                    android: {
+                                        paddingVertical: 7
+                                    }
+                                }),
+                                paddingHorizontal: 9
                             }}
                         />
                     </TouchableHighlight>
