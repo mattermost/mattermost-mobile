@@ -117,7 +117,7 @@
         "no-lone-blocks": 2,
         "no-lonely-if": 2,
         "no-loop-func": 2,
-        "no-magic-numbers": [1, { "ignore": [-1, 0, 1, 2], "enforceConst": true, "detectObjects": true } ],
+        "no-magic-numbers": 0,
         "no-mixed-operators": [2, {"allowSamePrecedence": false}],
         "no-mixed-spaces-and-tabs": 2,
         "no-multi-spaces": [2, { "exceptions": { "Property": false } }],
