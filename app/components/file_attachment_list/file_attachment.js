@@ -78,8 +78,11 @@ export default class FileAttachment extends Component {
 
         return (
             <View style={style.fileInfoContainer}>
-                <Text style={style.fileName}>
-                    {Utils.getTruncatedFilename(file)}
+                <Text
+                    numberOfLines={4}
+                    style={style.fileName}
+                >
+                    {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
                     <Icon

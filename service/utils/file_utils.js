@@ -3,14 +3,6 @@
 
 import {Constants} from 'service/constants';
 
-export function getTruncatedFilename(file) {
-    const fileName = file.name.trim();
-    if (fileName.length > 35) {
-        return fileName.substring(0, Math.min(35, fileName.length)) + '...';
-    }
-    return fileName;
-}
-
 export function getFormattedFileSize(file) {
     const bytes = file.size;
     const fileSizes = [
