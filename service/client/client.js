@@ -127,12 +127,13 @@ export default class Client {
             headers[HEADER_AUTH] = `${HEADER_BEARER} ${this.token}`;
         }
 
+        if (options.headers) {
+            Object.assign(headers, options.headers);
+        }
+
         return {
             ...options,
-            headers: {
-                ...headers,
-                ...(options.headers || {})
-            }
+            headers
         };
     }
 
