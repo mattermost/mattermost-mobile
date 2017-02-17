@@ -63,3 +63,28 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
         }
     };
 }
+
+// Debounce function based on underscores modified to use es6 and a cb
+export function debounce(func, wait, immediate, cb) {
+    let timeout;
+    return function fx(...args) {
+        const runLater = () => {
+            timeout = null;
+            if (!immediate) {
+                Reflect.apply(func, this, args);
+                if (cb) {
+                    cb();
+                }
+            }
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(runLater, wait);
+        if (callNow) {
+            Reflect.apply(func, this, args);
+            if (cb) {
+                cb();
+            }
+        }
+    };
+}

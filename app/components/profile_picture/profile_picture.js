@@ -56,12 +56,21 @@ export default class ProfilePicture extends React.PureComponent {
         size: React.PropTypes.number,
         user: React.PropTypes.object,
         status: React.PropTypes.string,
-        theme: React.PropTypes.object.isRequired
+        theme: React.PropTypes.object.isRequired,
+        actions: React.PropTypes.shape({
+            getStatusForId: React.PropTypes.func.isRequired
+        })
     };
 
     static defaultProps = {
         size: 128
     };
+
+    componentDidMount() {
+        if (!this.props.status && this.props.user) {
+            this.props.actions.getStatusForId(this.props.user.id);
+        }
+    }
 
     render() {
         const style = getStyleSheet(this.props.theme);
@@ -89,9 +98,11 @@ export default class ProfilePicture extends React.PureComponent {
                     source={{uri: pictureUrl}}
                     defaultSource={placeholder}
                 />
-                <View style={[style.statusContainer, style[this.props.status]]}>
-                    {statusIcon}
-                </View>
+                {this.props.status &&
+                    <View style={[style.statusContainer, style[this.props.status]]}>
+                        {statusIcon}
+                    </View>
+                }
             </View>
         );
     }
