@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    Image,
     StyleSheet,
     Text,
     TouchableHighlight,
@@ -78,6 +79,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         systemMessage: {
             opacity: 0.5
+        },
+        webhookMessage: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            fontWeight: '600'
         }
     });
 });
@@ -162,6 +168,7 @@ export default class Post extends React.Component {
 
     render() {
         const style = getStyleSheet(this.props.theme);
+        const PROFILE_PICTURE_SIZE = 32;
 
         let profilePicture;
         let displayName;
@@ -171,8 +178,8 @@ export default class Post extends React.Component {
                 <View style={style.profilePicture}>
                     <MattermostIcon
                         color={this.props.theme.centerChannelColor}
-                        height={32}
-                        width={32}
+                        height={PROFILE_PICTURE_SIZE}
+                        width={PROFILE_PICTURE_SIZE}
                     />
                 </View>
             );
@@ -185,11 +192,27 @@ export default class Post extends React.Component {
             );
 
             messageStyle = [style.message, style.systemMessage];
+        } else if (this.props.post.props && this.props.post.props.from_webhook) {
+            profilePicture = (
+                <View style={style.profilePicture}>
+                    <Image
+                        source={{uri: this.props.post.props.override_icon_url}}
+                        style={{
+                            height: PROFILE_PICTURE_SIZE,
+                            width: PROFILE_PICTURE_SIZE,
+                            borderRadius: PROFILE_PICTURE_SIZE / 2
+                        }}
+                    />
+                </View>
+            );
+
+            displayName = this.props.post.props.override_username;
+            messageStyle = [style.message, style.webhookMessage];
         } else {
             profilePicture = (
                 <ProfilePicture
                     user={this.props.user}
-                    size={32}
+                    size={PROFILE_PICTURE_SIZE}
                 />
             );
 
