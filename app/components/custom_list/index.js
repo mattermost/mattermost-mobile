@@ -79,7 +79,6 @@ export default class CustomList extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.showNoResults = false;
         this.state = this.buildDataSource(props);
     }
 

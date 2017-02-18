@@ -64,6 +64,15 @@ const Styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         textAlignVertical: 'center'
+    },
+    more: {
+        position: 'absolute',
+        opacity: 0.6,
+        right: 0,
+        width: 50,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });
 
@@ -382,19 +391,9 @@ class ChannelDrawerList extends Component {
             );
         }
 
-        const moreStyle = {
-            position: 'absolute',
-            opacity: 0.6,
-            right: 0,
-            width: 50,
-            height: 30,
-            alignItems: 'center',
-            justifyContent: 'center'
-        };
-
         const moreChannels = (
             <TouchableHighlight
-                style={moreStyle}
+                style={Styles.more}
                 onPress={this.props.actions.showMoreChannelsModal}
             >
                 <Icon
@@ -427,7 +426,7 @@ class ChannelDrawerList extends Component {
 
         const moreDms = (
             <TouchableHighlight
-                style={moreStyle}
+                style={Styles.more}
                 onPress={this.props.actions.showDirectMessagesModal}
             >
                 <Icon
