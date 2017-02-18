@@ -442,6 +442,33 @@ export function getMoreChannels(teamId, offset, limit = Constants.CHANNELS_CHUNK
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: ChannelTypes.MORE_CHANNELS_FAILURE, error}, getState);
+            return null;
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_MORE_CHANNELS,
+                data: await channels
+            },
+            {
+                type: ChannelTypes.MORE_CHANNELS_SUCCESS
+            }
+        ]), getState);
+
+        return channels;
+    };
+}
+
+export function searchMoreChannels(teamId, term) {
+    return async (dispatch, getState) => {
+        dispatch({type: ChannelTypes.MORE_CHANNELS_REQUEST}, getState);
+
+        let channels;
+        try {
+            channels = await Client.searchMoreChannels(teamId, term);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: ChannelTypes.MORE_CHANNELS_FAILURE, error}, getState);
             return;
         }
 
@@ -640,6 +667,7 @@ export default {
     deleteChannel,
     viewChannel,
     getMoreChannels,
+    searchMoreChannels,
     getChannelStats,
     addChannelMember,
     removeChannelMember,

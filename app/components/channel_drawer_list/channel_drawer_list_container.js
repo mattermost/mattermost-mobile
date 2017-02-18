@@ -4,11 +4,22 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {showDirectMessagesModal, showOptionsModal, closeModal} from 'app/actions/navigation';
-import {closeDMChannel, leaveChannel, markFavorite, unmarkFavorite} from 'app/actions/views/channel';
+import {
+    closeModal,
+    showMoreChannelsModal,
+    showDirectMessagesModal,
+    showOptionsModal
+} from 'app/actions/navigation';
+
+import {
+    closeDMChannel,
+    leaveChannel,
+    markFavorite,
+    unmarkFavorite
+} from 'app/actions/views/channel';
 
 import {viewChannel, markChannelAsRead} from 'service/actions/channels';
-import ChannelList from './channel_list';
+import ChannelDrawerList from './channel_drawer_list';
 
 function mapStateToProps(state, ownProps) {
     return {
@@ -27,9 +38,10 @@ function mapDispatchToProps(dispatch) {
             unmarkFavorite,
             showOptionsModal,
             showDirectMessagesModal,
+            showMoreChannelsModal,
             closeOptionsModal: closeModal
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelList);
+export default connect(mapStateToProps, mapDispatchToProps)(ChannelDrawerList);

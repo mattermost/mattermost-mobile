@@ -130,6 +130,15 @@ export function showOptionsModal(title, options) {
     };
 }
 
+export function showMoreChannelsModal() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: Routes.MoreChannels
+        }, getState);
+    };
+}
+
 export function showDirectMessagesModal() {
     return async (dispatch, getState) => {
         dispatch({

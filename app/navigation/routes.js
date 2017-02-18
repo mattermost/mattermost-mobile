@@ -10,6 +10,7 @@ import {
     LoadTeam,
     Login,
     Mfa,
+    MoreChannels,
     MoreDirectMessages,
     OptionsModal,
     RightMenuDrawer,
@@ -78,6 +79,13 @@ export const Routes = {
         component: Mfa,
         navigationProps: {
             title: {id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}
+        }
+    },
+    MoreChannels: {
+        key: 'MoreChannels',
+        component: MoreChannels,
+        navigationProps: {
+            title: {id: 'more_channels.title', defaultMessage: 'More Channels'}
         }
     },
     MoreDirectMessages: {

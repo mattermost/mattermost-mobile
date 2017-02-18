@@ -44,6 +44,10 @@ export function buildDisplayableChannelList(usersState, teamsState, allChannels,
     };
 }
 
+export function getNotMemberChannels(allChannels, myMembers) {
+    return allChannels.filter(not(isNotMemberOf.bind(this, myMembers)));
+}
+
 export function getDirectChannelName(id, otherId) {
     let handle;
 
@@ -115,6 +119,10 @@ function createMissingDirectChannels(currentUserId, allChannels, myPreferences) 
 
 function isDirectChannelForUser(userId, otherUserId, channel) {
     return channel.type === Constants.DM_CHANNEL && getUserIdFromChannelName(userId, channel.name) === otherUserId;
+}
+
+function isNotMemberOf(myMembers, channel) {
+    return myMembers[channel.id];
 }
 
 export function getUserIdFromChannelName(userId, channelName) {

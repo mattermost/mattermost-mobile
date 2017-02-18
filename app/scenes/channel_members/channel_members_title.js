@@ -8,16 +8,20 @@ import {
 } from 'react-native';
 
 import {getCurrentUserRoles} from 'service/selectors/entities/users';
+import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
+import {Constants} from 'service/constants';
 
 import FormattedText from 'app/components/formatted_text';
 
 function ChannelMemberTitle(props) {
+    const {currentChannel, isAdmin} = props;
+    const manage = (isAdmin && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
     return (
         <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 50}}>
             <FormattedText
-                id={props.isAdmin ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
-                defaultMessage={props.isAdmin ? 'Manage Members' : 'View Members'}
+                id={manage ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                defaultMessage={manage ? 'Manage Members' : 'View Members'}
                 style={{color: props.theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
             />
         </View>
@@ -26,6 +30,7 @@ function ChannelMemberTitle(props) {
 
 ChannelMemberTitle.propTypes = {
     isAdmin: PropTypes.bool,
+    currentChannel: PropTypes.object.isRequired,
     theme: PropTypes.object
 };
 
@@ -40,6 +45,7 @@ function mapStateToProps(state) {
 
     return {
         isAdmin,
+        currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
     };
 }

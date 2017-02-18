@@ -27,6 +27,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
+        currentTeamId: state.entities.teams.currentId,
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,

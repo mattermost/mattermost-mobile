@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import ChannelList from 'app/components/channel_list';
+import ChannelDrawerList from 'app/components/channel_drawer_list';
 
 export default class ChannelDrawer extends React.PureComponent {
     static propTypes = {
@@ -37,7 +37,7 @@ export default class ChannelDrawer extends React.PureComponent {
         } = this.props;
 
         return (
-            <ChannelList
+            <ChannelDrawerList
                 currentTeam={currentTeam}
                 currentChannel={currentChannel}
                 channels={channels}

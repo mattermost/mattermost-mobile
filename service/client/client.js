@@ -539,6 +539,13 @@ export default class Client {
         );
     };
 
+    searchMoreChannels = async (teamId, term) => {
+        return this.doFetch(
+            `${this.getChannelsRoute(teamId)}/more/search`,
+            {method: 'post', body: JSON.stringify({term})}
+        );
+    };
+
     getChannelStats = async (teamId, channelId) => {
         return this.doFetch(
             `${this.getChannelNeededRoute(teamId, channelId)}/stats`,

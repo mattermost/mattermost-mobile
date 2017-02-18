@@ -38,6 +38,7 @@ const style = StyleSheet.create({
 class ChannelInfo extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
@@ -65,7 +66,7 @@ class ChannelInfo extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.actions.getChannelStats(this.props.currentChannel.team_id, this.props.currentChannel.id);
+        this.props.actions.getChannelStats(this.props.currentTeamId, this.props.currentChannel.id);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -179,15 +180,15 @@ class ChannelInfo extends PureComponent {
                     </View>
                     <ChannelInfoRow
                         action={this.props.actions.goToChannelMembers}
-                        defaultMessage={isAdmin ? 'Manage Members' : 'View Members'}
+                        defaultMessage={(isAdmin && currentChannel.type !== Constants.DM_CHANNEL) ? 'Manage Members' : 'View Members'}
                         detail={currentChannelMemberCount}
                         icon='users'
-                        textId={isAdmin ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                        textId={(isAdmin && currentChannel.type !== Constants.DM_CHANNEL) ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                     />
                     <View style={style.separatorContainer}>
                         <View style={style.separator}/>
                     </View>
-                    {isAdmin &&
+                    {isAdmin && this.renderLeaveOrDeleteChannelRow() &&
                         <View>
                             <ChannelInfoRow
                                 action={this.props.actions.goToChannelAddMembers}
