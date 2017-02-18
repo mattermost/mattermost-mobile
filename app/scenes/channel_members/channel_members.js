@@ -16,11 +16,15 @@ import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/mem
 import ChannelMembersTitle from './channel_members_title';
 import RemoveMemberButton from './remove_member_button';
 import {Constants} from 'service/constants';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
 });
 
 class ChannelMembers extends PureComponent {
@@ -138,8 +142,9 @@ class ChannelMembers extends PureComponent {
     };
 
     render() {
-        const {currentChannel, isAdmin} = this.props;
+        const {currentChannel, isAdmin, theme} = this.props;
         const canManage = (isAdmin && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
+        const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.container}>

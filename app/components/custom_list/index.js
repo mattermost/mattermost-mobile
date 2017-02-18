@@ -95,7 +95,7 @@ export default class CustomList extends PureComponent {
                 newData = this.props.createSections(data);
             }
 
-            const mergedData = [...newData, ...this.state.data];
+            const mergedData = Object.assign({}, newData, this.state.data);
             const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(mergedData) : this.state.dataSource.cloneWithRows(mergedData);
             this.setState({
                 data: mergedData,
@@ -189,8 +189,14 @@ export default class CustomList extends PureComponent {
 
     render() {
         const style = getStyleFromTheme(this.props.theme);
+        let noResults = false;
+        if (typeof this.props.data === 'object') {
+            noResults = Object.keys(this.props.data).length === 0;
+        } else {
+            noResults = this.props.data.length === 0;
+        }
 
-        if (this.showNoResults && !this.props.loading && this.state.data.length === 0) {
+        if (this.showNoResults && !this.props.loading && noResults) {
             return (
                 <View style={style.noResultContainer}>
                     <FormattedText

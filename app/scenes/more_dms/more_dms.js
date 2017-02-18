@@ -126,10 +126,10 @@ class MoreDirectMessages extends PureComponent {
     };
 
     cancelSearch = () => {
+        this.props.actions.getProfiles(0);
         this.setState({
             searching: false,
-            page: 0,
-            profiles: []
+            page: 0
         });
     };
 

@@ -13,11 +13,15 @@ import MemberList from 'app/components/custom_list';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 
 import AddMemberButton from './add_member_button';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
 });
 
 export default class ChannelAddMembers extends PureComponent {
@@ -95,6 +99,8 @@ export default class ChannelAddMembers extends PureComponent {
     };
 
     render() {
+        const style = getStyleFromTheme(this.props.theme);
+
         return (
             <View style={style.container}>
                 <MemberList

@@ -135,11 +135,11 @@ class MoreChannels extends PureComponent {
     };
 
     cancelSearch = () => {
+        this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
         this.setState({
             term: null,
             searching: false,
-            page: 0,
-            channels: []
+            page: 0
         });
     };
 
