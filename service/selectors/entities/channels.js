@@ -101,3 +101,26 @@ export const getMoreChannels = createSelector(
         return getNotMemberChannels(Object.values(allChannels), myMembers);
     }
 );
+
+export const getUnreads = createSelector(
+    getAllChannels,
+    getChannelMemberships,
+    (channels, myMembers) => {
+        let messageCount = 0;
+        let mentionCount = 0;
+        Object.keys(myMembers).forEach((id) => {
+            const m = myMembers[id];
+            const channel = channels[id];
+            if (channel.type === 'D') {
+                mentionCount += channel.total_msg_count - m.msg_count;
+            } else if (m.mention_count > 0) {
+                mentionCount += m.mention_count;
+            }
+            if (m.notify_props.mark_unread !== 'mention' && channel.total_msg_count - m.msg_count > 0) {
+                messageCount += 1;
+            }
+        });
+
+        return {messageCount, mentionCount};
+    }
+);
