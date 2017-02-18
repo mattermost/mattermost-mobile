@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {AppState} from 'react-native';
 import Loading from 'app/components/loading';
 
 import {RequestStatus} from 'service/constants';
@@ -14,6 +15,7 @@ export default class Root extends React.Component {
         actions: React.PropTypes.shape({
             goToLoadTeam: React.PropTypes.func,
             goToSelectServer: React.PropTypes.func,
+            flushToStorage: React.PropTypes.func,
             loadStorage: React.PropTypes.func,
             removeStorage: React.PropTypes.func,
             setStoreFromLocalData: React.PropTypes.func,
@@ -28,6 +30,7 @@ export default class Root extends React.Component {
     componentDidMount() {
         // Any initialization logic for navigation, setting up the client, etc should go here
         this.init();
+        AppState.addEventListener('change', this.handleAppStateChange);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -37,6 +40,13 @@ export default class Root extends React.Component {
         } else if (this.props.logoutRequest.status === RequestStatus.SUCCESS &&
             nextProps.logoutRequest.status === RequestStatus.NOT_STARTED) {
             this.init();
+        }
+    }
+
+    handleAppStateChange = (event) => {
+        // App gets killed, phone call comes in, app is pushed to the background, etc...
+        if (event === 'inactive') {
+            this.props.actions.flushToStorage();
         }
     }
 

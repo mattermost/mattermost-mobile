@@ -3,6 +3,8 @@
 
 import {AsyncStorage} from 'react-native';
 import {batchActions} from 'redux-batched-actions';
+
+import {ViewTypes} from 'app/constants';
 import {ChannelTypes, GeneralTypes, TeamsTypes, UsersTypes} from 'service/constants';
 
 export function loadStorage() {
@@ -15,15 +17,51 @@ export function loadStorage() {
 
             const currentChannelId = otherStorage[currentTeamId] ? otherStorage[currentTeamId].currentChannelId : '';
 
-            dispatch(batchActions([
+            const actions = [
                 {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
                 {type: TeamsTypes.SELECT_TEAM, data: currentTeamId},
                 {type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId}
-            ]), getState);
+            ];
+
+            // Load post drafts if there are any
+            if (otherStorage.postDrafts) {
+                Object.keys(otherStorage.postDrafts).forEach((d) => {
+                    actions.push({
+                        type: ViewTypes.POST_DRAFT_CHANGED,
+                        channelId: d,
+                        postDraft: otherStorage.postDrafts[d]
+                    });
+                });
+            }
+
+            // Load thread drafts if there are any
+            if (otherStorage.threadDrafts) {
+                Object.keys(otherStorage.threadDrafts).forEach((d) => {
+                    actions.push({
+                        type: ViewTypes.COMMENT_DRAFT_CHANGED,
+                        rootId: d,
+                        draft: otherStorage.threadDrafts[d]
+                    });
+                });
+            }
+
+            dispatch(batchActions(actions), getState);
         } catch (error) {
             // Error loading data
             dispatch({type: GeneralTypes.REMOVED_APP_CREDENTIALS, error}, getState);
         }
+    };
+}
+
+export function flushToStorage() {
+    return async (dispatch, getState) => {
+        const state = getState();
+
+        // Can add other important items here.
+        const postDrafts = state.views.channel.drafts;
+        const threadDrafts = state.views.thread.draft;
+
+        await updateStorage(null, {postDrafts, threadDrafts});
     };
 }
 
