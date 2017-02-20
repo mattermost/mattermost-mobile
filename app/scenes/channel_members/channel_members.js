@@ -11,12 +11,14 @@ import {
 import {injectIntl, intlShape} from 'react-intl';
 
 import MemberList from 'app/components/custom_list';
-import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
+import {createMembersSections, loadingText} from 'app/utils/member_list';
+import MemberListRow from 'app/components/custom_list/member_list_row';
+import {displayUsername} from 'service/utils/user_utils';
+import {Constants} from 'service/constants';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelMembersTitle from './channel_members_title';
 import RemoveMemberButton from './remove_member_button';
-import {Constants} from 'service/constants';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -34,6 +36,7 @@ class ChannelMembers extends PureComponent {
         currentChannel: PropTypes.object,
         currentChannelMembers: PropTypes.array.isRequired,
         currentChannelMemberCount: PropTypes.number.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         currentTeam: PropTypes.object,
         preferences: PropTypes.object,
         requestStatus: PropTypes.string,
@@ -141,6 +144,32 @@ class ChannelMembers extends PureComponent {
         });
     };
 
+    renderMemberRow = (user, sectionId, rowId, preferences, theme, selectable, onPress, onSelect) => {
+        const {id, username} = user;
+        const displayName = displayUsername(user, preferences);
+        let onRowSelect = null;
+        if (selectable) {
+            onRowSelect = () => onSelect(sectionId, rowId);
+        }
+
+        const disableSelect = user.id === this.props.currentUserId;
+
+        return (
+            <MemberListRow
+                id={id}
+                user={user}
+                displayName={displayName}
+                username={username}
+                theme={theme}
+                onPress={onPress}
+                selectable={selectable}
+                selected={user.selected}
+                onRowSelect={onRowSelect}
+                disableSelect={disableSelect}
+            />
+        );
+    }
+
     render() {
         const {currentChannel, isAdmin, theme} = this.props;
         const canManage = (isAdmin && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
@@ -157,7 +186,7 @@ class ChannelMembers extends PureComponent {
                     loadingText={loadingText}
                     selectable={canManage}
                     onRowSelect={this.handleRowSelect}
-                    renderRow={renderMemberRow}
+                    renderRow={this.renderMemberRow}
                     createSections={createMembersSections}
                 />
             </View>

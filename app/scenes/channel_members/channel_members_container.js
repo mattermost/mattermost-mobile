@@ -26,6 +26,7 @@ function mapStateToProps(state) {
         currentChannel: getCurrentChannel(state),
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentChannelMemberCount,
+        currentUserId: state.entities.users.currentId,
         currentTeam: getCurrentTeam(state),
         preferences: getMyPreferences(state),
         requestStatus: state.requests.users.getProfilesInChannel.status,

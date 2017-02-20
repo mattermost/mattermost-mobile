@@ -55,6 +55,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center'
         },
+        selectorDisabled: {
+            backgroundColor: '#888'
+        },
         selectorFilled: {
             backgroundColor: '#378FD2',
             borderWidth: 0
@@ -71,15 +74,15 @@ function createTouchableComponent(children, action) {
 }
 
 function MemberListRow(props) {
-    const {id, displayName, username, onPress, theme, user} = props;
+    const {id, displayName, username, onPress, theme, user, disableSelect} = props;
     const style = getStyleFromTheme(theme);
 
     const RowComponent = (
         <View style={style.container}>
             {props.selectable &&
-                <TouchableWithoutFeedback onPress={props.onRowSelect}>
+                <TouchableWithoutFeedback onPress={disableSelect ? () => false : props.onRowSelect}>
                     <View style={style.selectorContainer}>
-                        <View style={[style.selector, (props.selected && style.selectorFilled)]}>
+                        <View style={[style.selector, (props.selected && style.selectorFilled), (disableSelect && style.selectorDisabled)]}>
                             {props.selected &&
                                 <Icon
                                     name='check'
@@ -130,7 +133,8 @@ MemberListRow.propTypes = {
     onPress: PropTypes.func,
     selectable: PropTypes.bool,
     onRowSelect: PropTypes.func,
-    selected: PropTypes.bool
+    selected: PropTypes.bool,
+    disableSelect: PropTypes.bool
 };
 
 export default MemberListRow;
