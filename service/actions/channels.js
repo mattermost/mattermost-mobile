@@ -653,6 +653,32 @@ export function markChannelAsUnread(channelId, mentionsArray) {
     };
 }
 
+export function autocompleteChannels(teamId, term) {
+    return async (dispatch, getState) => {
+        dispatch({type: ChannelTypes.AUTOCOMPLETE_CHANNELS_REQUEST}, getState);
+
+        let data;
+        try {
+            data = await Client.autocompleteChannels(teamId, term);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch({type: ChannelTypes.AUTOCOMPLETE_CHANNELS_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_AUTOCOMPLETE_CHANNELS,
+                data,
+                teamId
+            },
+            {
+                type: ChannelTypes.AUTOCOMPLETE_CHANNELS_SUCCESS
+            }
+        ]), getState);
+    };
+}
+
 export default {
     selectChannel,
     createChannel,
@@ -674,5 +700,6 @@ export default {
     updateChannelHeader,
     updateChannelPurpose,
     markChannelAsRead,
-    markChannelAsUnread
+    markChannelAsUnread,
+    autocompleteChannels
 };
