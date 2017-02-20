@@ -83,8 +83,6 @@ export function close() {
         if (dispatch) {
             dispatch(batchActions([
                 {type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'},
-                // TODO: this should probably be a different error type
-                // perhaps generalErrorObject should take in error type?
                 generalErrorObject({error: 'Closed'})
             ]), getState);
         }

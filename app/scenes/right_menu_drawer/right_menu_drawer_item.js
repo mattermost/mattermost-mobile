@@ -28,7 +28,7 @@ export default class MainMenuItem extends React.Component {
     }
 
     render() {
-        const {onPress, style, children, shouldRender = true} = this.props
+        const {onPress, style, children, shouldRender = true} = this.props;
         if (!shouldRender) {
             return null;
         }
