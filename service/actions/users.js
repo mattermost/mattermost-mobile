@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'service/constants';
 import {fetchTeams} from 'service/actions/teams';
-import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
+import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 
 export function checkMfa(loginId) {
     return async (dispatch, getState) => {
@@ -273,6 +273,23 @@ export function getProfilesNotInChannel(teamId, channelId, offset, limit = Const
             }
         ]), getState);
     };
+}
+
+// We create an array to hold the id's that we want to get a status for. We build our
+// debounced function that will get called after a set period of idle time in which
+// the array of id's will be passed to the getStatusesByIds with a cb that clears out
+// the array. Helps with performance because instead of making 75 different calls for
+// statuses, we are only making one call for 75 ids.
+// We could maybe clean it up somewhat by storing the array of ids in redux state possbily?
+let ids = [];
+const debouncedGetStatusesByIds = debounce(async (dispatch, getState) => {
+    getStatusesByIds([...new Set(ids)])(dispatch, getState);
+}, 20, false, () => {
+    ids = [];
+});
+export function getStatusesByIdsBatchedDebounced(id) {
+    ids = [...ids, id];
+    return debouncedGetStatusesByIds;
 }
 
 export function getStatusesByIds(userIds) {
