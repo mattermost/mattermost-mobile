@@ -3,5 +3,5 @@
     "TestServerUrl": "http://localhost:8065",
     "DefaultLocale": "en",
     "DefaultTheme": "default",
-    "ShowErrorsList": true,
+    "ShowErrorsList": true
 }
