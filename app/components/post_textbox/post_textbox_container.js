@@ -5,8 +5,10 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {createPost} from 'service/actions/posts';
+import {userTyping} from 'service/actions/websocket';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentUserId} from 'service/selectors/entities/users';
+import {getUsersTyping} from 'service/selectors/entities/typing';
 
 import PostTextbox from './post_textbox';
 
@@ -14,6 +16,7 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         currentUserId: getCurrentUserId(state),
+        typing: getUsersTyping(state),
         theme: getTheme(state)
     };
 }
@@ -21,7 +24,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            createPost
+            createPost,
+            userTyping
         }, dispatch)
     };
 }

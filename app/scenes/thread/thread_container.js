@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 
 import {handleCommentDraftChanged} from 'app/actions/views/thread';
+import {selectPost} from 'service/actions/posts';
 
 import {makeGetPostsForThread} from 'service/selectors/entities/posts';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -34,7 +35,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleCommentDraftChanged
+            handleCommentDraftChanged,
+            selectPost
         }, dispatch)
     };
 }

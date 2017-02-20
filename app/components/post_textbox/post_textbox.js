@@ -1,15 +1,16 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {
     Platform,
     TouchableHighlight,
-    View
+    View, Text
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import Autocomplete from 'app/components/autocomplete';
+import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity} from 'app/utils/theme';
 
@@ -17,17 +18,19 @@ import {changeOpacity} from 'app/utils/theme';
 
 const MAX_CONTENT_HEIGHT = 100;
 
-export default class PostTextbox extends React.PureComponent {
+export default class PostTextbox extends PureComponent {
     static propTypes = {
-        currentUserId: React.PropTypes.string.isRequired,
-        teamId: React.PropTypes.string.isRequired,
-        channelId: React.PropTypes.string.isRequired,
-        rootId: React.PropTypes.string,
-        value: React.PropTypes.string.isRequired,
-        onChangeText: React.PropTypes.func.isRequired,
-        theme: React.PropTypes.object.isRequired,
-        actions: React.PropTypes.shape({
-            createPost: React.PropTypes.func.isRequired
+        currentUserId: PropTypes.string.isRequired,
+        typing: PropTypes.array.isRequired,
+        teamId: PropTypes.string.isRequired,
+        channelId: PropTypes.string.isRequired,
+        rootId: PropTypes.string,
+        value: PropTypes.string.isRequired,
+        onChangeText: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            createPost: PropTypes.func.isRequired,
+            userTyping: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -72,21 +75,62 @@ export default class PostTextbox extends React.PureComponent {
     };
 
     handleTextChange = (text) => {
-        this.props.onChangeText(text);
-    }
+        const {
+            onChangeText,
+            channelId,
+            rootId,
+            actions
+        } = this.props;
+
+        onChangeText(text);
+        actions.userTyping(channelId, rootId);
+    };
 
     handleSelectionChange = (event) => {
         if (this.autocomplete) {
             this.autocomplete.handleSelectionChange(event);
         }
-    }
+    };
 
     attachAutocomplete = (c) => {
         this.autocomplete = c;
-    }
+    };
+
+    renderTyping = () => {
+        const {typing} = this.props;
+        const numUsers = typing.length;
+
+        switch (numUsers) {
+        case 0:
+            return null;
+        case 1:
+            return (
+                <FormattedText
+                    id='msg_typing.isTyping'
+                    defaultMessage='{user} is typing...'
+                    values={{
+                        user: typing[0]
+                    }}
+                />
+            );
+        default: {
+            const last = typing.pop();
+            return (
+                <FormattedText
+                    id='msg_typing.areTyping'
+                    defaultMessage='{users} and {last} are typing...'
+                    values={{
+                        users: (typing.join(', ')),
+                        last
+                    }}
+                />
+            );
+        }
+        }
+    };
 
     render() {
-        const theme = this.props.theme;
+        const {theme} = this.props;
 
         let placeholder;
         if (this.props.rootId) {
@@ -97,6 +141,20 @@ export default class PostTextbox extends React.PureComponent {
 
         return (
             <View style={{padding: 7}}>
+                <View>
+                    <Text
+                        style={{
+                            opacity: 0.7,
+                            fontSize: 11,
+                            marginBottom: 5,
+                            color: theme.centerChannelColor
+                        }}
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                    >
+                        {this.renderTyping()}
+                    </Text>
+                </View>
                 <Autocomplete ref={this.attachAutocomplete}/>
                 <View
                     style={{

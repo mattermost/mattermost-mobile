@@ -9,6 +9,7 @@ import {closeDrawers} from 'app/actions/navigation';
 
 import {
     fetchMyChannelsAndMembers,
+    getChannelStats,
     getMyChannelMembers,
     selectChannel,
     leaveChannel as serviceLeaveChannel
@@ -23,7 +24,7 @@ import {getPreferencesByCategory} from 'service/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
-        const channels = getState().entities.channels.channels;
+        const {channels} = getState().entities.channels;
 
         let hasChannelsForTeam = false;
         for (const channel of Object.values(channels)) {
@@ -129,19 +130,19 @@ export function selectInitialChannel(teamId) {
         if (currentChannel && myMembers[currentChannelId] &&
             (currentChannel.team_id === teamId || (currentChannel.type === Constants.DM_CHANNEL &&
             isDirectChannelVisible(currentUserId, myPreferences, currentChannel)))) {
-            await selectChannel(currentChannelId)(dispatch, getState);
+            await handleSelectChannel(currentChannelId)(dispatch, getState);
             return;
         }
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === Constants.DEFAULT_CHANNEL);
         if (channel) {
-            await selectChannel(channel.id)(dispatch, getState);
+            await handleSelectChannel(channel.id)(dispatch, getState);
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
             const firstChannel = channelsInTeam[0].id;
-            await selectChannel(firstChannel.id)(dispatch, getState);
+            await handleSelectChannel(firstChannel.id)(dispatch, getState);
         }
     };
 }
@@ -152,6 +153,8 @@ export function handleSelectChannel(channelId) {
 
         await updateStorage(currentTeamId, {currentChannelId: channelId});
         await selectChannel(channelId)(dispatch, getState);
+        await getChannelStats(currentTeamId, channelId)(dispatch, getState);
+
         setTimeout(async () => {
             await closeDrawers()(dispatch, getState); // trying to smooth out channel switch transitions
         }, 200);

@@ -152,6 +152,8 @@ function handlePosts(posts = {}, postsByChannel = {}, action) {
 
 function selectedPostId(state = '', action) {
     switch (action.type) {
+    case PostsTypes.RECEIVED_POST_SELECTED:
+        return action.data;
     case UsersTypes.LOGOUT_SUCCESS:
         return '';
     default:

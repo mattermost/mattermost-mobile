@@ -150,6 +150,6 @@ export default combineReducers({
     //object where every key is the channel id and has and object with the channel members detail
     myMembers,
 
-    // object where every key is the team id and has an object with the team stats
+    // object where every key is the channel id and has an object with the channel stats
     stats
 });

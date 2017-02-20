@@ -1,18 +1,18 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 
 import PostList from 'app/components/post_list';
 
-export default class ChannelPostList extends React.Component {
+export default class ChannelPostList extends PureComponent {
     static propTypes = {
-        actions: React.PropTypes.shape({
-            loadPostsIfNecessary: React.PropTypes.func.isRequired,
-            goToThread: React.PropTypes.func.isRequired
+        actions: PropTypes.shape({
+            loadPostsIfNecessary: PropTypes.func.isRequired,
+            goToThread: PropTypes.func.isRequired
         }).isRequired,
-        channel: React.PropTypes.object.isRequired,
-        posts: React.PropTypes.array.isRequired
+        channel: PropTypes.object.isRequired,
+        posts: PropTypes.array.isRequired
     };
 
     componentDidMount() {
@@ -27,7 +27,7 @@ export default class ChannelPostList extends React.Component {
 
     goToThread = (post) => {
         this.props.actions.goToThread(post.channel_id, post.root_id || post.id);
-    }
+    };
 
     render() {
         if (!this.props.posts) {

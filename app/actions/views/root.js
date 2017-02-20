@@ -6,6 +6,7 @@ import Routes from 'app/navigation/routes';
 
 import Client from 'service/client';
 import {loadMe} from 'service/actions/users';
+import {getClientConfig, getLicenseConfig} from 'service/actions/general';
 
 export function goToSelectServer() {
     return async (dispatch, getState) => {
@@ -22,6 +23,8 @@ export function setStoreFromLocalData(data) {
         Client.setToken(data.token);
         Client.setUrl(data.url);
 
+        await getClientConfig()(dispatch, getState);
+        await getLicenseConfig()(dispatch, getState);
         return loadMe()(dispatch, getState);
     };
 }

@@ -1,9 +1,10 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
+import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import websocketClient from 'service/client/websocket_client';
+import {getProfilesByIds, getStatusesByIds} from 'service/actions/users';
 import {
     fetchMyChannelsAndMembers,
     getChannel,
@@ -28,6 +29,7 @@ import {
     UsersTypes,
     WebsocketEvents
 } from 'service/constants';
+import {getCurrentChannelStats} from 'service/selectors/entities/channels';
 import {getUserIdFromChannelName} from 'service/utils/channel_utils';
 import EventEmitter from 'service/utils/event_emitter';
 
@@ -136,6 +138,9 @@ function handleEvent(msg, dispatch, getState) {
     case WebsocketEvents.STATUS_CHANGED:
         handleStatusChangedEvent(msg, dispatch, getState);
         break;
+    case WebsocketEvents.TYPING:
+        handleUserTypingEvent(msg, dispatch, getState);
+        break;
     }
 }
 
@@ -192,16 +197,25 @@ async function handleNewPostEvent(msg, dispatch, getState) {
         });
     }
 
-    dispatch({
-        type: PostsTypes.RECEIVED_POSTS,
-        data: {
-            order: [],
-            posts: {
-                [post.id]: post
-            }
+    dispatch(batchActions([
+        {
+            type: PostsTypes.RECEIVED_POSTS,
+            data: {
+                order: [],
+                posts: {
+                    [post.id]: post
+                }
+            },
+            channelId: post.channel_id
         },
-        channelId: post.channel_id
-    }, getState);
+        {
+            type: WebsocketEvents.STOP_TYPING,
+            data: {
+                id: post.channel_id + post.root_id,
+                userId: post.user_id
+            }
+        }
+    ]), getState);
 
     if (userId === users.currentId || post.channel_id === currentChannelId) {
         markChannelAsRead(post.channel_id);
@@ -343,6 +357,52 @@ function handleStatusChangedEvent(msg, dispatch, getState) {
     }, getState);
 }
 
+const typingUsers = {};
+function handleUserTypingEvent(msg, dispatch, getState) {
+    const state = getState();
+    const {profiles, statuses} = state.entities.users;
+    const {config} = state.entities.general;
+    const userId = msg.data.user_id;
+    const id = msg.broadcast.channel_id + msg.data.parent_id;
+    const data = {id, userId};
+
+    // Create entry
+    if (!typingUsers[id]) {
+        typingUsers[id] = {};
+    }
+
+    // If we already have this user, clear it's timeout to be deleted
+    if (typingUsers[id][userId]) {
+        clearTimeout(typingUsers[id][userId].timeout);
+    }
+
+    // Set the user and a timeout to remove it
+    typingUsers[id][userId] = setTimeout(() => {
+        Reflect.deleteProperty(typingUsers[id], userId);
+        if (typingUsers[id] === {}) {
+            Reflect.deleteProperty(typingUsers, id);
+        }
+        dispatch({
+            type: WebsocketEvents.STOP_TYPING,
+            data
+        }, getState);
+    }, parseInt(config.TimeBetweenUserTypingUpdatesMilliseconds, 10));
+
+    dispatch({
+        type: WebsocketEvents.TYPING,
+        data
+    }, getState);
+
+    if (!profiles[userId]) {
+        getProfilesByIds([userId])(dispatch, getState);
+    }
+
+    const status = statuses[userId];
+    if (status !== Constants.ONLINE) {
+        getStatusesByIds([userId])(dispatch, getState);
+    }
+}
+
 // Helpers
 
 function loadPostsHelper(teamId, channelId, dispatch, getState) {
@@ -360,4 +420,20 @@ function loadPostsHelper(teamId, channelId, dispatch, getState) {
     } else {
         getPostsSince(teamId, channelId, latestPostTime)(dispatch, getState);
     }
+}
+
+let lastTimeTypingSent = 0;
+export function userTyping(channelId, parentPostId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const config = state.entities.general.config;
+        const t = Date.now();
+        const membersInChannel = getCurrentChannelStats(state).member_count;
+
+        if (((t - lastTimeTypingSent) > config.TimeBetweenUserTypingUpdatesMilliseconds) &&
+            (membersInChannel < config.MaxNotificationsPerChannel) && (config.EnableUserTypingMessages === 'true')) {
+            websocketClient.userTyping(channelId, parentPostId);
+            lastTimeTypingSent = t;
+        }
+    };
 }

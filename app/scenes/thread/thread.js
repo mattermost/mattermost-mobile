@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {StatusBar, StyleSheet} from 'react-native';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -18,18 +18,23 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default class Thread extends React.Component {
+export default class Thread extends PureComponent {
     static propTypes = {
         actions: React.PropTypes.shape({
-            handleCommentDraftChanged: React.PropTypes.func.isRequired
+            handleCommentDraftChanged: PropTypes.func.isRequired,
+            selectPost: PropTypes.func.isRequired
         }).isRequired,
-        teamId: React.PropTypes.string.isRequired,
-        channelId: React.PropTypes.string.isRequired,
-        rootId: React.PropTypes.string.isRequired,
-        draft: React.PropTypes.string.isRequired,
-        theme: React.PropTypes.object.isRequired,
-        posts: React.PropTypes.array.isRequired
+        teamId: PropTypes.string.isRequired,
+        channelId: PropTypes.string.isRequired,
+        rootId: PropTypes.string.isRequired,
+        draft: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired,
+        posts: PropTypes.array.isRequired
     };
+
+    componentWillUnmount() {
+        this.props.actions.selectPost('');
+    }
 
     handleDraftChanged = (value) => {
         this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
