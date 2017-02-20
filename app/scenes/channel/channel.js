@@ -17,7 +17,6 @@ import EventEmitter from 'service/utils/event_emitter';
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelMenuButton from './channel_menu_button';
 import ChannelTitle from './channel_title';
-import ErrorList from 'app/components/error_list';
 import ChannelPostList from './channel_post_list';
 
 export default class Channel extends React.PureComponent {
@@ -139,7 +138,6 @@ export default class Channel extends React.PureComponent {
                 keyboardVerticalOffset={65}
             >
                 <StatusBar barStyle='light-content'/>
-                <ErrorList/>
                 <ChannelPostList channel={currentChannel}/>
                 <PostTextbox
                     ref={this.attachPostTextbox}

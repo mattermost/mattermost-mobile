@@ -16,7 +16,7 @@ import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
 import {RouteTransitions} from 'app/navigation/routes';
 import {getTheme} from 'service/selectors/entities/preferences';
-
+import ErrorList from 'app/components/error_list';
 import NavigationModal from './navigation_modal';
 
 const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder;
@@ -128,6 +128,7 @@ class Router extends React.Component {
         return (
             <View style={{flex: 1, flexDirection: 'column-reverse'}}>
                 <View style={{flex: 1}}>
+                    <ErrorList/>
                     {renderedScenes}
                 </View>
                 {navBar}
