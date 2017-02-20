@@ -1,3 +1,6 @@
+// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
 import React, {PropTypes} from 'react';
 import {
     StyleSheet,
@@ -7,49 +10,56 @@ import {
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 import ProfilePicture from 'app/components/profile_picture';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        height: 65,
-        paddingHorizontal: 10,
-        alignItems: 'center',
-        backgroundColor: '#fff'
-    },
-    displayName: {
-        fontSize: 16
-    },
-    textContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        marginLeft: 10
-    },
-    username: {
-        marginLeft: 5,
-        fontSize: 16,
-        opacity: 0.7
-    },
-    selector: {
-        height: 28,
-        width: 28,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: '#888',
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    selectorContainer: {
-        height: 50,
-        paddingRight: 15,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    selectorFilled: {
-        backgroundColor: '#378FD2',
-        borderWidth: 0
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flexDirection: 'row',
+            height: 65,
+            paddingHorizontal: 15,
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg
+        },
+        displayName: {
+            fontSize: 16,
+            color: theme.centerChannelColor
+        },
+        icon: {
+            fontSize: 20,
+            color: theme.centerChannelColor
+        },
+        textContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            marginLeft: 5
+        },
+        username: {
+            marginLeft: 5,
+            fontSize: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        selector: {
+            height: 28,
+            width: 28,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#888',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        selectorContainer: {
+            height: 50,
+            paddingRight: 15,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        selectorFilled: {
+            backgroundColor: '#378FD2',
+            borderWidth: 0
+        }
+    });
 });
 
 function createTouchableComponent(children, action) {
@@ -61,7 +71,8 @@ function createTouchableComponent(children, action) {
 }
 
 function MemberListRow(props) {
-    const {id, displayName, username, onPress, user} = props;
+    const {id, displayName, username, onPress, theme, user} = props;
+    const style = getStyleFromTheme(theme);
 
     const RowComponent = (
         <View style={style.container}>
@@ -115,6 +126,7 @@ MemberListRow.propTypes = {
     displayName: PropTypes.string.isRequired,
     pictureURL: PropTypes.string,
     username: PropTypes.string.isRequired,
+    theme: PropTypes.object.isRequired,
     onPress: PropTypes.func,
     selectable: PropTypes.bool,
     onRowSelect: PropTypes.func,

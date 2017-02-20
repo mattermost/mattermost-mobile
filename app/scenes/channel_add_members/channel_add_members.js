@@ -9,18 +9,24 @@ import {
     View
 } from 'react-native';
 
-import MemberList from 'app/components/member_list';
+import MemberList from 'app/components/custom_list';
+import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 
 import AddMemberButton from './add_member_button';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
 });
 
 export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
+        theme: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         currentChannelMemberCount: PropTypes.number,
         membersNotInChannel: PropTypes.array.isRequired,
@@ -36,17 +42,17 @@ export default class ChannelAddMembers extends PureComponent {
             goBack: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired
         })
-    }
+    };
 
     static navigationProps = {
         renderRightComponent: (props, emitter) => {
             return <AddMemberButton emitter={emitter}/>;
         }
-    }
+    };
 
     state = {
         selectedMembers: {}
-    }
+    };
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('add_members', this.handleAddMembersPress);
@@ -83,25 +89,31 @@ export default class ChannelAddMembers extends PureComponent {
         if (loadMoreRequestStatus !== 'started' && membersNotInChannel.length < (currentTeamMemberCount - currentChannelMemberCount - 1)) {
             this.props.actions.getProfilesNotInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.props.membersNotInChannel.length);
         }
-    }
+    };
 
     handleRowSelect = (id) => {
         const selectedMembers = Object.assign({}, this.state.selectedMembers, {[id]: !this.state.selectedMembers[id]});
         this.setState({
             selectedMembers
         });
-    }
+    };
 
     render() {
+        const style = getStyleFromTheme(this.props.theme);
+
         return (
             <View style={style.container}>
                 <MemberList
-                    members={this.props.membersNotInChannel}
+                    data={this.props.membersNotInChannel}
+                    theme={this.props.theme}
                     onListEndReached={this.loadMoreMembers}
                     preferences={this.props.preferences}
-                    loadingMembers={this.props.loadMoreRequestStatus === 'started'}
+                    loading={this.props.loadMoreRequestStatus === 'started'}
+                    loadingText={loadingText}
                     selectable={true}
                     onRowSelect={this.handleRowSelect}
+                    renderRow={renderMemberRow}
+                    createSections={createMembersSections}
                 />
             </View>
         );

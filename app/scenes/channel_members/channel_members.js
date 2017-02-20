@@ -10,20 +10,27 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import MemberList from 'app/components/member_list';
+import MemberList from 'app/components/custom_list';
+import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 
 import ChannelMembersTitle from './channel_members_title';
 import RemoveMemberButton from './remove_member_button';
+import {Constants} from 'service/constants';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
 });
 
 class ChannelMembers extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
+        theme: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         currentChannelMembers: PropTypes.array.isRequired,
         currentChannelMemberCount: PropTypes.number.isRequired,
@@ -38,7 +45,7 @@ class ChannelMembers extends PureComponent {
             goBack: PropTypes.func.isRequired,
             handleRemoveChannelMembers: PropTypes.func.isRequired
         })
-    }
+    };
 
     static navigationProps = {
         renderTitleComponent: () => {
@@ -47,11 +54,11 @@ class ChannelMembers extends PureComponent {
         renderRightComponent: (props, emitter) => {
             return <RemoveMemberButton emitter={emitter}/>;
         }
-    }
+    };
 
     state = {
         selectedMembers: {}
-    }
+    };
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('remove_members', this.handleRemoveMembersPress);
@@ -112,38 +119,46 @@ class ChannelMembers extends PureComponent {
                 onPress: () => this.removeMembers(membersToRemove)
             }]
         );
-    }
+    };
 
     removeMembers = (membersToRemove) => {
         const {actions, currentTeam, currentChannel} = this.props;
         actions.handleRemoveChannelMembers(currentTeam.id, currentChannel.id, membersToRemove).then(() => {
             actions.goBack();
         });
-    }
+    };
 
     loadMoreMembers = () => {
         if (this.props.requestStatus !== 'started' && this.props.currentChannelMembers.length < this.props.currentChannelMemberCount) {
             this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.props.currentChannelMembers.length);
         }
-    }
+    };
 
     handleRowSelect = (id) => {
         const selectedMembers = Object.assign({}, this.state.selectedMembers, {[id]: !this.state.selectedMembers[id]});
         this.setState({
             selectedMembers
         });
-    }
+    };
 
     render() {
+        const {currentChannel, isAdmin, theme} = this.props;
+        const canManage = (isAdmin && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
+        const style = getStyleFromTheme(theme);
+
         return (
             <View style={style.container}>
                 <MemberList
-                    members={this.props.currentChannelMembers}
+                    data={this.props.currentChannelMembers}
+                    theme={this.props.theme}
                     onListEndReached={this.loadMoreMembers}
                     preferences={this.props.preferences}
-                    loadingMembers={this.props.requestStatus === 'started'}
-                    selectable={this.props.isAdmin}
+                    loading={this.props.requestStatus === 'started'}
+                    loadingText={loadingText}
+                    selectable={canManage}
                     onRowSelect={this.handleRowSelect}
+                    renderRow={renderMemberRow}
+                    createSections={createMembersSections}
                 />
             </View>
         );

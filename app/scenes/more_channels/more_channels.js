@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-import MemberList from 'app/components/custom_list';
+import ChannelList from 'app/components/custom_list';
+import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import SearchBar from 'app/components/search_bar';
-import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
+
 import {Constants, RequestStatus} from 'service/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -26,22 +27,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-class MoreDirectMessages extends PureComponent {
+class MoreChannels extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
-        preferences: PropTypes.object.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        profiles: PropTypes.array,
-        search: PropTypes.array,
+        channels: PropTypes.array,
         requestStatus: PropTypes.object.isRequired,
-        searchRequest: PropTypes.object.isRequired,
         subscribeToHeaderEvent: React.PropTypes.func.isRequired,
         unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
         actions: PropTypes.shape({
             goBack: PropTypes.func.isRequired,
-            makeDirectChannel: PropTypes.func.isRequired,
-            getProfiles: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired
+            handleSelectChannel: PropTypes.func.isRequired,
+            joinChannel: PropTypes.func.isRequired,
+            getMoreChannels: PropTypes.func.isRequired,
+            searchMoreChannels: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -68,7 +69,7 @@ class MoreDirectMessages extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            profiles: [],
+            channels: [],
             page: 0,
             next: true,
             searching: false
@@ -81,26 +82,33 @@ class MoreDirectMessages extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {requestStatus} = this.props;
-        if (requestStatus.status === RequestStatus.STARTED &&
+        if (this.state.searching &&
+            nextProps.requestStatus.status === RequestStatus.SUCCESS) {
+            const channels = this.filterChannels(nextProps.channels, this.state.term);
+            this.setState({channels});
+        } else if (requestStatus.status === RequestStatus.STARTED &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const profiles = nextProps.profiles.splice(0, (page + 1) * Constants.PROFILE_CHUNK_SIZE);
-            this.setState({profiles});
-        } else if (this.state.searching &&
-            nextProps.searchRequest.status === RequestStatus.SUCCESS) {
-            this.setState({profiles: nextProps.search});
+            const channels = nextProps.channels.splice(0, (page + 1) * Constants.CHANNELS_CHUNK_SIZE);
+            this.setState({channels});
         }
     }
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-            this.props.actions.getProfiles(0);
+            this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
         });
     }
 
     componentWillUnmount() {
         this.props.unsubscribeFromHeaderEvent('close');
     }
+
+    filterChannels = (channels, term) => {
+        return channels.filter((c) => {
+            return (c.name.toLowerCase().indexOf(term) !== -1 || c.display_name.toLowerCase().indexOf(term) !== -1);
+        });
+    };
 
     searchBarRef = (ref) => {
         this.searchBar = ref;
@@ -111,14 +119,15 @@ class MoreDirectMessages extends PureComponent {
     };
 
     searchProfiles = (event) => {
-        const term = event.nativeEvent.text;
+        const term = event.nativeEvent.text.toLowerCase();
 
         if (term) {
-            this.setState({searching: true});
+            const channels = this.filterChannels(this.state.channels, term);
+            this.setState({channels, term, searching: true});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchProfiles(term);
+                this.props.actions.searchMoreChannels(this.props.currentTeamId, term);
             }, Constants.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
@@ -126,18 +135,22 @@ class MoreDirectMessages extends PureComponent {
     };
 
     cancelSearch = () => {
-        this.props.actions.getProfiles(0);
+        this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
         this.setState({
+            term: null,
             searching: false,
             page: 0
         });
     };
 
-    loadMoreProfiles = () => {
+    loadMoreChannels = () => {
         let {page} = this.state;
         if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
             page = page + 1;
-            this.props.actions.getProfiles(page * Constants.PROFILE_CHUNK_SIZE, Constants.PROFILE_CHUNK_SIZE).
+            this.props.actions.getMoreChannels(
+                this.props.currentTeamId,
+                page * Constants.CHANNELS_CHUNK_SIZE,
+                Constants.CHANNELS_CHUNK_SIZE).
             then((data) => {
                 if (Object.keys(data).length) {
                     this.setState({
@@ -150,9 +163,34 @@ class MoreDirectMessages extends PureComponent {
         }
     };
 
-    onSelectMember = async (id) => {
+    renderChannelRow = (channel, sectionId, rowId, preferences, theme, selectable, onPress, onSelect) => {
+        const {id, display_name: displayName, purpose} = channel;
+        let onRowSelect = null;
+        if (selectable) {
+            onRowSelect = () => onSelect(sectionId, rowId);
+        }
+
+        return (
+            <ChannelListRow
+                id={id}
+                displayName={displayName}
+                purpose={purpose}
+                theme={theme}
+                onPress={onPress}
+                selectable={selectable}
+                selected={channel.selected}
+                onRowSelect={onRowSelect}
+            />
+        );
+    };
+
+    onSelectChannel = async (id) => {
         this.searchBar.blur();
-        await this.props.actions.makeDirectChannel(id);
+        await this.props.actions.joinChannel(
+            this.props.currentUserId,
+            this.props.currentTeamId,
+            id);
+        await this.props.actions.handleSelectChannel(id);
 
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.goBack();
@@ -161,10 +199,9 @@ class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.props.intl;
-        const isLoading = (this.props.requestStatus.status === RequestStatus.STARTED) ||
-            (this.props.searchRequest.status === RequestStatus.STARTED);
+        const isLoading = this.props.requestStatus.status === RequestStatus.STARTED;
         const style = getStyleFromTheme(this.props.theme);
-        const more = this.state.searching ? () => true : this.loadMoreProfiles;
+        const more = this.state.searching ? () => true : this.loadMoreChannels;
 
         return (
             <View style={style.container}>
@@ -184,23 +221,22 @@ class MoreDirectMessages extends PureComponent {
                         onCancelButtonPress={this.cancelSearch}
                     />
                 </View>
-                <MemberList
-                    data={this.state.profiles}
+                <ChannelList
+                    data={this.state.channels}
                     theme={this.props.theme}
                     searching={this.state.searching}
                     onListEndReached={more}
-                    preferences={this.props.preferences}
                     loading={isLoading}
                     selectable={false}
                     listScrollRenderAheadDistance={50}
-                    createSections={createMembersSections}
-                    renderRow={renderMemberRow}
-                    onRowPress={this.onSelectMember}
-                    loadingText={loadingText}
+                    showSections={false}
+                    renderRow={this.renderChannelRow}
+                    onRowPress={this.onSelectChannel}
+                    loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
                 />
             </View>
         );
     }
 }
 
-export default injectIntl(MoreDirectMessages);
+export default injectIntl(MoreChannels);

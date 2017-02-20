@@ -15,7 +15,7 @@ import {
 import {injectIntl, intlShape} from 'react-intl';
 import {Constants} from 'service/constants';
 import LineDivider from 'app/components/line_divider';
-import ChannelItem from './channel_item';
+import ChannelDrawerItem from './channel_drawer_item';
 import FormattedText from 'app/components/formatted_text';
 import UnreadIndicator from './unread_indicator';
 import deepEqual from 'deep-equal';
@@ -64,10 +64,19 @@ const Styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         textAlignVertical: 'center'
+    },
+    more: {
+        position: 'absolute',
+        opacity: 0.6,
+        right: 0,
+        width: 50,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });
 
-class ChannelList extends Component {
+class ChannelDrawerList extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
         currentTeam: PropTypes.object.isRequired,
@@ -85,6 +94,7 @@ class ChannelList extends Component {
             unmarkFavorite: PropTypes.func.isRequired,
             showOptionsModal: PropTypes.func.isRequired,
             showDirectMessagesModal: PropTypes.func.isRequired,
+            showMoreChannelsModal: PropTypes.func.isRequired,
             closeOptionsModal: PropTypes.func.isRequired
         }).isRequired
     };
@@ -337,7 +347,7 @@ class ChannelList extends Component {
         const unread = msgCount > 0;
 
         return (
-            <ChannelItem
+            <ChannelDrawerItem
                 ref={channel.id}
                 channel={channel}
                 hasUnread={unread}
@@ -381,12 +391,28 @@ class ChannelList extends Component {
             );
         }
 
+        const moreChannels = (
+            <TouchableHighlight
+                style={Styles.more}
+                onPress={this.props.actions.showMoreChannelsModal}
+            >
+                <Icon
+                    name='plus-circle'
+                    size={18}
+                    color={theme.sidebarText}
+                />
+            </TouchableHighlight>
+        );
+
         data.push(
-            <FormattedText
-                style={[Styles.title, {color: theme.sidebarText}]}
-                id='sidebar.channels'
-                defaultMessage='CHANNELS'
-            />,
+            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                <FormattedText
+                    style={[Styles.title, {color: theme.sidebarText}]}
+                    id='sidebar.channels'
+                    defaultMessage='CHANNELS'
+                />
+                {moreChannels}
+            </View>,
             ...publicChannels
         );
         data.push(
@@ -398,19 +424,9 @@ class ChannelList extends Component {
             ...privateChannels
         );
 
-        const moreDmStyle = {
-            position: 'absolute',
-            opacity: 0.6,
-            right: 0,
-            width: 50,
-            height: 30,
-            alignItems: 'center',
-            justifyContent: 'center'
-        };
-
         const moreDms = (
             <TouchableHighlight
-                style={moreDmStyle}
+                style={Styles.more}
                 onPress={this.props.actions.showDirectMessagesModal}
             >
                 <Icon
@@ -530,4 +546,4 @@ class ChannelList extends Component {
     }
 }
 
-export default injectIntl(ChannelList);
+export default injectIntl(ChannelDrawerList);

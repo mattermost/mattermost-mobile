@@ -10,9 +10,9 @@ import {changeOpacity} from 'app/utils/theme';
 
 import {Constants} from 'service/constants';
 
-import Badge from './badge';
+import Badge from 'app/components/badge';
 
-export default class ChannelItem extends React.Component {
+export default class ChannelDrawerItem extends React.Component {
     static propTypes = {
         channel: React.PropTypes.object.isRequired,
         onSelectChannel: React.PropTypes.func.isRequired,

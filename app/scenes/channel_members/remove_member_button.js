@@ -11,10 +11,13 @@ import {
 import FormattedText from 'app/components/formatted_text';
 
 import {getCurrentUserRoles} from 'service/selectors/entities/users';
+import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
+import {Constants} from 'service/constants';
 
 function RemoveMemberButton(props) {
-    if (!props.isAdmin) {
+    const {currentChannel, isAdmin} = props;
+    if (!isAdmin || currentChannel.type === Constants.DM_CHANNEL || currentChannel.name === Constants.DEFAULT_CHANNEL) {
         return null;
     }
 
@@ -37,6 +40,7 @@ function RemoveMemberButton(props) {
 RemoveMemberButton.propTypes = {
     emitter: PropTypes.func.isRequired,
     isAdmin: PropTypes.bool.isRequired,
+    currentChannel: PropTypes.object.isRequired,
     theme: PropTypes.object
 };
 
@@ -50,6 +54,7 @@ function mapStateToProps(state) {
     const isAdmin = currentUserRoles.includes('_admin');
     return {
         isAdmin,
+        currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
     };
 }

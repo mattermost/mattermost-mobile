@@ -8,7 +8,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 import {goBack} from 'app/actions/navigation';
 import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
-import {getMyPreferences} from 'service/selectors/entities/preferences';
+import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam, getCurrentTeamStats} from 'service/selectors/entities/teams';
 import {getProfilesNotInCurrentChannel} from 'service/selectors/entities/users';
 import {getTeamStats} from 'service/actions/teams';
@@ -21,6 +21,7 @@ function mapStateToProps(state) {
     const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
 
     return {
+        theme: getTheme(state),
         currentChannel: getCurrentChannel(state),
         membersNotInChannel: getProfilesNotInCurrentChannel(state),
         currentTeam: getCurrentTeam(state),
