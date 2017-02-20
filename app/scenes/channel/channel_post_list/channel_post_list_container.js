@@ -65,6 +65,7 @@ const getPostsInCurrentChannelWithReplyProps = createSelector(
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
+        myMember: state.entities.channels.myMembers[ownProps.channel.id],
         posts: getPostsInCurrentChannelWithReplyProps(state)
     };
 }
