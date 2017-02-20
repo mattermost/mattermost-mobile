@@ -47,7 +47,7 @@ export default class Badge extends PureComponent {
         const {count} = this.props;
         let text = count.toString();
         if (count < 0) {
-            text = '';
+            text = '•';
         }
         return (
             <Text

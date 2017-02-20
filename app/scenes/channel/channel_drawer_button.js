@@ -26,11 +26,11 @@ function ChannelDrawerButton(props) {
             top: 5,
             left: 5,
             flexDirection: 'row',
-            backgroundColor: props.theme.mentionBj
+            backgroundColor: 'rgb(214, 73, 70)'
         };
 
         const mentionStyle = {
-            color: props.theme.mentionColor,
+            color: '#fff',
             fontSize: 12
         };
 
