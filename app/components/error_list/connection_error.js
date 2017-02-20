@@ -2,12 +2,11 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {injectIntl} from 'react-intl';
 import {
     StyleSheet,
-    View,
-    Text
+    View
 } from 'react-native';
+import FormattedText from 'app/components/formatted_text';
 
 const style = StyleSheet.create({
     container: {
@@ -18,19 +17,13 @@ const style = StyleSheet.create({
     }
 });
 
-function ConnectionError(intl) {
+export default function ConnectionError() {
     return (
         <View style={style.container}>
-            <Text>
-                {
-                  intl.formatMessage({
-                      id: 'connection.error',
-                      defaultMessage: 'Cannot reach {siteName}. Please check your connection.'
-                  })
-                }
-            </Text>
+            <FormattedText
+                id='connection.error'
+                defaultMessage='Cannot reach {siteName}. Please check your connection.'
+            />
         </View>
     );
 }
-
-export default injectIntl(ConnectionError);
