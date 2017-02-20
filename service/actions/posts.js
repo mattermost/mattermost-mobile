@@ -227,6 +227,15 @@ export function getPostsAfter(teamId, channelId, postId, offset = 0, limit = Con
     };
 }
 
+export function selectPost(postId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: PostsTypes.RECEIVED_POST_SELECTED,
+            data: postId
+        }, getState);
+    };
+}
+
 export default {
     createPost,
     editPost,
@@ -236,5 +245,6 @@ export default {
     getPosts,
     getPostsSince,
     getPostsBefore,
-    getPostsAfter
+    getPostsAfter,
+    selectPost
 };

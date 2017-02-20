@@ -3,6 +3,7 @@
 
 import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
+import {selectPost} from 'service/actions/posts';
 
 export function goBack() {
     return async (dispatch, getState) => {
@@ -85,6 +86,8 @@ export function goToChannelAddMembers() {
 
 export function goToThread(channelId, rootId) {
     return async (dispatch, getState) => {
+        selectPost(rootId)(dispatch, getState);
+
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: {

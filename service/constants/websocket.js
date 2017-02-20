@@ -12,6 +12,7 @@ const WebsocketEvents = {
     USER_REMOVED: 'user_removed',
     USER_UPDATED: 'user_updated',
     TYPING: 'typing',
+    STOP_TYPING: 'stop_typing',
     PREFERENCE_CHANGED: 'preference_changed',
     EPHEMERAL_MESSAGE: 'ephemeral_message',
     STATUS_CHANGED: 'status_change',

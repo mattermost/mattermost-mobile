@@ -46,7 +46,8 @@ const state = {
         },
         preferences: {
             myPreferences: {}
-        }
+        },
+        typing: {}
     },
     requests: {
         channels: {
