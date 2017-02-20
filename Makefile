@@ -1,4 +1,4 @@
-.PHONY: run run-ios run-android check-style test clean post-install stop
+.PHONY: run run-ios run-android check-style test clean post-install start stop
 .PHONY: check-ios-target build-ios
 .PHONY: check-android-target prepare-android-build build-android
 .PHONY: start-packager stop-packager
@@ -34,9 +34,11 @@ pre-run: .npminstall dist/assets
 
 run: run-ios
 
+start: | pre-run start-packager
+
 stop: stop-packager
 
-run-ios: | pre-run start-packager
+run-ios: | start
 	@if ! [ $(shell command -v xcodebuild) ]; then \
 		echo "xcode is not installed"; \
 		exit 1; \
@@ -51,7 +53,7 @@ run-ios: | pre-run start-packager
 	npm run run-ios
 	open -a Simulator
 
-run-android: | pre-run start-packager
+run-android: | start prepare-android-build
 	@if ! [ $(ANDROID_HOME) ]; then \
 		echo "ANDROID_HOME is not set"; \
 		exit 1; \
@@ -100,10 +102,16 @@ post-install:
 	sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 
 start-packager:
-	@node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID
+	@if [ $(shell ps -a | grep "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID; \
+	else \
+		echo React Native packager server already running; \
+		ps -a | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
+	fi
 
 stop-packager:
-	@echo Stopping packager server
+	@echo Stopping React Native packager server
 	@kill -9 `cat server.PID` && rm server.PID
 
 check-ios-target:
@@ -133,7 +141,7 @@ do-build-android:
 	@echo "Building android $(android_target) app"
 	@cd fastlane && fastlane android $(android_target)
 
-build-android: | check-android-target pre-run check-style prepare-android-build do-build-android
+build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
 
 dev:
 	@:
