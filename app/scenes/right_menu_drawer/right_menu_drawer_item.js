@@ -23,18 +23,23 @@ export default class MainMenuItem extends React.Component {
         style: React.PropTypes.oneOfType([
             React.PropTypes.object,
             React.PropTypes.array
-        ])
+        ]),
+        shouldRender: React.PropTypes.bool
     }
 
     render() {
+        const {onPress, style, children, shouldRender = true} = this.props
+        if (!shouldRender) {
+            return null;
+        }
         return (
             <TouchableHighlight
                 underlayColor='rgba(255, 255, 255, 0.3)'
-                onPress={this.props.onPress}
-                style={this.props.style}
+                onPress={onPress}
+                style={style}
             >
                 <View style={Styles.item}>
-                    {this.props.children}
+                    {children}
                 </View>
             </TouchableHighlight>
         );

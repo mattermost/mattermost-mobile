@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {dismissError} from 'service/actions/errors';
+import {dismissError, clearErrors} from 'service/actions/errors';
 
 import ErrorList from './error_list';
 
@@ -17,7 +17,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            dismissError
+            dismissError,
+            clearErrors
         }, dispatch)
     };
 }

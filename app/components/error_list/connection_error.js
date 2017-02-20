@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {injectIntl} from 'react-intl';
 import {
     StyleSheet,
     View,
@@ -17,12 +18,19 @@ const style = StyleSheet.create({
     }
 });
 
-function ConnectionError() {
+function ConnectionError(intl) {
     return (
         <View style={style.container}>
-            <Text>{'I am a general error'}</Text>
+            <Text>
+                {
+                  intl.formatMessage({
+                      id: 'connection.error',
+                      defaultMessage: 'Cannot reach {siteName}. Please check your connection.'
+                  })
+                }
+            </Text>
         </View>
     );
 }
 
-export default ConnectionError;
+export default injectIntl(ConnectionError);

@@ -9,10 +9,9 @@ import {
     TouchableOpacity
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 import FormattedText from 'app/components/formatted_text';
-
 import GeneralError from './general_error';
+import Config from 'assets/config.json';
 
 const {width: deviceWidth} = Dimensions.get('window');
 
@@ -56,26 +55,44 @@ const style = StyleSheet.create({
 export default class ErrorList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            dismissError: PropTypes.func.isRequired
+            dismissError: PropTypes.func.isRequired,
+            clearErrors: PropTypes.func.isRequired
         }).isRequired,
         errors: PropTypes.array.isRequired
+    }
+
+    renderErrorsList() {
+        const {errors} = this.props;
+        if (Config.ShowErrorsList) {
+            return errors.map((error, index) => (
+                <GeneralError
+                    key={index}
+                    dismiss={() => this.props.actions.dismissError(index)}
+                    message={error.message}
+                />
+            ));
+        }
+        const error = errors[0];
+        if (error) {
+            return (
+                <GeneralError
+                    dismiss={() => this.props.actions.dismissError(0)}
+                    message={error.message}
+                />
+            );
+        }
+        return null;
     }
 
     render() {
         return (
             <View style={[style.wrapper, (!this.props.errors.length && {height: 0})]}>
                 <View style={style.container}>
-                    {this.props.errors.map((error, index) => (
-                        <GeneralError
-                            key={index}
-                            dismiss={() => this.props.actions.dismissError(index)}
-                            message={error.message}
-                        />
-                    ))}
+                    {this.renderErrorsList()}
                     {this.props.errors.length > 1 &&
                         <TouchableOpacity
                             style={style.closeButtonContainer}
-                            onPress={() => true}
+                            onPress={() => this.props.actions.clearErrors()}
                         >
                             <View style={style.closeButton}>
                                 <Icon

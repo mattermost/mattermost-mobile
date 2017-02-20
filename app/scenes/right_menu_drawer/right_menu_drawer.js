@@ -83,6 +83,7 @@ export default class RightMenuDrawer extends React.Component {
 
     render() {
         const Styles = getStyleSheet(this.props.theme);
+        const errors = this.props.errors;
 
         return (
             <ScrollView style={Styles.container}>
@@ -122,7 +123,10 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Help'
                     />
                 </RightMenuDrawerItem>
-                <RightMenuDrawerItem onPress={this.openErrorEmail}>
+                <RightMenuDrawerItem
+                    onPress={this.openErrorEmail}
+                    shouldRender={errors && errors.length > 0}
+                >
                     <Icon
                         style={Styles.icon}
                         name='phone'

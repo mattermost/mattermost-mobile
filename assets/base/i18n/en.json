@@ -1093,6 +1093,7 @@
   "claim.oauth_to_email.switchTo": "Switch {type} to email and password",
   "claim.oauth_to_email.title": "Switch {type} Account to Email",
   "confirm_modal.cancel": "Cancel",
+  "connection.error": "Cannot reach {siteName}. Please check your connection.",
   "create_comment.addComment": "Add a comment...",
   "create_comment.comment": "Add Comment",
   "create_comment.commentLength": "Comment length must be less than {max} characters.",
