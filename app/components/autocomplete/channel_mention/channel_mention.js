@@ -24,7 +24,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         sectionText: {
             fontSize: 12,
@@ -36,11 +40,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         listView: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderTopWidth: 0,
-            borderBottomWidth: 0
+            backgroundColor: theme.centerChannelBg
         },
         loading: {
             alignItems: 'center',
@@ -57,7 +57,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         rowDisplayName: {
             fontSize: 13,
@@ -70,7 +74,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default class AtMention extends Component {
+export default class ChannelMention extends Component {
     static propTypes = {
         currentChannelId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -106,7 +110,7 @@ export default class AtMention extends Component {
     componentWillReceiveProps(nextProps) {
         const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(CHANNEL_MENTION_REGEX);
 
-        // If not match or if user clicked on a mention
+        // If not match or if user clicked on a channel
         if (!match || this.state.mentionComplete) {
             const nextState = {
                 active: false,
@@ -114,7 +118,7 @@ export default class AtMention extends Component {
             };
 
             // Handle the case where the user typed a ~ first and then backspaced
-            if (!nextProps.postDraft.length) {
+            if (nextProps.postDraft.length < this.props.postDraft.length) {
                 nextState.matchTerm = null;
             }
 
