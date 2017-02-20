@@ -7,7 +7,7 @@ export function isSystemMessage(post) {
     return post.type && post.type.startsWith(Constants.SYSTEM_MESSAGE_PREFIX);
 }
 
-export function addDatesToPostList(posts, lastViewedAt) {
+export function addDatesToPostList(posts, indicateNewMessages, lastViewedAt) {
     const out = [];
 
     let lastDate = null;
@@ -25,7 +25,7 @@ export function addDatesToPostList(posts, lastViewedAt) {
         out.push(post);
 
         postIsUnread = post.create_at > lastViewedAt;
-        if (subsequentPostIsUnread && !postIsUnread) {
+        if (indicateNewMessages && subsequentPostIsUnread && !postIsUnread) {
             out.push(Constants.START_OF_NEW_MESSAGES);
         }
         subsequentPostIsUnread = postIsUnread;

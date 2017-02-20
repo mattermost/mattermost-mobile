@@ -40,6 +40,7 @@ export default class ChannelPostList extends PureComponent {
                 posts={this.props.posts}
                 onPostPress={this.goToThread}
                 renderReplies={true}
+                indicateNewMessages={true}
                 lastViewedAt={this.props.myMember.last_viewed_at}
             />
         );
