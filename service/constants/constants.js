@@ -33,6 +33,8 @@ const Constants = {
     DISPLAY_PREFER_NICKNAME: 'nickname_full_name',
     DISPLAY_PREFER_FULL_NAME: 'full_name',
 
+    START_OF_NEW_MESSAGES: 'start-of-new-messages',
+
     POST_HEADER_CHANGE: 'system_header_change',
     POST_PURPOSE_CHANGE: 'system_purpose_change'
 };

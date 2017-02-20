@@ -35,7 +35,7 @@ export default class DateHeader extends React.Component {
     static propTypes = {
         date: React.PropTypes.object.isRequired,
         theme: React.PropTypes.object.isRequired,
-        style: React.PropTypes.oneOfType([React.PropTypes.object, React.PropTypes.number])
+        style: View.propTypes.style
     };
 
     render() {

@@ -9,9 +9,11 @@ import {
 
 import Post from 'app/components/post';
 
+import {Constants} from 'service/constants';
 import {addDatesToPostList} from 'service/utils/post_utils';
 
 import DateHeader from './date_header';
+import NewMessagesDivider from './new_messages_divider';
 
 const style = StyleSheet.create({
     container: {
@@ -27,30 +29,42 @@ export default class PostList extends React.Component {
         posts: React.PropTypes.array.isRequired,
         theme: React.PropTypes.object.isRequired,
         onPostPress: React.PropTypes.func,
-        renderReplies: React.PropTypes.bool
+        renderReplies: React.PropTypes.bool,
+        indicateNewMessages: React.PropTypes.bool,
+        lastViewedAt: React.PropTypes.number
     };
 
     constructor(props) {
         super(props);
-
+        const {posts, indicateNewMessages, lastViewedAt} = this.props;
         this.state = {
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(addDatesToPostList(this.props.posts))
+            }).cloneWithRows(addDatesToPostList(posts, indicateNewMessages, lastViewedAt))
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
-            this.setState({
-                dataSource: this.state.dataSource.cloneWithRows(addDatesToPostList(nextProps.posts))
-            });
+            const {posts, indicateNewMessages, lastViewedAt} = nextProps;
+            const dataSource = this.state.dataSource.cloneWithRows(
+                addDatesToPostList(posts, indicateNewMessages, lastViewedAt)
+            );
+            this.setState({dataSource});
         }
     }
 
     renderRow = (row) => {
         if (row instanceof Date) {
             return this.renderDateHeader(row);
+        }
+        if (row === Constants.START_OF_NEW_MESSAGES) {
+            return (
+                <NewMessagesDivider
+                    theme={this.props.theme}
+                    style={style.row}
+                />
+            );
         }
 
         return this.renderPost(row);

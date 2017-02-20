@@ -12,6 +12,7 @@ export default class ChannelPostList extends PureComponent {
             goToThread: PropTypes.func.isRequired
         }).isRequired,
         channel: PropTypes.object.isRequired,
+        myMember: PropTypes.object.isRequired,
         posts: PropTypes.array.isRequired
     };
 
@@ -39,6 +40,8 @@ export default class ChannelPostList extends PureComponent {
                 posts={this.props.posts}
                 onPostPress={this.goToThread}
                 renderReplies={true}
+                indicateNewMessages={true}
+                lastViewedAt={this.props.myMember.last_viewed_at}
             />
         );
     }
