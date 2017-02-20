@@ -91,7 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 export default class Post extends React.Component {
     static propTypes = {
-        style: React.PropTypes.oneOfType([React.PropTypes.object, React.PropTypes.number]),
+        style: View.propTypes.style,
         post: React.PropTypes.object.isRequired,
         user: React.PropTypes.object,
         displayName: React.PropTypes.string,

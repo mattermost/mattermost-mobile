@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes} from 'react';
+import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -44,7 +44,7 @@ function NewMessagesDivider(props) {
 }
 
 NewMessagesDivider.propTypes = {
-    style: PropTypes.oneOfType([PropTypes.object, PropTypes.number])
+    style: View.propTypes.style
 };
 
 export default NewMessagesDivider;
