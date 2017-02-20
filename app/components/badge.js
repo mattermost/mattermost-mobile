@@ -1,8 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React, {PropTypes, PureComponent} from 'react';
+import {View, Text, TouchableWithoutFeedback, StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
@@ -20,20 +20,22 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class Badge extends React.Component {
+export default class Badge extends PureComponent {
     static defaultProps = {
         extraPaddingHorizontal: 10,
         minHeight: 0,
-        minWidth: 0
+        minWidth: 0,
+        onPress: () => true
     };
 
     static propTypes = {
-        count: React.PropTypes.number.isRequired,
-        extraPaddingHorizontal: React.PropTypes.number,
+        count: PropTypes.number.isRequired,
+        extraPaddingHorizontal: PropTypes.number,
         style: View.propTypes.style,
         countStyle: Text.propTypes.style,
-        minHeight: React.PropTypes.number,
-        minWidth: React.PropTypes.number
+        minHeight: PropTypes.number,
+        minWidth: PropTypes.number,
+        onPress: PropTypes.func
     };
 
     constructor(props) {
@@ -42,14 +44,23 @@ export default class Badge extends React.Component {
     }
 
     renderText = () => {
+        const {count} = this.props;
+        let text = count.toString();
+        if (count < 0) {
+            text = '•';
+        }
         return (
             <Text
                 onLayout={this.onLayout}
                 style={[styles.text, this.props.countStyle]}
             >
-                {this.props.count}
+                {text}
             </Text>
         );
+    };
+
+    badgeRef = (ref) => {
+        this.container = ref;
     };
 
     onLayout = (e) => {
@@ -81,12 +92,14 @@ export default class Badge extends React.Component {
     render() {
         return (
             <View
-                ref={(component) => {
-                    this.container = component;
-                }}
+                ref={this.badgeRef}
                 style={[styles.container, this.props.style]}
             >
-                {this.renderText()}
+                <TouchableWithoutFeedback onPress={this.props.onPress}>
+                    <View>
+                        {this.renderText()}
+                    </View>
+                </TouchableWithoutFeedback>
             </View>
         );
     }
