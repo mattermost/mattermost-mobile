@@ -141,7 +141,6 @@ export default class PostTextbox extends PureComponent {
 
         return (
             <View style={{padding: 7}}>
-                <Autocomplete ref={this.attachAutocomplete}/>
                 <View>
                     <Text
                         style={{
@@ -156,6 +155,7 @@ export default class PostTextbox extends PureComponent {
                         {this.renderTyping()}
                     </Text>
                 </View>
+                <Autocomplete ref={this.attachAutocomplete}/>
                 <View
                     style={{
                         alignItems: 'flex-end',
