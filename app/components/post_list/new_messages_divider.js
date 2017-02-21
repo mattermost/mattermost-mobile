@@ -9,7 +9,8 @@ import FormattedText from 'app/components/formatted_text';
 const style = StyleSheet.create({
     container: {
         alignItems: 'center',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        height: 28
     },
     textContainer: {
         marginHorizontal: 15

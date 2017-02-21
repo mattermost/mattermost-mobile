@@ -11,7 +11,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         container: {
             alignItems: 'center',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            height: 28
         },
         dateContainer: {
             marginLeft: 15,
