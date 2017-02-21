@@ -9,6 +9,7 @@ import {goToThread} from 'app/actions/navigation';
 import {loadPostsIfNecessary} from 'app/actions/views/channel';
 
 import {getAllPosts, getPostsInCurrentChannel} from 'service/selectors/entities/posts';
+import {getCurrentChannelMembership} from 'service/selectors/entities/channels';
 
 import ChannelPostList from './channel_post_list';
 
@@ -65,7 +66,7 @@ const getPostsInCurrentChannelWithReplyProps = createSelector(
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        myMember: state.entities.channels.myMembers[ownProps.channel.id],
+        myMember: getCurrentChannelMembership(state),
         posts: getPostsInCurrentChannelWithReplyProps(state)
     };
 }

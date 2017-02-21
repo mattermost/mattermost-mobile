@@ -42,6 +42,7 @@ export default class ChannelPostList extends PureComponent {
                 renderReplies={true}
                 indicateNewMessages={true}
                 lastViewedAt={this.props.myMember.last_viewed_at}
+                currentUserId={this.props.myMember.user_id}
             />
         );
     }
