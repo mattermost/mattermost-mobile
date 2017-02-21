@@ -24,7 +24,7 @@ export default class ChannelDrawer extends React.PureComponent {
     }
 
     selectChannel = (id) => {
-        this.props.actions.handleSelectChannel(id);
+        return this.props.actions.handleSelectChannel(id);
     };
 
     render() {

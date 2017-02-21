@@ -172,9 +172,10 @@ class ChannelDrawerList extends Component {
             currentTeam
         } = this.props;
 
-        this.props.onSelectChannel(channel.id);
-        this.props.actions.viewChannel(currentTeam.id, channel.id);
-        this.props.actions.markChannelAsRead(channel.id, currentChannel.id);
+        this.props.onSelectChannel(channel.id).then(() => {
+            this.props.actions.viewChannel(currentTeam.id, channel.id);
+            this.props.actions.markChannelAsRead(channel.id, currentChannel.id);
+        });
     };
 
     onLayout = (event) => {
