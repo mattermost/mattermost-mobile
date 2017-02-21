@@ -17,9 +17,8 @@ const style = StyleSheet.create({
     },
     line: {
         flex: 1,
-        height: 1,
-        backgroundColor: '#ffaf53',
-        opacity: 0.2
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#f80'
     },
     text: {
         fontSize: 14,
