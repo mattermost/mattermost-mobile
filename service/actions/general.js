@@ -7,12 +7,23 @@ import {GeneralTypes} from 'service/constants';
 import {getMyChannelMembers} from './channels';
 
 export function getPing() {
-    return bindClientFunc(
-        Client.getPing,
-        GeneralTypes.PING_REQUEST,
-        GeneralTypes.PING_SUCCESS,
-        GeneralTypes.PING_FAILURE
-    );
+    return async (dispatch, getState) => {
+        dispatch({type: GeneralTypes.PING_REQUEST}, getState);
+
+        let data;
+        try {
+            data = await Client.getPing();
+            if (!data.version) {
+                // successful ping but not the right return data
+                throw new TypeError('Network request failed');
+            }
+        } catch (error) {
+            dispatch({type: GeneralTypes.PING_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch({type: GeneralTypes.PING_SUCCESS, data}, getState);
+    };
 }
 
 export function getClientConfig() {
