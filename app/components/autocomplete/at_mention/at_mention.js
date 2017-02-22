@@ -17,7 +17,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import {RequestStatus} from 'service/constants';
 
-const AT_MENTION_REGEX = /\B@\w*$/i;
+const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -139,7 +139,7 @@ export default class AtMention extends Component {
             return;
         }
 
-        const matchTerm = match[0].substring(1);
+        const matchTerm = match[2];
 
         if (matchTerm !== this.state.matchTerm) {
             this.setState({
