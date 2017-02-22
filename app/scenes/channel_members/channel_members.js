@@ -40,7 +40,7 @@ class ChannelMembers extends PureComponent {
         currentTeam: PropTypes.object,
         preferences: PropTypes.object,
         requestStatus: PropTypes.string,
-        isAdmin: PropTypes.bool.isRequired,
+        canManageUsers: PropTypes.bool.isRequired,
         subscribeToHeaderEvent: React.PropTypes.func,
         unsubscribeFromHeaderEvent: React.PropTypes.func,
         actions: PropTypes.shape({
@@ -171,8 +171,8 @@ class ChannelMembers extends PureComponent {
     }
 
     render() {
-        const {currentChannel, isAdmin, theme} = this.props;
-        const canManage = (isAdmin && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
+        const {currentChannel, canManageUsers, theme} = this.props;
+        const canManage = (canManageUsers && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
         const style = getStyleFromTheme(theme);
 
         return (

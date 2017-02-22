@@ -12,6 +12,10 @@ import PreferencesTypes from './preferences';
 import RequestStatus from './request_status';
 import WebsocketEvents from './websocket';
 
+const Channels = {
+    PUBLIC: 'O'
+};
+
 const Preferences = {
     CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
     CATEGORY_THEME: 'theme'
@@ -22,6 +26,7 @@ export {
     GeneralTypes,
     UsersTypes,
     TeamsTypes,
+    Channels,
     ChannelTypes,
     PostsTypes,
     FilesTypes,

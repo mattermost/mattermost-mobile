@@ -7,6 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
+import {Channels} from 'service/constants';
 import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
 import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
@@ -16,21 +17,22 @@ import {getProfilesInChannel} from 'service/actions/users';
 import ChannelMembers from './channel_members';
 
 function mapStateToProps(state) {
+    const currentChannel = getCurrentChannel(state);
     const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
     const currentUserRoles = getCurrentUserRoles(state);
 
-    const isAdmin = currentUserRoles.includes('_admin');
+    const canManageUsers = currentChannel.type === Channels.PUBLIC || currentUserRoles.includes('_admin');
 
     return {
         theme: getTheme(state),
-        currentChannel: getCurrentChannel(state),
+        currentChannel,
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentChannelMemberCount,
         currentUserId: state.entities.users.currentId,
         currentTeam: getCurrentTeam(state),
         preferences: getMyPreferences(state),
         requestStatus: state.requests.users.getProfilesInChannel.status,
-        isAdmin
+        canManageUsers
     };
 }
 
