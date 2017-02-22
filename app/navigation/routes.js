@@ -18,7 +18,8 @@ import {
     Search,
     SelectServer,
     SelectTeam,
-    Thread
+    Thread,
+    UserProfile
 } from 'app/scenes';
 
 import keyMirror from 'service/utils/key_mirror';
@@ -135,6 +136,14 @@ export const Routes = {
         component: Thread,
         navigationProps: {
             title: {id: 'mobile.routes.thread', defaultMessage: 'Thread'}
+        }
+    },
+    UserProfile: {
+        key: 'UserProfile',
+        transition: RouteTransitions.Horizontal,
+        component: UserProfile,
+        navigationProps: {
+            title: {id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}
         }
     }
 };

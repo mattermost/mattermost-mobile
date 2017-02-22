@@ -13,24 +13,21 @@ import Client from 'service/client';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
-        container: {
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end'
-        },
-        statusContainer: {
-            width: 14,
-            height: 14,
+        statusWrapper: {
             position: 'absolute',
             bottom: 0,
             right: 0,
+            overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 8,
-            borderWidth: 1.5,
             borderColor: theme.centerChannelBg
         },
+        statusContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
+        },
         status: {
-            backgroundColor: 'transparent',
             color: theme.centerChannelBg
         },
         online: {
@@ -54,6 +51,9 @@ const statusToIcon = {
 export default class ProfilePicture extends React.PureComponent {
     static propTypes = {
         size: React.PropTypes.number,
+        statusBorderWidth: React.PropTypes.number,
+        statusSize: React.PropTypes.number,
+        statusIconSize: React.PropTypes.number,
         user: React.PropTypes.object,
         status: React.PropTypes.string,
         theme: React.PropTypes.object.isRequired,
@@ -63,7 +63,10 @@ export default class ProfilePicture extends React.PureComponent {
     };
 
     static defaultProps = {
-        size: 128
+        size: 128,
+        statusBorderWidth: 2,
+        statusSize: 14,
+        statusIconSize: 8
     };
 
     componentDidMount() {
@@ -86,7 +89,7 @@ export default class ProfilePicture extends React.PureComponent {
                 <Icon
                     style={style.status}
                     name={statusToIcon[this.props.status]}
-                    size={8}
+                    size={this.props.statusIconSize}
                 />
             );
         }
@@ -99,8 +102,32 @@ export default class ProfilePicture extends React.PureComponent {
                     defaultSource={placeholder}
                 />
                 {this.props.status &&
-                    <View style={[style.statusContainer, style[this.props.status]]}>
-                        {statusIcon}
+                    <View
+                        style={[
+                            style.statusWrapper,
+                            {
+                                width: this.props.statusSize,
+                                height: this.props.statusSize,
+                                borderWidth: this.props.statusBorderWidth,
+                                borderRadius: this.props.statusSize / 2
+                            },
+                            (this.props.status === 'offline' && style.offline)
+                        ]}
+                    >
+                        <View
+                            style={[
+                                style.statusContainer,
+                                {
+                                    width: this.props.statusSize - this.props.statusBorderWidth,
+                                    height: this.props.statusSize - this.props.statusBorderWidth,
+                                    borderRadius: (this.props.statusSize - this.props.statusBorderWidth) / 2,
+                                    padding: this.props.statusBorderWidth
+                                },
+                                style[this.props.status
+                            ]]}
+                        >
+                            {statusIcon}
+                        </View>
                     </View>
                 }
             </View>

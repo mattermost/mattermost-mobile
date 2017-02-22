@@ -1,12 +1,13 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {Component, PropTypes} from 'react';
 import {
     Image,
     StyleSheet,
     Text,
     TouchableHighlight,
+    TouchableOpacity,
     View
 } from 'react-native';
 
@@ -89,19 +90,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default class Post extends React.Component {
+export default class Post extends Component {
     static propTypes = {
         style: View.propTypes.style,
-        post: React.PropTypes.object.isRequired,
-        user: React.PropTypes.object,
-        displayName: React.PropTypes.string,
-        renderReplies: React.PropTypes.bool,
-        isFirstReply: React.PropTypes.bool,
-        isLastReply: React.PropTypes.bool,
-        commentedOnPost: React.PropTypes.object,
-        commentedOnDisplayName: React.PropTypes.string,
-        theme: React.PropTypes.object.isRequired,
-        onPress: React.PropTypes.func
+        post: PropTypes.object.isRequired,
+        user: PropTypes.object,
+        displayName: PropTypes.string,
+        renderReplies: PropTypes.bool,
+        isFirstReply: PropTypes.bool,
+        isLastReply: PropTypes.bool,
+        commentedOnPost: PropTypes.object,
+        commentedOnDisplayName: PropTypes.string,
+        theme: PropTypes.object.isRequired,
+        onPress: PropTypes.func,
+        actions: PropTypes.shape({
+            goToUserProfile: PropTypes.func.isRequired
+        }).isRequired
     };
 
     handlePress = () => {
@@ -177,6 +181,10 @@ export default class Post extends React.Component {
         return attachments;
     }
 
+    viewUserProfile = () => {
+        this.props.actions.goToUserProfile(this.props.user.id);
+    }
+
     render() {
         const style = getStyleSheet(this.props.theme);
         const PROFILE_PICTURE_SIZE = 32;
@@ -199,6 +207,7 @@ export default class Post extends React.Component {
                 <FormattedText
                     id='post_info.system'
                     defaultMessage='System'
+                    style={style.displayName}
                 />
             );
 
@@ -217,23 +226,36 @@ export default class Post extends React.Component {
                 </View>
             );
 
-            displayName = this.props.post.props.override_username;
+            displayName = (
+                <Text style={style.displayName}>
+                    {this.props.post.props.override_username}
+                </Text>
+            );
             messageStyle = [style.message, style.webhookMessage];
         } else {
             profilePicture = (
-                <ProfilePicture
-                    user={this.props.user}
-                    size={PROFILE_PICTURE_SIZE}
-                />
+                <TouchableOpacity onPress={this.viewUserProfile}>
+                    <ProfilePicture
+                        user={this.props.user}
+                        size={PROFILE_PICTURE_SIZE}
+                    />
+                </TouchableOpacity>
             );
 
             if (this.props.displayName) {
-                displayName = this.props.displayName;
+                displayName = (
+                    <TouchableOpacity onPress={this.viewUserProfile}>
+                        <Text style={style.displayName}>
+                            {this.props.displayName}
+                        </Text>
+                    </TouchableOpacity>
+                );
             } else {
                 displayName = (
                     <FormattedText
                         id='channel_loader.someone'
                         defaultMessage='Someone'
+                        style={style.displayName}
                     />
                 );
             }
@@ -250,9 +272,7 @@ export default class Post extends React.Component {
                     </View>
                     <View style={style.rightColumn}>
                         <View style={style.postInfoContainer}>
-                            <Text style={style.displayName}>
-                                {displayName}
-                            </Text>
+                            {displayName}
                             <Text style={style.time}>
                                 <FormattedTime value={this.props.post.create_at}/>
                             </Text>
@@ -279,9 +299,7 @@ export default class Post extends React.Component {
                     {this.renderReplyBar(style)}
                     <View style={style.rightColumn}>
                         <View style={style.postInfoContainer}>
-                            <Text style={style.displayName}>
-                                {displayName}
-                            </Text>
+                            {displayName}
                             <Text style={style.time}>
                                 <FormattedTime value={this.props.post.create_at}/>
                             </Text>

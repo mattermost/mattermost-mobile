@@ -1519,6 +1519,8 @@
   "mobile.routes.channel_members.action_message": "You must select at least one member to {term} {prep} the channel.",
   "mobile.routes.channel_members.action_message_confirm": "Are you sure you want to {term} the selected members {prep} the channel?",
   "mobile.routes.thread": "Thread",
+  "mobile.routes.user_profile": "Profile",
+  "mobile.routes.user_profile.send_message": "Send Message",
   "more_channels.close": "Close",
   "more_channels.create": "Create New Channel",
   "more_channels.createClick": "Click 'Create New Channel' to make a new one",

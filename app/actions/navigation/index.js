@@ -102,6 +102,20 @@ export function goToThread(channelId, rootId) {
     };
 }
 
+export function goToUserProfile(userId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {
+                ...Routes.UserProfile,
+                props: {
+                    userId
+                }
+            }
+        }, getState);
+    };
+}
+
 export function openChannelDrawer() {
     return async (dispatch, getState) => {
         dispatch({
