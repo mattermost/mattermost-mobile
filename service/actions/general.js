@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import Client from 'service/client';
-import {bindClientFunc} from './helpers.js';
+import {bindClientFunc, FormattedError} from './helpers.js';
 import {GeneralTypes} from 'service/constants';
 import {getMyChannelMembers} from './channels';
 
@@ -15,7 +15,7 @@ export function getPing() {
             data = await Client.getPing();
             if (!data.version) {
                 // successful ping but not the right return data
-                throw new TypeError('Network request failed');
+                throw new FormattedError('error.network_request_failed', 'Network request failed');
             }
         } catch (error) {
             dispatch({type: GeneralTypes.PING_FAILURE, error}, getState);

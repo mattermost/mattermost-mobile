@@ -25,7 +25,8 @@ export function handleRequest(REQUEST, SUCCESS, FAILURE, state, action) {
         };
     case FAILURE: {
         let error = action.error;
-        if (error instanceof Error) {
+
+        if (error instanceof Error && !error.hasOwnProperty('id')) {
             error = error.toString();
         }
 
