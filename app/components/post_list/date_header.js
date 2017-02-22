@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import FormattedDate from 'app/components/formatted_date';
@@ -11,16 +11,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         container: {
             alignItems: 'center',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            height: 28
         },
         dateContainer: {
-            marginLeft: 15,
-            marginRight: 15
+            marginHorizontal: 15
         },
         line: {
-            backgroundColor: theme.centerChannelColor,
             flex: 1,
             height: StyleSheet.hairlineWidth,
+            backgroundColor: theme.centerChannelColor,
             opacity: 0.2
         },
         date: {
@@ -31,31 +31,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default class DateHeader extends React.Component {
-    static propTypes = {
-        date: React.PropTypes.object.isRequired,
-        theme: React.PropTypes.object.isRequired,
-        style: View.propTypes.style
-    };
+function DateHeader(props) {
+    const style = getStyleSheet(props.theme);
 
-    render() {
-        const style = getStyleSheet(this.props.theme);
-
-        return (
-            <View style={[style.container, this.props.style]}>
-                <View style={style.line}/>
-                <View style={style.dateContainer}>
-                    <FormattedDate
-                        style={style.date}
-                        value={this.props.date}
-                        weekday='short'
-                        day='2-digit'
-                        month='short'
-                        year='numeric'
-                    />
-                </View>
-                <View style={style.line}/>
+    return (
+        <View style={[style.container, props.style]}>
+            <View style={style.line}/>
+            <View style={style.dateContainer}>
+                <FormattedDate
+                    style={style.date}
+                    value={props.date}
+                    weekday='short'
+                    day='2-digit'
+                    month='short'
+                    year='numeric'
+                />
             </View>
-        );
-    }
+            <View style={style.line}/>
+        </View>
+    );
 }
+
+DateHeader.propTypes = {
+    date: PropTypes.object.isRequired,
+    theme: PropTypes.object.isRequired,
+    style: View.propTypes.style
+};
+
+export default DateHeader;

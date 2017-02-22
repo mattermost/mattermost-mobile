@@ -31,24 +31,25 @@ export default class PostList extends React.Component {
         onPostPress: React.PropTypes.func,
         renderReplies: React.PropTypes.bool,
         indicateNewMessages: React.PropTypes.bool,
+        currentUserId: React.PropTypes.string,
         lastViewedAt: React.PropTypes.number
     };
 
     constructor(props) {
         super(props);
-        const {posts, indicateNewMessages, lastViewedAt} = this.props;
+        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = this.props;
         this.state = {
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(addDatesToPostList(posts, indicateNewMessages, lastViewedAt))
+            }).cloneWithRows(addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt))
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
-            const {posts, indicateNewMessages, lastViewedAt} = nextProps;
+            const {posts, indicateNewMessages, currentUserId, lastViewedAt} = nextProps;
             const dataSource = this.state.dataSource.cloneWithRows(
-                addDatesToPostList(posts, indicateNewMessages, lastViewedAt)
+                addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt)
             );
             this.setState({dataSource});
         }

@@ -9,16 +9,16 @@ import FormattedText from 'app/components/formatted_text';
 const style = StyleSheet.create({
     container: {
         alignItems: 'center',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        height: 28
     },
     textContainer: {
         marginHorizontal: 15
     },
     line: {
         flex: 1,
-        height: 1,
-        backgroundColor: '#ffaf53',
-        opacity: 0.2
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#f80'
     },
     text: {
         fontSize: 14,

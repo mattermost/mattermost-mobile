@@ -16,12 +16,17 @@ export default class ChannelPostList extends PureComponent {
         posts: PropTypes.array.isRequired
     };
 
+    state = {
+        lastViewedAt: this.props.myMember.last_viewed_at
+    };
+
     componentDidMount() {
         this.props.actions.loadPostsIfNecessary(this.props.channel);
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.channel.id !== nextProps.channel.id) {
+            this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
             this.props.actions.loadPostsIfNecessary(nextProps.channel);
         }
     }
@@ -41,7 +46,8 @@ export default class ChannelPostList extends PureComponent {
                 onPostPress={this.goToThread}
                 renderReplies={true}
                 indicateNewMessages={true}
-                lastViewedAt={this.props.myMember.last_viewed_at}
+                currentUserId={this.props.myMember.user_id}
+                lastViewedAt={this.state.lastViewedAt}
             />
         );
     }

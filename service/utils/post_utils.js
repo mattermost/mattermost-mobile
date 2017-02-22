@@ -7,13 +7,21 @@ export function isSystemMessage(post) {
     return post.type && post.type.startsWith(Constants.SYSTEM_MESSAGE_PREFIX);
 }
 
-export function addDatesToPostList(posts, indicateNewMessages, lastViewedAt) {
+export function addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt) {
     const out = [];
 
     let lastDate = null;
     let subsequentPostIsUnread = false;
+    let subsequentPostUserId;
     let postIsUnread;
     for (const post of posts) {
+        postIsUnread = post.create_at > lastViewedAt;
+        if (indicateNewMessages && subsequentPostIsUnread && !postIsUnread && subsequentPostUserId !== currentUserId) {
+            out.push(Constants.START_OF_NEW_MESSAGES);
+        }
+        subsequentPostIsUnread = postIsUnread;
+        subsequentPostUserId = post.user_id;
+
         const postDate = new Date(post.create_at);
 
         // Push on a date header if the last post was on a different day than the current one
@@ -23,12 +31,6 @@ export function addDatesToPostList(posts, indicateNewMessages, lastViewedAt) {
 
         lastDate = postDate;
         out.push(post);
-
-        postIsUnread = post.create_at > lastViewedAt;
-        if (indicateNewMessages && subsequentPostIsUnread && !postIsUnread) {
-            out.push(Constants.START_OF_NEW_MESSAGES);
-        }
-        subsequentPostIsUnread = postIsUnread;
     }
 
     // Push on the date header for the oldest post
