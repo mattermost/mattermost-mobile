@@ -90,11 +90,13 @@ export default class Mfa extends Component {
                         <Image
                             source={logo}
                         />
-                        <FormattedText
-                            style={[GlobalStyles.header, GlobalStyles.label]}
-                            id='login_mfa.enterToken'
-                            defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
-                        />
+                        <View>
+                            <FormattedText
+                                style={[GlobalStyles.header, GlobalStyles.label]}
+                                id='login_mfa.enterToken'
+                                defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
+                            />
+                        </View>
                         <ErrorText error={this.state.error}/>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}

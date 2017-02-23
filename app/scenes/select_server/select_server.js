@@ -59,11 +59,13 @@ export default class SelectServer extends Component {
                         <Image
                             source={logo}
                         />
-                        <FormattedText
-                            style={[GlobalStyles.header, GlobalStyles.label]}
-                            id='mobile.components.select_server_view.enterServerUrl'
-                            defaultMessage='Enter Server URL'
-                        />
+                        <View>
+                            <FormattedText
+                                style={[GlobalStyles.header, GlobalStyles.label]}
+                                id='mobile.components.select_server_view.enterServerUrl'
+                                defaultMessage='Enter Server URL'
+                            />
+                        </View>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
                             value={this.props.serverUrl}

@@ -186,14 +186,16 @@ class Login extends Component {
                         <Image
                             source={logo}
                         />
-                        <Text style={GlobalStyles.header}>
-                            {this.props.config.SiteName}
-                        </Text>
-                        <FormattedText
-                            style={GlobalStyles.subheader}
-                            id='web.root.signup_info'
-                            defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                        />
+                        <View>
+                            <Text style={GlobalStyles.header}>
+                                {this.props.config.SiteName}
+                            </Text>
+                            <FormattedText
+                                style={GlobalStyles.subheader}
+                                id='web.root.signup_info'
+                                defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                            />
+                        </View>
                         <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
                         <TextInput
                             ref={this.loginRef}
