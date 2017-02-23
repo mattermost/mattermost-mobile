@@ -10,7 +10,7 @@ import {
 import {getCurrentUserRoles} from 'service/selectors/entities/users';
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
-import {Channels, Constants} from 'service/constants';
+import {Constants} from 'service/constants';
 
 import FormattedText from 'app/components/formatted_text';
 
@@ -41,7 +41,7 @@ ChannelMemberTitle.defaultProps = {
 function mapStateToProps(state) {
     const currentUserRoles = getCurrentUserRoles(state);
     const currentChannel = getCurrentChannel(state);
-    const canManageUsers = currentChannel.type === Channels.PUBLIC || currentUserRoles.includes('_admin');
+    const canManageUsers = currentChannel.type === Constants.OPEN_CHANNEL || currentUserRoles.includes('_admin');
 
     return {
         canManageUsers,

@@ -16,8 +16,8 @@ import {getTheme} from 'service/selectors/entities/preferences';
 import {Constants} from 'service/constants';
 
 function RemoveMemberButton(props) {
-    const {currentChannel, isAdmin} = props;
-    if (!isAdmin || currentChannel.type === Constants.DM_CHANNEL || currentChannel.name === Constants.DEFAULT_CHANNEL) {
+    const {currentChannel, canManageUsers} = props;
+    if (!canManageUsers || currentChannel.type === Constants.DM_CHANNEL || currentChannel.name === Constants.DEFAULT_CHANNEL) {
         return null;
     }
 
@@ -39,7 +39,7 @@ function RemoveMemberButton(props) {
 
 RemoveMemberButton.propTypes = {
     emitter: PropTypes.func.isRequired,
-    isAdmin: PropTypes.bool.isRequired,
+    canManageUsers: PropTypes.bool.isRequired,
     currentChannel: PropTypes.object.isRequired,
     theme: PropTypes.object
 };
@@ -50,11 +50,12 @@ RemoveMemberButton.defaultProps = {
 
 function mapStateToProps(state) {
     const currentUserRoles = getCurrentUserRoles(state);
+    const currentChannel = getCurrentChannel(state);
+    const canManageUsers = currentChannel.type === Constants.OPEN_CHANNEL || currentUserRoles.includes('_admin');
 
-    const isAdmin = currentUserRoles.includes('_admin');
     return {
-        isAdmin,
-        currentChannel: getCurrentChannel(state),
+        canManageUsers,
+        currentChannel,
         theme: getTheme(state)
     };
 }

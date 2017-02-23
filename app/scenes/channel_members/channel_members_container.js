@@ -7,7 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
-import {Channels} from 'service/constants';
+import {Constants} from 'service/constants';
 import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
 import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
@@ -21,7 +21,7 @@ function mapStateToProps(state) {
     const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
     const currentUserRoles = getCurrentUserRoles(state);
 
-    const canManageUsers = currentChannel.type === Channels.PUBLIC || currentUserRoles.includes('_admin');
+    const canManageUsers = currentChannel.type === Constants.OPEN_CHANNEL || currentUserRoles.includes('_admin');
 
     return {
         theme: getTheme(state),
