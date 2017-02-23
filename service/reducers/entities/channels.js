@@ -38,10 +38,14 @@ function channels(state = {}, action) {
     case ChannelTypes.RECEIVED_LAST_VIEWED: {
         const channelId = action.data.channel_id;
         const lastUpdatedAt = action.data.last_viewed_at;
+        const channel = state[channelId];
+        if (!channel) {
+            return state;
+        }
         return {
             ...state,
             [channelId]: {
-                ...state[channelId],
+                ...channel,
                 extra_update_at: lastUpdatedAt
             }
         };
@@ -101,10 +105,15 @@ function myMembers(state = {}, action) {
         };
     }
     case ChannelTypes.RECEIVED_LAST_VIEWED: {
-        const member = {...state[action.data.channel_id]};
-        member.last_viewed_at = action.data.last_viewed_at;
-        member.msg_count = action.data.total_msg_count;
-        member.mention_count = 0;
+        let member = state[action.data.channel_id];
+        if (!member) {
+            return state;
+        }
+        member = {...member,
+            last_viewed_at: action.data.last_viewed_at,
+            msg_count: action.data.total_msg_count,
+            mention_count: 0
+        };
 
         return {
             ...state,
