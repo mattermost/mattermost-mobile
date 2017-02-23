@@ -67,7 +67,7 @@ export default class UserProfile extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            makeDirectChannel: PropTypes.func.isRequired
+            handleSendMessage: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -105,7 +105,7 @@ export default class UserProfile extends PureComponent {
     }
 
     sendMessage = () => {
-        this.props.actions.makeDirectChannel(this.props.user.id);
+        this.props.actions.handleSendMessage(this.props.user.id);
     }
 
     render() {

@@ -3,7 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 
-import {makeDirectChannel} from 'app/actions/views/user_profile';
+import {handleSendMessage} from 'app/actions/views/user_profile';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 import UserProfile from './user_profile';
@@ -21,7 +21,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            makeDirectChannel
+            handleSendMessage
         }, dispatch)
     };
 }
