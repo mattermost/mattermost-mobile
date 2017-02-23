@@ -121,7 +121,7 @@ export const getUnreads = createSelector(
                 } else if (m.mention_count > 0) {
                     mentionCount += m.mention_count;
                 }
-                if (m.notify_props.mark_unread !== 'mention' && channel.total_msg_count - m.msg_count > 0) {
+                if (m.notify_props && m.notify_props.mark_unread !== 'mention' && channel.total_msg_count - m.msg_count > 0) {
                     messageCount += 1;
                 }
             }
