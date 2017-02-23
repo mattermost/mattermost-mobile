@@ -53,7 +53,8 @@ const defaults = {
         flexDirection: 'row',
         alignItems: 'center'
     },
-    allowSwipe: false
+    allowSceneSwipe: true,
+    allowMenuSwipe: false
 };
 
 export default (stateProps, dispatchProps) => (WrappedComponent) => {
