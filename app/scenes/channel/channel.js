@@ -41,7 +41,7 @@ export default class Channel extends React.PureComponent {
     };
 
     static navigationProps = {
-        allowSwipe: true,
+        allowMenuSwipe: true,
         renderLeftComponent: (props, emitter) => {
             return <ChannelDrawerButton emitter={emitter}/>;
         },

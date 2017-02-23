@@ -101,10 +101,14 @@ class Router extends React.Component {
                 };
             }
 
+            // NavigationExperimental only creates the correct panHandlers if the panHandlers prop === undefined
+            const panHandlers = navigationProps.allowSceneSwipe ? undefined : null; // eslint-disable-line
+
             return (
                 <NavigationExperimental.Card
                     {...cardProps}
-                    panHandlers={null}
+                    onNavigateBack={this.props.actions.goBack}
+                    panHandlers={panHandlers}
                     style={style}
                     renderScene={this.renderScene}
                     key={scene.key}
@@ -198,7 +202,7 @@ class Router extends React.Component {
                     panOpenMask={0.1}
                     panCloseMask={0.2}
                     panThreshold={0.2}
-                    acceptPan={navigationProps.allowSwipe}
+                    acceptPan={navigationProps.allowMenuSwipe}
                     negotiatePan={true}
                     useInteractionManager={true}
                 >
@@ -214,7 +218,7 @@ class Router extends React.Component {
                         panOpenMask={0.1}
                         panCloseMask={0.2}
                         panThreshold={0.2}
-                        acceptPan={navigationProps.allowSwipe}
+                        acceptPan={navigationProps.allowMenuSwipe}
                         negotiatePan={true}
                         useInteractionManager={true}
                     >
