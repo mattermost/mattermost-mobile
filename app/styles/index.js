@@ -22,6 +22,7 @@ export const GlobalStyles = StyleSheet.create({
         height: 50
     },
     header: {
+        textAlign: 'center',
         marginTop: 15,
         marginBottom: 15,
         fontSize: 32,

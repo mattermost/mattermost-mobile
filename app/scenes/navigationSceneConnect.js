@@ -43,7 +43,7 @@ const defaults = {
                     <FormattedText
                         id={title.id}
                         defaultMessage={title.defaultMessage}
-                        style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}
+                        style={{textAlign: 'center', color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}
                     />
                 </View>
             );
