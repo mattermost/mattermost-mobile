@@ -4,6 +4,7 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {StatusBar, StyleSheet} from 'react-native';
 
+import ThreadTitle from './thread_title';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
@@ -30,6 +31,12 @@ export default class Thread extends PureComponent {
         draft: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         posts: PropTypes.array.isRequired
+    };
+
+    static navigationProps = {
+        renderTitleComponent: () => {
+            return <ThreadTitle/>;
+        }
     };
 
     componentWillUnmount() {
