@@ -12,28 +12,34 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        backgroundColor: '#fff',
-        paddingHorizontal: 15,
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    detail: {
-        marginHorizontal: 15,
-        color: 'rgba(0, 0, 0, 0.5)',
-        fontSize: 15
-    },
-    label: {
-        flex: 1,
-        marginLeft: 15,
-        fontSize: 15,
-        paddingVertical: 15
-    },
-    leftIcon: {
-        width: 17
-    }
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            paddingHorizontal: 15,
+            flexDirection: 'row',
+            alignItems: 'center'
+        },
+        detail: {
+            marginHorizontal: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 15
+        },
+        label: {
+            flex: 1,
+            marginLeft: 15,
+            fontSize: 15,
+            paddingVertical: 15
+        },
+        leftIcon: {
+            width: 17
+        },
+        rightIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        }
+    });
 });
 
 function createTouchableComponent(children, action) {
@@ -45,21 +51,24 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, textColor, textId, togglable, shouldRender = true} = props;
+    const {action, defaultMessage, detail, icon, iconColor, textColor, textId, togglable, theme, shouldRender} = props;
 
     if (!shouldRender) {
         return null;
     }
+
+    const style = getStyleSheet(theme);
+
     const RowComponent = (
         <View style={style.container}>
             <Icon
                 name={icon}
                 size={15}
-                color={iconColor}
+                color={iconColor || changeOpacity(theme.centerChannelColor, 0.5)}
                 style={style.leftIcon}
             />
             <FormattedText
-                style={[style.label, {color: textColor}]}
+                style={[style.label, {color: textColor || theme.centerChannelColor}]}
                 id={textId}
                 defaultMessage={defaultMessage}
             />
@@ -72,7 +81,7 @@ function channelInfoRow(props) {
                 <Icon
                     name='chevron-right'
                     size={15}
-                    color='rgba(0, 0, 0, 0.7)'
+                    style={style.rightIcon}
                 />
             }
         </View>
@@ -97,13 +106,13 @@ channelInfoRow.propTypes = {
     iconColor: PropTypes.string,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
-    textColor: PropTypes.string
+    textColor: PropTypes.string,
+    theme: PropTypes.object.isRequired
 };
 
 channelInfoRow.defaultProps = {
-    iconColor: 'rgba(0, 0, 0, 0.7)',
-    textColor: '#000',
-    togglable: false
+    togglable: false,
+    shouldRender: true
 };
 
 export default channelInfoRow;

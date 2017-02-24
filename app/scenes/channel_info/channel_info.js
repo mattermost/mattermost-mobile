@@ -10,29 +10,42 @@ import {
     View
 } from 'react-native';
 
-import ChannelInfoHeader from './channel_info_header';
-import ChannelInfoRow from './channel_info_row';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {Constants} from 'service/constants';
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1
-    },
-    footer: {
-        marginTop: 40
-    },
-    separator: {
-        flex: 1,
-        marginHorizontal: 15
-    },
-    separatorContainer: {
-        flex: 1,
-        backgroundColor: '#fff',
-        height: 1
-    },
-    scrollView: {
-        flex: 1
-    }
+import ChannelInfoHeader from './channel_info_header';
+import ChannelInfoRow from './channel_info_row';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        },
+        footer: {
+            marginTop: 40,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        rowsContainer: {
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: theme.centerChannelBg
+        },
+        separator: {
+            marginHorizontal: 15,
+            height: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+        }
+    });
 });
 
 class ChannelInfo extends PureComponent {
@@ -42,6 +55,7 @@ class ChannelInfo extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        theme: PropTypes.object.isRequired,
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
@@ -143,8 +157,11 @@ class ChannelInfo extends PureComponent {
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
-            canManageUsers
+            canManageUsers,
+            theme
         } = this.props;
+
+        const style = getStyleSheet(theme);
 
         return (
             <View style={style.container}>
@@ -157,68 +174,70 @@ class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         purpose={currentChannel.purpose}
+                        theme={theme}
                     />
-                    <ChannelInfoRow
-                        action={this.handleFavorite}
-                        defaultMessage='Favorite'
-                        detail={this.state.isFavorite}
-                        icon='star-o'
-                        textId='mobile.routes.channelInfo.favorite'
-                        togglable={true}
-                    />
-                    <View style={style.separatorContainer}>
+                    <View style={style.rowsContainer}>
+                        <ChannelInfoRow
+                            action={this.handleFavorite}
+                            defaultMessage='Favorite'
+                            detail={this.state.isFavorite}
+                            icon='star-o'
+                            textId='mobile.routes.channelInfo.favorite'
+                            togglable={true}
+                            theme={theme}
+                        />
                         <View style={style.separator}/>
-                    </View>
-                    <ChannelInfoRow
-                        action={() => true}
-                        defaultMessage='Notification Preferences'
-                        icon='bell-o'
-                        textId='channel_header.notificationPreferences'
-                    />
-                    <View style={style.separatorContainer}>
+                        <ChannelInfoRow
+                            action={() => true}
+                            defaultMessage='Notification Preferences'
+                            icon='bell-o'
+                            textId='channel_header.notificationPreferences'
+                            theme={theme}
+                        />
                         <View style={style.separator}/>
-                    </View>
-                    <ChannelInfoRow
-                        action={this.props.actions.goToChannelMembers}
-                        defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
-                        detail={currentChannelMemberCount}
-                        icon='users'
-                        textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
-                    />
-                    <View style={style.separatorContainer}>
-                        <View style={style.separator}/>
-                    </View>
-                    {canManageUsers && this.renderLeaveOrDeleteChannelRow() &&
-                        <View>
-                            <ChannelInfoRow
-                                action={this.props.actions.goToChannelAddMembers}
-                                defaultMessage='Add Members'
-                                icon='user-plus'
-                                textId='channel_header.addMembers'
-                            />
-                            <View style={style.separatorContainer}>
+                        <ChannelInfoRow
+                            action={this.props.actions.goToChannelMembers}
+                            defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
+                            detail={currentChannelMemberCount}
+                            icon='users'
+                            textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                            theme={theme}
+                        />
+                        {canManageUsers && this.renderLeaveOrDeleteChannelRow() &&
+                            <View>
+                                <View style={style.separator}/>
+                                <ChannelInfoRow
+                                    action={this.props.actions.goToChannelAddMembers}
+                                    defaultMessage='Add Members'
+                                    icon='user-plus'
+                                    textId='channel_header.addMembers'
+                                    theme={theme}
+                                />
                                 <View style={style.separator}/>
                             </View>
-                        </View>
-                    }
-                    <ChannelInfoRow
-                        action={() => this.handleDeleteOrLeave('leave')}
-                        defaultMessage='Leave Channel'
-                        icon='sign-out'
-                        textId='navbar.leave'
-                        shouldRender={this.renderLeaveOrDeleteChannelRow()}
-                    />
-                    <View style={style.footer}>
+                        }
                         <ChannelInfoRow
-                            action={() => this.handleDeleteOrLeave('delete')}
-                            defaultMessage='Delete Channel'
-                            icon='trash'
-                            iconColor='#DA4A4A'
-                            textId='mobile.routes.channelInfo.delete_channel'
-                            textColor='#DA4A4A'
+                            action={() => this.handleDeleteOrLeave('leave')}
+                            defaultMessage='Leave Channel'
+                            icon='sign-out'
+                            textId='navbar.leave'
                             shouldRender={this.renderLeaveOrDeleteChannelRow()}
+                            theme={theme}
                         />
                     </View>
+                    {this.renderLeaveOrDeleteChannelRow() &&
+                        <View style={style.footer}>
+                            <ChannelInfoRow
+                                action={() => this.handleDeleteOrLeave('delete')}
+                                defaultMessage='Delete Channel'
+                                icon='trash'
+                                iconColor='#DA4A4A'
+                                textId='mobile.routes.channelInfo.delete_channel'
+                                textColor='#DA4A4A'
+                                theme={theme}
+                            />
+                        </View>
+                    }
                 </ScrollView>
             </View>
         );
