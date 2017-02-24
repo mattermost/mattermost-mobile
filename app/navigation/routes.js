@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import {
+    AccountSettings,
     ChannelView,
     ChannelDrawer,
     ChannelInfo,
@@ -29,6 +30,14 @@ export const RouteTransitions = keyMirror({
 });
 
 export const Routes = {
+    AccountSettings: {
+        key: 'AccountSettings',
+        transition: RouteTransitions.Horizontal,
+        component: AccountSettings,
+        navigationProps: {
+            title: {id: 'user.settings.modal.title', defaultMessage: 'Account Settings'}
+        }
+    },
     ChannelInfo: {
         key: 'ChannelInfo',
         transition: RouteTransitions.Horizontal,

@@ -172,3 +172,12 @@ export function closeModal() {
         }, getState);
     };
 }
+
+export function goToModalAccountSettings() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: Routes.AccountSettings
+        }, getState);
+    };
+}
