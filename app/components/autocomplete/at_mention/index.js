@@ -4,7 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handlePostDraftChanged} from 'app/actions/views/channel';
 import {autocompleteUsersInChannel} from 'service/actions/users';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getDefaultChannel} from 'service/selectors/entities/channels';
@@ -12,10 +11,18 @@ import {getAutocompleteUsersInCurrentChannel} from 'service/selectors/entities/u
 
 import AtMention from './at_mention';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
     const currentChannelId = state.entities.channels.currentId;
-    const postDraft = state.views.channel.drafts[currentChannelId];
+
+    let postDraft;
+    if (ownProps.rootId.length) {
+        postDraft = state.views.thread.draft[ownProps.rootId];
+    } else {
+        postDraft = state.views.channel.drafts[currentChannelId];
+    }
+
     return {
+        ...ownProps,
         currentUserId: state.entities.users.currentId,
         currentChannelId,
         currentTeamId: state.entities.teams.currentId,
@@ -30,7 +37,6 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            changePostDraft: handlePostDraftChanged,
             autocompleteUsersInChannel
         }, dispatch)
     };

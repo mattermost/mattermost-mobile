@@ -155,7 +155,11 @@ export default class PostTextbox extends PureComponent {
                         {this.renderTyping()}
                     </Text>
                 </View>
-                <Autocomplete ref={this.attachAutocomplete}/>
+                <Autocomplete
+                    ref={this.attachAutocomplete}
+                    onChangeText={this.props.onChangeText}
+                    rootId={this.props.rootId}
+                />
                 <View
                     style={{
                         alignItems: 'flex-end',

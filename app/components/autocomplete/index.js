@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PropTypes, Component} from 'react';
 import {
     StyleSheet,
     View
@@ -22,9 +22,14 @@ const style = StyleSheet.create({
 });
 
 export default class Autocomplete extends Component {
+    static propTypes = {
+        onChangeText: PropTypes.func.isRequired,
+        rootId: PropTypes.string
+    };
+
     state = {
         cursorPosition: 0
-    }
+    };
 
     handleSelectionChange = (event) => {
         this.setState({
@@ -36,8 +41,16 @@ export default class Autocomplete extends Component {
         return (
             <View>
                 <View style={style.container}>
-                    <AtMention cursorPosition={this.state.cursorPosition}/>
-                    <ChannelMention cursorPosition={this.state.cursorPosition}/>
+                    <AtMention
+                        cursorPosition={this.state.cursorPosition}
+                        onChangeText={this.props.onChangeText}
+                        rootId={this.props.rootId}
+                    />
+                    <ChannelMention
+                        cursorPosition={this.state.cursorPosition}
+                        onChangeText={this.props.onChangeText}
+                        rootId={this.props.rootId}
+                    />
                 </View>
             </View>
         );

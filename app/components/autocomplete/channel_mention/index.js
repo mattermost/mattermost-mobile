@@ -4,17 +4,24 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handlePostDraftChanged} from 'app/actions/views/channel';
 import {autocompleteChannels} from 'service/actions/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getAutocompleteChannelWithSections} from 'service/selectors/entities/channels';
 
 import ChannelMention from './channel_mention';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
     const currentChannelId = state.entities.channels.currentId;
-    const postDraft = state.views.channel.drafts[currentChannelId];
+
+    let postDraft;
+    if (ownProps.rootId.length) {
+        postDraft = state.views.thread.draft[ownProps.rootId];
+    } else {
+        postDraft = state.views.channel.drafts[currentChannelId];
+    }
+
     return {
+        ...ownProps,
         currentChannelId,
         currentTeamId: state.entities.teams.currentId,
         postDraft,
@@ -27,7 +34,6 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            changePostDraft: handlePostDraftChanged,
             autocompleteChannels
         }, dispatch)
     };

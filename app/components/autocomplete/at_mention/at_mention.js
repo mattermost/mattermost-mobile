@@ -102,8 +102,8 @@ export default class AtMention extends Component {
         postDraft: PropTypes.string,
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        onChangeText: PropTypes.func.isRequired,
         actions: PropTypes.shape({
-            changePostDraft: PropTypes.func.isRequired,
             autocompleteUsersInChannel: PropTypes.func.isRequired
         })
     }
@@ -206,7 +206,7 @@ export default class AtMention extends Component {
             completedDraft += this.props.postDraft.substring(this.props.cursorPosition);
         }
 
-        this.props.actions.changePostDraft(this.props.currentChannelId, completedDraft);
+        this.props.onChangeText(completedDraft);
         this.setState({
             active: false,
             mentionComplete: true
