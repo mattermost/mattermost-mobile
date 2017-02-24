@@ -158,6 +158,43 @@ class Login extends Component {
         return '';
     }
 
+    getLoginErrorMessage = () => {
+        return (
+            this.getServerErrorForLogin() ||
+            this.props.checkMfaRequest.error ||
+            this.state.error
+        );
+    };
+
+    getServerErrorForLogin = () => {
+        const {error} = this.props.loginRequest;
+        if (!error) {
+            return null;
+        }
+        const errorId = error.server_error_id;
+        if (!errorId) {
+            return error.message;
+        }
+        if (
+            errorId === 'store.sql_user.get_for_login.app_error' ||
+            errorId === 'ent.ldap.do_login.user_not_registered.app_error'
+        ) {
+            return {
+                id: 'login.userNotFound',
+                defaultMessage: "We couldn't find an account matching your login credentials."
+            };
+        } else if (
+            errorId === 'api.user.check_user_password.invalid.app_error' ||
+            errorId === 'ent.ldap.do_login.invalid_password.app_error'
+        ) {
+            return {
+                id: 'login.invalidPassword',
+                defaultMessage: 'Your password is incorrect.'
+            };
+        }
+        return error.message;
+    }
+
     loginRef = (ref) => {
         this.loginId = ref;
     };
@@ -196,7 +233,7 @@ class Login extends Component {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.props.loginRequest.error || this.props.checkMfaRequest.error || this.state.error}/>
+                        <ErrorText error={this.getLoginErrorMessage()}/>
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
