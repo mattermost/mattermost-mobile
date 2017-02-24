@@ -727,7 +727,12 @@ export default class Client {
             console.error(msg); // eslint-disable-line no-console
         }
 
-        throw {message: msg, status_code: data.status_code, url};
+        throw {
+            message: msg,
+            server_error_id: data.id,
+            status_code: data.status_code,
+            url
+        };
     };
 }
 
