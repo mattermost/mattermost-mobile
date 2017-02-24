@@ -133,10 +133,7 @@ export const Routes = {
     Thread: {
         key: 'Thread',
         transition: RouteTransitions.Horizontal,
-        component: Thread,
-        navigationProps: {
-            title: {id: 'mobile.routes.thread', defaultMessage: 'Thread'}
-        }
+        component: Thread
     },
     UserProfile: {
         key: 'UserProfile',
