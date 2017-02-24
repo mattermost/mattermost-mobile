@@ -5,21 +5,18 @@ import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
 import {View} from 'react-native';
 
-import {getCurrentUserRoles} from 'service/selectors/entities/users';
-import {getCurrentChannel} from 'service/selectors/entities/channels';
+import {getCurrentChannel, canManageChannelMembers} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
-import {Constants} from 'service/constants';
 
 import FormattedText from 'app/components/formatted_text';
 
 function ChannelMembersTitle(props) {
-    const {currentChannel, canManageUsers} = props;
-    const manage = (canManageUsers && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
+    const {canManageUsers} = props;
     return (
         <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 50}}>
             <FormattedText
-                id={manage ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
-                defaultMessage={manage ? 'Manage Members' : 'View Members'}
+                id={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                 style={{color: props.theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
             />
         </View>
@@ -27,9 +24,9 @@ function ChannelMembersTitle(props) {
 }
 
 ChannelMembersTitle.propTypes = {
-    canManageUsers: PropTypes.bool,
+    canManageUsers: PropTypes.bool.isRequired,
     currentChannel: PropTypes.object.isRequired,
-    theme: PropTypes.object
+    theme: PropTypes.object.isRequired
 };
 
 ChannelMembersTitle.defaultProps = {
@@ -37,13 +34,9 @@ ChannelMembersTitle.defaultProps = {
 };
 
 function mapStateToProps(state) {
-    const currentUserRoles = getCurrentUserRoles(state);
-    const currentChannel = getCurrentChannel(state);
-    const canManageUsers = currentChannel.type === Constants.OPEN_CHANNEL || currentUserRoles.includes('_admin');
-
     return {
-        canManageUsers,
-        currentChannel,
+        canManageUsers: canManageChannelMembers(state),
+        currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
     };
 }

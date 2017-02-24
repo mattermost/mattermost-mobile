@@ -7,32 +7,27 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
-import {Constants} from 'service/constants';
-import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
+import {getCurrentChannel, getCurrentChannelStats, canManageChannelMembers} from 'service/selectors/entities/channels';
 import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
-import {getProfilesInCurrentChannel, getCurrentUserRoles} from 'service/selectors/entities/users';
+import {getProfilesInCurrentChannel} from 'service/selectors/entities/users';
 import {getProfilesInChannel} from 'service/actions/users';
 
 import ChannelMembers from './channel_members';
 
 function mapStateToProps(state) {
-    const currentChannel = getCurrentChannel(state);
     const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
-    const currentUserRoles = getCurrentUserRoles(state);
-
-    const canManageUsers = currentChannel.type === Constants.OPEN_CHANNEL || currentUserRoles.includes('_admin');
 
     return {
         theme: getTheme(state),
-        currentChannel,
+        currentChannel: getCurrentChannel(state),
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentChannelMemberCount,
         currentUserId: state.entities.users.currentId,
         currentTeam: getCurrentTeam(state),
         preferences: getMyPreferences(state),
         requestStatus: state.requests.users.getProfilesInChannel.status,
-        canManageUsers
+        canManageUsers: canManageChannelMembers(state)
     };
 }
 

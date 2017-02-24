@@ -180,10 +180,10 @@ class ChannelInfo extends PureComponent {
                     </View>
                     <ChannelInfoRow
                         action={this.props.actions.goToChannelMembers}
-                        defaultMessage={(canManageUsers && currentChannel.type !== Constants.DM_CHANNEL) ? 'Manage Members' : 'View Members'}
+                        defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                         detail={currentChannelMemberCount}
                         icon='users'
-                        textId={(canManageUsers && currentChannel.type !== Constants.DM_CHANNEL) ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                        textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                     />
                     <View style={style.separatorContainer}>
                         <View style={style.separator}/>
