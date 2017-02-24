@@ -3,9 +3,7 @@
 
 import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
-import {
-    View
-} from 'react-native';
+import {View} from 'react-native';
 
 import {getCurrentUserRoles} from 'service/selectors/entities/users';
 import {getCurrentChannel} from 'service/selectors/entities/channels';
@@ -14,7 +12,7 @@ import {Constants} from 'service/constants';
 
 import FormattedText from 'app/components/formatted_text';
 
-function ChannelMemberTitle(props) {
+function ChannelMembersTitle(props) {
     const {currentChannel, canManageUsers} = props;
     const manage = (canManageUsers && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
     return (
@@ -28,13 +26,13 @@ function ChannelMemberTitle(props) {
     );
 }
 
-ChannelMemberTitle.propTypes = {
+ChannelMembersTitle.propTypes = {
     canManageUsers: PropTypes.bool,
     currentChannel: PropTypes.object.isRequired,
     theme: PropTypes.object
 };
 
-ChannelMemberTitle.defaultProps = {
+ChannelMembersTitle.defaultProps = {
     theme: {}
 };
 
@@ -50,4 +48,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ChannelMemberTitle);
+export default connect(mapStateToProps)(ChannelMembersTitle);
