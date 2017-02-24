@@ -2,8 +2,10 @@
 // See License.txt for license information.
 
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
+import {goToUserProfile} from 'app/actions/navigation';
 import {getUser} from 'service/selectors/entities/users';
 import {displayUsername} from 'service/utils/user_utils';
 
@@ -24,5 +26,12 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps)(Post);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            goToUserProfile
+        }, dispatch)
+    };
+}
 
+export default connect(mapStateToProps, mapDispatchToProps)(Post);

@@ -154,6 +154,33 @@ describe('Reducers.Navigation', () => {
         });
     });
 
+    it('NAVIGATION_POP_TO_INDEX', () => {
+        let state = initialState();
+
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {key: 'fake'}
+        });
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {key: 'fake2'}
+        });
+        state = reduceAndFreeze(state, {
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: {key: 'fake3'}
+        });
+
+        it('Reset to first index', () => {
+            state = reduceAndFreeze(state, {
+                type: NavigationTypes.NAVIGATION_POP_TO_INDEX,
+                index: 0
+            });
+
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root, {key: 'fake'}]);
+        });
+    });
+
     it('NAVIGATION_OPEN_LEFT_DRAWER', () => {
         let state = initialState();
 

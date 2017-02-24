@@ -18,12 +18,12 @@ const defaults = {
     renderBackButton: (props, emitter, theme) => {
         return (
             <TouchableOpacity
-                style={{flexDirection: 'row', ...Platform.select({ios: {marginTop: 10}, android: {marginTop: 15}}), marginLeft: 15, alignItems: 'center'}}
+                style={{flexDirection: 'row', flex: 1, paddingHorizontal: 15, alignItems: 'center'}}
                 onPress={props.onNavigateBack}
             >
                 <Icon
                     name='angle-left'
-                    size={25}
+                    size={18}
                     color={theme.sidebarHeaderTextColor}
                 />
                 <FormattedText

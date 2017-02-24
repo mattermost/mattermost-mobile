@@ -59,6 +59,41 @@ export default function(state = initialState, action) {
 
         return NavigationExperimental.StateUtils.pop(state);
 
+    case NavigationTypes.NAVIGATION_POP_TO_INDEX: {
+        let newState = {...state};
+
+        if (!newState.isModal && (newState.leftDrawerOpen || newState.rightDrawerOpen)) {
+            newState = {
+                ...newState,
+                leftDrawerOpen: false,
+                rightDrawerOpen: false
+            };
+        }
+
+        if (newState.isModal) {
+            newState = {
+                ...newState,
+                modal: {
+                    index: 0,
+                    routes: []
+                },
+                isModal: false
+            };
+        }
+
+        if (action.index === newState.index || action.index > newState.routes.length - 1) {
+            return newState;
+        }
+
+        const nextRoutes = newState.routes.slice(0, action.index + 1);
+
+        return {
+            ...newState,
+            index: action.index,
+            routes: nextRoutes
+        };
+    }
+
     case NavigationTypes.NAVIGATION_OPEN_LEFT_DRAWER:
         return {
             ...state,
