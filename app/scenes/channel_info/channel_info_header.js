@@ -11,56 +11,63 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const style = StyleSheet.create({
-    container: {
-        backgroundColor: '#fff',
-        marginBottom: 40,
-        padding: 15
-    },
-    channelName: {
-        marginLeft: 5,
-        fontSize: 15,
-        fontWeight: '600'
-    },
-    channelNameContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingBottom: 10
-    },
-    createdBy: {
-        flexDirection: 'row',
-        fontSize: 11,
-        opacity: 0.5,
-        marginTop: 5
-    },
-    detail: {
-        fontSize: 13
-    },
-    header: {
-        fontSize: 12,
-        opacity: 0.5,
-        marginBottom: 10
-    },
-    section: {
-        marginTop: 15
-    },
-    url: {
-        fontSize: 11,
-        opacity: 0.5,
-        marginBottom: 10
-    }
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            marginBottom: 40,
+            padding: 15,
+            borderBottomWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        channelName: {
+            marginLeft: 5,
+            fontSize: 15,
+            fontWeight: '600',
+            color: theme.centerChannelColor
+        },
+        channelNameContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingBottom: 10
+        },
+        createdBy: {
+            flexDirection: 'row',
+            fontSize: 11,
+            marginTop: 5,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            backgroundColor: 'transparent'
+        },
+        detail: {
+            fontSize: 13,
+            color: theme.centerChannelColor
+        },
+        header: {
+            fontSize: 12,
+            marginBottom: 10,
+            color: theme.centerChannelColor,
+            backgroundColor: 'transparent'
+        },
+        section: {
+            marginTop: 15
+        }
+    });
 });
 
 function channelInfoHeader(props) {
-    const {createAt, creator, displayName, header, purpose} = props;
+    const {createAt, creator, displayName, header, purpose, theme} = props;
+
+    const style = getStyleSheet(theme);
+
     return (
         <View style={style.container}>
             <View style={style.channelNameContainer}>
                 <Icon
                     name='globe'
                     size={15}
-                    color='rgba(0, 0, 0, 0.7)'
+                    color={changeOpacity(theme.centerChannelColor, 0.7)}
                 />
                 <Text style={style.channelName}>{displayName}</Text>
             </View>
@@ -110,7 +117,8 @@ channelInfoHeader.propTypes = {
     creator: PropTypes.string,
     displayName: PropTypes.string.isRequired,
     header: PropTypes.string,
-    purpose: PropTypes.string
+    purpose: PropTypes.string,
+    theme: PropTypes.object.isRequired
 };
 
 export default channelInfoHeader;
