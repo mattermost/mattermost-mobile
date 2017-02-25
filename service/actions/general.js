@@ -15,7 +15,10 @@ export function getPing() {
             data = await Client.getPing();
             if (!data.version) {
                 // successful ping but not the right return data
-                throw new FormattedError('error.network_request_failed', 'Cannot connect to the server. Please check your server URL and internet connection.');
+                throw new FormattedError(
+                    'mobile.server_ping_failed',
+                    'Cannot connect to the server. Please check your server URL and internet connection.'
+                );
             }
         } catch (error) {
             dispatch({type: GeneralTypes.PING_FAILURE, error}, getState);
