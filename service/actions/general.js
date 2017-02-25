@@ -2,17 +2,33 @@
 // See License.txt for license information.
 
 import Client from 'service/client';
-import {bindClientFunc} from './helpers.js';
+import {bindClientFunc, FormattedError} from './helpers.js';
 import {GeneralTypes} from 'service/constants';
 import {getMyChannelMembers} from './channels';
 
 export function getPing() {
-    return bindClientFunc(
-        Client.getPing,
-        GeneralTypes.PING_REQUEST,
-        GeneralTypes.PING_SUCCESS,
-        GeneralTypes.PING_FAILURE
-    );
+    return async (dispatch, getState) => {
+        dispatch({type: GeneralTypes.PING_REQUEST}, getState);
+
+        let data;
+        const pingError = new FormattedError(
+            'mobile.server_ping_failed',
+            'Cannot connect to the server. Please check your server URL and internet connection.'
+        );
+        try {
+            data = await Client.getPing();
+            if (!data.version) {
+                // successful ping but not the right return data
+                dispatch({type: GeneralTypes.PING_FAILURE, error: pingError}, getState);
+                return;
+            }
+        } catch (error) {
+            dispatch({type: GeneralTypes.PING_FAILURE, error: pingError}, getState);
+            return;
+        }
+
+        dispatch({type: GeneralTypes.PING_SUCCESS, data}, getState);
+    };
 }
 
 export function getClientConfig() {

@@ -88,3 +88,14 @@ export function debounce(func, wait, immediate, cb) {
         }
     };
 }
+
+export class FormattedError extends Error {
+    constructor(id, defaultMessage, values = {}) {
+        super(defaultMessage);
+        this.intl = {
+            id,
+            defaultMessage,
+            values
+        };
+    }
+}

@@ -1,31 +1,33 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component, PropTypes} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {Text} from 'react-native';
 import FormattedText from 'app/components/formatted_text';
 
 import {GlobalStyles} from 'app/styles';
 
-const propTypes = {
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
-};
+export default class ErrorText extends PureComponent {
+    static propTypes = {
+        error: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+    };
 
-export default class ErrorText extends Component {
-    static propTypes = propTypes;
+    static defaultProps = {
+        error: {}
+    };
 
     render() {
         if (!this.props.error) {
             return null;
         }
 
-        if (this.props.error.hasOwnProperty('id')) {
-            const {error} = this.props;
+        if (this.props.error.hasOwnProperty('intl')) {
+            const {intl} = this.props.error;
             return (
                 <FormattedText
-                    id={error.id}
-                    defaultMessage={error.defaultMessage}
-                    values={error.values}
+                    id={intl.id}
+                    defaultMessage={intl.defaultMessage}
+                    values={intl.values}
                     style={GlobalStyles.errorLabel}
                 />
             );

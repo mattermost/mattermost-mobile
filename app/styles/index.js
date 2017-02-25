@@ -89,7 +89,8 @@ export const GlobalStyles = StyleSheet.create({
         color: 'red',
         marginTop: 15,
         marginBottom: 15,
-        fontSize: 12
+        fontSize: 12,
+        textAlign: 'center'
     },
 
     switchUp: {

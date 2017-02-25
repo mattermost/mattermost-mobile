@@ -1521,6 +1521,7 @@
   "mobile.routes.thread": "{channelName} Thread",
   "mobile.routes.user_profile": "Profile",
   "mobile.routes.user_profile.send_message": "Send Message",
+  "mobile.server_ping_failed": "Cannot connect to the server. Please check your server URL and internet connection.",
   "more_channels.close": "Close",
   "more_channels.create": "Create New Channel",
   "more_channels.createClick": "Click 'Create New Channel' to make a new one",
