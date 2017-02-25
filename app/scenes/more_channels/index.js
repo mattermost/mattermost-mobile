@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {goBack} from 'app/actions/navigation';
+import {goBack, goToCreateChannel} from 'app/actions/navigation';
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getMoreChannels as getMoreChannelsSelector} from 'service/selectors/entities/channels';
 import {handleSelectChannel} from 'app/actions/views/channel';
@@ -32,6 +32,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             goBack,
             handleSelectChannel,
+            goToCreateChannel,
             joinChannel,
             getMoreChannels,
             searchMoreChannels

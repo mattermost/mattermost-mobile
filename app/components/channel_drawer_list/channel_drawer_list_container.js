@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {
     closeModal,
+    goToCreateChannel,
     showMoreChannelsModal,
     showDirectMessagesModal,
     showOptionsModal
@@ -33,6 +34,7 @@ function mapDispatchToProps(dispatch) {
             viewChannel,
             markChannelAsRead,
             closeDMChannel,
+            goToCreateChannel,
             leaveChannel,
             markFavorite,
             unmarkFavorite,

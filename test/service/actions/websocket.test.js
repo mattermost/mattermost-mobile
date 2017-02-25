@@ -212,8 +212,8 @@ describe('Actions.Websocket', () => {
 
     it('Websocket Handle Channel Deleted', (done) => {
         async function test() {
-            await ChannelActions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
             await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
+            await ChannelActions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
             await ChannelActions.selectChannel(TestHelper.basicChannel.id)(store.dispatch, store.getState);
             await Client.deleteChannel(
                 TestHelper.basicTeam.id,

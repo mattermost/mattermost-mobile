@@ -177,3 +177,11 @@ function not(f) {
 function andX(...fns) {
     return (...args) => fns.every((f) => f(...args));
 }
+
+export function cleanUpUrlable(input) {
+    let cleaned = input.trim().replace(/-/g, ' ').replace(/[^\w\s]/gi, '').toLowerCase().replace(/\s/g, '-');
+    cleaned = cleaned.replace(/-{2,}/, '-');
+    cleaned = cleaned.replace(/^-+/, '');
+    cleaned = cleaned.replace(/-+$/, '');
+    return cleaned;
+}

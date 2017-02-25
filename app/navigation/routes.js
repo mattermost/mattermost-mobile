@@ -8,6 +8,7 @@ import {
     ChannelInfo,
     ChannelMembers,
     ChannelAddMembers,
+    CreateChannel,
     LoadTeam,
     Login,
     Mfa,
@@ -70,6 +71,21 @@ export const Routes = {
         key: 'ChannelView',
         transition: RouteTransitions.Horizontal,
         component: ChannelView
+    },
+    CreatePublicChannel: {
+        key: 'CreatePublicChannel',
+        component: CreateChannel,
+        transition: RouteTransitions.Horizontal,
+        navigationProps: {
+            title: {id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}
+        }
+    },
+    CreatePrivateChannel: {
+        key: 'CreatePrivateChannel',
+        component: CreateChannel,
+        navigationProps: {
+            title: {id: 'mobile.create_channel.private', defaultMessage: 'New Private Group'}
+        }
     },
     LoadTeam: {
         key: 'LoadTeam',
