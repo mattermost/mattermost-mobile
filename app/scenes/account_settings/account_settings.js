@@ -94,7 +94,10 @@ export default class AccountSettings extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.itemWrapper}>
+            <View
+                key={id}
+                style={style.itemWrapper}
+            >
                 <TouchableOpacity
                     style={style.item}
                     onPress={action}
@@ -122,6 +125,16 @@ export default class AccountSettings extends PureComponent {
         );
     }
 
+    renderItems = () => {
+        return [
+            this.buildItemRow('gear', 'user.settings.modal.general', 'General', () => true, true, true),
+            this.buildItemRow('lock', 'user.settings.modal.security', 'Security', () => true, true, true),
+            this.buildItemRow('bell', 'user.settings.modal.notifications', 'Notifications', () => true, true, false),
+            this.buildItemRow('mobile', 'user.settings.modal.display', 'Display', () => true, true, false),
+            this.buildItemRow('wrench', 'user.settings.modal.advanced', 'Advanced', () => true, false, false)
+        ];
+    }
+
     render() {
         const {theme} = this.props;
         const style = getStyleSheet(theme);
@@ -130,11 +143,7 @@ export default class AccountSettings extends PureComponent {
             <View style={style.wrapper}>
                 <View style={style.container}>
                     <View style={style.itemsContainer}>
-                        {this.buildItemRow('gear', 'user.settings.modal.general', 'General', () => true, true, false)}
-                        {this.buildItemRow('lock', 'user.settings.modal.security', 'Security', () => true, true, false)}
-                        {this.buildItemRow('bell', 'user.settings.modal.notifications', 'Notifications', () => true, true, false)}
-                        {this.buildItemRow('mobile', 'user.settings.modal.display', 'Display', () => true, true, false)}
-                        {this.buildItemRow('wrench', 'user.settings.modal.advanced', 'Advanced', () => true, false, false)}
+                        {this.renderItems()}
                     </View>
                 </View>
             </View>
