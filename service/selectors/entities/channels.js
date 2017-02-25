@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import {createSelector} from 'reselect';
-import {getCurrentTeamId} from 'service/selectors/entities/teams';
+import {getCurrentTeamId, getCurrentTeamMembership} from 'service/selectors/entities/teams';
+import {getCurrentUserId, getUsers} from 'service/selectors/entities/users';
 import {buildDisplayableChannelList, getNotMemberChannels, completeDirectChannelInfo} from 'service/utils/channel_utils';
 import {Constants} from 'service/constants';
 
@@ -148,5 +149,24 @@ export const getAutocompleteChannelWithSections = createSelector(
         });
 
         return channels;
+    }
+);
+
+export const canManageChannelMembers = createSelector(
+    getCurrentChannel,
+    getCurrentChannelMembership,
+    getCurrentTeamMembership,
+    getUsers,
+    getCurrentUserId,
+    (channel, channelMembership, teamMembership, allUsers, currentUserId) => {
+        const user = allUsers[currentUserId];
+        const roles = `${channelMembership.roles} ${teamMembership.roles} ${user.roles}`;
+        if (channel.type === Constants.DM_CHANNEL || channel.name === Constants.DEFAULT_CHANNEL) {
+            return false;
+        }
+        if (channel.type === Constants.OPEN_CHANNEL) {
+            return true;
+        }
+        return roles.includes('_admin');
     }
 );

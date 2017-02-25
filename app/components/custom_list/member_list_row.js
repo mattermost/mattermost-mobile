@@ -31,7 +31,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor
         },
         textContainer: {
-            flex: 1,
             flexDirection: 'row',
             marginLeft: 5
         },
@@ -99,7 +98,7 @@ function MemberListRow(props) {
                 size={40}
             />
             <View style={style.textContainer}>
-                <View style={{flexGrow: 1, flexDirection: 'column'}}>
+                <View style={{flexDirection: 'column'}}>
                     <Text style={style.displayName}>
                         {displayName}
                     </Text>

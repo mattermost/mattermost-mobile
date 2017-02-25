@@ -14,7 +14,6 @@ import MemberList from 'app/components/custom_list';
 import {createMembersSections, loadingText} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
 import {displayUsername} from 'service/utils/user_utils';
-import {Constants} from 'service/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelMembersTitle from './channel_members_title';
@@ -40,7 +39,7 @@ class ChannelMembers extends PureComponent {
         currentTeam: PropTypes.object,
         preferences: PropTypes.object,
         requestStatus: PropTypes.string,
-        isAdmin: PropTypes.bool.isRequired,
+        canManageUsers: PropTypes.bool.isRequired,
         subscribeToHeaderEvent: React.PropTypes.func,
         unsubscribeFromHeaderEvent: React.PropTypes.func,
         actions: PropTypes.shape({
@@ -171,8 +170,7 @@ class ChannelMembers extends PureComponent {
     }
 
     render() {
-        const {currentChannel, isAdmin, theme} = this.props;
-        const canManage = (isAdmin && currentChannel.type !== Constants.DM_CHANNEL && currentChannel.name !== Constants.DEFAULT_CHANNEL);
+        const {canManageUsers, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -184,7 +182,7 @@ class ChannelMembers extends PureComponent {
                     preferences={this.props.preferences}
                     loading={this.props.requestStatus === 'started'}
                     loadingText={loadingText}
-                    selectable={canManage}
+                    selectable={canManageUsers}
                     onRowSelect={this.handleRowSelect}
                     renderRow={this.renderMemberRow}
                     createSections={createMembersSections}

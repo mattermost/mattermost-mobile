@@ -44,7 +44,7 @@ class ChannelInfo extends PureComponent {
         currentChannelMemberCount: PropTypes.number,
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
-        isAdmin: PropTypes.bool.isRequired,
+        canManageUsers: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
             goToChannelMembers: PropTypes.func.isRequired,
@@ -143,7 +143,7 @@ class ChannelInfo extends PureComponent {
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
-            isAdmin
+            canManageUsers
         } = this.props;
 
         return (
@@ -180,15 +180,15 @@ class ChannelInfo extends PureComponent {
                     </View>
                     <ChannelInfoRow
                         action={this.props.actions.goToChannelMembers}
-                        defaultMessage={(isAdmin && currentChannel.type !== Constants.DM_CHANNEL) ? 'Manage Members' : 'View Members'}
+                        defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                         detail={currentChannelMemberCount}
                         icon='users'
-                        textId={(isAdmin && currentChannel.type !== Constants.DM_CHANNEL) ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                        textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                     />
                     <View style={style.separatorContainer}>
                         <View style={style.separator}/>
                     </View>
-                    {isAdmin && this.renderLeaveOrDeleteChannelRow() &&
+                    {canManageUsers && this.renderLeaveOrDeleteChannelRow() &&
                         <View>
                             <ChannelInfoRow
                                 action={this.props.actions.goToChannelAddMembers}
