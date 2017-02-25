@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goBack, goToModalSelectTeam} from 'app/actions/navigation';
+import {goToModalAccountSettings, goBack, goToModalSelectTeam} from 'app/actions/navigation';
 
 import {logout} from 'service/actions/users';
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -21,6 +21,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            goToModalAccountSettings,
             goBack,
             goToModalSelectTeam,
             logout

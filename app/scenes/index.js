@@ -1,6 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import AccountSettings from './account_settings';
 import Channel from './channel';
 import ChannelDrawer from './channel_drawer';
 import ChannelInfo from './channel_info';
@@ -21,6 +22,7 @@ import Thread from './thread';
 import UserProfile from './user_profile';
 
 module.exports = {
+    AccountSettings,
     ChannelView: Channel, // Special case the name for this one to avoid ambiguity
     ChannelDrawer,
     ChannelInfo,

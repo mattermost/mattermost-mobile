@@ -50,6 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
+            goToModalAccountSettings: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
         }).isRequired,
@@ -62,7 +63,7 @@ export default class RightMenuDrawer extends React.Component {
         return (
             <ScrollView style={Styles.container}>
                 <Divider style={Styles.divider}/>
-                <RightMenuDrawerItem>
+                <RightMenuDrawerItem onPress={this.props.actions.goToModalAccountSettings}>
                     <Icon
                         style={Styles.icon}
                         name='cog'
