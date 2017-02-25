@@ -11,17 +11,19 @@ export function getPing() {
         dispatch({type: GeneralTypes.PING_REQUEST}, getState);
 
         let data;
+        const pingError = new FormattedError(
+            'mobile.server_ping_failed',
+            'Cannot connect to the server. Please check your server URL and internet connection.'
+        );
         try {
             data = await Client.getPing();
             if (!data.version) {
                 // successful ping but not the right return data
-                throw new FormattedError(
-                    'mobile.server_ping_failed',
-                    'Cannot connect to the server. Please check your server URL and internet connection.'
-                );
+                dispatch({type: GeneralTypes.PING_FAILURE, error: pingError}, getState);
+                return;
             }
         } catch (error) {
-            dispatch({type: GeneralTypes.PING_FAILURE, error}, getState);
+            dispatch({type: GeneralTypes.PING_FAILURE, error: pingError}, getState);
             return;
         }
 
