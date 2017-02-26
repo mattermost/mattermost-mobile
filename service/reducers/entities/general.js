@@ -48,9 +48,21 @@ function credentials(state = {}, action) {
     }
 }
 
+function serverVersion(state = '', action) {
+    switch (action.type) {
+    case GeneralTypes.RECEIVED_SERVER_VERSION:
+        return action.data;
+    case UsersTypes.LOGOUT_SUCCESS:
+        return '';
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     appState,
     credentials,
     config,
-    license
+    license,
+    serverVersion
 });

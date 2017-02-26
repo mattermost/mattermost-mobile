@@ -73,10 +73,17 @@ export function setAppState(state) {
     };
 }
 
+export function setServerVersion(serverVersion) {
+    return async (dispatch, getState) => {
+        dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion}, getState);
+    };
+}
+
 export default {
     getPing,
     getClientConfig,
     getLicenseConfig,
     logClientError,
-    setAppState
+    setAppState,
+    setServerVersion
 };

@@ -1,11 +1,15 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import EventEmitter from 'service/utils/event_emitter';
+import {Constants} from 'service/constants';
+
 const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
 const HEADER_CONTENT_TYPE = 'Content-Type';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
 const HEADER_TOKEN = 'Token';
+const HEADER_X_VERSION_ID = 'X-Version-Id';
 
 const CONTENT_TYPE_JSON = 'application/json';
 
@@ -15,6 +19,7 @@ export default class Client {
         this.token = '';
         this.url = '';
         this.urlVersion = '/api/v3';
+        this.serverVersion = '';
 
         this.translations = {
             connectionError: 'There appears to be a problem with your internet connection.',
@@ -36,6 +41,10 @@ export default class Client {
 
     setToken(token) {
         this.token = token;
+    }
+
+    getServerVersion() {
+        return this.serverVersion;
     }
 
     getUrlVersion() {
@@ -706,6 +715,14 @@ export default class Client {
             data = await response.json();
         } else {
             data = await response.text();
+        }
+
+        if (headers.has(HEADER_X_VERSION_ID)) {
+            const serverVersion = headers.get(HEADER_X_VERSION_ID);
+            if (this.serverVersion !== serverVersion) {
+                this.serverVersion = serverVersion;
+                EventEmitter.emit(Constants.CONFIG_CHANGED, serverVersion);
+            }
         }
 
         if (response.ok) {

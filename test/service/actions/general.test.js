@@ -75,4 +75,12 @@ describe('Actions.General', () => {
         // Check a few basic fields since they may change over time
         assert.notStrictEqual(licenseConfig.IsLicensed, undefined);
     });
+
+    it('setServerVersion', async () => {
+        const version = '3.7.0';
+        await Actions.setServerVersion(version)(store.dispatch, store.getState);
+
+        const {serverVersion} = store.getState().entities.general;
+        assert.deepEqual(serverVersion, version);
+    });
 });

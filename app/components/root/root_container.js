@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import Config from 'assets/config.json';
 
+import {loadConfigAndLicense} from 'app/actions/views/root';
 import {setAppState} from 'service/actions/general';
 
 import Root from './root';
@@ -28,6 +29,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            loadConfigAndLicense,
             setAppState
         }, dispatch)
     };

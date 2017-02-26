@@ -3,10 +3,11 @@
 
 import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
+import {updateStorage} from 'app/actions/storage';
 
 import Client from 'service/client';
+import {getClientConfig, getLicenseConfig, setServerVersion} from 'service/actions/general';
 import {loadMe} from 'service/actions/users';
-import {getClientConfig, getLicenseConfig} from 'service/actions/general';
 
 export function goToSelectServer() {
     return async (dispatch, getState) => {
@@ -23,13 +24,21 @@ export function setStoreFromLocalData(data) {
         Client.setToken(data.token);
         Client.setUrl(data.url);
 
-        await getClientConfig()(dispatch, getState);
-        await getLicenseConfig()(dispatch, getState);
         return loadMe()(dispatch, getState);
+    };
+}
+
+export function loadConfigAndLicense(serverVersion) {
+    return async (dispatch, getState) => {
+        getClientConfig()(dispatch, getState);
+        getLicenseConfig()(dispatch, getState);
+        setServerVersion(serverVersion)(dispatch, getState);
+        await updateStorage(null, {serverVersion});
     };
 }
 
 export default {
     goToSelectServer,
+    loadConfigAndLicense,
     setStoreFromLocalData
 };
