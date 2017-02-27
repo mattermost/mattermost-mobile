@@ -1,19 +1,18 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {Component, PropTypes} from 'react';
 import {
     ListView,
     StyleSheet
 } from 'react-native';
 
 import Post from 'app/components/post';
+import DateHeader from './date_header';
+import NewMessagesDivider from './new_messages_divider';
 
 import {Constants} from 'service/constants';
 import {addDatesToPostList} from 'service/utils/post_utils';
-
-import DateHeader from './date_header';
-import NewMessagesDivider from './new_messages_divider';
 
 const style = StyleSheet.create({
     container: {
@@ -24,15 +23,15 @@ const style = StyleSheet.create({
     }
 });
 
-export default class PostList extends React.Component {
+export default class PostList extends Component {
     static propTypes = {
-        posts: React.PropTypes.array.isRequired,
-        theme: React.PropTypes.object.isRequired,
-        onPostPress: React.PropTypes.func,
-        renderReplies: React.PropTypes.bool,
-        indicateNewMessages: React.PropTypes.bool,
-        currentUserId: React.PropTypes.string,
-        lastViewedAt: React.PropTypes.number
+        posts: PropTypes.array.isRequired,
+        theme: PropTypes.object.isRequired,
+        onPostPress: PropTypes.func,
+        renderReplies: PropTypes.bool,
+        indicateNewMessages: PropTypes.bool,
+        currentUserId: PropTypes.string,
+        lastViewedAt: PropTypes.number
     };
 
     constructor(props) {
