@@ -210,6 +210,25 @@ describe('Actions.Websocket', () => {
         });
     });
 
+    it('Websocket Handle Channel Created', (done) => {
+        async function test() {
+            await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);
+            const channel = await Client.createChannel(TestHelper.fakeChannel(TestHelper.basicTeam.id));
+
+            setTimeout(() => {
+                const state = store.getState();
+                const entities = state.entities;
+                const {channels, myMembers} = entities.channels;
+
+                assert.ok(channels[channel.id]);
+                assert.ok(myMembers[channel.id]);
+                done();
+            }, 1000);
+        }
+
+        test();
+    });
+
     it('Websocket Handle Channel Deleted', (done) => {
         async function test() {
             await TeamActions.selectTeam(TestHelper.basicTeam)(store.dispatch, store.getState);

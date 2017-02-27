@@ -61,17 +61,21 @@ export function createChannel(channel, userId) {
             last_update_at: created.create_at
         };
 
+        const actions = [];
+        const {channels, myMembers} = getState().entities.channels;
+
+        if (!channels[created.id]) {
+            actions.push({type: ChannelTypes.RECEIVED_CHANNEL, data: created});
+        }
+
+        if (!myMembers[created.id]) {
+            actions.push({type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER, data: member});
+        }
+
         dispatch(batchActions([
-            {
-                type: ChannelTypes.RECEIVED_CHANNEL,
-                data: created
-            },
+            ...actions,
             {
                 type: ChannelTypes.CREATE_CHANNEL_SUCCESS
-            },
-            {
-                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                data: member
             },
             {
                 type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS

@@ -127,6 +127,9 @@ function handleEvent(msg, dispatch, getState) {
     case WebsocketEvents.USER_UPDATED:
         handleUserUpdatedEvent(msg, dispatch, getState);
         break;
+    case WebsocketEvents.CHANNEL_CREATED:
+        handleChannelCreatedEvent(msg, dispatch, getState);
+        break;
     case WebsocketEvents.CHANNEL_DELETED:
         handleChannelDeletedEvent(msg, dispatch, getState);
         break;
@@ -300,6 +303,17 @@ function handleUserUpdatedEvent(msg, dispatch, getState) {
                 [user.id]: user
             }
         }, getState);
+    }
+}
+
+function handleChannelCreatedEvent(msg, dispatch, getState) {
+    const {channel_id: channelId, team_id: teamId} = msg.data;
+    const state = getState();
+    const {channels} = state.entities.channels;
+    const {currentId: currentTeamId} = state.entities.teams;
+
+    if (teamId === currentTeamId && !channels[channelId]) {
+        getChannel(teamId, channelId)(dispatch, getState);
     }
 }
 
