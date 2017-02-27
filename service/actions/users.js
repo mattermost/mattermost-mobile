@@ -369,6 +369,27 @@ export function searchProfiles(term, options) {
     );
 }
 
+let statusIntervalId = '';
+export function startPeriodicStatusUpdates() {
+    return async (dispatch, getState) => {
+        clearInterval(statusIntervalId);
+
+        statusIntervalId = setInterval(
+            () => {
+                const {statuses} = getState().entities.users;
+                getStatusesByIds(Object.keys(statuses))(dispatch, getState);
+            },
+            Constants.STATUS_INTERVAL
+        );
+    };
+}
+
+export function stopPeriodicStatusUpdates() {
+    return async () => {
+        clearInterval(statusIntervalId);
+    };
+}
+
 export default {
     checkMfa,
     login,
@@ -382,5 +403,7 @@ export default {
     getSessions,
     revokeSession,
     getAudits,
-    searchProfiles
+    searchProfiles,
+    startPeriodicStatusUpdates,
+    stopPeriodicStatusUpdates
 };
