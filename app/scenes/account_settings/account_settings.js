@@ -127,8 +127,8 @@ export default class AccountSettings extends PureComponent {
 
     renderItems = () => {
         return [
-            this.buildItemRow('gear', 'user.settings.modal.general', 'General', () => true, true, true),
-            this.buildItemRow('lock', 'user.settings.modal.security', 'Security', () => true, true, true),
+            this.buildItemRow('gear', 'user.settings.modal.general', 'General', () => true, true, false),
+            this.buildItemRow('lock', 'user.settings.modal.security', 'Security', () => true, true, false),
             this.buildItemRow('bell', 'user.settings.modal.notifications', 'Notifications', () => true, true, false),
             this.buildItemRow('mobile', 'user.settings.modal.display', 'Display', () => true, true, false),
             this.buildItemRow('wrench', 'user.settings.modal.advanced', 'Advanced', () => true, false, false)

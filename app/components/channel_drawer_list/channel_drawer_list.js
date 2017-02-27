@@ -362,7 +362,7 @@ class ChannelDrawerList extends Component {
         );
     };
 
-    sectionAction = (action) => {
+    renderSectionAction = (action) => {
         const {theme} = this.props;
 
         return (
@@ -420,7 +420,7 @@ class ChannelDrawerList extends Component {
                     id='sidebar.channels'
                     defaultMessage='CHANNELS'
                 />
-                {this.sectionAction(this.props.actions.showMoreChannelsModal)}
+                {this.renderSectionAction(this.props.actions.showMoreChannelsModal)}
             </View>,
             ...publicChannels
         );
@@ -432,7 +432,7 @@ class ChannelDrawerList extends Component {
                     id='sidebar.pg'
                     defaultMessage='PRIVATE GROUPS'
                 />
-                {this.sectionAction(this.createPrivateChannel)}
+                {this.renderSectionAction(this.createPrivateChannel)}
             </View>,
             ...privateChannels
         );
@@ -444,7 +444,7 @@ class ChannelDrawerList extends Component {
                     id='sidebar.direct'
                     defaultMessage='DIRECT MESSAGES'
                 />
-                {this.sectionAction(this.props.actions.showDirectMessagesModal)}
+                {this.renderSectionAction(this.props.actions.showDirectMessagesModal)}
             </View>,
             ...directChannels
         );

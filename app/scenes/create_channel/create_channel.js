@@ -26,7 +26,6 @@ import EventEmitter from 'service/utils/event_emitter';
 import CreateChannelButton from './create_channel_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    const {height, width} = Dimensions.get('window');
     return StyleSheet.create({
         container: {
             flex: 1,
@@ -35,12 +34,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 30,
-            height: height + (Platform.OS === 'android' ? 200 : 0)
+            paddingTop: 30
         },
         errorContainer: {
-            position: 'absolute',
-            width
+            position: 'absolute'
         },
         errorWrapper: {
             justifyContent: 'center',
@@ -239,6 +236,7 @@ class CreateChannel extends PureComponent {
         const {channelType, theme} = this.props;
         const {displayName, header, purpose, error} = this.state;
         const {formatMessage} = this.props.intl;
+        const {height, width} = Dimensions.get('window');
 
         const style = getStyleSheet(theme);
 
@@ -252,7 +250,7 @@ class CreateChannel extends PureComponent {
         let displayError;
         if (error) {
             displayError = (
-                <View style={style.errorContainer}>
+                <View style={[style.errorContainer, {width}]}>
                     <View style={style.errorWrapper}>
                         <ErrorText error={error}/>
                     </View>
@@ -266,7 +264,7 @@ class CreateChannel extends PureComponent {
                 style={style.container}
             >
                 <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={style.scrollView}>
+                    <View style={[style.scrollView, {height: height + (Platform.OS === 'android' ? 200 : 0)}]}>
                         {displayError}
                         <View>
                             <FormattedText
