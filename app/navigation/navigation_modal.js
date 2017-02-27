@@ -24,33 +24,41 @@ export default class NavigationModal extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.show === nextProps.show) {
-            return;
-        }
+        if (nextProps.show) {
+            let currentRouteKeys;
+            const nextRouteKeys = nextProps.children.props.navigationState.routes.map((r) => r.key).join('');
+            if (this.state.children) {
+                currentRouteKeys = this.state.children.props.navigationState.routes.map((r) => r.key).join('');
+            }
 
-        // In order for the scene to be shown throughout the
-        // animated slide down we have to hang on to it by
-        // storing it in state
-        if (!this.state.children) {
-            this.setState({
-                children: nextProps.children
-            });
-        }
+            const routesDidChange = currentRouteKeys !== nextRouteKeys;
 
-        const animateValue = nextProps.show ? 0 : deviceHeight;
-
-        Animated.timing(this.state.top, {
-            toValue: animateValue,
-            duration: 400
-        }).start(() => {
-            // Once the scene has finished sliding down we can release the child scene
-            // which will unmount the scene correctly.
-            if (!this.props.show && !nextProps.show) {
+            // In order for the scene to be shown throughout the
+            // animated slide down we have to hang on to it by
+            // storing it in state
+            if (routesDidChange) {
                 this.setState({
-                    children: null
+                    children: nextProps.children
                 });
             }
-        });
+        }
+
+        if (nextProps.show !== this.props.show) {
+            const animateValue = nextProps.show ? 0 : deviceHeight;
+
+            Animated.timing(this.state.top, {
+                toValue: animateValue,
+                duration: 400
+            }).start(() => {
+                // Once the scene has finished sliding down we can release the child scene
+                // which will unmount the scene correctly.
+                if (!this.props.show && !nextProps.show) {
+                    this.setState({
+                        children: null
+                    });
+                }
+            });
+        }
     }
 
     render() {

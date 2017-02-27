@@ -47,13 +47,18 @@ export default function(state = initialState, action) {
         }
 
         if (state.isModal) {
+            const nextModalState = state.modal.routes.length > 1 ?
+                NavigationExperimental.StateUtils.pop(state.modal) :
+            {
+                index: 0,
+                routes: []
+            };
+
+            const isModal = nextModalState.routes.length > 0;
             return {
                 ...state,
-                modal: {
-                    index: 0,
-                    routes: []
-                },
-                isModal: false
+                modal: nextModalState,
+                isModal
             };
         }
 
