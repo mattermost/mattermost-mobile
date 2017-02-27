@@ -8,6 +8,7 @@ import Config from 'assets/config.json';
 
 import {loadConfigAndLicense} from 'app/actions/views/root';
 import {setAppState} from 'service/actions/general';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'service/actions/users';
 
 import Root from './root';
 
@@ -30,6 +31,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadConfigAndLicense,
+            startPeriodicStatusUpdates,
+            stopPeriodicStatusUpdates,
             setAppState
         }, dispatch)
     };
