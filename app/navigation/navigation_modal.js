@@ -24,16 +24,20 @@ export default class NavigationModal extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.show === nextProps.show) {
+        const nextRoutesLength = nextProps.children.props.navigationState.routes.length;
+        const currentRoutesLength = this.state.children ? this.state.children.props.navigationState.routes.length : 0;
+        const routesDidChange = nextRoutesLength !== currentRoutesLength;
+
+        if (this.props.show === nextProps.show && !routesDidChange) {
             return;
         }
 
         // In order for the scene to be shown throughout the
         // animated slide down we have to hang on to it by
         // storing it in state
-        if (!this.state.children) {
+        if (!this.state.children || (routesDidChange && nextProps.show)) {
             this.setState({
-                children: nextProps.children
+                children: {...nextProps.children}
             });
         }
 

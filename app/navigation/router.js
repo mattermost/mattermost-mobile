@@ -30,26 +30,26 @@ class Router extends React.Component {
 
     headerEventSubscriptions = {};
 
-    emitHeaderEvent = (event) => {
-        const subscription = this.headerEventSubscriptions[event];
+    emitHeaderEvent = (key) => (event) => {
+        const subscription = this.headerEventSubscriptions[`${key}-${event}`];
         if (subscription) {
             subscription();
         }
     }
 
-    subscribeToHeaderEvent = (event, callback) => {
-        this.headerEventSubscriptions[event] = callback;
+    subscribeToHeaderEvent = (key) => (event, callback) => {
+        this.headerEventSubscriptions[`${key}-${event}`] = callback;
     }
 
-    unsubscribeFromHeaderEvent = (event) => {
+    unsubscribeFromHeaderEvent = (key) => (event) => {
         if (this.headerEventSubscriptions[event]) {
-            Reflect.deleteProperty(this.headerEventSubscriptions, event);
+            Reflect.deleteProperty(this.headerEventSubscriptions, `${key}-${event}`);
         }
     }
 
-    wrapHeaderComponent = (fx) => (props) => {
+    wrapHeaderComponent = (fx, emitter) => (props) => {
         if (fx && props.scene.isActive) {
-            return fx(props, this.emitHeaderEvent, this.props.theme);
+            return fx(props, emitter, this.props.theme);
         }
 
         return null;
@@ -63,9 +63,10 @@ class Router extends React.Component {
         const navigationProps = this.extractNavigationProps(transitionProps.scene.route);
         let navBar = null;
         if (!navigationProps.hideNavBar) {
-            const renderLeftComponent = transitionProps.navigationState.index > 0 ? this.wrapHeaderComponent(navigationProps.renderBackButton) : this.wrapHeaderComponent(navigationProps.renderLeftComponent);
-            const renderTitleComponent = navigationProps.renderTitleComponent ? this.wrapHeaderComponent(navigationProps.renderTitleComponent) : this.renderTitle;
-            const renderRightComponent = this.wrapHeaderComponent(navigationProps.renderRightComponent);
+            const emitter = this.emitHeaderEvent(transitionProps.scene.route.key);
+            const renderLeftComponent = transitionProps.navigationState.index > 0 ? this.wrapHeaderComponent(navigationProps.renderBackButton, emitter) : this.wrapHeaderComponent(navigationProps.renderLeftComponent, emitter);
+            const renderTitleComponent = navigationProps.renderTitleComponent ? this.wrapHeaderComponent(navigationProps.renderTitleComponent, emitter) : this.renderTitle;
+            const renderRightComponent = this.wrapHeaderComponent(navigationProps.renderRightComponent, emitter);
 
             navBar = (
                 <NavigationExperimental.Header
@@ -151,10 +152,13 @@ class Router extends React.Component {
     renderRoute = (route) => {
         const SceneComponent = route.component;
 
+        const emitterSubscriber = this.subscribeToHeaderEvent(route.key);
+        const emitterUnsubscriber = this.unsubscribeFromHeaderEvent(route.key);
+
         return (
             <SceneComponent
-                subscribeToHeaderEvent={this.subscribeToHeaderEvent}
-                unsubscribeFromHeaderEvent={this.unsubscribeFromHeaderEvent}
+                subscribeToHeaderEvent={emitterSubscriber}
+                unsubscribeFromHeaderEvent={emitterUnsubscriber}
                 {...route.props}
             />
         );
