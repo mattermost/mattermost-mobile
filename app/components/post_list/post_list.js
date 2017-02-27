@@ -36,22 +36,23 @@ export default class PostList extends Component {
 
     constructor(props) {
         super(props);
-        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = this.props;
         this.state = {
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt}))
+            }).cloneWithRows(this.getPostsWithDates(props))
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
-            const {posts, indicateNewMessages, currentUserId, lastViewedAt} = nextProps;
-            const dataSource = this.state.dataSource.cloneWithRows(
-                addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt})
-            );
+            const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps));
             this.setState({dataSource});
         }
+    }
+
+    getPostsWithDates(props) {
+        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
+        return addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
     }
 
     renderRow = (row) => {
