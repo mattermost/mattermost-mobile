@@ -32,8 +32,6 @@ class Login extends Component {
             handleSuccessfulLogin: React.PropTypes.func.isRequired,
             checkMfa: React.PropTypes.func.isRequired,
             login: React.PropTypes.func.isRequired,
-            getClientConfig: React.PropTypes.func.isRequired,
-            getLicenseConfig: React.PropTypes.func.isRequired,
             goToMfa: React.PropTypes.func.isRequired,
             goToLoadTeam: React.PropTypes.func.isRequired
         }).isRequired,
@@ -53,11 +51,6 @@ class Login extends Component {
         this.state = {
             error: null
         };
-    }
-
-    componentWillMount() {
-        this.props.actions.getClientConfig();
-        this.props.actions.getLicenseConfig();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -193,7 +186,7 @@ class Login extends Component {
             };
         }
         return error.message;
-    }
+    };
 
     loginRef = (ref) => {
         this.loginId = ref;

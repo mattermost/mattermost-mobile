@@ -2,6 +2,8 @@
 // See License.txt for license information.
 
 const Constants = {
+    CONFIG_CHANGED: 'config_changed',
+
     POST_CHUNK_SIZE: 60,
     PROFILE_CHUNK_SIZE: 100,
     CHANNELS_CHUNK_SIZE: 50,

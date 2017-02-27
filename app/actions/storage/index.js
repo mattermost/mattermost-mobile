@@ -12,13 +12,14 @@ export function loadStorage() {
         try {
             const data = JSON.parse(await AsyncStorage.getItem('storage'));
 
-            const {token, url, currentTeamId, ...otherStorage} = data;
+            const {token, url, serverVersion, currentTeamId, ...otherStorage} = data;
             const credentials = {token, url};
 
             const currentChannelId = otherStorage[currentTeamId] ? otherStorage[currentTeamId].currentChannelId : '';
 
             const actions = [
                 {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
+                {type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion},
                 {type: TeamsTypes.SELECT_TEAM, data: currentTeamId},
                 {type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId}
             ];

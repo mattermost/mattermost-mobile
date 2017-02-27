@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {getClientConfig, getLicenseConfig} from 'service/actions/general';
 import LoginActions from 'app/actions/views/login';
 import {goToMfa, goToLoadTeam} from 'app/actions/navigation';
 import {checkMfa, login} from 'service/actions/users';
@@ -33,8 +32,6 @@ function mapDispatchToProps(dispatch) {
             ...LoginActions,
             checkMfa,
             login,
-            getClientConfig,
-            getLicenseConfig,
             goToMfa,
             goToLoadTeam
         }, dispatch)

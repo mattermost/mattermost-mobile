@@ -142,6 +142,9 @@ function handleEvent(msg, dispatch, getState) {
     case WebsocketEvents.TYPING:
         handleUserTypingEvent(msg, dispatch, getState);
         break;
+    case WebsocketEvents.HELLO:
+        handleHelloEvent(msg);
+        break;
     }
 }
 
@@ -356,6 +359,14 @@ function handleStatusChangedEvent(msg, dispatch, getState) {
             [msg.data.user_id]: msg.data.status
         }
     }, getState);
+}
+
+function handleHelloEvent(msg) {
+    const serverVersion = msg.data.server_version;
+    if (Client.serverVersion !== serverVersion) {
+        Client.serverVersion = serverVersion;
+        EventEmitter.emit(Constants.CONFIG_CHANGED, serverVersion);
+    }
 }
 
 const typingUsers = {};
