@@ -223,7 +223,7 @@ describe('Actions.Websocket', () => {
                 assert.ok(channels[channel.id]);
                 assert.ok(myMembers[channel.id]);
                 done();
-            }, 500);
+            }, 1000);
         }
 
         test();
