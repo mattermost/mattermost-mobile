@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {goBack} from 'app/actions/navigation';
+import {goBack, closeModal} from 'app/actions/navigation';
 import {handleCreateChannel} from 'app/actions/views/create_channel';
 
 import {getTheme} from 'service/selectors/entities/preferences';
@@ -27,6 +27,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             goBack,
+            closeModal,
             handleCreateChannel
         }, dispatch)
     };

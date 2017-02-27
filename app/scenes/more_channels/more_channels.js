@@ -206,7 +206,6 @@ class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = async () => {
-        this.props.actions.goBack();
         this.props.actions.goToCreateChannel(Constants.OPEN_CHANNEL);
     };
 

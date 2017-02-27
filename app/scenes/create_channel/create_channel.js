@@ -42,6 +42,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'absolute',
             width
         },
+        errorWrapper: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 10
+        },
         inputContainer: {
             marginTop: 10,
             borderTopWidth: 1,
@@ -55,6 +60,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             height: 40,
             paddingHorizontal: 15
+        },
+        titleContainer30: {
+            flexDirection: 'row',
+            marginTop: 30
+        },
+        titleContainer15: {
+            flexDirection: 'row',
+            marginTop: 15
         },
         title: {
             fontSize: 14,
@@ -85,6 +98,7 @@ class CreateChannel extends PureComponent {
         unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
         actions: PropTypes.shape({
             goBack: PropTypes.func.isRequired,
+            closeModal: PropTypes.func.isRequired,
             handleCreateChannel: PropTypes.func.isRequired
         })
     };
@@ -173,8 +187,16 @@ class CreateChannel extends PureComponent {
         this.headerInput = ref;
     };
 
+    scrollRef = (ref) => {
+        this.scroll = ref;
+    };
+
+    lastTextRef = (ref) => {
+        this.lastText = ref;
+    };
+
     scrollToEnd = () => {
-        this.refs.scroll.scrollToFocusedInput(findNodeHandle(this.refs.headerHelp));
+        this.scroll.scrollToFocusedInput(findNodeHandle(this.lastText));
     };
 
     componentWillMount() {
@@ -194,7 +216,7 @@ class CreateChannel extends PureComponent {
             case RequestStatus.SUCCESS:
                 this.emitCreating(false);
                 this.setState({error: null});
-                this.props.actions.goBack();
+                this.props.actions.closeModal();
                 break;
             case RequestStatus.FAILURE:
                 this.emitCreating(false);
@@ -231,7 +253,7 @@ class CreateChannel extends PureComponent {
         if (error) {
             displayError = (
                 <View style={style.errorContainer}>
-                    <View style={{justifyContent: 'center', alignItems: 'center', marginBottom: 10}}>
+                    <View style={style.errorWrapper}>
                         <ErrorText error={error}/>
                     </View>
                 </View>
@@ -240,7 +262,7 @@ class CreateChannel extends PureComponent {
 
         return (
             <KeyboardAwareScrollView
-                ref='scroll'
+                ref={this.scrollRef}
                 style={style.container}
             >
                 <TouchableWithoutFeedback onPress={this.blur}>
@@ -266,12 +288,7 @@ class CreateChannel extends PureComponent {
                                 underlineColorAndroid='transparent'
                             />
                         </View>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                marginTop: 30
-                            }}
-                        >
+                        <View style={style.titleContainer30}>
                             <FormattedText
                                 style={style.title}
                                 id='channel_modal.purpose'
@@ -305,12 +322,7 @@ class CreateChannel extends PureComponent {
                                 }}
                             />
                         </View>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                marginTop: 15
-                            }}
-                        >
+                        <View style={style.titleContainer15}>
                             <FormattedText
                                 style={style.title}
                                 id='channel_modal.header'
@@ -335,7 +347,7 @@ class CreateChannel extends PureComponent {
                                 underlineColorAndroid='transparent'
                             />
                         </View>
-                        <View ref='headerHelp'>
+                        <View ref={this.lastTextRef}>
                             <FormattedText
                                 style={style.helpText}
                                 id='channel_modal.headerHelp'
