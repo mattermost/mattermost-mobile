@@ -9,6 +9,7 @@ import {
 
 import Post from 'app/components/post';
 import DateHeader from './date_header';
+import LoadMoreButton from './load_more_button';
 import NewMessagesDivider from './new_messages_divider';
 
 import {Constants} from 'service/constants';
@@ -27,6 +28,8 @@ export default class PostList extends Component {
     static propTypes = {
         posts: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
+        showLoadMore: PropTypes.bool,
+        loadMore: PropTypes.func,
         onPostPress: PropTypes.func,
         renderReplies: PropTypes.bool,
         indicateNewMessages: PropTypes.bool,
@@ -51,8 +54,8 @@ export default class PostList extends Component {
     }
 
     getPostsWithDates(props) {
-        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
-        return addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
+        const {posts, showLoadMore, indicateNewMessages, currentUserId, lastViewedAt} = props;
+        return addDatesToPostList(posts, {showLoadMore, indicateNewMessages, currentUserId, lastViewedAt});
     }
 
     renderRow = (row) => {
@@ -62,6 +65,15 @@ export default class PostList extends Component {
         if (row === Constants.START_OF_NEW_MESSAGES) {
             return (
                 <NewMessagesDivider
+                    theme={this.props.theme}
+                    style={style.row}
+                />
+            );
+        }
+        if (row === 'load-more-posts') {
+            return (
+                <LoadMoreButton
+                    loadMore={this.props.loadMore}
                     theme={this.props.theme}
                     style={style.row}
                 />

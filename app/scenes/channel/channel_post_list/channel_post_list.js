@@ -9,6 +9,7 @@ export default class ChannelPostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessary: PropTypes.func.isRequired,
+            getPostsBefore: PropTypes.func.isRequired,
             goToThread: PropTypes.func.isRequired
         }).isRequired,
         channel: PropTypes.object.isRequired,
@@ -31,6 +32,15 @@ export default class ChannelPostList extends PureComponent {
         }
     }
 
+    loadMorePosts = () => {
+        const {channel, posts} = this.props;
+        const {team_id: teamId, id: channelId} = channel;
+        const oldestPost = posts[posts.length - 1];
+        if (oldestPost) {
+            this.props.actions.getPostsBefore(teamId, channelId, oldestPost.id);
+        }
+    };
+
     goToThread = (post) => {
         this.props.actions.goToThread(post.channel_id, post.root_id || post.id);
     };
@@ -43,6 +53,8 @@ export default class ChannelPostList extends PureComponent {
         return (
             <PostList
                 posts={this.props.posts}
+                showLoadMore={true}
+                loadMore={this.loadMorePosts}
                 onPostPress={this.goToThread}
                 renderReplies={true}
                 indicateNewMessages={true}

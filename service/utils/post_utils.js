@@ -12,7 +12,7 @@ export function shouldIgnorePost(post) {
 }
 
 export function addDatesToPostList(posts, options = {}) {
-    const {indicateNewMessages, currentUserId, lastViewedAt} = options;
+    const {showLoadMore, indicateNewMessages, currentUserId, lastViewedAt} = options;
 
     const out = [];
 
@@ -42,6 +42,10 @@ export function addDatesToPostList(posts, options = {}) {
     // Push on the date header for the oldest post
     if (lastDate) {
         out.push(lastDate);
+    }
+
+    if (showLoadMore) {
+        out.push('load-more-posts');
     }
 
     return out;

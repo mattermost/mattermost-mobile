@@ -7,6 +7,7 @@ import {createSelector} from 'reselect';
 
 import {goToThread} from 'app/actions/navigation';
 import {loadPostsIfNecessary} from 'app/actions/views/channel';
+import {getPostsBefore} from 'service/actions/posts';
 
 import {getAllPosts, getPostsInCurrentChannel} from 'service/selectors/entities/posts';
 import {getCurrentChannelMembership} from 'service/selectors/entities/channels';
@@ -75,6 +76,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadPostsIfNecessary,
+            getPostsBefore,
             goToThread
         }, dispatch)
     };
