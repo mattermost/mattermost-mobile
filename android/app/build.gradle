@@ -91,7 +91,7 @@ android {
         applicationId "com.mattermost.react.native"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 10
+        versionCode 11
         versionName "1.0"
         multiDexEnabled true
         ndk {
