@@ -47,7 +47,7 @@ export function createChannel(channel, userId) {
                     error
                 }
             ]), getState);
-            return;
+            return null;
         }
 
         const member = {
@@ -77,6 +77,8 @@ export function createChannel(channel, userId) {
                 type: ChannelTypes.CHANNEL_MEMBERS_SUCCESS
             }
         ]), getState);
+
+        return created;
     };
 }
 

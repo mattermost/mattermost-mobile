@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
@@ -17,14 +17,27 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class Button extends React.Component {
+export default class Loading extends PureComponent {
+    static propTypes = {
+        size: PropTypes.string,
+        color: PropTypes.string,
+        style: View.propTypes.style
+    };
+
+    static defaultProps = {
+        size: 'large',
+        color: 'grey',
+        style: {}
+    };
+
     render() {
         return (
             <View style={styles.container}>
                 <ActivityIndicator
-                    style={styles.loading}
+                    style={[styles.loading, this.props.style]}
                     animating={true}
-                    size='large'
+                    size={this.props.size}
+                    color={this.props.color}
                 />
             </View>
         );

@@ -3,6 +3,7 @@
 
 import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
+import {Constants} from 'service/constants';
 import {selectPost} from 'service/actions/posts';
 
 export function goBack() {
@@ -178,6 +179,34 @@ export function goToModalAccountSettings() {
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.AccountSettings
+        }, getState);
+    };
+}
+
+export function goToCreateChannel(channelType) {
+    return async (dispatch, getState) => {
+        closeDrawers()(dispatch, getState);
+        let type;
+        let route;
+        switch (channelType) {
+        case Constants.OPEN_CHANNEL:
+            type = NavigationTypes.NAVIGATION_PUSH;
+            route = Routes.CreatePublicChannel;
+            break;
+        case Constants.PRIVATE_CHANNEL:
+            type = NavigationTypes.NAVIGATION_MODAL;
+            route = Routes.CreatePrivateChannel;
+            break;
+        default:
+            return;
+        }
+
+        dispatch({
+            type,
+            route,
+            props: {
+                channelType
+            }
         }, getState);
     };
 }

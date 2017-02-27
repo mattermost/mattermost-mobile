@@ -89,6 +89,7 @@ class ChannelDrawerList extends Component {
             viewChannel: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
             closeDMChannel: PropTypes.func.isRequired,
+            goToCreateChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
@@ -361,6 +362,27 @@ class ChannelDrawerList extends Component {
         );
     };
 
+    renderSectionAction = (action) => {
+        const {theme} = this.props;
+
+        return (
+            <TouchableHighlight
+                style={Styles.more}
+                onPress={action}
+            >
+                <Icon
+                    name='plus-circle'
+                    size={18}
+                    color={theme.sidebarText}
+                />
+            </TouchableHighlight>
+        );
+    };
+
+    createPrivateChannel = () => {
+        this.props.actions.goToCreateChannel(Constants.PRIVATE_CHANNEL);
+    };
+
     buildData = (props) => {
         const data = [];
 
@@ -391,19 +413,6 @@ class ChannelDrawerList extends Component {
             );
         }
 
-        const moreChannels = (
-            <TouchableHighlight
-                style={Styles.more}
-                onPress={this.props.actions.showMoreChannelsModal}
-            >
-                <Icon
-                    name='plus-circle'
-                    size={18}
-                    color={theme.sidebarText}
-                />
-            </TouchableHighlight>
-        );
-
         data.push(
             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
                 <FormattedText
@@ -411,31 +420,23 @@ class ChannelDrawerList extends Component {
                     id='sidebar.channels'
                     defaultMessage='CHANNELS'
                 />
-                {moreChannels}
+                {this.renderSectionAction(this.props.actions.showMoreChannelsModal)}
             </View>,
             ...publicChannels
         );
+
         data.push(
-            <FormattedText
-                style={[Styles.title, {color: theme.sidebarText}]}
-                id='sidebar.pg'
-                defaultMessage='PRIVATE GROUPS'
-            />,
+            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                <FormattedText
+                    style={[Styles.title, {color: theme.sidebarText}]}
+                    id='sidebar.pg'
+                    defaultMessage='PRIVATE GROUPS'
+                />
+                {this.renderSectionAction(this.createPrivateChannel)}
+            </View>,
             ...privateChannels
         );
 
-        const moreDms = (
-            <TouchableHighlight
-                style={Styles.more}
-                onPress={this.props.actions.showDirectMessagesModal}
-            >
-                <Icon
-                    name='plus-circle'
-                    size={18}
-                    color={theme.sidebarText}
-                />
-            </TouchableHighlight>
-        );
         data.push(
             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
                 <FormattedText
@@ -443,7 +444,7 @@ class ChannelDrawerList extends Component {
                     id='sidebar.direct'
                     defaultMessage='DIRECT MESSAGES'
                 />
-                {moreDms}
+                {this.renderSectionAction(this.props.actions.showDirectMessagesModal)}
             </View>,
             ...directChannels
         );

@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {ChannelTypes, UsersTypes} from 'service/constants';
+import {ChannelTypes, TeamsTypes, UsersTypes} from 'service/constants';
 import {combineReducers} from 'redux';
 
 function currentId(state = '', action) {
@@ -71,6 +71,7 @@ function channels(state = {}, action) {
         };
     }
     case UsersTypes.LOGOUT_SUCCESS:
+    case TeamsTypes.SELECT_TEAM:
         return {};
 
     default:
@@ -126,6 +127,7 @@ function myMembers(state = {}, action) {
         return nextState;
 
     case UsersTypes.LOGOUT_SUCCESS:
+    case TeamsTypes.SELECT_TEAM:
         return {};
     default:
         return state;
@@ -142,6 +144,7 @@ function stats(state = {}, action) {
         return nextState;
     }
     case UsersTypes.LOGOUT_SUCCESS:
+    case TeamsTypes.SELECT_TEAM:
         return {};
     default:
         return state;

@@ -1,6 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import fetch from './fetch_etag';
+
 import EventEmitter from 'service/utils/event_emitter';
 import {Constants} from 'service/constants';
 

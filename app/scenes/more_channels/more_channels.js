@@ -18,6 +18,8 @@ import SearchBar from 'app/components/search_bar';
 import {Constants, RequestStatus} from 'service/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
+import CreateButton from './create_button';
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         container: {
@@ -40,6 +42,7 @@ class MoreChannels extends PureComponent {
         actions: PropTypes.shape({
             goBack: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
+            goToCreateChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getMoreChannels: PropTypes.func.isRequired,
             searchMoreChannels: PropTypes.func.isRequired
@@ -60,6 +63,9 @@ class MoreChannels extends PureComponent {
                     />
                 </TouchableOpacity>
             );
+        },
+        renderRightComponent: (props, emitter) => {
+            return <CreateButton emitter={emitter}/>;
         }
     };
 
@@ -78,6 +84,7 @@ class MoreChannels extends PureComponent {
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('close', this.props.actions.goBack);
+        this.props.subscribeToHeaderEvent('new_channel', this.onCreateChannel);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -102,6 +109,7 @@ class MoreChannels extends PureComponent {
 
     componentWillUnmount() {
         this.props.unsubscribeFromHeaderEvent('close');
+        this.props.unsubscribeFromHeaderEvent('new_channel');
     }
 
     filterChannels = (channels, term) => {
@@ -195,6 +203,10 @@ class MoreChannels extends PureComponent {
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.goBack();
         });
+    };
+
+    onCreateChannel = async () => {
+        this.props.actions.goToCreateChannel(Constants.OPEN_CHANNEL);
     };
 
     render() {
