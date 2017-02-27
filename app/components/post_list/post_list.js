@@ -41,7 +41,7 @@ export default class PostList extends React.Component {
         this.state = {
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt))
+            }).cloneWithRows(addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt}))
         };
     }
 
@@ -49,7 +49,7 @@ export default class PostList extends React.Component {
         if (nextProps.posts !== this.props.posts) {
             const {posts, indicateNewMessages, currentUserId, lastViewedAt} = nextProps;
             const dataSource = this.state.dataSource.cloneWithRows(
-                addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt)
+                addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt})
             );
             this.setState({dataSource});
         }
