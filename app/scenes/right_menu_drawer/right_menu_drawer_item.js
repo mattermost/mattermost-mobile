@@ -24,11 +24,15 @@ export default class MainMenuItem extends React.Component {
             React.PropTypes.object,
             React.PropTypes.array
         ]),
-        shouldRender: React.PropTypes.bool
+        shouldRender: React.PropTypes.bool.isRequired
+    }
+
+    static defaultProps = {
+        shouldRender: false
     }
 
     render() {
-        const {onPress, style, children, shouldRender = true} = this.props;
+        const {onPress, style, children, shouldRender} = this.props;
         if (!shouldRender) {
             return null;
         }
