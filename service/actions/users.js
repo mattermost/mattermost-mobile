@@ -377,7 +377,17 @@ export function startPeriodicStatusUpdates() {
         statusIntervalId = setInterval(
             () => {
                 const {statuses} = getState().entities.users;
-                getStatusesByIds(Object.keys(statuses))(dispatch, getState);
+
+                if (!statuses) {
+                    return;
+                }
+
+                const userIds = Object.keys(statuses);
+                if (!userIds.length) {
+                    return;
+                }
+
+                getStatusesByIds(userIds)(dispatch, getState);
             },
             Constants.STATUS_INTERVAL
         );
@@ -386,7 +396,9 @@ export function startPeriodicStatusUpdates() {
 
 export function stopPeriodicStatusUpdates() {
     return async () => {
-        clearInterval(statusIntervalId);
+        if (statusIntervalId) {
+            clearInterval(statusIntervalId);
+        }
     };
 }
 
