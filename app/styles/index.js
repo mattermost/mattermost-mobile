@@ -107,7 +107,7 @@ export const GlobalStyles = StyleSheet.create({
         borderWidth: 1,
         marginTop: 5,
         marginBottom: 5,
-        padding: 15,
+        paddingLeft: 10,
         alignSelf: 'stretch',
         borderRadius: 3
     }
