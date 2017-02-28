@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    Dimensions,
     Easing,
     NavigationExperimental,
     View
@@ -108,7 +109,7 @@ class Router extends React.Component {
             if (navigationProps.allowSceneSwipe) {
                 panHandlers = navigationPanResponder.forHorizontal({
                     ...cardProps,
-                    gestureResponseDistance: 60, // sets the distance from the edge for swiping
+                    gestureResponseDistance: (Dimensions.get('window').width / 2), // sets the distance from the edge for swiping
                     onNavigateBack: this.props.actions.goBack
                 });
             }
@@ -210,7 +211,7 @@ class Router extends React.Component {
                     tapToClose={true}
                     openDrawerOffset={0.2}
                     onRequestClose={this.props.actions.closeDrawers}
-                    panOpenMask={0.1}
+                    panOpenMask={0.4}
                     panCloseMask={0.2}
                     panThreshold={0.2}
                     acceptPan={navigationProps.allowMenuSwipe}
@@ -226,7 +227,7 @@ class Router extends React.Component {
                         tapToClose={true}
                         openDrawerOffset={0.2}
                         onRequestClose={this.props.actions.closeDrawers}
-                        panOpenMask={0.1}
+                        panOpenMask={0.4}
                         panCloseMask={0.2}
                         panThreshold={0.2}
                         acceptPan={navigationProps.allowMenuSwipe}
