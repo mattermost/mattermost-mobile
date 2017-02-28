@@ -31,7 +31,7 @@ import {
 } from 'service/constants';
 import {getCurrentChannelStats} from 'service/selectors/entities/channels';
 import {getUserIdFromChannelName} from 'service/utils/channel_utils';
-import {isSystemMessage} from 'service/utils/post_utils';
+import {isSystemMessage, shouldIgnorePost} from 'service/utils/post_utils';
 import EventEmitter from 'service/utils/event_emitter';
 
 export function init(siteUrl, token, optionalWebSocket) {
@@ -224,7 +224,7 @@ async function handleNewPostEvent(msg, dispatch, getState) {
         }
     ]), getState);
 
-    if (userId === users.currentId || post.channel_id === currentChannelId || isSystemMessage(post)) {
+    if ((userId === users.currentId && !isSystemMessage(post)) || post.channel_id === currentChannelId || shouldIgnorePost(post)) {
         markChannelAsRead(post.channel_id)(dispatch, getState);
     } else {
         markChannelAsUnread(post.channel_id, msg.data.mentions)(dispatch, getState);

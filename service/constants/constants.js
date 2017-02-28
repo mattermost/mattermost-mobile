@@ -54,7 +54,23 @@ const FileConstants = {
     WORD_TYPES: ['doc', 'docx']
 };
 
+const PostsConstants = {
+    JOIN_LEAVE: 'system_join_leave',
+    JOIN_CHANNEL: 'system_join_channel',
+    LEAVE_CHANNEL: 'system_leave_channel',
+    ADD_TO_CHANNEL: 'system_add_to_channel',
+    REMOVE_FROM_CHANNEL: 'system_remove_from_channel',
+    ADD_REMOVE: 'system_add_remove',
+    HEADER_CHANGE: 'system_header_change',
+    DISPLAYNAME_CHANGE: 'system_displayname_change',
+    PURPOSE_CHANGE: 'system_purpose_change',
+    CHANNEL_DELETED: 'system_channel_deleted',
+    EPHEMERAL: 'system_ephemeral'
+};
+
 export default {
     ...Constants,
-    ...FileConstants
+    ...FileConstants,
+    ...PostsConstants,
+    IGNORE_POST_TYPES: [PostsConstants.JOIN_LEAVE, PostsConstants.JOIN_CHANNEL, PostsConstants.LEAVE_CHANNEL, PostsConstants.REMOVE_FROM_CHANNEL, PostsConstants.ADD_TO_CHANNEL, PostsConstants.ADD_REMOVE]
 };
