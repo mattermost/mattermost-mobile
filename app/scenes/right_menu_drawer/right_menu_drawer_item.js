@@ -16,7 +16,7 @@ const Styles = StyleSheet.create({
     }
 });
 
-export default class MainMenuItem extends React.Component {
+export default class RightMenuDrawerItem extends React.Component {
     static propTypes = {
         children: React.PropTypes.node,
         onPress: React.PropTypes.func,
