@@ -18,6 +18,8 @@ import {getTheme} from 'service/selectors/entities/preferences';
 
 import NavigationModal from './navigation_modal';
 
+const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder;
+
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
@@ -102,9 +104,14 @@ class Router extends React.Component {
                 };
             }
 
-            // NavigationExperimental only creates the correct panHandlers if the panHandlers prop === undefined
-            const panHandlers = navigationProps.allowSceneSwipe ? undefined : null; // eslint-disable-line
-
+            let panHandlers = null;
+            if (navigationProps.allowSceneSwipe) {
+                panHandlers = navigationPanResponder.forHorizontal({
+                    ...cardProps,
+                    gestureResponseDistance: 60, // sets the distance from the edge for swiping
+                    onNavigateBack: this.props.actions.goBack
+                });
+            }
             return (
                 <NavigationExperimental.Card
                     {...cardProps}
