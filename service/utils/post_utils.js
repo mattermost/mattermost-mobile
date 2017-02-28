@@ -12,7 +12,7 @@ export function shouldIgnorePost(post) {
 }
 
 export function addDatesToPostList(posts, options = {}) {
-    const {showLoadMore, indicateNewMessages, currentUserId, lastViewedAt} = options;
+    const {allowLoadMore, indicateNewMessages, currentUserId, lastViewedAt} = options;
 
     const out = [];
 
@@ -44,7 +44,7 @@ export function addDatesToPostList(posts, options = {}) {
         out.push(lastDate);
     }
 
-    if (showLoadMore) {
+    if (allowLoadMore) {
         out.push('load-more-posts');
     }
 

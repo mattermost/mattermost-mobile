@@ -28,7 +28,7 @@ export default class PostList extends Component {
     static propTypes = {
         posts: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
-        showLoadMore: PropTypes.bool,
+        allowLoadMore: PropTypes.bool,
         loadMore: PropTypes.func,
         onPostPress: PropTypes.func,
         renderReplies: PropTypes.bool,
@@ -54,9 +54,16 @@ export default class PostList extends Component {
     }
 
     getPostsWithDates(props) {
-        const {posts, showLoadMore, indicateNewMessages, currentUserId, lastViewedAt} = props;
-        return addDatesToPostList(posts, {showLoadMore, indicateNewMessages, currentUserId, lastViewedAt});
+        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
+        return addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
     }
+
+    loadMore = () => {
+        const {allowLoadMore, loadMore} = this.props;
+        if (allowLoadMore && typeof loadMore === 'function') {
+            loadMore();
+        }
+    };
 
     renderRow = (row) => {
         if (row instanceof Date) {
@@ -111,10 +118,11 @@ export default class PostList extends Component {
         return (
             <ListView
                 style={style.container}
-                enableEmptySections={true}
                 dataSource={this.state.dataSource}
-                renderSectionHeader={this.renderSectionHeader}
                 renderRow={this.renderRow}
+                onEndReached={this.loadMore}
+                renderSectionHeader={this.renderSectionHeader}
+                enableEmptySections={true}
                 showsVerticalScrollIndicator={false}
             />
         );

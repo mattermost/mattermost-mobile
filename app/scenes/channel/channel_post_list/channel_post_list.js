@@ -53,7 +53,7 @@ export default class ChannelPostList extends PureComponent {
         return (
             <PostList
                 posts={this.props.posts}
-                showLoadMore={true}
+                allowLoadMore={true}
                 loadMore={this.loadMorePosts}
                 onPostPress={this.goToThread}
                 renderReplies={true}
