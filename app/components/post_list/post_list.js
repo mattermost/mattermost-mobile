@@ -12,7 +12,7 @@ import DateHeader from './date_header';
 import LoadMoreButton from './load_more_button';
 import NewMessagesDivider from './new_messages_divider';
 
-import {Constants} from 'service/constants';
+import {Constants, RequestStatus} from 'service/constants';
 import {addDatesToPostList} from 'service/utils/post_utils';
 
 const style = StyleSheet.create({
@@ -27,6 +27,7 @@ const style = StyleSheet.create({
 export default class PostList extends Component {
     static propTypes = {
         posts: PropTypes.array.isRequired,
+        postsRequests: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         allowLoadMore: PropTypes.bool,
         loadMore: PropTypes.func,
@@ -59,8 +60,9 @@ export default class PostList extends Component {
     }
 
     loadMore = () => {
-        const {allowLoadMore, loadMore} = this.props;
-        if (allowLoadMore && typeof loadMore === 'function') {
+        const {allowLoadMore, loadMore, postsRequests} = this.props;
+        const initialPostsLoaded = postsRequests.getPosts.status === RequestStatus.SUCCESS;
+        if (allowLoadMore && typeof loadMore === 'function' && initialPostsLoaded) {
             loadMore();
         }
     };
