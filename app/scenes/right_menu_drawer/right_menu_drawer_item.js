@@ -4,14 +4,13 @@
 import React, {Component, PropTypes} from 'react';
 import {StyleSheet, TouchableHighlight, View} from 'react-native';
 
-const Styles = StyleSheet.create({
+const styles = StyleSheet.create({
     item: {
+        flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
         height: 40,
-        paddingLeft: 10,
-        paddingRight: 10,
-        flex: 1,
-        flexDirection: 'row'
+        paddingHorizontal: 10
     }
 });
 
@@ -38,7 +37,7 @@ export default class RightMenuDrawerItem extends Component {
                 onPress={onPress}
                 style={style}
             >
-                <View style={Styles.item}>
+                <View style={styles.item}>
                     {children}
                 </View>
             </TouchableHighlight>
