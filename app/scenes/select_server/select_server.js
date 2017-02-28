@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     Keyboard,
@@ -21,22 +21,45 @@ import logo from 'assets/images/logo.png';
 import Client from 'service/client';
 import RequestStatus from 'service/constants/request_status';
 
-export default class SelectServer extends Component {
+export default class SelectServer extends PureComponent {
     static propTypes = {
-        serverUrl: React.PropTypes.string.isRequired,
-        server: React.PropTypes.object.isRequired,
-        actions: React.PropTypes.object.isRequired
+        serverUrl: PropTypes.string.isRequired,
+        server: PropTypes.object.isRequired,
+        actions: PropTypes.object.isRequired
     };
 
-    onClick = () => {
-        Client.setUrl(this.props.serverUrl);
+    constructor(props) {
+        super(props);
 
-        this.props.actions.getPing().then(() => {
-            if (this.props.server.status === RequestStatus.SUCCESS) {
-                Keyboard.dismiss();
-                this.props.actions.goToLogin();
-            }
-        });
+        this.state = {
+            error: null
+        };
+    }
+
+    onClick = () => {
+        const url = this.props.serverUrl;
+        const regex = /^https?:\/\//i;
+        let error = null;
+
+        if (regex.test(url)) {
+            Client.setUrl(url.replace(/\/+$/, ''));
+
+            this.props.actions.getPing().then(() => {
+                if (this.props.server.status === RequestStatus.SUCCESS) {
+                    Keyboard.dismiss();
+                    this.props.actions.goToLogin();
+                }
+            });
+        } else {
+            error = {
+                intl: {
+                    id: 'mobile.server_url.format',
+                    defaultMessage: 'URL must start with http:// or https://'
+                }
+            };
+        }
+
+        this.setState({error});
     };
 
     inputRef = (ref) => {
@@ -90,7 +113,7 @@ export default class SelectServer extends Component {
                                 defaultMessage='Proceed'
                             />
                         </Button>
-                        <ErrorText error={this.props.server.error}/>
+                        <ErrorText error={this.props.server.error || this.state.error}/>
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardLayout>
