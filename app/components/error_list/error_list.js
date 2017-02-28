@@ -85,8 +85,12 @@ export default class ErrorList extends PureComponent {
     }
 
     render() {
+        const wrapperStyle = [style.wrapper];
+        if (!this.props.errors.length) {
+            wrapperStyle.push({height: 0});
+        }
         return (
-            <View style={[style.wrapper, (!this.props.errors.length && {height: 0})]}>
+            <View style={wrapperStyle}>
                 <View style={style.container}>
                     {this.renderErrorsList()}
                     {this.props.errors.length > 1 &&
