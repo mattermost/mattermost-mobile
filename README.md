@@ -20,8 +20,10 @@ If you would like to help with testing the apps, you can:
 
 1. [Sign up for our team site](https://pre-release.mattermost.com/signup_user_complete/?id=f1924a8db44ff3bb41c96424cdc20676)
 2. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new
-3. Ask to be added as a beta tester by sending a direct message to `@lindsay` with your email address and device OS (iOS or Android)
-4. Install the `Mattermost RN` app
+3. Sign up to be a beta tester
+  - [Android](https://play.google.com/apps/testing/com.mattermost.react.native)
+  - [iOS](https://mattermost-fastlane.herokuapp.com/)
+4. Install the `Mattermost 2017 (Beta)` app
   - Note: Due to recent changes the new app only works with master - you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
 5. Check the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) or search for `#rnchangelog` for an outline of the latest changes (example [here](https://pre-release.mattermost.com/core/pl/tepdema9yirupdzjjamxk6wj3c))
 5. File any bugs you find by posting in the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) with:
