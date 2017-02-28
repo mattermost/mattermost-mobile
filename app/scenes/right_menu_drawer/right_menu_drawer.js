@@ -67,19 +67,18 @@ export default class RightMenuDrawer extends React.Component {
             `mailto:feedback@mattermost.com?subject=Errors&body=${this.errorEmailBody()}`
         );
         this.props.actions.clearErrors();
-    }
+    };
 
     errorEmailBody = () => {
         const {currentUserId, currentTeamId, errors} = this.props;
-        return `
-            Current User Id: ${currentUserId}
-            Current Team Id: ${currentTeamId}
-
-            Errors:
-
-            ${JSON.stringify(errors)}
-        `;
-    }
+        return [
+            `Current User Id: ${currentUserId}`,
+            `Current Team Id: ${currentTeamId}`,
+            '',
+            'Errors:',
+            errors ? JSON.stringify(errors) : ''
+        ].join('\n');
+    };
 
     render() {
         const Styles = getStyleSheet(this.props.theme);
