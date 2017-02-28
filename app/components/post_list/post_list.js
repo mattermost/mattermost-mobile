@@ -9,7 +9,7 @@ import {
 
 import Post from 'app/components/post';
 import DateHeader from './date_header';
-import LoadMoreButton from './load_more_button';
+import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
 
 import {Constants, RequestStatus} from 'service/constants';
@@ -98,8 +98,7 @@ export default class PostList extends Component {
         }
         if (row === 'load-more-posts') {
             return (
-                <LoadMoreButton
-                    loadMore={this.props.loadMore}
+                <LoadMorePosts
                     theme={this.props.theme}
                     style={style.row}
                 />

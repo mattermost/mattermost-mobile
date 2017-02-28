@@ -29,7 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default class LoadMoreButton extends PureComponent {
+export default class LoadMorePosts extends PureComponent {
     static propTypes = {
         loadMore: PropTypes.func,
         theme: PropTypes.object.isRequired,
