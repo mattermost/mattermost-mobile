@@ -1,8 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-
+import React, {Component, PropTypes} from 'react';
 import {StyleSheet, TouchableHighlight, View} from 'react-native';
 
 const Styles = StyleSheet.create({
@@ -16,15 +15,12 @@ const Styles = StyleSheet.create({
     }
 });
 
-export default class RightMenuDrawerItem extends React.Component {
+export default class RightMenuDrawerItem extends Component {
     static propTypes = {
-        children: React.PropTypes.node,
-        onPress: React.PropTypes.func,
-        style: React.PropTypes.oneOfType([
-            React.PropTypes.object,
-            React.PropTypes.array
-        ]),
-        shouldRender: React.PropTypes.bool.isRequired
+        children: PropTypes.node,
+        onPress: PropTypes.func,
+        style: View.propTypes.style,
+        shouldRender: PropTypes.bool.isRequired
     }
 
     static defaultProps = {
