@@ -4,13 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {getDisplayableErrors} from 'service/selectors/errors';
 import {dismissError, clearErrors} from 'service/actions/errors';
 
 import ErrorList from './error_list';
 
 function mapStateToProps(state) {
     return {
-        errors: state.errors.filter((error) => error.displayable)
+        errors: getDisplayableErrors(state)
     };
 }
 
