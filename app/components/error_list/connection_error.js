@@ -21,7 +21,7 @@ export default function ConnectionError() {
     return (
         <View style={style.container}>
             <FormattedText
-                id='connection.error'
+                id='mobile.connection.error'
                 defaultMessage='Cannot reach {siteName}. Please check your connection.'
             />
         </View>
