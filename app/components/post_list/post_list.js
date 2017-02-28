@@ -48,6 +48,12 @@ export default class PostList extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
+            this.didPostsLoad(nextProps, 'getPostsSince');
+        if (didInitialPostsLoad) {
+            const hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
+            this.setState({hasFirstPost});
+        }
         if (nextProps.posts !== this.props.posts) {
             const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps));
             this.setState({dataSource});
@@ -59,11 +65,21 @@ export default class PostList extends Component {
         return addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
     }
 
+    didPostsLoad(nextProps, postsRequest) {
+        const nextGetPostsStatus = nextProps.postsRequests[postsRequest].status;
+        const getPostsStatus = this.props.postsRequests[postsRequest].status;
+        return getPostsStatus === RequestStatus.STARTED && nextGetPostsStatus === RequestStatus.SUCCESS;
+    }
+
     loadMore = () => {
         const {allowLoadMore, loadMore, postsRequests} = this.props;
         const initialPostsLoaded = postsRequests.getPosts.status === RequestStatus.SUCCESS;
         if (allowLoadMore && typeof loadMore === 'function' && initialPostsLoaded) {
-            loadMore();
+            const morePosts = loadMore();
+            if (morePosts) {
+                const hasFirstPost = Object.values(morePosts).length < Constants.POST_CHUNK_SIZE;
+                this.setState({hasFirstPost});
+            }
         }
     };
 

@@ -37,8 +37,9 @@ export default class ChannelPostList extends PureComponent {
         const {team_id: teamId, id: channelId} = channel;
         const oldestPost = posts[posts.length - 1];
         if (oldestPost) {
-            this.props.actions.getPostsBefore(teamId, channelId, oldestPost.id);
+            return this.props.actions.getPostsBefore(teamId, channelId, oldestPost.id);
         }
+        return null;
     };
 
     goToThread = (post) => {
