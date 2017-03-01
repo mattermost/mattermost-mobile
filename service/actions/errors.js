@@ -18,7 +18,7 @@ export function dismissError(index) {
 
 export function generalErrorObject(error, displayable = false) {
     return {
-        type: ErrorTypes.GENERAL_ERROR,
+        type: ErrorTypes.LOG_ERROR,
         displayable,
         message: error.message
     };

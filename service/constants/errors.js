@@ -5,7 +5,7 @@ import keyMirror from 'service/utils/key_mirror';
 
 const ErrorTypes = keyMirror({
     DISMISS_ERROR: null,
-    GENERAL_ERROR: null,
+    LOG_ERROR: null,
     CLEAR_ERRORS: null
 });
 

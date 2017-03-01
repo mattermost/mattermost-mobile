@@ -11,7 +11,7 @@ export default (state = [], action) => {
 
         return nextState;
     }
-    case ErrorTypes.GENERAL_ERROR: {
+    case ErrorTypes.LOG_ERROR: {
         const nextState = [...state];
         const {...errorProps} = action;
 
