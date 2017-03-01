@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    Dimensions,
     Easing,
     NavigationExperimental,
     View
@@ -17,6 +18,8 @@ import {RouteTransitions} from 'app/navigation/routes';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 import NavigationModal from './navigation_modal';
+
+const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder;
 
 class Router extends React.Component {
     static propTypes = {
@@ -102,9 +105,14 @@ class Router extends React.Component {
                 };
             }
 
-            // NavigationExperimental only creates the correct panHandlers if the panHandlers prop === undefined
-            const panHandlers = navigationProps.allowSceneSwipe ? undefined : null; // eslint-disable-line
-
+            let panHandlers = null;
+            if (navigationProps.allowSceneSwipe) {
+                panHandlers = navigationPanResponder.forHorizontal({
+                    ...cardProps,
+                    gestureResponseDistance: (Dimensions.get('window').width / 2), // sets the distance from the edge for swiping
+                    onNavigateBack: this.props.actions.goBack
+                });
+            }
             return (
                 <NavigationExperimental.Card
                     {...cardProps}
@@ -203,7 +211,7 @@ class Router extends React.Component {
                     tapToClose={true}
                     openDrawerOffset={0.2}
                     onRequestClose={this.props.actions.closeDrawers}
-                    panOpenMask={0.1}
+                    panOpenMask={0.4}
                     panCloseMask={0.2}
                     panThreshold={0.2}
                     acceptPan={navigationProps.allowMenuSwipe}
@@ -219,7 +227,7 @@ class Router extends React.Component {
                         tapToClose={true}
                         openDrawerOffset={0.2}
                         onRequestClose={this.props.actions.closeDrawers}
-                        panOpenMask={0.1}
+                        panOpenMask={0.4}
                         panCloseMask={0.2}
                         panThreshold={0.2}
                         acceptPan={navigationProps.allowMenuSwipe}
