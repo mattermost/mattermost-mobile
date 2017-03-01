@@ -24,6 +24,8 @@ const style = StyleSheet.create({
     }
 });
 
+const LOAD_MORE_POSTS = 'load-more-posts';
+
 export default class PostList extends Component {
     static propTypes = {
         posts: PropTypes.array.isRequired,
@@ -71,7 +73,7 @@ export default class PostList extends Component {
         const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
         const postsWithDates = addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
         if (postsWithDates.length && !hasFirstPost) {
-            postsWithDates.push('load-more-posts');
+            postsWithDates.push(LOAD_MORE_POSTS);
         }
         return postsWithDates;
     }
@@ -102,7 +104,7 @@ export default class PostList extends Component {
                 />
             );
         }
-        if (row === 'load-more-posts') {
+        if (row === LOAD_MORE_POSTS) {
             return (
                 <LoadMorePosts
                     loading={this.props.postsRequests.getPostsBefore.status === RequestStatus.STARTED}
