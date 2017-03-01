@@ -80,10 +80,11 @@ export default class PostList extends Component {
     loadMore = () => {
         const {allowLoadMore, loadMore} = this.props;
         const {didInitialPostsLoad} = this.state;
-        if (allowLoadMore && typeof loadMore === 'function' && didInitialPostsLoad) {
+        let {hasFirstPost} = this.state;
+        if (allowLoadMore && typeof loadMore === 'function' && didInitialPostsLoad && !hasFirstPost) {
             const morePosts = loadMore();
             if (morePosts) {
-                const hasFirstPost = Object.values(morePosts).length < Constants.POST_CHUNK_SIZE;
+                hasFirstPost = Object.values(morePosts).length < Constants.POST_CHUNK_SIZE;
                 this.setState({hasFirstPost});
             }
         }
