@@ -7,6 +7,10 @@ export function isSystemMessage(post) {
     return post.type && post.type.startsWith(Constants.SYSTEM_MESSAGE_PREFIX);
 }
 
+export function shouldIgnorePost(post) {
+    return Constants.IGNORE_POST_TYPES.includes(post.type);
+}
+
 export function addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt) {
     const out = [];
 

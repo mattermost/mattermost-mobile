@@ -31,7 +31,7 @@ import {
 } from 'service/constants';
 import {getCurrentChannelStats} from 'service/selectors/entities/channels';
 import {getUserIdFromChannelName} from 'service/utils/channel_utils';
-import {isSystemMessage} from 'service/utils/post_utils';
+import {isSystemMessage, shouldIgnorePost} from 'service/utils/post_utils';
 import EventEmitter from 'service/utils/event_emitter';
 
 export function init(siteUrl, token, optionalWebSocket) {
@@ -224,7 +224,21 @@ async function handleNewPostEvent(msg, dispatch, getState) {
         }
     ]), getState);
 
-    if (userId === users.currentId || post.channel_id === currentChannelId || isSystemMessage(post)) {
+    if (shouldIgnorePost(post)) {
+        // if the post type is in the ignore list we'll do nothing with the read state
+        return;
+    }
+
+    let markAsRead = false;
+    if (userId === users.currentId && !isSystemMessage(post)) {
+        // In case the current user posted the message and that message wasn't triggered by a system message
+        markAsRead = true;
+    } else if (post.channel_id === currentChannelId) {
+        // if the post is for the channel that the user is currently viewing we'll mark the channel as read
+        markAsRead = true;
+    }
+
+    if (markAsRead) {
         markChannelAsRead(post.channel_id)(dispatch, getState);
     } else {
         markChannelAsUnread(post.channel_id, msg.data.mentions)(dispatch, getState);
