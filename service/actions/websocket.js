@@ -231,7 +231,7 @@ async function handleNewPostEvent(msg, dispatch, getState) {
 
     let markAsRead = false;
     if (userId === users.currentId && !isSystemMessage(post)) {
-        // In case the current user posted the message and that message wasn't trigger by a system message
+        // In case the current user posted the message and that message wasn't triggered by a system message
         markAsRead = true;
     } else if (post.channel_id === currentChannelId) {
         // if the post is for the channel that the user is currently viewing we'll mark the channel as read
