@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import {Constants, PreferencesTypes, UsersTypes, TeamsTypes} from 'service/constants';
 import {fetchTeams} from 'service/actions/teams';
-import {generalErrorObject} from 'service/actions/errors';
+import {getLogErrorAction} from 'service/actions/errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 
 export function checkMfa(loginId) {
@@ -47,7 +47,7 @@ export function login(loginId, password, mfaToken = '') {
                 forceLogoutIfNecessary(error, dispatch);
                 dispatch(batchActions([
                     {type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error},
-                    generalErrorObject(error)
+                    getLogErrorAction(error)
                 ]), getState);
                 dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
                 return;

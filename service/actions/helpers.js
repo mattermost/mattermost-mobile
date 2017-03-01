@@ -4,7 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import {UsersTypes} from 'service/constants';
-import {generalErrorObject} from './errors';
+import {getLogErrorAction} from './errors';
 const HTTP_UNAUTHORIZED = 401;
 
 export async function forceLogoutIfNecessary(err, dispatch) {
@@ -54,7 +54,7 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch(batchActions([
                 requestFailure(failure, err),
-                generalErrorObject(err)
+                getLogErrorAction(err)
             ]), getState);
             return;
         }

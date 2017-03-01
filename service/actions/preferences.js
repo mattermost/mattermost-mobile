@@ -11,7 +11,7 @@ import {getPreferenceKey} from 'service/utils/preference_utils';
 
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
-import {generalErrorObject} from './errors';
+import {getLogErrorAction} from './errors';
 export function getMyPreferences() {
     return bindClientFunc(
         Client.getMyPreferences,
@@ -31,7 +31,7 @@ export function savePreferences(preferences) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {type: PreferencesTypes.SAVE_PREFERENCES_FAILURE, error},
-                generalErrorObject(error)
+                getLogErrorAction(error)
             ]), getState);
             return;
         }
@@ -58,7 +58,7 @@ export function deletePreferences(preferences) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {type: PreferencesTypes.DELETE_PREFERENCES_FAILURE, error},
-                generalErrorObject(error)
+                getLogErrorAction(error)
             ]), getState);
             return;
         }

@@ -4,7 +4,7 @@
 import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {Constants, TeamsTypes} from 'service/constants';
-import {generalErrorObject} from './errors';
+import {getLogErrorAction} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {getProfilesByIds, getStatusesByIds} from './users';
 
@@ -68,7 +68,7 @@ export function createTeam(userId, team) {
             forceLogoutIfNecessary(err, dispatch);
             dispatch(batchActions([
                 {type: TeamsTypes.CREATE_TEAM_FAILURE, error: err},
-                generalErrorObject(err)
+                getLogErrorAction(err)
             ]), getState);
             return;
         }
@@ -133,7 +133,7 @@ export function getTeamMember(teamId, userId) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {type: TeamsTypes.TEAM_MEMBERS_FAILURE, error},
-                generalErrorObject(error)
+                getLogErrorAction(error)
             ]), getState);
             return;
         }
@@ -162,7 +162,7 @@ export function getTeamMembersByIds(teamId, userIds) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {type: TeamsTypes.TEAM_MEMBERS_FAILURE, error},
-                generalErrorObject(error)
+                getLogErrorAction(error)
             ]), getState);
         }
 
@@ -198,7 +198,7 @@ export function addUserToTeam(teamId, userId) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {type: TeamsTypes.ADD_TEAM_MEMBER_FAILURE, error},
-                generalErrorObject(error)
+                getLogErrorAction(error)
             ]), getState);
             return;
         }
@@ -230,7 +230,7 @@ export function removeUserFromTeam(teamId, userId) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
                 {type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error},
-                generalErrorObject(error)
+                getLogErrorAction(error)
             ]), getState);
             return;
         }

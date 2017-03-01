@@ -14,7 +14,7 @@ import {
     markChannelAsUnread,
     markChannelAsRead
 } from 'service/actions/channels';
-import {generalErrorObject} from './errors';
+import {getLogErrorAction} from './errors';
 import {
     getPosts,
     getPostsSince
@@ -83,7 +83,7 @@ export function close() {
         if (dispatch) {
             dispatch(batchActions([
                 {type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'},
-                generalErrorObject({error: 'Closed'})
+                getLogErrorAction({error: 'Closed'})
             ]), getState);
         }
     };
@@ -116,7 +116,7 @@ function handleReconnect(dispatch, getState) {
 function handleClose(connectFailCount, dispatch, getState) {
     dispatch(batchActions([
         {type: GeneralTypes.WEBSOCKET_FAILURE, error: connectFailCount},
-        generalErrorObject({error: connectFailCount})
+        getLogErrorAction({error: connectFailCount})
     ]), getState);
 }
 
