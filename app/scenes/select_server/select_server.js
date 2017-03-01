@@ -21,6 +21,8 @@ import logo from 'assets/images/logo.png';
 import Client from 'service/client';
 import RequestStatus from 'service/constants/request_status';
 
+import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
+
 export default class SelectServer extends PureComponent {
     static propTypes = {
         serverUrl: PropTypes.string.isRequired,
@@ -38,11 +40,10 @@ export default class SelectServer extends PureComponent {
 
     onClick = () => {
         const url = this.props.serverUrl;
-        const regex = /^https?:\/\//i;
         let error = null;
 
-        if (regex.test(url)) {
-            Client.setUrl(url.replace(/\/+$/, ''));
+        if (isValidUrl(url)) {
+            Client.setUrl(stripTrailingSlashes(url));
 
             this.props.actions.getPing().then(() => {
                 if (this.props.server.status === RequestStatus.SUCCESS) {
@@ -53,7 +54,7 @@ export default class SelectServer extends PureComponent {
         } else {
             error = {
                 intl: {
-                    id: 'mobile.server_url.format',
+                    id: 'mobile.server_url.invalid_format',
                     defaultMessage: 'URL must start with http:// or https://'
                 }
             };
@@ -113,7 +114,7 @@ export default class SelectServer extends PureComponent {
                                 defaultMessage='Proceed'
                             />
                         </Button>
-                        <ErrorText error={this.props.server.error || this.state.error}/>
+                        <ErrorText error={this.state.error || this.props.server.error}/>
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardLayout>
