@@ -65,7 +65,10 @@ export default class PostList extends Component {
     getPostsWithDates(props) {
         const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
         const postsWithDates = addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
-        return [...postsWithDates, 'load-more-posts'];
+        if (postsWithDates.length) {
+            postsWithDates.push('load-more-posts');
+        }
+        return postsWithDates;
     }
 
     didPostsLoad(nextProps, postsRequest) {
