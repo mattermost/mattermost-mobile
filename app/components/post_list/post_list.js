@@ -41,6 +41,7 @@ export default class PostList extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            didInitialPostsLoad: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
             }).cloneWithRows(this.getPostsWithDates(props))
@@ -50,6 +51,7 @@ export default class PostList extends Component {
     componentWillReceiveProps(nextProps) {
         const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
             this.didPostsLoad(nextProps, 'getPostsSince');
+        this.setState({didInitialPostsLoad});
         if (didInitialPostsLoad) {
             const hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
             this.setState({hasFirstPost});
@@ -73,9 +75,9 @@ export default class PostList extends Component {
     }
 
     loadMore = () => {
-        const {allowLoadMore, loadMore, postsRequests} = this.props;
-        const initialPostsLoaded = postsRequests.getPosts.status === RequestStatus.SUCCESS;
-        if (allowLoadMore && typeof loadMore === 'function' && initialPostsLoaded) {
+        const {allowLoadMore, loadMore} = this.props;
+        const {didInitialPostsLoad} = this.state;
+        if (allowLoadMore && typeof loadMore === 'function' && didInitialPostsLoad) {
             const morePosts = loadMore();
             if (morePosts) {
                 const hasFirstPost = Object.values(morePosts).length < Constants.POST_CHUNK_SIZE;
