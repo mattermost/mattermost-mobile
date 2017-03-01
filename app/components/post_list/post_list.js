@@ -53,11 +53,14 @@ export default class PostList extends Component {
         const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
             this.didPostsLoad(nextProps, 'getPostsSince');
         this.setState({didInitialPostsLoad});
+        const didMorePostsLoad = this.didPostsLoad(nextProps, 'getPostsBefore');
         let hasFirstPost = false;
         if (didInitialPostsLoad) {
             hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
-            this.setState({hasFirstPost});
+        } else if (didMorePostsLoad) {
+            hasFirstPost = (nextProps.posts.length - this.props.posts.length) < Constants.POST_CHUNK_SIZE;
         }
+        this.setState({hasFirstPost});
         if (nextProps.posts !== this.props.posts) {
             const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps, hasFirstPost));
             this.setState({dataSource});
@@ -81,14 +84,9 @@ export default class PostList extends Component {
 
     loadMore = () => {
         const {allowLoadMore, loadMore} = this.props;
-        const {didInitialPostsLoad} = this.state;
-        let {hasFirstPost} = this.state;
+        const {didInitialPostsLoad, hasFirstPost} = this.state;
         if (allowLoadMore && typeof loadMore === 'function' && didInitialPostsLoad && !hasFirstPost) {
-            const morePosts = loadMore();
-            if (morePosts) {
-                hasFirstPost = Object.values(morePosts).length < Constants.POST_CHUNK_SIZE;
-                this.setState({hasFirstPost});
-            }
+            loadMore();
         }
     };
 
