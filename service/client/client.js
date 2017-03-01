@@ -717,6 +717,14 @@ export default class Client {
             data = await response.json();
         } else {
             data = await response.text();
+            if (isResponseInvalid(data)) {
+                throw {
+                    intl: {
+                        id: 'mobile.request.invalid_response',
+                        defaultMessage: 'Received invalid response from the server.'
+                    }
+                };
+            }
         }
 
         if (headers.has(HEADER_X_VERSION_ID)) {
@@ -774,4 +782,14 @@ function parseAndMergeNestedHeaders(originalHeaders) {
         headers.set(capitalizedKey, realVal);
     });
     return new Map([...headers, ...nestedHeaders]);
+}
+
+function isResponseInvalid(text) {
+    try {
+        JSON.parse(text);
+    } catch (err) {
+        return true;
+    }
+
+    return false;
 }
