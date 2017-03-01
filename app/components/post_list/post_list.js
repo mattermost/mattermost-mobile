@@ -99,6 +99,7 @@ export default class PostList extends Component {
         if (row === 'load-more-posts') {
             return (
                 <LoadMorePosts
+                    loading={this.props.postsRequests.getPostsBefore.status === RequestStatus.STARTED}
                     theme={this.props.theme}
                     style={style.row}
                 />

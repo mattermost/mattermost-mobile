@@ -31,28 +31,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 export default class LoadMorePosts extends PureComponent {
     static propTypes = {
+        loading: PropTypes.bool.isRequired,
         loadMore: PropTypes.func,
         theme: PropTypes.object.isRequired,
         style: View.propTypes.style
     };
 
     loadMore = () => {
-        const {loadMore} = this.props;
-        if (typeof loadMore === 'function') {
+        const {loading, loadMore} = this.props;
+        if (!loading && typeof loadMore === 'function') {
             loadMore();
         }
     };
+
+    renderText(style) {
+        let [id, defaultMessage] = ['posts_view.loadMore', 'Load more messages'];
+        if (this.props.loading) {
+            [id, defaultMessage] = ['mobile.loading_posts', 'Loading Messages...'];
+        }
+        return (
+            <FormattedText
+                id={id}
+                defaultMessage={defaultMessage}
+                style={style.text}
+            />
+        );
+    }
 
     render() {
         const style = getStyleSheet(this.props.theme);
         return (
             <View style={[style.container, this.props.style]}>
                 <TouchableOpacity onPress={this.loadMore}>
-                    <FormattedText
-                        id='posts_view.loadMore'
-                        defaultMessage='Load more messages'
-                        style={style.text}
-                    />
+                    {this.renderText(style)}
                 </TouchableOpacity>
             </View>
         );
