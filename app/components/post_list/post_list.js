@@ -41,6 +41,7 @@ export default class PostList extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            hasFirstPost: false,
             didInitialPostsLoad: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
@@ -52,20 +53,21 @@ export default class PostList extends Component {
         const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
             this.didPostsLoad(nextProps, 'getPostsSince');
         this.setState({didInitialPostsLoad});
+        let hasFirstPost = false;
         if (didInitialPostsLoad) {
-            const hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
+            hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
             this.setState({hasFirstPost});
         }
         if (nextProps.posts !== this.props.posts) {
-            const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps));
+            const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps, hasFirstPost));
             this.setState({dataSource});
         }
     }
 
-    getPostsWithDates(props) {
+    getPostsWithDates(props, hasFirstPost = false) {
         const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
         const postsWithDates = addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
-        if (postsWithDates.length) {
+        if (postsWithDates.length && !hasFirstPost) {
             postsWithDates.push('load-more-posts');
         }
         return postsWithDates;
