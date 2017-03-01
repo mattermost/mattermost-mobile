@@ -6,7 +6,6 @@ import {ErrorTypes} from 'service/constants';
 export function dismissErrorObject(index) {
     return {
         type: ErrorTypes.DISMISS_ERROR,
-        displayable: false,
         index
     };
 }
@@ -21,7 +20,6 @@ export function generalErrorObject(error, displayable = false) {
     return {
         type: ErrorTypes.GENERAL_ERROR,
         displayable,
-        errorType: 'general',
         message: error.message
     };
 }
