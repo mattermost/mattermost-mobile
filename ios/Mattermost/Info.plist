@@ -32,7 +32,7 @@
 				<true/>
 			</dict>
 		</dict>
-		<key>NSAllowsArbitraryLoads</key>
+        <key>NSAllowsArbitraryLoads</key>
         <true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
