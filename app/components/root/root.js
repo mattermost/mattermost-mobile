@@ -14,8 +14,6 @@ export default class Root extends React.Component {
         locale: React.PropTypes.string.isRequired,
         actions: React.PropTypes.shape({
             loadConfigAndLicense: React.PropTypes.func.isRequired,
-            startPeriodicStatusUpdates: React.PropTypes.func.isRequired,
-            stopPeriodicStatusUpdates: React.PropTypes.func.isRequired,
             setAppState: React.PropTypes.func.isRequired
         }).isRequired
     };
@@ -31,13 +29,11 @@ export default class Root extends React.Component {
     componentDidMount() {
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(Constants.CONFIG_CHANGED, this.handleConfigChanged);
-        this.props.actions.startPeriodicStatusUpdates();
     }
 
     componentWillUnmount() {
         AppState.removeEventListener('change', this.handleAppStateChange);
         EventEmitter.off(Constants.CONFIG_CHANGED, this.handleConfigChanged);
-        this.props.actions.stopPeriodicStatusUpdates();
     }
 
     handleAppStateChange(appState) {
