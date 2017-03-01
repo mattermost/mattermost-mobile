@@ -224,7 +224,19 @@ async function handleNewPostEvent(msg, dispatch, getState) {
         }
     ]), getState);
 
-    if ((userId === users.currentId && !isSystemMessage(post)) || post.channel_id === currentChannelId || shouldIgnorePost(post)) {
+    let markAsRead = false;
+    if (userId === users.currentId && !isSystemMessage(post)) {
+        // In case the current user posted the message and that message wasn't trigger by a system message
+        markAsRead = true;
+    } else if (shouldIgnorePost(post)) {
+        // if the system message is in the ignore list we'll mark the channel as read regardless of who triggered the post
+        markAsRead = true;
+    } else if (post.channel_id === currentChannelId) {
+        // if the post is for the channel that the user is currently viewing we'll mark the channel as read
+        markAsRead = true;
+    }
+
+    if (markAsRead) {
         markChannelAsRead(post.channel_id)(dispatch, getState);
     } else {
         markChannelAsUnread(post.channel_id, msg.data.mentions)(dispatch, getState);
