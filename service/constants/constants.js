@@ -54,23 +54,31 @@ const FileConstants = {
     WORD_TYPES: ['doc', 'docx']
 };
 
-const PostsConstants = {
-    JOIN_LEAVE: 'system_join_leave',
-    JOIN_CHANNEL: 'system_join_channel',
-    LEAVE_CHANNEL: 'system_leave_channel',
-    ADD_TO_CHANNEL: 'system_add_to_channel',
-    REMOVE_FROM_CHANNEL: 'system_remove_from_channel',
+const PostsTypes = {
     ADD_REMOVE: 'system_add_remove',
-    HEADER_CHANGE: 'system_header_change',
-    DISPLAYNAME_CHANGE: 'system_displayname_change',
-    PURPOSE_CHANGE: 'system_purpose_change',
+    ADD_TO_CHANNEL: 'system_add_to_channel',
     CHANNEL_DELETED: 'system_channel_deleted',
-    EPHEMERAL: 'system_ephemeral'
+    DISPLAYNAME_CHANGE: 'system_displayname_change',
+    EPHEMERAL: 'system_ephemeral',
+    HEADER_CHANGE: 'system_header_change',
+    JOIN_CHANNEL: 'system_join_channel',
+    JOIN_LEAVE: 'system_join_leave',
+    LEAVE_CHANNEL: 'system_leave_channel',
+    PURPOSE_CHANGE: 'system_purpose_change',
+    REMOVE_FROM_CHANNEL: 'system_remove_from_channel'
 };
 
 export default {
     ...Constants,
     ...FileConstants,
-    ...PostsConstants,
-    IGNORE_POST_TYPES: [PostsConstants.JOIN_LEAVE, PostsConstants.JOIN_CHANNEL, PostsConstants.LEAVE_CHANNEL, PostsConstants.REMOVE_FROM_CHANNEL, PostsConstants.ADD_TO_CHANNEL, PostsConstants.ADD_REMOVE]
+    ...PostsTypes,
+    IGNORE_POST_TYPES: [
+        PostsTypes.ADD_REMOVE,
+        PostsTypes.ADD_TO_CHANNEL,
+        PostsTypes.CHANNEL_DELETED,
+        PostsTypes.JOIN_LEAVE,
+        PostsTypes.JOIN_CHANNEL,
+        PostsTypes.LEAVE_CHANNEL,
+        PostsTypes.REMOVE_FROM_CHANNEL
+    ]
 };

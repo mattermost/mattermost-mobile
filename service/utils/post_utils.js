@@ -8,7 +8,7 @@ export function isSystemMessage(post) {
 }
 
 export function shouldIgnorePost(post) {
-    return Constants.IGNORE_POST_TYPES.indexOf(post.type) !== -1;
+    return Constants.IGNORE_POST_TYPES.includes(post.type);
 }
 
 export function addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt) {
