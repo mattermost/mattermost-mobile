@@ -18,6 +18,7 @@ describe('Actions.Websocket', () => {
         await TestHelper.initBasic(Client);
         const webSocketConnector = require('ws');
         return await Actions.init(
+            'ios',
             null,
             null,
             webSocketConnector
