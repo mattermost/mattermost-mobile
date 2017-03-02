@@ -84,6 +84,31 @@ export default class ErrorList extends PureComponent {
         return null;
     }
 
+    renderDismissAll() {
+        if (this.props.errors.length <= 1 || !Config.ShowErrorsList) {
+            return null;
+        }
+        return (
+            <TouchableOpacity
+                style={style.closeButtonContainer}
+                onPress={() => this.props.actions.clearErrors()}
+            >
+                <View style={style.closeButton}>
+                    <Icon
+                        name='close'
+                        size={10}
+                        color='#fff'
+                    />
+                </View>
+                <FormattedText
+                    id='mobile.components.error_list.dismiss_all'
+                    defaultMessage='Dismiss All'
+                    style={style.closeButtonText}
+                />
+            </TouchableOpacity>
+        );
+    }
+
     render() {
         const wrapperStyle = [style.wrapper];
         if (!this.props.errors.length) {
@@ -93,25 +118,7 @@ export default class ErrorList extends PureComponent {
             <View style={wrapperStyle}>
                 <View style={style.container}>
                     {this.renderErrorsList()}
-                    {this.props.errors.length > 1 &&
-                        <TouchableOpacity
-                            style={style.closeButtonContainer}
-                            onPress={() => this.props.actions.clearErrors()}
-                        >
-                            <View style={style.closeButton}>
-                                <Icon
-                                    name='close'
-                                    size={10}
-                                    color='#fff'
-                                />
-                            </View>
-                            <FormattedText
-                                id='mobile.components.error_list.dismiss_all'
-                                defaultMessage='Dismiss All'
-                                style={style.closeButtonText}
-                            />
-                        </TouchableOpacity>
-                    }
+                    {this.renderDismissAll()}
                 </View>
             </View>
         );
