@@ -7,6 +7,7 @@ import {
     View
 } from 'react-native';
 
+import {Constants} from 'service/constants';
 import {getCurrentChannel} from 'service/selectors/entities/channels';
 import {getTheme} from 'service/selectors/entities/preferences';
 
@@ -14,16 +15,30 @@ import FormattedText from 'app/components/formatted_text';
 
 function ThreadTitle(props) {
     const {currentChannel, theme} = props;
-    const channelName = currentChannel.display_name;
-
-    return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 50}}>
+    let label;
+    if (currentChannel.type === Constants.DM_CHANNEL) {
+        label = (
+            <FormattedText
+                id='mobile.routes.thread_dm'
+                defaultMessage='Direct Message Thread'
+                style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
+            />
+        );
+    } else {
+        const channelName = currentChannel.display_name;
+        label = (
             <FormattedText
                 id='mobile.routes.thread'
                 defaultMessage='{channelName} Thread'
                 values={{channelName}}
                 style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
             />
+        );
+    }
+
+    return (
+        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 50}}>
+            {label}
         </View>
     );
 }
