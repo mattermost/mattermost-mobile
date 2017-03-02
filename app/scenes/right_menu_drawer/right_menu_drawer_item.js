@@ -23,7 +23,7 @@ export default class RightMenuDrawerItem extends Component {
     }
 
     static defaultProps = {
-        shouldRender: false
+        shouldRender: true
     }
 
     render() {
