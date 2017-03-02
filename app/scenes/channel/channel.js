@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    Platform,
     StatusBar,
     Text
 } from 'react-native';
@@ -59,7 +60,7 @@ export default class Channel extends React.PureComponent {
         this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         const teamId = this.props.currentTeam.id;
-        this.props.actions.initWebSocket();
+        this.props.actions.initWebSocket(Platform.OS);
         this.loadChannels(teamId);
     }
 

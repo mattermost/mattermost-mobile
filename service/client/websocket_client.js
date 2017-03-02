@@ -25,7 +25,15 @@ class WebSocketClient {
         this.stop = false;
     }
 
-    initialize(forceConnection = true, connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket) {
+    initialize(token, dispatch, getState, opts) {
+        const defaults = {
+            forceConnection: true,
+            connectionUrl: this.connectionUrl,
+            webSocketConnector: WebSocket
+        };
+
+        const {connectionUrl, forceConnection, webSocketConnector, platform} = Object.assign({}, defaults, opts);
+
         if (forceConnection) {
             this.stop = false;
         }
@@ -57,8 +65,10 @@ class WebSocketClient {
                 this.connectingCallback(dispatch, getState);
             }
 
-            const captured = (/^(?:https?|wss?):\/\/[^/]*/).exec(connectionUrl);
+            const regex = platform === 'android' ? /^(?:https?|wss?):\/\/[^/][^*:]*/ : /^(?:https?|wss?):\/\/[^/]*/;
+            const captured = (regex).exec(connectionUrl);
             const origin = captured ? captured[0] : null;
+
             this.conn = new Socket(connectionUrl, null, {origin});
             this.connectionUrl = connectionUrl;
             this.token = token;

@@ -34,7 +34,7 @@ import {getUserIdFromChannelName} from 'service/utils/channel_utils';
 import {isSystemMessage, shouldIgnorePost} from 'service/utils/post_utils';
 import EventEmitter from 'service/utils/event_emitter';
 
-export function init(siteUrl, token, optionalWebSocket) {
+export function init(platform, siteUrl, token, optionalWebSocket) {
     return async (dispatch, getState) => {
         const config = getState().entities.general.config;
         let connUrl = siteUrl || Client.getUrl();
@@ -62,7 +62,17 @@ export function init(siteUrl, token, optionalWebSocket) {
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
         websocketClient.setConnectingCallback(handleConnecting);
-        return websocketClient.initialize(true, connUrl, authToken, dispatch, getState, optionalWebSocket);
+
+        const websocketOpts = {
+            connectionUrl: connUrl,
+            platform
+        };
+
+        if (optionalWebSocket) {
+            websocketOpts.webSocketConnector = optionalWebSocket;
+        }
+
+        return websocketClient.initialize(authToken, dispatch, getState, websocketOpts);
     };
 }
 
