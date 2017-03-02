@@ -72,12 +72,13 @@ export default class ErrorList extends PureComponent {
                 />
             ));
         }
-        const error = errors[0];
-        if (error) {
+        const lastErrorIndex = errors.length - 1;
+        const lastError = errors[lastErrorIndex];
+        if (lastError) {
             return (
                 <GeneralError
-                    dismiss={() => this.props.actions.dismissError(0)}
-                    message={error.message}
+                    dismiss={() => this.props.actions.dismissError(lastErrorIndex)}
+                    message={lastError.message}
                 />
             );
         }
