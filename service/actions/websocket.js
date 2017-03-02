@@ -14,7 +14,6 @@ import {
     markChannelAsUnread,
     markChannelAsRead
 } from 'service/actions/channels';
-import {getLogErrorAction} from './errors';
 import {
     getPosts,
     getPostsSince
@@ -81,10 +80,7 @@ export function close() {
     return async (dispatch, getState) => {
         websocketClient.close(true);
         if (dispatch) {
-            dispatch(batchActions([
-                {type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'},
-                getLogErrorAction({error: 'Closed'})
-            ]), getState);
+            dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: 'Closed'}, getState);
         }
     };
 }
@@ -114,10 +110,7 @@ function handleReconnect(dispatch, getState) {
 }
 
 function handleClose(connectFailCount, dispatch, getState) {
-    dispatch(batchActions([
-        {type: GeneralTypes.WEBSOCKET_FAILURE, error: connectFailCount},
-        getLogErrorAction({error: connectFailCount})
-    ]), getState);
+    dispatch({type: GeneralTypes.WEBSOCKET_FAILURE, error: connectFailCount}, getState);
 }
 
 function handleEvent(msg, dispatch, getState) {
