@@ -62,7 +62,17 @@ export function init(platform, siteUrl, token, optionalWebSocket) {
         websocketClient.setReconnectCallback(handleReconnect);
         websocketClient.setCloseCallback(handleClose);
         websocketClient.setConnectingCallback(handleConnecting);
-        return websocketClient.initialize(true, connUrl, authToken, dispatch, getState, optionalWebSocket, platform);
+
+        const websocketOpts = {
+            connectionUrl: connUrl,
+            platform
+        };
+
+        if (optionalWebSocket) {
+            websocketOpts.webSocketConnector = optionalWebSocket;
+        }
+
+        return websocketClient.initialize(authToken, dispatch, getState, websocketOpts);
     };
 }
 

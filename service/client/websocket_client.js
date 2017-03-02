@@ -25,7 +25,15 @@ class WebSocketClient {
         this.stop = false;
     }
 
-    initialize(forceConnection = true, connectionUrl = this.connectionUrl, token, dispatch, getState, webSocketConnector = WebSocket, platform) {
+    initialize(token, dispatch, getState, opts) {
+        const defaults = {
+            forceConnection: true,
+            connectionUrl: this.connectionUrl,
+            webSocketConnector: WebSocket
+        };
+
+        const {connectionUrl, forceConnection, webSocketConnector, platform} = Object.assign({}, defaults, opts);
+
         if (forceConnection) {
             this.stop = false;
         }
