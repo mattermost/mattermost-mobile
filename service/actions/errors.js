@@ -16,7 +16,7 @@ export function dismissError(index) {
     };
 }
 
-export function getLogErrorAction(error, displayable = false) {
+export function getLogErrorAction(error, displayable = true) {
     return {
         type: ErrorTypes.LOG_ERROR,
         displayable,
@@ -24,7 +24,7 @@ export function getLogErrorAction(error, displayable = false) {
     };
 }
 
-export function logError(error, displayable = false) {
+export function logError(error, displayable = true) {
     return async (dispatch) => {
         // do something with the incoming error
         // like sending it to analytics

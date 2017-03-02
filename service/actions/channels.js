@@ -23,7 +23,7 @@ export function selectChannel(channelId) {
                 data: channelId
             }, getState);
         } catch (error) {
-            logError(error, true)(dispatch);
+            logError(error)(dispatch);
         }
     };
 }
