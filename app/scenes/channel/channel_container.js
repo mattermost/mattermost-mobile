@@ -16,6 +16,7 @@ import {
     selectInitialChannel,
     handlePostDraftChanged
 } from 'app/actions/views/channel';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'service/actions/users';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
 import {getCurrentChannel} from 'service/selectors/entities/channels';
@@ -51,7 +52,9 @@ function mapDispatchToProps(dispatch) {
             handlePostDraftChanged,
             goToChannelInfo,
             initWebSocket,
-            closeWebSocket
+            closeWebSocket,
+            startPeriodicStatusUpdates,
+            stopPeriodicStatusUpdates
         }, dispatch)
     };
 }

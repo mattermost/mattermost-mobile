@@ -31,7 +31,9 @@ export default class Channel extends React.PureComponent {
             handlePostDraftChanged: React.PropTypes.func.isRequired,
             goToChannelInfo: React.PropTypes.func.isRequired,
             initWebSocket: React.PropTypes.func.isRequired,
-            closeWebSocket: React.PropTypes.func.isRequired
+            closeWebSocket: React.PropTypes.func.isRequired,
+            startPeriodicStatusUpdates: React.PropTypes.func.isRequired,
+            stopPeriodicStatusUpdates: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
@@ -64,6 +66,10 @@ export default class Channel extends React.PureComponent {
         this.loadChannels(teamId);
     }
 
+    componentDidMount() {
+        this.props.actions.startPeriodicStatusUpdates();
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
             const teamId = nextProps.currentTeam.id;
@@ -73,6 +79,7 @@ export default class Channel extends React.PureComponent {
 
     componentWillUnmount() {
         this.props.actions.closeWebSocket();
+        this.props.actions.stopPeriodicStatusUpdates();
         this.props.unsubscribeFromHeaderEvent('open_channel_drawer');
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
