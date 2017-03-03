@@ -721,7 +721,7 @@ export default class Client {
 
         if (headers.has(HEADER_X_VERSION_ID)) {
             const serverVersion = headers.get(HEADER_X_VERSION_ID);
-            if (this.serverVersion !== serverVersion) {
+            if (serverVersion && this.serverVersion !== serverVersion) {
                 this.serverVersion = serverVersion;
                 EventEmitter.emit(Constants.CONFIG_CHANGED, serverVersion);
             }

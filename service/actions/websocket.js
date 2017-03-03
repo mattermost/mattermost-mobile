@@ -401,7 +401,7 @@ function handleStatusChangedEvent(msg, dispatch, getState) {
 
 function handleHelloEvent(msg) {
     const serverVersion = msg.data.server_version;
-    if (Client.serverVersion !== serverVersion) {
+    if (serverVersion && Client.serverVersion !== serverVersion) {
         Client.serverVersion = serverVersion;
         EventEmitter.emit(Constants.CONFIG_CHANGED, serverVersion);
     }
