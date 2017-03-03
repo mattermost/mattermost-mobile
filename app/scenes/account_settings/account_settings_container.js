@@ -3,6 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 
+import {goToAccountNotifications} from 'app/actions/navigation';
 import {getTheme} from 'service/selectors/entities/preferences';
 
 import navigationSceneConnect from '../navigationSceneConnect';
@@ -17,7 +18,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-
+            goToAccountNotifications
         }, dispatch)
     };
 }

@@ -163,6 +163,16 @@ function searchProfiles(state = initialRequestState(), action) {
     );
 }
 
+function updateUserNotifyProps(state = initialRequestState(), action) {
+    return handleRequest(
+        UsersTypes.UPDATE_NOTIFY_PROPS_REQUEST,
+        UsersTypes.UPDATE_NOTIFY_PROPS_SUCCESS,
+        UsersTypes.UPDATE_NOTIFY_PROPS_FAILURE,
+        state,
+        action
+    );
+}
+
 export default combineReducers({
     checkMfa,
     login,
@@ -176,5 +186,6 @@ export default combineReducers({
     revokeSession,
     getAudits,
     autocompleteUsersInChannel,
-    searchProfiles
+    searchProfiles,
+    updateUserNotifyProps
 });

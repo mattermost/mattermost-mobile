@@ -287,4 +287,32 @@ describe('Actions.Users', () => {
         assert.ok(data[TestHelper.basicChannel.id].in_channel);
         assert.ok(data[TestHelper.basicChannel.id].out_of_channel);
     });
+
+    it('updateUserNotifyProps', async () => {
+        await Actions.login(TestHelper.basicUser.email, 'password1')(store.dispatch, store.getState);
+
+        const state = store.getState();
+        const currentUser = state.entities.users.profiles[state.entities.users.currentId];
+        const notifyProps = currentUser.notify_props;
+
+        await Actions.updateUserNotifyProps({
+            ...notifyProps,
+            comments: 'any',
+            email: 'false',
+            first_name: 'false',
+            mention_keys: '',
+            user_id: currentUser.id
+        })(store.dispatch, store.getState);
+
+        setTimeout(() => {
+            const updatedState = store.getState();
+            const updatedCurrentUser = updatedState.entities.users.profiles[state.entities.users.currentId];
+            const updateNotifyProps = updatedCurrentUser.notify_props;
+
+            assert.equal(updateNotifyProps.comments, 'any');
+            assert.equal(updateNotifyProps.email, 'false');
+            assert.equal(updateNotifyProps.first_name, 'false');
+            assert.equal(updateNotifyProps.mention_keys, '');
+        }, 1000);
+    });
 });
