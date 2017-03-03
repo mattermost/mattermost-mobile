@@ -8,12 +8,9 @@ import {Constants} from 'service/constants';
 
 const HEADER_AUTH = 'Authorization';
 const HEADER_BEARER = 'BEARER';
-const HEADER_CONTENT_TYPE = 'Content-Type';
 const HEADER_REQUESTED_WITH = 'X-Requested-With';
 const HEADER_TOKEN = 'Token';
 const HEADER_X_VERSION_ID = 'X-Version-Id';
-
-const CONTENT_TYPE_JSON = 'application/json';
 
 export default class Client {
     constructor() {
@@ -707,16 +704,18 @@ export default class Client {
 
     doFetchWithResponse = async (url, options) => {
         const response = await fetch(url, this.getOptions(options));
-
         const headers = parseAndMergeNestedHeaders(response.headers);
-        const contentType = headers.get(HEADER_CONTENT_TYPE);
-        const isJson = contentType && contentType.indexOf(CONTENT_TYPE_JSON) !== -1;
 
         let data;
-        if (isJson) {
+        try {
             data = await response.json();
-        } else {
-            data = await response.text();
+        } catch (err) {
+            throw {
+                intl: {
+                    id: 'mobile.request.invalid_response',
+                    defaultMessage: 'Received invalid response from the server.'
+                }
+            };
         }
 
         if (headers.has(HEADER_X_VERSION_ID)) {
@@ -735,12 +734,7 @@ export default class Client {
             };
         }
 
-        let msg;
-        if (isJson) {
-            msg = data.message || '';
-        } else {
-            msg = data;
-        }
+        const msg = data.message || '';
 
         if (this.logToConsole) {
             console.error(msg); // eslint-disable-line no-console
