@@ -8,6 +8,7 @@ import {selectPost} from 'service/actions/posts';
 
 import {makeGetPostsForThread} from 'service/selectors/entities/posts';
 import {getTheme} from 'service/selectors/entities/preferences';
+import {getCurrentTeamId} from 'service/selectors/entities/teams';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 import Thread from './thread';
@@ -20,9 +21,15 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const posts = getPostsForThread(state, ownProps);
 
+        let teamId = state.entities.channels.channels[ownProps.channelId].team_id;
+        if (!teamId) {
+            // We can't make a post without a team id, so get it from the current team
+            teamId = getCurrentTeamId(state);
+        }
+
         return {
             ...ownProps,
-            teamId: state.entities.channels.channels[ownProps.channelId].team_id,
+            teamId,
             channelId: ownProps.channelId,
             rootId: ownProps.rootId,
             draft: state.views.thread.draft[ownProps.rootId] || '',
