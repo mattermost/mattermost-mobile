@@ -15,51 +15,58 @@ import {getTheme} from 'service/selectors/entities/preferences';
 import EventEmitter from 'service/utils/event_emitter';
 import {changeOpacity} from 'app/utils/theme';
 
-class CreateChannelButton extends PureComponent {
+class ActionButton extends PureComponent {
     static propTypes = {
+        actionEventName: PropTypes.string.isRequired,
         emitter: PropTypes.func.isRequired,
+        enabled: PropTypes.bool,
+        enableEventName: PropTypes.string,
+        labelDefaultMessage: PropTypes.string.isRequired,
+        labelId: PropTypes.string.isRequired,
+        loadingEventName: PropTypes.string.isRequired,
         theme: PropTypes.object
     };
 
     static defaultProps = {
-        theme: {}
+        theme: {},
+        enabled: true
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            enabled: false,
+            enabled: props.enabled,
             loading: false
         };
     }
 
     componentWillMount() {
-        EventEmitter.on('can_create_channel', this.onCanCreate);
-        EventEmitter.on('creating_channel', this.onLoading);
+        EventEmitter.on(this.props.enableEventName, this.handleEnableEvent);
+        EventEmitter.on(this.props.loadingEventName, this.handleLoadingEvent);
     }
 
     componentWillUnmount() {
-        EventEmitter.off('can_create_channel', this.onCanCreate);
-        EventEmitter.off('creating_channel', this.onLoading);
+        EventEmitter.off(this.props.enableEventName, this.handleEnableEvent);
+        EventEmitter.off(this.props.loadingEventName, this.handleLoadingEvent);
     }
 
-    onCanCreate = (enabled) => {
+    handleEnableEvent = (enabled) => {
         this.setState({enabled});
     };
 
-    onLoading = (loading) => {
+    handleLoadingEvent = (loading) => {
         this.setState({loading});
     };
 
     onPress = () => {
         if (this.state.enabled) {
-            this.props.emitter('create_channel');
+            this.props.emitter(this.props.actionEventName);
         }
     };
 
     render() {
-        const {theme} = this.props;
+        const {labelDefaultMessage, labelId, theme} = this.props;
         const {enabled, loading} = this.state;
         let color = changeOpacity(theme.sidebarHeaderTextColor, 0.4);
         if (enabled) {
@@ -88,8 +95,8 @@ class CreateChannelButton extends PureComponent {
                     style={{paddingHorizontal: 15}}
                 >
                     <FormattedText
-                        id='mobile.create_channel'
-                        defaultMessage='Create'
+                        id={labelId}
+                        defaultMessage={labelDefaultMessage}
                         style={{color}}
                     />
                 </TouchableOpacity>
@@ -104,4 +111,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(CreateChannelButton);
+export default connect(mapStateToProps)(ActionButton);

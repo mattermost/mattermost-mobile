@@ -23,7 +23,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {Constants, RequestStatus} from 'service/constants';
 import EventEmitter from 'service/utils/event_emitter';
 
-import CreateChannelButton from './create_channel_button';
+import ActionButton from 'app/components/action_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -120,7 +120,17 @@ class CreateChannel extends PureComponent {
             );
         },
         renderRightComponent: (props, emitter) => {
-            return <CreateChannelButton emitter={emitter}/>;
+            return (
+                <ActionButton
+                    actionEventName='create_channel'
+                    emitter={emitter}
+                    enabled={false}
+                    enableEventName='can_create_channel'
+                    labelDefaultMessage='Create'
+                    labelId='mobile.create_channel'
+                    loadingEventName='creating_channel'
+                />
+            );
         }
     };
 
