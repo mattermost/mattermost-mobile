@@ -1524,6 +1524,7 @@
   "mobile.routes.channel_members.action_message": "You must select at least one member to {term} {prep} the channel.",
   "mobile.routes.channel_members.action_message_confirm": "Are you sure you want to {term} the selected members {prep} the channel?",
   "mobile.routes.thread": "{channelName} Thread",
+  "mobile.routes.thread_dm": "Direct Message Thread",
   "mobile.routes.user_profile": "Profile",
   "mobile.routes.user_profile.send_message": "Send Message",
   "mobile.server_ping_failed": "Cannot connect to the server. Please check your server URL and internet connection.",
