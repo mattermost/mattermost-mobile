@@ -1,25 +1,25 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-import {AppState} from 'react-native';
+import React, {PropTypes, PureComponent} from 'react';
+import {AppState, AsyncStorage} from 'react-native';
 import Loading from 'app/components/loading';
 
 import {RequestStatus} from 'service/constants';
 
-export default class Root extends React.Component {
+export default class Root extends PureComponent {
     static propTypes = {
-        credentials: React.PropTypes.object,
-        logoutRequest: React.PropTypes.object,
-        loginRequest: React.PropTypes.object,
-        actions: React.PropTypes.shape({
-            goToLoadTeam: React.PropTypes.func,
-            goToSelectServer: React.PropTypes.func,
-            flushToStorage: React.PropTypes.func,
-            loadStorage: React.PropTypes.func,
-            removeStorage: React.PropTypes.func,
-            setStoreFromLocalData: React.PropTypes.func,
-            resetLogout: React.PropTypes.func
+        credentials: PropTypes.object,
+        logoutRequest: PropTypes.object.isRequired,
+        loginRequest: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            goToLoadTeam: PropTypes.func.isRequired,
+            goToSelectServer: PropTypes.func.isRequired,
+            handleServerUrlChanged: PropTypes.func.isRequired,
+            flushToStorage: PropTypes.func.isRequired,
+            loadStorage: PropTypes.func.isRequired,
+            removeStorage: PropTypes.func.isRequired,
+            setStoreFromLocalData: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -48,7 +48,7 @@ export default class Root extends React.Component {
         if (event === 'inactive') {
             this.props.actions.flushToStorage();
         }
-    }
+    };
 
     init = () => {
         if (this.props.logoutRequest.status === RequestStatus.SUCCESS) {
@@ -67,13 +67,21 @@ export default class Root extends React.Component {
                     if (this.props.loginRequest.status === RequestStatus.SUCCESS) {
                         this.props.actions.goToLoadTeam();
                     } else {
-                        this.props.actions.goToSelectServer();
+                        this.selectServer();
                     }
                 });
             } else {
-                this.props.actions.goToSelectServer();
+                this.selectServer();
             }
         });
+    };
+
+    selectServer = async () => {
+        const {url} = JSON.parse(await AsyncStorage.getItem('storage'));
+        if (url) {
+            await this.props.actions.handleServerUrlChanged(url);
+        }
+        this.props.actions.goToSelectServer();
     };
 
     render() {
