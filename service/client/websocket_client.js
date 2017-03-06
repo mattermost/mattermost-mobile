@@ -23,6 +23,7 @@ class WebSocketClient {
         this.dispatch = null;
         this.getState = null;
         this.stop = false;
+        this.platform = '';
     }
 
     initialize(token, dispatch, getState, opts) {
@@ -33,6 +34,10 @@ class WebSocketClient {
         };
 
         const {connectionUrl, forceConnection, webSocketConnector, platform} = Object.assign({}, defaults, opts);
+
+        if (platform) {
+            this.platform = platform;
+        }
 
         if (forceConnection) {
             this.stop = false;
@@ -122,7 +127,7 @@ class WebSocketClient {
                         if (this.stop) {
                             return;
                         }
-                        this.initialize(false, connectionUrl, token, dispatch, getState, webSocketConnector);
+                        this.initialize(token, dispatch, getState, Object.assign({}, opts, {forceConnection: true}));
                     },
                     retryTime
                 );
@@ -199,7 +204,7 @@ class WebSocketClient {
             this.conn.send(JSON.stringify(msg));
         } else if (!this.conn || this.conn.readyState === Socket.CLOSED) {
             this.conn = null;
-            this.initialize(false, this.connectionUrl, this.token, this.dispatch, this.getState);
+            this.initialize(this.token, this.dispatch, this.getState, {forceConnection: true, platform: this.platform});
         }
     }
 
