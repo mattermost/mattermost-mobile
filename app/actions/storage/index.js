@@ -106,7 +106,13 @@ async function saveStorage(data) {
 export function removeStorage() {
     return async (dispatch, getState) => {
         try {
-            await AsyncStorage.removeItem('storage');
+            // Keep the server Url if we have it
+            const {url} = JSON.parse(await AsyncStorage.getItem('storage'));
+            if (url) {
+                await saveStorage({url});
+            } else {
+                await AsyncStorage.removeItem('storage');
+            }
         } catch (error) {
             // TODO: Error removing data
         }

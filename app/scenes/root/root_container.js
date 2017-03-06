@@ -7,8 +7,8 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {flushToStorage, loadStorage, removeStorage} from 'app/actions/storage';
 import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
+import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import {goToLoadTeam} from 'app/actions/navigation';
-import {resetLogout} from 'service/actions/users';
 
 import Root from './root';
 
@@ -26,11 +26,11 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             goToLoadTeam,
             goToSelectServer,
+            handleServerUrlChanged,
             flushToStorage,
             loadStorage,
             removeStorage,
-            setStoreFromLocalData,
-            resetLogout
+            setStoreFromLocalData
         }, dispatch)
     };
 }
