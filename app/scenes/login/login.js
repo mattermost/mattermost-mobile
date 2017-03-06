@@ -173,16 +173,20 @@ class Login extends Component {
             errorId === 'ent.ldap.do_login.user_not_registered.app_error'
         ) {
             return {
-                id: 'login.userNotFound',
-                defaultMessage: "We couldn't find an account matching your login credentials."
+                intl: {
+                    id: 'login.userNotFound',
+                    defaultMessage: "We couldn't find an account matching your login credentials."
+                }
             };
         } else if (
             errorId === 'api.user.check_user_password.invalid.app_error' ||
             errorId === 'ent.ldap.do_login.invalid_password.app_error'
         ) {
             return {
-                id: 'login.invalidPassword',
-                defaultMessage: 'Your password is incorrect.'
+                intl: {
+                    id: 'login.invalidPassword',
+                    defaultMessage: 'Your password is incorrect.'
+                }
             };
         }
         return error.message;
