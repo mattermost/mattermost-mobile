@@ -86,7 +86,10 @@ export function loadMe() {
             user = await Client.getMe();
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.LOGIN_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -96,7 +99,10 @@ export function loadMe() {
             preferences = await Client.getMyPreferences();
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PreferencesTypes.MY_PREFERENCES_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PreferencesTypes.MY_PREFERENCES_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -104,7 +110,10 @@ export function loadMe() {
             await fetchTeams()(dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: TeamsTypes.FETCH_TEAMS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: TeamsTypes.FETCH_TEAMS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -114,7 +123,10 @@ export function loadMe() {
             teamMembers = await Client.getMyTeamMembers();
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: TeamsTypes.MY_TEAM_MEMBERS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: TeamsTypes.MY_TEAM_MEMBERS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -162,7 +174,10 @@ export function getProfiles(offset, limit = Constants.PROFILE_CHUNK_SIZE) {
             profiles = await Client.getProfiles(offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: UsersTypes.PROFILES_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.PROFILES_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
 
@@ -199,7 +214,10 @@ export function getProfilesInTeam(teamId, offset, limit = Constants.PROFILE_CHUN
             profiles = await Client.getProfilesInTeam(teamId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: UsersTypes.PROFILES_IN_TEAM_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.PROFILES_IN_TEAM_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -229,7 +247,10 @@ export function getProfilesInChannel(teamId, channelId, offset, limit = Constant
             profiles = await Client.getProfilesInChannel(teamId, channelId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: UsersTypes.PROFILES_IN_CHANNEL_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.PROFILES_IN_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -259,7 +280,10 @@ export function getProfilesNotInChannel(teamId, channelId, offset, limit = Const
             profiles = await Client.getProfilesNotInChannel(teamId, channelId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: UsersTypes.PROFILES_NOT_IN_CHANNEL_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.PROFILES_NOT_IN_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -346,7 +370,10 @@ export function autocompleteUsersInChannel(teamId, channelId, term) {
             data = await Client.autocompleteUsersInChannel(teamId, channelId, term);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: UsersTypes.AUTOCOMPLETE_IN_CHANNEL_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.AUTOCOMPLETE_IN_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 

@@ -707,7 +707,10 @@ export function autocompleteChannels(teamId, term) {
             data = await Client.autocompleteChannels(teamId, term);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.AUTOCOMPLETE_CHANNELS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.AUTOCOMPLETE_CHANNELS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 

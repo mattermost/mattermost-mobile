@@ -67,10 +67,7 @@ export function deletePost(teamId, post) {
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
-                {
-                    type: PostsTypes.DELETE_POST_FAILURE,
-                    error
-                },
+                {type: PostsTypes.DELETE_POST_FAILURE, error},
                 getLogErrorAction(error)
             ]), getState);
             return;
@@ -108,10 +105,7 @@ export function getPost(teamId, channelId, postId) {
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
-                {
-                    type: PostsTypes.GET_POST_FAILURE,
-                    error
-                },
+                {type: PostsTypes.GET_POST_FAILURE, error},
                 getLogErrorAction(error)
             ]), getState);
             return;
