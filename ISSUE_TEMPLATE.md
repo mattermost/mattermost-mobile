@@ -1,14 +1,14 @@
-Submit feature requests to http://www.mattermost.org/feature-requests/.
-File non-security related bugs here in the following format: 
+Submit feature requests to http://www.mattermost.org/feature-requests/. File non-security related bugs here in the following format: 
 
 #### Summary
 Issue in one concise sentence.
 
 #### Environment Information
-Device Type: 
-OS Version: 
-Mattermost App Version: 
-Mattermost Server Version:
+
+- Device Type: 
+- OS Version: 
+- Mattermost App Version: 
+- Mattermost Server Version:
 
 #### Steps to reproduce
 How can we reproduce the issue?
