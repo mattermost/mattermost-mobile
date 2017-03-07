@@ -45,9 +45,10 @@ export default class PostList extends Component {
         this.state = {
             hasFirstPost: false,
             didInitialPostsLoad: false,
+            posts: this.getPostsWithDates(props),
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(this.getPostsWithDates(props))
+            })
         };
     }
 
@@ -68,18 +69,23 @@ export default class PostList extends Component {
             this.setState({hasFirstPost});
         }
         if (nextProps.posts !== this.props.posts) {
-            const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps, hasFirstPost));
-            this.setState({dataSource});
+            const posts = this.getPostsWithDates(nextProps, hasFirstPost);
+            this.setState({posts});
         }
     }
 
-    getPostsWithDates(props, hasFirstPost = false) {
-        const {posts, allowLoadMore, indicateNewMessages, currentUserId, lastViewedAt} = props;
-        const postsWithDates = addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
-        if (allowLoadMore && postsWithDates.length && !hasFirstPost) {
-            postsWithDates.push(LOAD_MORE_POSTS);
+    getPostsWithDates(props) {
+        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
+        return addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
+    }
+
+    getPostsWithLoadMore() {
+        const {allowLoadMore} = this.props;
+        const {posts, hasFirstPost} = this.state;
+        if (allowLoadMore && posts.length && !hasFirstPost) {
+            return [...posts, LOAD_MORE_POSTS];
         }
-        return postsWithDates;
+        return posts;
     }
 
     didPostsLoad(nextProps, postsRequest) {
@@ -149,7 +155,7 @@ export default class PostList extends Component {
         return (
             <ListView
                 style={style.container}
-                dataSource={this.state.dataSource}
+                dataSource={this.state.dataSource.cloneWithRows(this.getPostsWithLoadMore())}
                 renderRow={this.renderRow}
                 onEndReached={this.loadMore}
                 renderSectionHeader={this.renderSectionHeader}
