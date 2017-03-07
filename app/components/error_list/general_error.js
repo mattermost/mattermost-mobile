@@ -35,6 +35,14 @@ const style = StyleSheet.create({
 
 function GeneralError(props) {
     const {error, dismiss} = props;
+    let message = error.message;
+    if (!message) {
+        if (error instanceof Error) {
+            message = error.toString();
+        } else {
+            message = 'An error occurred.';
+        }
+    }
 
     return (
         <View style={style.container}>
