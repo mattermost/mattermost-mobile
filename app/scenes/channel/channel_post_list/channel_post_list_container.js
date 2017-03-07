@@ -14,8 +14,6 @@ import {getCurrentChannelMembership} from 'service/selectors/entities/channels';
 
 import ChannelPostList from './channel_post_list';
 
-import {getTheme} from 'service/selectors/entities/preferences';
-
 const getPostsInCurrentChannelWithReplyProps = createSelector(
     getAllPosts,
     getPostsInCurrentChannel,
