@@ -10,20 +10,20 @@ export function handleUpdateUserNotifyProps(notifyProps) {
         const state = getState();
         const config = state.entities.general.config;
 
-        let email = notifyProps.email;
+        const {interval, ...otherProps} = notifyProps;
+
+        const email = notifyProps.email;
         if (config.EnableEmailBatching === 'true' && email !== 'false') {
             const emailInterval = [{
                 user_id: notifyProps.user_id,
                 category: Preferences.CATEGORY_NOTIFICATIONS,
                 name: Preferences.EMAIL_INTERVAL,
-                value: email
+                value: interval
             }];
-
-            email = 'true';
 
             await savePreferences(emailInterval)(dispatch, getState);
         }
 
-        await updateUserNotifyProps({...notifyProps, email})(dispatch, getState);
+        await updateUserNotifyProps({...otherProps, email})(dispatch, getState);
     };
 }

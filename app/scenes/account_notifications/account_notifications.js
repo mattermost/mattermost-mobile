@@ -16,7 +16,7 @@ import {getPreferencesByCategory} from 'service/utils/preference_utils';
 
 import Section from './section';
 import SectionItem from './section_item';
-import SaveNotifcationsButton from './save_notifications_button';
+import SaveNotificationsButton from './save_notifications_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -45,6 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
+const SAVE_NOTIFY_PROPS = 'save_notify_props';
+const SAVING_NOTIFY_PROPS = 'saving_notify_props';
+
 export default class AccountNofications extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -62,7 +65,7 @@ export default class AccountNofications extends PureComponent {
 
     static navigationProps = {
         renderRightComponent: (props, emitter) => {
-            return <SaveNotifcationsButton emitter={emitter}/>;
+            return <SaveNotificationsButton emitter={emitter}/>;
         }
     }
 
@@ -75,11 +78,11 @@ export default class AccountNofications extends PureComponent {
     }
 
     componentWillMount() {
-        this.props.subscribeToHeaderEvent('save_notify_props', this.saveUserNotifyProps);
+        this.props.subscribeToHeaderEvent(SAVE_NOTIFY_PROPS, this.saveUserNotifyProps);
     }
 
     componentWillUnmount() {
-        this.props.unsubscribeFromHeaderEvent('save_notify_props');
+        this.props.unsubscribeFromHeaderEvent(SAVE_NOTIFY_PROPS);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -87,11 +90,11 @@ export default class AccountNofications extends PureComponent {
             const {notify_props: notifyProps} = nextProps.currentUser;
             this.setStateFromNotifyProps(notifyProps);
         }
+
         if (nextProps.saveRequestStatus === RequestStatus.SUCCESS && this.props.saveRequestStatus === RequestStatus.STARTED) {
             this.props.actions.goBack();
-        }
-        if (nextProps.saveRequestStatus === RequestStatus.FAILURE && this.props.saveRequestStatus === RequestStatus.STARTED) {
-            EventEmitter.emit('saving_notify_props', false);
+        } else if (nextProps.saveRequestStatus === RequestStatus.FAILURE && this.props.saveRequestStatus === RequestStatus.STARTED) {
+            EventEmitter.emit(SAVING_NOTIFY_PROPS, false);
             this.setStateFromNotifyProps(this.currentUser.notify_props);
         }
     }
@@ -103,22 +106,23 @@ export default class AccountNofications extends PureComponent {
             mentionKeys.splice(usernameMentionIndex, 1);
         }
 
-        let email = notifyProps.email;
+        const email = notifyProps.email;
+        let interval;
         if (this.props.config.EnableEmailBatching === 'true') {
             const emailPreferences = getPreferencesByCategory(this.props.myPreferences, Preferences.CATEGORY_NOTIFICATIONS);
-            const interval = emailPreferences.get(Preferences.EMAIL_INTERVAL).value;
-            email = interval;
+            interval = emailPreferences.get(Preferences.EMAIL_INTERVAL).value;
         }
 
         const newState = {
             ...notifyProps,
             email,
+            interval,
             usernameMention: usernameMentionIndex > -1,
             mention_keys: mentionKeys.join(',')
         };
 
         if (this.state) {
-            this.setState({...newState});
+            this.setState(newState);
         } else {
             this.state = {...newState};
         }
@@ -148,32 +152,43 @@ export default class AccountNofications extends PureComponent {
         });
     }
 
-    setEmailNotifications = (v) => {
+    setEmailNotifications = (value) => {
+        const {config} = this.props;
+        let email = value;
+        let interval;
+
+        const emailBatchingEnabled = config.EnableEmailBatching === 'true';
+        if (emailBatchingEnabled && value !== 'false') {
+            interval = value;
+            email = 'true';
+        }
+
         this.setState({
-            email: v
+            email,
+            interval
         });
     }
 
-    setReplyNotifications = (v) => {
+    setReplyNotifications = (value) => {
         this.setState({
-            comments: v
+            comments: value
         });
     }
 
-    setMobilePush = (v) => {
+    setMobilePush = (value) => {
         this.setState({
-            push: v
+            push: value
         });
     }
 
-    setMobilePushStatus = (v) => {
+    setMobilePushStatus = (value) => {
         this.setState({
-            push_status: v
+            push_status: value
         });
     }
 
     saveUserNotifyProps = () => {
-        EventEmitter.emit('saving_notify_props', true);
+        EventEmitter.emit(SAVING_NOTIFY_PROPS, true);
         let {mention_keys: mentionKeys, usernameMention, ...notifyProps} = this.state; //eslint-disable-line prefer-const
 
         if (mentionKeys.length > 0) {
@@ -269,14 +284,17 @@ export default class AccountNofications extends PureComponent {
         const emailBatchingEnabled = config.EnableEmailBatching === 'true';
 
         let sendImmediatley = this.state.email === 'true';
+        let sendImmediatleyValue = 'true';
         let fifteenMinutes;
         let hourly;
         const never = this.state.email === 'false';
 
         if (emailBatchingEnabled && this.state.email !== 'false') {
-            sendImmediatley = this.state.email === Preferences.INTERVAL_IMMEDIATE.toString();
-            fifteenMinutes = this.state.email === Preferences.INTERVAL_FIFTEEN_MINUTES.toString();
-            hourly = this.state.email === Preferences.INTERVAL_HOUR.toString();
+            sendImmediatley = this.state.interval === Preferences.INTERVAL_IMMEDIATE.toString();
+            fifteenMinutes = this.state.interval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString();
+            hourly = this.state.interval === Preferences.INTERVAL_HOUR.toString();
+
+            sendImmediatleyValue = Preferences.INTERVAL_IMMEDIATE.toString();
         }
 
         return (
@@ -296,7 +314,7 @@ export default class AccountNofications extends PureComponent {
                             labelDefaultMessage='Immediately'
                             action={this.setEmailNotifications}
                             actionType='select'
-                            actionValue={emailBatchingEnabled ? Preferences.INTERVAL_IMMEDIATE.toString() : 'true'}
+                            actionValue={sendImmediatleyValue}
                             selected={sendImmediatley}
                             theme={theme}
                         />
