@@ -63,8 +63,10 @@ export default class RightMenuDrawer extends React.Component {
     }
 
     openErrorEmail = () => {
+        const recipient = 'feedback@mattermost.com';
+        const subject = 'Problem with Mattermost React Native app';
         Linking.openURL(
-            `mailto:feedback@mattermost.com?subject=Errors&body=${this.errorEmailBody()}`
+            `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`
         );
         this.props.actions.clearErrors();
     };
