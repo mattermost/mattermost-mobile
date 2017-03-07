@@ -18,19 +18,11 @@ export default class RightMenuDrawerItem extends Component {
     static propTypes = {
         children: PropTypes.node,
         onPress: PropTypes.func,
-        style: View.propTypes.style,
-        shouldRender: PropTypes.bool.isRequired
-    }
-
-    static defaultProps = {
-        shouldRender: true
+        style: View.propTypes.style
     }
 
     render() {
-        const {onPress, style, children, shouldRender} = this.props;
-        if (!shouldRender) {
-            return null;
-        }
+        const {onPress, style, children} = this.props;
         return (
             <TouchableHighlight
                 underlayColor='rgba(255, 255, 255, 0.3)'
