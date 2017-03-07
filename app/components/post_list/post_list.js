@@ -54,7 +54,9 @@ export default class PostList extends Component {
     componentWillReceiveProps(nextProps) {
         const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
             this.didPostsLoad(nextProps, 'getPostsSince');
-        this.setState({didInitialPostsLoad});
+        if (didInitialPostsLoad) {
+            this.setState({didInitialPostsLoad});
+        }
         const didMorePostsLoad = this.didPostsLoad(nextProps, 'getPostsBefore');
         let hasFirstPost = false;
         if (didInitialPostsLoad) {
@@ -62,7 +64,9 @@ export default class PostList extends Component {
         } else if (didMorePostsLoad) {
             hasFirstPost = (nextProps.posts.length - this.props.posts.length) < Constants.POST_CHUNK_SIZE;
         }
-        this.setState({hasFirstPost});
+        if (hasFirstPost) {
+            this.setState({hasFirstPost});
+        }
         if (nextProps.posts !== this.props.posts) {
             const dataSource = this.state.dataSource.cloneWithRows(this.getPostsWithDates(nextProps, hasFirstPost));
             this.setState({dataSource});
