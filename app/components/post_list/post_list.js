@@ -12,7 +12,7 @@ import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
 
-import {Constants, RequestStatus} from 'service/constants';
+import {Constants} from 'service/constants';
 import {addDatesToPostList} from 'service/utils/post_utils';
 
 const style = StyleSheet.create({
@@ -29,10 +29,10 @@ const LOAD_MORE_POSTS = 'load-more-posts';
 export default class PostList extends Component {
     static propTypes = {
         posts: PropTypes.array.isRequired,
-        postsRequests: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        allowLoadMore: PropTypes.bool,
         loadMore: PropTypes.func,
+        isLoadingMore: PropTypes.bool,
+        showLoadMore: PropTypes.bool,
         onPostPress: PropTypes.func,
         renderReplies: PropTypes.bool,
         indicateNewMessages: PropTypes.bool,
@@ -43,8 +43,6 @@ export default class PostList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            hasFirstPost: false,
-            didInitialPostsLoad: false,
             posts: this.getPostsWithDates(props),
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
@@ -53,23 +51,8 @@ export default class PostList extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
-            this.didPostsLoad(nextProps, 'getPostsSince');
-        if (didInitialPostsLoad) {
-            this.setState({didInitialPostsLoad});
-        }
-        const didMorePostsLoad = this.didPostsLoad(nextProps, 'getPostsBefore');
-        let hasFirstPost = false;
-        if (didInitialPostsLoad) {
-            hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
-        } else if (didMorePostsLoad) {
-            hasFirstPost = (nextProps.posts.length - this.props.posts.length) < Constants.POST_CHUNK_SIZE;
-        }
-        if (hasFirstPost) {
-            this.setState({hasFirstPost});
-        }
         if (nextProps.posts !== this.props.posts) {
-            const posts = this.getPostsWithDates(nextProps, hasFirstPost);
+            const posts = this.getPostsWithDates(nextProps);
             this.setState({posts});
         }
     }
@@ -80,24 +63,17 @@ export default class PostList extends Component {
     }
 
     getPostsWithLoadMore() {
-        const {allowLoadMore} = this.props;
-        const {posts, hasFirstPost} = this.state;
-        if (allowLoadMore && posts.length && !hasFirstPost) {
+        const {showLoadMore} = this.props;
+        const {posts} = this.state;
+        if (showLoadMore) {
             return [...posts, LOAD_MORE_POSTS];
         }
         return posts;
     }
 
-    didPostsLoad(nextProps, postsRequest) {
-        const nextGetPostsStatus = nextProps.postsRequests[postsRequest].status;
-        const getPostsStatus = this.props.postsRequests[postsRequest].status;
-        return getPostsStatus === RequestStatus.STARTED && nextGetPostsStatus === RequestStatus.SUCCESS;
-    }
-
     loadMore = () => {
-        const {allowLoadMore, loadMore} = this.props;
-        const {didInitialPostsLoad, hasFirstPost} = this.state;
-        if (allowLoadMore && typeof loadMore === 'function' && didInitialPostsLoad && !hasFirstPost) {
+        const {loadMore} = this.props;
+        if (typeof loadMore === 'function') {
             loadMore();
         }
     };
@@ -117,7 +93,7 @@ export default class PostList extends Component {
         if (row === LOAD_MORE_POSTS) {
             return (
                 <LoadMorePosts
-                    loading={this.props.postsRequests.getPostsBefore.status === RequestStatus.STARTED}
+                    loading={this.props.isLoadingMore}
                     theme={this.props.theme}
                     style={style.row}
                 />

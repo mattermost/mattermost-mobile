@@ -14,6 +14,8 @@ import {getCurrentChannelMembership} from 'service/selectors/entities/channels';
 
 import ChannelPostList from './channel_post_list';
 
+import {getTheme} from 'service/selectors/entities/preferences';
+
 const getPostsInCurrentChannelWithReplyProps = createSelector(
     getAllPosts,
     getPostsInCurrentChannel,
@@ -68,6 +70,7 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         myMember: getCurrentChannelMembership(state),
+        postsRequests: state.requests.posts,
         posts: getPostsInCurrentChannelWithReplyProps(state)
     };
 }

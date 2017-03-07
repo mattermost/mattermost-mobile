@@ -10,7 +10,6 @@ import PostList from './post_list';
 function mapStateToProps(state, ownProps) {
     return {
         theme: getTheme(state),
-        postsRequests: state.requests.posts,
         ...ownProps
     };
 }
