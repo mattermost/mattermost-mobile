@@ -71,13 +71,18 @@ export default class RightMenuDrawer extends React.Component {
 
     errorEmailBody = () => {
         const {currentUserId, currentTeamId, errors} = this.props;
-        return [
+        const contents = [
             `Current User Id: ${currentUserId}`,
-            `Current Team Id: ${currentTeamId}`,
-            '',
-            'Errors:',
-            errors ? JSON.stringify(errors) : ''
-        ].join('\n');
+            `Current Team Id: ${currentTeamId}`
+        ];
+        if (errors.length) {
+            contents.push([
+                '',
+                'Errors:',
+                JSON.stringify(errors)
+            ]);
+        }
+        return contents.join('\n');
     };
 
     render() {
