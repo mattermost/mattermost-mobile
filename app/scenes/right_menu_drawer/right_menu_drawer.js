@@ -81,7 +81,7 @@ export default class RightMenuDrawer extends React.Component {
             contents.push([
                 '',
                 'Errors:',
-                JSON.stringify(errors)
+                JSON.stringify(errors.map((e) => e.error))
             ]);
         }
         return contents.join('\n');

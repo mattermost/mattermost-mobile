@@ -68,7 +68,7 @@ export default class ErrorList extends PureComponent {
                 <GeneralError
                     key={index}
                     dismiss={() => this.props.actions.dismissError(index)}
-                    message={error.message}
+                    error={error.error}
                 />
             ));
         }
@@ -78,7 +78,7 @@ export default class ErrorList extends PureComponent {
             return (
                 <GeneralError
                     dismiss={() => this.props.actions.dismissError(lastErrorIndex)}
-                    message={lastError.message}
+                    error={lastError.error}
                 />
             );
         }

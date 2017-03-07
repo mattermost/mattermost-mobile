@@ -13,9 +13,8 @@ export default (state = [], action) => {
     }
     case ErrorTypes.LOG_ERROR: {
         const nextState = [...state];
-        const {...errorProps} = action;
-
-        nextState.push(errorProps);
+        const {displayable, error} = action;
+        nextState.push({displayable, error});
 
         return nextState;
     }

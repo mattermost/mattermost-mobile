@@ -34,11 +34,13 @@ const style = StyleSheet.create({
 });
 
 function GeneralError(props) {
-    const {message, dismiss} = props;
+    const {error, dismiss} = props;
 
     return (
         <View style={style.container}>
-            <Text style={style.message}>{message}</Text>
+            <Text style={style.message}>
+                {error.message}
+            </Text>
             <TouchableOpacity
                 style={style.buttonContainer}
                 onPress={dismiss}
@@ -55,7 +57,7 @@ function GeneralError(props) {
 
 GeneralError.propTypes = {
     dismiss: PropTypes.func.isRequired,
-    message: PropTypes.string.isRequired
+    error: PropTypes.object.isRequired
 };
 
 export default GeneralError;

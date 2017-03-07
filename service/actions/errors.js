@@ -20,7 +20,7 @@ export function getLogErrorAction(error, displayable = true) {
     return {
         type: ErrorTypes.LOG_ERROR,
         displayable,
-        message: error.message
+        error
     };
 }
 
