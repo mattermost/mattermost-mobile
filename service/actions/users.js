@@ -16,7 +16,10 @@ export function checkMfa(loginId) {
             dispatch({type: UsersTypes.CHECK_MFA_SUCCESS}, getState);
             return mfa;
         } catch (error) {
-            dispatch({type: UsersTypes.CHECK_MFA_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.CHECK_MFA_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
     };
@@ -37,7 +40,10 @@ export function login(loginId, password, mfaToken = '') {
                 teamMembers = await teamMembersRequest;
                 preferences = await preferencesRequest;
             } catch (error) {
-                dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
+                dispatch(batchActions([
+                    {type: UsersTypes.LOGIN_FAILURE, error},
+                    getLogErrorAction(error)
+                ]), getState);
                 return;
             }
 
@@ -46,10 +52,9 @@ export function login(loginId, password, mfaToken = '') {
             } catch (error) {
                 forceLogoutIfNecessary(error, dispatch);
                 dispatch(batchActions([
-                    {type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error},
+                    {type: UsersTypes.LOGIN_FAILURE, error},
                     getLogErrorAction(error)
                 ]), getState);
-                dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
                 return;
             }
 
@@ -72,7 +77,10 @@ export function login(loginId, password, mfaToken = '') {
             ]), getState);
         }).
         catch((error) => {
-            dispatch({type: UsersTypes.LOGIN_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: UsersTypes.LOGIN_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         });
     };
