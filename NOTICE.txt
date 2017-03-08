@@ -425,8 +425,7 @@ The licensor of the React Native software also provides the following:
 
 Additional Grant of Patent Rights Version 2
 
-"Software" means the React Native software distributed by Facebook, Inc.
-
+"Software" means the React Native software distributed by Facebook, Inc. 
 Facebook, Inc. (“Facebook”) hereby grants to each recipient of the Software
 (“you”) a perpetual, worldwide, royalty-free, non-exclusive, irrevocable
 (subject to the termination provision below) license under any Necessary
@@ -449,14 +448,6 @@ infringement against you in the first instance, and you respond by filing a
 patent infringement counterclaim in that lawsuit against that party that is
 unrelated to the Software, the license granted hereunder will not terminate
 under section (i) of this paragraph due to such counterclaim.
-
-A "Necessary Claim" is a claim of a patent owned by Facebook that is
-necessarily infringed by the Software standing alone.
-
-A "Patent Assertion" is any lawsuit or other action alleging direct, indirect,
-or contributory infringement or inducement to infringe any patent, including a
-cross-claim or counterclaim.
-
 
 ---
 
