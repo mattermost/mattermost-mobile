@@ -5,7 +5,7 @@ Issue in one concise sentence.
 
 #### Environment Information
 
-- Device Type: 
+- Device Name: 
 - OS Version: 
 - Mattermost App Version: 
 - Mattermost Server Version:
