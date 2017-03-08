@@ -18,6 +18,7 @@ Development for the Beta Release is currently in progress, features implemented 
 - View and send replies in thread view
 - "New messages" line in center channel (app does not yet scroll to the line)
 - @mention autocomplete
+- ~channel autocomplete
 - "User is typing" message
 
 #### User profiles
@@ -30,9 +31,10 @@ Development for the Beta Release is currently in progress, features implemented 
 #### Channels
 - Channel drawer for selecting channels
 - Bolded channel names for Unreads, and mention jewel for Mentions
-- Favorite channels
+- Unread posts above/below indicator
+- Favorite channels (Section in sidebar, and ability to favorite/unfavorite from channel menu)
 - Create new public or private channels
-- Create new Direct Messages
+- Create new Direct Messages (Group Direct Messages are not yet supported) 
 - View channel info (name, header, purpose) 
 - Join public channels
 - Leave channel
