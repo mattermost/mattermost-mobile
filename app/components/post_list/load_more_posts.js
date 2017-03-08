@@ -45,13 +45,15 @@ export default class LoadMorePosts extends PureComponent {
     };
 
     renderText(style) {
-        let [id, defaultMessage] = ['posts_view.loadMore', 'Load more messages'];
+        let i18nId = 'posts_view.loadMore';
+        let defaultMessage = 'Load more messages';
         if (this.props.loading) {
-            [id, defaultMessage] = ['mobile.loading_posts', 'Loading Messages...'];
+            i18nId = 'mobile.loading_posts';
+            defaultMessage = 'Loading Messages...';
         }
         return (
             <FormattedText
-                id={id}
+                id={i18nId}
                 defaultMessage={defaultMessage}
                 style={style.text}
             />
