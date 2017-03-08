@@ -11,12 +11,12 @@ import path from 'path';
 import register from 'babel-core/register';
 import chai from 'chai';
 import chaiEnzyme from 'chai-enzyme';
-import React from 'react-native-mock';
+import ReactNative from 'react-native-mock';
 
 const m = require('module');
 const originalLoader = m._load;
 
-const NativeModules = React.NativeModules;
+const NativeModules = ReactNative.NativeModules;
 
 NativeModules.RNCookieManagerIOS = {};
 NativeModules.RNCookieManagerAndroid = {};

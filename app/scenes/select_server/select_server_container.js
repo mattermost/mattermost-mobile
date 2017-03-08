@@ -12,15 +12,14 @@ import * as SelectServerActions from 'app/actions/views/select_server';
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
-    const {config: configRequest, license: licenseRequest} = state.requests.general;
-    const {server} = state.requests.general;
+    const {config: configRequest, license: licenseRequest, server: pingRequest} = state.requests.general;
 
     const success = RequestStatus.SUCCESS;
-    const transition = (server.status === success && configRequest.status === success && licenseRequest.status === success);
+    const transition = (pingRequest.status === success && configRequest.status === success && licenseRequest.status === success);
 
     return {
         ...state.views.selectServer,
-        server,
+        pingRequest,
         configRequest,
         licenseRequest,
         transition

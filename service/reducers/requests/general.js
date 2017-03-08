@@ -2,15 +2,12 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {GeneralTypes, RequestStatus} from 'service/constants';
+import {GeneralTypes} from 'service/constants';
 import {handleRequest, initialRequestState} from './helpers';
 
 function server(state = initialRequestState(), action) {
     if (action.type === GeneralTypes.PING_RESET) {
-        return {
-            ...state,
-            status: RequestStatus.NOT_STARTED
-        };
+        return initialRequestState();
     }
 
     return handleRequest(

@@ -82,7 +82,7 @@ export default class LoginOptions extends PureComponent {
                 />
                 <FormattedText
                     style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
-                    id='mobile.login_options.chooseTitle'
+                    id='mobile.login_options.choose_title'
                     defaultMessage='Choose your login method'
                 />
                 {this.renderEmailOption()}

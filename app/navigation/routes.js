@@ -18,12 +18,12 @@ import {
     OptionsModal,
     RightMenuDrawer,
     Root,
+    Saml,
     Search,
     SelectServer,
     SelectTeam,
     Thread,
-    UserProfile,
-    Saml
+    UserProfile
 } from 'app/scenes';
 
 import keyMirror from 'service/utils/key_mirror';
@@ -146,6 +146,14 @@ export const Routes = {
         key: 'Root',
         component: Root
     },
+    Saml: {
+        key: 'Saml',
+        transition: RouteTransitions.Horizontal,
+        component: Saml,
+        navigationProps: {
+            title: {id: 'mobile.routes.saml', defaultMessage: 'Single SignOn'}
+        }
+    },
     Search: {
         key: 'Search',
         transition: RouteTransitions.Horizontal,
@@ -176,14 +184,6 @@ export const Routes = {
         component: UserProfile,
         navigationProps: {
             title: {id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}
-        }
-    },
-    Saml: {
-        key: 'Saml',
-        transition: RouteTransitions.Horizontal,
-        component: Saml,
-        navigationProps: {
-            title: {id: 'mobile.routes.saml', defaultMessage: 'Single SignOn'}
         }
     }
 };

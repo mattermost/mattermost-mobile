@@ -27,7 +27,7 @@ export default class SelectServer extends PureComponent {
     static propTypes = {
         transition: PropTypes.bool.isRequired,
         serverUrl: PropTypes.string.isRequired,
-        server: PropTypes.object.isRequired,
+        pingRequest: PropTypes.object.isRequired,
         configRequest: PropTypes.object.isRequired,
         licenseRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
@@ -84,14 +84,16 @@ export default class SelectServer extends PureComponent {
     };
 
     render() {
-        const {serverUrl, server, configRequest, licenseRequest} = this.props;
-        if (server.status === RequestStatus.STARTED ||
+        const {serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
+        const isLoading = pingRequest.status === RequestStatus.STARTED ||
             configRequest.status === RequestStatus.STARTED ||
-            licenseRequest.status === RequestStatus.STARTED) {
+            licenseRequest.status === RequestStatus.STARTED;
+
+        if (isLoading) {
             return <Loading/>;
         }
 
-        const error = server.error || configRequest.error || licenseRequest.error;
+        const error = pingRequest.error || configRequest.error || licenseRequest.error;
 
         return (
             <KeyboardLayout

@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    InteractionManager,
     WebView
 } from 'react-native';
 
@@ -18,9 +19,15 @@ export default class Saml extends PureComponent {
         }).isRequired
     };
 
-    onNavigationStateChange(navState) {
+    componentDidMount() {
+        InteractionManager.runAfterInteractions(() => {
+            this.setState({renderWebview: true});
+        });
+    }
+
+    onNavigationStateChange = (navState) => {
         const {url} = navState;
-        if (url.indexOf('/login/sso/saml') !== -1 && url.indexOf('mobile') === -1) {
+        if (url.includes('/login/sso/saml') && url.includes('mobile')) {
             CookieManager.get(this.props.serverUrl, (err, res) => {
                 const token = res.MMAUTHTOKEN;
                 const {
@@ -36,16 +43,20 @@ export default class Saml extends PureComponent {
                 }
             });
         }
-    }
+    };
 
     render() {
+        if (!this.state || !this.state.renderWebview) {
+            return null;
+        }
+
         return (
             <WebView
                 source={{uri: `${this.props.serverUrl}/login/sso/saml?action=mobile`}}
                 javaScriptEnabledAndroid={true}
                 automaticallyAdjustContentInsets={false}
                 scalesPageToFit={true}
-                onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+                onNavigationStateChange={this.onNavigationStateChange}
             />
         );
     }

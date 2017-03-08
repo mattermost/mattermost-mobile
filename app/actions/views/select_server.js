@@ -17,9 +17,11 @@ export function handleLoginOptions() {
     return async (dispatch, getState) => {
         const {config, license} = getState().entities.general;
 
+        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
+
         let options = 0;
-        if (config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
-            options++;
+        if (samlEnabled) {
+            options += 1;
         }
 
         if (options) {
