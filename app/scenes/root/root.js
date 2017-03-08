@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
-import {AppState, AsyncStorage} from 'react-native';
+import {AsyncStorage} from 'react-native';
 import Loading from 'app/components/loading';
 
 import {RequestStatus} from 'service/constants';
@@ -10,16 +10,15 @@ import {RequestStatus} from 'service/constants';
 export default class Root extends PureComponent {
     static propTypes = {
         credentials: PropTypes.object,
-        logoutRequest: PropTypes.object.isRequired,
-        loginRequest: PropTypes.object.isRequired,
+        logoutRequest: PropTypes.object,
+        loginRequest: PropTypes.object,
         actions: PropTypes.shape({
-            goToLoadTeam: PropTypes.func.isRequired,
-            goToSelectServer: PropTypes.func.isRequired,
+            goToLoadTeam: PropTypes.func,
+            goToSelectServer: PropTypes.func,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            flushToStorage: PropTypes.func.isRequired,
-            loadStorage: PropTypes.func.isRequired,
-            removeStorage: PropTypes.func.isRequired,
-            setStoreFromLocalData: PropTypes.func.isRequired
+            loadStorage: PropTypes.func,
+            removeStorage: PropTypes.func,
+            setStoreFromLocalData: PropTypes.func
         }).isRequired
     };
 
@@ -30,7 +29,6 @@ export default class Root extends PureComponent {
     componentDidMount() {
         // Any initialization logic for navigation, setting up the client, etc should go here
         this.init();
-        AppState.addEventListener('change', this.handleAppStateChange);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -42,13 +40,6 @@ export default class Root extends PureComponent {
             this.init();
         }
     }
-
-    handleAppStateChange = (event) => {
-        // App gets killed, phone call comes in, app is pushed to the background, etc...
-        if (event === 'inactive') {
-            this.props.actions.flushToStorage();
-        }
-    };
 
     init = () => {
         if (this.props.logoutRequest.status === RequestStatus.SUCCESS) {

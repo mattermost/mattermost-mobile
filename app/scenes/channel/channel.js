@@ -62,9 +62,11 @@ export default class Channel extends React.PureComponent {
         this.props.subscribeToHeaderEvent('open_right_menu', this.openRightMenuDrawer);
         this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
-        const teamId = this.props.currentTeam.id;
         this.props.actions.initWebSocket(Platform.OS);
-        this.loadChannels(teamId);
+        if (this.props.currentTeam) {
+            const teamId = this.props.currentTeam.id;
+            this.loadChannels(teamId);
+        }
     }
 
     componentDidMount() {
@@ -72,7 +74,7 @@ export default class Channel extends React.PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
+        if (this.props.currentTeam && nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
             const teamId = nextProps.currentTeam.id;
             this.loadChannels(teamId);
         }

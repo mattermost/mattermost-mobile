@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {flushToStorage, loadStorage, removeStorage} from 'app/actions/storage';
+import {loadStorage, removeStorage} from 'app/actions/storage';
 import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import {goToLoadTeam} from 'app/actions/navigation';
@@ -27,7 +27,6 @@ function mapDispatchToProps(dispatch) {
             goToLoadTeam,
             goToSelectServer,
             handleServerUrlChanged,
-            flushToStorage,
             loadStorage,
             removeStorage,
             setStoreFromLocalData

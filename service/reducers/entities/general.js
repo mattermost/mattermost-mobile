@@ -59,10 +59,23 @@ function serverVersion(state = '', action) {
     }
 }
 
+function deviceToken(state = '', action) {
+    switch (action.type) {
+    case GeneralTypes.RECEIVED_APP_DEVICE_TOKEN:
+        return action.data;
+
+    case UsersTypes.LOGOUT_SUCCESS:
+        return '';
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     appState,
     credentials,
     config,
     license,
-    serverVersion
+    serverVersion,
+    deviceToken
 });
