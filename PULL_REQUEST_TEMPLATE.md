@@ -16,7 +16,7 @@ When filling in a section please remove the help text and the above text.
 - [ ] Includes text changes and localization file updates
 
 #### Device Information
-This PR was tested on: [Device type(s), OS version(s)] 
+This PR was tested on: [Device name(s), OS version(s)] 
 
 #### Screenshots
 [If the PR includes UI changes, include screenshots (for both iOS and Android if possible).]
