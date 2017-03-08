@@ -48,7 +48,7 @@ platform :ios do
               branch_name: 'ios-beta'
           })
 
-    pilot({distribute_external: true})
+    pilot
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       testflight_url = ENV['TESTFLIGHT_URL']
