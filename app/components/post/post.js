@@ -213,10 +213,12 @@ export default class Post extends Component {
                         </View>
                         <View style={style.messageContainerWithReplyBar}>
                             {this.renderReplyBar(style)}
+                            {this.props.post.message.length > 0 &&
+                                <Text style={messageStyle}>
+                                    {this.props.post.message}
+                                </Text>
+                            }
                             {this.renderFileAttachments()}
-                            <Text style={messageStyle}>
-                                {this.props.post.message}
-                            </Text>
                         </View>
                     </View>
                 </View>
@@ -237,10 +239,12 @@ export default class Post extends Component {
                                 </Text>
                             </View>
                             <View style={style.messageContainer}>
+                                {this.props.post.message.length > 0 &&
+                                    <Text style={messageStyle}>
+                                        {this.props.post.message}
+                                    </Text>
+                                }
                                 {this.renderFileAttachments()}
-                                <Text style={messageStyle}>
-                                    {this.props.post.message}
-                                </Text>
                             </View>
                         </View>
                     </View>
