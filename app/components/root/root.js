@@ -57,7 +57,7 @@ export default class Root extends PureComponent {
     };
 
     onPushNotification = (notification) => {
-        const {foreground, userInteraction, data} = notification;
+        const {foreground, userInteraction, data, message} = notification;
         let noty;
 
         if (Platform.OS === 'android') {
@@ -65,10 +65,14 @@ export default class Root extends PureComponent {
                 data: {
                     channel_id: notification.channel_id,
                     team_id: notification.team_id
-                }
+                },
+                message
             };
         } else {
-            noty = {data};
+            noty = {
+                data,
+                message
+            };
         }
 
         if (foreground) {
