@@ -11,6 +11,7 @@ import {getTranslations} from 'service/i18n';
 import EventEmitter from 'service/utils/event_emitter';
 
 import icon from 'assets/images/icon.png';
+import {GooglePlaySenderId} from 'assets/config.json';
 
 export default class Root extends PureComponent {
     static propTypes = {
@@ -56,11 +57,24 @@ export default class Root extends PureComponent {
     };
 
     onPushNotification = (notification) => {
-        const {foreground, userInteraction} = notification;
+        const {foreground, userInteraction, data} = notification;
+        let noty;
+
+        if (Platform.OS === 'android') {
+            noty = {
+                data: {
+                    channel_id: notification.channel_id,
+                    team_id: notification.team_id
+                }
+            };
+        } else {
+            noty = {data};
+        }
+
         if (foreground) {
-            this.handleInAppNotification(notification);
+            this.handleInAppNotification(noty);
         } else if (userInteraction) {
-            this.onNotificationTapped(notification);
+            this.onNotificationTapped(noty);
         }
     };
 
@@ -108,6 +122,7 @@ export default class Root extends PureComponent {
         PushNotification.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
+            senderID: GooglePlaySenderId,
             popInitialNotification: true,
             requestPermissions: true
         });
