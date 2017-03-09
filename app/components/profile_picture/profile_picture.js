@@ -11,38 +11,6 @@ import placeholder from 'assets/images/profile.jpg';
 
 import Client from 'service/client';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        statusWrapper: {
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            overflow: 'hidden',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderColor: theme.centerChannelBg
-        },
-        statusContainer: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-        },
-        status: {
-            color: theme.centerChannelBg
-        },
-        online: {
-            backgroundColor: theme.onlineIndicator
-        },
-        away: {
-            backgroundColor: theme.awayIndicator
-        },
-        offline: {
-            backgroundColor: theme.centerChannelBg,
-            borderColor: '#bababa'
-        }
-    });
-});
-
 const statusToIcon = {
     online: 'check',
     away: 'minus'
@@ -134,3 +102,35 @@ export default class ProfilePicture extends React.PureComponent {
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        statusWrapper: {
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: theme.centerChannelBg
+        },
+        statusContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
+        },
+        status: {
+            color: theme.centerChannelBg
+        },
+        online: {
+            backgroundColor: theme.onlineIndicator
+        },
+        away: {
+            backgroundColor: theme.awayIndicator
+        },
+        offline: {
+            backgroundColor: theme.centerChannelBg,
+            borderColor: '#bababa'
+        }
+    });
+});
