@@ -738,7 +738,7 @@ SOFTWARE.
 
 ## react-native-push-notification
 
-This product contains 'react-native-push-notification', library to provide React Native Local and Remote Notifications for iOS and Android.
+This product contains 'react-native-push-notification', a library to provide React Native local and remote notifications for iOS and Android.
 
 * HOMEPAGE
     * https://github.com/zo0r/react-native-push-notification
@@ -771,7 +771,7 @@ SOFTWARE.
 
 ## react-native-message-bar
 
-This product contains 'react-native-message-bar', A message bar notification component displayed at the top of the screen for React Native (Android and iOS) projects.
+This product contains 'react-native-message-bar', a library for displaying a message bar notification component at the top of the screen for React Native (Android and iOS) projects.
 
 * HOMEPAGE
     * https://github.com/KBLNY/react-native-message-bar
