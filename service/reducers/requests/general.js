@@ -6,6 +6,10 @@ import {GeneralTypes} from 'service/constants';
 import {handleRequest, initialRequestState} from './helpers';
 
 function server(state = initialRequestState(), action) {
+    if (action.type === GeneralTypes.PING_RESET) {
+        return initialRequestState();
+    }
+
     return handleRequest(
         GeneralTypes.PING_REQUEST,
         GeneralTypes.PING_SUCCESS,

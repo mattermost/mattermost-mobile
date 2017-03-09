@@ -31,6 +31,12 @@ export function getPing() {
     };
 }
 
+export function resetPing() {
+    return async (dispatch, getState) => {
+        dispatch({type: GeneralTypes.PING_RESET}, getState);
+    };
+}
+
 export function getClientConfig() {
     return bindClientFunc(
         Client.getClientConfig,

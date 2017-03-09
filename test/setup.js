@@ -11,9 +11,15 @@ import path from 'path';
 import register from 'babel-core/register';
 import chai from 'chai';
 import chaiEnzyme from 'chai-enzyme';
+import ReactNative from 'react-native-mock';
 
 const m = require('module');
 const originalLoader = m._load;
+
+const NativeModules = ReactNative.NativeModules;
+
+NativeModules.RNCookieManagerIOS = {};
+NativeModules.RNCookieManagerAndroid = {};
 
 // Image file ignore setup from:
 // http://valuemotive.com/2016/08/01/unit-testing-react-native-components-with-mocha-and-enzyme/

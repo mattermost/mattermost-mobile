@@ -11,12 +11,14 @@ import {
     CreateChannel,
     LoadTeam,
     Login,
+    LoginOptions,
     Mfa,
     MoreChannels,
     MoreDirectMessages,
     OptionsModal,
     RightMenuDrawer,
     Root,
+    Saml,
     Search,
     SelectServer,
     SelectTeam,
@@ -99,6 +101,14 @@ export const Routes = {
             title: {id: 'mobile.routes.login', defaultMessage: 'Login'}
         }
     },
+    LoginOptions: {
+        key: 'LoginOptions',
+        transition: RouteTransitions.Horizontal,
+        component: LoginOptions,
+        navigationProps: {
+            title: {id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'}
+        }
+    },
     Mfa: {
         key: 'Mfa',
         transition: RouteTransitions.Horizontal,
@@ -135,6 +145,14 @@ export const Routes = {
     Root: {
         key: 'Root',
         component: Root
+    },
+    Saml: {
+        key: 'Saml',
+        transition: RouteTransitions.Horizontal,
+        component: Saml,
+        navigationProps: {
+            title: {id: 'mobile.routes.saml', defaultMessage: 'Single SignOn'}
+        }
     },
     Search: {
         key: 'Search',

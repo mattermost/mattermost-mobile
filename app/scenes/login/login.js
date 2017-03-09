@@ -16,7 +16,6 @@ import Button from 'react-native-button';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import Loading from 'app/components/loading';
 import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
@@ -40,9 +39,7 @@ class Login extends Component {
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         checkMfaRequest: PropTypes.object.isRequired,
-        loginRequest: PropTypes.object.isRequired,
-        configRequest: PropTypes.object.isRequired,
-        licenseRequest: PropTypes.object.isRequired
+        loginRequest: PropTypes.object.isRequired
     };
 
     constructor(props) {
@@ -205,10 +202,6 @@ class Login extends Component {
     };
 
     render() {
-        if (this.props.configRequest.status === RequestStatus.STARTED || this.props.licenseRequest.status === RequestStatus.STARTED) {
-            return <Loading/>;
-        }
-
         return (
             <KeyboardLayout
                 behavior='padding'

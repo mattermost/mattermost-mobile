@@ -13,21 +13,29 @@ import Button from 'react-native-button';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
+import Loading from 'app/components/loading';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
+import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 
 import logo from 'assets/images/logo.png';
 
+import {RequestStatus} from 'service/constants';
 import Client from 'service/client';
-import RequestStatus from 'service/constants/request_status';
-
-import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
+        transition: PropTypes.bool.isRequired,
         serverUrl: PropTypes.string.isRequired,
-        server: PropTypes.object.isRequired,
-        actions: PropTypes.object.isRequired
+        pingRequest: PropTypes.object.isRequired,
+        configRequest: PropTypes.object.isRequired,
+        licenseRequest: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            getPing: PropTypes.func.isRequired,
+            resetPing: PropTypes.func.isRequired,
+            handleLoginOptions: PropTypes.func.isRequired,
+            handleServerUrlChanged: PropTypes.func.isRequired
+        }).isRequired
     };
 
     constructor(props) {
@@ -38,19 +46,23 @@ export default class SelectServer extends PureComponent {
         };
     }
 
-    onClick = () => {
+    componentWillReceiveProps(nextProps) {
+        if (!this.props.transition && nextProps.transition) {
+            this.props.actions.resetPing().then(() => {
+                this.props.actions.handleLoginOptions();
+            });
+        }
+    }
+
+    onClick = async () => {
         const url = this.props.serverUrl;
         let error = null;
 
+        Keyboard.dismiss();
+
         if (isValidUrl(url)) {
             Client.setUrl(stripTrailingSlashes(url));
-
-            this.props.actions.getPing().then(() => {
-                if (this.props.server.status === RequestStatus.SUCCESS) {
-                    Keyboard.dismiss();
-                    this.props.actions.goToLogin();
-                }
-            });
+            await this.props.actions.getPing();
         } else {
             error = {
                 intl: {
@@ -72,6 +84,17 @@ export default class SelectServer extends PureComponent {
     };
 
     render() {
+        const {serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
+        const isLoading = pingRequest.status === RequestStatus.STARTED ||
+            configRequest.status === RequestStatus.STARTED ||
+            licenseRequest.status === RequestStatus.STARTED;
+
+        if (isLoading) {
+            return <Loading/>;
+        }
+
+        const error = pingRequest.error || configRequest.error || licenseRequest.error;
+
         return (
             <KeyboardLayout
                 behavior='padding'
@@ -92,7 +115,7 @@ export default class SelectServer extends PureComponent {
                         </View>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
-                            value={this.props.serverUrl}
+                            value={serverUrl}
                             onChangeText={this.props.actions.handleServerUrlChanged}
                             onSubmitEditing={this.onClick}
                             style={GlobalStyles.inputBox}
@@ -105,7 +128,6 @@ export default class SelectServer extends PureComponent {
                         />
                         <Button
                             onPress={this.onClick}
-                            loading={this.props.server.loading}
                             containerStyle={GlobalStyles.signupButton}
                         >
                             <FormattedText
@@ -114,7 +136,7 @@ export default class SelectServer extends PureComponent {
                                 defaultMessage='Proceed'
                             />
                         </Button>
-                        <ErrorText error={this.state.error || this.props.server.error}/>
+                        <ErrorText error={this.state.error || error}/>
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardLayout>

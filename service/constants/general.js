@@ -11,6 +11,7 @@ const GeneralTypes = keyMirror({
     PING_REQUEST: null,
     PING_SUCCESS: null,
     PING_FAILURE: null,
+    PING_RESET: null,
 
     RECEIVED_SERVER_VERSION: null,
 
