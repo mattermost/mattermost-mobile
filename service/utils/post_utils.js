@@ -11,7 +11,9 @@ export function shouldIgnorePost(post) {
     return Constants.IGNORE_POST_TYPES.includes(post.type);
 }
 
-export function addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt) {
+export function addDatesToPostList(posts, options = {}) {
+    const {indicateNewMessages, currentUserId, lastViewedAt} = options;
+
     const out = [];
 
     let lastDate = null;

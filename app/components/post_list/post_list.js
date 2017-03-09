@@ -1,19 +1,19 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {Component, PropTypes} from 'react';
 import {
     ListView,
     StyleSheet
 } from 'react-native';
 
 import Post from 'app/components/post';
+import DateHeader from './date_header';
+import LoadMorePosts from './load_more_posts';
+import NewMessagesDivider from './new_messages_divider';
 
 import {Constants} from 'service/constants';
 import {addDatesToPostList} from 'service/utils/post_utils';
-
-import DateHeader from './date_header';
-import NewMessagesDivider from './new_messages_divider';
 
 const style = StyleSheet.create({
     container: {
@@ -24,36 +24,59 @@ const style = StyleSheet.create({
     }
 });
 
-export default class PostList extends React.Component {
+const LOAD_MORE_POSTS = 'load-more-posts';
+
+export default class PostList extends Component {
     static propTypes = {
-        posts: React.PropTypes.array.isRequired,
-        theme: React.PropTypes.object.isRequired,
-        onPostPress: React.PropTypes.func,
-        renderReplies: React.PropTypes.bool,
-        indicateNewMessages: React.PropTypes.bool,
-        currentUserId: React.PropTypes.string,
-        lastViewedAt: React.PropTypes.number
+        posts: PropTypes.array.isRequired,
+        theme: PropTypes.object.isRequired,
+        loadMore: PropTypes.func,
+        isLoadingMore: PropTypes.bool,
+        showLoadMore: PropTypes.bool,
+        onPostPress: PropTypes.func,
+        renderReplies: PropTypes.bool,
+        indicateNewMessages: PropTypes.bool,
+        currentUserId: PropTypes.string,
+        lastViewedAt: PropTypes.number
     };
 
     constructor(props) {
         super(props);
-        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = this.props;
         this.state = {
+            posts: this.getPostsWithDates(props),
             dataSource: new ListView.DataSource({
                 rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt))
+            })
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
-            const {posts, indicateNewMessages, currentUserId, lastViewedAt} = nextProps;
-            const dataSource = this.state.dataSource.cloneWithRows(
-                addDatesToPostList(posts, indicateNewMessages, currentUserId, lastViewedAt)
-            );
-            this.setState({dataSource});
+            const posts = this.getPostsWithDates(nextProps);
+            this.setState({posts});
         }
     }
+
+    getPostsWithDates(props) {
+        const {posts, indicateNewMessages, currentUserId, lastViewedAt} = props;
+        return addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
+    }
+
+    getPostsWithLoadMore() {
+        const {showLoadMore} = this.props;
+        const {posts} = this.state;
+        if (showLoadMore) {
+            return [...posts, LOAD_MORE_POSTS];
+        }
+        return posts;
+    }
+
+    loadMore = () => {
+        const {loadMore} = this.props;
+        if (typeof loadMore === 'function') {
+            loadMore();
+        }
+    };
 
     renderRow = (row) => {
         if (row instanceof Date) {
@@ -62,6 +85,15 @@ export default class PostList extends React.Component {
         if (row === Constants.START_OF_NEW_MESSAGES) {
             return (
                 <NewMessagesDivider
+                    theme={this.props.theme}
+                    style={style.row}
+                />
+            );
+        }
+        if (row === LOAD_MORE_POSTS) {
+            return (
+                <LoadMorePosts
+                    loading={this.props.isLoadingMore}
                     theme={this.props.theme}
                     style={style.row}
                 />
@@ -99,10 +131,11 @@ export default class PostList extends React.Component {
         return (
             <ListView
                 style={style.container}
-                enableEmptySections={true}
-                dataSource={this.state.dataSource}
-                renderSectionHeader={this.renderSectionHeader}
+                dataSource={this.state.dataSource.cloneWithRows(this.getPostsWithLoadMore())}
                 renderRow={this.renderRow}
+                onEndReached={this.loadMore}
+                renderSectionHeader={this.renderSectionHeader}
+                enableEmptySections={true}
                 showsVerticalScrollIndicator={false}
             />
         );

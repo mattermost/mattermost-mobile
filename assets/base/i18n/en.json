@@ -1510,6 +1510,7 @@
   "mobile.create_channel.private": "New Private Group",
   "mobile.loading_channels": "Loading Channels...",
   "mobile.loading_members": "Loading Members...",
+  "mobile.loading_posts": "Loading Messages...",
   "mobile.request.invalid_response": "Received invalid response from the server.",
   "mobile.login_options.choose_title": "Choose your login method",
   "mobile.routes.channels": "Channels",

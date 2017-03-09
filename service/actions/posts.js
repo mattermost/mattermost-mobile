@@ -157,7 +157,7 @@ export function getPostsSince(teamId, channelId, since) {
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_SINCE_FAILURE, error}, getState);
-            return;
+            return null;
         }
 
         dispatch(batchActions([
@@ -170,6 +170,8 @@ export function getPostsSince(teamId, channelId, since) {
                 type: PostsTypes.GET_POSTS_SINCE_SUCCESS
             }
         ]), getState);
+
+        return posts;
     };
 }
 
@@ -184,7 +186,7 @@ export function getPostsBefore(teamId, channelId, postId, offset = 0, limit = Co
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_BEFORE_FAILURE, error}, getState);
-            return;
+            return null;
         }
 
         dispatch(batchActions([
@@ -197,6 +199,8 @@ export function getPostsBefore(teamId, channelId, postId, offset = 0, limit = Co
                 type: PostsTypes.GET_POSTS_BEFORE_SUCCESS
             }
         ]), getState);
+
+        return posts;
     };
 }
 
@@ -211,7 +215,7 @@ export function getPostsAfter(teamId, channelId, postId, offset = 0, limit = Con
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch({type: PostsTypes.GET_POSTS_AFTER_FAILURE, error}, getState);
-            return;
+            return null;
         }
 
         dispatch(batchActions([
@@ -224,6 +228,8 @@ export function getPostsAfter(teamId, channelId, postId, offset = 0, limit = Con
                 type: PostsTypes.GET_POSTS_AFTER_SUCCESS
             }
         ]), getState);
+
+        return posts;
     };
 }
 
