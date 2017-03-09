@@ -312,6 +312,34 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+The licensor of the React software also provides the following:
+ 
+Additional Grant of Patent Rights Version 2
+
+"Software" means the React software distributed by Facebook, Inc.
+Facebook, Inc. ("Facebook") hereby grants to each recipient of the Software
+("you") a perpetual, worldwide, royalty-free, non-exclusive, irrevocable
+(subject to the termination provision below) license under any Necessary
+Claims, to make, have made, use, sell, offer to sell, import, and otherwise
+transfer the Software. For avoidance of doubt, no license is granted under
+Facebook's rights in any patent claims that are infringed by (i) modifications
+to the Software made by you or any third party or (ii) the Software in
+combination with any software or other technology.
+
+The license granted hereunder will terminate, automatically and without notice,
+if you (or any of your subsidiaries, corporate affiliates or agents) initiate
+directly or indirectly, or take a direct financial interest in, any Patent
+Assertion: (i) against Facebook or any of its subsidiaries or corporate
+affiliates, (ii) against any party if such Patent Assertion arises in whole or
+in part from any software, technology, product or service of Facebook or any of
+its subsidiaries or corporate affiliates, or (iii) against any party relating
+to the Software. Notwithstanding the foregoing, if Facebook or any of its
+subsidiaries or corporate affiliates files a lawsuit alleging patent
+infringement against you in the first instance, and you respond by filing a
+patent infringement counterclaim in that lawsuit against that party that is
+unrelated to the Software, the license granted hereunder will not terminate
+under section (i) of this paragraph due to such counterclaim.
+
 ---
 
 ## react-intl
@@ -392,6 +420,34 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The licensor of the React Native software also provides the following:
+
+Additional Grant of Patent Rights Version 2
+
+"Software" means the React Native software distributed by Facebook, Inc. 
+Facebook, Inc. (“Facebook”) hereby grants to each recipient of the Software
+(“you”) a perpetual, worldwide, royalty-free, non-exclusive, irrevocable
+(subject to the termination provision below) license under any Necessary
+Claims, to make, have made, use, sell, offer to sell, import, and otherwise
+transfer the Software. For avoidance of doubt, no license is granted under
+Facebook's rights in any patent claims that are infringed by (i) modifications
+to the Software made by you or any third party or (ii) the Software in
+combination with any software or other technology.
+
+The license granted hereunder will terminate, automatically and without notice,
+if you (or any of your subsidiaries, corporate affiliates or agents) initiate
+directly or indirectly, or take a direct financial interest in, any Patent
+Assertion: (i) against Facebook or any of its subsidiaries or corporate
+affiliates, (ii) against any party if such Patent Assertion arises in whole or
+in part from any software, technology, product or service of Facebook or any of
+its subsidiaries or corporate affiliates, or (iii) against any party relating
+to the Software. Notwithstanding the foregoing, if Facebook or any of its
+subsidiaries or corporate affiliates files a lawsuit alleging patent
+infringement against you in the first instance, and you respond by filing a
+patent infringement counterclaim in that lawsuit against that party that is
+unrelated to the Software, the license granted hereunder will not terminate
+under section (i) of this paragraph due to such counterclaim.
 
 ---
 
