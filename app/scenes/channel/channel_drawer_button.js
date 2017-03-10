@@ -8,7 +8,6 @@ import {
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import PushNotification from 'react-native-push-notification';
 import Badge from 'app/components/badge';
 
 import {getUnreads} from 'service/selectors/entities/channels';
@@ -17,8 +16,6 @@ import {getTheme} from 'service/selectors/entities/preferences';
 function ChannelDrawerButton(props) {
     let badge;
     let badgeCount = props.mentionCount;
-
-    PushNotification.setApplicationIconBadgeNumber(props.mentionCount || 0);
 
     if (!badgeCount && props.messageCount) {
         badgeCount = -1;
