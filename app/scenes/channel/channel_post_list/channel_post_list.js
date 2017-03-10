@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 
 import {Constants, RequestStatus} from 'service/constants';
 
+import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
 
 export default class ChannelPostList extends PureComponent {
@@ -84,8 +85,8 @@ export default class ChannelPostList extends PureComponent {
 
     render() {
         const {posts, postsRequests} = this.props;
-        if (!posts) {
-            return <Text>{'waiting on posts'}</Text>;
+        if (!posts || (postsRequests.getPosts.status === RequestStatus.STARTED && !this.state.didInitialPostsLoad)) {
+            return <Loading/>;
         }
 
         return (

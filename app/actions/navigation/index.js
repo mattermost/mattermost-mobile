@@ -69,6 +69,7 @@ export function goToLoadTeam() {
 
 export function goToModalSelectTeam() {
     return async (dispatch, getState) => {
+        closeDrawers()(dispatch, getState);
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.SelectTeam
@@ -168,6 +169,7 @@ export function showOptionsModal(title, options) {
 
 export function showMoreChannelsModal() {
     return async (dispatch, getState) => {
+        closeDrawers()(dispatch, getState);
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.MoreChannels
@@ -177,6 +179,7 @@ export function showMoreChannelsModal() {
 
 export function showDirectMessagesModal() {
     return async (dispatch, getState) => {
+        closeDrawers()(dispatch, getState);
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.MoreDirectMessages
@@ -194,6 +197,7 @@ export function closeModal() {
 
 export function goToModalAccountSettings() {
     return async (dispatch, getState) => {
+        closeDrawers()(dispatch, getState);
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.AccountSettings

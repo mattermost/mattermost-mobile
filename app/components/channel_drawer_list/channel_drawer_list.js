@@ -21,61 +21,6 @@ import UnreadIndicator from './unread_indicator';
 import deepEqual from 'deep-equal';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const Styles = StyleSheet.create({
-    container: {
-        flex: 1
-    },
-    scrollContainer: {
-        flex: 1
-    },
-    headerContainer: {
-        flexDirection: 'column',
-        ...Platform.select({
-            ios: {
-                height: 64,
-                justifyContent: 'flex-end'
-            },
-            android: {
-                height: 56,
-                justifyContent: 'center',
-                paddingTop: 10
-            }
-        }),
-        width: 300,
-        paddingLeft: 10,
-        paddingBottom: 12
-    },
-    header: {
-        fontSize: 18,
-        fontWeight: 'bold'
-    },
-    title: {
-        paddingTop: 10,
-        paddingRight: 10,
-        paddingLeft: 10,
-        paddingBottom: 5,
-        fontSize: 15,
-        opacity: 0.6
-    },
-    indicatorText: {
-        paddingVertical: 2,
-        paddingHorizontal: 4,
-        backgroundColor: 'transparent',
-        fontSize: 14,
-        textAlign: 'center',
-        textAlignVertical: 'center'
-    },
-    more: {
-        position: 'absolute',
-        opacity: 0.6,
-        right: 0,
-        width: 50,
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center'
-    }
-});
-
 class ChannelDrawerList extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
@@ -86,8 +31,6 @@ class ChannelDrawerList extends Component {
         theme: PropTypes.object.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         actions: PropTypes.shape({
-            viewChannel: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
             closeDMChannel: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
@@ -167,15 +110,8 @@ class ChannelDrawerList extends Component {
         }
     };
 
-    onSelectChannel = async (channel) => {
-        const {
-            currentChannel,
-            currentTeam
-        } = this.props;
-
-        await this.props.onSelectChannel(channel.id);
-        this.props.actions.viewChannel(currentTeam.id, channel.id);
-        this.props.actions.markChannelAsRead(channel.id, currentChannel.id);
+    onSelectChannel = (channel) => {
+        this.props.onSelectChannel(channel.id);
     };
 
     onLayout = (event) => {
@@ -546,5 +482,60 @@ class ChannelDrawerList extends Component {
         );
     }
 }
+
+const Styles = StyleSheet.create({
+    container: {
+        flex: 1
+    },
+    scrollContainer: {
+        flex: 1
+    },
+    headerContainer: {
+        flexDirection: 'column',
+        ...Platform.select({
+            ios: {
+                height: 64,
+                justifyContent: 'flex-end'
+            },
+            android: {
+                height: 56,
+                justifyContent: 'center',
+                paddingTop: 10
+            }
+        }),
+        width: 300,
+        paddingLeft: 10,
+        paddingBottom: 12
+    },
+    header: {
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    title: {
+        paddingTop: 10,
+        paddingRight: 10,
+        paddingLeft: 10,
+        paddingBottom: 5,
+        fontSize: 15,
+        opacity: 0.6
+    },
+    indicatorText: {
+        paddingVertical: 2,
+        paddingHorizontal: 4,
+        backgroundColor: 'transparent',
+        fontSize: 14,
+        textAlign: 'center',
+        textAlignVertical: 'center'
+    },
+    more: {
+        position: 'absolute',
+        opacity: 0.6,
+        right: 0,
+        width: 50,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center'
+    }
+});
 
 export default injectIntl(ChannelDrawerList);

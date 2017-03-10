@@ -11,20 +11,12 @@ import {
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
+import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 import {Constants, RequestStatus} from 'service/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
-    });
-});
 
 class MoreDirectMessages extends PureComponent {
     static propTypes = {
@@ -70,6 +62,7 @@ class MoreDirectMessages extends PureComponent {
         this.state = {
             profiles: [],
             page: 0,
+            adding: false,
             next: true,
             searching: false
         };
@@ -151,9 +144,9 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
+        this.setState({adding: true});
         this.searchBar.blur();
         await this.props.actions.makeDirectChannel(id);
-
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.goBack();
         });
@@ -166,41 +159,61 @@ class MoreDirectMessages extends PureComponent {
         const style = getStyleFromTheme(this.props.theme);
         const more = this.state.searching ? () => true : this.loadMoreProfiles;
 
-        return (
-            <View style={style.container}>
-                <View
-                    style={{marginVertical: 5}}
-                >
-                    <SearchBar
-                        ref={this.searchBarRef}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
-                        height={27}
-                        fontSize={14}
-                        textColor={this.props.theme.centerChannelColor}
-                        hideBackground={true}
-                        textFieldBackgroundColor={changeOpacity(this.props.theme.centerChannelColor, 0.07)}
-                        onChange={this.searchProfiles}
-                        onSearchButtonPress={this.onSearchButtonPress}
-                        onCancelButtonPress={this.cancelSearch}
+        let content;
+        if (this.state.adding) {
+            content = (
+                <View style={style.container}>
+                    <Loading/>
+                </View>
+            );
+        } else {
+            content = (
+                <View style={style.container}>
+                    <View
+                        style={{marginVertical: 5}}
+                    >
+                        <SearchBar
+                            ref={this.searchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
+                            height={27}
+                            fontSize={14}
+                            textColor={this.props.theme.centerChannelColor}
+                            hideBackground={true}
+                            textFieldBackgroundColor={changeOpacity(this.props.theme.centerChannelColor, 0.07)}
+                            onChange={this.searchProfiles}
+                            onSearchButtonPress={this.onSearchButtonPress}
+                            onCancelButtonPress={this.cancelSearch}
+                        />
+                    </View>
+                    <MemberList
+                        data={this.state.profiles}
+                        theme={this.props.theme}
+                        searching={this.state.searching}
+                        onListEndReached={more}
+                        preferences={this.props.preferences}
+                        loading={isLoading}
+                        selectable={false}
+                        listScrollRenderAheadDistance={50}
+                        createSections={createMembersSections}
+                        renderRow={renderMemberRow}
+                        onRowPress={this.onSelectMember}
+                        loadingText={loadingText}
                     />
                 </View>
-                <MemberList
-                    data={this.state.profiles}
-                    theme={this.props.theme}
-                    searching={this.state.searching}
-                    onListEndReached={more}
-                    preferences={this.props.preferences}
-                    loading={isLoading}
-                    selectable={false}
-                    listScrollRenderAheadDistance={50}
-                    createSections={createMembersSections}
-                    renderRow={renderMemberRow}
-                    onRowPress={this.onSelectMember}
-                    loadingText={loadingText}
-                />
-            </View>
-        );
+            );
+        }
+
+        return content;
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});
 
 export default injectIntl(MoreDirectMessages);

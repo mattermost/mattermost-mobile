@@ -38,17 +38,17 @@ class Router extends React.Component {
         if (subscription) {
             subscription();
         }
-    }
+    };
 
     subscribeToHeaderEvent = (key) => (event, callback) => {
         this.headerEventSubscriptions[`${key}-${event}`] = callback;
-    }
+    };
 
     unsubscribeFromHeaderEvent = (key) => (event) => {
         if (this.headerEventSubscriptions[event]) {
             Reflect.deleteProperty(this.headerEventSubscriptions, `${key}-${event}`);
         }
-    }
+    };
 
     wrapHeaderComponent = (fx, emitter) => (props) => {
         if (fx && props.scene.isActive) {
@@ -56,11 +56,11 @@ class Router extends React.Component {
         }
 
         return null;
-    }
+    };
 
     extractNavigationProps = (route) => {
         return Object.assign({}, route.navigationProps, route.component.navigationProps);
-    }
+    };
 
     renderTransition = (transitionProps) => {
         const navigationProps = this.extractNavigationProps(transitionProps.scene.route);

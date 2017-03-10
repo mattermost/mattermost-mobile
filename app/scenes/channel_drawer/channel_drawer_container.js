@@ -11,6 +11,8 @@ import {getChannelsByCategory, getCurrentChannel} from 'service/selectors/entiti
 import {getTheme} from 'service/selectors/entities/preferences';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
+import {viewChannel, markChannelAsRead} from 'service/actions/channels';
+
 import ChannelDrawer from './channel_drawer.js';
 
 function mapStateToProps(state) {
@@ -27,7 +29,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             closeDrawers,
-            handleSelectChannel
+            handleSelectChannel,
+            viewChannel,
+            markChannelAsRead
         }, dispatch)
     };
 }
