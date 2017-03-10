@@ -10,24 +10,16 @@ import {
     View
 } from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
 import ChannelList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
+import FormattedText from 'app/components/formatted_text';
+import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 
 import {Constants, RequestStatus} from 'service/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import CreateButton from './create_button';
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
-    });
-});
 
 class MoreChannels extends PureComponent {
     static propTypes = {
@@ -77,6 +69,7 @@ class MoreChannels extends PureComponent {
         this.state = {
             channels: [],
             page: 0,
+            adding: false,
             next: true,
             searching: false
         };
@@ -193,6 +186,7 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
+        this.setState({adding: true});
         this.searchBar.blur();
         await this.props.actions.joinChannel(
             this.props.currentUserId,
@@ -215,40 +209,60 @@ class MoreChannels extends PureComponent {
         const style = getStyleFromTheme(this.props.theme);
         const more = this.state.searching ? () => true : this.loadMoreChannels;
 
-        return (
-            <View style={style.container}>
-                <View
-                    style={{marginVertical: 5}}
-                >
-                    <SearchBar
-                        ref={this.searchBarRef}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
-                        height={27}
-                        fontSize={14}
-                        textColor={this.props.theme.centerChannelColor}
-                        hideBackground={true}
-                        textFieldBackgroundColor={changeOpacity(this.props.theme.centerChannelColor, 0.07)}
-                        onChange={this.searchProfiles}
-                        onSearchButtonPress={this.onSearchButtonPress}
-                        onCancelButtonPress={this.cancelSearch}
+        let content;
+        if (this.state.adding) {
+            content = (
+                <View style={style.container}>
+                    <Loading/>
+                </View>
+            );
+        } else {
+            content = (
+                <View style={style.container}>
+                    <View
+                        style={{marginVertical: 5}}
+                    >
+                        <SearchBar
+                            ref={this.searchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
+                            height={27}
+                            fontSize={14}
+                            textColor={this.props.theme.centerChannelColor}
+                            hideBackground={true}
+                            textFieldBackgroundColor={changeOpacity(this.props.theme.centerChannelColor, 0.07)}
+                            onChange={this.searchProfiles}
+                            onSearchButtonPress={this.onSearchButtonPress}
+                            onCancelButtonPress={this.cancelSearch}
+                        />
+                    </View>
+                    <ChannelList
+                        data={this.state.channels}
+                        theme={this.props.theme}
+                        searching={this.state.searching}
+                        onListEndReached={more}
+                        loading={isLoading}
+                        selectable={false}
+                        listScrollRenderAheadDistance={50}
+                        showSections={false}
+                        renderRow={this.renderChannelRow}
+                        onRowPress={this.onSelectChannel}
+                        loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
                     />
                 </View>
-                <ChannelList
-                    data={this.state.channels}
-                    theme={this.props.theme}
-                    searching={this.state.searching}
-                    onListEndReached={more}
-                    loading={isLoading}
-                    selectable={false}
-                    listScrollRenderAheadDistance={50}
-                    showSections={false}
-                    renderRow={this.renderChannelRow}
-                    onRowPress={this.onSelectChannel}
-                    loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
-                />
-            </View>
-        );
+            );
+        }
+
+        return content;
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});
 
 export default injectIntl(MoreChannels);

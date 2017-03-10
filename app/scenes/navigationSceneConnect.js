@@ -22,14 +22,10 @@ const defaults = {
                 onPress={props.onNavigateBack}
             >
                 <Icon
+                    style={{fontWeight: 'bold'}}
                     name='angle-left'
-                    size={18}
+                    size={35}
                     color={theme.sidebarHeaderTextColor}
-                />
-                <FormattedText
-                    id='mobile.routes.back'
-                    defaultMessage='Back'
-                    style={{color: theme.sidebarHeaderTextColor, marginLeft: 10}}
                 />
             </TouchableOpacity>
         );

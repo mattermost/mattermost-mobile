@@ -69,8 +69,33 @@ class ActionButton extends PureComponent {
         const {labelDefaultMessage, labelId, theme} = this.props;
         const {enabled, loading} = this.state;
         let color = changeOpacity(theme.sidebarHeaderTextColor, 0.4);
+        let contents;
         if (enabled) {
             color = theme.sidebarHeaderTextColor;
+            contents = (
+                <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                    <TouchableOpacity
+                        onPress={this.onPress}
+                        style={{paddingHorizontal: 15}}
+                    >
+                        <FormattedText
+                            id={labelId}
+                            defaultMessage={labelDefaultMessage}
+                            style={{color}}
+                        />
+                    </TouchableOpacity>
+                </View>
+            );
+        } else {
+            contents = (
+                <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 15}}>
+                    <FormattedText
+                        id={labelId}
+                        defaultMessage={labelDefaultMessage}
+                        style={{color}}
+                    />
+                </View>
+            );
         }
 
         if (loading) {
@@ -88,20 +113,7 @@ class ActionButton extends PureComponent {
             );
         }
 
-        return (
-            <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1}}>
-                <TouchableOpacity
-                    onPress={this.onPress}
-                    style={{paddingHorizontal: 15}}
-                >
-                    <FormattedText
-                        id={labelId}
-                        defaultMessage={labelDefaultMessage}
-                        style={{color}}
-                    />
-                </TouchableOpacity>
-            </View>
-        );
+        return contents;
     }
 }
 

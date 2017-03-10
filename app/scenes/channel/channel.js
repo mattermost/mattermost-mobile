@@ -5,10 +5,11 @@ import React from 'react';
 import {
     Platform,
     StatusBar,
-    Text
+    View
 } from 'react-native';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
+import Loading from 'app/components/loading';
 import PostTextbox from 'app/components/post_textbox';
 
 import {Constants} from 'service/constants';
@@ -120,10 +121,12 @@ export default class Channel extends React.PureComponent {
             theme
         } = this.props;
 
-        if (!currentTeam) {
-            return <Text>{'Waiting on team'}</Text>;
-        } else if (!currentChannel) {
-            return <Text>{'Waiting on channel'}</Text>;
+        if (!currentTeam || !currentChannel) {
+            return (
+                <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
+                    <Loading/>
+                </View>
+            );
         }
 
         let teamId = currentChannel.team_id;

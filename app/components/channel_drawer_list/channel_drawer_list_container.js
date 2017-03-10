@@ -19,7 +19,6 @@ import {
     unmarkFavorite
 } from 'app/actions/views/channel';
 
-import {viewChannel, markChannelAsRead} from 'service/actions/channels';
 import ChannelDrawerList from './channel_drawer_list';
 
 function mapStateToProps(state, ownProps) {
@@ -31,8 +30,6 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            viewChannel,
-            markChannelAsRead,
             closeDMChannel,
             goToCreateChannel,
             leaveChannel,

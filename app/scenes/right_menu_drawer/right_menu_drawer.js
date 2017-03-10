@@ -15,38 +15,6 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import RightMenuDrawerItem from './right_menu_drawer_item';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            backgroundColor: theme.sidebarBg,
-            flex: 1,
-            ...Platform.select({
-                ios: {
-                    paddingTop: 20
-                },
-                android: {
-                    paddingTop: 5
-                }
-            })
-        },
-        itemText: {
-            color: 'white'
-        },
-        icon: {
-            color: 'white',
-            width: 25
-        },
-        mentionIcon: {
-            fontSize: 17,
-            fontWeight: 'bold'
-        },
-        divider: {
-            borderColor: 'rgba(255, 255, 255, 0.6)',
-            borderTopWidth: StyleSheet.hairlineWidth
-        }
-    });
-});
-
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
         actions: React.PropTypes.shape({
@@ -55,7 +23,7 @@ export default class RightMenuDrawer extends React.Component {
             logout: React.PropTypes.func.isRequired
         }).isRequired,
         theme: React.PropTypes.object
-    }
+    };
 
     render() {
         const Styles = getStyleSheet(this.props.theme);
@@ -140,3 +108,35 @@ export default class RightMenuDrawer extends React.Component {
 function Divider(props) {
     return <View {...props}/>;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.sidebarBg,
+            flex: 1,
+            ...Platform.select({
+                ios: {
+                    paddingTop: 20
+                },
+                android: {
+                    paddingTop: 5
+                }
+            })
+        },
+        itemText: {
+            color: 'white'
+        },
+        icon: {
+            color: 'white',
+            width: 25
+        },
+        mentionIcon: {
+            fontSize: 17,
+            fontWeight: 'bold'
+        },
+        divider: {
+            borderColor: 'rgba(255, 255, 255, 0.6)',
+            borderTopWidth: StyleSheet.hairlineWidth
+        }
+    });
+});
