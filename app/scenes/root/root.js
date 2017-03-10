@@ -77,9 +77,12 @@ export default class Root extends PureComponent {
     };
 
     selectServer = async () => {
-        const {url} = JSON.parse(await AsyncStorage.getItem('storage'));
-        if (url) {
-            await this.props.actions.handleServerUrlChanged(url);
+        const storage = await AsyncStorage.getItem('storage');
+        if (storage) {
+            const {url} = JSON.parse(await AsyncStorage.getItem('storage'));
+            if (url) {
+                await this.props.actions.handleServerUrlChanged(url);
+            }
         }
         this.props.actions.goToSelectServer();
     };

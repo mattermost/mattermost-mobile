@@ -3,6 +3,7 @@
 
 import React, {Component, PropTypes} from 'react';
 import {
+    Platform,
     Image,
     StyleSheet,
     Text,
@@ -19,76 +20,6 @@ import FileAttachmentList from 'app/components/file_attachment_list/file_attachm
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {isSystemMessage} from 'service/utils/post_utils.js';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            flexDirection: 'row'
-        },
-        rightColumn: {
-            flex: 1,
-            flexDirection: 'column',
-            marginRight: 12
-        },
-        postInfoContainer: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            marginTop: 10
-        },
-        messageContainerWithReplyBar: {
-            flexDirection: 'row'
-        },
-        profilePictureContainer: {
-            marginBottom: 10,
-            marginRight: 10,
-            marginLeft: 12,
-            marginTop: 10
-        },
-        replyBar: {
-            backgroundColor: theme.centerChannelColor,
-            opacity: 0.1,
-            marginRight: 10,
-            width: 3,
-            flexBasis: 3
-        },
-        replyBarFirst: {
-            marginTop: 10
-        },
-        replyBarLast: {
-            marginBottom: 10
-        },
-        displayName: {
-            fontSize: 14,
-            fontWeight: '600',
-            marginRight: 10,
-            color: theme.centerChannelColor
-        },
-        time: {
-            color: theme.centerChannelColor,
-            fontSize: 12,
-            opacity: 0.5
-        },
-        commentedOn: {
-            color: theme.centerChannelColor,
-            lineHeight: 21
-        },
-        message: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
-            lineHeight: 21,
-            marginBottom: 10
-        },
-        systemMessage: {
-            opacity: 0.5
-        },
-        webhookMessage: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            fontWeight: '600'
-        }
-    });
-});
 
 export default class Post extends Component {
     static propTypes = {
@@ -282,10 +213,12 @@ export default class Post extends Component {
                         </View>
                         <View style={style.messageContainerWithReplyBar}>
                             {this.renderReplyBar(style)}
+                            {this.props.post.message.length > 0 &&
+                                <Text style={messageStyle}>
+                                    {this.props.post.message}
+                                </Text>
+                            }
                             {this.renderFileAttachments()}
-                            <Text style={messageStyle}>
-                                {this.props.post.message}
-                            </Text>
                         </View>
                     </View>
                 </View>
@@ -296,19 +229,23 @@ export default class Post extends Component {
                     <View style={style.profilePictureContainer}>
                         {profilePicture}
                     </View>
-                    {this.renderReplyBar(style)}
-                    <View style={style.rightColumn}>
-                        <View style={style.postInfoContainer}>
-                            {displayName}
-                            <Text style={style.time}>
-                                <FormattedTime value={this.props.post.create_at}/>
-                            </Text>
-                        </View>
-                        <View style={style.messageContainer}>
-                            {this.renderFileAttachments()}
-                            <Text style={messageStyle}>
-                                {this.props.post.message}
-                            </Text>
+                    <View style={style.messageContainerWithReplyBar}>
+                        {this.renderReplyBar(style)}
+                        <View style={style.rightColumn}>
+                            <View style={style.postInfoContainer}>
+                                {displayName}
+                                <Text style={style.time}>
+                                    <FormattedTime value={this.props.post.create_at}/>
+                                </Text>
+                            </View>
+                            <View style={style.messageContainer}>
+                                {this.props.post.message.length > 0 &&
+                                    <Text style={messageStyle}>
+                                        {this.props.post.message}
+                                    </Text>
+                                }
+                                {this.renderFileAttachments()}
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -326,3 +263,82 @@ export default class Post extends Component {
         return contents;
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            flexDirection: 'row'
+        },
+        rightColumn: {
+            flex: 1,
+            flexDirection: 'column',
+            marginRight: 12
+        },
+        postInfoContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            marginTop: 10
+        },
+        messageContainerWithReplyBar: {
+            flexDirection: 'row',
+            flex: 1
+        },
+        profilePictureContainer: {
+            marginBottom: 10,
+            marginRight: 10,
+            marginLeft: 12,
+            marginTop: 10
+        },
+        replyBar: {
+            backgroundColor: theme.centerChannelColor,
+            opacity: 0.1,
+            marginRight: 10,
+            ...Platform.select({
+                ios: {
+                    width: 3,
+                    flexBasis: 3
+                },
+                android: {
+                    width: 6,
+                    flexBasis: 6
+                }
+            })
+        },
+        replyBarFirst: {
+            marginTop: 10
+        },
+        replyBarLast: {
+            marginBottom: 10
+        },
+        displayName: {
+            fontSize: 14,
+            fontWeight: '600',
+            marginRight: 10,
+            color: theme.centerChannelColor
+        },
+        time: {
+            color: theme.centerChannelColor,
+            fontSize: 12,
+            opacity: 0.5
+        },
+        commentedOn: {
+            color: theme.centerChannelColor,
+            lineHeight: 21
+        },
+        message: {
+            color: theme.centerChannelColor,
+            fontSize: 14,
+            lineHeight: 21,
+            marginBottom: 10
+        },
+        systemMessage: {
+            opacity: 0.5
+        },
+        webhookMessage: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            fontWeight: '600'
+        }
+    });
+});
