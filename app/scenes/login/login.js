@@ -79,11 +79,13 @@ class Login extends Component {
 
             this.setState({
                 error: {
-                    id: msgId,
-                    defaultMessage: '',
-                    values: {
-                        ldapUsername: this.props.config.LdapLoginFieldName ||
-                            this.props.intl.formatMessage({id: 'login.ldapUsernameLower', defaultMessage: 'AD/LDAP username'})
+                    intl: {
+                        id: msgId,
+                        defaultMessage: '',
+                        values: {
+                            ldapUsername: this.props.config.LdapLoginFieldName ||
+                                this.props.intl.formatMessage({id: 'login.ldapUsernameLower', defaultMessage: 'AD/LDAP username'})
+                        }
                     }
                 }
             });
@@ -92,7 +94,12 @@ class Login extends Component {
 
         if (!this.props.password) {
             this.setState({
-                error: {id: 'login.noPassword', defaultMessage: 'Please enter your password'}
+                error: {
+                    intl: {
+                        id: 'login.noPassword',
+                        defaultMessage: 'Please enter your password'
+                    }
+                }
             });
             return;
         }
