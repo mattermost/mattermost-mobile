@@ -167,7 +167,7 @@ export function completeDirectChannelInfo(usersState, myPreferences, channel) {
 }
 
 export function buildDisplayNameAndTypeComparable(channel) {
-    return (typeToPrefixMap[channel.type] || defaultPrefix) + channel.display_name + channel.name;
+    return (typeToPrefixMap[channel.type] || defaultPrefix) + channel.display_name.toLocaleLowerCase() + channel.name.toLocaleLowerCase();
 }
 
 function not(f) {
