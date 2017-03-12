@@ -5,6 +5,7 @@ import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {Constants, PostsTypes} from 'service/constants';
+import {getLogErrorAction} from './errors';
 import {getProfilesByIds, getStatusesByIds} from './users';
 
 async function getProfilesAndStatusesForPosts(list, dispatch, getState) {
@@ -65,7 +66,10 @@ export function deletePost(teamId, post) {
             await Client.deletePost(teamId, post.channel_id, post.id);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PostsTypes.DELETE_POST_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PostsTypes.DELETE_POST_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -100,7 +104,10 @@ export function getPost(teamId, channelId, postId) {
             getProfilesAndStatusesForPosts(post, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PostsTypes.GET_POST_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PostsTypes.GET_POST_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -127,7 +134,10 @@ export function getPosts(teamId, channelId, offset = 0, limit = Constants.POST_C
             getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PostsTypes.GET_POSTS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PostsTypes.GET_POSTS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
 
@@ -156,7 +166,10 @@ export function getPostsSince(teamId, channelId, since) {
             getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PostsTypes.GET_POSTS_SINCE_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PostsTypes.GET_POSTS_SINCE_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
 
@@ -185,7 +198,10 @@ export function getPostsBefore(teamId, channelId, postId, offset = 0, limit = Co
             getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PostsTypes.GET_POSTS_BEFORE_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PostsTypes.GET_POSTS_BEFORE_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
 
@@ -214,7 +230,10 @@ export function getPostsAfter(teamId, channelId, postId, offset = 0, limit = Con
             getProfilesAndStatusesForPosts(posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: PostsTypes.GET_POSTS_AFTER_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: PostsTypes.GET_POSTS_AFTER_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
 

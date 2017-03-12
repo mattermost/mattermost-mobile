@@ -6,7 +6,8 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    View
+    View,
+    Linking
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -17,12 +18,41 @@ import RightMenuDrawerItem from './right_menu_drawer_item';
 
 export default class RightMenuDrawer extends React.Component {
     static propTypes = {
+        errors: React.PropTypes.array.isRequired,
+        currentUserId: React.PropTypes.string.isRequired,
+        currentTeamId: React.PropTypes.string.isRequired,
         actions: React.PropTypes.shape({
             goToModalAccountSettings: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
+            clearErrors: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
         }).isRequired,
         theme: React.PropTypes.object
+    };
+
+    openErrorEmail = () => {
+        const recipient = 'feedback@mattermost.com';
+        const subject = 'Problem with Mattermost React Native app';
+        Linking.openURL(
+            `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`
+        );
+        this.props.actions.clearErrors();
+    };
+
+    errorEmailBody = () => {
+        const {currentUserId, currentTeamId, errors} = this.props;
+        let contents = [
+            `Current User Id: ${currentUserId}`,
+            `Current Team Id: ${currentTeamId}`
+        ];
+        if (errors.length) {
+            contents = contents.concat([
+                '',
+                'Errors:',
+                JSON.stringify(errors.map((e) => e.error))
+            ]);
+        }
+        return contents.join('\n');
     };
 
     render() {
@@ -66,7 +96,7 @@ export default class RightMenuDrawer extends React.Component {
                         defaultMessage='Help'
                     />
                 </RightMenuDrawerItem>
-                <RightMenuDrawerItem>
+                <RightMenuDrawerItem onPress={this.openErrorEmail}>
                     <Icon
                         style={Styles.icon}
                         name='phone'

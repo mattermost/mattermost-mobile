@@ -4,6 +4,7 @@
 import Client from 'service/client';
 import {batchActions} from 'redux-batched-actions';
 import {Constants, TeamsTypes} from 'service/constants';
+import {getLogErrorAction} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {getProfilesByIds, getStatusesByIds} from './users';
 
@@ -65,7 +66,10 @@ export function createTeam(userId, team) {
             created = await Client.createTeam(team);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
-            dispatch({type: TeamsTypes.CREATE_TEAM_FAILURE, error: err}, getState);
+            dispatch(batchActions([
+                {type: TeamsTypes.CREATE_TEAM_FAILURE, error: err},
+                getLogErrorAction(err)
+            ]), getState);
             return;
         }
 
@@ -127,7 +131,10 @@ export function getTeamMember(teamId, userId) {
             getProfilesAndStatusesForMembers([userId], dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: TeamsTypes.TEAM_MEMBERS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: TeamsTypes.TEAM_MEMBERS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -153,7 +160,10 @@ export function getTeamMembersByIds(teamId, userIds) {
             getProfilesAndStatusesForMembers(userIds, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: TeamsTypes.TEAM_MEMBERS_FAILURE}, getState);
+            dispatch(batchActions([
+                {type: TeamsTypes.TEAM_MEMBERS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
         }
 
         dispatch(batchActions([
@@ -184,9 +194,12 @@ export function addUserToTeam(teamId, userId) {
 
         try {
             await Client.addUserToTeam(teamId, userId);
-        } catch (err) {
-            forceLogoutIfNecessary(err, dispatch);
-            dispatch({type: TeamsTypes.ADD_TEAM_MEMBER_FAILURE, error: err}, getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch(batchActions([
+                {type: TeamsTypes.ADD_TEAM_MEMBER_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -213,9 +226,12 @@ export function removeUserFromTeam(teamId, userId) {
 
         try {
             await Client.removeUserFromTeam(teamId, userId);
-        } catch (err) {
-            forceLogoutIfNecessary(err, dispatch);
-            dispatch({type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error: err}, getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch);
+            dispatch(batchActions([
+                {type: TeamsTypes.REMOVE_TEAM_MEMBER_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 

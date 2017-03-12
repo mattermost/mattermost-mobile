@@ -3,8 +3,8 @@
 
 import {AsyncStorage} from 'react-native';
 import {batchActions} from 'redux-batched-actions';
-
 import {ViewTypes} from 'app/constants';
+import {logError, getLogErrorAction} from 'service/actions/errors';
 import {ChannelTypes, GeneralTypes, TeamsTypes, UsersTypes} from 'service/constants';
 
 export function loadStorage() {
@@ -49,7 +49,13 @@ export function loadStorage() {
             dispatch(batchActions(actions), getState);
         } catch (error) {
             // Error loading data
-            dispatch({type: GeneralTypes.REMOVED_APP_CREDENTIALS, error}, getState);
+            dispatch(batchActions([
+                {
+                    type: ChannelTypes.REMOVED_APP_CREDENTIALS,
+                    error
+                },
+                getLogErrorAction(error)
+            ]), getState);
         }
     };
 }
@@ -90,7 +96,7 @@ export async function updateStorage(key, data) {
 
         return mergedStorageData;
     } catch (error) {
-        // TODO: Need to handle this error
+        logError(error);
         return null;
     }
 }
@@ -114,7 +120,7 @@ export function removeStorage() {
                 await AsyncStorage.removeItem('storage');
             }
         } catch (error) {
-            // TODO: Error removing data
+            logError(error);
         }
         dispatch({type: UsersTypes.RESET_LOGOUT_STATE}, getState);
     };

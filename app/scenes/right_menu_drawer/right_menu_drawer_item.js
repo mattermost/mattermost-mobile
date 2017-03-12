@@ -1,40 +1,36 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-
+import React, {Component, PropTypes} from 'react';
 import {StyleSheet, TouchableHighlight, View} from 'react-native';
 
-const Styles = StyleSheet.create({
+const styles = StyleSheet.create({
     item: {
+        flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
         height: 40,
-        paddingLeft: 10,
-        paddingRight: 10,
-        flex: 1,
-        flexDirection: 'row'
+        paddingHorizontal: 10
     }
 });
 
-export default class MainMenuItem extends React.Component {
+export default class RightMenuDrawerItem extends Component {
     static propTypes = {
-        children: React.PropTypes.node,
-        onPress: React.PropTypes.func,
-        style: React.PropTypes.oneOfType([
-            React.PropTypes.object,
-            React.PropTypes.array
-        ])
+        children: PropTypes.node,
+        onPress: PropTypes.func,
+        style: View.propTypes.style
     }
 
     render() {
+        const {onPress, style, children} = this.props;
         return (
             <TouchableHighlight
                 underlayColor='rgba(255, 255, 255, 0.3)'
-                onPress={this.props.onPress}
-                style={this.props.style}
+                onPress={onPress}
+                style={style}
             >
-                <View style={Styles.item}>
-                    {this.props.children}
+                <View style={styles.item}>
+                    {children}
                 </View>
             </TouchableHighlight>
         );

@@ -8,16 +8,23 @@ import {
     PreferencesTypes,
     UsersTypes
 } from 'service/constants';
-import {forceLogoutIfNecessary} from './helpers';
 import {batchActions} from 'redux-batched-actions';
+
 import Client from 'service/client';
+
+import {logError, getLogErrorAction} from './errors';
+import {forceLogoutIfNecessary} from './helpers';
 
 export function selectChannel(channelId) {
     return async (dispatch, getState) => {
-        dispatch({
-            type: ChannelTypes.SELECT_CHANNEL,
-            data: channelId
-        }, getState);
+        try {
+            dispatch({
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId
+            }, getState);
+        } catch (error) {
+            logError(error)(dispatch);
+        }
     };
 }
 
@@ -45,7 +52,8 @@ export function createChannel(channel, userId) {
                 {
                     type: ChannelTypes.CHANNEL_MEMBERS_FAILURE,
                     error
-                }
+                },
+                getLogErrorAction(error)
             ]), getState);
             return null;
         }
@@ -96,14 +104,9 @@ export function createDirectChannel(teamId, userId, otherUserId) {
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
-                {
-                    type: ChannelTypes.CREATE_CHANNEL_FAILURE,
-                    error
-                },
-                {
-                    type: ChannelTypes.CHANNEL_MEMBERS_FAILURE,
-                    error
-                }
+                {type: ChannelTypes.CREATE_CHANNEL_FAILURE, error},
+                {type: ChannelTypes.CHANNEL_MEMBERS_FAILURE, error},
+                getLogErrorAction(error)
             ]), getState);
             return null;
         }
@@ -150,7 +153,11 @@ export function updateChannel(channel) {
             updated = await Client.updateChannel(channel);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.UPDATE_CHANNEL_FAILURE, error}, getState);
+
+            dispatch(batchActions([
+                {type: ChannelTypes.UPDATE_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -181,7 +188,11 @@ export function updateChannelNotifyProps(userId, teamId, channelId, props) {
             notifyProps = await Client.updateChannelNotifyProps(teamId, data);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.NOTIFY_PROPS_FAILURE, error}, getState);
+
+            dispatch(batchActions([
+                {type: ChannelTypes.NOTIFY_PROPS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -209,7 +220,10 @@ export function getChannel(teamId, channelId) {
             data = await Client.getChannel(teamId, channelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.CHANNELS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.CHANNELS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -251,14 +265,9 @@ export function fetchMyChannelsAndMembers(teamId) {
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
             dispatch(batchActions([
-                {
-                    type: ChannelTypes.CHANNELS_FAILURE,
-                    error
-                },
-                {
-                    type: ChannelTypes.CHANNEL_MEMBERS_FAILURE,
-                    error
-                }
+                {type: ChannelTypes.CHANNELS_FAILURE, error},
+                {type: ChannelTypes.CHANNEL_MEMBERS_FAILURE, error},
+                getLogErrorAction(error)
             ]), getState);
             return;
         }
@@ -293,7 +302,10 @@ export function getMyChannelMembers(teamId) {
             channelMembers = await channelMembersRequest;
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.CHANNEL_MEMBERS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.CHANNEL_MEMBERS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -317,7 +329,10 @@ export function leaveChannel(teamId, channelId) {
             await Client.leaveChannel(teamId, channelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.LEAVE_CHANNEL_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.LEAVE_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -346,7 +361,10 @@ export function joinChannel(userId, teamId, channelId, channelName) {
             }
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.JOIN_CHANNEL_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.JOIN_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -385,7 +403,10 @@ export function deleteChannel(teamId, channelId) {
             await Client.deleteChannel(teamId, channelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.DELETE_CHANNEL_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.DELETE_CHANNEL_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -430,7 +451,10 @@ export function viewChannel(teamId, channelId) {
             await Client.viewChannel(teamId, channelId, prevChannelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.UPDATE_LAST_VIEWED_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.UPDATE_LAST_VIEWED_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -447,7 +471,10 @@ export function getMoreChannels(teamId, offset, limit = Constants.CHANNELS_CHUNK
             channels = await Client.getMoreChannels(teamId, offset, limit);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.MORE_CHANNELS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.MORE_CHANNELS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return null;
         }
 
@@ -474,7 +501,10 @@ export function searchMoreChannels(teamId, term) {
             channels = await Client.searchMoreChannels(teamId, term);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.MORE_CHANNELS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.MORE_CHANNELS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -499,7 +529,10 @@ export function getChannelStats(teamId, channelId) {
             stat = await Client.getChannelStats(teamId, channelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.CHANNEL_STATS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.CHANNEL_STATS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -523,7 +556,10 @@ export function addChannelMember(teamId, channelId, userId) {
             await Client.addChannelMember(teamId, channelId, userId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.ADD_CHANNEL_MEMBER_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.ADD_CHANNEL_MEMBER_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -548,7 +584,10 @@ export function removeChannelMember(teamId, channelId, userId) {
             await Client.removeChannelMember(teamId, channelId, userId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.REMOVE_CHANNEL_MEMBER_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.REMOVE_CHANNEL_MEMBER_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 
@@ -668,7 +707,10 @@ export function autocompleteChannels(teamId, term) {
             data = await Client.autocompleteChannels(teamId, term);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch);
-            dispatch({type: ChannelTypes.AUTOCOMPLETE_CHANNELS_FAILURE, error}, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.AUTOCOMPLETE_CHANNELS_FAILURE, error},
+                getLogErrorAction(error)
+            ]), getState);
             return;
         }
 

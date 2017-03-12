@@ -2,5 +2,6 @@
     "DefaultServerUrl": "http://localhost:8065",
     "TestServerUrl": "http://localhost:8065",
     "DefaultLocale": "en",
-    "DefaultTheme": "default"
+    "DefaultTheme": "default",
+    "ShowErrorsList": false
 }

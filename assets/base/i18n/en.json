@@ -1502,6 +1502,7 @@
   "mobile.channel_list.privateChannel": "Private Channel",
   "mobile.channel_list.publicChannel": "Public Channel",
   "mobile.components.channels_list_view.yourChannels": "Your channels:",
+  "mobile.components.error_list.dismiss_all": "Dismiss All",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",
   "mobile.components.select_server_view.continue": "Continue",
   "mobile.components.select_server_view.siteUrlPlaceholder": "https://mattermost.example.com",

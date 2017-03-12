@@ -1,8 +1,10 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {batchActions} from 'redux-batched-actions';
 import Client from 'service/client';
 import {UsersTypes} from 'service/constants';
+import {getLogErrorAction} from './errors';
 const HTTP_UNAUTHORIZED = 401;
 
 export async function forceLogoutIfNecessary(err, dispatch) {
@@ -50,7 +52,10 @@ export function bindClientFunc(clientFunc, request, success, failure, ...args) {
             data = await clientFunc(...args);
         } catch (err) {
             forceLogoutIfNecessary(err, dispatch);
-            dispatch(requestFailure(failure, err), getState);
+            dispatch(batchActions([
+                requestFailure(failure, err),
+                getLogErrorAction(err)
+            ]), getState);
             return;
         }
 
