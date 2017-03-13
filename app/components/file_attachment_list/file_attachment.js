@@ -2,8 +2,8 @@
 // See License.txt for license information.
 
 import React, {
-    Component,
-    PropTypes
+    PropTypes,
+    PureComponent
 } from 'react';
 
 import {
@@ -18,6 +18,69 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
 import FileAttachmentIcon from './file_attachment_icon';
+import FileAttachmentPreview from './file_attachment_preview';
+
+export default class FileAttachment extends PureComponent {
+    static propTypes = {
+        file: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired
+    };
+
+    renderFileInfo() {
+        const {file, theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View style={style.fileInfoContainer}>
+                <Text
+                    numberOfLines={4}
+                    style={style.fileName}
+                >
+                    {file.name.trim()}
+                </Text>
+                <View style={style.fileDownloadContainer}>
+                    <Icon
+                        name='download'
+                        size={16}
+                        style={style.downloadIcon}
+                    />
+                    <Text style={style.fileInfo}>
+                        {`${file.extension.toUpperCase()} ${Utils.getFormattedFileSize(file)}`}
+                    </Text>
+                </View>
+            </View>
+        );
+    }
+
+    render() {
+        const {file, theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        let fileAttachmentComponent;
+        if (file.has_preview_image) {
+            fileAttachmentComponent = (
+                <FileAttachmentPreview
+                    file={file}
+                    theme={theme}
+                />
+            );
+        } else {
+            fileAttachmentComponent = (
+                <FileAttachmentIcon
+                    file={file}
+                    theme={theme}
+                />
+            );
+        }
+
+        return (
+            <View style={style.fileWrapper}>
+                {fileAttachmentComponent}
+                {this.renderFileInfo()}
+            </View>
+        );
+    }
+}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -57,51 +120,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
-
-export default class FileAttachment extends Component {
-    static propTypes = {
-        file: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
-    };
-
-    renderFileInfo() {
-        const {file, theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        return (
-            <View style={style.fileInfoContainer}>
-                <Text
-                    numberOfLines={4}
-                    style={style.fileName}
-                >
-                    {file.name.trim()}
-                </Text>
-                <View style={style.fileDownloadContainer}>
-                    <Icon
-                        name='download'
-                        size={16}
-                        style={style.downloadIcon}
-                    />
-                    <Text style={style.fileInfo}>
-                        {`${file.extension.toUpperCase()} ${Utils.getFormattedFileSize(file)}`}
-                    </Text>
-                </View>
-            </View>
-        );
-    }
-
-    render() {
-        const {file, theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        return (
-            <View style={style.fileWrapper}>
-                <FileAttachmentIcon
-                    file={file}
-                    theme={theme}
-                />
-                {this.renderFileInfo()}
-            </View>
-        );
-    }
-}

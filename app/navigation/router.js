@@ -22,6 +22,8 @@ import NavigationModal from './navigation_modal';
 
 const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder;
 
+const {width: deviceWidth, height: deviceHeight} = Dimensions.get('window');
+
 class Router extends React.Component {
     static propTypes = {
         navigation: React.PropTypes.object,
@@ -33,6 +35,11 @@ class Router extends React.Component {
     };
 
     headerEventSubscriptions = {};
+
+    state = {
+        deviceHeight,
+        deviceWidth
+    }
 
     emitHeaderEvent = (key) => (event) => {
         const subscription = this.headerEventSubscriptions[`${key}-${event}`];
@@ -60,6 +67,10 @@ class Router extends React.Component {
     };
 
     extractNavigationProps = (route) => {
+        if (!route) {
+            return {};
+        }
+
         return Object.assign({}, route.navigationProps, route.component.navigationProps);
     };
 
@@ -110,7 +121,7 @@ class Router extends React.Component {
             if (navigationProps.allowSceneSwipe) {
                 panHandlers = navigationPanResponder.forHorizontal({
                     ...cardProps,
-                    gestureResponseDistance: (Dimensions.get('window').width / 2), // sets the distance from the edge for swiping
+                    gestureResponseDistance: (this.state.deviceWidth / 2), // sets the distance from the edge for swiping
                     onNavigateBack: this.props.actions.goBack
                 });
             }
@@ -181,17 +192,29 @@ class Router extends React.Component {
         };
     };
 
+    onLayout = (event) => {
+        if (event.nativeEvent.layout.width !== this.state.deviceWidth) {
+            this.setState({
+                deviceHeight: event.nativeEvent.layout.height,
+                deviceWidth: event.nativeEvent.layout.width
+            });
+        }
+    }
+
     render = () => {
         const {
             index,
+            isModal: modalVisible,
             leftDrawerOpen,
             leftDrawerRoute,
+            modal,
             rightDrawerOpen,
             rightDrawerRoute,
-            routes,
-            isModal: modalVisible
+            routes
         } = this.props.navigation;
+
         const navigationProps = this.extractNavigationProps(routes[index]);
+        const modalNavigationProps = this.extractNavigationProps(modal.routes[0]);
 
         let leftDrawerContent;
         if (leftDrawerRoute) {
@@ -204,7 +227,10 @@ class Router extends React.Component {
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View
+                style={{flex: 1}}
+                onLayout={this.onLayout}
+            >
                 <Drawer
                     open={leftDrawerOpen}
                     type='displace'
@@ -244,10 +270,15 @@ class Router extends React.Component {
                         />
                     </Drawer>
                 </Drawer>
-                <NavigationModal show={modalVisible}>
+                <NavigationModal
+                    animationType={modalNavigationProps.modalAnimationType}
+                    deviceHeight={this.state.deviceHeight}
+                    deviceWidth={this.state.deviceWidth}
+                    show={modalVisible}
+                >
                     <NavigationExperimental.Transitioner
                         style={{flex: 1}}
-                        navigationState={this.props.navigation.modal}
+                        navigationState={modal}
                         render={this.renderTransition}
                         configureTransition={this.configureTransition}
                     />

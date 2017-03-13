@@ -178,8 +178,7 @@ export default function(state = initialState, action) {
             index: 0,
             routes: [
                 {
-                    ...action.route,
-                    props: action.props
+                    ...action.route
                 }
             ]
         };

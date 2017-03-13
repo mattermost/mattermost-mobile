@@ -1,6 +1,8 @@
 package com.mattermost;
 
 import com.facebook.react.ReactActivity;
+import com.psykar.cookiemanager.CookieManagerPackage;
+import com.BV.LinearGradient.LinearGradientPackage;
 
 public class MainActivity extends ReactActivity {
 

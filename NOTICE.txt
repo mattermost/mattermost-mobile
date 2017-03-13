@@ -1,10 +1,10 @@
-Mattermost Mobile 
+Mattermost Mobile
 © 2016 Mattermost, Inc.  All Rights Reserved.  See LICENSE.txt for license information.
 
-NOTICES: 
+NOTICES:
 --------
 
-This document includes a list of open source components used in Mattermost Mobile, including those that have been modified. 
+This document includes a list of open source components used in Mattermost Mobile, including those that have been modified.
 
 --------
 
@@ -12,10 +12,10 @@ This document includes a list of open source components used in Mattermost Mobil
 
 This product contains a modified portion of 'fbjs', a collection of JavaScript utilities by Facebook, Inc.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/facebook/fbjs
-  
-* LICENSE: 
+
+* LICENSE:
 
 BSD License
 
@@ -55,9 +55,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This product contains a modified portion of 'react-native-search-bar', a high-quality iOS native search bar for react native by Zhao Han.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/umhan35/react-native-search-bar
-  
+
 * LICENSE:
 
 The MIT License (MIT)
@@ -164,10 +164,10 @@ License.
 
 This product contains 'Intl.js', to bring long overdue localization methods to ECMAScript implementations by Andy Earnshaw.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/andyearnshaw/Intl.js
 
-* LICENSE: 
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -241,10 +241,10 @@ the property of their respective owners.
 
 This product contains 'isomorphic-fetch', to provide the fetch function for node by Matt Andrews.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/matthew-andrews/isomorphic-fetch
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -272,13 +272,13 @@ SOFTWARE.
 
 ## react
 
-This product contains 'react', a declarative, efficient, and 
-flexible JavaScript library for building user interfaces by Facebook, Inc. 
+This product contains 'react', a declarative, efficient, and
+flexible JavaScript library for building user interfaces by Facebook, Inc.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/facebook/react
-  
-* LICENSE: 
+
+* LICENSE:
 
 BSD License
 
@@ -313,7 +313,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The licensor of the React software also provides the following:
- 
+
 Additional Grant of Patent Rights Version 2
 
 "Software" means the React software distributed by Facebook, Inc.
@@ -344,12 +344,12 @@ under section (i) of this paragraph due to such counterclaim.
 
 ## react-intl
 
-This product contains 'react-intl', a library that provides React components and an API to format dates, numbers, and string messages including pluralization by Yahoo Inc. 
+This product contains 'react-intl', a library that provides React components and an API to format dates, numbers, and string messages including pluralization by Yahoo Inc.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/yahoo/react-intl
-  
-* LICENSE: 
+
+* LICENSE:
 
 Copyright 2014 Yahoo Inc.
 All rights reserved.
@@ -385,10 +385,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This product contains 'react-native', a library for building native applications using Javascript and React by Facebook, Inc.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/facebook/react-native
-  
-* LICENSE: 
+
+* LICENSE:
 
 BSD License
 
@@ -425,7 +425,7 @@ The licensor of the React Native software also provides the following:
 
 Additional Grant of Patent Rights Version 2
 
-"Software" means the React Native software distributed by Facebook, Inc. 
+"Software" means the React Native software distributed by Facebook, Inc.
 Facebook, Inc. (“Facebook”) hereby grants to each recipient of the Software
 (“you”) a perpetual, worldwide, royalty-free, non-exclusive, irrevocable
 (subject to the termination provision below) license under any Necessary
@@ -455,10 +455,10 @@ under section (i) of this paragraph due to such counterclaim.
 
 This product contains 'react-native-button', a button for React apps by James Ide.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/ide/react-native-button
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -488,10 +488,10 @@ SOFTWARE.
 
 This product contains 'react-native-drawer', a drawer component for React Native by Zack Story.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/root-two/react-native-drawer
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -509,10 +509,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 This product contains 'react-native-keyboard-spacer', a keyboard spacer view for React Native by Andrew Hurst.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/Andr3wHur5t/react-native-keyboard-spacer
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -542,10 +542,10 @@ SOFTWARE.
 
 This product contains 'react-native-vector-icons', a set of vector icons for use in React Native apps by Joel Arvidsson.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/oblador/react-native-vector-icons
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -575,10 +575,10 @@ SOFTWARE.
 
 This product contains 'react-redux', a set of React bindings for Redux by Dan Abramov.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/reactjs/react-redux
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -608,10 +608,10 @@ SOFTWARE.
 
 This product contains 'redux', a predictable state container for JavaScript apps by Dan Abramov.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/reactjs/redux
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -641,10 +641,10 @@ SOFTWARE.
 
 This product contains 'redux-batched-actions', a batching action creator and higher order reducer for Redux by Tim Shelburne.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/tshelburne/redux-batched-actions
-  
-* LICENSE: 
+
+* LICENSE:
 
 MIT License
 
@@ -674,10 +674,10 @@ SOFTWARE.
 
 This product contains 'redux-thunk', middleware to allow asynchronous actions in Redux by Dan Abramov.
 
-* HOMEPAGE: 
+* HOMEPAGE:
   * https://github.com/gaearon/redux-thunk
-  
-* LICENSE: 
+
+* LICENSE:
 
 The MIT License (MIT)
 
@@ -832,3 +832,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## react-native-linear-gradient
+
+This product contains 'react-native-linear-gradient', a library to provide gradient components to react native on both iOS and Android.
+
+* HOMEPAGE
+    * https://github.com/react-native-community/react-native-linear-gradient
+
+* LICENSE
+
+MIT License
+
+Copyright (c) 2016 React Native Community
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---

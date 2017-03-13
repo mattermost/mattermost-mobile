@@ -3,24 +3,39 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
-    Animated,
-    Dimensions
+    Animated
 } from 'react-native';
 
 const {View: AnimatedView} = Animated;
-const {width: deviceWidth, height: deviceHeight} = Dimensions.get('window');
+
+const ANIMATION_TYPES = {
+    SlideFromBottom: 'slideFromBottom',
+    Fade: 'fade'
+};
 
 export default class NavigationModal extends PureComponent {
     static propTypes = {
+        animationType: PropTypes.oneOf([
+            ANIMATION_TYPES.SlideFromBottom,
+            ANIMATION_TYPES.Fade
+        ]),
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         show: PropTypes.bool
     }
 
     static defaultProps = {
+        animationType: ANIMATION_TYPES.SlideFromBottom,
         show: false
     }
 
-    state = {
-        top: new Animated.Value(deviceHeight)
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            top: new Animated.Value(props.deviceHeight),
+            opacity: new Animated.Value(100)
+        };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -44,12 +59,61 @@ export default class NavigationModal extends PureComponent {
         }
 
         if (nextProps.show !== this.props.show) {
-            const animateValue = nextProps.show ? 0 : deviceHeight;
+            const animationType = nextProps.show ? nextProps.animationType : this.props.animationType;
 
-            Animated.timing(this.state.top, {
-                toValue: animateValue,
+            if (animationType === ANIMATION_TYPES.SlideFromBottom) {
+                this.slideFromBottomAnimationRunner(nextProps);
+            } else if (animationType === ANIMATION_TYPES.Fade) {
+                this.fadeAnimationRunner(nextProps);
+            }
+        }
+    }
+
+    fadeAnimationRunner = (nextProps) => {
+        if (nextProps.show) {
+            const setOpacityToZero = Animated.timing(this.state.opacity, {
+                toValue: 0,
+                duration: 0
+            });
+            const setTopToZero = Animated.timing(this.state.top, {
+                toValue: 0,
+                duration: 0
+            });
+            const setOpacityToFull = Animated.timing(this.state.opacity, {
+                toValue: 1,
                 duration: 400
-            }).start(() => {
+            });
+            Animated.sequence([
+                setOpacityToZero,
+                setTopToZero,
+                setOpacityToFull
+            ]).start(() => {
+                // Once the scene has finished sliding down we can release the child scene
+                // which will unmount the scene correctly.
+                if (!this.props.show && !nextProps.show) {
+                    this.setState({
+                        children: null
+                    });
+                }
+            });
+        } else {
+            const setOpacityToZero = Animated.timing(this.state.opacity, {
+                toValue: 0,
+                duration: 400
+            });
+            const setTopToDeviceHeight = Animated.timing(this.state.top, {
+                toValue: this.props.deviceHeight,
+                duration: 0
+            });
+            const setOpacityToFull = Animated.timing(this.state.opacity, {
+                toValue: 1,
+                duration: 0
+            });
+            Animated.sequence([
+                setOpacityToZero,
+                setTopToDeviceHeight,
+                setOpacityToFull
+            ]).start(() => {
                 // Once the scene has finished sliding down we can release the child scene
                 // which will unmount the scene correctly.
                 if (!this.props.show && !nextProps.show) {
@@ -61,9 +125,37 @@ export default class NavigationModal extends PureComponent {
         }
     }
 
+    slideFromBottomAnimationRunner = (nextProps) => {
+        const animateValue = nextProps.show ? 0 : this.props.deviceHeight;
+
+        Animated.timing(this.state.top, {
+            toValue: animateValue,
+            duration: 400
+        }).start(() => {
+            // Once the scene has finished sliding down we can release the child scene
+            // which will unmount the scene correctly.
+            if (!this.props.show && !nextProps.show) {
+                this.setState({
+                    children: null
+                });
+            }
+        });
+    }
+
     render() {
         return (
-            <AnimatedView style={{position: 'absolute', width: deviceWidth, height: deviceHeight, top: this.state.top, left: 0, backgroundColor: '#0000'}}>
+            <AnimatedView
+                onLayout={this.onLayout}
+                style={{
+                    position: 'absolute',
+                    width: this.props.deviceWidth,
+                    height: this.props.deviceHeight,
+                    top: this.state.top,
+                    left: 0,
+                    backgroundColor: '#0000',
+                    opacity: this.state.opacity
+                }}
+            >
                 {this.state.children}
             </AnimatedView>
         );

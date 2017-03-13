@@ -39,6 +39,7 @@
 		C337E8708D2845C6A8DBB47E /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2DCFD31D3F4A4154822AB532 /* Ionicons.ttf */; };
 		F006936FC2884C24A1321FC0 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 356C9186FA374641A00EB2EA /* MaterialIcons.ttf */; };
 		10CD747CE4304BD6AB38B4CD /* libRNDeviceInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EE671DF7637347CD8C069819 /* libRNDeviceInfo.a */; };
+		584837D6B55F405F908A2053 /* libBVLinearGradient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ACC6B9FDC0AD45A6BFA4FBCD /* libBVLinearGradient.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -310,6 +311,8 @@
 		F81F6DC42D394831B4549928 /* libRNSearchBar.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNSearchBar.a; sourceTree = "<group>"; };
 		B97AA6F961BB47D3A3297E8E /* RNDeviceInfo.xcodeproj */ = {isa = PBXFileReference; name = "RNDeviceInfo.xcodeproj"; path = "../node_modules/react-native-device-info/RNDeviceInfo.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		EE671DF7637347CD8C069819 /* libRNDeviceInfo.a */ = {isa = PBXFileReference; name = "libRNDeviceInfo.a"; path = "libRNDeviceInfo.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		7DCC3D826CE640AF8F491692 /* BVLinearGradient.xcodeproj */ = {isa = PBXFileReference; name = "BVLinearGradient.xcodeproj"; path = "../node_modules/react-native-linear-gradient/BVLinearGradient.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		ACC6B9FDC0AD45A6BFA4FBCD /* libBVLinearGradient.a */ = {isa = PBXFileReference; name = "libBVLinearGradient.a"; path = "libBVLinearGradient.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -342,6 +345,7 @@
 				B50561A109B4442299F82327 /* libRNSearchBar.a in Frameworks */,
 				9906AC672C594EEB9D5EE503 /* libRNCookieManagerIOS.a in Frameworks */,
 				10CD747CE4304BD6AB38B4CD /* libRNDeviceInfo.a in Frameworks */,
+				584837D6B55F405F908A2053 /* libBVLinearGradient.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -550,6 +554,7 @@
 				59954D479A89488091EB588F /* RNSearchBar.xcodeproj */,
 				31A0780E2F224AC8AF8E6930 /* RNCookieManagerIOS.xcodeproj */,
 				B97AA6F961BB47D3A3297E8E /* RNDeviceInfo.xcodeproj */,
+				7DCC3D826CE640AF8F491692 /* BVLinearGradient.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
