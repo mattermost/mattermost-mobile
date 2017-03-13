@@ -12,47 +12,56 @@ export function loadStorage() {
         try {
             const data = JSON.parse(await AsyncStorage.getItem('storage'));
 
-            const {token, url, serverVersion, currentTeamId, ...otherStorage} = data;
-            const credentials = {token, url};
+            if (data) {
+                const {token, url, serverVersion, currentTeamId, ...otherStorage} = data;
+                const credentials = {token, url};
 
-            const currentChannelId = otherStorage[currentTeamId] ? otherStorage[currentTeamId].currentChannelId : '';
+                const currentChannelId = otherStorage[currentTeamId] ? otherStorage[currentTeamId].currentChannelId : '';
 
-            const actions = [
-                {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
-                {type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion}
-            ];
+                const actions = [];
 
-            if (currentTeamId) {
-                actions.push({type: TeamsTypes.SELECT_TEAM, data: currentTeamId});
-            }
+                if (credentials) {
+                    actions.push({type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials});
+                }
 
-            if (currentChannelId) {
-                actions.push({type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId});
-            }
+                if (serverVersion) {
+                    actions.push({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion});
+                }
 
-            // Load post drafts if there are any
-            if (otherStorage.postDrafts) {
-                Object.keys(otherStorage.postDrafts).forEach((d) => {
-                    actions.push({
-                        type: ViewTypes.POST_DRAFT_CHANGED,
-                        channelId: d,
-                        postDraft: otherStorage.postDrafts[d]
+                if (currentTeamId) {
+                    actions.push({type: TeamsTypes.SELECT_TEAM, data: currentTeamId});
+                }
+
+                if (currentChannelId) {
+                    actions.push({type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId});
+                }
+
+                // Load post drafts if there are any
+                if (otherStorage.postDrafts) {
+                    Object.keys(otherStorage.postDrafts).forEach((d) => {
+                        actions.push({
+                            type: ViewTypes.POST_DRAFT_CHANGED,
+                            channelId: d,
+                            postDraft: otherStorage.postDrafts[d]
+                        });
                     });
-                });
-            }
+                }
 
-            // Load thread drafts if there are any
-            if (otherStorage.threadDrafts) {
-                Object.keys(otherStorage.threadDrafts).forEach((d) => {
-                    actions.push({
-                        type: ViewTypes.COMMENT_DRAFT_CHANGED,
-                        rootId: d,
-                        draft: otherStorage.threadDrafts[d]
+                // Load thread drafts if there are any
+                if (otherStorage.threadDrafts) {
+                    Object.keys(otherStorage.threadDrafts).forEach((d) => {
+                        actions.push({
+                            type: ViewTypes.COMMENT_DRAFT_CHANGED,
+                            rootId: d,
+                            draft: otherStorage.threadDrafts[d]
+                        });
                     });
-                });
-            }
+                }
 
-            dispatch(batchActions(actions), getState);
+                if (actions.length) {
+                    dispatch(batchActions(actions), getState);
+                }
+            }
         } catch (error) {
             // Error loading data
             dispatch(batchActions([
