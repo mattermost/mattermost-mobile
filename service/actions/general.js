@@ -94,11 +94,18 @@ export function setServerVersion(serverVersion) {
     };
 }
 
+export function setDeviceToken(token) {
+    return async (dispatch, getState) => {
+        dispatch({type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN, data: token}, getState);
+    };
+}
+
 export default {
     getPing,
     getClientConfig,
     getLicenseConfig,
     logClientError,
     setAppState,
-    setServerVersion
+    setServerVersion,
+    setDeviceToken
 };

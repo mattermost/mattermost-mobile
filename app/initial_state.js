@@ -11,7 +11,8 @@ const state = {
             appState: false,
             credentials: {},
             config: {},
-            license: {}
+            license: {},
+            deviceToken: ''
         },
         users: {
             currentId: '',
@@ -281,6 +282,7 @@ const state = {
             loginId: '',
             password: ''
         },
+        notification: null,
         optionsModal: {
             title: '',
             options: [],

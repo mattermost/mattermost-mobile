@@ -213,11 +213,12 @@ export default class Client {
         );
     };
 
-    login = async (loginId, password, token = '') => {
+    login = async (loginId, password, token = '', deviceId = '') => {
         const body = {
             login_id: loginId,
             password,
-            token
+            token,
+            device_id: deviceId
         };
 
         const {headers, data} = await this.doFetchWithResponse(
@@ -242,6 +243,13 @@ export default class Client {
         }
         this.serverVersion = '';
         return response;
+    };
+
+    attachDevice = async (deviceId) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/attach_device`,
+            {method: 'post', body: JSON.stringify({device_id: deviceId})}
+        );
     };
 
     updateUser = async (user) => {

@@ -6,14 +6,17 @@ import {connect} from 'react-redux';
 
 import Config from 'assets/config.json';
 
-import {loadConfigAndLicense} from 'app/actions/views/root';
-import {setAppState} from 'service/actions/general';
+import {flushToStorage} from 'app/actions/storage';
+import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
+import {setAppState, setDeviceToken} from 'service/actions/general';
 
 import Root from './root';
 
 function mapStateToProps(state, ownProps) {
     const users = state.entities.users;
     const currentUserId = users.currentId;
+    const {currentId: currentTeamId} = state.entities.teams;
+    const {currentId: currentChannelId} = state.entities.channels;
 
     let locale = Config.DefaultLocale;
     if (currentUserId && users.profiles[currentUserId]) {
@@ -22,6 +25,8 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
+        currentTeamId,
+        currentChannelId,
         locale
     };
 }
@@ -30,7 +35,11 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadConfigAndLicense,
-            setAppState
+            goToNotification,
+            queueNotification,
+            setAppState,
+            setDeviceToken,
+            flushToStorage
         }, dispatch)
     };
 }

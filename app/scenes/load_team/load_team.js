@@ -1,28 +1,35 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 
 import Loading from 'app/components/loading';
 
 import {RequestStatus} from 'service/constants';
 
-export default class LoadTeam extends React.Component {
+export default class LoadTeam extends PureComponent {
     static propTypes = {
-        teams: React.PropTypes.object.isRequired,
-        myMembers: React.PropTypes.object.isRequired,
-        teamsRequest: React.PropTypes.object.isRequired,
-        currentTeam: React.PropTypes.object,
-        actions: React.PropTypes.shape({
-            goToChannelView: React.PropTypes.func.isRequired,
-            handleTeamChange: React.PropTypes.func.isRequired
+        notification: PropTypes.object,
+        teams: PropTypes.object.isRequired,
+        myMembers: PropTypes.object.isRequired,
+        teamsRequest: PropTypes.object.isRequired,
+        currentTeam: PropTypes.object,
+        actions: PropTypes.shape({
+            clearNotification: PropTypes.func.isRequired,
+            goToChannelView: PropTypes.func.isRequired,
+            goToNotification: PropTypes.func.isRequired,
+            handleTeamChange: PropTypes.func.isRequired
         }).isRequired
     };
 
     componentDidMount() {
-        const {currentTeam, myMembers, teams} = this.props;
+        const {notification, currentTeam, myMembers, teams} = this.props;
+        const {clearNotification, goToNotification} = this.props.actions;
 
-        if (currentTeam) {
+        if (notification) {
+            clearNotification();
+            goToNotification(notification);
+        } else if (currentTeam) {
             this.onSelectTeam(currentTeam);
         } else if (!currentTeam) {
             this.selectFirstTeam(teams, myMembers);

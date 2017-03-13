@@ -3,5 +3,6 @@
     "TestServerUrl": "http://localhost:8065",
     "DefaultLocale": "en",
     "DefaultTheme": "default",
-    "ShowErrorsList": false
+    "ShowErrorsList": false,
+    "GooglePlaySenderId": "184930218130"
 }

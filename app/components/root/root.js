@@ -1,20 +1,25 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-import {AppState} from 'react-native';
+import React, {PropTypes, PureComponent} from 'react';
+import {AppState, View} from 'react-native';
 import {IntlProvider} from 'react-intl';
+import PushNotification from 'app/components/push_notification';
+
 import {Constants} from 'service/constants';
 import {getTranslations} from 'service/i18n';
 import EventEmitter from 'service/utils/event_emitter';
 
-export default class Root extends React.Component {
+export default class Root extends PureComponent {
     static propTypes = {
-        children: React.PropTypes.node,
-        locale: React.PropTypes.string.isRequired,
-        actions: React.PropTypes.shape({
-            loadConfigAndLicense: React.PropTypes.func.isRequired,
-            setAppState: React.PropTypes.func.isRequired
+        children: PropTypes.node,
+        currentTeamId: PropTypes.string,
+        currentChannelId: PropTypes.string,
+        locale: PropTypes.string.isRequired,
+        actions: PropTypes.shape({
+            loadConfigAndLicense: PropTypes.func.isRequired,
+            setAppState: PropTypes.func.isRequired,
+            flushToStorage: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -38,6 +43,10 @@ export default class Root extends React.Component {
 
     handleAppStateChange(appState) {
         this.props.actions.setAppState(appState === 'active');
+
+        if (appState === 'inactive') {
+            this.props.actions.flushToStorage();
+        }
     }
 
     handleConfigChanged = (serverVersion) => {
@@ -52,7 +61,10 @@ export default class Root extends React.Component {
                 locale={locale}
                 messages={getTranslations(locale)}
             >
-                {this.props.children}
+                <View style={{flex: 1}}>
+                    {this.props.children}
+                    <PushNotification/>
+                </View>
             </IntlProvider>
         );
     }

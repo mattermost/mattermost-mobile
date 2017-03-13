@@ -143,6 +143,10 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-push-notification')
+    compile ('com.google.android.gms:play-services-gcm:9.0.0') {
+        force = true;
+    }
     compile project(':react-native-cookies')
     compile project(':react-native-vector-icons')
     compile project(':react-native-svg')

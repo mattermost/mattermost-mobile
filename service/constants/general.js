@@ -7,6 +7,7 @@ const GeneralTypes = keyMirror({
     RECEIVED_APP_STATE: null,
     RECEIVED_APP_CREDENTIALS: null,
     REMOVED_APP_CREDENTIALS: null,
+    RECEIVED_APP_DEVICE_TOKEN: null,
 
     PING_REQUEST: null,
     PING_SUCCESS: null,

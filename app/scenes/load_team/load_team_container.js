@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goToChannelView} from 'app/actions/views/load_team';
+import {clearNotification, goToNotification} from 'app/actions/views/root';
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {getCurrentTeam} from 'service/selectors/entities/teams';
 
@@ -16,14 +17,17 @@ function mapStateToProps(state) {
         teamsRequest: state.requests.teams.allTeams,
         teams: state.entities.teams.teams,
         currentTeam: getCurrentTeam(state),
-        myMembers: state.entities.teams.myMembers
+        myMembers: state.entities.teams.myMembers,
+        notification: state.views.notification
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            clearNotification,
             goToChannelView,
+            goToNotification,
             handleTeamChange
         }, dispatch)
     };

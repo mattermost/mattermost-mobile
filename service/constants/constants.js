@@ -39,7 +39,10 @@ const Constants = {
     START_OF_NEW_MESSAGES: 'start-of-new-messages',
 
     POST_HEADER_CHANGE: 'system_header_change',
-    POST_PURPOSE_CHANGE: 'system_purpose_change'
+    POST_PURPOSE_CHANGE: 'system_purpose_change',
+
+    PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
+    PUSH_NOTIFY_ANDROID_REACT_NATIVE: 'android_rn'
 };
 
 const FileConstants = {

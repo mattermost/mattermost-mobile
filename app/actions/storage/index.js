@@ -19,10 +19,16 @@ export function loadStorage() {
 
             const actions = [
                 {type: GeneralTypes.RECEIVED_APP_CREDENTIALS, data: credentials},
-                {type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion},
-                {type: TeamsTypes.SELECT_TEAM, data: (currentTeamId || '')},
-                {type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId}
+                {type: GeneralTypes.RECEIVED_SERVER_VERSION, data: serverVersion}
             ];
+
+            if (currentTeamId) {
+                actions.push({type: TeamsTypes.SELECT_TEAM, data: currentTeamId});
+            }
+
+            if (currentChannelId) {
+                actions.push({type: ChannelTypes.SELECT_CHANNEL, data: currentChannelId});
+            }
 
             // Load post drafts if there are any
             if (otherStorage.postDrafts) {

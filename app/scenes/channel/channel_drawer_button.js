@@ -16,6 +16,7 @@ import {getTheme} from 'service/selectors/entities/preferences';
 function ChannelDrawerButton(props) {
     let badge;
     let badgeCount = props.mentionCount;
+
     if (!badgeCount && props.messageCount) {
         badgeCount = -1;
     }
