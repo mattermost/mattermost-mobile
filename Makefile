@@ -7,7 +7,7 @@ ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
 
 .npminstall: package.json
-	@if ! [ $(shell command -v npm) ]; then \
+	@if ! [ $(shell command -v npm 2> /dev/null) ]; then \
 		echo "npm is not installed"; \
 		exit 1; \
 	fi
@@ -58,15 +58,15 @@ run-android: | start prepare-android-build
 		echo "ANDROID_HOME is not set"; \
 		exit 1; \
 	fi
-	@if ! [ $(shell command -v adb) ]; then \
+	@if ! [ $(shell command -v adb 2> /dev/null) ]; then \
 		echo "adb is not installed"; \
 		exit 1; \
 	fi
-	@if ! [ $(shell adb get-state) == "device" ]; then \
-		echo "no android device or emulator is running"; \
-		exit 1; \
-	fi
-	@if ! [ $(shell command -v watchman) ]; then \
+    ifneq ($(shell adb get-state),device)
+		echo "no android device or emulator is running"
+		exit 1;
+    endif
+	@if ! [ $(shell command -v watchman 2> /dev/null) ]; then \
 		echo "watchman is not installed"; \
 		exit 1; \
 	fi
