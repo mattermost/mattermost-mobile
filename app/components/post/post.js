@@ -116,11 +116,11 @@ export default class Post extends Component {
         this.props.actions.goToUserProfile(this.props.user.id);
     };
 
-    renderMessage = (style, messageStyle) => {
+    renderMessage = (style, messageStyle, replyBar = false) => {
         return (
             <TouchableHighlight onPress={this.handlePress}>
                 <View style={{flex: 1}}>
-                    {this.renderReplyBar(style)}
+                    {replyBar && this.renderReplyBar(style)}
                     {this.props.post.message.length > 0 &&
                     <Text style={messageStyle}>
                         {this.props.post.message}
@@ -227,7 +227,7 @@ export default class Post extends Component {
                         <View>
                             {this.renderCommentedOnMessage(style)}
                         </View>
-                        {this.renderMessage(style, messageStyle)}
+                        {this.renderMessage(style, messageStyle, true)}
                     </View>
                 </View>
             );
