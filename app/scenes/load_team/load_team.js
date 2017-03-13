@@ -1,9 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes, PureComponent} from 'react';
-
-import Loading from 'app/components/loading';
+import {PropTypes, PureComponent} from 'react';
 
 import {RequestStatus} from 'service/constants';
 
@@ -57,6 +55,6 @@ export default class LoadTeam extends PureComponent {
     }
 
     render() {
-        return <Loading/>;
+        return null;
     }
 }

@@ -43,7 +43,7 @@ export default class Post extends Component {
         if (this.props.onPress) {
             this.props.onPress(this.props.post);
         }
-    }
+    };
 
     renderCommentedOnMessage = (style) => {
         if (!this.props.renderReplies || !this.props.commentedOnPost) {
@@ -100,7 +100,7 @@ export default class Post extends Component {
         }
 
         return <View style={replyBarStyle}/>;
-    }
+    };
 
     renderFileAttachments() {
         const {post} = this.props;
@@ -114,7 +114,23 @@ export default class Post extends Component {
 
     viewUserProfile = () => {
         this.props.actions.goToUserProfile(this.props.user.id);
-    }
+    };
+
+    renderMessage = (style, messageStyle, replyBar = false) => {
+        return (
+            <TouchableHighlight onPress={this.handlePress}>
+                <View style={{flex: 1}}>
+                    {replyBar && this.renderReplyBar(style)}
+                    {this.props.post.message.length > 0 &&
+                    <Text style={messageStyle}>
+                        {this.props.post.message}
+                    </Text>
+                    }
+                    {this.renderFileAttachments()}
+                </View>
+            </TouchableHighlight>
+        );
+    };
 
     render() {
         const style = getStyleSheet(this.props.theme);
@@ -211,15 +227,7 @@ export default class Post extends Component {
                         <View>
                             {this.renderCommentedOnMessage(style)}
                         </View>
-                        <View style={style.messageContainerWithReplyBar}>
-                            {this.renderReplyBar(style)}
-                            {this.props.post.message.length > 0 &&
-                                <Text style={messageStyle}>
-                                    {this.props.post.message}
-                                </Text>
-                            }
-                            {this.renderFileAttachments()}
-                        </View>
+                        {this.renderMessage(style, messageStyle, true)}
                     </View>
                 </View>
             );
@@ -238,30 +246,16 @@ export default class Post extends Component {
                                     <FormattedTime value={this.props.post.create_at}/>
                                 </Text>
                             </View>
-                            <View style={style.messageContainer}>
-                                {this.props.post.message.length > 0 &&
-                                    <Text style={messageStyle}>
-                                        {this.props.post.message}
-                                    </Text>
-                                }
-                                {this.renderFileAttachments()}
-                            </View>
+                            {this.renderMessage(style, messageStyle)}
                         </View>
                     </View>
                 </View>
             );
         }
 
-        if (this.props.onPress) {
-            return (
-                <TouchableHighlight onPress={this.handlePress}>
-                    {contents}
-                </TouchableHighlight>
-            );
-        }
-
         return contents;
     }
+
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
