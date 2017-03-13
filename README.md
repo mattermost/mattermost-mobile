@@ -34,7 +34,9 @@ If you would like to help with testing the apps, you can:
 
 ### Contribute Code 
 
-We're not quite ready to accept external contributions yet - when things are ready, issues with a [Help Wanted] title will be posted in the [GitHub Issues section](https://github.com/mattermost/mattermost-mobile/issues).
+1. Look in [GitHub issues](https://github.com/mattermost/mattermost-mobile/issues) for issues marked as [Help Wanted]
+2. Comment to let people know you’re working on it
+3. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) on our team site to ask questions
 
 # Installing Dependencies
 Follow the [React Native Getting Started Guide](https://facebook.github.io/react-native/docs/getting-started.html) for detailed instructions on setting up your local machine for development.
