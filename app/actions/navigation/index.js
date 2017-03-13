@@ -232,3 +232,12 @@ export function goToCreateChannel(channelType) {
         }, getState);
     };
 }
+
+export function goToAccountNotifications() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.AccountNotifications
+        }, getState);
+    };
+}

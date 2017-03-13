@@ -15,7 +15,12 @@ import WebsocketEvents from './websocket';
 
 const Preferences = {
     CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
-    CATEGORY_THEME: 'theme'
+    CATEGORY_NOTIFICATIONS: 'notifications',
+    CATEGORY_THEME: 'theme',
+    EMAIL_INTERVAL: 'email_interval',
+    INTERVAL_FIFTEEN_MINUTES: 15 * 60,
+    INTERVAL_HOUR: 60 * 60,
+    INTERVAL_IMMEDIATE: 30 // "immediate" is a 30 second interval
 };
 
 export {

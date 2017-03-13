@@ -449,6 +449,25 @@ export function stopPeriodicStatusUpdates() {
     };
 }
 
+export function updateUserNotifyProps(notifyProps) {
+    return async (dispatch, getState) => {
+        dispatch({type: UsersTypes.UPDATE_NOTIFY_PROPS_REQUEST}, getState);
+
+        let data;
+        try {
+            data = await Client.updateUserNotifyProps(notifyProps);
+        } catch (error) {
+            dispatch({type: UsersTypes.UPDATE_NOTIFY_PROPS_FAILURE, error}, getState);
+            return;
+        }
+
+        dispatch(batchActions([
+            {type: UsersTypes.RECEIVED_ME, data},
+            {type: UsersTypes.UPDATE_NOTIFY_PROPS_SUCCESS}
+        ]), getState);
+    };
+}
+
 export default {
     checkMfa,
     login,
@@ -464,5 +483,6 @@ export default {
     getAudits,
     searchProfiles,
     startPeriodicStatusUpdates,
-    stopPeriodicStatusUpdates
+    stopPeriodicStatusUpdates,
+    updateUserNotifyProps
 };

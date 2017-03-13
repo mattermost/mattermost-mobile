@@ -64,7 +64,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 export default class AccountSettings extends PureComponent {
     static propTypes = {
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            goToAccountNotifications: PropTypes.func.isRequired
+        })
     }
 
     static navigationProps = {
@@ -129,7 +132,7 @@ export default class AccountSettings extends PureComponent {
         return [
             this.buildItemRow('gear', 'user.settings.modal.general', 'General', () => true, true, false),
             this.buildItemRow('lock', 'user.settings.modal.security', 'Security', () => true, true, false),
-            this.buildItemRow('bell', 'user.settings.modal.notifications', 'Notifications', () => true, true, false),
+            this.buildItemRow('bell', 'user.settings.modal.notifications', 'Notifications', this.props.actions.goToAccountNotifications, false, true),
             this.buildItemRow('mobile', 'user.settings.modal.display', 'Display', () => true, true, false),
             this.buildItemRow('wrench', 'user.settings.modal.advanced', 'Advanced', () => true, false, false)
         ];

@@ -1,6 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import AccountNotifications from './account_notifications';
 import AccountSettings from './account_settings';
 import Channel from './channel';
 import ChannelDrawer from './channel_drawer';
@@ -25,6 +26,7 @@ import UserProfile from './user_profile';
 import Saml from './saml';
 
 module.exports = {
+    AccountNotifications,
     AccountSettings,
     ChannelView: Channel, // Special case the name for this one to avoid ambiguity
     ChannelDrawer,
