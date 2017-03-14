@@ -55,6 +55,7 @@ export default class ImagePreview extends PureComponent {
             deviceWidth,
             drag: new Animated.ValueXY(),
             footerOpacity: new Animated.Value(1),
+            pagingEnabled: true,
             showFileInfo: true,
             wrapperViewOpacity: new Animated.Value(Platform.OS === 'android' ? 0 : 1)
         };
@@ -73,6 +74,7 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentDidMount() {
+        // TODO: Use contentOffset on Android once PR is merged
         // This is a hack until this PR gets merged: https://github.com/facebook/react-native/pull/12502
         // On Android there is a render animation for scrollViews. In order for scrollTo to work
         // on scrollViews we have to wait for the animation to finish. This will cause a bad flicker when we
@@ -93,11 +95,11 @@ export default class ImagePreview extends PureComponent {
 
     onMoveShouldSetPanResponderCapture =(evt, gestureState) => {
         const {dx, dy} = gestureState;
-        return (dy > DRAG_VERTICAL_THRESHOLD_START && dx < DRAG_HORIZONTAL_THRESHOLD);
+        return (Math.abs(dy) > DRAG_VERTICAL_THRESHOLD_START && dx < DRAG_HORIZONTAL_THRESHOLD);
     }
 
     onPanResponderRelease = (evt, gestureState) => {
-        if (gestureState.dy > DRAG_VERTICAL_THRESHOLD_END) {
+        if (Math.abs(gestureState.dy) > DRAG_VERTICAL_THRESHOLD_END) {
             this.props.actions.goBack();
         } else {
             Animated.spring(this.state.drag, {
@@ -123,7 +125,8 @@ export default class ImagePreview extends PureComponent {
     handleScroll = (event) => {
         if (event.nativeEvent.contentOffset.x % this.state.deviceWidth === 0) {
             this.setState({
-                currentFile: (event.nativeEvent.contentOffset.x / this.state.deviceWidth)
+                currentFile: (event.nativeEvent.contentOffset.x / this.state.deviceWidth),
+                pagingEnabled: true
             });
         }
     }
@@ -185,9 +188,8 @@ export default class ImagePreview extends PureComponent {
                         style={[style.ScrollView]}
                         contentContainerStyle={style.scrollViewContent}
                         horizontal={true}
-                        pagingEnabled={true}
+                        pagingEnabled={this.state.pagingEnabled}
                         bounces={false}
-                        maximumZoomScale={2}
                         onScroll={this.handleScroll}
                         scrollEventThrottle={1}
                         contentOffset={{x: (this.state.currentFile) * this.state.deviceWidth}}

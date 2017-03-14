@@ -68,6 +68,7 @@ export default class FileAttachmentIcon extends Component {
                 <Image
                     style={{height: iconHeight, width: iconWidth}}
                     source={source}
+                    defaultSource={genericIcon}
                 />
             </View>
         );

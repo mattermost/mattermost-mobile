@@ -13,6 +13,8 @@ import {
 
 import Client from 'mattermost-redux/client';
 
+import genericIcon from 'assets/images/icons/generic.png';
+
 export default class FileAttachmentPreview extends PureComponent {
     static propTypes = {
         file: PropTypes.object.isRequired,
@@ -53,6 +55,7 @@ export default class FileAttachmentPreview extends PureComponent {
                     source={source}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
+                    defaultSource={genericIcon}
                 />
             </View>
         );
