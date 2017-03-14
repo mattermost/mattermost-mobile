@@ -1,5 +1,7 @@
 --require test/setup.js
+--require test/mocks.js
 --compilers js:babel-core/register
+--compilers js:mocha-react-native/init
 --require react-native-mock/mock.js
 --require react-native-svg-mock/mock
 --require babel-polyfill

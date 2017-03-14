@@ -34,6 +34,10 @@ m._load = function hookedLoader(request, parent, isMain) {
 
     if (request === './options_modal_list') {
         request = './options_modal_list.ios';
+
+    if (request === 'react-native-linear-gradient') {
+        request = 'react-native-linear-gradient/index.ios';
+
     }
 
     return originalLoader(request, parent, isMain);
