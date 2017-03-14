@@ -128,8 +128,8 @@ class Router extends React.Component {
         return (
             <View style={{flex: 1, flexDirection: 'column-reverse'}}>
                 <View style={{flex: 1}}>
-                    <ErrorList/>
                     {renderedScenes}
+                    <ErrorList/>
                 </View>
                 {navBar}
             </View>
