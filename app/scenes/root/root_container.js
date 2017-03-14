@@ -6,9 +6,11 @@ import {bindActionCreators} from 'redux';
 import navigationSceneConnect from '../navigationSceneConnect';
 
 import {loadStorage, removeStorage} from 'app/actions/storage';
-import {goToSelectServer, setStoreFromLocalData} from 'app/actions/views/root';
+import {goToSelectServer} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import {goToLoadTeam} from 'app/actions/navigation';
+
+import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
 
 import Root from './root';
 

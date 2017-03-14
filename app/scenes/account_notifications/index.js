@@ -5,8 +5,8 @@ import {bindActionCreators} from 'redux';
 
 import {goBack} from 'app/actions/navigation';
 import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notifications';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentUser} from 'service/selectors/entities/users';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 

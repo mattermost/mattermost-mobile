@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {removeChannelMember} from 'service/actions/channels';
+import {removeChannelMember} from 'mattermost-redux/actions/channels';
 
 export function handleRemoveChannelMembers(teamId, channelId, members) {
     return async (dispatch, getState) => {

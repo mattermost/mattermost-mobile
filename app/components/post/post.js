@@ -19,7 +19,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {isSystemMessage} from 'service/utils/post_utils.js';
+import {isSystemMessage} from 'mattermost-redux/utils/post_utils.js';
 
 export default class Post extends Component {
     static propTypes = {

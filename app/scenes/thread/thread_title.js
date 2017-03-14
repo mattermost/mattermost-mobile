@@ -7,9 +7,9 @@ import {
     View
 } from 'react-native';
 
-import {Constants} from 'service/constants';
-import {getCurrentChannel} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {Constants} from 'mattermost-redux/constants';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
 
 import FormattedText from 'app/components/formatted_text';
 

@@ -11,11 +11,12 @@ const state = {
             appState: false,
             credentials: {},
             config: {},
+            deviceToken: '',
             license: {},
-            deviceToken: ''
+            serverVersion: ''
         },
         users: {
-            currentId: '',
+            currentUserId: '',
             mySessions: [],
             myAudits: [],
             profiles: {},
@@ -26,7 +27,7 @@ const state = {
             search: {}
         },
         teams: {
-            currentId: '',
+            currentTeamId: '',
             teams: {},
             myMembers: {},
             membersInTeam: {},
@@ -34,7 +35,7 @@ const state = {
             openTeamIds: new Set()
         },
         channels: {
-            currentId: '',
+            currentChannelId: '',
             channels: {},
             myMembers: {},
             stats: {}
@@ -50,6 +51,7 @@ const state = {
         },
         typing: {}
     },
+    errors: [],
     requests: {
         channels: {
             getChannel: {

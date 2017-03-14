@@ -6,14 +6,11 @@ import {createSelector} from 'reselect';
 import Config from 'assets/config.json';
 import Themes from 'assets/themes.json';
 
-import {Preferences} from 'service/constants';
-import {getPreferenceKey} from 'service/utils/preference_utils';
+import {Preferences} from 'mattermost-redux/constants';
+import {getPreferenceKey} from 'mattermost-redux/utils/preference_utils';
 
-import {getCurrentTeamId} from './teams';
-
-export function getMyPreferences(state) {
-    return state.entities.preferences.myPreferences;
-}
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 export const getTheme = createSelector(
     getMyPreferences,

@@ -4,11 +4,11 @@
 import {bindActionCreators} from 'redux';
 
 import {handleCommentDraftChanged} from 'app/actions/views/thread';
-import {selectPost} from 'service/actions/posts';
+import {selectPost} from 'mattermost-redux/actions/posts';
 
-import {makeGetPostsForThread} from 'service/selectors/entities/posts';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentTeamId} from 'service/selectors/entities/teams';
+import {makeGetPostsForThread} from 'mattermost-redux/selectors/entities/posts';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 import Thread from './thread';

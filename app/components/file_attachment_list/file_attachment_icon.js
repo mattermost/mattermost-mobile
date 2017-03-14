@@ -12,7 +12,7 @@ import {
     StyleSheet
 } from 'react-native';
 
-import * as Utils from 'service/utils/file_utils';
+import * as Utils from 'mattermost-redux/utils/file_utils';
 
 import audioIcon from 'assets/images/icons/audio.png';
 import codeIcon from 'assets/images/icons/code.png';

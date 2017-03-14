@@ -3,7 +3,7 @@
 
 import {PropTypes, PureComponent} from 'react';
 
-import {RequestStatus} from 'service/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {

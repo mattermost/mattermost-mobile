@@ -15,7 +15,7 @@ import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
-import {Constants, RequestStatus} from 'service/constants';
+import {Constants, RequestStatus} from 'mattermost-redux/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 class MoreDirectMessages extends PureComponent {

@@ -18,7 +18,7 @@ import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
 
-import RequestStatus from 'service/constants/request_status';
+import RequestStatus from 'mattermost-redux/constants/request_status';
 
 export default class Mfa extends Component {
     static propTypes = {

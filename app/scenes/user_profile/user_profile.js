@@ -11,7 +11,7 @@ import {
 
 import ProfilePicture from 'app/components/profile_picture';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getFullName} from 'service/utils/user_utils';
+import {getFullName} from 'mattermost-redux/utils/user_utils';
 
 import UserProfileRow from './user_profile_row';
 

@@ -4,11 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {createPost} from 'service/actions/posts';
-import {userTyping} from 'service/actions/websocket';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentUserId} from 'service/selectors/entities/users';
-import {getUsersTyping} from 'service/selectors/entities/typing';
+import {createPost} from 'mattermost-redux/actions/posts';
+import {userTyping} from 'mattermost-redux/actions/websocket';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getUsersTyping} from 'mattermost-redux/selectors/entities/typing';
 
 import PostTextbox from './post_textbox';
 

@@ -10,8 +10,8 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Badge from 'app/components/badge';
 
-import {getUnreads} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getUnreads} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
 
 function ChannelDrawerButton(props) {
     let badge;

@@ -10,8 +10,8 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 
-import {getCurrentChannel, canManageChannelMembers} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getCurrentChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
 
 function RemoveMemberButton(props) {
     const {canManageUsers} = props;

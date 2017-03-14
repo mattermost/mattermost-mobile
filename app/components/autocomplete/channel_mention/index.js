@@ -4,14 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {autocompleteChannels} from 'service/actions/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getAutocompleteChannelWithSections} from 'service/selectors/entities/channels';
+import {autocompleteChannels} from 'mattermost-redux/actions/channels';
+import {getTheme} from 'app/selectors/preferences';
+import {getAutocompleteChannelWithSections} from 'mattermost-redux/selectors/entities/channels';
 
 import ChannelMention from './channel_mention';
 
 function mapStateToProps(state, ownProps) {
-    const currentChannelId = state.entities.channels.currentId;
+    const {currentChannelId} = state.entities.channels;
 
     let postDraft;
     if (ownProps.rootId.length) {
@@ -23,7 +23,7 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         currentChannelId,
-        currentTeamId: state.entities.teams.currentId,
+        currentTeamId: state.entities.teams.currentTeamId,
         postDraft,
         autocompleteChannels: getAutocompleteChannelWithSections(state),
         requestStatus: state.requests.channels.autocompleteChannels.status,

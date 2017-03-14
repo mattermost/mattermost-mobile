@@ -2,10 +2,10 @@
 // See License.txt for license information.
 
 import {handleSelectChannel} from './channel';
-import {createChannel} from 'service/actions/channels';
-import {getCurrentTeamId} from 'service/selectors/entities/teams';
-import {getCurrentUserId} from 'service/selectors/entities/users';
-import {cleanUpUrlable} from 'service/utils/channel_utils';
+import {createChannel} from 'mattermost-redux/actions/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {cleanUpUrlable} from 'mattermost-redux/utils/channel_utils';
 
 export function handleCreateChannel(displayName, purpose, header, type) {
     return async (dispatch, getState) => {

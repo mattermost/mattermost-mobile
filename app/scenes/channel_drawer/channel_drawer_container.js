@@ -7,11 +7,11 @@ import {connect} from 'react-redux';
 import {closeDrawers} from 'app/actions/navigation';
 import {handleSelectChannel} from 'app/actions/views/channel';
 
-import {getChannelsByCategory, getCurrentChannel} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentTeam} from 'service/selectors/entities/teams';
+import {getChannelsByCategory, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
-import {viewChannel, markChannelAsRead} from 'service/actions/channels';
+import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
 
 import ChannelDrawer from './channel_drawer.js';
 

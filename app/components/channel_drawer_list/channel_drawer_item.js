@@ -8,7 +8,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
 import {changeOpacity} from 'app/utils/theme';
 
-import {Constants} from 'service/constants';
+import {Constants} from 'mattermost-redux/constants';
 
 import Badge from 'app/components/badge';
 

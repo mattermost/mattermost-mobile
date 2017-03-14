@@ -20,8 +20,8 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Constants, RequestStatus} from 'service/constants';
-import EventEmitter from 'service/utils/event_emitter';
+import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ActionButton from 'app/components/action_button';
 

@@ -20,7 +20,7 @@ import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
 
-import {RequestStatus} from 'service/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 class Login extends Component {
     static propTypes = {

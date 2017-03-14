@@ -20,8 +20,8 @@ import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 
 import logo from 'assets/images/logo.png';
 
-import {RequestStatus} from 'service/constants';
-import Client from 'service/client';
+import {RequestStatus} from 'mattermost-redux/constants';
+import Client from 'mattermost-redux/client';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {

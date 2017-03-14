@@ -7,7 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import LoginActions from 'app/actions/views/login';
 import {goToMfa, goToLoadTeam} from 'app/actions/navigation';
-import {checkMfa, login} from 'service/actions/users';
+import {checkMfa, login} from 'mattermost-redux/actions/users';
 
 import Login from './login.js';
 

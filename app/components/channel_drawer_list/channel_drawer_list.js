@@ -13,7 +13,7 @@ import {
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import {Constants} from 'service/constants';
+import {Constants} from 'mattermost-redux/constants';
 import LineDivider from 'app/components/line_divider';
 import ChannelDrawerItem from './channel_drawer_item';
 import FormattedText from 'app/components/formatted_text';

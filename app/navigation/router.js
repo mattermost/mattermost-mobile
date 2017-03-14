@@ -15,8 +15,9 @@ import {closeDrawers, goBack} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
 import {RouteTransitions} from 'app/navigation/routes';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 import ErrorList from 'app/components/error_list';
+
 import NavigationModal from './navigation_modal';
 
 const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder;

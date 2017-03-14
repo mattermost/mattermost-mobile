@@ -15,7 +15,7 @@ import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-import {RequestStatus} from 'service/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
 

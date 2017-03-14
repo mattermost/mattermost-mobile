@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 
 import Config from 'assets/config.json';
 
-import {UsersTypes} from 'service/constants';
+import {UsersTypes} from 'mattermost-redux/constants';
 
 function locale(state = Config.DefaultLocale, action) {
     switch (action.type) {

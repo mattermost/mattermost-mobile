@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 
 import {goToAccountNotifications} from 'app/actions/navigation';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 import AccountSettings from './account_settings';

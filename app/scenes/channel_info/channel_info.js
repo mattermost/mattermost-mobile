@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {Constants} from 'service/constants';
+import {Constants} from 'mattermost-redux/constants';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';

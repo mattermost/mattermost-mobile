@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes} from 'service/constants';
+import {ChannelTypes} from 'mattermost-redux/constants';
 
 function drafts(state = {}, action) {
     switch (action.type) {

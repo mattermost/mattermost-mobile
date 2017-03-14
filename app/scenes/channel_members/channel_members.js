@@ -13,7 +13,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import MemberList from 'app/components/custom_list';
 import {createMembersSections, loadingText} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
-import {displayUsername} from 'service/utils/user_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelMembersTitle from './channel_members_title';

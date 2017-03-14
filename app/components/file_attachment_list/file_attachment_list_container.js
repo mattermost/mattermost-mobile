@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {makeGetFilesForPost} from 'service/selectors/entities/files';
+import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 
 import FileAttachmentList from './file_attachment_list';
 

@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import appReducer from 'app/reducers';
-import configureServiceStore from 'service/store';
+import configureServiceStore from 'mattermost-redux/store';
 
 function getAppReducer() {
     return require('../../app/reducers'); // eslint-disable-line global-require

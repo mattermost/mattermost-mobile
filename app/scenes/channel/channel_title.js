@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {getCurrentChannel} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
 
 function ChannelTitle(props) {
     const channelName = props.currentChannel.display_name;

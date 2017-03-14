@@ -11,8 +11,8 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 
-import {getTheme} from 'service/selectors/entities/preferences';
-import EventEmitter from 'service/utils/event_emitter';
+import {getTheme} from 'app/selectors/preferences';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 class AccountNotifcationsButton extends PureComponent {
     static propTypes = {

@@ -9,7 +9,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
 
-import Client from 'service/client';
+import Client from 'mattermost-redux/client';
 
 const statusToIcon = {
     online: 'check',

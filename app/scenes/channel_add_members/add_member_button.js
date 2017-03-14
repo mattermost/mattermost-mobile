@@ -10,7 +10,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 
 function AddMemberButton(props) {
     return (

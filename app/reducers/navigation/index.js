@@ -3,7 +3,7 @@
 
 import {NavigationExperimental} from 'react-native';
 
-import {UsersTypes} from 'service/constants';
+import {UsersTypes} from 'mattermost-redux/constants';
 import {NavigationTypes} from 'app/constants';
 
 import Routes from 'app/navigation/routes';

@@ -7,11 +7,12 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
-import {getCurrentChannel, getCurrentChannelStats, canManageChannelMembers} from 'service/selectors/entities/channels';
-import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentTeam} from 'service/selectors/entities/teams';
-import {getProfilesInCurrentChannel} from 'service/selectors/entities/users';
-import {getProfilesInChannel} from 'service/actions/users';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentChannel, getCurrentChannelStats, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
+import {getProfilesInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
+import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 
 import ChannelMembers from './channel_members';
 
@@ -23,7 +24,7 @@ function mapStateToProps(state) {
         currentChannel: getCurrentChannel(state),
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentChannelMemberCount,
-        currentUserId: state.entities.users.currentId,
+        currentUserId: state.entities.users.currentUserId,
         currentTeam: getCurrentTeam(state),
         preferences: getMyPreferences(state),
         requestStatus: state.requests.users.getProfilesInChannel.status,

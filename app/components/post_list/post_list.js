@@ -12,8 +12,8 @@ import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
 
-import {Constants} from 'service/constants';
-import {addDatesToPostList} from 'service/utils/post_utils';
+import {Constants} from 'mattermost-redux/constants';
+import {addDatesToPostList} from 'mattermost-redux/utils/post_utils';
 
 const style = StyleSheet.create({
     container: {

@@ -7,12 +7,11 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
-
-import {getTheme} from 'service/selectors/entities/preferences';
-import EventEmitter from 'service/utils/event_emitter';
+import {getTheme} from 'app/selectors/preferences';
 import {changeOpacity} from 'app/utils/theme';
 
 class ActionButton extends PureComponent {
