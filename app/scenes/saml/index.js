@@ -7,7 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {handleSuccessfulLogin} from 'app/actions/views/login';
 import {goToLoadTeam} from 'app/actions/navigation';
-import {setStoreFromLocalData} from 'app/actions/views/root';
+import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
 
 import Saml from './saml';
 

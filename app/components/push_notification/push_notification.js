@@ -10,7 +10,7 @@ import {changeOpacity} from 'app/utils/theme';
 import icon from 'assets/images/icon.png';
 import {GooglePlaySenderId} from 'assets/config.json';
 
-import {Constants} from 'service/constants';
+import {Constants} from 'mattermost-redux/constants';
 
 export default class PushNotification extends PureComponent {
     static propTypes = {

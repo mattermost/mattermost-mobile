@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {logout} from 'service/actions/users';
+import {logout} from 'mattermost-redux/actions/users';
 
 import Logout from './logout.js';
 

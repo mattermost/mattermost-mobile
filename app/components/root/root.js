@@ -8,10 +8,10 @@ import DeviceInfo from 'react-native-device-info';
 
 import PushNotification from 'app/components/push_notification';
 
-import Client from 'service/client';
-import {Constants} from 'service/constants';
-import {getTranslations} from 'service/i18n';
-import EventEmitter from 'service/utils/event_emitter';
+import Client from 'mattermost-redux/client';
+import {Constants} from 'mattermost-redux/constants';
+import {getTranslations} from 'app/i18n';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 export default class Root extends PureComponent {
     static propTypes = {

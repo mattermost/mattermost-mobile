@@ -3,7 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 
-import {Constants, RequestStatus} from 'service/constants';
+import {Constants, RequestStatus} from 'mattermost-redux/constants';
 
 import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';

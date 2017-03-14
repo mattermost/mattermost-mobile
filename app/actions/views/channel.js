@@ -12,14 +12,14 @@ import {
     getMyChannelMembers,
     selectChannel,
     leaveChannel as serviceLeaveChannel
-} from 'service/actions/channels';
-import {getPosts, getPostsSince} from 'service/actions/posts';
-import {getFilesForPost} from 'service/actions/files';
-import {savePreferences, deletePreferences} from 'service/actions/preferences';
-import {getTeamMembersByIds} from 'service/actions/teams';
-import {Constants, UsersTypes} from 'service/constants';
-import {getChannelByName, getDirectChannelName, isDirectChannelVisible} from 'service/utils/channel_utils';
-import {getPreferencesByCategory} from 'service/utils/preference_utils';
+} from 'mattermost-redux/actions/channels';
+import {getPosts, getPostsSince} from 'mattermost-redux/actions/posts';
+import {getFilesForPost} from 'mattermost-redux/actions/files';
+import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
+import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
+import {Constants, UsersTypes} from 'mattermost-redux/constants';
+import {getChannelByName, getDirectChannelName, isDirectChannelVisible} from 'mattermost-redux/utils/channel_utils';
+import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
@@ -45,7 +45,7 @@ export function loadChannelsIfNecessary(teamId) {
 export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const currentUserId = state.entities.users.currentId;
+        const {currentUserId} = state.entities.users;
         const {channels} = state.entities.channels;
         const {myPreferences} = state.entities.preferences;
         const {membersInTeam} = state.entities.teams;
@@ -92,7 +92,7 @@ export function loadPostsIfNecessary(channel) {
         const postsInChannel = state.entities.posts.postsByChannel[channel.id];
 
         // Make sure we include a team id for DM channels
-        const teamId = channel.team_id || state.entities.teams.currentId;
+        const teamId = channel.team_id || state.entities.teams.currentTeamId;
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
         if (!postsInChannel || postsInChannel.length < Constants.POST_CHUNK_SIZE) {
@@ -111,8 +111,8 @@ export function loadFilesForPostIfNecessary(post) {
         const fileIdsForPost = files.fileIdsByPostId[post.id];
 
         if (!fileIdsForPost) {
-            const teamId = teams.currentId;
-            await getFilesForPost(teamId, post.channel_id, post.id)(dispatch, getState);
+            const {currentTeamId} = teams;
+            await getFilesForPost(currentTeamId, post.channel_id, post.id)(dispatch, getState);
         }
     };
 }
@@ -120,9 +120,8 @@ export function loadFilesForPostIfNecessary(post) {
 export function selectInitialChannel(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {channels, myMembers} = state.entities.channels;
-        const currentChannelId = state.entities.channels.currentId;
-        const currentUserId = state.entities.users.currentId;
+        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        const {currentUserId} = state.entities.users;
         const currentChannel = channels[currentChannelId];
         const {myPreferences} = state.entities.preferences;
 
@@ -148,7 +147,7 @@ export function selectInitialChannel(teamId) {
 
 export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
-        const currentTeamId = getState().entities.teams.currentId;
+        const {currentTeamId} = getState().entities.teams;
 
         await updateStorage(currentTeamId, {currentChannelId: channelId});
         await selectChannel(channelId)(dispatch, getState);
@@ -169,10 +168,10 @@ export function handlePostDraftChanged(channelId, postDraft) {
 export function toggleDMChannel(otherUserId, visible) {
     return async (dispatch, getState) => {
         const state = getState();
-        const userId = state.entities.users.currentId;
+        const {currentUserId} = state.entities.users;
 
         const dm = [{
-            user_id: userId,
+            user_id: currentUserId,
             category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW,
             name: otherUserId,
             value: visible
@@ -192,7 +191,7 @@ export function closeDMChannel(channel) {
 
         toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState).then(() => {
             if (channel.isCurrent) {
-                selectInitialChannel(state.entities.teams.currentId)(dispatch, getState);
+                selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
             }
         });
     };
@@ -200,9 +199,9 @@ export function closeDMChannel(channel) {
 
 export function markFavorite(channelId) {
     return async (dispatch, getState) => {
-        const userId = getState().entities.users.currentId;
+        const {currentUserId} = getState().entities.users;
         const fav = [{
-            user_id: userId,
+            user_id: currentUserId,
             category: Constants.CATEGORY_FAVORITE_CHANNEL,
             name: channelId,
             value: 'true'
@@ -213,9 +212,9 @@ export function markFavorite(channelId) {
 
 export function unmarkFavorite(channelId) {
     return async (dispatch, getState) => {
-        const userId = getState().entities.users.currentId;
+        const {currentUserId} = getState().entities.users;
         const fav = [{
-            user_id: userId,
+            user_id: currentUserId,
             category: Constants.CATEGORY_FAVORITE_CHANNEL,
             name: channelId
         }];
@@ -225,10 +224,10 @@ export function unmarkFavorite(channelId) {
 
 export function leaveChannel(channel, reset = false) {
     return async (dispatch, getState) => {
-        const {currentId: teamId} = getState().entities.teams;
-        await serviceLeaveChannel(teamId, channel.id)(dispatch, getState);
+        const {currentTeamId} = getState().entities.teams;
+        await serviceLeaveChannel(currentTeamId, channel.id)(dispatch, getState);
         if (channel.isCurrent || reset) {
-            await selectInitialChannel(teamId)(dispatch, getState);
+            await selectInitialChannel(currentTeamId)(dispatch, getState);
         }
     };
 }

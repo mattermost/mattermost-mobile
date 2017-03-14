@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
-import {login} from 'service/actions/users';
+import {login} from 'mattermost-redux/actions/users';
 
 import Mfa from './mfa';
 

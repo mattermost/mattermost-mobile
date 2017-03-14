@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 
 function ChannelMenuButton(props) {
     return (

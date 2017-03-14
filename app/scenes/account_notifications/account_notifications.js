@@ -10,9 +10,9 @@ import {
 
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import EventEmitter from 'service/utils/event_emitter';
-import {Preferences, RequestStatus} from 'service/constants';
-import {getPreferencesByCategory} from 'service/utils/preference_utils';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {Preferences, RequestStatus} from 'mattermost-redux/constants';
+import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import Section from './section';
 import SectionItem from './section_item';

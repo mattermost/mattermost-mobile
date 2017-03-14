@@ -3,7 +3,7 @@
 
 import React from 'react';
 import MemberListRow from 'app/components/custom_list/member_list_row';
-import {displayUsername} from 'service/utils/user_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 export const loadingText = {
     id: 'mobile.loading_members',

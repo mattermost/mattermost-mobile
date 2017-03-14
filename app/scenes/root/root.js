@@ -5,7 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {AsyncStorage} from 'react-native';
 import Loading from 'app/components/loading';
 
-import {RequestStatus} from 'service/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 export default class Root extends PureComponent {
     static propTypes = {

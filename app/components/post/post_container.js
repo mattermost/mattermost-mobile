@@ -4,10 +4,11 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 import {goToUserProfile} from 'app/actions/navigation';
-import {getUser} from 'service/selectors/entities/users';
-import {displayUsername} from 'service/utils/user_utils';
+import {getUser} from 'mattermost-redux/selectors/entities/users';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import Post from './post';
 

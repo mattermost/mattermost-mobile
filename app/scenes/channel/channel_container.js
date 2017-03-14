@@ -16,17 +16,17 @@ import {
     selectInitialChannel,
     handlePostDraftChanged
 } from 'app/actions/views/channel';
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'service/actions/users';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
-import {getCurrentChannel} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentTeam} from 'service/selectors/entities/teams';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     init as initWebSocket,
     close as closeWebSocket
-} from 'service/actions/websocket';
+} from 'mattermost-redux/actions/websocket';
 
 import Channel from './channel';
 

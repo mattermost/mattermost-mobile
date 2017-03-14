@@ -5,8 +5,8 @@ import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
 import {View} from 'react-native';
 
-import {getCurrentChannel, canManageChannelMembers} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getCurrentChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
 
 import FormattedText from 'app/components/formatted_text';
 

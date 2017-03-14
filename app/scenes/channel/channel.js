@@ -12,8 +12,8 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import PostTextbox from 'app/components/post_textbox';
 
-import {Constants} from 'service/constants';
-import EventEmitter from 'service/utils/event_emitter';
+import {Constants} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelMenuButton from './channel_menu_button';

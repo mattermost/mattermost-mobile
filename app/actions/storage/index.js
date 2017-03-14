@@ -3,9 +3,10 @@
 
 import {AsyncStorage} from 'react-native';
 import {batchActions} from 'redux-batched-actions';
+
 import {ViewTypes} from 'app/constants';
-import {logError, getLogErrorAction} from 'service/actions/errors';
-import {ChannelTypes, GeneralTypes, TeamsTypes, UsersTypes} from 'service/constants';
+import {logError, getLogErrorAction} from 'mattermost-redux/actions/errors';
+import {ChannelTypes, GeneralTypes, TeamsTypes, UsersTypes} from 'mattermost-redux/constants';
 
 export function loadStorage() {
     return async (dispatch, getState) => {
@@ -17,7 +18,6 @@ export function loadStorage() {
                 const credentials = {token, url};
 
                 const currentChannelId = otherStorage[currentTeamId] ? otherStorage[currentTeamId].currentChannelId : '';
-
                 const actions = [];
 
                 if (credentials) {

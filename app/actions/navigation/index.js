@@ -3,8 +3,8 @@
 
 import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
-import {Constants} from 'service/constants';
-import {selectPost} from 'service/actions/posts';
+import {Constants} from 'mattermost-redux/constants';
+import {selectPost} from 'mattermost-redux/actions/posts';
 
 export function goBack() {
     return async (dispatch, getState) => {

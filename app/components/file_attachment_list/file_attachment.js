@@ -15,7 +15,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import * as Utils from 'service/utils/file_utils.js';
+import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
 import FileAttachmentIcon from './file_attachment_icon';
 

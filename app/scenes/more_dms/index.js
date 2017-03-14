@@ -7,9 +7,10 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goBack} from 'app/actions/navigation';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
-import {getProfiles, searchProfiles} from 'service/actions/users';
-import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
-import {searchProfiles as searchSelector} from 'service/selectors/entities/users';
+import {getTheme} from 'app/selectors/preferences';
+import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {searchProfiles as searchSelector} from 'mattermost-redux/selectors/entities/users';
 
 import MoreDirectMessages from './more_dms';
 
@@ -17,9 +18,9 @@ function mapStateToProps(state, ownProps) {
     const {getProfiles: requestStatus, searchProfiles: searchRequest} = state.requests.users;
 
     function getUsers() {
-        const {profiles, currentId} = state.entities.users;
+        const {profiles, currentUserId} = state.entities.users;
         const users = {...profiles};
-        Reflect.deleteProperty(users, currentId);
+        Reflect.deleteProperty(users, currentUserId);
         return Object.values(users).sort((a, b) => {
             const nameA = a.username;
             const nameB = b.username;

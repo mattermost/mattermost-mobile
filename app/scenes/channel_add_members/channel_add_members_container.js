@@ -7,12 +7,13 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 import {goBack} from 'app/actions/navigation';
-import {getCurrentChannel, getCurrentChannelStats} from 'service/selectors/entities/channels';
-import {getMyPreferences, getTheme} from 'service/selectors/entities/preferences';
-import {getCurrentTeam, getCurrentTeamStats} from 'service/selectors/entities/teams';
-import {getProfilesNotInCurrentChannel} from 'service/selectors/entities/users';
-import {getTeamStats} from 'service/actions/teams';
-import {getProfilesNotInChannel} from 'service/actions/users';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentChannel, getCurrentChannelStats} from 'mattermost-redux/selectors/entities/channels';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentTeam, getCurrentTeamStats} from 'mattermost-redux/selectors/entities/teams';
+import {getProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
+import {getTeamStats} from 'mattermost-redux/actions/teams';
+import {getProfilesNotInChannel} from 'mattermost-redux/actions/users';
 
 import ChannelAddMembers from './channel_add_members';
 

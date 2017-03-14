@@ -27,7 +27,7 @@ import {
     UserProfile
 } from 'app/scenes';
 
-import keyMirror from 'service/utils/key_mirror';
+import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 export const RouteTransitions = keyMirror({
     Horizontal: null

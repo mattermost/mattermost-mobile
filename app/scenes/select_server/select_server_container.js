@@ -5,8 +5,8 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {getPing, resetPing} from 'service/actions/general';
-import {RequestStatus} from 'service/constants';
+import {getPing, resetPing} from 'mattermost-redux/actions/general';
+import {RequestStatus} from 'mattermost-redux/constants';
 import * as SelectServerActions from 'app/actions/views/select_server';
 
 import SelectServer from './select_server';

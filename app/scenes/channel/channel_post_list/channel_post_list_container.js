@@ -7,10 +7,10 @@ import {createSelector} from 'reselect';
 
 import {goToThread} from 'app/actions/navigation';
 import {loadPostsIfNecessary} from 'app/actions/views/channel';
-import {getPostsBefore} from 'service/actions/posts';
+import {getPostsBefore} from 'mattermost-redux/actions/posts';
 
-import {getAllPosts, getPostsInCurrentChannel} from 'service/selectors/entities/posts';
-import {getCurrentChannelMembership} from 'service/selectors/entities/channels';
+import {getAllPosts, getPostsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
+import {getCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 import ChannelPostList from './channel_post_list';
 

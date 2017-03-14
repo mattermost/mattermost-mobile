@@ -3,12 +3,12 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ChannelTypes, TeamsTypes} from 'service/constants';
+import {ChannelTypes, TeamsTypes} from 'mattermost-redux/constants';
 import {updateStorage} from 'app/actions/storage';
 
 export function handleTeamChange(team) {
     return async (dispatch, getState) => {
-        const currentTeamId = getState().entities.teams.currentId;
+        const {currentTeamId} = getState().entities.teams;
         if (currentTeamId === team.id) {
             return;
         }

@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {goToChannelView} from 'app/actions/views/load_team';
 import {clearNotification, goToNotification} from 'app/actions/views/root';
 import {handleTeamChange} from 'app/actions/views/select_team';
-import {getCurrentTeam} from 'service/selectors/entities/teams';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import LoadTeam from './load_team.js';
 

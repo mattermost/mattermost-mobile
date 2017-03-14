@@ -16,7 +16,7 @@ import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 
-import {Constants, RequestStatus} from 'service/constants';
+import {Constants, RequestStatus} from 'mattermost-redux/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import CreateButton from './create_button';

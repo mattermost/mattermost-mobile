@@ -1,9 +1,9 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {updateUserNotifyProps} from 'service/actions/users';
-import {Preferences} from 'service/constants';
-import {savePreferences} from 'service/actions/preferences';
+import {updateUserNotifyProps} from 'mattermost-redux/actions/users';
+import {Preferences} from 'mattermost-redux/constants';
+import {savePreferences} from 'mattermost-redux/actions/preferences';
 
 export function handleUpdateUserNotifyProps(notifyProps) {
     return async (dispatch, getState) => {

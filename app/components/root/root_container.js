@@ -8,15 +8,15 @@ import Config from 'assets/config.json';
 
 import {flushToStorage} from 'app/actions/storage';
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
-import {setAppState, setDeviceToken} from 'service/actions/general';
+import {setAppState, setDeviceToken} from 'mattermost-redux/actions/general';
 
 import Root from './root';
 
 function mapStateToProps(state, ownProps) {
     const users = state.entities.users;
-    const currentUserId = users.currentId;
-    const {currentId: currentTeamId} = state.entities.teams;
-    const {currentId: currentChannelId} = state.entities.channels;
+    const {currentUserId} = users;
+    const {currentTeamId} = state.entities.teams;
+    const {currentChannelId} = state.entities.channels;
 
     let locale = Config.DefaultLocale;
     if (currentUserId && users.profiles[currentUserId]) {

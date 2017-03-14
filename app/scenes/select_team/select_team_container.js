@@ -8,7 +8,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 import {goBack} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
-import {getCurrentTeam} from 'service/selectors/entities/teams';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import SelectTeam from './select_team.js';
 

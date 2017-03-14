@@ -13,7 +13,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-import {RequestStatus} from 'service/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 const CHANNEL_MENTION_REGEX = /\B(~([^~\r\n]*))$/i;
 

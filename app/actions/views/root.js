@@ -12,10 +12,8 @@ import {goToChannelView} from 'app/actions/views/load_team';
 import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
 import {updateStorage} from 'app/actions/storage';
 
-import Client from 'service/client';
-import {markChannelAsRead, viewChannel} from 'service/actions/channels';
-import {getClientConfig, getLicenseConfig, setServerVersion} from 'service/actions/general';
-import {loadMe} from 'service/actions/users';
+import {getClientConfig, getLicenseConfig, setServerVersion} from 'mattermost-redux/actions/general';
+import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
 
 export function goToSelectServer() {
     return async (dispatch, getState) => {
@@ -24,15 +22,6 @@ export function goToSelectServer() {
             routes: [Routes.SelectServer],
             index: 0
         }, getState);
-    };
-}
-
-export function setStoreFromLocalData(data) {
-    return async (dispatch, getState) => {
-        Client.setToken(data.token);
-        Client.setUrl(data.url);
-
-        return loadMe()(dispatch, getState);
     };
 }
 
@@ -67,7 +56,7 @@ export function goToNotification(notification) {
             loadChannelsIfNecessary(teamId)(dispatch, getState);
         } else {
             await selectFirstAvailableTeam()(dispatch, getState);
-            teamId = getState().entities.teams.currentId;
+            teamId = getState().entities.teams.currentTeamId;
         }
 
         const channelId = data.channel_id;
@@ -82,7 +71,6 @@ export function goToNotification(notification) {
 export default {
     goToSelectServer,
     loadConfigAndLicense,
-    setStoreFromLocalData,
     queueNotification,
     clearNotification,
     goToNotification

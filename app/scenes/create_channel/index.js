@@ -8,7 +8,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 import {goBack, closeModal} from 'app/actions/navigation';
 import {handleCreateChannel} from 'app/actions/views/create_channel';
 
-import {getTheme} from 'service/selectors/entities/preferences';
+import {getTheme} from 'app/selectors/preferences';
 
 import CreateChannel from './create_channel';
 

@@ -6,11 +6,11 @@ import {bindActionCreators} from 'redux';
 import navigationSceneConnect from '../navigationSceneConnect';
 
 import {goToChannelMembers, goToChannelAddMembers, goBack} from 'app/actions/navigation';
-import {getChannelStats, deleteChannel} from 'service/actions/channels';
+import {getChannelStats, deleteChannel} from 'mattermost-redux/actions/channels';
 import {markFavorite, unmarkFavorite, leaveChannel} from 'app/actions/views/channel';
-import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory, canManageChannelMembers} from 'service/selectors/entities/channels';
-import {getTheme} from 'service/selectors/entities/preferences';
-import {getUser} from 'service/selectors/entities/users';
+import {getCurrentChannel, getCurrentChannelStats, getChannelsByCategory, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {getTheme} from 'app/selectors/preferences';
+import {getUser} from 'mattermost-redux/selectors/entities/users';
 
 import ChannelInfo from './channel_info';
 
@@ -25,7 +25,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        currentTeamId: state.entities.teams.currentId,
+        currentTeamId: state.entities.teams.currentTeamId,
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,

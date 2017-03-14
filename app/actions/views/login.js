@@ -3,7 +3,7 @@
 
 import {ViewTypes} from 'app/constants';
 import {updateStorage} from 'app/actions/storage';
-import Client from 'service/client';
+import Client from 'mattermost-redux/client';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {

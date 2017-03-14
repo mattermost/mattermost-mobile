@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {UsersTypes} from 'service/constants';
+import {UsersTypes} from 'mattermost-redux/constants';
 import {ViewTypes} from 'app/constants';
 
 function loginId(state = '', action) {
