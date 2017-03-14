@@ -23,11 +23,16 @@ function ChannelDrawerButton(props) {
 
     if (badgeCount !== 0) {
         const badgeStyle = {
-            position: 'absolute',
-            top: 5,
-            left: 5,
+            backgroundColor: 'rgb(214, 73, 70)',
+            borderRadius: 10,
             flexDirection: 'row',
-            backgroundColor: 'rgb(214, 73, 70)'
+            height: 20,
+            left: 5,
+            padding: 3,
+            position: 'absolute',
+            right: 0,
+            top: 5,
+            width: 20
         };
 
         const mentionStyle = {
