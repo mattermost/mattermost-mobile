@@ -1,13 +1,14 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component, PropTypes} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {
     Alert,
     Image,
     Platform,
     StyleSheet,
     Text,
+    TouchableHighlight,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -26,7 +27,7 @@ import {Constants} from 'mattermost-redux/constants';
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin} from 'mattermost-redux/utils/user_utils';
 
-class Post extends Component {
+class Post extends PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -75,6 +76,10 @@ class Post extends Component {
         }
     };
 
+    showBottomSheet = () => {
+        this.refs.bottomSheet.show();
+    };
+
     renderCommentedOnMessage = (style) => {
         if (!this.props.renderReplies || !this.props.commentedOnPost) {
             return null;
@@ -112,7 +117,7 @@ class Post extends Component {
                 style={style.commentedOn}
             />
         );
-    }
+    };
 
     renderReplyBar = (style) => {
         if (!this.props.renderReplies || !this.props.post.root_id) {
@@ -143,6 +148,7 @@ class Post extends Component {
     }
 
     renderMessage = (style, messageStyle, replyBar = false) => {
+        const {formatMessage} = this.props.intl;
         const {currentUserId, post, roles, theme} = this.props;
         const actions = [];
 
@@ -152,7 +158,7 @@ class Post extends Component {
         //     actions.push({text: 'Edit', onPress: () => console.log('edit pressed')}); //eslint-disable-line no-console
         // }
         if (post.user_id === currentUserId || isAdmin(roles)) {
-            actions.push({text: 'Delete', onPress: () => this.handlePostDelete()});
+            actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
         }
 
         let messageContainer;
@@ -193,7 +199,24 @@ class Post extends Component {
                     </OptionsContext>
                 );
             } else {
-                messageContainer = message;
+                messageContainer = (
+                    <TouchableHighlight
+                        onHideUnderlay={() => this.toggleSelected(false)}
+                        onLongPress={this.showBottomSheet}
+                        onPress={this.handlePress}
+                        onShowUnderlay={() => this.toggleSelected(true)}
+                        underlayColor='transparent'
+                    >
+                        <View>
+                            {message}
+                            <OptionsContext
+                                ref='bottomSheet'
+                                actions={actions}
+                                cancelText={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            />
+                        </View>
+                    </TouchableHighlight>
+                );
             }
         }
 
