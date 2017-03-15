@@ -65,7 +65,8 @@ export default class Markdown extends PureComponent {
 
                 htmlBlock: this.renderHtml,
                 htmlInline: this.renderHtml
-            }
+            },
+            renderParagraphsInLists: true
         });
     }
 
