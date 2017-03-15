@@ -32,6 +32,10 @@ m._load = function hookedLoader(request, parent, isMain) {
         request = './search_bar.ios';
     }
 
+    if (request === './options_modal_list') {
+        request = './options_modal_list.ios';
+    }
+
     return originalLoader(request, parent, isMain);
 };
 

@@ -15,7 +15,8 @@ const NavigationTypes = keyMirror({
     NAVIGATION_REPLACE: null,
     NAVIGATION_RESET: null,
     NAVIGATION_MODAL: null,
-    NAVIGATION_CLOSE_MODAL: null
+    NAVIGATION_CLOSE_MODAL: null,
+    NAVIGATION_REQUEST_CLOSE_MODAL: null
 });
 
 export default NavigationTypes;

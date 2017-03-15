@@ -265,6 +265,7 @@ const state = {
         ],
         modal: {
             index: 0,
+            requestClose: false,
             routes: []
         },
         isModal: false,
