@@ -6,10 +6,10 @@ import {View} from 'react-native';
 
 export default class MarkdownList extends PureComponent {
     static propTypes = {
-        containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]).isRequired,
         ordered: PropTypes.bool.isRequired,
-        startAt: PropTypes.number
+        startAt: PropTypes.number,
+        tight: PropTypes.bool
     };
 
     render() {
@@ -17,12 +17,13 @@ export default class MarkdownList extends PureComponent {
             return React.cloneElement(child, {
                 ordered: this.props.ordered,
                 startAt: this.props.startAt,
-                index: i
+                index: i,
+                tight: this.props.tight
             });
         });
 
         return (
-            <View style={this.props.containerStyle}>
+            <View>
                 {children}
             </View>
         );

@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {
+    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -17,22 +18,24 @@ export default class MarkdownBlockQuote extends PureComponent {
     };
 
     render() {
-        // Inject the text style in case the children of this node are plain text which wouldn't
-        // get the text style from anywhere else
-        // const children = React.Children.map(this.props.children, (child) => {
-        //     return React.cloneElement(child, {
-        //         style: this.props.textStyle
-        //     });
-        // });
-        const children = this.props.children;
-
         return (
-            <View style={this.props.blockStyle}>
-                <Text style={this.props.bulletStyle}>
-                    {'> '}
-                </Text>
-                <View>{children}</View>
+            <View style={style.container}>
+                <View>
+                    <Text style={this.props.bulletStyle}>
+                        {'> '}
+                    </Text>
+                </View>
+                <View>
+                    {this.props.children}
+                </View>
             </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    }
+});

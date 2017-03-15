@@ -192,7 +192,7 @@ export default class Post extends Component {
                 </Text>
             );
 
-            messageStyle = [style.message, style.webhookMessage];
+            messageStyle = style.message;
         } else {
             profilePicture = (
                 <TouchableOpacity onPress={this.viewUserProfile}>
@@ -336,15 +336,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         message: {
             color: theme.centerChannelColor,
-            fontSize: 14
+            fontSize: 14,
+            lineHeight: 21
         },
         systemMessage: {
             opacity: 0.5
-        },
-        webhookMessage: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            fontWeight: '600'
         }
     });
 });

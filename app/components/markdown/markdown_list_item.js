@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -15,7 +16,7 @@ export default class MarkdownListItem extends PureComponent {
         ordered: PropTypes.bool.isRequired,
         startAt: PropTypes.number,
         index: PropTypes.number.isRequired,
-        blockStyle: CustomPropTypes.Style,
+        tight: PropTypes.bool,
         bulletStyle: CustomPropTypes.Style
     };
 
@@ -32,12 +33,23 @@ export default class MarkdownListItem extends PureComponent {
         }
 
         return (
-            <View style={this.props.blockStyle}>
-                <Text style={this.props.bulletStyle}>
-                    {bullet}
-                </Text>
-                <View style={{flex: 1}}>{this.props.children}</View>
+            <View style={style.container}>
+                <View>
+                    <Text style={this.props.bulletStyle}>
+                        {bullet}
+                    </Text>
+                </View>
+                <View>
+                    {this.props.children}
+                </View>
             </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    }
+});

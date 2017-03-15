@@ -84,8 +84,10 @@ export default class Markdown extends PureComponent {
 
     renderParagraph = ({children}) => {
         return (
-            <View style={[style.block, this.props.blockStyles.paragraph]}>
-                {children}
+            <View style={style.block}>
+                <Text>
+                    {children}
+                </Text>
             </View>
         );
     }
@@ -93,7 +95,9 @@ export default class Markdown extends PureComponent {
     renderHeading = ({children, level}) => {
         return (
             <View style={[style.block, this.props.blockStyles[`heading${level}`]]}>
-                {children}
+                <Text>
+                    {children}
+                </Text>
             </View>
         );
     }
@@ -115,7 +119,6 @@ export default class Markdown extends PureComponent {
     renderBlockQuote = ({children, ...otherProps}) => {
         return (
             <MarkdownBlockQuote
-                blockStyle={style.block}
                 bulletStyle={this.props.baseTextStyle}
                 {...otherProps}
             >
@@ -124,11 +127,12 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderList = ({children, type, start}) => {
+    renderList = ({children, type, start, tight}) => {
         return (
             <MarkdownList
                 ordered={type !== 'bullet'}
                 startAt={start}
+                tight={tight}
             >
                 {children}
             </MarkdownList>
@@ -138,7 +142,6 @@ export default class Markdown extends PureComponent {
     renderListItem = ({children, ...otherProps}) => {
         return (
             <MarkdownListItem
-                blockStyle={style.block}
                 bulletStyle={this.props.baseTextStyle}
                 {...otherProps}
             >
@@ -156,8 +159,7 @@ export default class Markdown extends PureComponent {
     }
 
     renderSoftBreak = () => {
-        // Render a large, empty view and have it shrink to fill the remaining space to force a line break
-        return <View style={style.softBreak}/>;
+        return <Text>{'\n'}</Text>;
     }
 
     renderHtml = () => {
@@ -176,9 +178,5 @@ const style = StyleSheet.create({
         alignItems: 'flex-start',
         flexDirection: 'row',
         flexWrap: 'wrap'
-    },
-    softBreak: {
-        flexBasis: 1000000,
-        flexShrink: 1
     }
 });

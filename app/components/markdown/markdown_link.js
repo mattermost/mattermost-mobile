@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
-import {Linking, TouchableHighlight, View} from 'react-native';
+import {Linking, Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
@@ -23,12 +23,6 @@ export default class MarkdownLink extends PureComponent {
     };
 
     render() {
-        return (
-            <TouchableHighlight onPress={this.handlePress}>
-                <View style={{flexWrap: 'wrap', flexDirection: 'row'}}>
-                    {this.props.children}
-                </View>
-            </TouchableHighlight>
-        );
+        return <Text onPress={this.handlePress}>{this.props.children}</Text>;
     }
 }
