@@ -25,6 +25,7 @@
     "react-native-linear-gradient": "2.0.0",
     "react-native-search-bar": "enahum/react-native-search-bar.git",
     "react-native-svg": "4.5.0",
+    "react-native-tooltip": "5.0.0",
     "react-native-vector-icons": "4.0.0",
     "react-redux": "5.0.1",
     "redux": "3.6.0",

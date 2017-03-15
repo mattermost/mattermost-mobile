@@ -3,27 +3,34 @@
 
 import React, {Component, PropTypes} from 'react';
 import {
+    Alert,
     Image,
     Platform,
     StyleSheet,
     Text,
-    TouchableHighlight,
     TouchableOpacity,
     View
 } from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import MattermostIcon from 'app/components/mattermost_icon';
 import Markdown from 'app/components/markdown/markdown';
+import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
 import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {isSystemMessage} from 'mattermost-redux/utils/post_utils.js';
+import {Constants} from 'mattermost-redux/constants';
+import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isAdmin} from 'mattermost-redux/utils/user_utils';
 
-export default class Post extends Component {
+class Post extends Component {
     static propTypes = {
+        currentTeamId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        intl: intlShape.isRequired,
         style: View.propTypes.style,
         post: PropTypes.object.isRequired,
         user: PropTypes.object,
@@ -31,13 +38,35 @@ export default class Post extends Component {
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
-        commentedOnPost: PropTypes.object,
         commentedOnDisplayName: PropTypes.string,
+        commentedOnPost: PropTypes.object,
+        roles: PropTypes.string,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         actions: PropTypes.shape({
+            deletePost: PropTypes.func.isRequired,
             goToUserProfile: PropTypes.func.isRequired
         }).isRequired
+    };
+
+    handlePostDelete = () => {
+        const {formatMessage} = this.props.intl;
+        const {currentTeamId, post, actions} = this.props;
+
+        Alert.alert(
+            formatMessage({id: 'mobile.post.delete_title', defaultMessage: 'Delete Post'}),
+            formatMessage({id: 'mobile.post.delete_question', defaultMessage: 'Are you sure you want to delete this post?'}),
+            [{
+                text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel'
+            }, {
+                text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
+                style: 'destructive',
+                onPress: () => {
+                    actions.deletePost(currentTeamId, post);
+                }
+            }]
+        );
     };
 
     handlePress = () => {
@@ -113,40 +142,80 @@ export default class Post extends Component {
         return attachments;
     }
 
-    viewUserProfile = () => {
-        this.props.actions.goToUserProfile(this.props.user.id);
-    };
-
     renderMessage = (style, messageStyle, replyBar = false) => {
-        let contents;
-        if (this.props.post.message.length > 0) {
-            const theme = this.props.theme;
+        const {currentUserId, post, roles, theme} = this.props;
+        const actions = [];
 
-            contents = (
+        // we should check for the user roles and permissions
+        // actions.push({text: 'Flag', onPress: () => console.log('flag pressed')}); //eslint-disable-line no-console
+        // if (post.user_id === currentUserId) {
+        //     actions.push({text: 'Edit', onPress: () => console.log('edit pressed')}); //eslint-disable-line no-console
+        // }
+        if (post.user_id === currentUserId || isAdmin(roles)) {
+            actions.push({text: 'Delete', onPress: () => this.handlePostDelete()});
+        }
+
+        let messageContainer;
+        let message;
+        if (post.state === Constants.POST_DELETED) {
+            message = (
+                <FormattedText
+                    style={messageStyle}
+                    id='post_body.deleted'
+                    defaultMessage='(message deleted)'
+                />
+            );
+        } else {
+            message = (
                 <Markdown
                     baseTextStyle={messageStyle}
                     textStyles={getMarkdownTextStyles(theme)}
                     blockStyles={getMarkdownBlockStyles(theme)}
-                    value={this.props.post.message}
+                    value={post.message}
                 />
             );
         }
 
+        if (this.props.post.message.length) {
+            if (Platform.OS === 'ios') {
+                messageContainer = (
+                    <OptionsContext
+                        ref='tooltip'
+                        onHideUnderlay={() => this.toggleSelected(false)}
+                        onPress={this.handlePress}
+                        onShowUnderlay={() => this.toggleSelected(true)}
+                        actions={actions}
+                        underlayColor='transparent'
+                        longPress={true}
+                        arrowDirection='down'
+                    >
+                        {message}
+                    </OptionsContext>
+                );
+            } else {
+                messageContainer = message;
+            }
+        }
+
         return (
-            <TouchableHighlight onPress={this.handlePress}>
-                <View style={{flex: 1}}>
-                    {replyBar && this.renderReplyBar(style)}
-                    {contents}
-                    {this.renderFileAttachments()}
-                </View>
-            </TouchableHighlight>
+            <View style={{flex: 1}}>
+                {replyBar && this.renderReplyBar(style)}
+                {messageContainer}
+                {this.renderFileAttachments()}
+            </View>
         );
     };
 
-    render() {
-        const theme = this.props.theme;
-        const style = getStyleSheet(theme);
+    viewUserProfile = () => {
+        this.props.actions.goToUserProfile(this.props.user.id);
+    };
 
+    toggleSelected = (selected) => {
+        this.setState({selected});
+    };
+
+    render() {
+        const style = getStyleSheet(this.props.theme);
         const PROFILE_PICTURE_SIZE = 32;
 
         let profilePicture;
@@ -191,8 +260,7 @@ export default class Post extends Component {
                     {this.props.post.props.override_username}
                 </Text>
             );
-
-            messageStyle = style.message;
+            messageStyle = [style.message, style.webhookMessage];
         } else {
             profilePicture = (
                 <TouchableOpacity onPress={this.viewUserProfile}>
@@ -224,10 +292,11 @@ export default class Post extends Component {
             messageStyle = style.message;
         }
 
+        const selected = this.state && this.state.selected ? style.selected : null;
         let contents;
         if (this.props.commentedOnPost) {
             contents = (
-                <View style={[style.container, this.props.style]}>
+                <View style={[style.container, this.props.style, selected]}>
                     <View style={style.profilePictureContainer}>
                         {profilePicture}
                     </View>
@@ -247,7 +316,7 @@ export default class Post extends Component {
             );
         } else {
             contents = (
-                <View style={[style.container, this.props.style]}>
+                <View style={[style.container, this.props.style, selected]}>
                     <View style={style.profilePictureContainer}>
                         {profilePicture}
                     </View>
@@ -341,6 +410,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         systemMessage: {
             opacity: 0.5
+        },
+        webhookMessage: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            fontWeight: '600'
+        },
+        selected: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
         }
     });
 });
@@ -415,3 +492,5 @@ const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
+
+export default injectIntl(Post);
