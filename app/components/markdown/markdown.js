@@ -79,7 +79,7 @@ export default class Markdown extends PureComponent {
     }
 
     renderCodeSpan = ({context, literal}) => {
-        return <Text style={this.computeTextStyle(this.props.textStyles.code, context)}>{literal}</Text>;
+        return <Text style={this.computeTextStyle([this.props.baseTextStyle, this.props.textStyles.code], context)}>{literal}</Text>;
     }
 
     renderImage = ({children, context, src}) => {
