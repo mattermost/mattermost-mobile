@@ -15,7 +15,6 @@ import {concatStyles} from 'app/utils/theme';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
-import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
@@ -49,7 +48,7 @@ export default class Markdown extends PureComponent {
                 strong: Renderer.forwardChildren,
                 code: this.renderCodeSpan,
                 link: MarkdownLink,
-                image: MarkdownImage,
+                image: this.renderImage,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -74,13 +73,26 @@ export default class Markdown extends PureComponent {
         return concatStyles(baseStyle, context.map((type) => this.props.textStyles[type]));
     }
 
-    renderText = ({literal, context}) => {
+    renderText = ({context, literal}) => {
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         return <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>{literal}</Text>;
     }
 
-    renderCodeSpan = ({literal, context}) => {
+    renderCodeSpan = ({context, literal}) => {
         return <Text style={this.computeTextStyle(this.props.textStyles.code, context)}>{literal}</Text>;
+    }
+
+    renderImage = ({children, context, src}) => {
+        // TODO This will be properly implemented for PLT-5736
+        return (
+            <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>
+                {'!['}
+                {children}
+                {']('}
+                {src}
+                {')'}
+            </Text>
+        );
     }
 
     renderParagraph = ({children}) => {
@@ -128,7 +140,7 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderList = ({children, type, start, tight}) => {
+    renderList = ({children, start, tight, type}) => {
         return (
             <MarkdownList
                 ordered={type !== 'bullet'}
