@@ -15,6 +15,7 @@ const initialState = {
     ],
     modal: {
         index: 0,
+        requestClose: false,
         routes: []
     },
     isModal: false,
@@ -53,6 +54,8 @@ export default function(state = initialState, action) {
                 index: 0,
                 routes: []
             };
+
+            nextModalState.requestClose = false;
 
             const isModal = nextModalState.routes.length > 0;
             return {
@@ -150,6 +153,7 @@ export default function(state = initialState, action) {
             ...NavigationExperimental.StateUtils.reset(state, action.routes, action.index),
             modal: {
                 index: 0,
+                requestClose: false,
                 routes: []
             },
             isModal: false,
@@ -191,10 +195,20 @@ export default function(state = initialState, action) {
             ...state,
             modal: {
                 index: 0,
+                requestClose: false,
                 routes: []
             },
             isModal: false
         };
+
+    case NavigationTypes.NAVIGATION_REQUEST_CLOSE_MODAL: {
+        const modalState = Object.assign({}, state.modal, {requestClose: true});
+
+        return {
+            ...state,
+            modal: modalState
+        };
+    }
 
     case UsersTypes.LOGOUT_SUCCESS:
         return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);

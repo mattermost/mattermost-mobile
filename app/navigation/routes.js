@@ -142,10 +142,7 @@ export const Routes = {
     },
     OptionsModal: {
         key: 'OptionsModal',
-        component: OptionsModal,
-        navigationProps: {
-            hideNavBar: true
-        }
+        component: OptionsModal
     },
     RightMenuDrawer: {
         key: 'RightMenuDrawer',

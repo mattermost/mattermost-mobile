@@ -240,7 +240,7 @@ class ChannelDrawerList extends Component {
         if (close) {
             options.push(close);
         }
-        this.props.actions.showOptionsModal(title, options);
+        this.props.actions.showOptionsModal({title, items: options});
     };
 
     getUnreadMessages = (channel) => {

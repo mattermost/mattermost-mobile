@@ -25,6 +25,7 @@ describe('Reducers.Navigation', () => {
             routes: [Routes.Root],
             modal: {
                 index: 0,
+                requestClose: false,
                 routes: []
             },
             isModal: false,

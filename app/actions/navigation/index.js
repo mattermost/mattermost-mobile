@@ -154,15 +154,12 @@ export function openRightMenuDrawer() {
     };
 }
 
-export function showOptionsModal(title, options) {
+export function showOptionsModal(options) {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.OptionsModal,
-            props: {
-                title,
-                options
-            }
+            props: options
         }, getState);
     };
 }
@@ -238,6 +235,14 @@ export function goToAccountNotifications() {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
             route: Routes.AccountNotifications
+        }, getState);
+    };
+}
+
+export function requestCloseModal() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_REQUEST_CLOSE_MODAL
         }, getState);
     };
 }

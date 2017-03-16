@@ -1,6 +1,27 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import OptionsModalContainer from './options_modal_container';
+import {bindActionCreators} from 'redux';
 
-export default OptionsModalContainer;
+import {closeModal} from 'app/actions/navigation';
+
+import navigationSceneConnect from '../navigationSceneConnect';
+
+import OptionsModal from './options_modal';
+
+function mapStateToProps(state, ownProps) {
+    return {
+        ...ownProps,
+        requestClose: state.navigation.modal.requestClose
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            closeModal
+        }, dispatch)
+    };
+}
+
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(OptionsModal);
