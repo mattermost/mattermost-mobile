@@ -93,7 +93,7 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
-    onMoveShouldSetPanResponderCapture =(evt, gestureState) => {
+    onMoveShouldSetPanResponderCapture = (evt, gestureState) => {
         const {dx, dy} = gestureState;
         return (Math.abs(dy) > DRAG_VERTICAL_THRESHOLD_START && dx < DRAG_HORIZONTAL_THRESHOLD);
     }
@@ -241,7 +241,7 @@ export default class ImagePreview extends PureComponent {
                             style={style.footer}
                             start={{x: 0.0, y: 0.0}}
                             end={{x: 0.0, y: 0.9}}
-                            colors={['#0000', '#000000']}
+                            colors={['transparent', '#000000']}
                         >
                             <Text style={style.filename}>
                                 {this.props.files[this.state.currentFile].name}
