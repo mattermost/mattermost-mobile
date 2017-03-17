@@ -76,8 +76,18 @@ class Post extends PureComponent {
         }
     };
 
-    showBottomSheet = () => {
-        this.refs.bottomSheet.show();
+    hideOptionsContext = () => {
+        if (Platform.OS === 'ios') {
+            this.refs.tooltip.hide();
+        }
+    };
+
+    showOptionsContext = () => {
+        if (Platform.OS === 'ios') {
+            return this.refs.tooltip.show();
+        }
+
+        return this.refs.bottomSheet.show();
     };
 
     renderCommentedOnMessage = (style) => {
@@ -140,9 +150,17 @@ class Post extends PureComponent {
     renderFileAttachments() {
         const {post} = this.props;
         const fileIds = post.file_ids || [];
+
         let attachments;
         if (fileIds.length > 0) {
-            attachments = (<FileAttachmentList post={post}/>);
+            attachments = (
+                <FileAttachmentList
+                    hideOptionsContext={this.hideOptionsContext}
+                    onLongPress={this.showOptionsContext}
+                    post={post}
+                    toggleSelected={this.toggleSelected}
+                />
+            );
         }
         return attachments;
     }
@@ -171,7 +189,7 @@ class Post extends PureComponent {
                     defaultMessage='(message deleted)'
                 />
             );
-        } else {
+        } else if (this.props.post.message.length) {
             message = (
                 <Markdown
                     baseTextStyle={messageStyle}
@@ -182,27 +200,28 @@ class Post extends PureComponent {
             );
         }
 
-        if (this.props.post.message.length) {
-            if (Platform.OS === 'ios') {
-                messageContainer = (
+        if (Platform.OS === 'ios') {
+            messageContainer = (
+                <View style={{flex: 1}}>
+                    {replyBar && this.renderReplyBar(style)}
                     <OptionsContext
-                        ref='tooltip'
-                        onHideUnderlay={() => this.toggleSelected(false)}
-                        onPress={this.handlePress}
-                        onShowUnderlay={() => this.toggleSelected(true)}
                         actions={actions}
-                        underlayColor='transparent'
-                        longPress={true}
-                        arrowDirection='down'
+                        ref='tooltip'
+                        onPress={this.handlePress}
+                        toggleSelected={this.toggleSelected}
                     >
                         {message}
+                        {this.renderFileAttachments()}
                     </OptionsContext>
-                );
-            } else {
-                messageContainer = (
+                </View>
+            );
+        } else {
+            messageContainer = (
+                <View style={{flex: 1}}>
+                    {replyBar && this.renderReplyBar(style)}
                     <TouchableHighlight
                         onHideUnderlay={() => this.toggleSelected(false)}
-                        onLongPress={this.showBottomSheet}
+                        onLongPress={this.showOptionsContext}
                         onPress={this.handlePress}
                         onShowUnderlay={() => this.toggleSelected(true)}
                         underlayColor='transparent'
@@ -214,19 +233,14 @@ class Post extends PureComponent {
                                 actions={actions}
                                 cancelText={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             />
+                            {this.renderFileAttachments()}
                         </View>
                     </TouchableHighlight>
-                );
-            }
+                </View>
+            );
         }
 
-        return (
-            <View style={{flex: 1}}>
-                {replyBar && this.renderReplyBar(style)}
-                {messageContainer}
-                {this.renderFileAttachments()}
-            </View>
-        );
+        return messageContainer;
     };
 
     viewUserProfile = () => {
