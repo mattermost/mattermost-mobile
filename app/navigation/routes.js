@@ -10,6 +10,7 @@ import {
     ChannelMembers,
     ChannelAddMembers,
     CreateChannel,
+    ImagePreview,
     LoadTeam,
     Login,
     LoginOptions,
@@ -97,6 +98,10 @@ export const Routes = {
         navigationProps: {
             title: {id: 'mobile.create_channel.private', defaultMessage: 'New Private Group'}
         }
+    },
+    ImagePreview: {
+        key: 'ImagePreview',
+        component: ImagePreview
     },
     LoadTeam: {
         key: 'LoadTeam',

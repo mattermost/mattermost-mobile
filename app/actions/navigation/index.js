@@ -246,3 +246,18 @@ export function requestCloseModal() {
         }, getState);
     };
 }
+
+export function goToImagePreviewModal(post, fileId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: {
+                ...Routes.ImagePreview,
+                props: {
+                    post,
+                    fileId
+                }
+            }
+        }, getState);
+    };
+}

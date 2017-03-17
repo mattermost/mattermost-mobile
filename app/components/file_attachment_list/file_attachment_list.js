@@ -7,7 +7,8 @@ import React, {
 } from 'react';
 
 import {
-    View
+    View,
+    TouchableOpacity
 } from 'react-native';
 
 import FileAttachment from './file_attachment';
@@ -27,11 +28,15 @@ export default class FileAttachmentList extends Component {
 
     render() {
         const fileAttachments = this.props.files.map((file) => (
-            <FileAttachment
+            <TouchableOpacity
                 key={file.id}
-                file={file}
-                theme={this.props.theme}
-            />
+                onPress={() => this.props.actions.goToImagePreviewModal(this.props.post, file.id)}
+            >
+                <FileAttachment
+                    file={file}
+                    theme={this.props.theme}
+                />
+            </TouchableOpacity>
         ));
 
         return (

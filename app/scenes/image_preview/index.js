@@ -2,14 +2,14 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 
-import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
-import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
+import {goBack} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
-import {goToImagePreviewModal} from 'app/actions/navigation';
+import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 
-import FileAttachmentList from './file_attachment_list';
+import ImagePreview from './image_preview';
+
+import navigationSceneConnect from '../navigationSceneConnect';
 
 function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
@@ -25,10 +25,9 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goToImagePreviewModal,
-            loadFilesForPostIfNecessary
+            goBack
         }, dispatch)
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(FileAttachmentList);
+export default navigationSceneConnect(makeMapStateToProps, mapDispatchToProps)(ImagePreview);

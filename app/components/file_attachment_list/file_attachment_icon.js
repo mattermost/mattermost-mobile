@@ -25,20 +25,6 @@ import pptIcon from 'assets/images/icons/ppt.png';
 import videoIcon from 'assets/images/icons/video.png';
 import wordIcon from 'assets/images/icons/word.png';
 
-const styles = StyleSheet.create({
-    fileIcon: {
-        width: 60,
-        height: 60
-    },
-    fileIconWrapper: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 100,
-        height: 100,
-        backgroundColor: '#fff'
-    }
-});
-
 const ICON_PATH_FROM_FILE_TYPE = {
     audio: audioIcon,
     code: codeIcon,
@@ -54,8 +40,19 @@ const ICON_PATH_FROM_FILE_TYPE = {
 
 export default class FileAttachmentIcon extends Component {
     static propTypes = {
-        file: PropTypes.object.isRequired
+        file: PropTypes.object.isRequired,
+        iconHeight: PropTypes.number,
+        iconWidth: PropTypes.number,
+        wrapperHeight: PropTypes.number,
+        wrapperWidth: PropTypes.number
     };
+
+    static defaultProps = {
+        iconHeight: 60,
+        iconWidth: 60,
+        wrapperHeight: 100,
+        wrapperWidth: 100
+    }
 
     getFileIconPath(file) {
         const fileType = Utils.getFileType(file);
@@ -63,14 +60,25 @@ export default class FileAttachmentIcon extends Component {
     }
 
     render() {
-        const {file} = this.props;
+        const {file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
+        const source = this.getFileIconPath(file);
+
         return (
-            <View style={styles.fileIconWrapper}>
+            <View style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}>
                 <Image
-                    style={styles.fileIcon}
-                    source={this.getFileIconPath(file)}
+                    style={{height: iconHeight, width: iconWidth}}
+                    source={source}
+                    defaultSource={genericIcon}
                 />
             </View>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    fileIconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff'
+    }
+});

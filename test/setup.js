@@ -17,23 +17,18 @@ const m = require('module');
 const originalLoader = m._load;
 
 const NativeModules = ReactNative.NativeModules;
+const Platform = ReactNative.Platform;
 
 NativeModules.RNCookieManagerIOS = {};
 NativeModules.RNCookieManagerAndroid = {};
+
+Platform.__setOS('ios');
 
 // Image file ignore setup from:
 // http://valuemotive.com/2016/08/01/unit-testing-react-native-components-with-mocha-and-enzyme/
 m._load = function hookedLoader(request, parent, isMain) {
     if (request.match(/.jpeg|.jpg|.png$/)) {
-        return {uri: request};
-    }
-
-    if (request === './search_bar') {
-        request = './search_bar.ios';
-    }
-
-    if (request === './options_modal_list') {
-        request = './options_modal_list.ios';
+        return {uri: request}
     }
 
     return originalLoader(request, parent, isMain);
