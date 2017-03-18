@@ -48,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const SAVE_NOTIFY_PROPS = 'save_notify_props';
 const SAVING_NOTIFY_PROPS = 'saving_notify_props';
 
-export default class AccountNofications extends PureComponent {
+export default class AccountNotifications extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             goBack: PropTypes.func.isRequired,
@@ -95,7 +95,7 @@ export default class AccountNofications extends PureComponent {
             this.props.actions.goBack();
         } else if (nextProps.saveRequestStatus === RequestStatus.FAILURE && this.props.saveRequestStatus === RequestStatus.STARTED) {
             EventEmitter.emit(SAVING_NOTIFY_PROPS, false);
-            this.setStateFromNotifyProps(this.currentUser.notify_props);
+            this.setStateFromNotifyProps(nextProps.currentUser.notify_props);
         }
     }
 
