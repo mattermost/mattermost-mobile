@@ -37,7 +37,7 @@ function ChannelDrawerButton(props) {
 
         const mentionStyle = {
             color: '#fff',
-            fontSize: 12
+            fontSize: 10
         };
 
         badge = (
