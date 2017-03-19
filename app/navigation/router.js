@@ -18,6 +18,8 @@ import {RouteTransitions} from 'app/navigation/routes';
 import {getTheme} from 'app/selectors/preferences';
 import ErrorList from 'app/components/error_list';
 
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import NavigationModal from './navigation_modal';
 
 const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder;
@@ -39,7 +41,7 @@ class Router extends React.Component {
     state = {
         deviceHeight,
         deviceWidth
-    }
+    };
 
     emitHeaderEvent = (key) => (event) => {
         const subscription = this.headerEventSubscriptions[`${key}-${event}`];
@@ -201,6 +203,19 @@ class Router extends React.Component {
         }
     }
 
+    handleDrawerTween = (ratio) => {
+        const opacity = (ratio / 2);
+
+        EventEmitter.emit('drawer_opacity', opacity);
+
+        return {
+            mainOverlay: {
+                backgroundColor: '#000',
+                opacity
+            }
+        };
+    };
+
     render = () => {
         const {
             index,
@@ -237,14 +252,15 @@ class Router extends React.Component {
                     disabled={modalVisible}
                     content={leftDrawerContent}
                     tapToClose={true}
-                    openDrawerOffset={0.2}
+                    openDrawerOffset={42}
                     onRequestClose={this.props.actions.closeDrawers}
-                    panOpenMask={0.4}
-                    panCloseMask={0.2}
+                    panOpenMask={0.3}
+                    panCloseMask={42}
                     panThreshold={0.2}
                     acceptPan={navigationProps.allowMenuSwipe}
                     negotiatePan={true}
                     useInteractionManager={true}
+                    tweenHandler={this.handleDrawerTween}
                 >
                     <Drawer
                         open={rightDrawerOpen}
@@ -253,14 +269,15 @@ class Router extends React.Component {
                         disabled={modalVisible}
                         content={rightDrawerContent}
                         tapToClose={true}
-                        openDrawerOffset={0.2}
+                        openDrawerOffset={50}
                         onRequestClose={this.props.actions.closeDrawers}
-                        panOpenMask={0.4}
-                        panCloseMask={0.2}
+                        panOpenMask={0.3}
+                        panCloseMask={50}
                         panThreshold={0.2}
                         acceptPan={navigationProps.allowMenuSwipe}
                         negotiatePan={true}
                         useInteractionManager={true}
+                        tweenHandler={this.handleDrawerTween}
                     >
                         <NavigationExperimental.Transitioner
                             style={{flex: 1}}
