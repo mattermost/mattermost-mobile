@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goToModalAccountSettings, goBack, goToModalSelectTeam} from 'app/actions/navigation';
+import {goBack, goToModalSelectTeam} from 'app/actions/navigation';
 import {clearErrors} from 'mattermost-redux/actions/errors';
 
 import {logout} from 'mattermost-redux/actions/users';
@@ -25,7 +25,6 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goToModalAccountSettings,
             goBack,
             goToModalSelectTeam,
             clearErrors,

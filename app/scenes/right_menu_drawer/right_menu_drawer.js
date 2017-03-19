@@ -22,7 +22,6 @@ export default class RightMenuDrawer extends React.Component {
         currentUserId: React.PropTypes.string.isRequired,
         currentTeamId: React.PropTypes.string.isRequired,
         actions: React.PropTypes.shape({
-            goToModalAccountSettings: React.PropTypes.func.isRequired,
             goToModalSelectTeam: React.PropTypes.func.isRequired,
             clearErrors: React.PropTypes.func.isRequired,
             logout: React.PropTypes.func.isRequired
@@ -60,18 +59,6 @@ export default class RightMenuDrawer extends React.Component {
 
         return (
             <ScrollView style={Styles.container}>
-                <Divider style={Styles.divider}/>
-                <RightMenuDrawerItem onPress={this.props.actions.goToModalAccountSettings}>
-                    <Icon
-                        style={Styles.icon}
-                        name='cog'
-                    />
-                    <FormattedText
-                        style={Styles.itemText}
-                        id='sidebar_right_menu.accountSettings'
-                        defaultMessage='Account Settings'
-                    />
-                </RightMenuDrawerItem>
                 <Divider style={Styles.divider}/>
                 <RightMenuDrawerItem onPress={this.props.actions.goToModalSelectTeam}>
                     <Icon
