@@ -17,8 +17,14 @@ import {getPosts, getPostsSince} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
-import {Constants, UsersTypes} from 'mattermost-redux/constants';
-import {getChannelByName, getDirectChannelName, isDirectChannelVisible} from 'mattermost-redux/utils/channel_utils';
+import {getProfilesInChannel} from 'mattermost-redux/actions/users';
+import {Constants, Preferences, UsersTypes} from 'mattermost-redux/constants';
+import {
+    getChannelByName,
+    getDirectChannelName,
+    isDirectChannelVisible,
+    isGroupChannelVisible
+} from 'mattermost-redux/utils/channel_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
@@ -49,12 +55,27 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         const {channels} = state.entities.channels;
         const {myPreferences} = state.entities.preferences;
         const {membersInTeam} = state.entities.teams;
-        const dmPrefs = getPreferencesByCategory(myPreferences, Constants.CATEGORY_DIRECT_CHANNEL_SHOW);
+        const dmPrefs = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW);
+        const gmPrefs = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_GROUP_CHANNEL_SHOW);
         const members = [];
+        const loadProfilesForChannels = [];
 
         for (const [key, pref] of dmPrefs) {
             if (pref.value === 'true') {
                 members.push(key);
+            }
+        }
+
+        for (const [key, pref] of gmPrefs) {
+            if (pref.value === 'true') {
+                loadProfilesForChannels.push(key);
+            }
+        }
+
+        if (loadProfilesForChannels.length) {
+            for (let i = 0; i < loadProfilesForChannels.length; i++) {
+                const channelId = loadProfilesForChannels[i];
+                getProfilesInChannel(teamId, channelId, 0)(dispatch, getState);
             }
         }
 
@@ -125,9 +146,14 @@ export function selectInitialChannel(teamId) {
         const currentChannel = channels[currentChannelId];
         const {myPreferences} = state.entities.preferences;
 
+        const isDMVisible = currentChannel && currentChannel.type === Constants.DM_CHANNEL &&
+            isDirectChannelVisible(currentUserId, myPreferences, currentChannel);
+
+        const isGMVisible = currentChannel && currentChannel.type === Constants.GM_CHANNEL &&
+            isGroupChannelVisible(myPreferences, currentChannel);
+
         if (currentChannel && myMembers[currentChannelId] &&
-            (currentChannel.team_id === teamId || (currentChannel.type === Constants.DM_CHANNEL &&
-            isDirectChannelVisible(currentUserId, myPreferences, currentChannel)))) {
+            (currentChannel.team_id === teamId || isDMVisible || isGMVisible)) {
             await handleSelectChannel(currentChannelId)(dispatch, getState);
             return;
         }

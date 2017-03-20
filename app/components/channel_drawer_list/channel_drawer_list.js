@@ -295,7 +295,6 @@ class ChannelDrawerList extends Component {
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
                 onLongPress={this.onShowModal}
-                handleClose={this.handleClose}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
@@ -320,13 +319,12 @@ class ChannelDrawerList extends Component {
             favoriteChannels,
             publicChannels,
             privateChannels,
-            directChannels,
-            directNonTeamChannels
+            directAndGroupChannels
         } = props.channels;
 
         if (favoriteChannels.length) {
             data.push(
-                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', favoriteChannels.length > 0),
+                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, favoriteChannels.length > 0),
                 ...favoriteChannels
             );
         }
@@ -342,13 +340,9 @@ class ChannelDrawerList extends Component {
         );
 
         data.push(
-            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.props.actions.showDirectMessagesModal, directChannels.length > 0),
-            ...directChannels
+            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.props.actions.showDirectMessagesModal, directAndGroupChannels.length > 0),
+            ...directAndGroupChannels
         );
-
-        if (directNonTeamChannels.length) {
-            data.push(...directNonTeamChannels);
-        }
 
         this.firstUnreadChannel = null;
         this.lastUnreadChannel = null;
@@ -549,7 +543,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18
         },
         divider: {
-            backgroundColor: changeOpacity(theme.sidebarText, 0.1),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1
         },
         actionContainer: {
