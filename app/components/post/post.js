@@ -564,6 +564,9 @@ const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             height: StyleSheet.hairlineWidth,
             flex: 1,
             marginVertical: 10
+        },
+        mention: {
+            color: theme.linkColor
         }
     });
 });

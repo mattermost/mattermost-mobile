@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "commonmark": "hmhealey/commonmark.js#00189db64c261926de98db16ca14d5b1bcba4d8e",
-    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#2e8ea6ac67b683b44782f403b69a06bb0e5c63e6",
+    "commonmark": "hmhealey/commonmark.js#46784f1461fa34e148940534c1763af6d344ab0f",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#7479202c42ab1b722359adadaa13f738edf5f88a",
     "deep-equal": "1.0.1",
     "harmony-reflect": "1.5.1",
     "intl": "1.2.5",
