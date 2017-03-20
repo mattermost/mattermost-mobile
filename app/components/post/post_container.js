@@ -21,6 +21,7 @@ function mapStateToProps(state, ownProps) {
     const myPreferences = getMyPreferences(state);
 
     return {
+        config: state.entities.general.config,
         commentedOnDisplayName: displayUsername(commentedOnUser, myPreferences),
         currentTeamId: getCurrentTeamId(state),
         currentUserId: getCurrentUserId(state),

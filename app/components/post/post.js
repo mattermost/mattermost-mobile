@@ -23,12 +23,17 @@ import ProfilePicture from 'app/components/profile_picture';
 import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import webhookIcon from 'assets/images/icons/webhook.jpg';
+
 import {Constants} from 'mattermost-redux/constants';
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin} from 'mattermost-redux/utils/user_utils';
 
+const BOT_NAME = 'BOT';
+
 class Post extends PureComponent {
     static propTypes = {
+        config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
@@ -252,17 +257,18 @@ class Post extends PureComponent {
     };
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const {config, post, theme} = this.props;
+        const style = getStyleSheet(theme);
         const PROFILE_PICTURE_SIZE = 32;
 
         let profilePicture;
         let displayName;
         let messageStyle;
-        if (isSystemMessage(this.props.post)) {
+        if (isSystemMessage(post)) {
             profilePicture = (
                 <View style={style.profilePicture}>
                     <MattermostIcon
-                        color={this.props.theme.centerChannelColor}
+                        color={theme.centerChannelColor}
                         height={PROFILE_PICTURE_SIZE}
                         width={PROFILE_PICTURE_SIZE}
                     />
@@ -278,24 +284,43 @@ class Post extends PureComponent {
             );
 
             messageStyle = [style.message, style.systemMessage];
-        } else if (this.props.post.props && this.props.post.props.from_webhook) {
-            profilePicture = (
-                <View style={style.profilePicture}>
-                    <Image
-                        source={{uri: this.props.post.props.override_icon_url}}
-                        style={{
-                            height: PROFILE_PICTURE_SIZE,
-                            width: PROFILE_PICTURE_SIZE,
-                            borderRadius: PROFILE_PICTURE_SIZE / 2
-                        }}
+        } else if (post.props && post.props.from_webhook) {
+            if (config.EnablePostIconOverride === 'true') {
+                const icon = post.props.override_icon_url ? {uri: post.props.override_icon_url} : webhookIcon;
+                profilePicture = (
+                    <View style={style.profilePicture}>
+                        <Image
+                            source={icon}
+                            style={{
+                                height: PROFILE_PICTURE_SIZE,
+                                width: PROFILE_PICTURE_SIZE,
+                                borderRadius: PROFILE_PICTURE_SIZE / 2
+                            }}
+                        />
+                    </View>
+                );
+            } else {
+                profilePicture = (
+                    <ProfilePicture
+                        user={this.props.user}
+                        size={PROFILE_PICTURE_SIZE}
                     />
-                </View>
-            );
+                );
+            }
 
+            let name = this.props.displayName;
+            if (post.props.override_username && config.EnablePostUsernameOverride === 'true') {
+                name = post.props.override_username;
+            }
             displayName = (
-                <Text style={style.displayName}>
-                    {this.props.post.props.override_username}
-                </Text>
+                <View style={style.botContainer}>
+                    <Text style={style.displayName}>
+                        {name}
+                    </Text>
+                    <Text style={style.bot}>
+                        {BOT_NAME}
+                    </Text>
+                </View>
             );
             messageStyle = [style.message, style.webhookMessage];
         } else {
@@ -426,14 +451,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 10
         },
         displayName: {
+            color: theme.centerChannelColor,
             fontSize: 14,
             fontWeight: '600',
-            marginRight: 10,
-            color: theme.centerChannelColor
+            marginRight: 5
+        },
+        botContainer: {
+            flexDirection: 'row'
+        },
+        bot: {
+            alignSelf: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderRadius: 2,
+            color: theme.centerChannelColor,
+            fontSize: 10,
+            fontWeight: '600',
+            marginRight: 5,
+            paddingVertical: 2,
+            paddingHorizontal: 4
         },
         time: {
             color: theme.centerChannelColor,
             fontSize: 12,
+            marginLeft: 5,
             opacity: 0.5
         },
         commentedOn: {
