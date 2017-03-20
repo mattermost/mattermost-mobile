@@ -15,6 +15,7 @@ import {
 
 import {
     closeDMChannel,
+    closeGMChannel,
     leaveChannel,
     markFavorite,
     unmarkFavorite
@@ -32,6 +33,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             closeDMChannel,
+            closeGMChannel,
             goToCreateChannel,
             leaveChannel,
             markFavorite,

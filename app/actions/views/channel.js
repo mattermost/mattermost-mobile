@@ -198,12 +198,28 @@ export function toggleDMChannel(otherUserId, visible) {
 
         const dm = [{
             user_id: currentUserId,
-            category: Constants.CATEGORY_DIRECT_CHANNEL_SHOW,
+            category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW,
             name: otherUserId,
             value: visible
         }];
 
         return savePreferences(dm)(dispatch, getState);
+    };
+}
+
+export function toggleGMChannel(channelId, visible) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+
+        const gm = [{
+            user_id: currentUserId,
+            category: Preferences.CATEGORY_GROUP_CHANNEL_SHOW,
+            name: channelId,
+            value: visible
+        }];
+
+        return savePreferences(gm)(dispatch, getState);
     };
 }
 
@@ -216,6 +232,22 @@ export function closeDMChannel(channel) {
         }
 
         toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState).then(() => {
+            if (channel.isCurrent) {
+                selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
+            }
+        });
+    };
+}
+
+export function closeGMChannel(channel) {
+    return async(dispatch, getState) => {
+        const state = getState();
+
+        if (channel.isFavorite) {
+            unmarkFavorite(channel.id)(dispatch, getState);
+        }
+
+        toggleGMChannel(channel.id, 'false')(dispatch, getState).then(() => {
             if (channel.isCurrent) {
                 selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
             }
