@@ -16,9 +16,12 @@ import FileAttachment from './file_attachment';
 export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
-        post: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
-        theme: PropTypes.object.isRequired
+        hideOptionsContext: PropTypes.func.isRequired,
+        onLongPress: PropTypes.func,
+        post: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired,
+        toggleSelected: PropTypes.func.isRequired
     };
 
     componentDidMount() {
@@ -26,11 +29,19 @@ export default class FileAttachmentList extends Component {
         this.props.actions.loadFilesForPostIfNecessary(post);
     }
 
+    handleOnPress = (file) => {
+        this.props.hideOptionsContext();
+        this.props.actions.goToImagePreviewModal(this.props.post, file.id);
+    };
+
     render() {
         const fileAttachments = this.props.files.map((file) => (
             <TouchableOpacity
                 key={file.id}
-                onPress={() => this.props.actions.goToImagePreviewModal(this.props.post, file.id)}
+                onLongPress={this.props.onLongPress}
+                onPress={() => this.handleOnPress(file)}
+                onPressIn={() => this.props.toggleSelected(true)}
+                onPressOut={() => this.props.toggleSelected(false)}
             >
                 <FileAttachment
                     file={file}

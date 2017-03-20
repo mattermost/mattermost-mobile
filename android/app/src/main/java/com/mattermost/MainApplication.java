@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.facebook.react.ReactApplication;
+import com.gnet.bottomsheet.RNBottomSheetPackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.psykar.cookiemanager.CookieManagerPackage;
 import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
@@ -31,6 +32,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNBottomSheetPackage(),
             new RNDeviceInfo(),
             new CookieManagerPackage(),
             new ReactNativePushNotificationPackage(),
