@@ -12,7 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import RightMenuDrawerItem from './right_menu_drawer_item';
 
@@ -154,10 +154,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             })
         },
         itemText: {
-            color: 'white'
+            color: theme.sidebarText
         },
         icon: {
-            color: 'white',
+            color: theme.sidebarText,
             width: 25
         },
         mentionIcon: {
@@ -165,7 +165,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold'
         },
         divider: {
-            borderColor: 'rgba(255, 255, 255, 0.6)',
+            borderColor: changeOpacity(theme.sidebarText, 0.2),
             borderTopWidth: StyleSheet.hairlineWidth
         }
     });
