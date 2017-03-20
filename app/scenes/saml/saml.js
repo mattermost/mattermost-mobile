@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import CookieManager from 'react-native-cookies';
+import Client from 'mattermost-redux/client';
 
 export default class Saml extends PureComponent {
     static propTypes = {
@@ -27,16 +28,19 @@ export default class Saml extends PureComponent {
 
     onNavigationStateChange = (navState) => {
         const {url} = navState;
-        if (url.includes('/login/sso/saml') && url.includes('mobile')) {
+
+        if (url.includes('/login/sso/saml')) {
             CookieManager.get(this.props.serverUrl, (err, res) => {
                 const token = res.MMAUTHTOKEN;
-                const {
-                    handleSuccessfulLogin,
-                    setStoreFromLocalData,
-                    goToLoadTeam
-                } = this.props.actions;
 
                 if (token) {
+                    const {
+                        handleSuccessfulLogin,
+                        setStoreFromLocalData,
+                        goToLoadTeam
+                    } = this.props.actions;
+
+                    Client.setToken(token);
                     handleSuccessfulLogin().
                     then(setStoreFromLocalData.bind(null, {url: this.props.serverUrl, token})).
                     then(goToLoadTeam);
