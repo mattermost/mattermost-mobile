@@ -10,6 +10,7 @@ import {
     View
 } from 'react-native';
 
+import AtMention from 'app/components/at_mention';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {concatStyles} from 'app/utils/theme';
 
@@ -49,6 +50,7 @@ export default class Markdown extends PureComponent {
                 code: this.renderCodeSpan,
                 link: MarkdownLink,
                 image: this.renderImage,
+                atMention: this.renderAtMention,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -92,6 +94,16 @@ export default class Markdown extends PureComponent {
                 {src}
                 {')'}
             </Text>
+        );
+    }
+
+    renderAtMention = ({context, mentionName}) => {
+        return (
+            <AtMention
+                mentionStyle={this.props.textStyles.mention}
+                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                mentionName={mentionName}
+            />
         );
     }
 
