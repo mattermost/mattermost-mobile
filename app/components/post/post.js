@@ -43,6 +43,7 @@ class Post extends PureComponent {
         displayName: PropTypes.string,
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
+        isFlagged: PropTypes.bool,
         isLastReply: PropTypes.bool,
         commentedOnDisplayName: PropTypes.string,
         commentedOnPost: PropTypes.object,
@@ -51,7 +52,9 @@ class Post extends PureComponent {
         onPress: PropTypes.func,
         actions: PropTypes.shape({
             deletePost: PropTypes.func.isRequired,
-            goToUserProfile: PropTypes.func.isRequired
+            flagPost: PropTypes.func.isRequired,
+            goToUserProfile: PropTypes.func.isRequired,
+            unflagPost: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -172,14 +175,23 @@ class Post extends PureComponent {
 
     renderMessage = (style, messageStyle, replyBar = false) => {
         const {formatMessage} = this.props.intl;
-        const {currentUserId, post, roles, theme} = this.props;
+        const {currentUserId, isFlagged, post, roles, theme} = this.props;
+        const {flagPost, unflagPost} = this.props.actions;
         const actions = [];
 
         // we should check for the user roles and permissions
-        // actions.push({text: 'Flag', onPress: () => console.log('flag pressed')}); //eslint-disable-line no-console
-        // if (post.user_id === currentUserId) {
-        //     actions.push({text: 'Edit', onPress: () => console.log('edit pressed')}); //eslint-disable-line no-console
-        // }
+        if (isFlagged) {
+            actions.push({
+                text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
+                onPress: () => unflagPost(post.id)
+            });
+        } else {
+            actions.push({
+                text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
+                onPress: () => flagPost(post.id)
+            });
+        }
+
         if (post.user_id === currentUserId || isAdmin(roles)) {
             actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
         }

@@ -7,10 +7,11 @@ import {bindActionCreators} from 'redux';
 import {goToUserProfile} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
 
-import {deletePost} from 'mattermost-redux/actions/posts';
+import {deletePost, flagPost, unflagPost} from 'mattermost-redux/actions/posts';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/selectors/entities/users';
+import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import Post from './post';
@@ -26,6 +27,7 @@ function mapStateToProps(state, ownProps) {
         currentTeamId: getCurrentTeamId(state),
         currentUserId: getCurrentUserId(state),
         displayName: displayUsername(user, myPreferences),
+        isFlagged: isPostFlagged(ownProps.post.id, myPreferences),
         roles: getCurrentUserRoles(state),
         theme: getTheme(state),
         user,
@@ -37,7 +39,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             deletePost,
-            goToUserProfile
+            flagPost,
+            goToUserProfile,
+            unflagPost
         }, dispatch)
     };
 }
