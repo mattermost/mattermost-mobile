@@ -5,8 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
-    requestCloseModal,
+    goToModalAccountSettings,
     goToCreateChannel,
+    requestCloseModal,
     showMoreChannelsModal,
     showDirectMessagesModal,
     showOptionsModal
@@ -32,6 +33,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             closeDMChannel,
             goToCreateChannel,
+            goToModalAccountSettings,
             leaveChannel,
             markFavorite,
             unmarkFavorite,

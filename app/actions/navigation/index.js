@@ -158,8 +158,10 @@ export function showOptionsModal(options) {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
-            route: Routes.OptionsModal,
-            props: options
+            route: {
+                ...Routes.OptionsModal,
+                props: options
+            }
         }, getState);
     };
 }

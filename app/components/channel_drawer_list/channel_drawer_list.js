@@ -1,8 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import deepEqual from 'deep-equal';
 import React, {PropTypes, Component} from 'react';
-
 import {
     Alert,
     ListView,
@@ -13,13 +13,16 @@ import {
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import {Constants} from 'mattermost-redux/constants';
-import LineDivider from 'app/components/line_divider';
-import ChannelDrawerItem from './channel_drawer_item';
+import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
 import FormattedText from 'app/components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {Constants} from 'mattermost-redux/constants';
+
+import ChannelDrawerItem from './channel_drawer_item';
 import UnreadIndicator from './unread_indicator';
-import deepEqual from 'deep-equal';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 class ChannelDrawerList extends Component {
     static propTypes = {
@@ -33,6 +36,7 @@ class ChannelDrawerList extends Component {
         actions: PropTypes.shape({
             closeDMChannel: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
+            goToModalAccountSettings: React.PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
@@ -291,27 +295,9 @@ class ChannelDrawerList extends Component {
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
                 onLongPress={this.onShowModal}
-                handleClose={this.handleClose}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
-        );
-    };
-
-    renderSectionAction = (action) => {
-        const {theme} = this.props;
-
-        return (
-            <TouchableHighlight
-                style={Styles.more}
-                onPress={action}
-            >
-                <Icon
-                    name='plus-circle'
-                    size={18}
-                    color={theme.sidebarText}
-                />
-            </TouchableHighlight>
         );
     };
 
@@ -326,75 +312,37 @@ class ChannelDrawerList extends Component {
             return data;
         }
 
-        const {
-            theme
-        } = props;
+        const {theme} = this.props;
+        const styles = getStyleSheet(theme);
 
         const {
             favoriteChannels,
             publicChannels,
             privateChannels,
-            directChannels,
-            directNonTeamChannels
+            directAndGroupChannels
         } = props.channels;
 
         if (favoriteChannels.length) {
             data.push(
-                <FormattedText
-                    style={[Styles.title, {color: theme.sidebarText}]}
-                    id='sidebar.favorite'
-                    defaultMessage='FAVORITES'
-                />,
+                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, favoriteChannels.length > 0),
                 ...favoriteChannels
             );
         }
 
         data.push(
-            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
-                <FormattedText
-                    style={[Styles.title, {color: theme.sidebarText}]}
-                    id='sidebar.channels'
-                    defaultMessage='CHANNELS'
-                />
-                {this.renderSectionAction(this.props.actions.showMoreChannelsModal)}
-            </View>,
+            this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', this.props.actions.showMoreChannelsModal, publicChannels.length > 0),
             ...publicChannels
         );
 
         data.push(
-            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
-                <FormattedText
-                    style={[Styles.title, {color: theme.sidebarText}]}
-                    id='sidebar.pg'
-                    defaultMessage='PRIVATE GROUPS'
-                />
-                {this.renderSectionAction(this.createPrivateChannel)}
-            </View>,
+            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE GROUPS', this.createPrivateChannel, privateChannels.length > 0),
             ...privateChannels
         );
 
         data.push(
-            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
-                <FormattedText
-                    style={[Styles.title, {color: theme.sidebarText}]}
-                    id='sidebar.direct'
-                    defaultMessage='DIRECT MESSAGES'
-                />
-                {this.renderSectionAction(this.props.actions.showDirectMessagesModal)}
-            </View>,
-            ...directChannels
+            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.props.actions.showDirectMessagesModal, directAndGroupChannels.length > 0),
+            ...directAndGroupChannels
         );
-
-        if (directNonTeamChannels.length) {
-            data.push(
-                <LineDivider
-                    color={theme.sidebarTextActiveBorder}
-                    translationId='sidebar.otherMembers'
-                    translationText='Outside this team'
-                />,
-                ...directNonTeamChannels
-            );
-        }
 
         this.firstUnreadChannel = null;
         this.lastUnreadChannel = null;
@@ -403,11 +351,50 @@ class ChannelDrawerList extends Component {
         return data;
     };
 
+    renderSectionAction = (styles, action) => {
+        return (
+            <TouchableHighlight
+                style={styles.actionContainer}
+                onPress={action}
+            >
+                <MaterialIcon
+                    name='add'
+                    style={styles.action}
+                />
+            </TouchableHighlight>
+        );
+    };
+
+    renderDivider = (styles, marginLeft) => {
+        return (
+            <View
+                style={[styles.divider, {marginLeft}]}
+            />
+        );
+    };
+
     renderRow = (rowData) => {
         if (rowData && rowData.id) {
             return this.createChannelElement(rowData);
         }
         return rowData;
+    };
+
+    renderTitle = (styles, id, defaultMessage, action, bottomDivider) => {
+        return (
+            <View>
+                {this.renderDivider(styles, 0)}
+                <View style={styles.titleContainer}>
+                    <FormattedText
+                        style={styles.title}
+                        id={id}
+                        defaultMessage={defaultMessage}
+                    />
+                    {action && this.renderSectionAction(styles, action)}
+                </View>
+                {bottomDivider && this.renderDivider(styles, 16)}
+            </View>
+        );
     };
 
     setScrollContainer = (ref) => {
@@ -419,19 +406,30 @@ class ChannelDrawerList extends Component {
             return <Text>{'Loading'}</Text>;
         }
 
-        const {
-            theme
-        } = this.props;
+        const {theme} = this.props;
+        const styles = getStyleSheet(theme);
+
+        const settings = (
+            <TouchableHighlight
+                style={styles.settingsContainer}
+                onPress={() => this.props.actions.goToModalAccountSettings()}
+            >
+                <AwesomeIcon
+                    name='cog'
+                    style={styles.settings}
+                />
+            </TouchableHighlight>
+        );
 
         let above;
         let below;
         if (this.state.showAbove) {
             above = (
                 <UnreadIndicator
-                    style={{top: 55, backgroundColor: theme.mentionBj, width: (this.width - 40)}}
+                    style={[styles.above, {width: (this.width - 40)}]}
                     text={(
                         <FormattedText
-                            style={[Styles.indicatorText, {color: theme.mentionColor}]}
+                            style={styles.indicatorText}
                             id='sidebar.unreadAbove'
                             defaultMessage='Unread post(s) above'
                         />
@@ -443,10 +441,10 @@ class ChannelDrawerList extends Component {
         if (this.state.showBelow) {
             below = (
                 <UnreadIndicator
-                    style={{bottom: 15, backgroundColor: theme.mentionBj, width: (this.width - 40)}}
+                    style={[styles.below, {width: (this.width - 40)}]}
                     text={(
                         <FormattedText
-                            style={[Styles.indicatorText, {color: theme.mentionColor}]}
+                            style={styles.indicatorText}
                             id='sidebar.unreadBelow'
                             defaultMessage='Unread post(s) below'
                         />
@@ -457,21 +455,24 @@ class ChannelDrawerList extends Component {
 
         return (
             <View
-                style={[Styles.container, {backgroundColor: theme.sidebarBg}]}
+                style={styles.container}
                 onLayout={this.onLayout}
             >
-                <View style={[Styles.headerContainer, {backgroundColor: theme.sidebarHeaderBg}]}>
-                    <Text
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        style={[Styles.header, {color: theme.sidebarHeaderTextColor}]}
-                    >
-                        {this.props.currentTeam.display_name}
-                    </Text>
+                <View style={styles.statusBar}>
+                    <View style={styles.headerContainer}>
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={styles.header}
+                        >
+                            {this.props.currentTeam.display_name}
+                        </Text>
+                        {settings}
+                    </View>
                 </View>
                 <ListView
                     ref={this.setScrollContainer}
-                    style={Styles.scrollContainer}
+                    style={styles.scrollContainer}
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRow}
                     onChangeVisibleRows={this.updateUnreadIndicators}
@@ -483,59 +484,99 @@ class ChannelDrawerList extends Component {
     }
 }
 
-const Styles = StyleSheet.create({
-    container: {
-        flex: 1
-    },
-    scrollContainer: {
-        flex: 1
-    },
-    headerContainer: {
-        flexDirection: 'column',
-        ...Platform.select({
-            ios: {
-                height: 64,
-                justifyContent: 'flex-end'
-            },
-            android: {
-                height: 56,
-                justifyContent: 'center',
-                paddingTop: 10
-            }
-        }),
-        width: 300,
-        paddingLeft: 10,
-        paddingBottom: 12
-    },
-    header: {
-        fontSize: 18,
-        fontWeight: 'bold'
-    },
-    title: {
-        paddingTop: 10,
-        paddingRight: 10,
-        paddingLeft: 10,
-        paddingBottom: 5,
-        fontSize: 15,
-        opacity: 0.6
-    },
-    indicatorText: {
-        paddingVertical: 2,
-        paddingHorizontal: 4,
-        backgroundColor: 'transparent',
-        fontSize: 14,
-        textAlign: 'center',
-        textAlignVertical: 'center'
-    },
-    more: {
-        position: 'absolute',
-        opacity: 0.6,
-        right: 0,
-        width: 50,
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center'
-    }
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.sidebarBg,
+            flex: 1
+        },
+        statusBar: {
+            backgroundColor: theme.sidebarHeaderBg,
+            ...Platform.select({
+                ios: {
+                    paddingTop: 20
+                }
+            })
+        },
+        scrollContainer: {
+            flex: 1,
+            marginBottom: 10
+        },
+        headerContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.sidebarHeaderBg,
+            flexDirection: 'row',
+            height: 44,
+            paddingLeft: 16
+        },
+        header: {
+            color: theme.sidebarHeaderTextColor,
+            flex: 1,
+            fontSize: 14,
+            fontWeight: 'normal',
+            lineHeight: 16
+        },
+        settingsContainer: {
+            alignItems: 'center',
+            height: 44,
+            justifyContent: 'center',
+            width: 50
+        },
+        settings: {
+            color: theme.sidebarText,
+            fontSize: 18,
+            fontWeight: '300'
+        },
+        titleContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            height: 48,
+            marginLeft: 16
+        },
+        title: {
+            flex: 1,
+            color: theme.sidebarText,
+            opacity: 1,
+            fontSize: 15,
+            fontWeight: '500',
+            letterSpacing: 0.8,
+            lineHeight: 18
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            height: 1
+        },
+        actionContainer: {
+            alignItems: 'center',
+            height: 48,
+            justifyContent: 'center',
+            width: 50
+        },
+        action: {
+            color: theme.sidebarText,
+            fontSize: 16,
+            fontWeight: '500',
+            lineHeight: 18
+        },
+        above: {
+            backgroundColor: theme.mentionBj,
+            top: 55
+        },
+        below: {
+            backgroundColor: theme.mentionBj,
+            bottom: 15
+        },
+        indicatorText: {
+            backgroundColor: 'transparent',
+            color: theme.mentionColor,
+            fontSize: 14,
+            paddingVertical: 2,
+            paddingHorizontal: 4,
+            textAlign: 'center',
+            textAlignVertical: 'center'
+        }
+    });
 });
 
 export default injectIntl(ChannelDrawerList);

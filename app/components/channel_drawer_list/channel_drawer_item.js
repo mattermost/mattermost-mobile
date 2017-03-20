@@ -1,27 +1,29 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
-import {TouchableHighlight, Text, View} from 'react-native';
+import React, {PropTypes, PureComponent} from 'react';
+import {
+    StyleSheet,
+    TouchableHighlight,
+    Text,
+    View
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {Constants} from 'mattermost-redux/constants';
 
-import Badge from 'app/components/badge';
-
-export default class ChannelDrawerItem extends React.Component {
+export default class ChannelDrawerItem extends PureComponent {
     static propTypes = {
-        channel: React.PropTypes.object.isRequired,
-        onSelectChannel: React.PropTypes.func.isRequired,
-        handleClose: React.PropTypes.func,
-        onLongPress: React.PropTypes.func,
-        isActive: React.PropTypes.bool.isRequired,
-        hasUnread: React.PropTypes.bool.isRequired,
-        mentions: React.PropTypes.number.isRequired,
-        theme: React.PropTypes.object.isRequired
+        channel: PropTypes.object.isRequired,
+        onSelectChannel: PropTypes.func.isRequired,
+        onLongPress: PropTypes.func,
+        isActive: PropTypes.bool.isRequired,
+        hasUnread: PropTypes.bool.isRequired,
+        mentions: PropTypes.number.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     render() {
@@ -30,79 +32,50 @@ export default class ChannelDrawerItem extends React.Component {
             theme,
             mentions,
             hasUnread,
-            isActive,
-            handleClose
+            isActive
         } = this.props;
 
-        let iconColor = changeOpacity(theme.centerChannelColor, 0.7);
-        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
-        let icon;
+        const style = getStyleSheet(theme);
+        let activeItem;
+        let activeIcon;
+        let unreadIcon;
+        let activeGroupBox;
+        let unreadGroupBox;
+        let activeGroup;
+        let unreadGroup;
+        let activeText;
+        let unreadText;
+
         let activeBorder;
+        let icon;
         let badge;
 
         if (mentions && !isActive) {
-            const badgeStyle = {
-                position: 'absolute',
-                top: 12,
-                right: 10,
-                flexDirection: 'row',
-                backgroundColor: theme.mentionBj
-            };
-
-            const mentionStyle = {
-                color: theme.mentionColor,
-                fontSize: 14
-            };
-
             badge = (
-                <Badge
-                    style={badgeStyle}
-                    countStyle={mentionStyle}
-                    count={mentions}
-                    minHeight={20}
-                    minWidth={20}
-                />
+                <View style={style.badgeContainer}>
+                    <Text style={style.badge}>
+                        {mentions}
+                    </Text>
+                </View>
             );
         }
 
-        const itemStyle = {
-            alignItems: 'center',
-            height: 45,
-            paddingLeft: 20,
-            paddingRight: 10,
-            flex: 1,
-            flexDirection: 'row'
-        };
-
-        const style = {
-            marginLeft: 5,
-            opacity: 0.6,
-            fontSize: 15,
-            color: theme.sidebarText
-        };
-
-        const activeStyle = {
-            width: 5,
-            height: 45,
-            backgroundColor: theme.sidebarTextActiveBorder,
-            position: 'absolute'
-        };
-
         if (hasUnread) {
-            style.fontWeight = 'bold';
-            style.color = theme.sidebarUnreadText;
-            style.opacity = 1;
-            iconColor = theme.centerChannelColor;
+            unreadIcon = style.iconUnread;
+            unreadText = style.textUnread;
+            unreadGroupBox = style.groupBoxUnread;
+            unreadGroup = style.groupUnread;
         }
 
         if (isActive) {
-            iconColor = theme.sidebarTextActiveColor;
-            style.color = theme.sidebarTextActiveColor;
-            style.opacity = 1;
-            itemStyle.backgroundColor = changeOpacity(theme.sidebarTextActiveColor, 0.1);
+            activeItem = style.itemActive;
+            activeIcon = style.iconActive;
+            activeGroupBox = style.groupBoxActive;
+            activeGroup = style.groupActive;
+            activeText = style.textActive;
 
             activeBorder = (
-                <View style={activeStyle}/>
+                <View style={style.borderActive}/>
             );
         }
 
@@ -110,102 +83,182 @@ export default class ChannelDrawerItem extends React.Component {
             icon = (
                 <Icon
                     name='globe'
-                    size={15}
-                    color={iconColor}
+                    style={[style.icon, unreadIcon, activeIcon]}
                 />
             );
         } else if (channel.type === Constants.PRIVATE_CHANNEL) {
             icon = (
                 <Icon
                     name='lock'
-                    size={15}
-                    color={iconColor}
+                    style={[style.icon, unreadIcon, activeIcon]}
                 />
+            );
+        } else if (channel.type === Constants.GM_CHANNEL) {
+            icon = (
+                <View style={style.groupContainer}>
+                    <View style={[style.groupBox, unreadGroupBox, activeGroupBox]}>
+                        <Text style={[style.group, unreadGroup, activeGroup]}>
+                            {channel.display_name.split(',').length}
+                        </Text>
+                    </View>
+                </View>
             );
         } else {
             switch (channel.status) {
             case Constants.ONLINE:
                 icon = (
-                    <OnlineStatus
-                        width={13}
-                        height={13}
-                        color={theme.onlineIndicator}
-                    />
+                    <View style={style.statusIcon}>
+                        <OnlineStatus
+                            width={12}
+                            height={12}
+                            color={theme.onlineIndicator}
+                        />
+                    </View>
                 );
                 break;
             case Constants.AWAY:
                 icon = (
-                    <AwayStatus
-                        width={13}
-                        height={13}
-                        color={theme.awayIndicator}
-                    />
+                    <View style={style.statusIcon}>
+                        <AwayStatus
+                            width={12}
+                            height={12}
+                            color={theme.awayIndicator}
+                        />
+                    </View>
                 );
                 break;
             default:
                 icon = (
-                    <OfflineStatus
-                        width={13}
-                        height={13}
-                        color={changeOpacity(theme.centerChannelColor, 0.7)}
-                    />
+                    <View style={style.statusIcon}>
+                        <OfflineStatus
+                            width={12}
+                            height={12}
+                            color={changeOpacity(theme.centerChannelColor, 0.4)}
+                        />
+                    </View>
                 );
                 break;
             }
         }
 
-        let closeButton = null;
-        if (isDirectMessage && !badge) {
-            const closeStyle = {
-                position: 'absolute',
-                justifyContent: 'center',
-                alignItems: 'center',
-                opacity: 0.4,
-                width: 50,
-                height: 50,
-                right: 0,
-                flexDirection: 'row'
-            };
-
-            closeButton = (
-                <TouchableHighlight
-                    style={closeStyle}
-                    onPress={() => handleClose(channel)}
-                >
-                    <Icon
-                        name='times'
-                        size={13}
-                        color={theme.sidebarText}
-                    />
-                </TouchableHighlight>
-            );
-        }
-
         return (
             <TouchableHighlight
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.3)}
+                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={() => this.props.onSelectChannel(channel)}
                 delayLongPress={1000}
                 onLongPress={() => {
                     this.props.onLongPress(channel);
                 }}
             >
-                <View style={{flex: 1}}>
+                <View style={style.container}>
                     {activeBorder}
-                    <View style={itemStyle}>
+                    <View style={[style.item, activeItem]}>
                         {icon}
                         <Text
-                            style={style}
+                            style={[style.text, unreadText, activeText]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
                             {channel.display_name}
                         </Text>
                         {badge}
-                        {closeButton}
                     </View>
                 </View>
             </TouchableHighlight>
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            flexDirection: 'row',
+            height: 44
+        },
+        borderActive: {
+            backgroundColor: theme.sidebarTextActiveBorder,
+            width: 5
+        },
+        item: {
+            alignItems: 'center',
+            height: 44,
+            flex: 1,
+            flexDirection: 'row',
+            paddingLeft: 16
+        },
+        itemActive: {
+            backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
+            paddingLeft: 11
+        },
+        icon: {
+            color: changeOpacity(theme.sidebarText, 0.4),
+            fontSize: 12,
+            paddingRight: 12
+        },
+        iconActive: {
+            color: theme.sidebarTextActiveColor
+        },
+        iconUnread: {
+            color: theme.sidebarUnreadText
+        },
+        statusIcon: {
+            paddingRight: 12
+        },
+        groupContainer: {
+            paddingRight: 12
+        },
+        groupBox: {
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.sidebarText, 0.4),
+            height: 15,
+            justifyContent: 'center',
+            width: 12
+        },
+        groupBoxActive: {
+            borderColor: theme.sidebarTextActiveColor
+        },
+        groupBoxUnread: {
+            borderColor: theme.sidebarUnreadText
+        },
+        group: {
+            color: changeOpacity(theme.sidebarText, 0.4),
+            fontSize: 10,
+            fontWeight: '600'
+        },
+        groupActive: {
+            color: theme.sidebarTextActiveColor
+        },
+        groupUnread: {
+            color: theme.sidebarUnreadText
+        },
+        text: {
+            color: changeOpacity(theme.sidebarText, 0.4),
+            flex: 1,
+            fontSize: 14,
+            fontWeight: '600',
+            lineHeight: 16,
+            paddingRight: 40
+        },
+        textActive: {
+            color: theme.sidebarTextActiveColor
+        },
+        textUnread: {
+            color: theme.sidebarUnreadText
+        },
+        badgeContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.mentionBj,
+            height: 15,
+            justifyContent: 'center',
+            marginRight: 16,
+            width: 15
+        },
+        badge: {
+            color: theme.mentionColor,
+            fontSize: 10,
+            fontWeight: '600'
+        }
+    });
+});
