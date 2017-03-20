@@ -72,10 +72,10 @@ class ChannelDrawerButton extends PureComponent {
                 width: 20
             };
 
-        const mentionStyle = {
-            color: '#fff',
-            fontSize: 10
-        };
+            const mentionStyle = {
+                color: '#fff',
+                fontSize: 10
+            };
 
             badge = (
                 <Badge
