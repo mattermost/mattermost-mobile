@@ -36,3 +36,7 @@ export function changeOpacity(oldColor, opacity) {
 
     return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
 }
+
+export function concatStyles(...styles) {
+    return [].concat(styles);
+}

@@ -3,8 +3,8 @@
 
 import React, {Component, PropTypes} from 'react';
 import {
-    Platform,
     Image,
+    Platform,
     StyleSheet,
     Text,
     TouchableHighlight,
@@ -15,9 +15,10 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import MattermostIcon from 'app/components/mattermost_icon';
+import Markdown from 'app/components/markdown/markdown';
 import ProfilePicture from 'app/components/profile_picture';
 import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils.js';
 
@@ -117,15 +118,25 @@ export default class Post extends Component {
     };
 
     renderMessage = (style, messageStyle, replyBar = false) => {
+        let contents;
+        if (this.props.post.message.length > 0) {
+            const theme = this.props.theme;
+
+            contents = (
+                <Markdown
+                    baseTextStyle={messageStyle}
+                    textStyles={getMarkdownTextStyles(theme)}
+                    blockStyles={getMarkdownBlockStyles(theme)}
+                    value={this.props.post.message}
+                />
+            );
+        }
+
         return (
             <TouchableHighlight onPress={this.handlePress}>
                 <View style={{flex: 1}}>
                     {replyBar && this.renderReplyBar(style)}
-                    {this.props.post.message.length > 0 &&
-                    <Text style={messageStyle}>
-                        {this.props.post.message}
-                    </Text>
-                    }
+                    {contents}
                     {this.renderFileAttachments()}
                 </View>
             </TouchableHighlight>
@@ -133,7 +144,9 @@ export default class Post extends Component {
     };
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const theme = this.props.theme;
+        const style = getStyleSheet(theme);
+
         const PROFILE_PICTURE_SIZE = 32;
 
         let profilePicture;
@@ -178,7 +191,8 @@ export default class Post extends Component {
                     {this.props.post.props.override_username}
                 </Text>
             );
-            messageStyle = [style.message, style.webhookMessage];
+
+            messageStyle = style.message;
         } else {
             profilePicture = (
                 <TouchableOpacity onPress={this.viewUserProfile}>
@@ -323,16 +337,81 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         message: {
             color: theme.centerChannelColor,
             fontSize: 14,
-            lineHeight: 21,
-            marginBottom: 10
+            lineHeight: 21
         },
         systemMessage: {
             opacity: 0.5
+        }
+    });
+});
+
+const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
+    const codeFont = Platform.OS === 'ios' ? 'Courier New' : 'monospace';
+
+    return StyleSheet.create({
+        emph: {
+            fontStyle: 'italic'
         },
-        webhookMessage: {
-            color: theme.centerChannelColor,
+        strong: {
+            fontWeight: 'bold'
+        },
+        link: {
+            color: theme.linkColor
+        },
+        heading1: {
+            fontSize: 30,
+            lineHeight: 45
+        },
+        heading2: {
+            fontSize: 24,
+            lineHeight: 36
+        },
+        heading3: {
+            fontSize: 20,
+            lineHeight: 30
+        },
+        heading4: {
             fontSize: 16,
-            fontWeight: '600'
+            lineHeight: 24
+        },
+        heading5: {
+            fontSize: 14,
+            lineHeight: 21
+        },
+        heading6: {
+            fontSize: 14,
+            lineHeight: 21,
+            opacity: 0.8
+        },
+        code: {
+            alignSelf: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            fontFamily: codeFont,
+            paddingHorizontal: 4,
+            paddingVertical: 2
+        },
+        codeBlock: {
+            fontFamily: codeFont
+        },
+        horizontalRule: {
+            backgroundColor: theme.centerChannelColor,
+            height: StyleSheet.hairlineWidth,
+            flex: 1,
+            marginVertical: 10
+        }
+    });
+});
+
+const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        codeBlock: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderRadius: 4,
+            paddingHorizontal: 4,
+            paddingVertical: 2
+        },
+        horizontalRule: {
+            backgroundColor: theme.centerChannelColor
         }
     });
 });

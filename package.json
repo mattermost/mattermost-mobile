@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "commonmark": "0.27.0",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#2e8ea6ac67b683b44782f403b69a06bb0e5c63e6",
     "deep-equal": "1.0.1",
     "harmony-reflect": "1.5.1",
     "intl": "1.2.5",
