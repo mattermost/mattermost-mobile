@@ -327,7 +327,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 10
         },
         systemMessage: {
-            opacity: 0.5
+            opacity: 0.6
         },
         webhookMessage: {
             color: theme.centerChannelColor,
