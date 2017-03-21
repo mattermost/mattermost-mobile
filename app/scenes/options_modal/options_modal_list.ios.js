@@ -10,24 +10,41 @@ import {
 } from 'react-native';
 import Font from 'react-native-vector-icons/FontAwesome';
 
+import FormattedText from 'app/components/formatted_text';
+
 export default class OptionsModalList extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
         onCancelPress: PropTypes.func,
-        title: PropTypes.string
+        title: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.object
+        ])
     }
 
     renderOptions = () => {
         const {items} = this.props;
 
         const options = items.map((item, index) => {
+            let textComponent;
+            if (item.text.hasOwnProperty('id')) {
+                textComponent = (
+                    <FormattedText
+                        style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}
+                        {...item.text}
+                    />
+                );
+            } else {
+                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
+            }
+
             return (
                 <TouchableOpacity
                     key={index}
                     onPress={item.action}
                     style={[style.option, (index < items.length - 1 && style.optionBorder)]}
                 >
-                    <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>
+                    {textComponent}
                     {item.icon &&
                         <Font
                             name={item.icon}
@@ -39,14 +56,29 @@ export default class OptionsModalList extends PureComponent {
             );
         });
 
-        const title = (
-            <View
-                key={items.length}
-                style={[style.option, style.optionBorder]}
-            >
-                <Text style={style.optionTitleText}>{this.props.title}</Text>
-            </View>
-        );
+        let title;
+        let titleComponent;
+        if (this.props.title) {
+            if (this.props.title.hasOwnProperty('id')) {
+                titleComponent = (
+                    <FormattedText
+                        style={style.optionTitleText}
+                        {...this.props.title}
+                    />
+                );
+            } else {
+                titleComponent = <Text style={style.optionTitleText}>{this.props.title}</Text>;
+            }
+
+            title = (
+                <View
+                    key={items.length}
+                    style={[style.option, style.optionBorder]}
+                >
+                    {titleComponent}
+                </View>
+            );
+        }
 
         return [
             title,

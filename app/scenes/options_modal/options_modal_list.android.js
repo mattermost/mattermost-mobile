@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import Font from 'react-native-vector-icons/FontAwesome';
 
+import FormattedText from 'app/components/formatted_text';
+
 export default class OptionsModalList extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
@@ -20,13 +22,25 @@ export default class OptionsModalList extends PureComponent {
         const {items, onCancelPress} = this.props;
 
         const options = items.map((item, index) => {
+            let textComponent;
+            if (item.text.hasOwnProperty('id')) {
+                textComponent = (
+                    <FormattedText
+                        style={[style.optionText, item.textStyle]}
+                        {...item.text}
+                    />
+                );
+            } else {
+                textComponent = <Text style={[style.optionText, item.textStyle]}>{item.text}</Text>;
+            }
+
             return (
                 <TouchableOpacity
                     key={index}
                     onPress={item.action}
                     style={[style.option, style.optionBorder]}
                 >
-                    <Text style={[style.optionText, item.textStyle]}>{item.text}</Text>
+                    {textComponent}
                     {item.icon &&
                         <Font
                             name={item.icon}

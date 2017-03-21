@@ -27,6 +27,7 @@ export default class Thread extends PureComponent {
         }).isRequired,
         teamId: PropTypes.string.isRequired,
         channelId: PropTypes.string.isRequired,
+        files: PropTypes.array,
         rootId: PropTypes.string.isRequired,
         draft: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -61,6 +62,7 @@ export default class Thread extends PureComponent {
                 <PostTextbox
                     rootId={this.props.rootId}
                     value={this.props.draft}
+                    files={this.props.files}
                     teamId={this.props.teamId}
                     channelId={this.props.channelId}
                     onChangeText={this.handleDraftChanged}

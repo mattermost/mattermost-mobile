@@ -15,7 +15,7 @@ const style = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         left: 0,
-        right: 43,
+        right: 0,
         maxHeight: 200,
         overflow: 'hidden'
     }

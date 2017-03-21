@@ -24,7 +24,10 @@ export default class OptionsModal extends PureComponent {
         items: PropTypes.array.isRequired,
         onCancelPress: PropTypes.func,
         requestClose: PropTypes.bool, // eslint-disable-line react/no-unused-prop-types
-        title: PropTypes.string
+        title: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.object
+        ])
     }
 
     static defaultProps = {
@@ -71,7 +74,7 @@ export default class OptionsModal extends PureComponent {
         } = this.props;
 
         return (
-            <TouchableWithoutFeedback onPress={actions.goBack}>
+            <TouchableWithoutFeedback onPress={actions.closeModal}>
                 <View style={style.wrapper}>
                     <AnimatedView style={{height: deviceHeight, left: 0, top: this.state.top, width: deviceWidth}}>
                         <OptionsModalList

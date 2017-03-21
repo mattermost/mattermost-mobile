@@ -293,6 +293,9 @@ const state = {
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl
+        },
+        thread: {
+            drafts: {}
         }
     }
 };

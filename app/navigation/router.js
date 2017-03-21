@@ -123,7 +123,7 @@ class Router extends React.Component {
             if (navigationProps.allowSceneSwipe) {
                 panHandlers = navigationPanResponder.forHorizontal({
                     ...cardProps,
-                    gestureResponseDistance: (this.state.deviceWidth / 2), // sets the distance from the edge for swiping
+                    gestureResponseDistance: (this.state.deviceWidth / 4), // sets the distance from the edge for swiping
                     onNavigateBack: this.props.actions.goBack
                 });
             }
@@ -254,7 +254,7 @@ class Router extends React.Component {
                     tapToClose={true}
                     openDrawerOffset={42}
                     onRequestClose={this.props.actions.closeDrawers}
-                    panOpenMask={0.3}
+                    panOpenMask={0.2}
                     panCloseMask={42}
                     panThreshold={0.2}
                     acceptPan={navigationProps.allowMenuSwipe}
@@ -271,7 +271,7 @@ class Router extends React.Component {
                         tapToClose={true}
                         openDrawerOffset={50}
                         onRequestClose={this.props.actions.closeDrawers}
-                        panOpenMask={0.3}
+                        panOpenMask={0.2}
                         panCloseMask={50}
                         panThreshold={0.2}
                         acceptPan={navigationProps.allowMenuSwipe}
