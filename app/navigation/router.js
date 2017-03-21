@@ -5,6 +5,7 @@ import React from 'react';
 import {
     Dimensions,
     Easing,
+    InteractionManager,
     NavigationExperimental,
     View
 } from 'react-native';
@@ -216,6 +217,26 @@ class Router extends React.Component {
         };
     };
 
+    handleLeftDrawerClose = () => {
+        setTimeout(() => {
+            InteractionManager.clearInteractionHandle(this.closeLeftHandle);
+        });
+    };
+
+    handleLeftDrawerCloseStart = () => {
+        this.closeLeftHandle = InteractionManager.createInteractionHandle();
+    };
+
+    handleLeftDrawerOpen = () => {
+        setTimeout(() => {
+            InteractionManager.clearInteractionHandle(this.openLeftHandle);
+        });
+    };
+
+    handleLeftDrawerOpenStart = () => {
+        this.openLeftHandle = InteractionManager.createInteractionHandle();
+    };
+
     render = () => {
         const {
             index,
@@ -248,18 +269,22 @@ class Router extends React.Component {
             >
                 <Drawer
                     open={leftDrawerOpen}
+                    onOpenStart={this.handleLeftDrawerOpenStart}
+                    onOpen={this.handleLeftDrawerOpen}
+                    onCloseStart={this.handleLeftDrawerCloseStart}
+                    onClose={this.handleLeftDrawerClose}
                     type='displace'
                     disabled={modalVisible}
                     content={leftDrawerContent}
                     tapToClose={true}
                     openDrawerOffset={42}
                     onRequestClose={this.props.actions.closeDrawers}
-                    panOpenMask={0.3}
+                    panOpenMask={0.2}
                     panCloseMask={42}
                     panThreshold={0.2}
                     acceptPan={navigationProps.allowMenuSwipe}
                     negotiatePan={true}
-                    useInteractionManager={true}
+                    useInteractionManager={false}
                     tweenHandler={this.handleDrawerTween}
                 >
                     <Drawer

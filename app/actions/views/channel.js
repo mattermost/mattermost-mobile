@@ -176,8 +176,8 @@ export function handleSelectChannel(channelId) {
         const {currentTeamId} = getState().entities.teams;
 
         await updateStorage(currentTeamId, {currentChannelId: channelId});
-        await selectChannel(channelId)(dispatch, getState);
         await getChannelStats(currentTeamId, channelId)(dispatch, getState);
+        await selectChannel(channelId)(dispatch, getState);
     };
 }
 
