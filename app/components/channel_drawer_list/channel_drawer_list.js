@@ -5,6 +5,7 @@ import deepEqual from 'deep-equal';
 import React, {PropTypes, Component} from 'react';
 import {
     Alert,
+    InteractionManager,
     ListView,
     Platform,
     StyleSheet,
@@ -27,8 +28,7 @@ import UnreadIndicator from './unread_indicator';
 class ChannelDrawerList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
-            closeDMChannel: PropTypes.func.isRequired,
-            closeGMChannel: PropTypes.func.isRequired,
+            closeDirectChannel: PropTypes.func.isRequired,
             closeOptionsModal: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
@@ -125,16 +125,10 @@ class ChannelDrawerList extends Component {
     };
 
     handleClose = (channel) => {
+        const {closeDirectChannel, closeOptionsModal} = this.props.actions;
         this.setState({showOptions: false});
-
-        switch (channel.type) {
-        case Constants.DM_CHANNEL:
-            this.props.actions.closeDMChannel(channel);
-            break;
-        case Constants.GM_CHANNEL:
-            this.props.actions.closeGMChannel(channel);
-            break;
-        }
+        closeDirectChannel(channel);
+        InteractionManager.runAfterInteractons(closeOptionsModal);
     };
 
     handleLeave = (channel, term) => {

@@ -24,6 +24,7 @@ class ChannelInfo extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
@@ -181,10 +182,12 @@ class ChannelInfo extends PureComponent {
                     <ChannelInfoHeader
                         createAt={currentChannel.create_at}
                         creator={currentChannelCreatorName}
+                        memberCount={currentChannelMemberCount}
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         purpose={currentChannel.purpose}
                         theme={theme}
+                        type={currentChannel.type}
                     />
                     <View style={style.rowsContainer}>
                         <ChannelInfoRow
@@ -241,9 +244,9 @@ class ChannelInfo extends PureComponent {
                                 action={() => this.handleDeleteOrLeave('delete')}
                                 defaultMessage='Delete Channel'
                                 icon='trash'
-                                iconColor='#DA4A4A'
+                                iconColor='#CA3B27'
                                 textId='mobile.routes.channelInfo.delete_channel'
-                                textColor='#DA4A4A'
+                                textColor='#CA3B27'
                                 theme={theme}
                             />
                         </View>
@@ -254,9 +257,9 @@ class ChannelInfo extends PureComponent {
                             action={this.handleClose}
                             defaultMessage={defaultMessage}
                             icon='times'
-                            iconColor='#DA4A4A'
+                            iconColor='#CA3B27'
                             textId={i18nId}
-                            textColor='#DA4A4A'
+                            textColor='#CA3B27'
                             theme={theme}
                         />
                     </View>

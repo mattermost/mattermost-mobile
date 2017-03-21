@@ -11,18 +11,20 @@ import {
     markFavorite,
     unmarkFavorite
 } from 'app/actions/views/channel';
+import navigationSceneConnect from 'app/scenes/navigationSceneConnect';
 import {getTheme} from 'app/selectors/preferences';
 
 import {getChannelStats, deleteChannel} from 'mattermost-redux/actions/channels';
+import {Constants} from 'mattermost-redux/constants';
 import {
     getCurrentChannel,
     getCurrentChannelStats,
     getChannelsByCategory,
     canManageChannelMembers
 } from 'mattermost-redux/selectors/entities/channels';
-import {getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
 
-import navigationSceneConnect from '../navigationSceneConnect';
 import ChannelInfo from './channel_info';
 
 function mapStateToProps(state, ownProps) {
@@ -30,10 +32,17 @@ function mapStateToProps(state, ownProps) {
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
+    const currentUserId = getCurrentUserId(state);
     const favoriteChannels = getChannelsByCategory(state).favoriteChannels.map((f) => f.id);
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
     const leaveChannelRequest = state.requests.channels.leaveChannel;
+
+    let status;
+    if (currentChannel.type === Constants.DM_CHANNEL) {
+        const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
+        status = getStatusForUserId(state, teammateId);
+    }
 
     return {
         ...ownProps,
@@ -44,6 +53,7 @@ function mapStateToProps(state, ownProps) {
         isCurrent,
         isFavorite,
         leaveChannelRequest,
+        status,
         theme: getTheme(state),
         canManageUsers: canManageChannelMembers(state)
     };
