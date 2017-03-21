@@ -6,6 +6,22 @@ import Routes from 'app/navigation/routes';
 import {Constants} from 'mattermost-redux/constants';
 import {selectPost} from 'mattermost-redux/actions/posts';
 
+export function closeDrawers() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_CLOSE_DRAWERS
+        }, getState);
+    };
+}
+
+export function closeModal() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_CLOSE_MODAL
+        }, getState);
+    };
+}
+
 export function goBack() {
     return async (dispatch, getState) => {
         dispatch({
@@ -14,10 +30,99 @@ export function goBack() {
     };
 }
 
-export function closeDrawers() {
+export function goToAccountNotifications() {
     return async (dispatch, getState) => {
         dispatch({
-            type: NavigationTypes.NAVIGATION_CLOSE_DRAWERS
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.AccountNotifications
+        }, getState);
+    };
+}
+
+export function goToAccountSettings() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.AccountSettings
+        }, getState);
+    };
+}
+
+export function goToChannelAddMembers() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelAddMembers
+        }, getState);
+    };
+}
+
+export function goToChannelInfo() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelInfo
+        }, getState);
+    };
+}
+
+export function goToChannelMembers() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.ChannelMembers
+        }, getState);
+    };
+}
+
+export function goToCreateChannel(channelType) {
+    return async (dispatch, getState) => {
+        closeDrawers()(dispatch, getState);
+        let type;
+        let route;
+        switch (channelType) {
+        case Constants.OPEN_CHANNEL:
+            type = NavigationTypes.NAVIGATION_PUSH;
+            route = Routes.CreatePublicChannel;
+            break;
+        case Constants.PRIVATE_CHANNEL:
+            type = NavigationTypes.NAVIGATION_MODAL;
+            route = Routes.CreatePrivateChannel;
+            break;
+        default:
+            return;
+        }
+
+        dispatch({
+            type,
+            route,
+            props: {
+                channelType
+            }
+        }, getState);
+    };
+}
+
+export function goToImagePreviewModal(post, fileId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: {
+                ...Routes.ImagePreview,
+                props: {
+                    post,
+                    fileId
+                }
+            }
+        }, getState);
+    };
+}
+
+export function goToLoadTeam() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.LoadTeam
         }, getState);
     };
 }
@@ -58,48 +163,11 @@ export function goToSaml() {
     };
 }
 
-export function goToLoadTeam() {
+export function goToSelectTeam() {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.LoadTeam
-        }, getState);
-    };
-}
-
-export function goToModalSelectTeam() {
-    return async (dispatch, getState) => {
-        closeDrawers()(dispatch, getState);
-        dispatch({
-            type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.SelectTeam
-        }, getState);
-    };
-}
-
-export function goToChannelInfo() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.ChannelInfo
-        }, getState);
-    };
-}
-
-export function goToChannelMembers() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.ChannelMembers
-        }, getState);
-    };
-}
-
-export function goToChannelAddMembers() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.ChannelAddMembers
         }, getState);
     };
 }
@@ -145,11 +213,19 @@ export function openChannelDrawer() {
     };
 }
 
-export function openRightMenuDrawer() {
+export function openSettingsModal() {
     return async (dispatch, getState) => {
         dispatch({
-            type: NavigationTypes.NAVIGATION_OPEN_RIGHT_DRAWER,
-            route: Routes.RightMenuDrawer
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: Routes.Settings
+        }, getState);
+    };
+}
+
+export function requestCloseModal() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_REQUEST_CLOSE_MODAL
         }, getState);
     };
 }
@@ -182,84 +258,6 @@ export function showDirectMessagesModal() {
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.MoreDirectMessages
-        }, getState);
-    };
-}
-
-export function closeModal() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_CLOSE_MODAL
-        }, getState);
-    };
-}
-
-export function goToModalAccountSettings() {
-    return async (dispatch, getState) => {
-        closeDrawers()(dispatch, getState);
-        dispatch({
-            type: NavigationTypes.NAVIGATION_MODAL,
-            route: Routes.AccountSettings
-        }, getState);
-    };
-}
-
-export function goToCreateChannel(channelType) {
-    return async (dispatch, getState) => {
-        closeDrawers()(dispatch, getState);
-        let type;
-        let route;
-        switch (channelType) {
-        case Constants.OPEN_CHANNEL:
-            type = NavigationTypes.NAVIGATION_PUSH;
-            route = Routes.CreatePublicChannel;
-            break;
-        case Constants.PRIVATE_CHANNEL:
-            type = NavigationTypes.NAVIGATION_MODAL;
-            route = Routes.CreatePrivateChannel;
-            break;
-        default:
-            return;
-        }
-
-        dispatch({
-            type,
-            route,
-            props: {
-                channelType
-            }
-        }, getState);
-    };
-}
-
-export function goToAccountNotifications() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_PUSH,
-            route: Routes.AccountNotifications
-        }, getState);
-    };
-}
-
-export function requestCloseModal() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_REQUEST_CLOSE_MODAL
-        }, getState);
-    };
-}
-
-export function goToImagePreviewModal(post, fileId) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_MODAL,
-            route: {
-                ...Routes.ImagePreview,
-                props: {
-                    post,
-                    fileId
-                }
-            }
         }, getState);
     };
 }

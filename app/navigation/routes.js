@@ -18,7 +18,7 @@ import {
     MoreChannels,
     MoreDirectMessages,
     OptionsModal,
-    RightMenuDrawer,
+    Settings,
     Root,
     Saml,
     Search,
@@ -149,10 +149,6 @@ export const Routes = {
         key: 'OptionsModal',
         component: OptionsModal
     },
-    RightMenuDrawer: {
-        key: 'RightMenuDrawer',
-        component: RightMenuDrawer
-    },
     Root: {
         key: 'Root',
         component: Root
@@ -180,8 +176,16 @@ export const Routes = {
     SelectTeam: {
         key: 'SelectTeam',
         component: SelectTeam,
+        transition: RouteTransitions.Horizontal,
         navigationProps: {
             title: {id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}
+        }
+    },
+    Settings: {
+        key: 'Settings',
+        component: Settings,
+        navigationProps: {
+            title: {id: 'mobile.routes.settings', defaultMessage: 'Settings'}
         }
     },
     Thread: {

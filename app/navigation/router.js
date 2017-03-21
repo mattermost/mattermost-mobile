@@ -244,7 +244,6 @@ class Router extends React.Component {
             leftDrawerOpen,
             leftDrawerRoute,
             modal,
-            rightDrawerOpen,
             rightDrawerRoute,
             routes
         } = this.props.navigation;
@@ -288,10 +287,10 @@ class Router extends React.Component {
                     tweenHandler={this.handleDrawerTween}
                 >
                     <Drawer
-                        open={rightDrawerOpen}
+                        open={false}
                         type='displace'
                         side='right'
-                        disabled={modalVisible}
+                        disabled={true}
                         content={rightDrawerContent}
                         tapToClose={true}
                         openDrawerOffset={50}
@@ -300,7 +299,7 @@ class Router extends React.Component {
                         panCloseMask={50}
                         panThreshold={0.2}
                         acceptPan={navigationProps.allowMenuSwipe}
-                        negotiatePan={true}
+                        negotiatePan={false}
                         useInteractionManager={true}
                         tweenHandler={this.handleDrawerTween}
                     >

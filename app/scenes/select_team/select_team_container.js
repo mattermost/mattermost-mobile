@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {goBack} from 'app/actions/navigation';
+import {closeDrawers, closeModal, goBack} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
@@ -25,7 +25,9 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goBackToChannelView: goBack,
+            closeDrawers,
+            closeModal,
+            goBack,
             handleTeamChange
         }, dispatch)
     };

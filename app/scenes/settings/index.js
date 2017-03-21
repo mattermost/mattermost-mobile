@@ -2,15 +2,20 @@
 // See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 
-import {goBack, goToModalSelectTeam} from 'app/actions/navigation';
+import {
+    closeDrawers,
+    goBack,
+    goToAccountSettings,
+    goToSelectTeam
+} from 'app/actions/navigation';
 import {clearErrors} from 'mattermost-redux/actions/errors';
 
 import {logout} from 'mattermost-redux/actions/users';
+import navigationSceneConnect from 'app/scenes/navigationSceneConnect';
 import {getTheme} from 'app/selectors/preferences';
 
-import RightMenuDrawer from './right_menu_drawer';
+import Settings from './settings';
 
 function mapStateToProps(state, ownProps) {
     return {
@@ -25,12 +30,14 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closeDrawers,
             goBack,
-            goToModalSelectTeam,
+            goToAccountSettings,
+            goToSelectTeam,
             clearErrors,
             logout
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RightMenuDrawer);
+export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(Settings);
