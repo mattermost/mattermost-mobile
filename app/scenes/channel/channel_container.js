@@ -7,8 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {
     goToChannelInfo,
-    openChannelDrawer,
-    openRightMenuDrawer
+    openChannelDrawer
 } from 'app/actions/navigation';
 import {
     loadChannelsIfNecessary,
@@ -48,7 +47,6 @@ function mapDispatchToProps(dispatch) {
             selectFirstAvailableTeam,
             selectInitialChannel,
             openChannelDrawer,
-            openRightMenuDrawer,
             handlePostDraftChanged,
             goToChannelInfo,
             initWebSocket,

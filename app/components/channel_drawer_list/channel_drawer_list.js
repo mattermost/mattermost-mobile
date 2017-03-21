@@ -36,9 +36,9 @@ class ChannelDrawerList extends Component {
         actions: PropTypes.shape({
             closeDMChannel: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
-            goToModalAccountSettings: React.PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
+            openSettingsModal: React.PropTypes.func.isRequired,
             unmarkFavorite: PropTypes.func.isRequired,
             showOptionsModal: PropTypes.func.isRequired,
             showDirectMessagesModal: PropTypes.func.isRequired,
@@ -412,7 +412,7 @@ class ChannelDrawerList extends Component {
         const settings = (
             <TouchableHighlight
                 style={styles.settingsContainer}
-                onPress={() => this.props.actions.goToModalAccountSettings()}
+                onPress={() => this.props.actions.openSettingsModal()}
             >
                 <AwesomeIcon
                     name='cog'

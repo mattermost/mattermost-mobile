@@ -17,7 +17,7 @@ import Mfa from './mfa';
 import MoreChannels from './more_channels';
 import MoreDirectMessages from './more_dms';
 import OptionsModal from './options_modal';
-import RightMenuDrawer from './right_menu_drawer';
+import Settings from './settings';
 import Root from './root/root_container.js';
 import Search from './search/search_container.js';
 import SelectServer from './select_server/select_server_container.js';
@@ -43,7 +43,7 @@ module.exports = {
     MoreChannels,
     MoreDirectMessages,
     OptionsModal,
-    RightMenuDrawer,
+    Settings,
     Root,
     Search,
     SelectServer,

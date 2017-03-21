@@ -272,7 +272,7 @@ const state = {
         leftDrawerOpen: false,
         leftDrawerRoute: Routes.ChannelDrawer,
         rightDrawerOpen: false,
-        rightDrawerRoute: Routes.RightMenuDrawer
+        rightDrawerRoute: null
     },
     views: {
         channel: {

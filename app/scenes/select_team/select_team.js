@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     InteractionManager,
@@ -17,16 +17,18 @@ import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
 
-export default class SelectTeam extends React.Component {
+export default class SelectTeam extends PureComponent {
     static propTypes = {
-        config: React.PropTypes.object.isRequired,
-        teams: React.PropTypes.object.isRequired,
-        myMembers: React.PropTypes.object.isRequired,
-        subscribeToHeaderEvent: React.PropTypes.func.isRequired,
-        unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
-        actions: React.PropTypes.shape({
-            goBackToChannelView: React.PropTypes.func.isRequired,
-            handleTeamChange: React.PropTypes.func.isRequired
+        config: PropTypes.object.isRequired,
+        teams: PropTypes.object.isRequired,
+        myMembers: PropTypes.object.isRequired,
+        subscribeToHeaderEvent: PropTypes.func.isRequired,
+        unsubscribeFromHeaderEvent: PropTypes.func.isRequired,
+        actions: PropTypes.shape({
+            closeDrawers: PropTypes.func.isRequired,
+            closeModal: PropTypes.func.isRequired,
+            goBack: PropTypes.func.isRequired,
+            handleTeamChange: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -48,7 +50,7 @@ export default class SelectTeam extends React.Component {
     };
 
     componentWillMount() {
-        this.props.subscribeToHeaderEvent('close', this.props.actions.goBackToChannelView);
+        this.props.subscribeToHeaderEvent('close', this.props.actions.goBack);
     }
 
     componentWillUnmount() {
@@ -57,23 +59,24 @@ export default class SelectTeam extends React.Component {
 
     onSelectTeam = async (team) => {
         const {
-            goBackToChannelView,
+            closeDrawers,
+            closeModal,
             handleTeamChange
         } = this.props.actions;
 
-        await handleTeamChange(team);
-        InteractionManager.runAfterInteractions(goBackToChannelView);
+        handleTeamChange(team);
+        closeDrawers();
+        InteractionManager.runAfterInteractions(closeModal);
     };
 
     render() {
-        const teams = [];
-        for (const id of Object.keys(this.props.teams)) {
-            const team = this.props.teams[id];
-
-            if (this.props.myMembers.hasOwnProperty(id)) {
-                teams.push(
+        const content = [];
+        const teams = Object.values(this.props.teams);
+        for (const team of teams) {
+            if (this.props.myMembers.hasOwnProperty(team.id)) {
+                content.push(
                     <Button
-                        key={id}
+                        key={team.id}
                         onPress={() => this.onSelectTeam(team)}
                         style={GlobalStyles.buttonListItemText}
                         containerStyle={GlobalStyles.buttonListItem}
@@ -108,7 +111,7 @@ export default class SelectTeam extends React.Component {
                     id='signup_team.choose'
                     defaultMessage='Your teams:'
                 />
-                {teams}
+                {content}
             </View>
         );
     }

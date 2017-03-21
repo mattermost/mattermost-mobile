@@ -16,7 +16,6 @@ import {Constants} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawerButton from './channel_drawer_button';
-import ChannelMenuButton from './channel_menu_button';
 import ChannelTitle from './channel_title';
 import ChannelPostList from './channel_post_list';
 
@@ -28,7 +27,6 @@ export default class Channel extends React.PureComponent {
             selectFirstAvailableTeam: React.PropTypes.func.isRequired,
             selectInitialChannel: React.PropTypes.func.isRequired,
             openChannelDrawer: React.PropTypes.func.isRequired,
-            openRightMenuDrawer: React.PropTypes.func.isRequired,
             handlePostDraftChanged: React.PropTypes.func.isRequired,
             goToChannelInfo: React.PropTypes.func.isRequired,
             initWebSocket: React.PropTypes.func.isRequired,
@@ -51,15 +49,11 @@ export default class Channel extends React.PureComponent {
         },
         renderTitleComponent: (props, emitter) => {
             return <ChannelTitle emitter={emitter}/>;
-        },
-        renderRightComponent: (props, emitter) => {
-            return <ChannelMenuButton emitter={emitter}/>;
         }
     };
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('open_channel_drawer', this.openChannelDrawer);
-        this.props.subscribeToHeaderEvent('open_right_menu', this.openRightMenuDrawer);
         this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         this.props.actions.initWebSocket(Platform.OS);
@@ -97,11 +91,6 @@ export default class Channel extends React.PureComponent {
     openChannelDrawer = () => {
         this.postTextbox.getWrappedInstance().blur();
         this.props.actions.openChannelDrawer();
-    };
-
-    openRightMenuDrawer = () => {
-        this.postTextbox.getWrappedInstance().blur();
-        this.props.actions.openRightMenuDrawer();
     };
 
     attachPostTextbox = (ref) => {
