@@ -32,11 +32,11 @@ export default class ChannelDrawer extends PureComponent {
             currentTeam
         } = this.props;
 
+        this.props.actions.markChannelAsRead(id, currentChannel.id);
+        this.props.actions.viewChannel(currentTeam.id, id);
         this.props.actions.closeDrawers();
         InteractionManager.runAfterInteractions(() => {
-            this.props.actions.markChannelAsRead(id, currentChannel.id);
             this.props.actions.handleSelectChannel(id);
-            this.props.actions.viewChannel(currentTeam.id, id);
         });
     };
 

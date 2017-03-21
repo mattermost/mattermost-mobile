@@ -175,9 +175,9 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
-        await updateStorage(currentTeamId, {currentChannelId: channelId});
-        await selectChannel(channelId)(dispatch, getState);
-        await getChannelStats(currentTeamId, channelId)(dispatch, getState);
+        updateStorage(currentTeamId, {currentChannelId: channelId});
+        getChannelStats(currentTeamId, channelId)(dispatch, getState);
+        selectChannel(channelId)(dispatch, getState);
     };
 }
 
