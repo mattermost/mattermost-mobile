@@ -15,9 +15,9 @@ function mapStateToProps(state, ownProps) {
 
     let postDraft;
     if (ownProps.rootId.length) {
-        postDraft = state.views.thread.draft[ownProps.rootId];
+        postDraft = state.views.thread.drafts[ownProps.rootId].draft;
     } else {
-        postDraft = state.views.channel.drafts[currentChannelId];
+        postDraft = state.views.channel.drafts[currentChannelId].draft;
     }
 
     return {

@@ -40,9 +40,10 @@ export function loadStorage() {
                 if (otherStorage.postDrafts) {
                     Object.keys(otherStorage.postDrafts).forEach((d) => {
                         actions.push({
-                            type: ViewTypes.POST_DRAFT_CHANGED,
+                            type: ViewTypes.SET_POST_DRAFT,
                             channelId: d,
-                            postDraft: otherStorage.postDrafts[d]
+                            postDraft: otherStorage.postDrafts[d].draft,
+                            files: otherStorage.postDrafts[d].files
                         });
                     });
                 }
@@ -51,9 +52,10 @@ export function loadStorage() {
                 if (otherStorage.threadDrafts) {
                     Object.keys(otherStorage.threadDrafts).forEach((d) => {
                         actions.push({
-                            type: ViewTypes.COMMENT_DRAFT_CHANGED,
+                            type: ViewTypes.SET_COMMENT_DRAFT,
                             rootId: d,
-                            draft: otherStorage.threadDrafts[d]
+                            draft: otherStorage.threadDrafts[d].draft,
+                            files: otherStorage.threadDrafts[d].files
                         });
                     });
                 }
@@ -81,7 +83,7 @@ export function flushToStorage() {
 
         // Can add other important items here.
         const postDrafts = state.views.channel.drafts;
-        const threadDrafts = state.views.thread.draft;
+        const threadDrafts = state.views.thread.drafts;
 
         await updateStorage(null, {postDrafts, threadDrafts});
     };

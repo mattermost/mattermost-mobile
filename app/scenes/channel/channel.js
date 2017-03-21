@@ -136,6 +136,8 @@ export default class Channel extends React.PureComponent {
             teamId = currentTeam.id;
         }
 
+        const channelDraft = this.props.drafts[this.props.currentChannel.id];
+
         return (
             <KeyboardLayout
                 behavior='padding'
@@ -146,7 +148,8 @@ export default class Channel extends React.PureComponent {
                 <ChannelPostList channel={currentChannel}/>
                 <PostTextbox
                     ref={this.attachPostTextbox}
-                    value={this.props.drafts[this.props.currentChannel.id]}
+                    files={channelDraft.files}
+                    value={channelDraft.draft}
                     teamId={teamId}
                     channelId={currentChannel.id}
                     onChangeText={this.handleDraftChanged}

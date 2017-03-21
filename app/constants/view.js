@@ -14,7 +14,14 @@ const ViewTypes = keyMirror({
 
     OPTIONS_MODAL_CHANGED: null,
 
-    NOTIFICATION_CHANGED: null
+    NOTIFICATION_CHANGED: null,
+
+    SET_POST_DRAFT: null,
+    SET_COMMENT_DRAFT: null,
+
+    CLEAR_FILES_FOR_POST_DRAFT: null,
+
+    REMOVE_FILE_FROM_POST_DRAFT: null
 });
 
 export default ViewTypes;

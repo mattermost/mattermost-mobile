@@ -27,12 +27,15 @@ function makeMapStateToProps() {
             teamId = getCurrentTeamId(state);
         }
 
+        const threadDraft = state.views.thread.drafts[ownProps.rootId];
+
         return {
             ...ownProps,
             teamId,
             channelId: ownProps.channelId,
             rootId: ownProps.rootId,
-            draft: state.views.thread.draft[ownProps.rootId] || '',
+            draft: threadDraft.draft,
+            files: threadDraft.files,
             posts,
             theme: getTheme(state)
         };

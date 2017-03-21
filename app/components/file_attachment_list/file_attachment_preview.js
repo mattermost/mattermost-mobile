@@ -35,6 +35,22 @@ export default class FileAttachmentPreview extends PureComponent {
         wrapperWidth: 100
     };
 
+    state = {
+        retry: 0
+    }
+
+    // Sometimes the request after a file upload errors out.
+    // We'll up to three times to get the image.
+    // We have to add a timestamp so fetch will retry the call.
+    handleError = () => {
+        if (this.state.retry < 3) {
+            setTimeout(() => this.setState({
+                retry: this.state.retry++,
+                timestamp: Date.now()
+            }), 100);
+        }
+    }
+
     render() {
         const {
             file,
@@ -46,16 +62,17 @@ export default class FileAttachmentPreview extends PureComponent {
             wrapperWidth
         } = this.props;
 
-        const source = {uri: Client.getFilePreviewUrl(file.id)};
+        const source = {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)};
 
         return (
             <View style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth}]}>
                 <Image
                     style={{height: imageHeight, width: imageWidth}}
                     source={source}
+                    defaultSource={genericIcon}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
-                    defaultSource={genericIcon}
+                    onError={this.handleError}
                 />
             </View>
         );

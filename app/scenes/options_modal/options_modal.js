@@ -24,7 +24,10 @@ export default class OptionsModal extends PureComponent {
         items: PropTypes.array.isRequired,
         onCancelPress: PropTypes.func,
         requestClose: PropTypes.bool, // eslint-disable-line react/no-unused-prop-types
-        title: PropTypes.string
+        title: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.object
+        ])
     }
 
     static defaultProps = {

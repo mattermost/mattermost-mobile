@@ -16,7 +16,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         return {
             ...ownProps,
-            files: getFilesForPost(state, ownProps),
+            files: getFilesForPost(state, ownProps.post),
             theme: getTheme(state)
         };
     };
@@ -31,4 +31,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(FileAttachmentList);
+export default connect(makeMapStateToProps(), mapDispatchToProps)(FileAttachmentList);
