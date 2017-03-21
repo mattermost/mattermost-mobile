@@ -31,4 +31,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps(), mapDispatchToProps)(FileAttachmentList);
+export default connect(makeMapStateToProps, mapDispatchToProps)(FileAttachmentList);

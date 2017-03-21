@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    StyleSheet,
     TouchableHighlight,
     View,
     Text
@@ -15,11 +16,11 @@ import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_CONTENT_HEIGHT = 100;
 
-class PostTextbox extends PureComponent {
+export default class PostTextbox extends PureComponent {
     static propTypes = {
         currentUserId: PropTypes.string.isRequired,
         typing: PropTypes.array.isRequired,
@@ -198,6 +199,8 @@ class PostTextbox extends PureComponent {
     render() {
         const {theme} = this.props;
 
+        const style = getStyleSheet(theme);
+
         let placeholder;
         if (this.props.rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
@@ -209,13 +212,7 @@ class PostTextbox extends PureComponent {
             <View>
                 <View>
                     <Text
-                        style={{
-                            paddingLeft: 10,
-                            fontSize: 11,
-                            marginBottom: 5,
-                            color: theme.centerChannelColor,
-                            backgroundColor: theme.centerChannelBg
-                        }}
+                        style={style.typing}
                         ellipsizeMode='tail'
                         numberOfLines={1}
                     >
@@ -234,22 +231,11 @@ class PostTextbox extends PureComponent {
                     rootId={this.props.rootId}
                 />
                 <View
-                    style={{
-                        alignItems: 'flex-end',
-                        flexDirection: 'row',
-                        padding: 4,
-                        backgroundColor: '#000'
-                    }}
+                    style={style.inputWrapper}
                 >
                     <TouchableHighlight
                         onPress={this.showFileAttachmentOptions}
-                        style={{
-                            height: 36,
-                            width: 36,
-                            marginRight: 2,
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
+                        style={style.buttonContainer}
                     >
                         <Icon
                             size={30}
@@ -257,7 +243,7 @@ class PostTextbox extends PureComponent {
                             name='md-add'
                         />
                     </TouchableHighlight>
-                    <View style={{flex: 1, flexDirection: 'row', backgroundColor: '#fff', alignItems: 'flex-end'}}>
+                    <View style={style.inputContainer}>
                         <TextInputWithLocalizedPlaceholder
                             ref='input'
                             value={this.props.value}
@@ -269,25 +255,11 @@ class PostTextbox extends PureComponent {
                             onSubmitEditing={this.sendMessage}
                             multiline={true}
                             underlineColorAndroid='transparent'
-                            style={{
-                                color: '#000',
-                                flex: 1,
-                                fontSize: 14,
-                                height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT),
-                                paddingBottom: 8,
-                                paddingLeft: 12,
-                                paddingRight: 12,
-                                paddingTop: 6
-                            }}
+                            style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
                         />
                         <TouchableHighlight
                             onPress={this.sendMessage}
-                            style={{
-                                height: 36,
-                                width: 36,
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
+                            style={style.buttonContainer}
                         >
                             <Icon
                                 name='ios-arrow-round-up'
@@ -303,4 +275,41 @@ class PostTextbox extends PureComponent {
     }
 }
 
-export default PostTextbox;
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        buttonContainer: {
+            height: 36,
+            width: 36,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        input: {
+            color: '#000',
+            flex: 1,
+            fontSize: 14,
+            paddingBottom: 8,
+            paddingLeft: 12,
+            paddingRight: 12,
+            paddingTop: 6
+        },
+        inputContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            backgroundColor: '#fff',
+            alignItems: 'flex-end'
+        },
+        inputWrapper: {
+            alignItems: 'flex-end',
+            flexDirection: 'row',
+            padding: 4,
+            backgroundColor: '#000'
+        },
+        typing: {
+            paddingLeft: 10,
+            fontSize: 11,
+            marginBottom: 5,
+            color: theme.centerChannelColor,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});

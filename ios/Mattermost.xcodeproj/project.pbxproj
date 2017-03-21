@@ -1203,7 +1203,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -1226,7 +1225,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = MattermostTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -1248,10 +1246,8 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../node_modules/react-native/Libraries/PushNotificationIOS/**";
 				INFOPLIST_FILE = Mattermost/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -1274,10 +1270,8 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../node_modules/react-native/Libraries/PushNotificationIOS/**";
 				INFOPLIST_FILE = Mattermost/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",

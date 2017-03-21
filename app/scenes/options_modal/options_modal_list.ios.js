@@ -27,15 +27,15 @@ export default class OptionsModalList extends PureComponent {
 
         const options = items.map((item, index) => {
             let textComponent;
-            if (typeof item.text === 'string') {
-                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
-            } else if (item.text.hasOwnProperty('id')) {
+            if (item.text.hasOwnProperty('id')) {
                 textComponent = (
                     <FormattedText
                         style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}
                         {...item.text}
                     />
                 );
+            } else {
+                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
             }
 
             return (
@@ -59,15 +59,15 @@ export default class OptionsModalList extends PureComponent {
         let title;
         let titleComponent;
         if (this.props.title) {
-            if (typeof this.props.title === 'string') {
-                titleComponent = <Text style={style.optionTitleText}>{this.props.title}</Text>;
-            } else if (this.props.title.hasOwnProperty('id')) {
+            if (this.props.title.hasOwnProperty('id')) {
                 titleComponent = (
                     <FormattedText
                         style={style.optionTitleText}
                         {...this.props.title}
                     />
                 );
+            } else {
+                titleComponent = <Text style={style.optionTitleText}>{this.props.title}</Text>;
             }
 
             title = (

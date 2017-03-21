@@ -23,15 +23,15 @@ export default class OptionsModalList extends PureComponent {
 
         const options = items.map((item, index) => {
             let textComponent;
-            if (typeof item.text === 'string') {
-                textComponent = <Text style={[style.optionText, item.textStyle]}>{item.text}</Text>;
-            } else if (item.text.hasOwnProperty('id')) {
+            if (item.text.hasOwnProperty('id')) {
                 textComponent = (
                     <FormattedText
                         style={[style.optionText, item.textStyle]}
                         {...item.text}
                     />
                 );
+            } else {
+                textComponent = <Text style={[style.optionText, item.textStyle]}>{item.text}</Text>;
             }
 
             return (
