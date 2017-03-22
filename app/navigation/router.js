@@ -285,6 +285,7 @@ class Router extends React.Component {
                     negotiatePan={true}
                     useInteractionManager={false}
                     tweenHandler={this.handleDrawerTween}
+                    elevation={-5}
                 >
                     <Drawer
                         open={false}
@@ -295,12 +296,12 @@ class Router extends React.Component {
                         tapToClose={true}
                         openDrawerOffset={50}
                         onRequestClose={this.props.actions.closeDrawers}
-                        panOpenMask={0.2}
+                        panOpenMask={0}
                         panCloseMask={50}
-                        panThreshold={0.2}
-                        acceptPan={navigationProps.allowMenuSwipe}
+                        panThreshold={0}
+                        acceptPan={false}
                         negotiatePan={false}
-                        useInteractionManager={true}
+                        useInteractionManager={false}
                         tweenHandler={this.handleDrawerTween}
                     >
                         <NavigationExperimental.Transitioner

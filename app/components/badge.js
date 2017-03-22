@@ -2,7 +2,13 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
-import {View, Text, TouchableWithoutFeedback, StyleSheet} from 'react-native';
+import {
+    PanResponder,
+    StyleSheet,
+    Text,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
 
 export default class Badge extends PureComponent {
     static defaultProps = {
@@ -22,6 +28,14 @@ export default class Badge extends PureComponent {
         onPress: PropTypes.func
     };
 
+    componentWillMount() {
+        this.panResponder = PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onStartShouldSetResponderCapture: () => false
+        });
+    }
+
     renderText = () => {
         const {count} = this.props;
         let text = count.toString();
@@ -39,7 +53,10 @@ export default class Badge extends PureComponent {
 
     render() {
         return (
-            <View style={[styles.badge, this.props.style]}>
+            <View
+                {...this.panResponder.panHandlers}
+                style={[styles.badge, this.props.style]}
+            >
                 <TouchableWithoutFeedback onPress={this.props.onPress}>
                     <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                         {this.renderText()}
