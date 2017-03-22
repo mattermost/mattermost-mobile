@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {connect} from 'react-redux';
 import {
     PanResponder,
+    Platform,
     StyleSheet,
     TouchableOpacity,
     View
@@ -45,7 +46,8 @@ class ChannelDrawerButton extends PureComponent {
             onStartShouldSetPanResponder: () => true,
             onMoveShouldSetPanResponder: () => true,
             onStartShouldSetResponderCapture: () => true,
-            onMoveShouldSetResponderCapture: () => true
+            onMoveShouldSetResponderCapture: () => true,
+            onResponderMove: () => false
         });
     }
 
@@ -126,7 +128,14 @@ const style = StyleSheet.create({
         padding: 3,
         position: 'absolute',
         right: 0,
-        top: 5,
+        ...Platform.select({
+            android: {
+                top: 10
+            },
+            ios: {
+                top: 5
+            }
+        }),
         width: 20
     },
     mention: {

@@ -22,7 +22,8 @@ const initialState = {
     leftDrawerOpen: false,
     leftDrawerRoute: null,
     rightDrawerOpen: false,
-    rightDrawerRoute: null
+    rightDrawerRoute: null,
+    shouldRenderDrawer: false
 };
 
 export default function(state = initialState, action) {
@@ -206,6 +207,13 @@ export default function(state = initialState, action) {
         return {
             ...state,
             modal: modalState
+        };
+    }
+
+    case NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER: {
+        return {
+            ...state,
+            shouldRenderDrawer: true
         };
     }
 

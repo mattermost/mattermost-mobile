@@ -7,7 +7,8 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {
     goToChannelInfo,
-    openChannelDrawer
+    openChannelDrawer,
+    renderDrawer
 } from 'app/actions/navigation';
 import {
     loadChannelsIfNecessary,
@@ -52,7 +53,8 @@ function mapDispatchToProps(dispatch) {
             initWebSocket,
             closeWebSocket,
             startPeriodicStatusUpdates,
-            stopPeriodicStatusUpdates
+            stopPeriodicStatusUpdates,
+            renderDrawer
         }, dispatch)
     };
 }

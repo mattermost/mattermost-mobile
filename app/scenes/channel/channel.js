@@ -32,7 +32,8 @@ export default class Channel extends React.PureComponent {
             initWebSocket: React.PropTypes.func.isRequired,
             closeWebSocket: React.PropTypes.func.isRequired,
             startPeriodicStatusUpdates: React.PropTypes.func.isRequired,
-            stopPeriodicStatusUpdates: React.PropTypes.func.isRequired
+            stopPeriodicStatusUpdates: React.PropTypes.func.isRequired,
+            renderDrawer: React.PropTypes.func.isRequired
         }).isRequired,
         currentTeam: React.PropTypes.object,
         currentChannel: React.PropTypes.object,
@@ -65,6 +66,7 @@ export default class Channel extends React.PureComponent {
 
     componentDidMount() {
         this.props.actions.startPeriodicStatusUpdates();
+        this.props.actions.renderDrawer();
     }
 
     componentWillReceiveProps(nextProps) {
