@@ -43,6 +43,8 @@ export default class PostTextbox extends PureComponent {
 
     static defaultProps = {
         rootId: '',
+        files: [],
+        value: '',
         onSelectionChange: () => true
     };
 
