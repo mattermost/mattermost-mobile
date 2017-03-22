@@ -8,12 +8,9 @@ import {
     Text,
     View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
+import ChanneIcon from 'app/components/channel_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {Constants} from 'mattermost-redux/constants';
 
 export default class ChannelDrawerItem extends PureComponent {
     static propTypes = {
@@ -37,17 +34,10 @@ export default class ChannelDrawerItem extends PureComponent {
 
         const style = getStyleSheet(theme);
         let activeItem;
-        let activeIcon;
-        let unreadIcon;
-        let activeGroupBox;
-        let unreadGroupBox;
-        let activeGroup;
-        let unreadGroup;
         let activeText;
         let unreadText;
 
         let activeBorder;
-        let icon;
         let badge;
 
         if (mentions && !isActive) {
@@ -61,17 +51,11 @@ export default class ChannelDrawerItem extends PureComponent {
         }
 
         if (hasUnread) {
-            unreadIcon = style.iconUnread;
             unreadText = style.textUnread;
-            unreadGroupBox = style.groupBoxUnread;
-            unreadGroup = style.groupUnread;
         }
 
         if (isActive) {
             activeItem = style.itemActive;
-            activeIcon = style.iconActive;
-            activeGroupBox = style.groupBoxActive;
-            activeGroup = style.groupActive;
             activeText = style.textActive;
 
             activeBorder = (
@@ -79,67 +63,17 @@ export default class ChannelDrawerItem extends PureComponent {
             );
         }
 
-        if (channel.type === Constants.OPEN_CHANNEL) {
-            icon = (
-                <Icon
-                    name='globe'
-                    style={[style.icon, unreadIcon, activeIcon]}
-                />
-            );
-        } else if (channel.type === Constants.PRIVATE_CHANNEL) {
-            icon = (
-                <Icon
-                    name='lock'
-                    style={[style.icon, unreadIcon, activeIcon]}
-                />
-            );
-        } else if (channel.type === Constants.GM_CHANNEL) {
-            icon = (
-                <View style={style.groupContainer}>
-                    <View style={[style.groupBox, unreadGroupBox, activeGroupBox]}>
-                        <Text style={[style.group, unreadGroup, activeGroup]}>
-                            {channel.display_name.split(',').length}
-                        </Text>
-                    </View>
-                </View>
-            );
-        } else {
-            switch (channel.status) {
-            case Constants.ONLINE:
-                icon = (
-                    <View style={style.statusIcon}>
-                        <OnlineStatus
-                            width={12}
-                            height={12}
-                            color={theme.onlineIndicator}
-                        />
-                    </View>
-                );
-                break;
-            case Constants.AWAY:
-                icon = (
-                    <View style={style.statusIcon}>
-                        <AwayStatus
-                            width={12}
-                            height={12}
-                            color={theme.awayIndicator}
-                        />
-                    </View>
-                );
-                break;
-            default:
-                icon = (
-                    <View style={style.statusIcon}>
-                        <OfflineStatus
-                            width={12}
-                            height={12}
-                            color={changeOpacity(theme.centerChannelColor, 0.4)}
-                        />
-                    </View>
-                );
-                break;
-            }
-        }
+        const icon = (
+            <ChanneIcon
+                isActive={isActive}
+                hasUnread={hasUnread}
+                membersCount={channel.display_name.split(',').length}
+                size={12}
+                status={channel.status}
+                theme={theme}
+                type={channel.type}
+            />
+        );
 
         return (
             <TouchableHighlight
@@ -190,48 +124,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         itemActive: {
             backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
             paddingLeft: 11
-        },
-        icon: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 12,
-            paddingRight: 12
-        },
-        iconActive: {
-            color: theme.sidebarTextActiveColor
-        },
-        iconUnread: {
-            color: theme.sidebarUnreadText
-        },
-        statusIcon: {
-            paddingRight: 12
-        },
-        groupContainer: {
-            paddingRight: 12
-        },
-        groupBox: {
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.sidebarText, 0.4),
-            height: 15,
-            justifyContent: 'center',
-            width: 12
-        },
-        groupBoxActive: {
-            borderColor: theme.sidebarTextActiveColor
-        },
-        groupBoxUnread: {
-            borderColor: theme.sidebarUnreadText
-        },
-        group: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 10,
-            fontWeight: '600'
-        },
-        groupActive: {
-            color: theme.sidebarTextActiveColor
-        },
-        groupUnread: {
-            color: theme.sidebarUnreadText
         },
         text: {
             color: changeOpacity(theme.sidebarText, 0.4),

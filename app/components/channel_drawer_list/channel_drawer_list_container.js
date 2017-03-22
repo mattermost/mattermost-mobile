@@ -14,7 +14,7 @@ import {
 } from 'app/actions/navigation';
 
 import {
-    closeDMChannel,
+    closeDirectChannel,
     leaveChannel,
     markFavorite,
     unmarkFavorite
@@ -31,7 +31,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            closeDMChannel,
+            closeDirectChannel,
             goToCreateChannel,
             leaveChannel,
             markFavorite,

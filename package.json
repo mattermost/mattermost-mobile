@@ -9,7 +9,7 @@
     "harmony-reflect": "1.5.1",
     "intl": "1.2.5",
     "isomorphic-fetch": "2.2.1",
-    "mattermost-redux": "mattermost/mattermost-redux#release-3.7",
+    "mattermost-redux": "mattermost/mattermost-redux#957b27015b46538c707f534c24e750e5d1d1e517",
     "react": "15.4.1",
     "react-addons-pure-render-mixin": "15.4.1",
     "react-intl": "2.2.2",

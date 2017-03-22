@@ -5,6 +5,7 @@ import deepEqual from 'deep-equal';
 import React, {PropTypes, Component} from 'react';
 import {
     Alert,
+    InteractionManager,
     ListView,
     Platform,
     StyleSheet,
@@ -26,15 +27,9 @@ import UnreadIndicator from './unread_indicator';
 
 class ChannelDrawerList extends Component {
     static propTypes = {
-        intl: intlShape.isRequired,
-        currentTeam: PropTypes.object.isRequired,
-        currentChannel: PropTypes.object,
-        channels: PropTypes.object.isRequired,
-        channelMembers: PropTypes.object,
-        theme: PropTypes.object.isRequired,
-        onSelectChannel: PropTypes.func.isRequired,
         actions: PropTypes.shape({
-            closeDMChannel: PropTypes.func.isRequired,
+            closeDirectChannel: PropTypes.func.isRequired,
+            closeOptionsModal: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             markFavorite: PropTypes.func.isRequired,
@@ -42,9 +37,15 @@ class ChannelDrawerList extends Component {
             unmarkFavorite: PropTypes.func.isRequired,
             showOptionsModal: PropTypes.func.isRequired,
             showDirectMessagesModal: PropTypes.func.isRequired,
-            showMoreChannelsModal: PropTypes.func.isRequired,
-            closeOptionsModal: PropTypes.func.isRequired
-        }).isRequired
+            showMoreChannelsModal: PropTypes.func.isRequired
+        }).isRequired,
+        channels: PropTypes.object.isRequired,
+        channelMembers: PropTypes.object,
+        currentTeam: PropTypes.object.isRequired,
+        currentChannel: PropTypes.object,
+        intl: intlShape.isRequired,
+        onSelectChannel: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
@@ -124,8 +125,10 @@ class ChannelDrawerList extends Component {
     };
 
     handleClose = (channel) => {
+        const {closeDirectChannel, closeOptionsModal} = this.props.actions;
         this.setState({showOptions: false});
-        this.props.actions.closeDMChannel(channel);
+        closeDirectChannel(channel);
+        InteractionManager.runAfterInteractons(closeOptionsModal);
     };
 
     handleLeave = (channel, term) => {
@@ -156,9 +159,11 @@ class ChannelDrawerList extends Component {
         let open;
         let close;
         let favorite;
+        let term;
         let title;
 
-        if (channel.type === Constants.DM_CHANNEL) {
+        switch (channel.type) {
+        case Constants.DM_CHANNEL:
             title = formatMessage({
                 id: 'mobile.channel_list.modalTitle',
                 defaultMessage: 'Select an action for the {term} {name}'},
@@ -179,13 +184,41 @@ class ChannelDrawerList extends Component {
                 action: () => {
                     this.handleClose(channel);
                 },
-                text: formatMessage({id: 'sidebar.removeList', defaultMessage: 'Remove from list'}),
+                text: formatMessage({id: 'mobile.channel_list.closeDM', defaultMessage: 'Close Direct Message'}),
                 textStyle: {
                     color: '#CC3239'
                 }
             };
-        } else {
-            const term = channel.type === Constants.OPEN_CHANNEL ?
+            break;
+        case Constants.GM_CHANNEL:
+            title = formatMessage({
+                id: 'mobile.channel_list.modalTitle',
+                defaultMessage: 'Select an action for the {term} {name}'},
+                {
+                    name: channel.display_name,
+                    term: formatMessage({id: 'mobile.channel_list.gm', defaultMessage: 'Group Message'}).toLowerCase()
+                });
+
+            open = {
+                action: () => {
+                    this.props.actions.closeOptionsModal();
+                    this.onSelectChannel(channel);
+                },
+                text: formatMessage({id: 'mobile.channel_list.openGM', defaultMessage: 'Open Group Message'})
+            };
+
+            close = {
+                action: () => {
+                    this.handleClose(channel);
+                },
+                text: formatMessage({id: 'mobile.channel_list.closeGM', defaultMessage: 'Close Group Message'}),
+                textStyle: {
+                    color: '#CC3239'
+                }
+            };
+            break;
+        default:
+            term = channel.type === Constants.OPEN_CHANNEL ?
                 formatMessage({id: 'mobile.channel_list.publicChannel', defaultMessage: 'Public Channel'}) :
                 formatMessage({id: 'mobile.channel_list.privateChannel', defaultMessage: 'Private Channel'});
 
@@ -220,6 +253,7 @@ class ChannelDrawerList extends Component {
                     }
                 };
             }
+            break;
         }
 
         if (channel.isFavorite) {

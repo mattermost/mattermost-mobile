@@ -11,42 +11,11 @@ import {
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
 import {Constants} from 'mattermost-redux/constants';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        },
-        footer: {
-            marginTop: 40,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
-        },
-        rowsContainer: {
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
-        },
-        separator: {
-            marginHorizontal: 15,
-            height: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
-        }
-    });
-});
 
 class ChannelInfo extends PureComponent {
     static propTypes = {
@@ -55,19 +24,23 @@ class ChannelInfo extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        status: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
         leaveChannelRequest: PropTypes.object.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
+            closeDMChannel: PropTypes.func.isRequired,
+            closeGMChannel: PropTypes.func.isRequired,
+            deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
-            goToChannelMembers: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
             goToChannelAddMembers: PropTypes.func.isRequired,
-            markFavorite: PropTypes.func.isRequired,
-            unmarkFavorite: PropTypes.func.isRequired,
+            goToChannelMembers: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
-            deleteChannel: PropTypes.func.isRequired
+            markFavorite: PropTypes.func.isRequired,
+            unmarkFavorite: PropTypes.func.isRequired
         })
     };
 
@@ -145,11 +118,36 @@ class ChannelInfo extends PureComponent {
         );
     }
 
+    handleClose = () => {
+        const {currentChannel, isCurrent, isFavorite} = this.props;
+        const channel = Object.assign({}, currentChannel, {isCurrent}, {isFavorite});
+        const {closeDMChannel, closeGMChannel, goBack} = this.props.actions;
+
+        switch (channel.type) {
+        case Constants.DM_CHANNEL:
+            closeDMChannel(channel).then(goBack);
+            break;
+        case Constants.GM_CHANNEL:
+            closeGMChannel(channel).then(goBack);
+            break;
+        }
+    };
+
     renderLeaveOrDeleteChannelRow() {
         const channel = this.props.currentChannel;
         const isDefaultChannel = channel.name === Constants.DEFAULT_CHANNEL;
         const isDirectMessage = channel.type === Constants.DM_CHANNEL;
-        return !isDefaultChannel && !isDirectMessage;
+        const isGroupMessage = channel.type === Constants.GM_CHANNEL;
+
+        return !isDefaultChannel && !isDirectMessage && !isGroupMessage;
+    }
+
+    renderCloseDirect() {
+        const channel = this.props.currentChannel;
+        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
+        const isGroupMessage = channel.type === Constants.GM_CHANNEL;
+
+        return isDirectMessage || isGroupMessage;
     }
 
     render() {
@@ -163,6 +161,19 @@ class ChannelInfo extends PureComponent {
 
         const style = getStyleSheet(theme);
 
+        let i18nId;
+        let defaultMessage;
+        switch (currentChannel.type) {
+        case Constants.DM_CHANNEL:
+            i18nId = 'mobile.channel_list.closeDM';
+            defaultMessage = 'Close Direct Message';
+            break;
+        case Constants.GM_CHANNEL:
+            i18nId = 'mobile.channel_list.closeGM';
+            defaultMessage = 'Close Group Message';
+            break;
+        }
+
         return (
             <View style={style.container}>
                 <ScrollView
@@ -171,10 +182,12 @@ class ChannelInfo extends PureComponent {
                     <ChannelInfoHeader
                         createAt={currentChannel.create_at}
                         creator={currentChannelCreatorName}
+                        memberCount={currentChannelMemberCount}
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         purpose={currentChannel.purpose}
                         theme={theme}
+                        type={currentChannel.type}
                     />
                     <View style={style.rowsContainer}>
                         <ChannelInfoRow
@@ -231,17 +244,62 @@ class ChannelInfo extends PureComponent {
                                 action={() => this.handleDeleteOrLeave('delete')}
                                 defaultMessage='Delete Channel'
                                 icon='trash'
-                                iconColor='#DA4A4A'
+                                iconColor='#CA3B27'
                                 textId='mobile.routes.channelInfo.delete_channel'
-                                textColor='#DA4A4A'
+                                textColor='#CA3B27'
                                 theme={theme}
                             />
                         </View>
+                    }
+                    {this.renderCloseDirect() &&
+                    <View style={style.footer}>
+                        <ChannelInfoRow
+                            action={this.handleClose}
+                            defaultMessage={defaultMessage}
+                            icon='times'
+                            iconColor='#CA3B27'
+                            textId={i18nId}
+                            textColor='#CA3B27'
+                            theme={theme}
+                        />
+                    </View>
                     }
                 </ScrollView>
             </View>
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+        },
+        footer: {
+            marginTop: 40,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        rowsContainer: {
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: theme.centerChannelBg
+        },
+        separator: {
+            marginHorizontal: 15,
+            height: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        }
+    });
+});
 
 export default injectIntl(ChannelInfo);
