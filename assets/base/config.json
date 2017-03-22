@@ -1,5 +1,5 @@
 {
-    "DefaultServerUrl": "http://localhost:8065",
+    "DefaultServerUrl": "",
     "TestServerUrl": "http://localhost:8065",
     "DefaultLocale": "en",
     "DefaultTheme": "default",
