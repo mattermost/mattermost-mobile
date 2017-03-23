@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 
 import {goBack} from 'app/actions/navigation';
+import {addFileToFetchCache} from 'app/actions/views/file_preview';
 import {getTheme} from 'app/selectors/preferences';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 
@@ -16,6 +17,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         return {
             ...ownProps,
+            fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.post),
             theme: getTheme(state)
         };
@@ -25,6 +27,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            addFileToFetchCache,
             goBack
         }, dispatch)
     };

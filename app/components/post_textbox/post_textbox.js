@@ -135,11 +135,7 @@ export default class PostTextbox extends PureComponent {
     }
 
     uploadFiles = (images) => {
-        const uploadFileRequestId = Date.now();
-        this.setState({
-            uploadFileRequestId
-        });
-        this.props.actions.handleUploadFiles(images, this.props.rootId, uploadFileRequestId);
+        this.props.actions.handleUploadFiles(images, this.props.rootId);
     }
 
     showFileAttachmentOptions = () => {
@@ -225,7 +221,6 @@ export default class PostTextbox extends PureComponent {
                     channelId={this.props.channelId}
                     files={this.props.files}
                     rootId={this.props.rootId}
-                    uploadFileRequestId={this.state.uploadFileRequestId}
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}

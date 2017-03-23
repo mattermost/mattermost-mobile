@@ -279,6 +279,7 @@ const state = {
         channel: {
             drafts: {}
         },
+        fetchCache: {},
         i18n: {
             locale: ''
         },

@@ -16,11 +16,14 @@ export function handleUploadFiles(files, rootId, requestId) {
         const teamId = state.entities.teams.currentTeamId;
         const channelId = state.entities.channels.currentChannelId;
         const formData = new FormData();
+        const clientIds = [];
 
         files.forEach((file) => {
             const name = file.path.split('/').pop();
             const mimeType = lookupMimeType(name);
             const clientId = generateId();
+
+            clientIds.push(clientId);
 
             const fileData = {
                 uri: file.path,
@@ -38,6 +41,13 @@ export function handleUploadFiles(files, rootId, requestId) {
             formBoundary = '--mobile.client.file.upload';
         }
 
+        dispatch({
+            type: ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT,
+            clientIds,
+            channelId,
+            rootId
+        });
+
         await uploadFile(teamId, channelId, formData, formBoundary, rootId, requestId)(dispatch, getState);
     };
 }
@@ -50,10 +60,10 @@ export function handleClearFiles(channelId, rootId) {
     };
 }
 
-export function handleRemoveFile(fileId, channelId, rootId) {
+export function handleRemoveFile(clientId, channelId, rootId) {
     return {
         type: ViewTypes.REMOVE_FILE_FROM_POST_DRAFT,
-        fileId,
+        clientId,
         channelId,
         rootId
     };

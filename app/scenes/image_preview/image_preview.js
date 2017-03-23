@@ -15,7 +15,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
@@ -32,8 +32,10 @@ const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? 25 : 0; // Used to account
 export default class ImagePreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addFileToFetchCache: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired
         }),
+        fetchCache: PropTypes.object.isRequired,
         fileId: PropTypes.string.isRequired,
         files: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired
@@ -163,8 +165,8 @@ export default class ImagePreview extends PureComponent {
                                 style={style.headerIcon}
                             >
                                 <Icon
-                                    name='close'
-                                    size={15}
+                                    name='md-close'
+                                    size={26}
                                     color='#fff'
                                 />
                             </TouchableOpacity>
@@ -199,11 +201,14 @@ export default class ImagePreview extends PureComponent {
                             if (file.has_preview_image) {
                                 component = (
                                     <FileAttachmentPreview
+                                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                                        fetchCache={this.props.fetchCache}
                                         file={file}
                                         theme={this.props.theme}
                                         imageHeight={Math.min(maxImageHeight, file.height)}
                                         imageWidth={Math.min(this.state.deviceWidth, file.width)}
                                         resizeMode='contain'
+                                        wrapperBackgroundColor='#000'
                                         wrapperHeight={maxImageHeight}
                                         wrapperWidth={this.state.deviceWidth}
                                     />
@@ -281,7 +286,7 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         ...Platform.select({
             ios: {
-                marginTop: 30
+                marginTop: 20
             },
             android: {
                 marginTop: 10

@@ -37,15 +37,36 @@ function drafts(state = {}, action) {
 
         return data;
     }
-    case FilesTypes.RECEIVED_UPLOAD_FILES: {
+    case ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT: {
         if (action.rootId) {
             return state;
         }
 
+        const tempFiles = action.clientIds.map((id) => ({clientId: id, loading: true}));
         const files = [
             ...state[action.channelId].files,
-            ...action.data
+            ...tempFiles
         ];
+
+        return {
+            ...state,
+            [action.channelId]: Object.assign({}, state[action.channelId], {files})
+        };
+    }
+    case FilesTypes.RECEIVED_UPLOAD_FILES: {
+        if (action.rootId || !state[action.channelId].files) {
+            return state;
+        }
+
+        // Reconcile tempFiles with the received uploaded files
+        const files = state[action.channelId].files.map((tempFile) => {
+            const file = action.data.find((f) => f.clientId === tempFile.clientId);
+            if (file) {
+                return file;
+            }
+
+            return tempFile;
+        });
 
         return {
             ...state,
@@ -67,7 +88,7 @@ function drafts(state = {}, action) {
             return state;
         }
 
-        const files = state[action.channelId].files.filter((file) => file.id !== action.fileId);
+        const files = state[action.channelId].files.filter((file) => (file.clientId !== action.clientId));
 
         return {
             ...state,

@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
+import {addFileToFetchCache} from 'app/actions/views/file_preview';
 import {getTheme} from 'app/selectors/preferences';
 import {goToImagePreviewModal} from 'app/actions/navigation';
 
@@ -16,6 +17,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         return {
             ...ownProps,
+            fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.post),
             theme: getTheme(state)
         };
@@ -25,6 +27,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            addFileToFetchCache,
             goToImagePreviewModal,
             loadFilesForPostIfNecessary
         }, dispatch)
