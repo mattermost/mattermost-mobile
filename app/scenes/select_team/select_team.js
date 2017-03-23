@@ -5,9 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     InteractionManager,
-    Platform,
     ScrollView,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -15,6 +13,7 @@ import {
 import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import {GlobalStyles} from 'app/styles';
 import FormattedText from 'app/components/formatted_text';
 
 import logo from 'assets/images/logo.png';
@@ -76,8 +75,8 @@ export default class SelectTeam extends PureComponent {
                 <Button
                     key={team.id}
                     onPress={() => this.onSelectTeam(team)}
-                    style={style.buttonListItemText}
-                    containerStyle={style.buttonListItem}
+                    style={GlobalStyles.buttonListItemText}
+                    containerStyle={GlobalStyles.buttonListItem}
                 >
                     {team.display_name}
                     <Icon
@@ -90,86 +89,32 @@ export default class SelectTeam extends PureComponent {
         });
 
         return (
-            <View style={style.container}>
-                <View style={style.wrapper}>
+            <View style={GlobalStyles.container}>
+                <ScrollView
+                    style={{flex: 1}}
+                    contentContainerStyle={{alignItems: 'center', paddingVertical: 64}}
+                    showsVerticalScrollIndicator={false}
+                >
                     <Image
+                        style={GlobalStyles.logo}
                         source={logo}
                     />
-                    <Text style={style.header}>
+                    <Text style={GlobalStyles.header}>
                         {this.props.config.SiteName}
                     </Text>
                     <FormattedText
-                        style={style.subheader}
+                        style={GlobalStyles.subheader}
                         id='web.root.signup_info'
                         defaultMessage='All team communication in one place, searchable and accessible anywhere'
                     />
                     <FormattedText
-                        style={[style.subheader, style.subheader2]}
+                        style={GlobalStyles.subheader}
                         id='signup_team.choose'
                         defaultMessage='Your teams:'
                     />
-                </View>
-                <ScrollView style={style.scrollView}>
                     {content}
                 </ScrollView>
             </View>
         );
     }
 }
-
-const style = StyleSheet.create({
-    container: {
-        backgroundColor: 'white',
-        flex: 1
-    },
-    wrapper: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center'
-    },
-    header: {
-        fontSize: 32,
-        fontWeight: '600',
-        marginBottom: 15,
-        marginTop: 15,
-        textAlign: 'center'
-    },
-    subheader: {
-        color: '#777',
-        fontSize: 16,
-        fontWeight: '300',
-        lineHeight: 22,
-        marginBottom: 15,
-        textAlign: 'center'
-    },
-    subheader2: {
-        lineHeight: 17,
-        marginBottom: 0
-    },
-    scrollView: {
-        flex: 1,
-        flexDirection: 'column',
-        ...Platform.select({
-            android: {
-                marginBottom: 22
-            }
-        })
-    },
-    buttonListItem: {
-        alignSelf: 'stretch',
-        backgroundColor: '#fafafa',
-        borderColor: '#d5d5d5',
-        borderRadius: 3,
-        borderWidth: 1,
-        height: 50,
-        marginBottom: 5,
-        marginHorizontal: 15,
-        padding: 13
-    },
-    buttonListItemText: {
-        color: '#777',
-        fontSize: 18,
-        fontWeight: '400',
-        textAlign: 'left'
-    }
-});
