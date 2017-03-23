@@ -230,6 +230,12 @@ export function requestCloseModal() {
     };
 }
 
+export function renderDrawer() {
+    return async (dispatch, getState) => {
+        dispatch({type: NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER}, getState);
+    };
+}
+
 export function showOptionsModal(options) {
     return async (dispatch, getState) => {
         dispatch({

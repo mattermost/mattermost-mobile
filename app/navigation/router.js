@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {Component, PropTypes} from 'react';
 import {
     Dimensions,
     Easing,
@@ -12,7 +12,7 @@ import {
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {closeDrawers, goBack} from 'app/actions/navigation';
+import {closeDrawers, goBack, openChannelDrawer} from 'app/actions/navigation';
 import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
 import {RouteTransitions} from 'app/navigation/routes';
@@ -27,13 +27,14 @@ const navigationPanResponder = NavigationExperimental.Card.CardStackPanResponder
 
 const {width: deviceWidth, height: deviceHeight} = Dimensions.get('window');
 
-class Router extends React.Component {
+class Router extends Component {
     static propTypes = {
-        navigation: React.PropTypes.object,
-        theme: React.PropTypes.object,
-        actions: React.PropTypes.shape({
-            closeDrawers: React.PropTypes.func.isRequired,
-            goBack: React.PropTypes.func.isRequired
+        navigation: PropTypes.object,
+        theme: PropTypes.object,
+        actions: PropTypes.shape({
+            closeDrawers: PropTypes.func.isRequired,
+            goBack: PropTypes.func.isRequired,
+            openChannelDrawer: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -213,6 +214,10 @@ class Router extends React.Component {
             mainOverlay: {
                 backgroundColor: '#000',
                 opacity
+            },
+            drawerOverlay: {
+                backgroundColor: '#000',
+                opacity: (1 - ratio) / 2
             }
         };
     };
@@ -234,6 +239,7 @@ class Router extends React.Component {
     };
 
     handleLeftDrawerOpenStart = () => {
+        this.props.actions.openChannelDrawer();
         this.openLeftHandle = InteractionManager.createInteractionHandle();
     };
 
@@ -245,6 +251,7 @@ class Router extends React.Component {
             leftDrawerRoute,
             modal,
             rightDrawerRoute,
+            shouldRenderDrawer,
             routes
         } = this.props.navigation;
 
@@ -252,7 +259,7 @@ class Router extends React.Component {
         const modalNavigationProps = this.extractNavigationProps(modal.routes[0]);
 
         let leftDrawerContent;
-        if (leftDrawerRoute) {
+        if (leftDrawerRoute && shouldRenderDrawer) {
             leftDrawerContent = this.renderRoute(leftDrawerRoute);
         }
 
@@ -272,19 +279,20 @@ class Router extends React.Component {
                     onOpen={this.handleLeftDrawerOpen}
                     onCloseStart={this.handleLeftDrawerCloseStart}
                     onClose={this.handleLeftDrawerClose}
-                    type='displace'
+                    type='static'
                     disabled={modalVisible}
                     content={leftDrawerContent}
                     tapToClose={true}
-                    openDrawerOffset={42}
+                    openDrawerOffset={40}
                     onRequestClose={this.props.actions.closeDrawers}
                     panOpenMask={0.2}
-                    panCloseMask={42}
-                    panThreshold={0.2}
+                    panCloseMask={40}
+                    panThreshold={0.25}
                     acceptPan={navigationProps.allowMenuSwipe}
                     negotiatePan={true}
                     useInteractionManager={false}
                     tweenHandler={this.handleDrawerTween}
+                    elevation={-5}
                 >
                     <Drawer
                         open={false}
@@ -295,12 +303,12 @@ class Router extends React.Component {
                         tapToClose={true}
                         openDrawerOffset={50}
                         onRequestClose={this.props.actions.closeDrawers}
-                        panOpenMask={0.2}
+                        panOpenMask={0}
                         panCloseMask={50}
-                        panThreshold={0.2}
-                        acceptPan={navigationProps.allowMenuSwipe}
+                        panThreshold={0}
+                        acceptPan={false}
                         negotiatePan={false}
-                        useInteractionManager={true}
+                        useInteractionManager={false}
                         tweenHandler={this.handleDrawerTween}
                     >
                         <NavigationExperimental.Transitioner
@@ -340,7 +348,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             closeDrawers,
-            goBack
+            goBack,
+            openChannelDrawer
         }, dispatch)
     };
 }

@@ -32,7 +32,8 @@ describe('Reducers.Navigation', () => {
             leftDrawerOpen: false,
             leftDrawerRoute: null,
             rightDrawerOpen: false,
-            rightDrawerRoute: null
+            rightDrawerRoute: null,
+            shouldRenderDrawer: false
         }, 'initial state');
     });
 
@@ -213,6 +214,20 @@ describe('Reducers.Navigation', () => {
             assert.equal(state.leftDrawerOpen, false);
             assert.equal(state.rightDrawerOpen, true);
             assert.deepEqual(state.rightDrawerRoute, {key: 'fake'});
+        });
+    });
+
+    it('NAVIGATION_RENDER_LEFT_DRAWER', () => {
+        let state = initialState();
+
+        it('render left drawer', () => {
+            state = reduceAndFreeze(state, {type: NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER});
+
+            assert.equal(state.index, 0);
+            assert.deepEqual(state.routes, [Routes.Root]);
+            assert.equal(state.leftDrawerOpen, false);
+            assert.equal(state.rightDrawerOpen, true);
+            assert.equal(state.shouldRenderDrawer, true);
         });
     });
 

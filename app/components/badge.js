@@ -2,14 +2,19 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
-import {View, Text, TouchableWithoutFeedback, StyleSheet} from 'react-native';
+import {
+    PanResponder,
+    StyleSheet,
+    Text,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
 
 export default class Badge extends PureComponent {
     static defaultProps = {
         extraPaddingHorizontal: 10,
         minHeight: 0,
-        minWidth: 0,
-        onPress: () => true
+        minWidth: 0
     };
 
     static propTypes = {
@@ -22,15 +27,35 @@ export default class Badge extends PureComponent {
         onPress: PropTypes.func
     };
 
+    componentWillMount() {
+        this.panResponder = PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onStartShouldSetResponderCapture: () => true,
+            onMoveShouldSetResponderCapture: () => true,
+            onResponderMove: () => false
+        });
+    }
+
+    handlePress = () => {
+        if (this.props.onPress) {
+            this.props.onPress();
+        }
+    };
+
     renderText = () => {
         const {count} = this.props;
         let text = count.toString();
+        const extra = {};
         if (count < 0) {
             text = '•';
+
+            //the extra margin is to align to the center?
+            extra.marginBottom = 1;
         }
         return (
             <Text
-                style={[styles.text, this.props.countStyle]}
+                style={[styles.text, this.props.countStyle, extra]}
             >
                 {text}
             </Text>
@@ -39,13 +64,18 @@ export default class Badge extends PureComponent {
 
     render() {
         return (
-            <View style={[styles.badge, this.props.style]}>
-                <TouchableWithoutFeedback onPress={this.props.onPress}>
-                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <TouchableWithoutFeedback
+                {...this.panResponder.panHandlers}
+                onPress={this.handlePress}
+            >
+                <View
+                    style={[styles.badge, this.props.style]}
+                >
+                    <View style={styles.wrapper}>
                         {this.renderText()}
                     </View>
-                </TouchableWithoutFeedback>
-            </View>
+                </View>
+            </TouchableWithoutFeedback>
         );
     }
 }
@@ -60,6 +90,11 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         position: 'absolute',
         right: 30
+    },
+    wrapper: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center'
     },
     text: {
         fontSize: 14,

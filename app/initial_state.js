@@ -272,7 +272,8 @@ const state = {
         leftDrawerOpen: false,
         leftDrawerRoute: Routes.ChannelDrawer,
         rightDrawerOpen: false,
-        rightDrawerRoute: null
+        rightDrawerRoute: null,
+        shouldRenderDrawer: false
     },
     views: {
         channel: {

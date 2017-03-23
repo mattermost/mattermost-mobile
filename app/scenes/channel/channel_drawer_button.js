@@ -4,6 +4,9 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {connect} from 'react-redux';
 import {
+    PanResponder,
+    Platform,
+    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -38,6 +41,16 @@ class ChannelDrawerButton extends PureComponent {
         };
     }
 
+    componentWillMount() {
+        this.panResponder = PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onStartShouldSetResponderCapture: () => true,
+            onMoveShouldSetResponderCapture: () => true,
+            onResponderMove: () => false
+        });
+    }
+
     componentDidMount() {
         EventEmitter.on('drawer_opacity', this.setOpacity);
     }
@@ -50,6 +63,10 @@ class ChannelDrawerButton extends PureComponent {
         this.setState({opacity: value > 0 ? 0.1 : 1});
     };
 
+    handlePress = () => {
+        this.props.emitter('open_channel_drawer');
+    };
+
     render() {
         let badge;
         let badgeCount = this.props.mentionCount;
@@ -59,53 +76,73 @@ class ChannelDrawerButton extends PureComponent {
         }
 
         if (badgeCount !== 0) {
-            const badgeStyle = {
-                backgroundColor: 'rgb(214, 73, 70)',
-                borderRadius: 10,
-                flexDirection: 'row',
-                height: 20,
-                left: 5,
-                padding: 3,
-                position: 'absolute',
-                right: 0,
-                top: 5,
-                width: 20
-            };
-
-            const mentionStyle = {
-                color: '#fff',
-                fontSize: 10
-            };
-
             badge = (
                 <Badge
-                    style={badgeStyle}
-                    countStyle={mentionStyle}
+                    style={style.badge}
+                    countStyle={style.mention}
                     count={badgeCount}
                     minHeight={5}
                     minWidth={5}
-                    onPress={() => this.props.emitter('open_channel_drawer')}
+                    onPress={this.handlePress}
                 />
             );
         }
 
         return (
-            <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1, opacity: this.state.opacity}}>
-                <TouchableOpacity
-                    onPress={() => this.props.emitter('open_channel_drawer')}
-                    style={{height: 25, width: 25, marginLeft: 10, marginRight: 10}}
-                >
+            <TouchableOpacity
+                {...this.panResponder.panHandlers}
+                onPress={this.handlePress}
+                style={style.container}
+            >
+                <View style={[style.wrapper, {opacity: this.state.opacity, zIndex: 30}]}>
                     <Icon
                         name='bars'
                         size={25}
                         color={this.props.theme.sidebarHeaderTextColor}
                     />
-                </TouchableOpacity>
-                {badge}
-            </View>
+                    {badge}
+                </View>
+            </TouchableOpacity>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flex: 1
+    },
+    wrapper: {
+        alignItems: 'center',
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingHorizontal: 10,
+        zIndex: 30
+    },
+    badge: {
+        backgroundColor: 'rgb(214, 73, 70)',
+        borderRadius: 10,
+        flexDirection: 'row',
+        height: 20,
+        left: 5,
+        padding: 3,
+        position: 'absolute',
+        right: 0,
+        ...Platform.select({
+            android: {
+                top: 10
+            },
+            ios: {
+                top: 5
+            }
+        }),
+        width: 20
+    },
+    mention: {
+        color: '#fff',
+        fontSize: 10
+    }
+});
 
 function mapStateToProps(state) {
     return {
