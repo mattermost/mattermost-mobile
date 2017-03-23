@@ -22,7 +22,7 @@ function channelInfoHeader(props) {
         <View style={style.container}>
             <View style={style.channelNameContainer}>
                 <ChanneIcon
-                    isActive={true}
+                    isInfo={true}
                     membersCount={memberCount - 1}
                     size={15}
                     status={status}

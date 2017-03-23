@@ -16,7 +16,7 @@ import {Constants} from 'mattermost-redux/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 function channelIcon(props) {
-    const {isActive, hasUnread, membersCount, size, status, theme, type} = props;
+    const {isActive, hasUnread, isInfo, membersCount, size, status, theme, type} = props;
     const style = getStyleSheet(theme);
 
     let activeIcon;
@@ -36,6 +36,12 @@ function channelIcon(props) {
         activeIcon = style.iconActive;
         activeGroupBox = style.groupBoxActive;
         activeGroup = style.groupActive;
+    }
+
+    if (isInfo) {
+        activeIcon = style.iconInfo;
+        activeGroupBox = style.groupBoxInfo;
+        activeGroup = style.groupInfo;
     }
 
     if (type === Constants.OPEN_CHANNEL) {
@@ -109,6 +115,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         iconUnread: {
             color: theme.sidebarUnreadText
         },
+        iconInfo: {
+            color: theme.sidebarText
+        },
         statusIcon: {
             paddingRight: 12
         },
@@ -128,6 +137,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         groupBoxUnread: {
             borderColor: theme.sidebarUnreadText
         },
+        groupBoxInfo: {
+            borderColor: theme.sidebarText
+        },
         group: {
             color: changeOpacity(theme.sidebarText, 0.4),
             fontSize: 10,
@@ -138,12 +150,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         groupUnread: {
             color: theme.sidebarUnreadText
+        },
+        groupInfo: {
+            color: theme.sidebarText
         }
     });
 });
 
 channelIcon.propTypes = {
     isActive: PropTypes.bool,
+    isInfo: PropTypes.bool,
     hasUnread: PropTypes.bool,
     membersCount: PropTypes.number,
     size: PropTypes.number,
@@ -154,6 +170,7 @@ channelIcon.propTypes = {
 
 channelIcon.defaultProps = {
     isActive: false,
+    isInfo: false,
     hasUnread: false,
     size: 12
 };
