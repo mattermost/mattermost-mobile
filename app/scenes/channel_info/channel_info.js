@@ -156,6 +156,7 @@ class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             canManageUsers,
+            status,
             theme
         } = this.props;
 
@@ -186,6 +187,7 @@ class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         purpose={currentChannel.purpose}
+                        status={status}
                         theme={theme}
                         type={currentChannel.type}
                     />
