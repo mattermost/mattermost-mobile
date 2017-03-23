@@ -3,6 +3,8 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    Keyboard,
+    Platform,
     ScrollView,
     StyleSheet,
     View
@@ -81,8 +83,18 @@ export default class AccountNotifications extends PureComponent {
         this.props.subscribeToHeaderEvent(SAVE_NOTIFY_PROPS, this.saveUserNotifyProps);
     }
 
+    componentDidMount() {
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+    }
+
     componentWillUnmount() {
         this.props.unsubscribeFromHeaderEvent(SAVE_NOTIFY_PROPS);
+
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -98,6 +110,10 @@ export default class AccountNotifications extends PureComponent {
             this.setStateFromNotifyProps(nextProps.currentUser.notify_props);
         }
     }
+
+    handleAndroidKeyboard = () => {
+        this.refs.mention_keys.getWrappedInstance().blur();
+    };
 
     setStateFromNotifyProps = (notifyProps) => {
         const mentionKeys = (notifyProps.mention_keys || '').split(',');
@@ -262,6 +278,7 @@ export default class AccountNotifications extends PureComponent {
                     theme={theme}
                 >
                     <TextInputWithLocalizedPlaceholder
+                        ref='mention_keys'
                         value={this.state.mention_keys}
                         onChangeText={this.updateMentionKeys}
                         style={style.input}

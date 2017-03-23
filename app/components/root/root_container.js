@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import Config from 'assets/config.json';
 
-import {closeDrawers, unrenderDrawer} from 'app/actions/navigation';
+import {closeDrawers, closeModal, goBack, unrenderDrawer} from 'app/actions/navigation';
 import {flushToStorage} from 'app/actions/storage';
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
 import {setAppState, setDeviceToken} from 'mattermost-redux/actions/general';
@@ -29,7 +29,8 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         currentTeamId,
         currentChannelId,
-        locale
+        locale,
+        navigation: state.navigation
     };
 }
 
@@ -37,6 +38,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             closeDrawers,
+            closeModal,
+            goBack,
             loadConfigAndLicense,
             logout,
             goToNotification,

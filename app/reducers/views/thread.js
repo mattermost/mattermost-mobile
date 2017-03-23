@@ -82,6 +82,31 @@ function drafts(state = {}, action) {
             [action.rootId]: Object.assign({}, state[action.rootId], {files: []})
         };
     }
+    case ViewTypes.REMOVE_FILE_FROM_POST_DRAFT: {
+        if (!action.rootId) {
+            return state;
+        }
+
+        const files = state[action.rootId].files.filter((file) => (file.clientId !== action.clientId));
+
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        };
+    }
+    case ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT: {
+        if (!action.rootId) {
+            return state;
+        }
+
+        const files = [...state[action.rootId].files];
+        files.splice(-1);
+
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        };
+    }
     default:
         return state;
     }

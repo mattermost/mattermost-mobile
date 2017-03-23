@@ -15,6 +15,18 @@ import {getTheme} from 'app/selectors/preferences';
 
 function ChannelTitle(props) {
     const channelName = props.currentChannel.display_name;
+    let icon;
+    if (channelName) {
+        icon = (
+            <Icon
+                style={{marginHorizontal: 6}}
+                size={12}
+                name='chevron-down'
+                color={props.theme.sidebarHeaderTextColor}
+            />
+        );
+    }
+
     return (
         <TouchableOpacity
             style={{flexDirection: 'row', flex: 1}}
@@ -24,12 +36,7 @@ function ChannelTitle(props) {
                 <Text style={{color: props.theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
                     {channelName}
                 </Text>
-                <Icon
-                    style={{marginHorizontal: 6}}
-                    size={12}
-                    name='chevron-down'
-                    color={props.theme.sidebarHeaderTextColor}
-                />
+                {icon}
             </View>
         </TouchableOpacity>
     );

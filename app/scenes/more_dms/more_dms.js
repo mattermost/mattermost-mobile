@@ -4,6 +4,8 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Keyboard,
+    Platform,
     InteractionManager,
     StyleSheet,
     TouchableOpacity,
@@ -86,6 +88,10 @@ class MoreDirectMessages extends PureComponent {
     }
 
     componentDidMount() {
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.getProfiles(0);
         });
@@ -93,7 +99,15 @@ class MoreDirectMessages extends PureComponent {
 
     componentWillUnmount() {
         this.props.unsubscribeFromHeaderEvent('close');
+
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
     }
+
+    handleAndroidKeyboard = () => {
+        this.onSearchButtonPress();
+    };
 
     searchBarRef = (ref) => {
         this.searchBar = ref;

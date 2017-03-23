@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import {
     Image,
     Keyboard,
+    Platform,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -40,6 +41,12 @@ export default class Mfa extends Component {
         };
     }
 
+    componentDidMount() {
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         // In case the login is successful the previous scene (login) will take care of the transition
         if (this.props.loginRequest.status === RequestStatus.STARTED &&
@@ -47,6 +54,16 @@ export default class Mfa extends Component {
             this.props.actions.goBack();
         }
     }
+
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+    }
+
+    handleAndroidKeyboard = () => {
+        this.blur();
+    };
 
     handleInput = (token) => {
         this.setState({

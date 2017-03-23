@@ -95,6 +95,19 @@ function drafts(state = {}, action) {
             [action.channelId]: Object.assign({}, state[action.channelId], {files})
         };
     }
+    case ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT: {
+        if (action.rootId) {
+            return state;
+        }
+
+        const files = [...state[action.channelId].files];
+        files.splice(-1);
+
+        return {
+            ...state,
+            [action.channelId]: Object.assign({}, state[action.channelId], {files})
+        };
+    }
     default:
         return state;
     }

@@ -3,6 +3,9 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    BackAndroid,
+    Keyboard,
+    Platform,
     StyleSheet,
     TouchableHighlight,
     View,
@@ -35,6 +38,7 @@ export default class PostTextbox extends PureComponent {
         actions: PropTypes.shape({
             closeModal: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
+            handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
             showOptionsModal: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired
@@ -56,6 +60,20 @@ export default class PostTextbox extends PureComponent {
         };
     }
 
+    componentDidMount() {
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+            BackAndroid.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        }
+    }
+
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            BackAndroid.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        }
+    }
+
     blur = () => {
         this.refs.input.getWrappedInstance().blur();
     };
@@ -64,6 +82,19 @@ export default class PostTextbox extends PureComponent {
         this.setState({
             contentHeight: e.nativeEvent.contentSize.height
         });
+    };
+
+    handleAndroidKeyboard = () => {
+        this.blur();
+    };
+
+    handleAndroidBack = () => {
+        const {channelId, files, rootId} = this.props;
+        if (files.length) {
+            this.props.actions.handleRemoveLastFile(channelId, rootId);
+            return true;
+        }
+        return false;
     };
 
     sendMessage = () => {
