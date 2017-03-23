@@ -71,7 +71,7 @@ export default class Badge extends PureComponent {
                 <View
                     style={[styles.badge, this.props.style]}
                 >
-                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    <View style={styles.wrapper}>
                         {this.renderText()}
                     </View>
                 </View>
@@ -90,6 +90,11 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         position: 'absolute',
         right: 30
+    },
+    wrapper: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center'
     },
     text: {
         fontSize: 14,
