@@ -5,6 +5,9 @@ import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     InteractionManager,
+    Platform,
+    ScrollView,
+    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -13,7 +16,6 @@ import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
 
@@ -74,8 +76,8 @@ export default class SelectTeam extends PureComponent {
                 <Button
                     key={team.id}
                     onPress={() => this.onSelectTeam(team)}
-                    style={GlobalStyles.buttonListItemText}
-                    containerStyle={GlobalStyles.buttonListItem}
+                    style={style.buttonListItemText}
+                    containerStyle={style.buttonListItem}
                 >
                     {team.display_name}
                     <Icon
@@ -88,26 +90,86 @@ export default class SelectTeam extends PureComponent {
         });
 
         return (
-            <View style={GlobalStyles.container}>
-                <Image
-                    style={GlobalStyles.logo}
-                    source={logo}
-                />
-                <Text style={GlobalStyles.header}>
-                    {this.props.config.SiteName}
-                </Text>
-                <FormattedText
-                    style={GlobalStyles.subheader}
-                    id='web.root.signup_info'
-                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                />
-                <FormattedText
-                    style={GlobalStyles.subheader}
-                    id='signup_team.choose'
-                    defaultMessage='Your teams:'
-                />
-                {content}
+            <View style={style.container}>
+                <View style={style.wrapper}>
+                    <Image
+                        source={logo}
+                    />
+                    <Text style={style.header}>
+                        {this.props.config.SiteName}
+                    </Text>
+                    <FormattedText
+                        style={style.subheader}
+                        id='web.root.signup_info'
+                        defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                    />
+                    <FormattedText
+                        style={[style.subheader, style.subheader2]}
+                        id='signup_team.choose'
+                        defaultMessage='Your teams:'
+                    />
+                </View>
+                <ScrollView style={style.scrollView}>
+                    {content}
+                </ScrollView>
             </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        backgroundColor: 'white',
+        flex: 1
+    },
+    wrapper: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center'
+    },
+    header: {
+        fontSize: 32,
+        fontWeight: '600',
+        marginBottom: 15,
+        marginTop: 15,
+        textAlign: 'center'
+    },
+    subheader: {
+        color: '#777',
+        fontSize: 16,
+        fontWeight: '300',
+        lineHeight: 22,
+        marginBottom: 15,
+        textAlign: 'center'
+    },
+    subheader2: {
+        lineHeight: 17,
+        marginBottom: 0
+    },
+    scrollView: {
+        flex: 1,
+        flexDirection: 'column',
+        ...Platform.select({
+            android: {
+                marginBottom: 22
+            }
+        })
+    },
+    buttonListItem: {
+        alignSelf: 'stretch',
+        backgroundColor: '#fafafa',
+        borderColor: '#d5d5d5',
+        borderRadius: 3,
+        borderWidth: 1,
+        height: 50,
+        marginBottom: 5,
+        marginHorizontal: 15,
+        padding: 13
+    },
+    buttonListItemText: {
+        color: '#777',
+        fontSize: 18,
+        fontWeight: '400',
+        textAlign: 'left'
+    }
+});
