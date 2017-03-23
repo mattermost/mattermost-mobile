@@ -1,45 +1,9 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 import React, {PropTypes, PureComponent} from 'react';
-import {ListView, StyleSheet, Text, View} from 'react-native';
+import {ListView, Platform, StyleSheet, Text, View} from 'react-native';
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        listView: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        },
-        loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6)
-        },
-        sectionContainer: {
-            backgroundColor: theme.sidebarHeaderBg,
-            paddingLeft: 10,
-            paddingVertical: 2
-        },
-        sectionText: {
-            fontWeight: '600',
-            color: theme.sidebarHeaderTextColor
-        },
-        separator: {
-            height: 1,
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
-        },
-        noResultContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
-    });
-});
 
 export default class CustomList extends PureComponent {
     static propTypes = {
@@ -225,3 +189,44 @@ export default class CustomList extends PureComponent {
         );
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        listView: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+            ...Platform.select({
+                android: {
+                    marginBottom: 20
+                }
+            })
+        },
+        loadingText: {
+            color: changeOpacity(theme.centerChannelColor, 0.6)
+        },
+        sectionContainer: {
+            backgroundColor: theme.sidebarHeaderBg,
+            paddingLeft: 10,
+            paddingVertical: 2
+        },
+        sectionText: {
+            fontWeight: '600',
+            color: theme.sidebarHeaderTextColor
+        },
+        separator: {
+            height: 1,
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        noResultContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        noResultText: {
+            fontSize: 26,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        }
+    });
+});

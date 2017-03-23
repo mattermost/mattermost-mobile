@@ -200,14 +200,19 @@ class ChannelInfo extends PureComponent {
                             theme={theme}
                         />
                         <View style={style.separator}/>
-                        <ChannelInfoRow
-                            action={() => true}
-                            defaultMessage='Notification Preferences'
-                            icon='bell-o'
-                            textId='channel_header.notificationPreferences'
-                            theme={theme}
-                        />
-                        <View style={style.separator}/>
+                        {
+
+                            /**
+                             <ChannelInfoRow
+                             action={() => true}
+                             defaultMessage='Notification Preferences'
+                             icon='bell-o'
+                             textId='channel_header.notificationPreferences'
+                             theme={theme}
+                             />
+                             <View style={style.separator}/>
+                             **/
+                        }
                         <ChannelInfoRow
                             action={this.props.actions.goToChannelMembers}
                             defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}

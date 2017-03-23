@@ -1,8 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes, PureComponent} from 'react';
-import {AppState, View} from 'react-native';
+import React, {Component, PropTypes} from 'react';
+import {AppState, StatusBar, View} from 'react-native';
 import {IntlProvider} from 'react-intl';
 import DeviceInfo from 'react-native-device-info';
 
@@ -13,7 +13,7 @@ import {Constants} from 'mattermost-redux/constants';
 import {getTranslations} from 'app/i18n';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-export default class Root extends PureComponent {
+export default class Root extends Component {
     static propTypes = {
         children: PropTypes.node,
         currentTeamId: PropTypes.string,
@@ -66,6 +66,7 @@ export default class Root extends PureComponent {
                 messages={getTranslations(locale)}
             >
                 <View style={{flex: 1}}>
+                    <StatusBar barStyle='light-content'/>
                     {this.props.children}
                     <PushNotification/>
                 </View>

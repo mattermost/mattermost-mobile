@@ -90,7 +90,7 @@ function channelIcon(props) {
                 <OfflineStatus
                     width={size}
                     height={size}
-                    color={changeOpacity(theme.centerChannelColor, 0.4)}
+                    color={changeOpacity(theme.sidebarText, 0.5)}
                 />
             </View>
         );

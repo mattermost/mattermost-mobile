@@ -20,8 +20,7 @@ import logo from 'assets/images/logo.png';
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
-        teams: PropTypes.object.isRequired,
-        myMembers: PropTypes.object.isRequired,
+        teams: PropTypes.array.isRequired,
         subscribeToHeaderEvent: PropTypes.func.isRequired,
         unsubscribeFromHeaderEvent: PropTypes.func.isRequired,
         actions: PropTypes.shape({
@@ -70,27 +69,23 @@ export default class SelectTeam extends PureComponent {
     };
 
     render() {
-        const content = [];
-        const teams = Object.values(this.props.teams);
-        for (const team of teams) {
-            if (this.props.myMembers.hasOwnProperty(team.id)) {
-                content.push(
-                    <Button
-                        key={team.id}
-                        onPress={() => this.onSelectTeam(team)}
-                        style={GlobalStyles.buttonListItemText}
-                        containerStyle={GlobalStyles.buttonListItem}
-                    >
-                        {team.display_name}
-                        <Icon
-                            name='keyboard-arrow-right'
-                            size={24}
-                            color='#777'
-                        />
-                    </Button>
-                );
-            }
-        }
+        const content = this.props.teams.map((team) => {
+            return (
+                <Button
+                    key={team.id}
+                    onPress={() => this.onSelectTeam(team)}
+                    style={GlobalStyles.buttonListItemText}
+                    containerStyle={GlobalStyles.buttonListItem}
+                >
+                    {team.display_name}
+                    <Icon
+                        name='keyboard-arrow-right'
+                        size={24}
+                        color='#777'
+                    />
+                </Button>
+            );
+        });
 
         return (
             <View style={GlobalStyles.container}>

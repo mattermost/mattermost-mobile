@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     Keyboard,
+    StatusBar,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -101,6 +102,7 @@ export default class SelectServer extends PureComponent {
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
             >
+                <StatusBar barStyle='light-content'/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image

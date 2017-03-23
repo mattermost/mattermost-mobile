@@ -26,7 +26,7 @@ export default class SearchBarIos extends PureComponent {
 
     static defaultProps = {
         barStyle: 'default',
-        searchBarStyle: 'default',
+        searchBarStyle: 'minimal',
         placeholder: 'Search',
         showCancelButton: true,
         hideBackground: true,
@@ -77,7 +77,7 @@ export default class SearchBarIos extends PureComponent {
                 text={this.props.text}
                 placeholder={this.props.placeholder}
                 showsCancelButton={this.state.displayCancelButton}
-                hideBackground={this.props.hideBackground}
+                hideBackground={false}
                 textFieldBackgroundColor={this.props.textFieldBackgroundColor}
                 placeholderTextColor={this.props.placeholderTextColor}
                 textColor={this.props.textColor}
