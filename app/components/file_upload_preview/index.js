@@ -3,9 +3,10 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {cancelUploadFileRequest} from 'mattermost-redux/actions/files';
 
 import {handleClearFiles, handleRemoveFile} from 'app/actions/views/file_upload';
+import {addFileToFetchCache} from 'app/actions/views/file_preview';
+import {getTheme} from 'app/selectors/preferences';
 
 import FileUploadPreview from './file_upload_preview';
 
@@ -13,14 +14,16 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         createPostRequestStatus: state.requests.posts.createPost.status,
-        uploadFileRequestStatus: state.requests.files.uploadFiles.status
+        fetchCache: state.views.fetchCache,
+        uploadFileRequestStatus: state.requests.files.uploadFiles.status,
+        theme: getTheme(state)
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            cancelUploadFileRequest,
+            addFileToFetchCache,
             handleClearFiles,
             handleRemoveFile
         }, dispatch)

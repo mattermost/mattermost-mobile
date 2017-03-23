@@ -22,6 +22,8 @@ import FileAttachmentPreview from './file_attachment_preview';
 
 export default class FileAttachment extends PureComponent {
     static propTypes = {
+        addFileToFetchCache: PropTypes.func.isRequired,
+        fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -60,6 +62,8 @@ export default class FileAttachment extends PureComponent {
         if (file.has_preview_image) {
             fileAttachmentComponent = (
                 <FileAttachmentPreview
+                    addFileToFetchCache={this.props.addFileToFetchCache}
+                    fetchCache={this.props.fetchCache}
                     file={file}
                     theme={theme}
                 />

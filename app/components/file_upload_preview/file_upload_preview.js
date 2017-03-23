@@ -4,10 +4,8 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {
     Dimensions,
-    KeyboardAvoidingView,
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -15,22 +13,23 @@ import Font from 'react-native-vector-icons/FontAwesome';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import FileAttachmentPreview from 'app/components/file_attachment_list/file_attachment_preview';
+import KeyboardLayout from 'app/components/layout/keyboard_layout';
 
 const {height: deviceHeight} = Dimensions.get('window');
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            cancelUploadFileRequest: PropTypes.func.isRequired,
+            addFileToFetchCache: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
             handleRemoveFile: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         createPostRequestStatus: PropTypes.string.isRequired,
+        fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         rootId: PropTypes.string,
-        uploadFileRequestStatus: PropTypes.string.isRequired,
-        uploadFileRequestId: PropTypes.number
+        uploadFileRequestStatus: PropTypes.string.isRequired
     };
 
     componentWillReceiveProps(nextProps) {
@@ -43,13 +42,17 @@ export default class FileUploadPreview extends PureComponent {
         return this.props.files.map((file) => {
             return (
                 <View
-                    key={file.id}
+                    key={file.clientId}
                     style={style.preview}
                 >
-                    <FileAttachmentPreview file={file}/>
+                    <FileAttachmentPreview
+                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                        fetchCache={this.props.fetchCache}
+                        file={file}
+                    />
                     <TouchableOpacity
                         style={style.removeButton}
-                        onPress={() => this.props.actions.handleRemoveFile(file.id, this.props.channelId, this.props.rootId)}
+                        onPress={() => this.props.actions.handleRemoveFile(file.clientId, this.props.channelId, this.props.rootId)}
                     >
                         <Font
                             name='times'
@@ -62,27 +65,13 @@ export default class FileUploadPreview extends PureComponent {
         });
     }
 
-    handleCancelUpload = () => {
-        this.props.actions.cancelUploadFileRequest(this.props.uploadFileRequestId);
-    }
-
     render() {
         if (!this.props.files.length && this.props.uploadFileRequestStatus !== RequestStatus.STARTED) {
             return null;
         }
 
-        let component;
-        if (this.props.uploadFileRequestStatus === RequestStatus.STARTED) {
-            component = (
-                <View style={style.loader}>
-                    <Text style={style.loaderText}>{'Loading...'}</Text>
-                    <TouchableOpacity onPress={this.handleCancelUpload}>
-                        <Text style={style.cancelText}>{'Cancel'}</Text>
-                    </TouchableOpacity>
-                </View>
-            );
-        } else {
-            component = (
+        return (
+            <KeyboardLayout style={style.container}>
                 <ScrollView
                     horizontal={true}
                     style={style.scrollView}
@@ -90,13 +79,7 @@ export default class FileUploadPreview extends PureComponent {
                 >
                     {this.buildFilePreviews()}
                 </ScrollView>
-            );
-        }
-
-        return (
-            <KeyboardAvoidingView style={style.container}>
-                {component}
-            </KeyboardAvoidingView>
+            </KeyboardLayout>
         );
     }
 }
@@ -132,7 +115,7 @@ const style = StyleSheet.create({
         alignItems: 'center',
         height: 115,
         justifyContent: 'center',
-        marginLeft: 24,
+        marginRight: 5,
         width: 115
     },
     removeButton: {
@@ -151,6 +134,7 @@ const style = StyleSheet.create({
         marginBottom: 24
     },
     scrollViewContent: {
-        alignItems: 'flex-end'
+        alignItems: 'flex-end',
+        marginLeft: 10
     }
 });

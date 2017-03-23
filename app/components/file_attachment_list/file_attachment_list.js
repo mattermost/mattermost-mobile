@@ -16,6 +16,7 @@ import FileAttachment from './file_attachment';
 export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
+        fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
         onLongPress: PropTypes.func,
@@ -44,6 +45,8 @@ export default class FileAttachmentList extends Component {
                 onPressOut={() => this.props.toggleSelected(false)}
             >
                 <FileAttachment
+                    addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                    fetchCache={this.props.fetchCache}
                     file={file}
                     theme={this.props.theme}
                 />

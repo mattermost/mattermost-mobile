@@ -19,9 +19,14 @@ const ViewTypes = keyMirror({
     SET_POST_DRAFT: null,
     SET_COMMENT_DRAFT: null,
 
+    SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT: null,
+
     CLEAR_FILES_FOR_POST_DRAFT: null,
 
-    REMOVE_FILE_FROM_POST_DRAFT: null
+    REMOVE_FILE_FROM_POST_DRAFT: null,
+    REMOVE_LAST_FILE_FROM_POST_DRAFT: null,
+
+    ADD_FILE_TO_FETCH_CACHE: null
 });
 
 export default ViewTypes;

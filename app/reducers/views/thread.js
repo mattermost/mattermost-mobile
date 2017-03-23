@@ -36,15 +36,36 @@ function drafts(state = {}, action) {
 
         return data;
     }
+    case ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT: {
+        if (!action.rootId) {
+            return state;
+        }
+
+        const tempFiles = action.clientIds.map((id) => ({clientId: id, loading: true}));
+        const files = [
+            ...state[action.rootId].files,
+            ...tempFiles
+        ];
+
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        };
+    }
     case FilesTypes.RECEIVED_UPLOAD_FILES: {
         if (!action.rootId) {
             return state;
         }
 
-        const files = [
-            ...state[action.rootId].files,
-            ...action.data
-        ];
+        // Reconcile tempFiles with the received uploaded files
+        const files = state[action.rootId].files.map((tempFile) => {
+            const file = action.data.find((f) => f.clientId === tempFile.clientId);
+            if (file) {
+                return file;
+            }
+
+            return tempFile;
+        });
 
         return {
             ...state,
