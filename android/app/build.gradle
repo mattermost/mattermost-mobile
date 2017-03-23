@@ -144,6 +144,7 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-orientation')
     compile project(':react-native-bottom-sheet')
     compile project(':react-native-push-notification')
     compile ('com.google.android.gms:play-services-gcm:9.4.0') {
