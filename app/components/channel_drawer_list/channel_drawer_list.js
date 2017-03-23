@@ -154,133 +154,6 @@ class ChannelDrawerList extends Component {
         );
     };
 
-    onShowModal = (channel) => {
-        const {formatMessage} = this.props.intl;
-        let open;
-        let close;
-        let favorite;
-        let term;
-        let title;
-
-        switch (channel.type) {
-        case Constants.DM_CHANNEL:
-            title = formatMessage({
-                id: 'mobile.channel_list.modalTitle',
-                defaultMessage: 'Select an action for the {term} {name}'},
-                {
-                    name: channel.display_name,
-                    term: formatMessage({id: 'mobile.channel_list.dm', defaultMessage: 'Direct Message'}).toLowerCase()
-                });
-
-            open = {
-                action: () => {
-                    this.props.actions.closeOptionsModal();
-                    this.onSelectChannel(channel);
-                },
-                text: formatMessage({id: 'mobile.channel_list.openDM', defaultMessage: 'Open Direct Message'})
-            };
-
-            close = {
-                action: () => {
-                    this.handleClose(channel);
-                },
-                text: formatMessage({id: 'mobile.channel_list.closeDM', defaultMessage: 'Close Direct Message'}),
-                textStyle: {
-                    color: '#CC3239'
-                }
-            };
-            break;
-        case Constants.GM_CHANNEL:
-            title = formatMessage({
-                id: 'mobile.channel_list.modalTitle',
-                defaultMessage: 'Select an action for the {term} {name}'},
-                {
-                    name: channel.display_name,
-                    term: formatMessage({id: 'mobile.channel_list.gm', defaultMessage: 'Group Message'}).toLowerCase()
-                });
-
-            open = {
-                action: () => {
-                    this.props.actions.closeOptionsModal();
-                    this.onSelectChannel(channel);
-                },
-                text: formatMessage({id: 'mobile.channel_list.openGM', defaultMessage: 'Open Group Message'})
-            };
-
-            close = {
-                action: () => {
-                    this.handleClose(channel);
-                },
-                text: formatMessage({id: 'mobile.channel_list.closeGM', defaultMessage: 'Close Group Message'}),
-                textStyle: {
-                    color: '#CC3239'
-                }
-            };
-            break;
-        default:
-            term = channel.type === Constants.OPEN_CHANNEL ?
-                formatMessage({id: 'mobile.channel_list.publicChannel', defaultMessage: 'Public Channel'}) :
-                formatMessage({id: 'mobile.channel_list.privateChannel', defaultMessage: 'Private Channel'});
-
-            title = formatMessage({
-                id: 'mobile.channel_list.modalTitle',
-                defaultMessage: 'Select an action for the {term} {name}'},
-                {
-                    name: channel.display_name,
-                    term: term.toLowerCase()
-                });
-
-            open = {
-                action: () => {
-                    this.props.actions.closeOptionsModal();
-                    this.onSelectChannel(channel);
-                },
-                text: formatMessage({id: 'mobile.channel_list.openChannel', defaultMessage: 'Open {term}'}, {
-                    term
-                })
-            };
-
-            if (channel.name !== Constants.DEFAULT_CHANNEL) {
-                close = {
-                    action: () => {
-                        this.handleLeave(channel, term);
-                    },
-                    text: formatMessage({id: 'channel_header.leave', defaultMessage: 'Leave {term}'}, {
-                        term
-                    }),
-                    textStyle: {
-                        color: '#CC3239'
-                    }
-                };
-            }
-            break;
-        }
-
-        if (channel.isFavorite) {
-            favorite = {
-                action: () => {
-                    this.props.actions.closeOptionsModal();
-                    this.props.actions.unmarkFavorite(channel.id);
-                },
-                text: formatMessage({id: 'channelHeader.removeFromFavorites', defaultMessage: 'Remove from Favorites'})
-            };
-        } else {
-            favorite = {
-                action: () => {
-                    this.props.actions.closeOptionsModal();
-                    this.props.actions.markFavorite(channel.id);
-                },
-                text: formatMessage({id: 'channelHeader.addToFavorites', defaultMessage: 'Add to Favorites'})
-            };
-        }
-
-        const options = [open, favorite];
-        if (close) {
-            options.push(close);
-        }
-        this.props.actions.showOptionsModal({title, items: options});
-    };
-
     getUnreadMessages = (channel) => {
         const member = this.props.channelMembers[channel.id];
         let mentions = 0;
@@ -328,7 +201,6 @@ class ChannelDrawerList extends Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
-                onLongPress={this.onShowModal}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
             />
@@ -557,7 +429,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 50
         },
         settings: {
-            color: theme.sidebarText,
+            color: theme.sidebarHeaderTextColor,
             fontSize: 18,
             fontWeight: '300'
         },
@@ -578,7 +450,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18
         },
         divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: changeOpacity(theme.sidebarText, 0.1),
             height: 1
         },
         actionContainer: {

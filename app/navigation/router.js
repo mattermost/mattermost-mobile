@@ -203,7 +203,7 @@ class Router extends Component {
                 deviceWidth: event.nativeEvent.layout.width
             });
         }
-    }
+    };
 
     handleDrawerTween = (ratio) => {
         const opacity = (ratio / 2);
@@ -216,8 +216,8 @@ class Router extends Component {
                 opacity
             },
             drawerOverlay: {
-                backgroundColor: '#000',
-                opacity: (1 - ratio) / 2
+                backgroundColor: ratio ? '#000' : '#FFF',
+                opacity: ratio ? (1 - ratio) / 2 : 1
             }
         };
     };

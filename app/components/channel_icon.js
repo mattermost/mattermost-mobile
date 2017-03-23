@@ -49,7 +49,7 @@ function channelIcon(props) {
         return (
             <Icon
                 name='lock'
-                style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                style={[style.icon, unreadIcon, activeIcon, {fontSize: size + 1}]}
             />
         );
     } else if (type === Constants.GM_CHANNEL) {
@@ -90,7 +90,7 @@ function channelIcon(props) {
                 <OfflineStatus
                     width={size}
                     height={size}
-                    color={changeOpacity(theme.centerChannelColor, 0.4)}
+                    color={changeOpacity(theme.sidebarText, 0.5)}
                 />
             </View>
         );
@@ -116,6 +116,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 12
         },
         groupBox: {
+            alignSelf: 'flex-start',
             alignItems: 'center',
             borderWidth: 1,
             borderColor: changeOpacity(theme.sidebarText, 0.4),

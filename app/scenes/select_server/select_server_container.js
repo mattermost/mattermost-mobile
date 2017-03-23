@@ -7,6 +7,7 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {getPing, resetPing} from 'mattermost-redux/actions/general';
 import {RequestStatus} from 'mattermost-redux/constants';
+import {unrenderDrawer} from 'app/actions/navigation';
 import * as SelectServerActions from 'app/actions/views/select_server';
 
 import SelectServer from './select_server';
@@ -31,7 +32,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             ...SelectServerActions,
             getPing,
-            resetPing
+            resetPing,
+            unrenderDrawer
         }, dispatch)
     };
 }

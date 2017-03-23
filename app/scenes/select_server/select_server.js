@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     Keyboard,
+    StatusBar,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -34,7 +35,8 @@ export default class SelectServer extends PureComponent {
             getPing: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
             handleLoginOptions: PropTypes.func.isRequired,
-            handleServerUrlChanged: PropTypes.func.isRequired
+            handleServerUrlChanged: PropTypes.func.isRequired,
+            unrenderDrawer: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -44,6 +46,10 @@ export default class SelectServer extends PureComponent {
         this.state = {
             error: null
         };
+    }
+
+    componentDidMount() {
+        this.props.actions.unrenderDrawer();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -101,6 +107,7 @@ export default class SelectServer extends PureComponent {
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
             >
+                <StatusBar barStyle='light-content'/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image

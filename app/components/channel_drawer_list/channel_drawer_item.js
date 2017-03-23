@@ -23,6 +23,12 @@ export default class ChannelDrawerItem extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    handleLongPress = (channel) => {
+        if (this.props.onLongPress) {
+            this.props.onLongPress(channel);
+        }
+    };
+
     render() {
         const {
             channel,
@@ -81,7 +87,7 @@ export default class ChannelDrawerItem extends PureComponent {
                 onPress={() => this.props.onSelectChannel(channel)}
                 delayLongPress={1000}
                 onLongPress={() => {
-                    this.props.onLongPress(channel);
+                    this.handleLongPress(channel);
                 }}
             >
                 <View style={style.container}>
@@ -142,10 +148,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         badgeContainer: {
             alignItems: 'center',
             backgroundColor: theme.mentionBj,
+            borderRadius: 7,
             height: 15,
             justifyContent: 'center',
             marginRight: 16,
-            width: 15
+            width: 16
         },
         badge: {
             color: theme.mentionColor,

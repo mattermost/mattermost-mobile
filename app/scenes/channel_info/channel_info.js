@@ -156,6 +156,7 @@ class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             canManageUsers,
+            status,
             theme
         } = this.props;
 
@@ -186,6 +187,7 @@ class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         purpose={currentChannel.purpose}
+                        status={status}
                         theme={theme}
                         type={currentChannel.type}
                     />
@@ -200,14 +202,19 @@ class ChannelInfo extends PureComponent {
                             theme={theme}
                         />
                         <View style={style.separator}/>
-                        <ChannelInfoRow
-                            action={() => true}
-                            defaultMessage='Notification Preferences'
-                            icon='bell-o'
-                            textId='channel_header.notificationPreferences'
-                            theme={theme}
-                        />
-                        <View style={style.separator}/>
+                        {
+
+                            /**
+                             <ChannelInfoRow
+                             action={() => true}
+                             defaultMessage='Notification Preferences'
+                             icon='bell-o'
+                             textId='channel_header.notificationPreferences'
+                             theme={theme}
+                             />
+                             <View style={style.separator}/>
+                             **/
+                        }
                         <ChannelInfoRow
                             action={this.props.actions.goToChannelMembers}
                             defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
