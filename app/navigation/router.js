@@ -293,6 +293,9 @@ class Router extends Component {
                     useInteractionManager={false}
                     tweenHandler={this.handleDrawerTween}
                     elevation={-5}
+                    styles={{
+                        main: {shadowColor: '#000000', shadowOpacity: 0.8, shadowRadius: 5}
+                    }}
                 >
                     <Drawer
                         open={false}
