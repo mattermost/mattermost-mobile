@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import Orientation from 'react-native-orientation';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import FileAttachmentPreview from 'app/components/file_attachment_list/file_attachment_preview';
@@ -76,6 +77,8 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentDidMount() {
+        Orientation.unlockAllOrientations();
+
         // TODO: Use contentOffset on Android once PR is merged
         // This is a hack until this PR gets merged: https://github.com/facebook/react-native/pull/12502
         // On Android there is a render animation for scrollViews. In order for scrollTo to work
@@ -93,6 +96,10 @@ export default class ImagePreview extends PureComponent {
                 }).start();
             });
         }
+    }
+
+    componentWillUnmount() {
+        Orientation.lockToPortrait();
     }
 
     onMoveShouldSetPanResponderCapture = (evt, gestureState) => {
