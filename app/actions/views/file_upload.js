@@ -68,3 +68,11 @@ export function handleRemoveFile(clientId, channelId, rootId) {
         rootId
     };
 }
+
+export function handleRemoveLastFile(channelId, rootId) {
+    return {
+        type: ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT,
+        channelId,
+        rootId
+    };
+}

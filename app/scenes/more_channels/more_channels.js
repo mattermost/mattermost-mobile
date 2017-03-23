@@ -4,6 +4,8 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Keyboard,
+    Platform,
     InteractionManager,
     StyleSheet,
     TouchableOpacity,
@@ -95,6 +97,10 @@ class MoreChannels extends PureComponent {
     }
 
     componentDidMount() {
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
         });
@@ -103,12 +109,20 @@ class MoreChannels extends PureComponent {
     componentWillUnmount() {
         this.props.unsubscribeFromHeaderEvent('close');
         this.props.unsubscribeFromHeaderEvent('new_channel');
+
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
     }
 
     filterChannels = (channels, term) => {
         return channels.filter((c) => {
             return (c.name.toLowerCase().indexOf(term) !== -1 || c.display_name.toLowerCase().indexOf(term) !== -1);
         });
+    };
+
+    handleAndroidKeyboard = () => {
+        this.onSearchButtonPress();
     };
 
     searchBarRef = (ref) => {

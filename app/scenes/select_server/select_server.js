@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     Keyboard,
+    Platform,
     StatusBar,
     TouchableWithoutFeedback,
     View
@@ -50,6 +51,9 @@ export default class SelectServer extends PureComponent {
 
     componentDidMount() {
         this.props.actions.unrenderDrawer();
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -59,6 +63,16 @@ export default class SelectServer extends PureComponent {
             });
         }
     }
+
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+    }
+
+    handleAndroidKeyboard = () => {
+        this.blur();
+    };
 
     onClick = async () => {
         const url = this.props.serverUrl;

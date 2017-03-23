@@ -6,6 +6,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Image,
     Keyboard,
+    Platform,
     Text,
     TextInput,
     TouchableWithoutFeedback,
@@ -50,11 +51,27 @@ class Login extends Component {
         };
     }
 
+    componentDidMount() {
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
             this.props.actions.handleSuccessfulLogin().then(this.props.actions.goToLoadTeam);
         }
     }
+
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
+    }
+
+    handleAndroidKeyboard = () => {
+        this.blur();
+    };
 
     blur = () => {
         this.loginId.blur();
