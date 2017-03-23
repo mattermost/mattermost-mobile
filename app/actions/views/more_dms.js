@@ -3,7 +3,7 @@
 
 import {getDirectChannelName} from 'mattermost-redux/utils/channel_utils';
 import {createDirectChannel} from 'mattermost-redux/actions/channels';
-import {getTeamMember} from 'mattermost-redux/actions/teams';
+import {getProfilesByIds, getStatusesByIds} from 'mattermost-redux/actions/users';
 import {handleSelectChannel, toggleDMChannel} from 'app/actions/views/channel';
 
 export function makeDirectChannel(otherUserId) {
@@ -15,7 +15,8 @@ export function makeDirectChannel(otherUserId) {
         const channel = Object.values(channels).find((c) => c.name === channelName);
         const {currentTeamId} = state.entities.teams;
 
-        await getTeamMember(currentTeamId, otherUserId)(dispatch, getState);
+        getProfilesByIds([otherUserId])(dispatch, getState);
+        getStatusesByIds([otherUserId])(dispatch, getState);
 
         if (channel && myMembers[channel.id]) {
             await toggleDMChannel(otherUserId, 'true')(dispatch, getState);
