@@ -213,7 +213,7 @@ export default function(state = initialState, action) {
     case NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER: {
         return {
             ...state,
-            shouldRenderDrawer: true
+            shouldRenderDrawer: action.data
         };
     }
 

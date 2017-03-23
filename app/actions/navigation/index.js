@@ -232,7 +232,13 @@ export function requestCloseModal() {
 
 export function renderDrawer() {
     return async (dispatch, getState) => {
-        dispatch({type: NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER}, getState);
+        dispatch({type: NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER, data: true}, getState);
+    };
+}
+
+export function unrenderDrawer() {
+    return async (dispatch, getState) => {
+        dispatch({type: NavigationTypes.NAVIGATION_RENDER_LEFT_DRAWER, data: false}, getState);
     };
 }
 
