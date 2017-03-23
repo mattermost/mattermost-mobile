@@ -6,9 +6,11 @@ import {connect} from 'react-redux';
 
 import Config from 'assets/config.json';
 
+import {closeDrawers, unrenderDrawer} from 'app/actions/navigation';
 import {flushToStorage} from 'app/actions/storage';
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
 import {setAppState, setDeviceToken} from 'mattermost-redux/actions/general';
+import {logout} from 'mattermost-redux/actions/users';
 
 import Root from './root';
 
@@ -34,12 +36,15 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closeDrawers,
             loadConfigAndLicense,
+            logout,
             goToNotification,
             queueNotification,
             setAppState,
             setDeviceToken,
-            flushToStorage
+            flushToStorage,
+            unrenderDrawer
         }, dispatch)
     };
 }

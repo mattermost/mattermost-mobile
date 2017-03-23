@@ -4,5 +4,6 @@
     "DefaultLocale": "en",
     "DefaultTheme": "default",
     "ShowErrorsList": false,
-    "GooglePlaySenderId": "184930218130"
+    "GooglePlaySenderId": "184930218130",
+    "MinServerVersion": "3.7.0"
 }
