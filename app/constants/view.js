@@ -26,7 +26,9 @@ const ViewTypes = keyMirror({
     REMOVE_FILE_FROM_POST_DRAFT: null,
     REMOVE_LAST_FILE_FROM_POST_DRAFT: null,
 
-    ADD_FILE_TO_FETCH_CACHE: null
+    ADD_FILE_TO_FETCH_CACHE: null,
+
+    SET_CHANNEL_LOADER: null
 });
 
 export default ViewTypes;

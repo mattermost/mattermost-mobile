@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {closeDrawers} from 'app/actions/navigation';
-import {handleSelectChannel} from 'app/actions/views/channel';
+import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel';
 
 import {getChannelsByCategory, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'app/selectors/preferences';
@@ -31,7 +31,8 @@ function mapDispatchToProps(dispatch) {
             closeDrawers,
             handleSelectChannel,
             viewChannel,
-            markChannelAsRead
+            markChannelAsRead,
+            setChannelLoading
         }, dispatch)
     };
 }

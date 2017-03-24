@@ -12,7 +12,8 @@ export default class ChannelDrawer extends PureComponent {
             closeDrawers: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             viewChannel: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired
+            markChannelAsRead: PropTypes.func.isRequired,
+            setChannelLoading: PropTypes.func.isRequired
         }).isRequired,
         currentTeam: PropTypes.object,
         currentChannel: PropTypes.object,
@@ -33,6 +34,7 @@ export default class ChannelDrawer extends PureComponent {
         } = this.props;
 
         this.props.actions.markChannelAsRead(currentChannel.id);
+        this.props.actions.setChannelLoading();
         this.props.actions.viewChannel(currentTeam.id, id);
         this.props.actions.closeDrawers();
         InteractionManager.runAfterInteractions(() => {

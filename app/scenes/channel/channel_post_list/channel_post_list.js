@@ -5,7 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 
 import {Constants, RequestStatus} from 'mattermost-redux/constants';
 
-import Loading from 'app/components/loading';
+import ChannelLoader from 'app/components/channel_loader';
 import PostList from 'app/components/post_list';
 
 export default class ChannelPostList extends PureComponent {
@@ -17,13 +17,15 @@ export default class ChannelPostList extends PureComponent {
         }).isRequired,
         channel: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
+        channelIsLoading: PropTypes.bool,
         myMember: PropTypes.object.isRequired,
         postsRequests: PropTypes.shape({
             getPosts: PropTypes.object.isRequired,
             getPostsBefore: PropTypes.object.isRequired,
             getPostsSince: PropTypes.object.isRequired
         }).isRequired,
-        posts: PropTypes.array.isRequired
+        posts: PropTypes.array.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     state = {
@@ -92,9 +94,9 @@ export default class ChannelPostList extends PureComponent {
     };
 
     render() {
-        const {posts, postsRequests} = this.props;
-        if (!posts || (postsRequests.getPosts.status === RequestStatus.STARTED && !this.state.didInitialPostsLoad)) {
-            return <Loading/>;
+        const {channelIsLoading, posts, postsRequests, theme} = this.props;
+        if (channelIsLoading || !posts || (postsRequests.getPosts.status === RequestStatus.STARTED && !this.state.didInitialPostsLoad)) {
+            return <ChannelLoader theme={theme}/>;
         }
 
         return (

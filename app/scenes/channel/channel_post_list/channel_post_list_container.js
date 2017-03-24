@@ -4,14 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
-
-import {goToThread} from 'app/actions/navigation';
-import {loadPostsIfNecessary} from 'app/actions/views/channel';
 import {getPostsBefore} from 'mattermost-redux/actions/posts';
-
 import {getAllPosts, getPostsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+
+import {goToThread} from 'app/actions/navigation';
+import {loadPostsIfNecessary} from 'app/actions/views/channel';
+import {getTheme} from 'app/selectors/preferences';
 
 import ChannelPostList from './channel_post_list';
 
@@ -69,9 +69,11 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         currentTeamId: getCurrentTeamId(state),
+        channelIsLoading: state.views.channel.loading,
         myMember: getCurrentChannelMembership(state),
         postsRequests: state.requests.posts,
-        posts: getPostsInCurrentChannelWithReplyProps(state)
+        posts: getPostsInCurrentChannelWithReplyProps(state),
+        theme: getTheme(state)
     };
 }
 

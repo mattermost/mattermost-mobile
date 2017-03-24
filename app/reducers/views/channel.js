@@ -113,6 +113,18 @@ function drafts(state = {}, action) {
     }
 }
 
+function loading(state = false, action) {
+    switch (action.type) {
+    case ChannelTypes.SELECT_CHANNEL:
+        return false;
+    case ViewTypes.SET_CHANNEL_LOADER:
+        return true;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
-    drafts
+    drafts,
+    loading
 });
