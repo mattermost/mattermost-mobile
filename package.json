@@ -24,7 +24,7 @@
     "react-native-keyboard-spacer": "0.3.1",
     "react-native-linear-gradient": "2.0.0",
     "react-native-message-bar": "1.6.0",
-    "react-native-orientation": "git+https://github.com/BonifyByForteil/react-native-orientation.git#newRN",
+    "react-native-orientation": "enahum/react-native-orientation.git",
     "react-native-push-notification": "2.2.1",
     "react-native-search-bar": "enahum/react-native-search-bar.git",
     "react-native-svg": "4.5.0",
