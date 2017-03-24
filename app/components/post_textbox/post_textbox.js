@@ -334,15 +334,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'flex-end',
             flexDirection: 'row',
             paddingVertical: 4,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
         },
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
-            height: 30,
-            width: 30,
-            marginRight: 4,
-            marginBottom: 3,
+            height: 26,
+            width: 26,
+            marginRight: 5,
+            marginBottom: 5,
             alignItems: 'center',
             justifyContent: 'center'
         },
