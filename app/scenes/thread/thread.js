@@ -27,6 +27,7 @@ export default class Thread extends PureComponent {
         }).isRequired,
         teamId: PropTypes.string.isRequired,
         channelId: PropTypes.string.isRequired,
+        myMember: PropTypes.object.isRequired,
         files: PropTypes.array,
         rootId: PropTypes.string.isRequired,
         draft: PropTypes.string.isRequired,
@@ -39,6 +40,14 @@ export default class Thread extends PureComponent {
             return <ThreadTitle/>;
         }
     };
+
+    state = {};
+
+    componentWillReceiveProps(nextProps) {
+        if (!this.state.lastViewedAt) {
+            this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
+        }
+    }
 
     componentWillUnmount() {
         this.props.actions.selectPost('');
@@ -58,7 +67,12 @@ export default class Thread extends PureComponent {
                 keyboardVerticalOffset={65}
             >
                 <StatusBar barStyle='light-content'/>
-                <PostList posts={this.props.posts}/>
+                <PostList
+                    indicateNewMessages={true}
+                    posts={this.props.posts}
+                    currentUserId={this.props.myMember.user_id}
+                    lastViewedAt={this.state.lastViewedAt}
+                />
                 <PostTextbox
                     rootId={this.props.rootId}
                     value={this.props.draft}
