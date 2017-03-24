@@ -18,12 +18,15 @@ import {getTheme} from 'app/selectors/preferences';
 import Settings from './settings';
 
 function mapStateToProps(state, ownProps) {
+    const showTeamSelection = Object.keys(state.entities.teams.teams).length > 1;
+
     return {
         ...ownProps,
         theme: getTheme(state),
         errors: state.errors,
         currentUserId: state.entities.users.currentUserId,
-        currentTeamId: state.entities.teams.currentTeamId
+        currentTeamId: state.entities.teams.currentTeamId,
+        showTeamSelection
     };
 }
 

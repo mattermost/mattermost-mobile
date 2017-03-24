@@ -12,62 +12,12 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
-        },
-        item: {
-            height: 45,
-            flexDirection: 'row',
-            alignItems: 'center'
-        },
-        itemLeftIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        },
-        itemLeftIconContainer: {
-            width: 18,
-            marginRight: 15,
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        itemText: {
-            fontSize: 16,
-            color: theme.centerChannelColor,
-            flex: 1
-        },
-        itemRightIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        },
-        itemsContainer: {
-            marginTop: 30,
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
-        },
-        itemWrapper: {
-            marginHorizontal: 15
-        },
-        separator: {
-            height: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
-        },
-        wrapper: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
-    });
-});
-
 export default class AccountSettings extends PureComponent {
     static propTypes = {
-        theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             goToAccountNotifications: PropTypes.func.isRequired
-        })
+        }),
+        theme: PropTypes.object.isRequired
     }
 
     static navigationProps = {
@@ -153,3 +103,53 @@ export default class AccountSettings extends PureComponent {
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+        },
+        item: {
+            height: 45,
+            flexDirection: 'row',
+            alignItems: 'center'
+        },
+        itemLeftIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        itemLeftIconContainer: {
+            width: 18,
+            marginRight: 15,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        itemText: {
+            fontSize: 16,
+            color: theme.centerChannelColor,
+            flex: 1
+        },
+        itemRightIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        itemsContainer: {
+            marginTop: 30,
+            backgroundColor: theme.centerChannelBg,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        itemWrapper: {
+            marginHorizontal: 15
+        },
+        separator: {
+            height: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        wrapper: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});
