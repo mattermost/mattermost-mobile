@@ -48,8 +48,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 10,
             borderTopWidth: 1,
             borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.newMessageSeparator, 0.5),
-            borderBottomColor: changeOpacity(theme.newMessageSeparator, 0.5),
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
             backgroundColor: theme.centerChannelBg
         },
         input: {
