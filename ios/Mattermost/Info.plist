@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Take a Photo or Video and upload it to your mattermost instance</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload Photos and Videos to your Mattermost instance</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -28,6 +24,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -41,10 +39,12 @@
 			</dict>
 		</dict>
 	</dict>
-  <key>NSAllowsArbitraryLoads</key>
-  <true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a Photo or Video and upload it to your mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Upload Photos and Videos to your Mattermost instance</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>

@@ -229,6 +229,7 @@ export default class PostTextbox extends PureComponent {
         const {theme} = this.props;
 
         const style = getStyleSheet(theme);
+        const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
 
         let placeholder;
         if (this.props.rootId) {
@@ -251,6 +252,7 @@ export default class PostTextbox extends PureComponent {
                 <FileUploadPreview
                     channelId={this.props.channelId}
                     files={this.props.files}
+                    inputHeight={textInputHeight}
                     rootId={this.props.rootId}
                 />
                 <Autocomplete
@@ -283,7 +285,7 @@ export default class PostTextbox extends PureComponent {
                             onSubmitEditing={this.sendMessage}
                             multiline={true}
                             underlineColorAndroid='transparent'
-                            style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
+                            style={[style.input, {height: textInputHeight}]}
                         />
                         <TouchableHighlight
                             onPress={this.sendMessage}

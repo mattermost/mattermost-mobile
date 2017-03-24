@@ -11,6 +11,7 @@
 #import "RCTPushNotificationManager.h"
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import "Orientation.h"
 
 @implementation AppDelegate
 
@@ -61,4 +62,8 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
   [RCTPushNotificationManager didReceiveLocalNotification:notification];
 }
 
+// Required for orientation
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+  return [Orientation getOrientation];
+}
 @end

@@ -102,8 +102,10 @@ export default class CustomList extends PureComponent {
     renderSectionHeader = (sectionData, sectionId) => {
         const style = getStyleFromTheme(this.props.theme);
         return (
-            <View style={style.sectionContainer}>
-                <Text style={style.sectionText}>{sectionId}</Text>
+            <View style={style.sectionWrapper}>
+                <View style={style.sectionContainer}>
+                    <Text style={style.sectionText}>{sectionId}</Text>
+                </View>
             </View>
         );
     };
@@ -205,13 +207,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.6)
         },
         sectionContainer: {
-            backgroundColor: theme.sidebarHeaderBg,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
             paddingLeft: 10,
             paddingVertical: 2
         },
+        sectionWrapper: {
+            backgroundColor: theme.centerChannelBg
+        },
         sectionText: {
             fontWeight: '600',
-            color: theme.sidebarHeaderTextColor
+            color: theme.centerChannelColor
         },
         separator: {
             height: 1,

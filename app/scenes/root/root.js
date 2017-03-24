@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {AsyncStorage} from 'react-native';
+import Orientation from 'react-native-orientation';
 import Loading from 'app/components/loading';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -27,6 +28,8 @@ export default class Root extends PureComponent {
     };
 
     componentDidMount() {
+        Orientation.lockToPortrait();
+
         // Any initialization logic for navigation, setting up the client, etc should go here
         this.init();
     }

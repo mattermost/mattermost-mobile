@@ -17,6 +17,7 @@ import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
+import com.github.yamill.orientation.OrientationPackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +41,8 @@ public class MainApplication extends Application implements ReactApplication {
             new VectorIconsPackage(),
             new RNSvgPackage(),
             new LinearGradientPackage(),
-            new PickerPackage()
+            new PickerPackage(),
+            new OrientationPackage()
       );
     }
   };

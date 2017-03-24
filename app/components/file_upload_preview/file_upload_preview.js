@@ -28,6 +28,7 @@ export default class FileUploadPreview extends PureComponent {
         createPostRequestStatus: PropTypes.string.isRequired,
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
+        inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         uploadFileRequestStatus: PropTypes.string.isRequired
     };
@@ -75,7 +76,7 @@ export default class FileUploadPreview extends PureComponent {
                 <ScrollView
                     horizontal={true}
                     style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
+                    contentContainerStyle={[style.scrollViewContent, {marginBottom: this.props.inputHeight}]}
                 >
                     {this.buildFilePreviews()}
                 </ScrollView>
@@ -92,24 +93,11 @@ const style = StyleSheet.create({
     },
     container: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        bottom: 40,
         height: deviceHeight,
         left: 0,
+        bottom: 0,
         position: 'absolute',
         width: '100%'
-    },
-    loader: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        height: 124,
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bottom: 0,
-        position: 'absolute'
-    },
-    loaderText: {
-        fontSize: 24,
-        color: '#fff'
     },
     preview: {
         alignItems: 'center',
