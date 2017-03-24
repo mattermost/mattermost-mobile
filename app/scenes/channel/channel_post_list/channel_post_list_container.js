@@ -11,6 +11,7 @@ import {getPostsBefore} from 'mattermost-redux/actions/posts';
 
 import {getAllPosts, getPostsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import ChannelPostList from './channel_post_list';
 
@@ -67,6 +68,7 @@ const getPostsInCurrentChannelWithReplyProps = createSelector(
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
+        currentTeamId: getCurrentTeamId(state),
         myMember: getCurrentChannelMembership(state),
         postsRequests: state.requests.posts,
         posts: getPostsInCurrentChannelWithReplyProps(state)

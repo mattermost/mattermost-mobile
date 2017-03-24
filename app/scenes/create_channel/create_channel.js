@@ -179,7 +179,7 @@ class CreateChannel extends PureComponent {
         this.nameInput.refs.wrappedInstance.blur();
         this.purposeInput.refs.wrappedInstance.blur();
         this.headerInput.refs.wrappedInstance.blur();
-        this.refs.scroll.scrollToPosition(0, 0, true);
+        this.scroll.scrollToPosition(0, 0, true);
     };
 
     channelNameRef = (ref) => {
