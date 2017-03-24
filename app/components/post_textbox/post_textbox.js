@@ -7,7 +7,7 @@ import {
     Keyboard,
     Platform,
     StyleSheet,
-    TouchableHighlight,
+    TouchableOpacity,
     View,
     Text
 } from 'react-native';
@@ -19,6 +19,7 @@ import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_CONTENT_HEIGHT = 100;
@@ -263,16 +264,17 @@ export default class PostTextbox extends PureComponent {
                 <View
                     style={style.inputWrapper}
                 >
-                    <TouchableHighlight
+                    <TouchableOpacity
                         onPress={this.showFileAttachmentOptions}
                         style={style.buttonContainer}
                     >
                         <Icon
                             size={30}
-                            color={changeOpacity('#fff', 0.9)}
+                            style={{marginTop: 2}}
+                            color={changeOpacity(theme.centerChannelColor, 0.9)}
                             name='md-add'
                         />
-                    </TouchableHighlight>
+                    </TouchableOpacity>
                     <View style={style.inputContainer}>
                         <TextInputWithLocalizedPlaceholder
                             ref='input'
@@ -287,17 +289,16 @@ export default class PostTextbox extends PureComponent {
                             underlineColorAndroid='transparent'
                             style={[style.input, {height: textInputHeight}]}
                         />
-                        <TouchableHighlight
+                        <TouchableOpacity
                             onPress={this.sendMessage}
-                            style={style.buttonContainer}
+                            style={style.sendButton}
                         >
-                            <Icon
-                                name='ios-arrow-round-up'
-                                size={34}
-                                color={theme.linkColor}
-                                style={{marginTop: 2}}
+                            <PaperPlane
+                                height={13}
+                                width={15}
+                                color={theme.buttonColor}
                             />
-                        </TouchableHighlight>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -326,13 +327,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             backgroundColor: '#fff',
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
+            marginRight: 4
         },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
-            padding: 4,
-            backgroundColor: '#000'
+            paddingVertical: 4,
+            backgroundColor: theme.centerChannelBg
+        },
+        sendButton: {
+            backgroundColor: theme.buttonBg,
+            borderRadius: 18,
+            height: 30,
+            width: 30,
+            marginRight: 4,
+            marginBottom: 3,
+            alignItems: 'center',
+            justifyContent: 'center'
         },
         typing: {
             paddingLeft: 10,
