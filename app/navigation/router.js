@@ -294,7 +294,7 @@ class Router extends Component {
                     tweenHandler={this.handleDrawerTween}
                     elevation={-5}
                     styles={{
-                        main: {shadowColor: '#000000', shadowOpacity: 0.8, shadowRadius: 5}
+                        main: {shadowColor: '#000000', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: {width: -4, height: 0}}
                     }}
                 >
                     <Drawer
