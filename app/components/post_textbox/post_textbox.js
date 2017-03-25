@@ -243,7 +243,7 @@ export default class PostTextbox extends PureComponent {
             <View>
                 <View>
                     <Text
-                        style={style.typing}
+                        style={[style.typing]}
                         ellipsizeMode='tail'
                         numberOfLines={1}
                     >
@@ -261,44 +261,46 @@ export default class PostTextbox extends PureComponent {
                     onChangeText={this.props.onChangeText}
                     rootId={this.props.rootId}
                 />
-                <View
-                    style={style.inputWrapper}
-                >
-                    <TouchableOpacity
-                        onPress={this.showFileAttachmentOptions}
-                        style={style.buttonContainer}
+                <View style={{backgroundColor: theme.centerChannelBg}}>
+                    <View
+                        style={style.inputWrapper}
                     >
-                        <Icon
-                            size={30}
-                            style={{marginTop: 2}}
-                            color={changeOpacity(theme.centerChannelColor, 0.9)}
-                            name='md-add'
-                        />
-                    </TouchableOpacity>
-                    <View style={style.inputContainer}>
-                        <TextInputWithLocalizedPlaceholder
-                            ref='input'
-                            value={this.props.value}
-                            onChangeText={this.handleTextChange}
-                            onSelectionChange={this.handleSelectionChange}
-                            onContentSizeChange={this.handleContentSizeChange}
-                            placeholder={placeholder}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            onSubmitEditing={this.sendMessage}
-                            multiline={true}
-                            underlineColorAndroid='transparent'
-                            style={[style.input, {height: textInputHeight}]}
-                        />
                         <TouchableOpacity
-                            onPress={this.sendMessage}
-                            style={style.sendButton}
+                            onPress={this.showFileAttachmentOptions}
+                            style={style.buttonContainer}
                         >
-                            <PaperPlane
-                                height={13}
-                                width={15}
-                                color={theme.buttonColor}
+                            <Icon
+                                size={30}
+                                style={{marginTop: 2}}
+                                color={changeOpacity(theme.centerChannelColor, 0.9)}
+                                name='md-add'
                             />
                         </TouchableOpacity>
+                        <View style={style.inputContainer}>
+                            <TextInputWithLocalizedPlaceholder
+                                ref='input'
+                                value={this.props.value}
+                                onChangeText={this.handleTextChange}
+                                onSelectionChange={this.handleSelectionChange}
+                                onContentSizeChange={this.handleContentSizeChange}
+                                placeholder={placeholder}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                onSubmitEditing={this.sendMessage}
+                                multiline={true}
+                                underlineColorAndroid='transparent'
+                                style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
+                            />
+                            <TouchableOpacity
+                                onPress={this.sendMessage}
+                                style={style.sendButton}
+                            >
+                                <PaperPlane
+                                    height={13}
+                                    width={15}
+                                    color={theme.buttonColor}
+                                />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </View>
@@ -353,7 +355,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 11,
             marginBottom: 5,
             color: theme.centerChannelColor,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: 'transparent'
         }
     });
 });
