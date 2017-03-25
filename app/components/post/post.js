@@ -54,6 +54,7 @@ class Post extends PureComponent {
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
             goToUserProfile: PropTypes.func.isRequired,
+            openEditPostModal: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired
         }).isRequired
     };
@@ -76,6 +77,11 @@ class Post extends PureComponent {
                 }
             }]
         );
+    };
+
+    handlePostEdit = () => {
+        const {actions, post} = this.props;
+        actions.openEditPostModal(post);
     };
 
     handlePress = () => {
@@ -186,6 +192,10 @@ class Post extends PureComponent {
                 text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
                 onPress: () => flagPost(post.id)
             });
+        }
+
+        if (post.user_id === currentUserId) {
+            actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: () => this.handlePostEdit()});
         }
 
         if (post.user_id === currentUserId || isAdmin(roles)) {

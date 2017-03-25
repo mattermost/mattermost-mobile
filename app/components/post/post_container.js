@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {goToUserProfile} from 'app/actions/navigation';
+import {goToUserProfile, openEditPostModal} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
 
 import {deletePost, flagPost, unflagPost} from 'mattermost-redux/actions/posts';
@@ -41,6 +41,7 @@ function mapDispatchToProps(dispatch) {
             deletePost,
             flagPost,
             goToUserProfile,
+            openEditPostModal,
             unflagPost
         }, dispatch)
     };
