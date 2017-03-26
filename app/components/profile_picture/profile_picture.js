@@ -63,7 +63,7 @@ export default class ProfilePicture extends React.PureComponent {
         }
 
         return (
-            <View style={{width: this.props.size, height: this.props.size}}>
+            <View style={{width: this.props.size + 2, height: this.props.size + 2}}>
                 <Image
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={{uri: pictureUrl}}
