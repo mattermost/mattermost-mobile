@@ -79,7 +79,7 @@ export default class ChannelPostList extends PureComponent {
     loaderAnimationRunner = () => {
         Animated.timing(this.state.loaderOpacity, {
             toValue: 0,
-            duration: 300
+            duration: 500
         }).start();
     }
 
