@@ -26,9 +26,9 @@ function buildSections(key, style, theme, top) {
                     start={{x: 0.0, y: 1.0}}
                     end={{x: 1.0, y: 1.0}}
                     colors={[
-                        changeOpacity(theme.centerChannelColor, GRADIENT_START),
-                        changeOpacity(theme.centerChannelColor, GRADIENT_MIDDLE),
-                        changeOpacity(theme.centerChannelColor, GRADIENT_END)
+                        changeOpacity('#e5e5e4', GRADIENT_START),
+                        changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
+                        changeOpacity('#e5e5e4', GRADIENT_END)
                     ]}
                     locations={[0.1, 0.3, 0.7]}
                     style={[style.messageText, {width: 106}]}
@@ -37,9 +37,9 @@ function buildSections(key, style, theme, top) {
                     start={{x: 0.0, y: 1.0}}
                     end={{x: 1.0, y: 1.0}}
                     colors={[
-                        changeOpacity(theme.centerChannelColor, GRADIENT_START),
-                        changeOpacity(theme.centerChannelColor, GRADIENT_MIDDLE),
-                        changeOpacity(theme.centerChannelColor, GRADIENT_END)
+                        changeOpacity('#e5e5e4', GRADIENT_START),
+                        changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
+                        changeOpacity('#e5e5e4', GRADIENT_END)
                     ]}
                     locations={[0.1, 0.3, 0.7]}
                     style={[style.messageText, {alignSelf: 'stretch'}]}
@@ -48,9 +48,9 @@ function buildSections(key, style, theme, top) {
                     start={{x: 0.0, y: 1.0}}
                     end={{x: 1.0, y: 1.0}}
                     colors={[
-                        changeOpacity(theme.centerChannelColor, GRADIENT_START),
-                        changeOpacity(theme.centerChannelColor, GRADIENT_MIDDLE),
-                        changeOpacity(theme.centerChannelColor, GRADIENT_END)
+                        changeOpacity('#e5e5e4', GRADIENT_START),
+                        changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
+                        changeOpacity('#e5e5e4', GRADIENT_END)
                     ]}
                     locations={[0.1, 0.3, 0.7]}
                     style={[style.messageText, {alignSelf: 'stretch'}]}
