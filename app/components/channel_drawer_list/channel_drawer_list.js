@@ -467,7 +467,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         above: {
             backgroundColor: theme.mentionBj,
-            top: 55
+            top: 79
         },
         below: {
             backgroundColor: theme.mentionBj,
