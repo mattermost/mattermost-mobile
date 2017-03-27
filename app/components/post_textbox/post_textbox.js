@@ -57,6 +57,7 @@ export default class PostTextbox extends PureComponent {
         super(props);
 
         this.state = {
+            canSend: false,
             contentHeight: Platform.select({
                 ios: 0,
                 android: 34
@@ -69,6 +70,13 @@ export default class PostTextbox extends PureComponent {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackAndroid.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const canSend = (nextProps.value.trim().length > 0 || nextProps.files.length > 0) && nextProps.uploadFileRequestStatus !== RequestStatus.STARTED;
+        this.setState({
+            canSend
+        });
     }
 
     componentWillUnmount() {
@@ -102,7 +110,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     sendMessage = () => {
-        if ((this.props.value.trim().length === 0 && this.props.files.length === 0) || this.props.uploadFileRequestStatus === RequestStatus.STARTED) {
+        if (!this.state.canSend) {
             return;
         }
 
@@ -231,7 +239,7 @@ export default class PostTextbox extends PureComponent {
 
     render() {
         const {theme} = this.props;
-
+console.log(this.state.canSend);
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
 
@@ -293,16 +301,18 @@ export default class PostTextbox extends PureComponent {
                                 underlineColorAndroid='transparent'
                                 style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
                             />
-                            <TouchableOpacity
-                                onPress={this.sendMessage}
-                                style={style.sendButton}
-                            >
-                                <PaperPlane
-                                    height={13}
-                                    width={15}
-                                    color={theme.buttonColor}
-                                />
-                            </TouchableOpacity>
+                            {this.state.canSend &&
+                                <TouchableOpacity
+                                    onPress={this.sendMessage}
+                                    style={style.sendButton}
+                                >
+                                    <PaperPlane
+                                        height={13}
+                                        width={15}
+                                        color={theme.buttonColor}
+                                    />
+                                </TouchableOpacity>
+                            }
                         </View>
                     </View>
                 </View>
