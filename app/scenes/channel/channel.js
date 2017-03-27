@@ -123,7 +123,7 @@ export default class Channel extends React.PureComponent {
         }
 
         let teamId = currentChannel.team_id;
-        if (currentChannel.type === Constants.DM_CHANNEL) {
+        if (currentChannel.type === Constants.DM_CHANNEL || currentChannel.type === Constants.GM_CHANNEL) {
             teamId = currentTeam.id;
         }
 
