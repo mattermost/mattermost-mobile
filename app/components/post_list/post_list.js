@@ -134,9 +134,11 @@ export default class PostList extends Component {
                 dataSource={this.state.dataSource.cloneWithRows(this.getPostsWithLoadMore())}
                 renderRow={this.renderRow}
                 onEndReached={this.loadMore}
-                renderSectionHeader={this.renderSectionHeader}
                 enableEmptySections={true}
                 showsVerticalScrollIndicator={false}
+                initialListSize={30}
+                onEndReachedThreshold={200}
+                pageSize={10}
             />
         );
     }

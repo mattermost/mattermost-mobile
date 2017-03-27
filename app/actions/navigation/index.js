@@ -95,9 +95,11 @@ export function goToCreateChannel(channelType) {
 
         dispatch({
             type,
-            route,
-            props: {
-                channelType
+            route: {
+                ...route,
+                props: {
+                    channelType
+                }
             }
         }, getState);
     };

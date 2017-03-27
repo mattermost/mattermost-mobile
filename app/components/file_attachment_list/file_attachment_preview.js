@@ -15,6 +15,8 @@ import {
 
 import Client from 'mattermost-redux/client';
 
+import imageIcon from 'assets/images/icons/image.png';
+
 const {View: AnimatedView} = Animated;
 
 export default class FileAttachmentPreview extends PureComponent {
@@ -47,7 +49,7 @@ export default class FileAttachmentPreview extends PureComponent {
         opacity: new Animated.Value(0),
         requesting: true,
         retry: 0
-    }
+    };
 
     // Sometimes the request after a file upload errors out.
     // We'll up to three times to get the image.
@@ -55,11 +57,11 @@ export default class FileAttachmentPreview extends PureComponent {
     handleLoadError = () => {
         if (this.state.retry < 3) {
             this.setState({
-                retry: this.state.retry++,
+                retry: (this.state.retry + 1),
                 timestamp: Date.now()
             });
         }
-    }
+    };
 
     handleLoad = () => {
         this.setState({
@@ -72,13 +74,13 @@ export default class FileAttachmentPreview extends PureComponent {
         }).start(() => {
             this.props.addFileToFetchCache(Client.getFilePreviewUrl(this.props.file.id, this.state.timestamp));
         });
-    }
+    };
 
     handleLoadStart = () => {
         this.setState({
             requesting: true
         });
-    }
+    };
 
     render() {
         const {
@@ -93,7 +95,10 @@ export default class FileAttachmentPreview extends PureComponent {
             wrapperWidth
         } = this.props;
 
-        const source = file.id ? {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)} : {};
+        let source = file.id ? {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)} : {};
+        if (this.state.retry === 3) {
+            source = imageIcon;
+        }
 
         const isInFetchCache = fetchCache[source.uri];
         const imageComponentLoaders = {
