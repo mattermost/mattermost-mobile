@@ -57,7 +57,10 @@ export default class PostTextbox extends PureComponent {
         super(props);
 
         this.state = {
-            contentHeight: 0
+            contentHeight: Platform.select({
+                ios: 0,
+                android: 34
+            })
         };
     }
 
@@ -343,10 +346,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
+            marginRight: 5,
             height: 26,
             width: 26,
-            marginRight: 5,
-            marginBottom: 5,
+            ...Platform.select({
+                ios: {
+                    marginBottom: 5
+                },
+                android: {
+                    marginBottom: 3.5
+                }
+            }),
             alignItems: 'center',
             justifyContent: 'center'
         },

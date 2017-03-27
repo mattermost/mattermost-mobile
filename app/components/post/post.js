@@ -276,7 +276,13 @@ class Post extends PureComponent {
     };
 
     render() {
-        const {commentCount, config, post, theme} = this.props;
+        const {
+            commentCount,
+            config,
+            post,
+            renderReplies,
+            theme
+        } = this.props;
         const style = getStyleSheet(theme);
         const PROFILE_PICTURE_SIZE = 32;
 
@@ -411,7 +417,7 @@ class Post extends PureComponent {
                                         <FormattedTime value={this.props.post.create_at}/>
                                     </Text>
                                 </View>
-                                {commentCount > 0 &&
+                                {(commentCount > 0 && renderReplies) &&
                                     <TouchableOpacity
                                         onPress={this.handlePress}
                                         style={style.replyIconContainer}
@@ -532,7 +538,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         replyIconContainer: {
             flexDirection: 'row',
-            marginRight: 12
+            alignItems: 'center',
+            justifyContent: 'center'
         },
         replyText: {
             fontSize: 14,

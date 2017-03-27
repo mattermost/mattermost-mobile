@@ -29,7 +29,6 @@ const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing 
 const DRAG_VERTICAL_THRESHOLD_END = 100; // When do we want to navigate back
 const DRAG_HORIZONTAL_THRESHOLD = 50; // Make sure that it's not a sloppy horizontal swipe
 const HEADER_HEIGHT = 64;
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? 25 : 0; // Used to account for the Android status bar
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
