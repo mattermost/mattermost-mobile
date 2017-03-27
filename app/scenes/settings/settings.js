@@ -21,6 +21,7 @@ export default class Settings extends PureComponent {
         actions: PropTypes.shape({
             closeDrawers: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
+            goToAbout: PropTypes.func.isRequired,
             goToAccountSettings: PropTypes.func.isRequired,
             goToSelectTeam: PropTypes.func.isRequired,
             clearErrors: PropTypes.func.isRequired,
@@ -116,6 +117,15 @@ export default class Settings extends PureComponent {
                         iconName='warning'
                         iconType='material'
                         onPress={this.openErrorEmail}
+                        separator={true}
+                        theme={theme}
+                    />
+                    <SettingsItem
+                        defaultMessage='About Mattermost'
+                        i18nId='about.title'
+                        iconName='info-outline'
+                        iconType='material'
+                        onPress={this.props.actions.goToAbout}
                         separator={false}
                         theme={theme}
                     />

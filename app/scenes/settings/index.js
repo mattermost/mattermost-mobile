@@ -6,6 +6,7 @@ import {bindActionCreators} from 'redux';
 import {
     closeDrawers,
     goBack,
+    goToAbout,
     goToAccountSettings,
     goToSelectTeam
 } from 'app/actions/navigation';
@@ -35,6 +36,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             closeDrawers,
             goBack,
+            goToAbout,
             goToAccountSettings,
             goToSelectTeam,
             clearErrors,

@@ -30,6 +30,15 @@ export function goBack() {
     };
 }
 
+export function goToAbout() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_PUSH,
+            route: Routes.About
+        }, getState);
+    };
+}
+
 export function goToAccountNotifications() {
     return async (dispatch, getState) => {
         dispatch({
