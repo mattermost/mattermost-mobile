@@ -100,7 +100,9 @@ export default class SelectServer extends PureComponent {
     };
 
     blur = () => {
-        this.textInput.refs.wrappedInstance.blur();
+        if (this.textInput) {
+            this.textInput.refs.wrappedInstance.blur();
+        }
     };
 
     render() {
