@@ -6,6 +6,7 @@ import {
     Dimensions,
     Easing,
     InteractionManager,
+    Keyboard,
     NavigationExperimental,
     View
 } from 'react-native';
@@ -233,6 +234,7 @@ class Router extends Component {
     };
 
     handleLeftDrawerOpen = () => {
+        Keyboard.dismiss();
         setTimeout(() => {
             InteractionManager.clearInteractionHandle(this.openLeftHandle);
         });

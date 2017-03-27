@@ -144,12 +144,8 @@ class Post extends PureComponent {
 
         const replyBarStyle = [style.replyBar];
 
-        if (this.props.isFirstReply && !this.props.commentedOnPost) {
+        if (this.props.isFirstReply || this.props.commentedOnPost) {
             replyBarStyle.push(style.replyBarFirst);
-        }
-
-        if (this.props.isLastReply) {
-            replyBarStyle.push(style.replyBarLast);
         }
 
         return <View style={replyBarStyle}/>;
@@ -489,7 +485,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             opacity: 0.5
         },
         commentedOn: {
-            color: theme.centerChannelColor,
+            color: changeOpacity(theme.centerChannelColor, 0.65),
             lineHeight: 21
         },
         message: {

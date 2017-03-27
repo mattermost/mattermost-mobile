@@ -23,7 +23,7 @@ export default class MarkdownList extends PureComponent {
         });
 
         return (
-            <View>
+            <View style={{marginRight: 20}}>
                 {children}
             </View>
         );
