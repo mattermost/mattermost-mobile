@@ -766,7 +766,7 @@
 					};
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = UQ8HT4Q2XM;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.Push = {
 								enabled = 1;
@@ -1275,9 +1275,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CURRENT_PROJECT_VERSION = 19;
 				DEAD_CODE_STRIPPING = NO;
+				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../node_modules/react-native/Libraries/PushNotificationIOS/**",
 					"$(SRCROOT)/../node_modules/react-native-orientation/iOS/RCTOrientation/**",
@@ -1291,8 +1292,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.react.native;
 				PRODUCT_NAME = Mattermost;
-				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE = "49d041fa-5540-475b-90c7-4cc99954c615";
+				PROVISIONING_PROFILE_SPECIFIER = "match AdHoc com.mattermost.react.native";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1302,9 +1303,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CURRENT_PROJECT_VERSION = 19;
 				DEAD_CODE_STRIPPING = NO;
+				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../node_modules/react-native/Libraries/PushNotificationIOS/**";
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1315,8 +1317,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.react.native;
 				PRODUCT_NAME = Mattermost;
-				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE = "4d7f7521-3286-4c38-b9c0-e1055f5a0ff6";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.mattermost.react.native";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

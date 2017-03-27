@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import {
+    About,
     AccountNotifications,
     AccountSettings,
     ChannelView,
@@ -36,8 +37,16 @@ export const RouteTransitions = keyMirror({
 });
 
 export const Routes = {
+    About: {
+        key: 'About',
+        transition: RouteTransitions.Horizontal,
+        component: About,
+        navigationProps: {
+            title: {id: 'about.titles', defaultMessage: 'About Mattermost'}
+        }
+    },
     AccountNotifications: {
-        key: 'AccountNotifications',
+        key: 'About',
         transition: RouteTransitions.Horizontal,
         component: AccountNotifications,
         navigationProps: {
