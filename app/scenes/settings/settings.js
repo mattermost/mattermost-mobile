@@ -100,7 +100,7 @@ export default class Settings extends PureComponent {
                     />
                     <SettingsItem
                         defaultMessage='Team Selection'
-                        i18nId='sidebar_right_menu.switch_team'
+                        i18nId='mobile.settings.team_selection'
                         iconName='ios-people'
                         iconType='ion'
                         onPress={this.props.actions.goToSelectTeam}
