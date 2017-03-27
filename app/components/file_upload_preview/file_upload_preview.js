@@ -4,12 +4,13 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {
     Dimensions,
+    Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
-import Font from 'react-native-vector-icons/FontAwesome';
+import Font from 'react-native-vector-icons/Ionicons';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import FileAttachmentPreview from 'app/components/file_attachment_list/file_attachment_preview';
@@ -52,13 +53,15 @@ export default class FileUploadPreview extends PureComponent {
                         file={file}
                     />
                     <TouchableOpacity
-                        style={style.removeButton}
+                        style={style.removeButtonWrapper}
                         onPress={() => this.props.actions.handleRemoveFile(file.clientId, this.props.channelId, this.props.rootId)}
                     >
+                        <View style={{width: 14, height: 14, borderRadius: 7, backgroundColor: '#fff', position: 'absolute'}}/>
                         <Font
-                            name='times'
-                            color='#fff'
-                            size={15}
+                            name='ios-close-circle'
+                            color='#000'
+                            size={20}
+                            style={{position: 'absolute'}}
                         />
                     </TouchableOpacity>
                 </View>
@@ -86,11 +89,6 @@ export default class FileUploadPreview extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    cancelText: {
-        padding: 15,
-        color: '#fff',
-        fontSize: 18
-    },
     container: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         height: deviceHeight,
@@ -100,22 +98,32 @@ const style = StyleSheet.create({
         width: '100%'
     },
     preview: {
-        alignItems: 'center',
+        justifyContent: 'flex-end',
         height: 115,
-        justifyContent: 'center',
-        marginRight: 5,
-        width: 115
+        width: 115,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOpacity: 1,
+        shadowRadius: 8,
+        shadowOffset: {
+            width: 0,
+            height: 0
+        }
     },
-    removeButton: {
+    removeButtonWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
-        top: 0,
-        right: 0,
-        height: 20,
+        top: 7,
+        right: 7,
         width: 20,
+        height: 20,
         borderRadius: 10,
-        backgroundColor: '#000'
+        ...Platform.select({
+            android: {
+                backgroundColor: '#000'
+            }
+        })
     },
     scrollView: {
         flex: 1,
@@ -123,6 +131,6 @@ const style = StyleSheet.create({
     },
     scrollViewContent: {
         alignItems: 'flex-end',
-        marginLeft: 10
+        marginLeft: 16
     }
 });

@@ -61,7 +61,7 @@ export default class FileAttachmentPreview extends PureComponent {
                     retry: (this.state.retry + 1),
                     timestamp: Date.now()
                 });
-            }, 200);
+            }, 300);
         }
     };
 
