@@ -8,6 +8,7 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 
 import {makeGetPostsForThread} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'app/selectors/preferences';
+import {getCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import navigationSceneConnect from '../navigationSceneConnect';
@@ -33,6 +34,7 @@ function makeMapStateToProps() {
             ...ownProps,
             teamId,
             channelId: ownProps.channelId,
+            myMember: getCurrentChannelMembership(state),
             rootId: ownProps.rootId,
             draft: threadDraft.draft,
             files: threadDraft.files,
