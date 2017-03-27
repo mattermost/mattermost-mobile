@@ -19,41 +19,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
-        },
-        errorContainer: {
-            position: 'absolute'
-        },
-        errorWrapper: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 10
-        },
-        inputContainer: {
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg,
-            marginTop: 2
-        },
-        input: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
-            padding: 15,
-            textAlignVertical: 'top'
-        }
-    });
-});
-
 export default class EditPost extends PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
@@ -170,6 +135,20 @@ export default class EditPost extends PureComponent {
         this.props.unsubscribeFromHeaderEvent('edit_post');
     }
 
+    handleSubmit = () => {
+        // Workaround for android as the multiline is not working
+        if (Platform.OS === 'android') {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            this.timeout = setTimeout(() => {
+                let {message: msg} = this.state;
+                msg += '\n';
+                this.setState({message: msg});
+            }, 100);
+        }
+    };
+
     render() {
         const {theme} = this.props;
         const {message, error} = this.state;
@@ -210,19 +189,7 @@ export default class EditPost extends PureComponent {
                             placeholder={{id: 'edit_post.editPost', defaultMessage: 'Edit the post...'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'
-                            onSubmitEditing={() => {
-                                // Workaround for android as the multiline is not working
-                                if (Platform.OS === 'android') {
-                                    if (this.timeout) {
-                                        clearTimeout(this.timeout);
-                                    }
-                                    this.timeout = setTimeout(() => {
-                                        let {message: msg} = this.state;
-                                        msg += '\n';
-                                        this.setState({message: msg});
-                                    }, 100);
-                                }
-                            }}
+                            onSubmitEditing={this.handleSubmit}
                         />
                     </View>
                 </View>
@@ -230,3 +197,38 @@ export default class EditPost extends PureComponent {
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+        },
+        errorContainer: {
+            position: 'absolute'
+        },
+        errorWrapper: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 10
+        },
+        inputContainer: {
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: theme.centerChannelBg,
+            marginTop: 2
+        },
+        input: {
+            color: theme.centerChannelColor,
+            fontSize: 14,
+            padding: 15,
+            textAlignVertical: 'top'
+        }
+    });
+});
