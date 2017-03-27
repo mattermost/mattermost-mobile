@@ -75,7 +75,12 @@ class Router extends Component {
             return {};
         }
 
-        return Object.assign({}, route.navigationProps, route.component.navigationProps);
+        let component = route.component;
+        if (!component) {
+            component = {};
+        }
+
+        return Object.assign({}, route.navigationProps, component.navigationProps);
     };
 
     renderTransition = (transitionProps) => {

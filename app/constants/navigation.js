@@ -14,6 +14,7 @@ const NavigationTypes = keyMirror({
     NAVIGATION_JUMP: null,
     NAVIGATION_JUMP_TO_INDEX: null,
     NAVIGATION_REPLACE: null,
+    NAVIGATION_REPLACE_AT_ROOT: null,
     NAVIGATION_RESET: null,
     NAVIGATION_MODAL: null,
     NAVIGATION_CLOSE_MODAL: null,

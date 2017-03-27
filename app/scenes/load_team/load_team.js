@@ -1,9 +1,13 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {PropTypes, PureComponent} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
+import {View} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
+
+import Loading from 'app/components/loading';
+import {GlobalStyles} from 'app/styles';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {
@@ -55,6 +59,10 @@ export default class LoadTeam extends PureComponent {
     }
 
     render() {
-        return null;
+        return (
+            <View style={GlobalStyles.container}>
+                <Loading/>
+            </View>
+        );
     }
 }

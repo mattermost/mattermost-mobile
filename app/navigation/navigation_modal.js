@@ -3,7 +3,8 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
-    Animated
+    Animated,
+    InteractionManager
 } from 'react-native';
 
 const {View: AnimatedView} = Animated;
@@ -62,9 +63,13 @@ export default class NavigationModal extends PureComponent {
             const animationType = nextProps.show ? nextProps.animationType : this.props.animationType;
 
             if (animationType === ANIMATION_TYPES.SlideFromBottom) {
-                this.slideFromBottomAnimationRunner(nextProps);
+                InteractionManager.runAfterInteractions(() => {
+                    this.slideFromBottomAnimationRunner(nextProps);
+                });
             } else if (animationType === ANIMATION_TYPES.Fade) {
-                this.fadeAnimationRunner(nextProps);
+                InteractionManager.runAfterInteractions(() => {
+                    this.fadeAnimationRunner(nextProps);
+                });
             }
         }
     }

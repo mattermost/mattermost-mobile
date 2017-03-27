@@ -151,7 +151,7 @@ export default function(state = initialState, action) {
     case NavigationTypes.NAVIGATION_RESET:
         return {
             ...state,
-            ...NavigationExperimental.StateUtils.reset(state, action.routes, action.index),
+            ...NavigationExperimental.StateUtils.reset(state, action.routes),
             modal: {
                 index: 0,
                 requestClose: false,
@@ -173,6 +173,9 @@ export default function(state = initialState, action) {
 
         return NavigationExperimental.StateUtils.replaceAtIndex(state, state.index, action.route);
     }
+
+    case NavigationTypes.NAVIGATION_REPLACE_AT_ROOT:
+        return NavigationExperimental.StateUtils.replaceAtIndex(state, state.index, action.route);
 
     case NavigationTypes.NAVIGATION_MODAL: {
         const modal = {
