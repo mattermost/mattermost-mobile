@@ -7,7 +7,7 @@ import {
     Keyboard,
     Platform,
     StyleSheet,
-    TouchableHighlight,
+    TouchableOpacity,
     View,
     Text
 } from 'react-native';
@@ -19,6 +19,7 @@ import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_CONTENT_HEIGHT = 100;
@@ -56,7 +57,11 @@ export default class PostTextbox extends PureComponent {
         super(props);
 
         this.state = {
-            contentHeight: 0
+            canSend: false,
+            contentHeight: Platform.select({
+                ios: 34,
+                android: 34
+            })
         };
     }
 
@@ -65,6 +70,13 @@ export default class PostTextbox extends PureComponent {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackAndroid.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const canSend = (nextProps.value.trim().length > 0 || nextProps.files.length > 0) && nextProps.uploadFileRequestStatus !== RequestStatus.STARTED;
+        this.setState({
+            canSend
+        });
     }
 
     componentWillUnmount() {
@@ -98,7 +110,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     sendMessage = () => {
-        if ((this.props.value.trim().length === 0 && this.props.files.length === 0) || this.props.uploadFileRequestStatus === RequestStatus.STARTED) {
+        if (!this.state.canSend) {
             return;
         }
 
@@ -242,7 +254,7 @@ export default class PostTextbox extends PureComponent {
             <View>
                 <View>
                     <Text
-                        style={style.typing}
+                        style={[style.typing]}
                         ellipsizeMode='tail'
                         numberOfLines={1}
                     >
@@ -260,44 +272,48 @@ export default class PostTextbox extends PureComponent {
                     onChangeText={this.props.onChangeText}
                     rootId={this.props.rootId}
                 />
-                <View
-                    style={style.inputWrapper}
-                >
-                    <TouchableHighlight
-                        onPress={this.showFileAttachmentOptions}
-                        style={style.buttonContainer}
+                <View style={{backgroundColor: theme.centerChannelBg}}>
+                    <View
+                        style={style.inputWrapper}
                     >
-                        <Icon
-                            size={30}
-                            color={changeOpacity('#fff', 0.9)}
-                            name='md-add'
-                        />
-                    </TouchableHighlight>
-                    <View style={style.inputContainer}>
-                        <TextInputWithLocalizedPlaceholder
-                            ref='input'
-                            value={this.props.value}
-                            onChangeText={this.handleTextChange}
-                            onSelectionChange={this.handleSelectionChange}
-                            onContentSizeChange={this.handleContentSizeChange}
-                            placeholder={placeholder}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            onSubmitEditing={this.sendMessage}
-                            multiline={true}
-                            underlineColorAndroid='transparent'
-                            style={[style.input, {height: textInputHeight}]}
-                        />
-                        <TouchableHighlight
-                            onPress={this.sendMessage}
+                        <TouchableOpacity
+                            onPress={this.showFileAttachmentOptions}
                             style={style.buttonContainer}
                         >
                             <Icon
-                                name='ios-arrow-round-up'
-                                size={34}
-                                color={theme.linkColor}
+                                size={30}
                                 style={{marginTop: 2}}
+                                color={changeOpacity(theme.centerChannelColor, 0.9)}
+                                name='md-add'
                             />
-                        </TouchableHighlight>
+                        </TouchableOpacity>
+                        <View style={style.inputContainer}>
+                            <TextInputWithLocalizedPlaceholder
+                                ref='input'
+                                value={this.props.value}
+                                onChangeText={this.handleTextChange}
+                                onSelectionChange={this.handleSelectionChange}
+                                onContentSizeChange={this.handleContentSizeChange}
+                                placeholder={placeholder}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
+                                onSubmitEditing={this.sendMessage}
+                                multiline={true}
+                                underlineColorAndroid='transparent'
+                                style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
+                            />
+                            {this.state.canSend &&
+                                <TouchableOpacity
+                                    onPress={this.sendMessage}
+                                    style={style.sendButton}
+                                >
+                                    <PaperPlane
+                                        height={13}
+                                        width={15}
+                                        color={theme.buttonColor}
+                                    />
+                                </TouchableOpacity>
+                            }
+                        </View>
                     </View>
                 </View>
             </View>
@@ -326,20 +342,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             backgroundColor: '#fff',
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
+            marginRight: 4
         },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
-            padding: 4,
-            backgroundColor: '#000'
+            paddingVertical: 4,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
+        },
+        sendButton: {
+            backgroundColor: theme.buttonBg,
+            borderRadius: 18,
+            marginRight: 5,
+            height: 26,
+            width: 26,
+            ...Platform.select({
+                ios: {
+                    marginBottom: 5
+                },
+                android: {
+                    marginBottom: 3.5
+                }
+            }),
+            alignItems: 'center',
+            justifyContent: 'center'
         },
         typing: {
             paddingLeft: 10,
             fontSize: 11,
             marginBottom: 5,
             color: theme.centerChannelColor,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: 'transparent'
         }
     });
 });

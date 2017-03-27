@@ -18,7 +18,6 @@ import Drawer from 'app/components/drawer';
 import FormattedText from 'app/components/formatted_text';
 import {RouteTransitions} from 'app/navigation/routes';
 import {getTheme} from 'app/selectors/preferences';
-import ErrorList from 'app/components/error_list';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -146,7 +145,6 @@ class Router extends Component {
             <View style={{flex: 1, flexDirection: 'column-reverse'}}>
                 <View style={{flex: 1}}>
                     {renderedScenes}
-                    <ErrorList/>
                 </View>
                 {navBar}
             </View>

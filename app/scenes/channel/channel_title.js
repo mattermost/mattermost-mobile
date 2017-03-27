@@ -32,8 +32,15 @@ function ChannelTitle(props) {
             style={{flexDirection: 'row', flex: 1}}
             onPress={() => props.emitter('show_channel_info')}
         >
-            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-                <Text style={{color: props.theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}>
+            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginHorizontal: 15}}>
+                <Text
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                    style={{
+                        color: props.theme.sidebarHeaderTextColor,
+                        fontSize: 15,
+                        fontWeight: 'bold'}}
+                >
                     {channelName}
                 </Text>
                 {icon}

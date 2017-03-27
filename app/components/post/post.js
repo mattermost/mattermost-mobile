@@ -13,6 +13,9 @@ import {
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {Constants} from 'mattermost-redux/constants';
+import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isAdmin} from 'mattermost-redux/utils/user_utils';
 
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
@@ -22,18 +25,16 @@ import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
 import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import ReplyIcon from 'app/components/reply_icon';
 
 import webhookIcon from 'assets/images/icons/webhook.jpg';
-
-import {Constants} from 'mattermost-redux/constants';
-import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {isAdmin} from 'mattermost-redux/utils/user_utils';
 
 const BOT_NAME = 'BOT';
 
 class Post extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
+        commentCount: PropTypes.number.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
@@ -275,7 +276,13 @@ class Post extends PureComponent {
     };
 
     render() {
-        const {config, post, theme} = this.props;
+        const {
+            commentCount,
+            config,
+            post,
+            renderReplies,
+            theme
+        } = this.props;
         const style = getStyleSheet(theme);
         const PROFILE_PICTURE_SIZE = 32;
 
@@ -404,10 +411,25 @@ class Post extends PureComponent {
                         {this.renderReplyBar(style)}
                         <View style={style.rightColumn}>
                             <View style={style.postInfoContainer}>
-                                {displayName}
-                                <Text style={style.time}>
-                                    <FormattedTime value={this.props.post.create_at}/>
-                                </Text>
+                                <View style={{flexDirection: 'row', flex: 1}}>
+                                    {displayName}
+                                    <Text style={style.time}>
+                                        <FormattedTime value={this.props.post.create_at}/>
+                                    </Text>
+                                </View>
+                                {(commentCount > 0 && renderReplies) &&
+                                    <TouchableOpacity
+                                        onPress={this.handlePress}
+                                        style={style.replyIconContainer}
+                                    >
+                                        <ReplyIcon
+                                            height={15}
+                                            width={15}
+                                            color={theme.linkColor}
+                                        />
+                                        <Text style={style.replyText}>{commentCount}</Text>
+                                    </TouchableOpacity>
+                                }
                             </View>
                             {this.renderMessage(style, messageStyle)}
                         </View>
@@ -513,6 +535,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         selected: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        replyIconContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        replyText: {
+            fontSize: 14,
+            marginLeft: 3,
+            color: theme.linkColor
         }
     });
 });

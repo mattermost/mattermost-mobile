@@ -39,7 +39,14 @@ const defaults = {
                     <FormattedText
                         id={title.id}
                         defaultMessage={title.defaultMessage}
-                        style={{textAlign: 'center', color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={{
+                            textAlign: 'center',
+                            color: theme.sidebarHeaderTextColor,
+                            fontSize: 15,
+                            fontWeight: 'bold'
+                        }}
                     />
                 </View>
             );

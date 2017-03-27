@@ -276,7 +276,8 @@ const state = {
     },
     views: {
         channel: {
-            drafts: {}
+            drafts: {},
+            loading: false
         },
         fetchCache: {},
         i18n: {

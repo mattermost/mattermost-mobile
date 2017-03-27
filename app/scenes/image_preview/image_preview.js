@@ -9,6 +9,7 @@ import {
     PanResponder,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -28,7 +29,6 @@ const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing 
 const DRAG_VERTICAL_THRESHOLD_END = 100; // When do we want to navigate back
 const DRAG_HORIZONTAL_THRESHOLD = 50; // Make sure that it's not a sloppy horizontal swipe
 const HEADER_HEIGHT = 64;
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? 25 : 0; // Used to account for the Android status bar
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
@@ -117,11 +117,13 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
-    toggleFileInfo = () => {
+    toggleHeaderAndFileInfo = () => {
         const showFileInfo = !this.state.showFileInfo;
         this.setState({
             showFileInfo
         });
+
+        StatusBar.setHidden(!showFileInfo, 'fade');
 
         const opacity = showFileInfo ? 1 : 0;
 
@@ -154,7 +156,7 @@ export default class ImagePreview extends PureComponent {
     }
 
     render() {
-        const maxImageHeight = this.state.deviceHeight - HEADER_HEIGHT - STATUS_BAR_HEIGHT;
+        const maxImageHeight = this.state.deviceHeight;
 
         return (
             <View
@@ -165,33 +167,6 @@ export default class ImagePreview extends PureComponent {
                     style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
                     {...this.panResponder.panHandlers}
                 >
-                    <View style={style.header}>
-                        <View style={style.headerControls}>
-                            <TouchableOpacity
-                                onPress={this.props.actions.goBack}
-                                style={style.headerIcon}
-                            >
-                                <Icon
-                                    name='md-close'
-                                    size={26}
-                                    color='#fff'
-                                />
-                            </TouchableOpacity>
-                            <Text style={style.title}>
-                                {`${this.state.currentFile + 1}/${this.props.files.length}`}
-                            </Text>
-                            <TouchableOpacity
-                                onPress={() => true}
-                                style={style.headerIcon}
-                            >
-                                {/*<Icon
-                                    name='download'
-                                    size={15}
-                                    color='#fff'
-                                />*/}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
                     <ScrollView
                         ref={this.attachScrollView}
                         style={[style.ScrollView]}
@@ -236,7 +211,7 @@ export default class ImagePreview extends PureComponent {
                             return (
                                 <TouchableWithoutFeedback
                                     key={file.id}
-                                    onPress={this.toggleFileInfo}
+                                    onPress={this.toggleHeaderAndFileInfo}
                                 >
                                     <View style={[style.pageWrapper, {height: maxImageHeight, width: this.state.deviceWidth}]}>
                                         {component}
@@ -246,14 +221,42 @@ export default class ImagePreview extends PureComponent {
                         })}
                     </ScrollView>
                     <AnimatedView
-                        style={[style.footerWrapper, {width: this.state.deviceWidth, opacity: this.state.footerOpacity}]}
-                        pointerEvents='none'
+                        style={[style.footerHeaderWrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth, opacity: this.state.footerOpacity}]}
+                        pointerEvents='box-none'
                     >
+                        <View style={style.header}>
+                            <View style={style.headerControls}>
+                                <TouchableOpacity
+                                    onPress={this.props.actions.goBack}
+                                    style={style.headerIcon}
+                                >
+                                    <Icon
+                                        name='md-close'
+                                        size={26}
+                                        color='#fff'
+                                    />
+                                </TouchableOpacity>
+                                <Text style={style.title}>
+                                    {`${this.state.currentFile + 1}/${this.props.files.length}`}
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={() => true}
+                                    style={style.headerIcon}
+                                >
+                                    {/*<Icon
+                                        name='download'
+                                        size={15}
+                                        color='#fff'
+                                    />*/}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                         <LinearGradient
                             style={style.footer}
                             start={{x: 0.0, y: 0.0}}
                             end={{x: 0.0, y: 0.9}}
                             colors={['transparent', '#000000']}
+                            pointerEvents='none'
                         >
                             <Text style={style.filename}>
                                 {this.props.files[this.state.currentFile].name}
@@ -272,20 +275,27 @@ const style = StyleSheet.create({
         fontSize: 15
     },
     footer: {
-        flex: 1,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 100,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
         paddingBottom: 16
     },
-    footerWrapper: {
+    footerHeaderWrapper: {
         position: 'absolute',
         bottom: 0,
-        left: 0,
-        height: 100
+        left: 0
     },
     header: {
         backgroundColor: '#000',
-        height: HEADER_HEIGHT
+        height: HEADER_HEIGHT,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%'
     },
     headerControls: {
         alignItems: 'center',

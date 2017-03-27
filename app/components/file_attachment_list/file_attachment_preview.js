@@ -55,11 +55,13 @@ export default class FileAttachmentPreview extends PureComponent {
     // We'll up to three times to get the image.
     // We have to add a timestamp so fetch will retry the call.
     handleLoadError = () => {
-        if (this.state.retry < 3) {
-            this.setState({
-                retry: (this.state.retry + 1),
-                timestamp: Date.now()
-            });
+        if (this.state.retry < 4) {
+            setTimeout(() => {
+                this.setState({
+                    retry: (this.state.retry + 1),
+                    timestamp: Date.now()
+                });
+            }, 300);
         }
     };
 
@@ -96,7 +98,7 @@ export default class FileAttachmentPreview extends PureComponent {
         } = this.props;
 
         let source = file.id ? {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)} : {};
-        if (this.state.retry === 3) {
+        if (this.state.retry === 4) {
             source = imageIcon;
         }
 

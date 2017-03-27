@@ -18,9 +18,6 @@ import SettingsItem from './settings_item';
 
 export default class Settings extends PureComponent {
     static propTypes = {
-        errors: PropTypes.array.isRequired,
-        currentUserId: PropTypes.string.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             closeDrawers: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
@@ -29,6 +26,10 @@ export default class Settings extends PureComponent {
             clearErrors: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired
         }).isRequired,
+        currentTeamId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        errors: PropTypes.array.isRequired,
+        showTeamSelection: PropTypes.bool.isRequired,
         theme: PropTypes.object
     };
 
@@ -83,7 +84,7 @@ export default class Settings extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {showTeamSelection, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -98,15 +99,17 @@ export default class Settings extends PureComponent {
                         separator={true}
                         theme={theme}
                     />
-                    <SettingsItem
-                        defaultMessage='Team Selection'
-                        i18nId='mobile.settings.team_selection'
-                        iconName='ios-people'
-                        iconType='ion'
-                        onPress={this.props.actions.goToSelectTeam}
-                        separator={true}
-                        theme={theme}
-                    />
+                    {showTeamSelection &&
+                        <SettingsItem
+                            defaultMessage='Team Selection'
+                            i18nId='sidebar_right_menu.switch_team'
+                            iconName='ios-people'
+                            iconType='ion'
+                            onPress={this.props.actions.goToSelectTeam}
+                            separator={true}
+                            theme={theme}
+                        />
+                    }
                     <SettingsItem
                         defaultMessage='Report a Problem'
                         i18nId='sidebar_right_menu.report'

@@ -302,3 +302,9 @@ export function leaveChannel(channel, reset = false) {
         }
     };
 }
+
+export function setChannelLoading() {
+    return {
+        type: ViewTypes.SET_CHANNEL_LOADER
+    };
+}

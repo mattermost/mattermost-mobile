@@ -2,11 +2,19 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
+import {
+    Animated,
+    Dimensions,
+    View
+} from 'react-native';
 
 import {Constants, RequestStatus} from 'mattermost-redux/constants';
 
-import Loading from 'app/components/loading';
+import ChannelLoader from 'app/components/channel_loader';
 import PostList from 'app/components/post_list';
+
+const {View: AnimatedView} = Animated;
+const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 
 export default class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -17,19 +25,22 @@ export default class ChannelPostList extends PureComponent {
         }).isRequired,
         channel: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
+        channelIsLoading: PropTypes.bool,
         myMember: PropTypes.object.isRequired,
         postsRequests: PropTypes.shape({
             getPosts: PropTypes.object.isRequired,
             getPostsBefore: PropTypes.object.isRequired,
             getPostsSince: PropTypes.object.isRequired
         }).isRequired,
-        posts: PropTypes.array.isRequired
+        posts: PropTypes.array.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     state = {
         didInitialPostsLoad: false,
         hasFirstPost: false,
-        lastViewedAt: this.props.myMember.last_viewed_at
+        lastViewedAt: this.props.myMember.last_viewed_at,
+        loaderOpacity: new Animated.Value(1)
     };
 
     componentDidMount() {
@@ -53,14 +64,23 @@ export default class ChannelPostList extends PureComponent {
             if (hasFirstPost) {
                 this.setState({hasFirstPost});
             }
+            this.loaderAnimationRunner();
         } else {
             this.setState({
                 didInitialPostsLoad: false,
                 hasFirstPost: false,
-                lastViewedAt: nextProps.myMember.last_viewed_at
+                lastViewedAt: nextProps.myMember.last_viewed_at,
+                loaderOpacity: new Animated.Value(1)
             });
             this.props.actions.loadPostsIfNecessary(nextProps.channel);
         }
+    }
+
+    loaderAnimationRunner = () => {
+        Animated.timing(this.state.loaderOpacity, {
+            toValue: 0,
+            duration: 500
+        }).start();
     }
 
     didPostsLoad(nextProps, postsRequest) {
@@ -92,23 +112,43 @@ export default class ChannelPostList extends PureComponent {
     };
 
     render() {
-        const {posts, postsRequests} = this.props;
-        if (!posts || (postsRequests.getPosts.status === RequestStatus.STARTED && !this.state.didInitialPostsLoad)) {
-            return <Loading/>;
+        const {channelIsLoading, posts, postsRequests, theme} = this.props;
+        let component;
+        if (!channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
+            component = (
+                <PostList
+                    posts={posts}
+                    loadMore={this.loadMorePosts}
+                    isLoadingMore={postsRequests.getPostsBefore.status === RequestStatus.STARTED}
+                    showLoadMore={posts.length > 0 && !this.state.hasFirstPost}
+                    onPostPress={this.goToThread}
+                    renderReplies={true}
+                    indicateNewMessages={true}
+                    currentUserId={this.props.myMember.user_id}
+                    lastViewedAt={this.state.lastViewedAt}
+                />
+            );
+        } else {
+            component = <ChannelLoader theme={theme}/>;
         }
 
         return (
-            <PostList
-                posts={posts}
-                loadMore={this.loadMorePosts}
-                isLoadingMore={postsRequests.getPostsBefore.status === RequestStatus.STARTED}
-                showLoadMore={posts.length > 0 && !this.state.hasFirstPost}
-                onPostPress={this.goToThread}
-                renderReplies={true}
-                indicateNewMessages={true}
-                currentUserId={this.props.myMember.user_id}
-                lastViewedAt={this.state.lastViewedAt}
-            />
+            <View style={{flex: 1}}>
+                {component}
+                <AnimatedView
+                    pointerEvents='none'
+                    style={{
+                        position: 'absolute',
+                        height: deviceHeight,
+                        width: deviceWidth,
+                        top: 0,
+                        left: 0,
+                        opacity: this.state.loaderOpacity
+                    }}
+                >
+                    <ChannelLoader theme={theme}/>
+                </AnimatedView>
+            </View>
         );
     }
 }

@@ -21,7 +21,9 @@ function ThreadTitle(props) {
             <FormattedText
                 id='mobile.routes.thread_dm'
                 defaultMessage='Direct Message Thread'
-                style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}
             />
         );
     } else {
@@ -30,14 +32,16 @@ function ThreadTitle(props) {
             <FormattedText
                 id='mobile.routes.thread'
                 defaultMessage='{channelName} Thread'
+                ellipsizeMode='tail'
+                numberOfLines={1}
                 values={{channelName}}
-                style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
+                style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold'}}
             />
         );
     }
 
     return (
-        <View style={{alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 50}}>
+        <View style={{justifyContent: 'center', flex: 1, marginHorizontal: 1}}>
             {label}
         </View>
     );

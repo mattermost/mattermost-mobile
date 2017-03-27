@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {Image, Platform, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -15,6 +15,11 @@ const statusToIcon = {
     online: 'check',
     away: 'minus'
 };
+
+const STATUS_BUFFER = Platform.select({
+    ios: 3,
+    android: 2
+});
 
 export default class ProfilePicture extends React.PureComponent {
     static propTypes = {
@@ -63,7 +68,7 @@ export default class ProfilePicture extends React.PureComponent {
         }
 
         return (
-            <View style={{width: this.props.size, height: this.props.size}}>
+            <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 <Image
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={{uri: pictureUrl}}
