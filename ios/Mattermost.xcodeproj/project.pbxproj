@@ -1276,7 +1276,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				HEADER_SEARCH_PATHS = (
@@ -1304,7 +1304,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../node_modules/react-native/Libraries/PushNotificationIOS/**";
