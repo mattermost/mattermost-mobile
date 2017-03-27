@@ -26,7 +26,6 @@ class MoreDirectMessages extends PureComponent {
         preferences: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
-        search: PropTypes.array,
         requestStatus: PropTypes.object.isRequired,
         searchRequest: PropTypes.object.isRequired,
         subscribeToHeaderEvent: React.PropTypes.func.isRequired,
@@ -83,7 +82,12 @@ class MoreDirectMessages extends PureComponent {
             this.setState({profiles});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
-            this.setState({profiles: nextProps.search});
+            const results = nextProps.profiles.filter((p) => {
+                const {term} = this.state;
+                return p.username.toLowerCase().includes(term) || p.email.toLowerCase().includes(term) ||
+                    p.first_name.toLowerCase().includes(term) || p.last_name.toLowerCase().includes(term);
+            });
+            this.setState({profiles: results});
         }
     }
 
@@ -121,7 +125,7 @@ class MoreDirectMessages extends PureComponent {
         const term = event.nativeEvent.text;
 
         if (term) {
-            this.setState({searching: true});
+            this.setState({searching: true, term: term.toLowerCase()});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -133,10 +137,11 @@ class MoreDirectMessages extends PureComponent {
     };
 
     cancelSearch = () => {
-        this.props.actions.getProfiles(0);
         this.setState({
             searching: false,
-            page: 0
+            term: null,
+            page: 0,
+            profiles: this.props.profiles
         });
     };
 
