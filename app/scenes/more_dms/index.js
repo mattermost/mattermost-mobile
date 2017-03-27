@@ -10,7 +10,6 @@ import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
 import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {searchProfiles as searchSelector} from 'mattermost-redux/selectors/entities/users';
 
 import MoreDirectMessages from './more_dms';
 
@@ -33,7 +32,6 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         preferences: getMyPreferences(state),
         profiles: getUsers(),
-        search: searchSelector(state),
         theme: getTheme(state),
         requestStatus,
         searchRequest
