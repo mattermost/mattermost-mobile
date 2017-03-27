@@ -59,7 +59,7 @@ export default class PostTextbox extends PureComponent {
         this.state = {
             canSend: false,
             contentHeight: Platform.select({
-                ios: 0,
+                ios: 34,
                 android: 34
             })
         };
@@ -239,7 +239,7 @@ export default class PostTextbox extends PureComponent {
 
     render() {
         const {theme} = this.props;
-console.log(this.state.canSend);
+
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
 
