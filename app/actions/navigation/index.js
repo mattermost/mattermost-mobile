@@ -215,6 +215,20 @@ export function openChannelDrawer() {
     };
 }
 
+export function openEditPostModal(post) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: {
+                ...Routes.EditPost,
+                props: {
+                    post
+                }
+            }
+        }, getState);
+    };
+}
+
 export function openSettingsModal() {
     return async (dispatch, getState) => {
         dispatch({

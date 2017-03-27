@@ -4,8 +4,6 @@
 import deepEqual from 'deep-equal';
 import React, {PropTypes, Component} from 'react';
 import {
-    Alert,
-    InteractionManager,
     ListView,
     Platform,
     StyleSheet,
@@ -122,36 +120,6 @@ class ChannelDrawerList extends Component {
     onLayout = (event) => {
         const {width} = event.nativeEvent.layout;
         this.width = width;
-    };
-
-    handleClose = (channel) => {
-        const {closeDirectChannel, closeOptionsModal} = this.props.actions;
-        this.setState({showOptions: false});
-        closeDirectChannel(channel);
-        InteractionManager.runAfterInteractons(closeOptionsModal);
-    };
-
-    handleLeave = (channel, term) => {
-        const {formatMessage} = this.props.intl;
-        Alert.alert(
-            formatMessage({id: 'mobile.channel_list.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'}, {term}),
-            formatMessage({
-                id: 'mobile.channel_list.alertMessageLeaveChannel',
-                defaultMessage: 'Are you sure you want to leave the {term} with {name}?'
-            }, {
-                term: term.toLowerCase(),
-                name: channel.display_name
-            }),
-            [{
-                text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})
-            }, {
-                text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
-                onPress: () => {
-                    this.props.actions.closeOptionsModal();
-                    this.props.actions.leaveChannel(channel);
-                }
-            }]
-        );
     };
 
     getUnreadMessages = (channel) => {
@@ -382,6 +350,7 @@ class ChannelDrawerList extends Component {
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRow}
                     onChangeVisibleRows={this.updateUnreadIndicators}
+                    pageSize={10}
                 />
                 {above}
                 {below}

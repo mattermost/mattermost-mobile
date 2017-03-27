@@ -9,6 +9,7 @@ import ChannelInfo from './channel_info';
 import ChannelMembers from './channel_members';
 import ChannelAddMembers from './channel_add_members';
 import CreateChannel from './create_channel';
+import EditPost from './edit_post';
 import ImagePreview from './image_preview';
 import LoadTeam from './load_team';
 import Login from './login/login_container.js';
@@ -35,6 +36,7 @@ module.exports = {
     ChannelMembers,
     ChannelAddMembers,
     CreateChannel,
+    EditPost,
     ImagePreview,
     LoadTeam,
     Login,

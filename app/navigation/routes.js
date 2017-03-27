@@ -10,6 +10,7 @@ import {
     ChannelMembers,
     ChannelAddMembers,
     CreateChannel,
+    EditPost,
     ImagePreview,
     LoadTeam,
     Login,
@@ -97,6 +98,13 @@ export const Routes = {
         component: CreateChannel,
         navigationProps: {
             title: {id: 'mobile.create_channel.private', defaultMessage: 'New Private Group'}
+        }
+    },
+    EditPost: {
+        key: 'EditPost',
+        component: EditPost,
+        navigationProps: {
+            title: {id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'}
         }
     },
     ImagePreview: {
