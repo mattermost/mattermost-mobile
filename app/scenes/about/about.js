@@ -19,9 +19,6 @@ import MattermostIcon from 'app/components/mattermost_icon';
 
 export default class About extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            goBack: PropTypes.func.isRequired
-        }),
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired

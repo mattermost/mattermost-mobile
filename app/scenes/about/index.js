@@ -1,10 +1,6 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {bindActionCreators} from 'redux';
-
-import {goBack} from 'app/actions/navigation';
-
 import {getTheme} from 'app/selectors/preferences';
 import navigationSceneConnect from 'app/scenes/navigationSceneConnect';
 
@@ -20,12 +16,4 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            goBack
-        }, dispatch)
-    };
-}
-
-export default navigationSceneConnect(mapStateToProps, mapDispatchToProps)(About);
+export default navigationSceneConnect(mapStateToProps)(About);
