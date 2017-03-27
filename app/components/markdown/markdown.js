@@ -187,8 +187,18 @@ export default class Markdown extends PureComponent {
         return <Text>{'\n'}</Text>;
     }
 
-    renderHtml = () => {
-        return null;
+    renderHtml = (props) => {
+        let rendered = this.renderText(props);
+
+        if (props.isBlock) {
+            rendered = (
+                <View style={style.block}>
+                    {rendered}
+                </View>
+            );
+        }
+
+        return rendered;
     }
 
     render() {
