@@ -17,6 +17,7 @@ import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
+import com.reactnativecomponent.splashscreen.RCTSplashScreenPackage;
 import com.github.yamill.orientation.OrientationPackage;
 
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RCTSplashScreenPackage(),
             new RNBottomSheetPackage(),
             new RNDeviceInfo(),
             new CookieManagerPackage(),

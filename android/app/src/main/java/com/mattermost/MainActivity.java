@@ -7,6 +7,8 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Bundle;
+import com.reactnativecomponent.splashscreen.RCTSplashScreen;
 
 public class MainActivity extends ReactActivity {
 
@@ -17,6 +19,12 @@ public class MainActivity extends ReactActivity {
     @Override
     protected String getMainComponentName() {
         return "Mattermost";
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        RCTSplashScreen.openSplashScreen(this);
+        super.onCreate(savedInstanceState);
     }
 
     @Override
