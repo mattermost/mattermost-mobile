@@ -86,7 +86,7 @@ export default class FileAttachmentImage extends PureComponent {
             toValue: 1,
             duration: 300
         }).start(() => {
-            this.props.addFileToFetchCache(Client.getFilePreviewUrl(this.props.file.id, this.state.timestamp));
+            this.props.addFileToFetchCache(this.handleGetImageURL());
         });
     };
 
@@ -101,12 +101,12 @@ export default class FileAttachmentImage extends PureComponent {
 
         switch (imageSize) {
         case IMAGE_SIZE.Fullsize:
-            return {uri: Client.getFileUrl(file.id, this.state.timestamp)};
+            return Client.getFileUrl(file.id, this.state.timestamp);
         case IMAGE_SIZE.Preview:
-            return {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)};
+            return Client.getFilePreviewUrl(file.id, this.state.timestamp);
         case IMAGE_SIZE.Thumbnail:
         default:
-            return {uri: Client.getFileThumbnailUrl(file.id, this.state.timestamp)};
+            return Client.getFileThumbnailUrl(file.id, this.state.timestamp);
         }
     }
 
@@ -128,10 +128,11 @@ export default class FileAttachmentImage extends PureComponent {
         if (this.state.retry === 4) {
             source = imageIcon;
         } else if (file.id) {
-            source = this.handleGetImageURL();
+            source = {uri: this.handleGetImageURL()};
         }
 
         const isInFetchCache = fetchCache[source.uri];
+
         const imageComponentLoaders = {
             onError: isInFetchCache ? null : this.handleLoadError,
             onLoadStart: isInFetchCache ? null : this.handleLoadStart,
