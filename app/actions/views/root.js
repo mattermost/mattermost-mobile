@@ -19,8 +19,7 @@ export function goToSelectServer() {
     return async (dispatch, getState) => {
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
-            route: Routes.SelectServer,
-            index: 0
+            route: Routes.SelectServer
         }, getState);
     };
 }

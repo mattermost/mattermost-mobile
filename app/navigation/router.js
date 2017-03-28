@@ -331,6 +331,7 @@ class Router extends Component {
                     animationType={modalNavigationProps.modalAnimationType}
                     deviceHeight={this.state.deviceHeight}
                     deviceWidth={this.state.deviceWidth}
+                    duration={modalNavigationProps.duration}
                     show={modalVisible}
                 >
                     <NavigationExperimental.Transitioner
