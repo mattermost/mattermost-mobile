@@ -21,7 +21,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Orientation from 'react-native-orientation';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import FileAttachmentPreview from 'app/components/file_attachment_list/file_attachment_preview';
+import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
 
 const {View: AnimatedView} = Animated;
 const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
@@ -182,12 +182,13 @@ export default class ImagePreview extends PureComponent {
                             let component;
                             if (file.has_preview_image) {
                                 component = (
-                                    <FileAttachmentPreview
+                                    <FileAttachmentImage
                                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                                         fetchCache={this.props.fetchCache}
                                         file={file}
                                         theme={this.props.theme}
                                         imageHeight={Math.min(maxImageHeight, file.height)}
+                                        imageSize='fullsize'
                                         imageWidth={Math.min(this.state.deviceWidth, file.width)}
                                         resizeMode='contain'
                                         wrapperBackgroundColor='#000'

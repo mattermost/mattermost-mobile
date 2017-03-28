@@ -19,12 +19,23 @@ import imageIcon from 'assets/images/icons/image.png';
 
 const {View: AnimatedView} = Animated;
 
-export default class FileAttachmentPreview extends PureComponent {
+const IMAGE_SIZE = {
+    Fullsize: 'fullsize',
+    Preview: 'preview',
+    Thumbnail: 'thumbnail'
+};
+
+export default class FileAttachmentImage extends PureComponent {
     static propTypes = {
         addFileToFetchCache: PropTypes.func.isRequired,
         fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object,
         imageHeight: PropTypes.number,
+        imageSize: PropTypes.oneOf([
+            IMAGE_SIZE.Fullsize,
+            IMAGE_SIZE.Preview,
+            IMAGE_SIZE.Thumbnail
+        ]),
         imageWidth: PropTypes.number,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
@@ -36,6 +47,7 @@ export default class FileAttachmentPreview extends PureComponent {
     static defaultProps = {
         fadeInOnLoad: false,
         imageHeight: 100,
+        imageSize: IMAGE_SIZE.Thumbnail,
         imageWidth: 100,
         loading: false,
         resizeMode: 'cover',
@@ -84,6 +96,20 @@ export default class FileAttachmentPreview extends PureComponent {
         });
     };
 
+    handleGetImageURL = () => {
+        const {file, imageSize} = this.props;
+
+        switch (imageSize) {
+        case IMAGE_SIZE.Fullsize:
+            return {uri: Client.getFileUrl(file.id, this.state.timestamp)};
+        case IMAGE_SIZE.Preview:
+            return {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)};
+        case IMAGE_SIZE.Thumbnail:
+        default:
+            return {uri: Client.getFileThumbnailUrl(file.id, this.state.timestamp)};
+        }
+    }
+
     render() {
         const {
             fetchCache,
@@ -97,9 +123,12 @@ export default class FileAttachmentPreview extends PureComponent {
             wrapperWidth
         } = this.props;
 
-        let source = file.id ? {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)} : {};
+        let source = {};
+
         if (this.state.retry === 4) {
             source = imageIcon;
+        } else if (file.id) {
+            source = this.handleGetImageURL();
         }
 
         const isInFetchCache = fetchCache[source.uri];
