@@ -137,6 +137,7 @@ endif
 prepare-android-build:
 	@rm -rf ./node_modules/react-native/local-cli/templates/HelloWorld
 	@rm -rf ./node_modules/react-native-linear-gradient/Examples/
+	@rm -rf ./node_modules/react-native-orientation/demo/
 	@cd android && ./gradlew clean
 
 do-build-android:
