@@ -23,6 +23,7 @@ export default class ChannelPostList extends PureComponent {
             getPostsBefore: PropTypes.func.isRequired,
             goToThread: PropTypes.func.isRequired
         }).isRequired,
+        applicationInitializing: PropTypes.bool.isRequired,
         channel: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
@@ -64,7 +65,9 @@ export default class ChannelPostList extends PureComponent {
             if (hasFirstPost) {
                 this.setState({hasFirstPost});
             }
-            this.loaderAnimationRunner();
+            if (!nextProps.applicationInitializing) {
+                this.loaderAnimationRunner();
+            }
         } else {
             this.setState({
                 didInitialPostsLoad: false,
@@ -112,9 +115,9 @@ export default class ChannelPostList extends PureComponent {
     };
 
     render() {
-        const {channelIsLoading, posts, postsRequests, theme} = this.props;
+        const {applicationInitializing, channelIsLoading, posts, postsRequests, theme} = this.props;
         let component;
-        if (!channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
+        if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
             component = (
                 <PostList
                     posts={posts}

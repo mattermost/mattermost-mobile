@@ -24,6 +24,10 @@ export default class LoadTeam extends PureComponent {
         }).isRequired
     };
 
+    static navigationProps = {
+        hideNavBar: true
+    }
+
     componentDidMount() {
         const {notification, currentTeam, myMembers, teams} = this.props;
         const {clearNotification, goToNotification} = this.props.actions;
