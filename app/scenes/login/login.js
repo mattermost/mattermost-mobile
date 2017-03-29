@@ -6,6 +6,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Image,
     Keyboard,
+    KeyboardAvoidingView,
     Platform,
     Text,
     TextInput,
@@ -16,7 +17,6 @@ import Button from 'react-native-button';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
@@ -227,7 +227,7 @@ class Login extends Component {
 
     render() {
         return (
-            <KeyboardLayout
+            <KeyboardAvoidingView
                 behavior='padding'
                 style={{flex: 1}}
                 keyboardVerticalOffset={65}
@@ -286,7 +286,7 @@ class Login extends Component {
                         </Button>
                     </View>
                 </TouchableWithoutFeedback>
-            </KeyboardLayout>
+            </KeyboardAvoidingView>
         );
     }
 }

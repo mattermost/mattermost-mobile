@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import {
     Image,
     Keyboard,
+    KeyboardAvoidingView,
     Platform,
     StatusBar,
     TouchableWithoutFeedback,
@@ -20,7 +21,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {SplashScreenTypes} from 'app/constants';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
+
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
@@ -121,7 +122,7 @@ export default class SelectServer extends PureComponent {
         const error = pingRequest.error || configRequest.error || licenseRequest.error;
 
         return (
-            <KeyboardLayout
+            <KeyboardAvoidingView
                 behavior='padding'
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
@@ -165,7 +166,7 @@ export default class SelectServer extends PureComponent {
                         <ErrorText error={this.state.error || error}/>
                     </View>
                 </TouchableWithoutFeedback>
-            </KeyboardLayout>
+            </KeyboardAvoidingView>
         );
     }
 }

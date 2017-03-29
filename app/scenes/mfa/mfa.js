@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import {
     Image,
     Keyboard,
+    KeyboardAvoidingView,
     Platform,
     TouchableWithoutFeedback,
     View
@@ -13,7 +14,6 @@ import Button from 'react-native-button';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 
@@ -97,7 +97,7 @@ export default class Mfa extends Component {
 
     render() {
         return (
-            <KeyboardLayout
+            <KeyboardAvoidingView
                 behavior='padding'
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
@@ -141,7 +141,7 @@ export default class Mfa extends Component {
                         </Button>
                     </View>
                 </TouchableWithoutFeedback>
-            </KeyboardLayout>
+            </KeyboardAvoidingView>
         );
     }
 }
