@@ -6,8 +6,7 @@ import {View} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-import Loading from 'app/components/loading';
-import {GlobalStyles} from 'app/styles';
+import ChannelLoader from 'app/components/channel_loader';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {
@@ -21,12 +20,9 @@ export default class LoadTeam extends PureComponent {
             goToChannelView: PropTypes.func.isRequired,
             goToNotification: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired
-        }).isRequired
+        }).isRequired,
+        theme: PropTypes.object.isRequired
     };
-
-    static navigationProps = {
-        hideNavBar: true
-    }
 
     componentDidMount() {
         const {notification, currentTeam, myMembers, teams} = this.props;
@@ -64,8 +60,8 @@ export default class LoadTeam extends PureComponent {
 
     render() {
         return (
-            <View style={GlobalStyles.container}>
-                <Loading/>
+            <View style={{flex: 1}}>
+                <ChannelLoader theme={this.props.theme}/>
             </View>
         );
     }
