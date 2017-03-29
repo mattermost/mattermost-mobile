@@ -3,15 +3,10 @@
 
 import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
-import {
-    TouchableOpacity,
-    View
-} from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
+import ActionButton from 'app/components/action_button';
 
-import {getCurrentChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'app/selectors/preferences';
+import {canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
 
 function RemoveMemberButton(props) {
     const {canManageUsers} = props;
@@ -20,37 +15,26 @@ function RemoveMemberButton(props) {
     }
 
     return (
-        <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1}}>
-            <TouchableOpacity
-                onPress={() => props.emitter('remove_members')}
-                style={{paddingHorizontal: 15}}
-            >
-                <FormattedText
-                    id='channel_members_modal.remove'
-                    defaultMessage='Remove'
-                    style={{color: props.theme.sidebarHeaderTextColor}}
-                />
-            </TouchableOpacity>
-        </View>
+        <ActionButton
+            actionEventName='remove_members'
+            emitter={props.emitter}
+            enabled={false}
+            enableEventName='can_remove_members'
+            labelDefaultMessage='Remove'
+            labelId='channel_members_modal.remove'
+            loadingEventName='removing_members'
+        />
     );
 }
 
 RemoveMemberButton.propTypes = {
     emitter: PropTypes.func.isRequired,
-    canManageUsers: PropTypes.bool.isRequired,
-    currentChannel: PropTypes.object.isRequired,
-    theme: PropTypes.object
-};
-
-RemoveMemberButton.defaultProps = {
-    theme: {}
+    canManageUsers: PropTypes.bool.isRequired
 };
 
 function mapStateToProps(state) {
     return {
-        canManageUsers: canManageChannelMembers(state),
-        currentChannel: getCurrentChannel(state),
-        theme: getTheme(state)
+        canManageUsers: canManageChannelMembers(state)
     };
 }
 
