@@ -75,7 +75,12 @@ class Router extends Component {
             return {};
         }
 
-        return Object.assign({}, route.navigationProps, route.component.navigationProps);
+        let component = route.component;
+        if (!component) {
+            component = {};
+        }
+
+        return Object.assign({}, route.navigationProps, component.navigationProps);
     };
 
     renderTransition = (transitionProps) => {
@@ -326,6 +331,7 @@ class Router extends Component {
                     animationType={modalNavigationProps.modalAnimationType}
                     deviceHeight={this.state.deviceHeight}
                     deviceWidth={this.state.deviceWidth}
+                    duration={modalNavigationProps.duration}
                     show={modalVisible}
                 >
                     <NavigationExperimental.Transitioner

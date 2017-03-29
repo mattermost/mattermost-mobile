@@ -303,8 +303,9 @@ export function leaveChannel(channel, reset = false) {
     };
 }
 
-export function setChannelLoading() {
+export function setChannelLoading(loading = true) {
     return {
-        type: ViewTypes.SET_CHANNEL_LOADER
+        type: ViewTypes.SET_CHANNEL_LOADER,
+        loading
     };
 }

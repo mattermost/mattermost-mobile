@@ -118,13 +118,23 @@ function loading(state = false, action) {
     case ChannelTypes.SELECT_CHANNEL:
         return false;
     case ViewTypes.SET_CHANNEL_LOADER:
-        return true;
+        return action.loading;
+    default:
+        return state;
+    }
+}
+
+function appInitializing(state = true, action) {
+    switch (action.type) {
+    case ViewTypes.APPLICATION_INITIALIZED:
+        return false;
     default:
         return state;
     }
 }
 
 export default combineReducers({
+    appInitializing,
     drafts,
     loading
 });

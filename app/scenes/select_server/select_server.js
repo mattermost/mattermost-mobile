@@ -21,7 +21,6 @@ import {SplashScreenTypes} from 'app/constants';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import Loading from 'app/components/loading';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
@@ -116,7 +115,7 @@ export default class SelectServer extends PureComponent {
             licenseRequest.status === RequestStatus.STARTED;
 
         if (isLoading) {
-            return <Loading/>;
+            return null;
         }
 
         const error = pingRequest.error || configRequest.error || licenseRequest.error;

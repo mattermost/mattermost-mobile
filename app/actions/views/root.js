@@ -18,9 +18,8 @@ import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels'
 export function goToSelectServer() {
     return async (dispatch, getState) => {
         dispatch({
-            type: NavigationTypes.NAVIGATION_RESET,
-            routes: [Routes.SelectServer],
-            index: 0
+            type: NavigationTypes.NAVIGATION_MODAL,
+            route: Routes.SelectServer
         }, getState);
     };
 }

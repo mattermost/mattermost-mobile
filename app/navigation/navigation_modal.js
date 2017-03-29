@@ -3,7 +3,8 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
-    Animated
+    Animated,
+    InteractionManager
 } from 'react-native';
 
 const {View: AnimatedView} = Animated;
@@ -21,11 +22,13 @@ export default class NavigationModal extends PureComponent {
         ]),
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        duration: PropTypes.number,
         show: PropTypes.bool
     }
 
     static defaultProps = {
         animationType: ANIMATION_TYPES.SlideFromBottom,
+        duration: 400,
         show: false
     }
 
@@ -62,9 +65,13 @@ export default class NavigationModal extends PureComponent {
             const animationType = nextProps.show ? nextProps.animationType : this.props.animationType;
 
             if (animationType === ANIMATION_TYPES.SlideFromBottom) {
-                this.slideFromBottomAnimationRunner(nextProps);
+                InteractionManager.runAfterInteractions(() => {
+                    this.slideFromBottomAnimationRunner(nextProps);
+                });
             } else if (animationType === ANIMATION_TYPES.Fade) {
-                this.fadeAnimationRunner(nextProps);
+                InteractionManager.runAfterInteractions(() => {
+                    this.fadeAnimationRunner(nextProps);
+                });
             }
         }
     }
@@ -81,7 +88,7 @@ export default class NavigationModal extends PureComponent {
             });
             const setOpacityToFull = Animated.timing(this.state.opacity, {
                 toValue: 1,
-                duration: 400
+                duration: nextProps.duration
             });
             Animated.sequence([
                 setOpacityToZero,
@@ -99,7 +106,7 @@ export default class NavigationModal extends PureComponent {
         } else {
             const setOpacityToZero = Animated.timing(this.state.opacity, {
                 toValue: 0,
-                duration: 400
+                duration: nextProps.duration
             });
             const setTopToDeviceHeight = Animated.timing(this.state.top, {
                 toValue: this.props.deviceHeight,
@@ -130,7 +137,7 @@ export default class NavigationModal extends PureComponent {
 
         Animated.timing(this.state.top, {
             toValue: animateValue,
-            duration: 400
+            duration: nextProps.duration
         }).start(() => {
             // Once the scene has finished sliding down we can release the child scene
             // which will unmount the scene correctly.

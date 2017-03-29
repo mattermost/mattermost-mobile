@@ -187,7 +187,9 @@ export const Routes = {
         key: 'SelectServer',
         component: SelectServer,
         navigationProps: {
-            title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'}
+            title: {id: 'mobile.routes.enterServerUrl', defaultMessage: 'Enter Server URL'},
+            duration: 0,
+            modalAnimationType: 'fade'
         }
     },
     SelectTeam: {

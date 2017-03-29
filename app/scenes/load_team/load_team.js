@@ -1,9 +1,12 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {PropTypes, PureComponent} from 'react';
+import React, {PropTypes, PureComponent} from 'react';
+import {View} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
+
+import ChannelLoader from 'app/components/channel_loader';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {
@@ -17,8 +20,13 @@ export default class LoadTeam extends PureComponent {
             goToChannelView: PropTypes.func.isRequired,
             goToNotification: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired
-        }).isRequired
+        }).isRequired,
+        theme: PropTypes.object.isRequired
     };
+
+    static navigationProps = {
+        renderBackButton: () => null
+    }
 
     componentDidMount() {
         const {notification, currentTeam, myMembers, teams} = this.props;
@@ -55,6 +63,10 @@ export default class LoadTeam extends PureComponent {
     }
 
     render() {
-        return null;
+        return (
+            <View style={{flex: 1}}>
+                <ChannelLoader theme={this.props.theme}/>
+            </View>
+        );
     }
 }

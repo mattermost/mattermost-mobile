@@ -4,6 +4,8 @@
 import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 const ViewTypes = keyMirror({
+    APPLICATION_INITIALIZED: null,
+
     SERVER_URL_CHANGED: null,
 
     LOGIN_ID_CHANGED: null,
