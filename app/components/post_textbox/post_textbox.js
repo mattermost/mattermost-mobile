@@ -368,7 +368,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 }
             }),
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            paddingLeft: 2
         },
         typing: {
             paddingLeft: 10,
