@@ -24,6 +24,10 @@ export default class LoadTeam extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    static navigationProps = {
+        renderBackButton: () => null
+    }
+
     componentDidMount() {
         const {notification, currentTeam, myMembers, teams} = this.props;
         const {clearNotification, goToNotification} = this.props.actions;
