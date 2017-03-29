@@ -55,14 +55,14 @@ function channelIcon(props) {
         return (
             <Icon
                 name='lock'
-                style={[style.icon, unreadIcon, activeIcon, {fontSize: size + 1}]}
+                style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
             />
         );
     } else if (type === Constants.GM_CHANNEL) {
         return (
             <View style={style.groupContainer}>
-                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: (size + 2), height: (size + 3)}]}>
-                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 2)}]}>
+                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
+                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 6)}]}>
                         {membersCount}
                     </Text>
                 </View>

@@ -74,7 +74,7 @@ export default class ChannelDrawerItem extends PureComponent {
                 isActive={isActive}
                 hasUnread={hasUnread}
                 membersCount={channel.display_name.split(',').length}
-                size={12}
+                size={16}
                 status={channel.status}
                 theme={theme}
                 type={channel.type}
