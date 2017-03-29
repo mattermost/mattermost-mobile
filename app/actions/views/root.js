@@ -47,20 +47,24 @@ export function clearNotification() {
 
 export function goToNotification(notification) {
     return async (dispatch, getState) => {
+        const state = getState();
         const {data} = notification;
-        let teamId = data.team_id;
+        const {currentTeamId, teams} = state.entities.teams;
+        const channelId = data.channel_id;
+
+        // if the notification does not have a team id is because its from a DM or GM
+        let teamId = data.team_id || currentTeamId;
+
         if (teamId) {
-            const {teams} = getState().entities.teams;
             await handleTeamChange(teams[teamId])(dispatch, getState);
-            loadChannelsIfNecessary(teamId)(dispatch, getState);
+            await loadChannelsIfNecessary(teamId)(dispatch, getState);
         } else {
             await selectFirstAvailableTeam()(dispatch, getState);
-            teamId = getState().entities.teams.currentTeamId;
+            teamId = currentTeamId;
         }
 
-        const channelId = data.channel_id;
         viewChannel(teamId, channelId)(dispatch, getState);
-        loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
+        await loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
         await handleSelectChannel(channelId)(dispatch, getState);
         goToChannelView()(dispatch, getState);
         markChannelAsRead(teamId, channelId)(dispatch, getState);

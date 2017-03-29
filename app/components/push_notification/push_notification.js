@@ -16,11 +16,16 @@ export default class PushNotification extends PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string,
         currentChannelId: PropTypes.string,
+        teams: PropTypes.object,
         actions: PropTypes.shape({
             goToNotification: PropTypes.func.isRequired,
             queueNotification: PropTypes.func.isRequired,
             setDeviceToken: PropTypes.func.isRequired
         }).isRequired
+    };
+
+    static defaultProps: {
+        teams: {}
     };
 
     constructor(props) {
@@ -88,9 +93,9 @@ export default class PushNotification extends PureComponent {
     };
 
     onNotificationTapped = (notification) => {
-        const {currentTeamId, currentChannelId} = this.props;
+        const {currentTeamId, currentChannelId, teams} = this.props;
 
-        if (currentTeamId && currentChannelId) {
+        if (currentTeamId && currentChannelId && Object.keys(teams).length) {
             // this means that the store has the necessary data
             this.props.actions.goToNotification(notification);
         } else {
@@ -99,20 +104,23 @@ export default class PushNotification extends PureComponent {
     };
 
     handleInAppNotification = (notification) => {
-        const {message} = notification;
+        const {data, message} = notification;
+        const {currentChannelId} = this.props;
 
-        MessageBarManager.showAlert({
-            alertType: 'info',
-            avatar: icon,
-            avatarStyle: {borderRadius: 10, width: 20, height: 20},
-            message,
-            stylesheetInfo: {backgroundColor: changeOpacity('#000', 0.9)},
-            messageStyle: {color: 'white', fontSize: 13},
-            viewTopInset: 15,
-            viewBottomInset: 15,
-            duration: 5000,
-            onTapped: () => this.onNotificationTapped(notification)
-        });
+        if (data.channel_id !== currentChannelId) {
+            MessageBarManager.showAlert({
+                alertType: 'info',
+                avatar: icon,
+                avatarStyle: {borderRadius: 10, width: 20, height: 20},
+                message,
+                stylesheetInfo: {backgroundColor: changeOpacity('#000', 0.9)},
+                messageStyle: {color: 'white', fontSize: 13},
+                viewTopInset: 15,
+                viewBottomInset: 15,
+                duration: 5000,
+                onTapped: () => this.onNotificationTapped(notification)
+            });
+        }
     };
 
     render() {

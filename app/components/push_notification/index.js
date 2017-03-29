@@ -11,13 +11,14 @@ import {getUnreads} from 'mattermost-redux/selectors/entities/channels';
 import PushNotification from './push_notification';
 
 function mapStateToProps(state, ownProps) {
-    const {currentTeamId} = state.entities.teams;
+    const {currentTeamId, teams} = state.entities.teams;
     const {currentChannelId} = state.entities.channels;
 
     return {
         ...ownProps,
         currentTeamId,
         currentChannelId,
+        teams,
         ...getUnreads(state)
     };
 }
