@@ -25,66 +25,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ActionButton from 'app/components/action_button';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 30
-        },
-        errorContainer: {
-            position: 'absolute'
-        },
-        errorWrapper: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 10
-        },
-        inputContainer: {
-            marginTop: 10,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
-        },
-        input: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
-            height: 40,
-            paddingHorizontal: 15
-        },
-        titleContainer30: {
-            flexDirection: 'row',
-            marginTop: 30
-        },
-        titleContainer15: {
-            flexDirection: 'row',
-            marginTop: 15
-        },
-        title: {
-            fontSize: 14,
-            color: theme.centerChannelColor,
-            marginLeft: 15
-        },
-        optional: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 14,
-            marginLeft: 5
-        },
-        helpText: {
-            fontSize: 14,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginTop: 10,
-            marginHorizontal: 15
-        }
-    });
-});
-
 class CreateChannel extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
@@ -371,5 +311,65 @@ class CreateChannel extends PureComponent {
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            paddingTop: 30
+        },
+        errorContainer: {
+            position: 'absolute'
+        },
+        errorWrapper: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 10
+        },
+        inputContainer: {
+            marginTop: 10,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: theme.centerChannelBg
+        },
+        input: {
+            color: theme.centerChannelColor,
+            fontSize: 14,
+            height: 40,
+            paddingHorizontal: 15
+        },
+        titleContainer30: {
+            flexDirection: 'row',
+            marginTop: 30
+        },
+        titleContainer15: {
+            flexDirection: 'row',
+            marginTop: 15
+        },
+        title: {
+            fontSize: 14,
+            color: theme.centerChannelColor,
+            marginLeft: 15
+        },
+        optional: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 14,
+            marginLeft: 5
+        },
+        helpText: {
+            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            marginTop: 10,
+            marginHorizontal: 15
+        }
+    });
+});
 
 export default injectIntl(CreateChannel);

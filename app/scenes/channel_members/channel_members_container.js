@@ -12,7 +12,7 @@ import {getCurrentChannel, getCurrentChannelStats, canManageChannelMembers} from
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 import {getProfilesInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
-import {getProfilesInChannel} from 'mattermost-redux/actions/users';
+import {getProfilesInChannel, searchProfiles} from 'mattermost-redux/actions/users';
 
 import ChannelMembers from './channel_members';
 
@@ -28,6 +28,8 @@ function mapStateToProps(state) {
         currentTeam: getCurrentTeam(state),
         preferences: getMyPreferences(state),
         requestStatus: state.requests.users.getProfilesInChannel.status,
+        searchRequestStatus: state.requests.users.searchProfiles.status,
+        removeMembersStatus: state.requests.channels.removeChannelMember.status,
         canManageUsers: canManageChannelMembers(state)
     };
 }
@@ -37,7 +39,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getProfilesInChannel,
             goBack,
-            handleRemoveChannelMembers
+            handleRemoveChannelMembers,
+            searchProfiles
         }, dispatch)
     };
 }
