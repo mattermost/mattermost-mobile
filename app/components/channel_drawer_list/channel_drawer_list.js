@@ -255,15 +255,14 @@ class ChannelDrawerList extends Component {
     };
 
     renderTitle = (styles, id, defaultMessage, action, bottomDivider) => {
+        const {formatMessage} = this.props.intl;
         return (
             <View>
                 {this.renderDivider(styles, 0)}
                 <View style={styles.titleContainer}>
-                    <FormattedText
-                        style={styles.title}
-                        id={id}
-                        defaultMessage={defaultMessage}
-                    />
+                    <Text style={styles.title}>
+                        {formatMessage({id, defaultMessage}).toUpperCase()}
+                    </Text>
                     {action && this.renderSectionAction(styles, action)}
                 </View>
                 {bottomDivider && this.renderDivider(styles, 16)}
