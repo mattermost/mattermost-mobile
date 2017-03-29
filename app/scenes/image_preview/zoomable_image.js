@@ -1,3 +1,5 @@
+// This control is based on Leonti's Stack Overflow post:
+// http://stackoverflow.com/users/219449/leonti
 // http://stackoverflow.com/questions/36368919/scrollable-image-with-pinch-to-zoom
 
 import React, {Component, PropTypes} from 'react';
@@ -49,10 +51,15 @@ class ZoomableImage extends Component {
         file: PropTypes.object.isRequired,
         imageHeight: PropTypes.number.isRequired,
         imageWidth: PropTypes.number.isRequired,
+        onImageTap: PropTypes.func,
         onZoom: PropTypes.func.isRequired,
         wrapperHeight: PropTypes.number.isRequired,
         wrapperWidth: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired
+    };
+
+    static defaultProps = {
+        onImageTap: () => false
     };
 
     constructor(props) {
@@ -84,15 +91,17 @@ class ZoomableImage extends Component {
 
     componentWillMount() {
         this.panResponder = PanResponder.create({
-            onStartShouldSetPanResponder: (evt, gestureState) => {
-                return gestureState.numberActiveTouches === 2 || this.state.zoom > 1;
+            onStartShouldSetPanResponder: () => {
+                this.tap = Date.now();
+
+                return true;
             },
             onStartShouldSetPanResponderCapture: (evt, gestureState) => {
                 if (gestureState.numberActiveTouches === 2 || this.state.zoom > 1) {
                     // Store each press for double tap detection
-                    if (!this.lastPress) {
+                    /*if (!this.lastPress) {
                         this.lastPress = Date.now();
-                    } else if (Date.now() - this.lastPress < 400) {
+                    } else if (Date.now() - this.lastPress < 400 && Date.now() - this.lastPress > 100) {
                         this.setState({
                             zoom: 1,
                             top: 0,
@@ -101,9 +110,10 @@ class ZoomableImage extends Component {
                             offsetLeft: 0
                         });
                         this.props.onZoom(false);
+                        this.lastPress = null;
 
                         return false;
-                    }
+                    }*/
 
                     this.lastPress = Date.now();
 
@@ -171,21 +181,7 @@ class ZoomableImage extends Component {
         const distance = calcDistance(x1, y1, x2, y2);
         const center = calcCenter(x1, y1, x2, y2);
 
-        if (!this.state.isZooming) { // eslint-disable-line
-            const offsetByZoom = calcOffsetByZoom(this.state.width, this.state.height,
-                            this.props.wrapperWidth, this.props.wrapperHeight, this.state.zoom);
-            this.setState({
-                isZooming: true,
-                initialDistance: distance,
-                initialX: center.x,
-                initialY: center.y,
-                initialTop: this.state.top,
-                initialLeft: this.state.left,
-                initialZoom: this.state.zoom,
-                initialTopWithoutZoom: this.state.top - offsetByZoom.top,
-                initialLeftWithoutZoom: this.state.left - offsetByZoom.left
-            });
-        } else {
+        if (this.state.isZooming) {
             const touchZoom = distance / this.state.initialDistance;
             const zoom = touchZoom * this.state.initialZoom > this.state.minZoom ? touchZoom * this.state.initialZoom : this.state.minZoom;
             if (zoom > this.state.maxZoom) {
@@ -201,25 +197,39 @@ class ZoomableImage extends Component {
                 left: left > 0 ? 0 : maxOffset(left, this.state.width, this.props.wrapperWidth * zoom),
                 top: top > 0 ? 0 : maxOffset(top, this.state.height, this.props.wrapperHeight * zoom)
             });
+        } else {
+            const offsetByZoom = calcOffsetByZoom(this.state.width, this.state.height,
+                            this.props.wrapperWidth, this.props.wrapperHeight, this.state.zoom);
+            this.setState({
+                isZooming: true,
+                initialDistance: distance,
+                initialX: center.x,
+                initialY: center.y,
+                initialTop: this.state.top,
+                initialLeft: this.state.left,
+                initialZoom: this.state.zoom,
+                initialTopWithoutZoom: this.state.top - offsetByZoom.top,
+                initialLeftWithoutZoom: this.state.left - offsetByZoom.left
+            });
         }
     }
 
     processTouch(x, y) {
-        if (!this.state.isMoving) { // eslint-disable-line
-            this.setState({
-                isMoving: true,
-                initialX: x,
-                initialY: y,
-                initialTop: this.state.top,
-                initialLeft: this.state.left
-            });
-        } else {
+        if (this.state.isMoving) {
             const left = this.state.initialLeft + x - this.state.initialX; // eslint-disable-line
             const top = this.state.initialTop + y - this.state.initialY; // eslint-disable-line
 
             this.setState({
                 left: left > 0 ? 0 : maxOffset(left, this.state.width, this.props.wrapperWidth * this.state.zoom),
                 top: top > 0 ? 0 : maxOffset(top, this.state.height, this.props.wrapperHeight * this.state.zoom)
+            });
+        } else {
+            this.setState({
+                isMoving: true,
+                initialX: x,
+                initialY: y,
+                initialTop: this.state.top,
+                initialLeft: this.state.left
             });
         }
     }
@@ -260,6 +270,17 @@ class ZoomableImage extends Component {
         return (
             <View
                 {...this.panResponder.panHandlers}
+                onResponderRelease={() => {
+                    if (Date.now() - this.tap < 100) {
+                        this.props.onImageTap();
+                    }
+
+                    this.props.onZoom(this.state.zoom > 1);
+                    this.setState({
+                        isZooming: false,
+                        isMoving: false
+                    });
+                }}
                 onLayout={this.onLayout}
                 style={{
                     position: 'absolute',

@@ -13,7 +13,6 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -131,12 +130,8 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
-    handleImageTap = (evt) => {
-        if (evt.nativeEvent.changedTouches.length > 1 || this.state.isZooming) {
-            return;
-        }
-
-        if (!this.lastPress) {
+    handleImageTap = () => {
+        /*if (!this.lastPress) {
             this.lastPress = Date.now();
         } else if (Date.now() - this.lastPress < 400) {
             if (this.zoomableImages.hasOwnProperty(this.state.currentFile)) {
@@ -145,7 +140,8 @@ export default class ImagePreview extends PureComponent {
             }
         } else {
             this.lastPress = Date.now();
-        }
+
+        }*/
 
         this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
     }
@@ -238,6 +234,7 @@ export default class ImagePreview extends PureComponent {
                                         imageWidth={Math.min(this.state.deviceWidth, file.width)}
                                         wrapperHeight={maxImageHeight}
                                         wrapperWidth={this.state.deviceWidth}
+                                        onImageTap={this.handleImageTap}
                                         onZoom={this.imageIsZooming}
                                     />
                                 );
@@ -255,14 +252,12 @@ export default class ImagePreview extends PureComponent {
                             }
 
                             return (
-                                <TouchableWithoutFeedback
+                                <View
                                     key={file.id}
-                                    onPress={this.handleImageTap}
+                                    style={[style.pageWrapper, {height: maxImageHeight, width: this.state.deviceWidth}]}
                                 >
-                                    <View style={[style.pageWrapper, {height: maxImageHeight, width: this.state.deviceWidth}]}>
-                                        {component}
-                                    </View>
-                                </TouchableWithoutFeedback>
+                                    {component}
+                                </View>
                             );
                         })}
                     </ScrollView>
