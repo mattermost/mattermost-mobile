@@ -155,6 +155,10 @@ class Post extends PureComponent {
             replyBarStyle.push(style.replyBarFirst);
         }
 
+        if (this.props.isLastReply) {
+            replyBarStyle.push(style.replyBarLast);
+        }
+
         return <View style={replyBarStyle}/>;
     };
 
@@ -226,22 +230,24 @@ class Post extends PureComponent {
 
         if (Platform.OS === 'ios') {
             messageContainer = (
-                <View style={{flex: 1}}>
+                <View style={style.messageContainerWithReplyBar}>
                     {replyBar && this.renderReplyBar(style)}
-                    <OptionsContext
-                        actions={actions}
-                        ref='tooltip'
-                        onPress={this.handlePress}
-                        toggleSelected={this.toggleSelected}
-                    >
-                        {message}
-                        {this.renderFileAttachments()}
-                    </OptionsContext>
+                    <View style={{flex: 1}}>
+                        <OptionsContext
+                            actions={actions}
+                            ref='tooltip'
+                            onPress={this.handlePress}
+                            toggleSelected={this.toggleSelected}
+                        >
+                            {message}
+                            {this.renderFileAttachments()}
+                        </OptionsContext>
+                    </View>
                 </View>
             );
         } else {
             messageContainer = (
-                <View style={{flex: 1}}>
+                <View style={style.messageContainerWithReplyBar}>
                     {replyBar && this.renderReplyBar(style)}
                     <TouchableHighlight
                         onHideUnderlay={() => this.toggleSelected(false)}
@@ -249,8 +255,9 @@ class Post extends PureComponent {
                         onPress={this.handlePress}
                         onShowUnderlay={() => this.toggleSelected(true)}
                         underlayColor='transparent'
+                        style={{flex: 1}}
                     >
-                        <View>
+                        <View style={{flex: 1}}>
                             {message}
                             <OptionsContext
                                 ref='bottomSheet'
@@ -409,7 +416,7 @@ class Post extends PureComponent {
                     </View>
                     <View style={style.messageContainerWithReplyBar}>
                         {this.renderReplyBar(style)}
-                        <View style={style.rightColumn}>
+                        <View style={[style.rightColumn, (this.props.isLastReply && style.rightColumnPadding)]}>
                             <View style={style.postInfoContainer}>
                                 <View style={{flexDirection: 'row', flex: 1}}>
                                     {displayName}
@@ -454,6 +461,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             marginRight: 12
         },
+        rightColumnPadding: {
+            paddingBottom: 3
+        },
         postInfoContainer: {
             alignItems: 'center',
             flexDirection: 'row',
@@ -473,22 +483,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
             marginRight: 10,
-            ...Platform.select({
-                ios: {
-                    width: 3,
-                    flexBasis: 3
-                },
-                android: {
-                    width: 6,
-                    flexBasis: 6
-                }
-            })
+            width: 3,
+            flexBasis: 3
         },
         replyBarFirst: {
-            marginTop: 10
+            paddingTop: 10
         },
         replyBarLast: {
-            marginBottom: 10
+            paddingBottom: 10
         },
         displayName: {
             color: theme.centerChannelColor,
