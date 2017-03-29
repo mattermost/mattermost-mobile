@@ -122,6 +122,7 @@ const style = StyleSheet.create({
     optionCancelText: {
         color: '#CC3239',
         flex: 1,
+        fontSize: 20,
         textAlign: 'center'
     },
     optionContainer: {
@@ -136,7 +137,8 @@ const style = StyleSheet.create({
     },
     optionText: {
         color: '#4E8ACC',
-        flex: 1
+        flex: 1,
+        fontSize: 20
     },
     optionTitleText: {
         color: '#7f8180',

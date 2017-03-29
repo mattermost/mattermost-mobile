@@ -14,12 +14,14 @@ import {
 } from 'react-native';
 import {IntlProvider} from 'react-intl';
 import DeviceInfo from 'react-native-device-info';
+import SplashScreen from 'react-native-smart-splash-screen';
 import semver from 'semver';
 
-import Config from 'assets/config';
-
 import PushNotification from 'app/components/push_notification';
+import {SplashScreenTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
+
+import Config from 'assets/config';
 
 import Client from 'mattermost-redux/client';
 import {Constants} from 'mattermost-redux/constants';
@@ -55,6 +57,7 @@ export default class Root extends Component {
     componentDidMount() {
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(Constants.CONFIG_CHANGED, this.handleConfigChanged);
+        EventEmitter.on(SplashScreenTypes.CLOSE, this.handleCloseSplashScreen);
         Client.setUserAgent(DeviceInfo.getUserAgent());
 
         if (Platform.OS === 'android') {
@@ -65,6 +68,7 @@ export default class Root extends Component {
     componentWillUnmount() {
         AppState.removeEventListener('change', this.handleAppStateChange);
         EventEmitter.off(Constants.CONFIG_CHANGED, this.handleConfigChanged);
+        EventEmitter.off(SplashScreenTypes.CLOSE, this.handleCloseSplashScreen);
 
         if (Platform.OS === 'android') {
             BackAndroid.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -103,22 +107,14 @@ export default class Root extends Component {
         return false;
     };
 
-    handleVersionUpgrade = async () => {
-        const {closeDrawers, logout, unrenderDrawer} = this.props.actions;
+    handleCloseSplashScreen = (options = {}) => {
+        const opts = {
+            animationType: SplashScreen.animationType.scale,
+            duration: 850,
+            delay: 500
+        };
 
-        Client.serverVersion = '';
-
-        const storage = await AsyncStorage.getItem('storage');
-        if (storage) {
-            setTimeout(async () => {
-                const {token} = JSON.parse(await AsyncStorage.getItem('storage'));
-                if (token) {
-                    closeDrawers();
-                    unrenderDrawer();
-                    InteractionManager.runAfterInteractions(logout);
-                }
-            }, 1000);
-        }
+        SplashScreen.close(Object.assign({}, opts, options));
     };
 
     handleConfigChanged = (serverVersion) => {
@@ -137,6 +133,24 @@ export default class Root extends Component {
             } else {
                 loadConfigAndLicense(serverVersion);
             }
+        }
+    };
+
+    handleVersionUpgrade = async () => {
+        const {closeDrawers, logout, unrenderDrawer} = this.props.actions;
+
+        Client.serverVersion = '';
+
+        const storage = await AsyncStorage.getItem('storage');
+        if (storage) {
+            setTimeout(async () => {
+                const {token} = JSON.parse(await AsyncStorage.getItem('storage'));
+                if (token) {
+                    closeDrawers();
+                    unrenderDrawer();
+                    InteractionManager.runAfterInteractions(logout);
+                }
+            }, 1000);
         }
     };
 

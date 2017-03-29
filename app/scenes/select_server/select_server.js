@@ -12,6 +12,12 @@ import {
 } from 'react-native';
 
 import Button from 'react-native-button';
+
+import {RequestStatus} from 'mattermost-redux/constants';
+import Client from 'mattermost-redux/client';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {SplashScreenTypes} from 'app/constants';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -21,9 +27,6 @@ import {GlobalStyles} from 'app/styles';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 
 import logo from 'assets/images/logo.png';
-
-import {RequestStatus} from 'mattermost-redux/constants';
-import Client from 'mattermost-redux/client';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
@@ -54,6 +57,7 @@ export default class SelectServer extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+        EventEmitter.emit(SplashScreenTypes.CLOSE);
     }
 
     componentWillReceiveProps(nextProps) {

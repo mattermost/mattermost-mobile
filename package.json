@@ -27,6 +27,7 @@
     "react-native-orientation": "enahum/react-native-orientation.git",
     "react-native-push-notification": "2.2.1",
     "react-native-search-bar": "enahum/react-native-search-bar.git",
+    "react-native-smart-splash-screen": "2.3.3",
     "react-native-svg": "4.5.0",
     "react-native-tooltip": "5.0.0",
     "react-native-vector-icons": "4.0.0",
