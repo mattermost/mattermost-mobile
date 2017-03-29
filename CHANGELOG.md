@@ -47,7 +47,7 @@ The Beta apps are a work in progress, supported features are listed below. You c
 #### Channels
 - Channel drawer for selecting channels
 - Bolded channel names for Unreads, and mention jewel for Mentions
-- Unread posts above/below indicator
+- (iOS only) Unread posts above/below indicator
 - Favorite channels (Section in sidebar, and ability to favorite/unfavorite from channel menu)
 - Create new public or private channels
 - Create new Direct Messages (Group Direct Messages are not yet supported) 
