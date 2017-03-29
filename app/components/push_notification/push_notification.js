@@ -99,20 +99,23 @@ export default class PushNotification extends PureComponent {
     };
 
     handleInAppNotification = (notification) => {
-        const {message} = notification;
+        const {data, message} = notification;
+        const {currentChannelId} = this.props;
 
-        MessageBarManager.showAlert({
-            alertType: 'info',
-            avatar: icon,
-            avatarStyle: {borderRadius: 10, width: 20, height: 20},
-            message,
-            stylesheetInfo: {backgroundColor: changeOpacity('#000', 0.9)},
-            messageStyle: {color: 'white', fontSize: 13},
-            viewTopInset: 15,
-            viewBottomInset: 15,
-            duration: 5000,
-            onTapped: () => this.onNotificationTapped(notification)
-        });
+        if (data.channel_id !== currentChannelId) {
+            MessageBarManager.showAlert({
+                alertType: 'info',
+                avatar: icon,
+                avatarStyle: {borderRadius: 10, width: 20, height: 20},
+                message,
+                stylesheetInfo: {backgroundColor: changeOpacity('#000', 0.9)},
+                messageStyle: {color: 'white', fontSize: 13},
+                viewTopInset: 15,
+                viewBottomInset: 15,
+                duration: 5000,
+                onTapped: () => this.onNotificationTapped(notification)
+            });
+        }
     };
 
     render() {
