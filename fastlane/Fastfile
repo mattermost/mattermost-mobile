@@ -202,7 +202,7 @@ platform :android do
   end
 
   desc 'Submit a new Beta Build to Google Play'
-  lane :beta do
+  lane :alpha do
     build_android({
         release: true,
         increment_build: true,
@@ -211,7 +211,7 @@ platform :android do
           })
 
     supply(
-        track: 'beta',
+        track: 'alpha',
         apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
     )
 
