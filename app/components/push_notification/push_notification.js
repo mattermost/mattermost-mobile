@@ -109,11 +109,11 @@ export default class PushNotification extends PureComponent {
 
         if (data.channel_id !== currentChannelId) {
             MessageBarManager.showAlert({
-                alertType: 'info',
+                alertType: 'extra',
                 avatar: icon,
                 avatarStyle: {borderRadius: 10, width: 20, height: 20},
                 message,
-                stylesheetInfo: {backgroundColor: changeOpacity('#000', 0.9)},
+                stylesheetExtra: {backgroundColor: changeOpacity('#000', 0.9)},
                 messageStyle: {color: 'white', fontSize: 13},
                 viewTopInset: 15,
                 viewBottomInset: 15,

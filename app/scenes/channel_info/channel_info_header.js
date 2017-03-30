@@ -24,7 +24,7 @@ function channelInfoHeader(props) {
                 <ChanneIcon
                     isInfo={true}
                     membersCount={memberCount - 1}
-                    size={15}
+                    size={16}
                     status={status}
                     theme={theme}
                     type={type}

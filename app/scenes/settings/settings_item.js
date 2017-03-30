@@ -103,6 +103,7 @@ export default class SettingsItem extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         container: {
+            backgroundColor: theme.centerChannelBg,
             height: 51,
             flexDirection: 'column',
             justifyContent: 'center'
@@ -116,7 +117,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             color: theme.linkColor,
-            fontSize: 16
+            fontSize: 20
         },
         label: {
             color: theme.centerChannelColor,

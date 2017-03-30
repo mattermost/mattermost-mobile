@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
 import {getTheme} from 'app/selectors/preferences';
@@ -101,7 +101,7 @@ class ChannelDrawerButton extends PureComponent {
             >
                 <View style={[style.wrapper, {opacity: this.state.opacity, zIndex: 30}]}>
                     <Icon
-                        name='bars'
+                        name='md-menu'
                         size={25}
                         color={this.props.theme.sidebarHeaderTextColor}
                     />

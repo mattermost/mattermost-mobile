@@ -226,10 +226,12 @@ class ChannelDrawerList extends Component {
     };
 
     renderSectionAction = (styles, action) => {
+        const {theme} = this.props;
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
                 onPress={action}
+                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             >
                 <MaterialIcon
                     name='add'
@@ -286,6 +288,7 @@ class ChannelDrawerList extends Component {
             <TouchableHighlight
                 style={styles.settingsContainer}
                 onPress={() => this.props.actions.openSettingsModal()}
+                underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
             >
                 <AwesomeIcon
                     name='cog'
