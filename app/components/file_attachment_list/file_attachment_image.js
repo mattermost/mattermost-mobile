@@ -19,12 +19,23 @@ import imageIcon from 'assets/images/icons/image.png';
 
 const {View: AnimatedView} = Animated;
 
-export default class FileAttachmentPreview extends PureComponent {
+const IMAGE_SIZE = {
+    Fullsize: 'fullsize',
+    Preview: 'preview',
+    Thumbnail: 'thumbnail'
+};
+
+export default class FileAttachmentImage extends PureComponent {
     static propTypes = {
         addFileToFetchCache: PropTypes.func.isRequired,
         fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object,
         imageHeight: PropTypes.number,
+        imageSize: PropTypes.oneOf([
+            IMAGE_SIZE.Fullsize,
+            IMAGE_SIZE.Preview,
+            IMAGE_SIZE.Thumbnail
+        ]),
         imageWidth: PropTypes.number,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
@@ -36,6 +47,7 @@ export default class FileAttachmentPreview extends PureComponent {
     static defaultProps = {
         fadeInOnLoad: false,
         imageHeight: 100,
+        imageSize: IMAGE_SIZE.Thumbnail,
         imageWidth: 100,
         loading: false,
         resizeMode: 'cover',
@@ -74,7 +86,7 @@ export default class FileAttachmentPreview extends PureComponent {
             toValue: 1,
             duration: 300
         }).start(() => {
-            this.props.addFileToFetchCache(Client.getFilePreviewUrl(this.props.file.id, this.state.timestamp));
+            this.props.addFileToFetchCache(this.handleGetImageURL());
         });
     };
 
@@ -83,6 +95,20 @@ export default class FileAttachmentPreview extends PureComponent {
             requesting: true
         });
     };
+
+    handleGetImageURL = () => {
+        const {file, imageSize} = this.props;
+
+        switch (imageSize) {
+        case IMAGE_SIZE.Fullsize:
+            return Client.getFileUrl(file.id, this.state.timestamp);
+        case IMAGE_SIZE.Preview:
+            return Client.getFilePreviewUrl(file.id, this.state.timestamp);
+        case IMAGE_SIZE.Thumbnail:
+        default:
+            return Client.getFileThumbnailUrl(file.id, this.state.timestamp);
+        }
+    }
 
     render() {
         const {
@@ -97,12 +123,16 @@ export default class FileAttachmentPreview extends PureComponent {
             wrapperWidth
         } = this.props;
 
-        let source = file.id ? {uri: Client.getFilePreviewUrl(file.id, this.state.timestamp)} : {};
+        let source = {};
+
         if (this.state.retry === 4) {
             source = imageIcon;
+        } else if (file.id) {
+            source = {uri: this.handleGetImageURL()};
         }
 
         const isInFetchCache = fetchCache[source.uri];
+
         const imageComponentLoaders = {
             onError: isInFetchCache ? null : this.handleLoadError,
             onLoadStart: isInFetchCache ? null : this.handleLoadStart,

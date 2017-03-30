@@ -13,7 +13,6 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -21,7 +20,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import Orientation from 'react-native-orientation';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import FileAttachmentPreview from 'app/components/file_attachment_list/file_attachment_preview';
+
+import ZoomableImage from './zoomable_image';
 
 const {View: AnimatedView} = Animated;
 const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
@@ -29,6 +29,10 @@ const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing 
 const DRAG_VERTICAL_THRESHOLD_END = 100; // When do we want to navigate back
 const DRAG_HORIZONTAL_THRESHOLD = 50; // Make sure that it's not a sloppy horizontal swipe
 const HEADER_HEIGHT = 64;
+const STATUSBAR_HEIGHT = Platform.select({
+    ios: 0,
+    android: 20
+});
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
@@ -51,6 +55,8 @@ export default class ImagePreview extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.zoomableImages = {};
+
         const currentFile = props.files.findIndex((file) => file.id === props.fileId);
         this.state = {
             currentFile,
@@ -65,14 +71,14 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentWillMount() {
-        this.panResponder = PanResponder.create({
-            onMoveShouldSetPanResponderCapture: this.onMoveShouldSetPanResponderCapture,
+        this.mainViewPanResponder = PanResponder.create({
+            onMoveShouldSetPanResponderCapture: this.mainViewMoveShouldSetPanResponderCapture,
             onPanResponderMove: Animated.event([null, {
                 dx: 0,
                 dy: this.state.drag.y
             }]),
-            onPanResponderRelease: this.onPanResponderRelease,
-            onPanResponderTerminate: this.onPanResponderRelease
+            onPanResponderRelease: this.mainViewPanResponderRelease,
+            onPanResponderTerminate: this.mainViewPanResponderRelease
         });
     }
 
@@ -100,14 +106,21 @@ export default class ImagePreview extends PureComponent {
 
     componentWillUnmount() {
         Orientation.lockToPortrait();
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(false, 'fade');
+        }
     }
 
-    onMoveShouldSetPanResponderCapture = (evt, gestureState) => {
+    mainViewMoveShouldSetPanResponderCapture = (evt, gestureState) => {
+        if (gestureState.numberActiveTouches === 2 || this.state.isZooming) {
+            return false;
+        }
+
         const {dx, dy} = gestureState;
         return (Math.abs(dy) > DRAG_VERTICAL_THRESHOLD_START && dx < DRAG_HORIZONTAL_THRESHOLD);
     }
 
-    onPanResponderRelease = (evt, gestureState) => {
+    mainViewPanResponderRelease = (evt, gestureState) => {
         if (Math.abs(gestureState.dy) > DRAG_VERTICAL_THRESHOLD_END) {
             this.props.actions.goBack();
         } else {
@@ -117,15 +130,32 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
-    toggleHeaderAndFileInfo = () => {
-        const showFileInfo = !this.state.showFileInfo;
+    handleImageTap = () => {
+        /*if (!this.lastPress) {
+            this.lastPress = Date.now();
+        } else if (Date.now() - this.lastPress < 400) {
+            if (this.zoomableImages.hasOwnProperty(this.state.currentFile)) {
+                this.zoomableImages[this.state.currentFile].zoomIn();
+                return;
+            }
+        } else {
+            this.lastPress = Date.now();
+
+        }*/
+
+        this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
+    }
+
+    setHeaderAndFileInfoVisible = (show) => {
         this.setState({
-            showFileInfo
+            showFileInfo: show
         });
 
-        StatusBar.setHidden(!showFileInfo, 'fade');
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(!show, 'fade');
+        }
 
-        const opacity = showFileInfo ? 1 : 0;
+        const opacity = show ? 1 : 0;
 
         Animated.timing(this.state.footerOpacity, {
             toValue: opacity,
@@ -155,8 +185,17 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
+    imageIsZooming = (zooming) => {
+        if (zooming !== this.state.isZooming) {
+            this.setHeaderAndFileInfoVisible(!zooming);
+            this.setState({
+                isZooming: zooming
+            });
+        }
+    }
+
     render() {
-        const maxImageHeight = this.state.deviceHeight;
+        const maxImageHeight = this.state.deviceHeight - STATUSBAR_HEIGHT;
 
         return (
             <View
@@ -165,34 +204,38 @@ export default class ImagePreview extends PureComponent {
             >
                 <AnimatedView
                     style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
-                    {...this.panResponder.panHandlers}
+                    {...this.mainViewPanResponder.panHandlers}
                 >
                     <ScrollView
                         ref={this.attachScrollView}
                         style={[style.ScrollView]}
                         contentContainerStyle={style.scrollViewContent}
+                        scrollEnabled={!this.state.isZooming}
                         horizontal={true}
-                        pagingEnabled={this.state.pagingEnabled}
+                        pagingEnabled={!this.state.isZooming}
                         bounces={false}
                         onScroll={this.handleScroll}
                         scrollEventThrottle={1}
                         contentOffset={{x: (this.state.currentFile) * this.state.deviceWidth}}
                     >
-                        {this.props.files.map((file) => {
+                        {this.props.files.map((file, index) => {
                             let component;
                             if (file.has_preview_image) {
                                 component = (
-                                    <FileAttachmentPreview
+                                    <ZoomableImage
+                                        ref={(c) => {
+                                            this.zoomableImages[index] = c;
+                                        }}
                                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                                         fetchCache={this.props.fetchCache}
                                         file={file}
                                         theme={this.props.theme}
                                         imageHeight={Math.min(maxImageHeight, file.height)}
                                         imageWidth={Math.min(this.state.deviceWidth, file.width)}
-                                        resizeMode='contain'
-                                        wrapperBackgroundColor='#000'
-                                        wrapperHeight={maxImageHeight}
+                                        wrapperHeight={this.state.deviceHeight}
                                         wrapperWidth={this.state.deviceWidth}
+                                        onImageTap={this.handleImageTap}
+                                        onZoom={this.imageIsZooming}
                                     />
                                 );
                             } else {
@@ -209,14 +252,12 @@ export default class ImagePreview extends PureComponent {
                             }
 
                             return (
-                                <TouchableWithoutFeedback
+                                <View
                                     key={file.id}
-                                    onPress={this.toggleHeaderAndFileInfo}
+                                    style={[style.pageWrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}
                                 >
-                                    <View style={[style.pageWrapper, {height: maxImageHeight, width: this.state.deviceWidth}]}>
-                                        {component}
-                                    </View>
-                                </TouchableWithoutFeedback>
+                                    {component}
+                                </View>
                             );
                         })}
                     </ScrollView>

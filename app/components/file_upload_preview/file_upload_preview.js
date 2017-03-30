@@ -13,7 +13,7 @@ import {
 import Font from 'react-native-vector-icons/Ionicons';
 import {RequestStatus} from 'mattermost-redux/constants';
 
-import FileAttachmentPreview from 'app/components/file_attachment_list/file_attachment_preview';
+import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 
 const {height: deviceHeight} = Dimensions.get('window');
@@ -47,7 +47,7 @@ export default class FileUploadPreview extends PureComponent {
                     key={file.clientId}
                     style={style.preview}
                 >
-                    <FileAttachmentPreview
+                    <FileAttachmentImage
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                         fetchCache={this.props.fetchCache}
                         file={file}

@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
 import FileAttachmentIcon from './file_attachment_icon';
-import FileAttachmentPreview from './file_attachment_preview';
+import FileAttachmentImage from './file_attachment_image';
 
 export default class FileAttachment extends PureComponent {
     static propTypes = {
@@ -61,7 +61,7 @@ export default class FileAttachment extends PureComponent {
         let fileAttachmentComponent;
         if (file.has_preview_image) {
             fileAttachmentComponent = (
-                <FileAttachmentPreview
+                <FileAttachmentImage
                     addFileToFetchCache={this.props.addFileToFetchCache}
                     fetchCache={this.props.fetchCache}
                     file={file}
