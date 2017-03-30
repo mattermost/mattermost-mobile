@@ -113,3 +113,9 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
   - Start emulator
   - Start react packager: `$ react-native start`
   - Run in emulator: `$ react-native run-android`
+
+# Frequently Asked Questions
+
+**How is data handled on mobile devices after a user account is deactivated?**
+
+App data is wiped from the device when a user logs out of the app. If the user is logged in when the account is deactivated, then within one minute the system logs the user out, and as a result all app data is wiped from the device.
