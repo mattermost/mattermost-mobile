@@ -376,8 +376,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             })
         },
         scrollContainer: {
-            flex: 1,
-            marginBottom: 10
+            flex: 1
         },
         headerContainer: {
             alignItems: 'center',
