@@ -7,6 +7,7 @@ import Orientation from 'react-native-orientation';
 import Loading from 'app/components/loading';
 
 import {RequestStatus} from 'mattermost-redux/constants';
+import SplashScreen from 'react-native-smart-splash-screen';
 
 export default class Root extends PureComponent {
     static propTypes = {
@@ -32,6 +33,9 @@ export default class Root extends PureComponent {
 
         // Any initialization logic for navigation, setting up the client, etc should go here
         this.init();
+        setTimeout(() => {
+            this.handleCloseSplashScreen();
+        }, 1000);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,6 +47,16 @@ export default class Root extends PureComponent {
             this.init();
         }
     }
+
+    handleCloseSplashScreen = (options = {}) => {
+        const opts = {
+            animationType: SplashScreen.animationType.scale,
+            duration: 850,
+            delay: 500
+        };
+
+        SplashScreen.close(Object.assign({}, opts, options));
+    };
 
     init = () => {
         if (this.props.logoutRequest.status === RequestStatus.SUCCESS) {

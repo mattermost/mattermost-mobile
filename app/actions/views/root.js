@@ -65,8 +65,11 @@ export function goToNotification(notification) {
 
         viewChannel(teamId, channelId)(dispatch, getState);
         await loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
-        await handleSelectChannel(channelId)(dispatch, getState);
+
+        // when the notification is tapped go to the channel view before selecting the channel to prevent
+        // weird behavior
         goToChannelView()(dispatch, getState);
+        await handleSelectChannel(channelId)(dispatch, getState);
         markChannelAsRead(teamId, channelId)(dispatch, getState);
     };
 }
