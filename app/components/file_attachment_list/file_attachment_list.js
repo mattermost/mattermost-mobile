@@ -54,7 +54,7 @@ export default class FileAttachmentList extends Component {
         ));
 
         return (
-            <View>
+            <View style={{flex: 1}}>
                 {fileAttachments}
             </View>
         );

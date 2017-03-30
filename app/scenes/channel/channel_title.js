@@ -14,6 +14,10 @@ import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'app/selectors/preferences';
 
 function ChannelTitle(props) {
+    if (props.applicationInitializing) {
+        return null;
+    }
+
     const channelName = props.currentChannel.display_name;
     let icon;
     if (channelName) {
@@ -50,6 +54,7 @@ function ChannelTitle(props) {
 }
 
 ChannelTitle.propTypes = {
+    applicationInitializing: PropTypes.bool.isRequired,
     currentChannel: PropTypes.object,
     emitter: PropTypes.func.isRequired,
     theme: PropTypes.object
@@ -62,6 +67,7 @@ ChannelTitle.defaultProps = {
 
 function mapStateToProps(state) {
     return {
+        applicationInitializing: state.views.channel.appInitializing,
         currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
     };

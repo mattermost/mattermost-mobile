@@ -20,6 +20,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 class ChannelDrawerButton extends PureComponent {
     static propTypes = {
+        applicationInitializing: PropTypes.bool.isRequired,
         emitter: PropTypes.func.isRequired,
         theme: PropTypes.object,
         messageCount: PropTypes.number,
@@ -68,6 +69,10 @@ class ChannelDrawerButton extends PureComponent {
     };
 
     render() {
+        if (this.props.applicationInitializing) {
+            return null;
+        }
+
         let badge;
         let badgeCount = this.props.mentionCount;
 
@@ -146,6 +151,7 @@ const style = StyleSheet.create({
 
 function mapStateToProps(state) {
     return {
+        applicationInitializing: state.views.channel.appInitializing,
         theme: getTheme(state),
         ...getUnreads(state)
     };

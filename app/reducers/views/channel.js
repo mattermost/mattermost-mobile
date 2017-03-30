@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {ChannelTypes, FilesTypes} from 'mattermost-redux/constants';
+import {ChannelTypes, FilesTypes, UsersTypes} from 'mattermost-redux/constants';
 
 import {ViewTypes} from 'app/constants';
 
@@ -128,6 +128,8 @@ function appInitializing(state = true, action) {
     switch (action.type) {
     case ViewTypes.APPLICATION_INITIALIZED:
         return false;
+    case UsersTypes.RESET_LOGOUT_STATE:
+        return true;
     default:
         return state;
     }

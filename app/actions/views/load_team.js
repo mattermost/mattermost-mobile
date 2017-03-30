@@ -21,16 +21,18 @@ export function goToChannelView() {
                 dispatch({
                     type: ViewTypes.APPLICATION_INITIALIZED
                 }, getState);
-            }, 800); // modal close takes 400ms
+            }, 400);
         } else {
             dispatch({
                 type: NavigationTypes.NAVIGATION_RESET,
                 routes: [Routes.ChannelView]
             }, getState);
 
-            dispatch({
-                type: ViewTypes.APPLICATION_INITIALIZED
-            }, getState);
+            setTimeout(() => {
+                dispatch({
+                    type: ViewTypes.APPLICATION_INITIALIZED
+                }, getState);
+            }, 400);
         }
     };
 }
