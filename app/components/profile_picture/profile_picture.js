@@ -65,6 +65,20 @@ export default class ProfilePicture extends React.PureComponent {
                     size={this.props.statusIconSize}
                 />
             );
+        } else {
+            statusIcon = (
+                <View
+                    style={[style.offlineIcon, {
+                        borderRadius: this.props.statusSize / 2,
+                        height: this.props.statusSize - this.props.statusBorderWidth,
+                        width: this.props.statusSize - this.props.statusBorderWidth,
+                        borderWidth: Platform.select({
+                            ios: this.props.statusBorderWidth,
+                            android: this.props.statusBorderWidth / 2
+                        })
+                    }]}
+                />
+            );
         }
 
         return (
@@ -82,9 +96,9 @@ export default class ProfilePicture extends React.PureComponent {
                                 width: this.props.statusSize,
                                 height: this.props.statusSize,
                                 borderWidth: this.props.statusBorderWidth,
-                                borderRadius: this.props.statusSize / 2
-                            },
-                            (this.props.status === 'offline' && style.offline)
+                                borderRadius: this.props.statusSize / 2,
+                                borderColor: this.props.theme.centerChannelBg
+                            }
                         ]}
                     >
                         <View
@@ -116,8 +130,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             right: 0,
             overflow: 'hidden',
             alignItems: 'center',
-            justifyContent: 'center',
-            borderColor: theme.centerChannelBg
+            justifyContent: 'center'
         },
         statusContainer: {
             alignItems: 'center',
@@ -134,7 +147,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.awayIndicator
         },
         offline: {
-            backgroundColor: theme.centerChannelBg,
+            backgroundColor: theme.centerChannelBg
+        },
+        offlineIcon: {
             borderColor: '#bababa'
         }
     });
