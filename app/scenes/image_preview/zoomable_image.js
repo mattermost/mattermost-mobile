@@ -85,7 +85,9 @@ class ZoomableImage extends Component {
             initialLeftWithoutZoom: 0,
             initialZoom: 1,
             top: 0,
-            left: 0
+            left: 0,
+            height: props.wrapperHeight,
+            width: props.wrapperWidth
         };
     }
 
@@ -145,7 +147,9 @@ class ZoomableImage extends Component {
                     this.processTouch(touches[0].pageX, touches[0].pageY);
                 }
             },
-            onPanResponderTerminationRequest: () => false,
+            onPanResponderTerminationRequest: () => {
+                return this.state.zoom === 1;
+            },
             onPanResponderRelease: () => {
                 this.props.onZoom(this.state.zoom > 1);
                 this.setState({
@@ -158,6 +162,15 @@ class ZoomableImage extends Component {
             },
             onShouldBlockNativeResponder: () => false
         });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.wrapperWidth !== this.state.width || nextProps.wrapperHeight !== this.state.height) {
+            this.setState({
+                height: nextProps.wrapperHeight,
+                width: nextProps.wrapperWidth
+            });
+        }
     }
 
     zoomIn = (zoom = 2) => {
@@ -249,8 +262,8 @@ class ZoomableImage extends Component {
 
         this.setState({
             layoutKnown: true,
-            width: layout.width,
-            height: layout.height,
+            width: this.props.wrapperWidth,
+            height: this.props.wrapperHeight,
             offsetTop
         });
     }
@@ -281,7 +294,6 @@ class ZoomableImage extends Component {
                         isMoving: false
                     });
                 }}
-                onLayout={this.onLayout}
                 style={{
                     position: 'absolute',
                     top: this.state.offsetTop + this.state.top,

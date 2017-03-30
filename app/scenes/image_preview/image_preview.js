@@ -112,7 +112,7 @@ export default class ImagePreview extends PureComponent {
     }
 
     mainViewMoveShouldSetPanResponderCapture = (evt, gestureState) => {
-        if (gestureState.numberActiveTouches === 2) {
+        if (gestureState.numberActiveTouches === 2 || this.state.isZooming) {
             return false;
         }
 
@@ -232,7 +232,7 @@ export default class ImagePreview extends PureComponent {
                                         theme={this.props.theme}
                                         imageHeight={Math.min(maxImageHeight, file.height)}
                                         imageWidth={Math.min(this.state.deviceWidth, file.width)}
-                                        wrapperHeight={maxImageHeight}
+                                        wrapperHeight={this.state.deviceHeight}
                                         wrapperWidth={this.state.deviceWidth}
                                         onImageTap={this.handleImageTap}
                                         onZoom={this.imageIsZooming}
@@ -254,7 +254,7 @@ export default class ImagePreview extends PureComponent {
                             return (
                                 <View
                                     key={file.id}
-                                    style={[style.pageWrapper, {height: maxImageHeight, width: this.state.deviceWidth}]}
+                                    style={[style.pageWrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}
                                 >
                                     {component}
                                 </View>
