@@ -26,6 +26,7 @@ const MAX_CONTENT_HEIGHT = 100;
 
 export default class PostTextbox extends PureComponent {
     static propTypes = {
+        channelIsLoading: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         typing: PropTypes.array.isRequired,
         teamId: PropTypes.string.isRequired,
@@ -238,10 +239,12 @@ export default class PostTextbox extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {channelIsLoading, theme, value} = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
+
+        const textValue = channelIsLoading ? '' : value;
 
         let placeholder;
         if (this.props.rootId) {
@@ -290,7 +293,7 @@ export default class PostTextbox extends PureComponent {
                         <View style={style.inputContainer}>
                             <TextInputWithLocalizedPlaceholder
                                 ref='input'
-                                value={this.props.value}
+                                value={textValue}
                                 onChangeText={this.handleTextChange}
                                 onSelectionChange={this.handleSelectionChange}
                                 onContentSizeChange={this.handleContentSizeChange}

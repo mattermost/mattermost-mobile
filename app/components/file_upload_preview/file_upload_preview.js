@@ -26,6 +26,7 @@ export default class FileUploadPreview extends PureComponent {
             handleRemoveFile: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
+        channelIsLoading: PropTypes.bool,
         createPostRequestStatus: PropTypes.string.isRequired,
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
@@ -70,7 +71,7 @@ export default class FileUploadPreview extends PureComponent {
     }
 
     render() {
-        if (!this.props.files.length && this.props.uploadFileRequestStatus !== RequestStatus.STARTED) {
+        if (this.props.channelIsLoading || (!this.props.files.length && this.props.uploadFileRequestStatus !== RequestStatus.STARTED)) {
             return null;
         }
 

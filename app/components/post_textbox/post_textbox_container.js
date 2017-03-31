@@ -17,6 +17,7 @@ import PostTextbox from './post_textbox';
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
+        channelIsLoading: state.views.channel.loading,
         currentUserId: getCurrentUserId(state),
         typing: getUsersTyping(state),
         theme: getTheme(state),

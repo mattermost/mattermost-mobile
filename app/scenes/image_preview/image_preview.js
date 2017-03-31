@@ -130,6 +130,12 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
+    handleClose = () => {
+        if (this.state.showFileInfo) {
+            this.props.actions.goBack();
+        }
+    }
+
     handleImageTap = () => {
         /*if (!this.lastPress) {
             this.lastPress = Date.now();
@@ -268,7 +274,7 @@ export default class ImagePreview extends PureComponent {
                         <View style={style.header}>
                             <View style={style.headerControls}>
                                 <TouchableOpacity
-                                    onPress={this.props.actions.goBack}
+                                    onPress={this.handleClose}
                                     style={style.headerIcon}
                                 >
                                     <Icon
