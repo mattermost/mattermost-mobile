@@ -169,7 +169,7 @@ class ChannelMembers extends PureComponent {
     };
 
     loadMoreMembers = () => {
-        if (this.props.requestStatus !== 'started' && this.props.currentChannelMembers.length < this.props.currentChannelMemberCount) {
+        if (this.props.requestStatus !== 'started' && this.props.currentChannelMembers.length < this.props.currentChannelMemberCount - 1) {
             this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.props.currentChannelMembers.length);
         }
     };

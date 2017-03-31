@@ -1687,6 +1687,8 @@
   "mobile.loading_members": "Loading Members...",
   "mobile.loading_posts": "Loading Messages...",
   "mobile.login_options.choose_title": "Choose your login method",
+  "mobile.message_length.title": "Message Length",
+  "mobile.message_length.message": "Your current message is too long. Current character count: {max}/{count}",
   "mobile.post.cancel": "Cancel",
   "mobile.post.delete_question": "Are you sure you want to delete this post?",
   "mobile.post.delete_title": "Delete Post",

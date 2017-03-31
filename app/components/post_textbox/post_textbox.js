@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    Alert,
     BackAndroid,
     Keyboard,
     Platform,
@@ -13,6 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
+import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
@@ -23,20 +25,10 @@ import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_CONTENT_HEIGHT = 100;
+const MAX_MESSAGE_LENGTH = 4000;
 
-export default class PostTextbox extends PureComponent {
+class PostTextbox extends PureComponent {
     static propTypes = {
-        channelIsLoading: PropTypes.bool.isRequired,
-        currentUserId: PropTypes.string.isRequired,
-        typing: PropTypes.array.isRequired,
-        teamId: PropTypes.string.isRequired,
-        channelId: PropTypes.string.isRequired,
-        files: PropTypes.array,
-        rootId: PropTypes.string,
-        value: PropTypes.string.isRequired,
-        onChangeText: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired,
-        uploadFileRequestStatus: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             closeModal: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
@@ -44,14 +36,26 @@ export default class PostTextbox extends PureComponent {
             handleUploadFiles: PropTypes.func.isRequired,
             showOptionsModal: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired
-        }).isRequired
+        }).isRequired,
+        channelId: PropTypes.string.isRequired,
+        channelIsLoading: PropTypes.bool.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        files: PropTypes.array,
+        intl: intlShape.isRequired,
+        onChangeText: PropTypes.func.isRequired,
+        rootId: PropTypes.string,
+        teamId: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired,
+        typing: PropTypes.array.isRequired,
+        uploadFileRequestStatus: PropTypes.string.isRequired,
+        value: PropTypes.string.isRequired
     };
 
     static defaultProps = {
-        rootId: '',
         files: [],
-        value: '',
-        onSelectionChange: () => true
+        onSelectionChange: () => true,
+        rootId: '',
+        value: ''
     };
 
     constructor(props) {
@@ -74,7 +78,27 @@ export default class PostTextbox extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const canSend = (nextProps.value.trim().length > 0 || nextProps.files.length > 0) && nextProps.uploadFileRequestStatus !== RequestStatus.STARTED;
+        const {intl} = this.props;
+        const {files, uploadFileRequestStatus, value} = nextProps;
+        const valueLength = value.trim().length;
+
+        if (valueLength > MAX_MESSAGE_LENGTH) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.message_length.title',
+                    defaultMessage: 'Message Length'
+                }),
+                intl.formatMessage({
+                    id: 'mobile.message_length.message',
+                    defaultMessage: 'Your current message is too long. Current character count: {max}/{count}'
+                }, {
+                    max: MAX_MESSAGE_LENGTH,
+                    count: valueLength
+                })
+            );
+        }
+
+        const canSend = ((valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) || files.length > 0) && uploadFileRequestStatus !== RequestStatus.STARTED;
         this.setState({
             canSend
         });
@@ -383,3 +407,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
+
+export default injectIntl(PostTextbox);
