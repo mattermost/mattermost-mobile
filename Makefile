@@ -129,7 +129,7 @@ do-build-ios:
 build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
 
 check-android-target:
-ifneq ($(android_target), $(filter $(android_target), dev beta release))
+ifneq ($(android_target), $(filter $(android_target), dev alpha release))
 	@echo "Try running make build-android TARGET\nWhere TARGET is one of dev, beta or release"
 	@exit 1
 endif
@@ -145,6 +145,9 @@ do-build-android:
 	@cd fastlane && bundle exec fastlane android $(android_target)
 
 build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
+
+alpha:
+	@:
 
 dev:
 	@:
