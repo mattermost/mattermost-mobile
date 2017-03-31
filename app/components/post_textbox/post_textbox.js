@@ -408,4 +408,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default injectIntl(PostTextbox);
+export default injectIntl(PostTextbox, {withRef: true});
