@@ -26,7 +26,7 @@ export default class LoadTeam extends PureComponent {
 
     static navigationProps = {
         renderBackButton: () => null,
-        renderTitleComponent: () => <View style={{flex: 1, backgroundColor: 'blue'}}/>
+        renderTitleComponent: () => null
     }
 
     componentDidMount() {

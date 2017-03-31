@@ -13,6 +13,7 @@ import FileUploadPreview from './file_upload_preview';
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
+        channelIsLoading: state.views.channel.loading,
         createPostRequestStatus: state.requests.posts.createPost.status,
         fetchCache: state.views.fetchCache,
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
