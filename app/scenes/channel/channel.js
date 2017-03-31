@@ -91,7 +91,7 @@ export default class Channel extends React.PureComponent {
     };
 
     openChannelDrawer = () => {
-        this.postTextbox.getWrappedInstance().blur();
+        this.postTextbox.getWrappedInstance().getWrappedInstance().blur();
         this.props.actions.openChannelDrawer();
     };
 
