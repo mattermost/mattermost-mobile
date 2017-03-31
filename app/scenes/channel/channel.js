@@ -8,7 +8,6 @@ import {
     View
 } from 'react-native';
 
-import {SplashScreenTypes} from 'app/constants';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import PostTextbox from 'app/components/post_textbox';
@@ -68,7 +67,6 @@ export default class Channel extends React.PureComponent {
     componentDidMount() {
         this.props.actions.startPeriodicStatusUpdates();
         this.props.actions.renderDrawer();
-        EventEmitter.emit(SplashScreenTypes.CLOSE);
     }
 
     componentWillReceiveProps(nextProps) {

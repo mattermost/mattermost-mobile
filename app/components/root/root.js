@@ -14,11 +14,9 @@ import {
 } from 'react-native';
 import {IntlProvider} from 'react-intl';
 import DeviceInfo from 'react-native-device-info';
-import SplashScreen from 'react-native-smart-splash-screen';
 import semver from 'semver';
 
 import PushNotification from 'app/components/push_notification';
-import {SplashScreenTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 
 import Config from 'assets/config';
@@ -57,7 +55,6 @@ export default class Root extends Component {
     componentDidMount() {
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(Constants.CONFIG_CHANGED, this.handleConfigChanged);
-        EventEmitter.on(SplashScreenTypes.CLOSE, this.handleCloseSplashScreen);
         Client.setUserAgent(DeviceInfo.getUserAgent());
 
         if (Platform.OS === 'android') {
@@ -68,7 +65,6 @@ export default class Root extends Component {
     componentWillUnmount() {
         AppState.removeEventListener('change', this.handleAppStateChange);
         EventEmitter.off(Constants.CONFIG_CHANGED, this.handleConfigChanged);
-        EventEmitter.off(SplashScreenTypes.CLOSE, this.handleCloseSplashScreen);
 
         if (Platform.OS === 'android') {
             BackAndroid.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -105,16 +101,6 @@ export default class Root extends Component {
         }
 
         return false;
-    };
-
-    handleCloseSplashScreen = (options = {}) => {
-        const opts = {
-            animationType: SplashScreen.animationType.scale,
-            duration: 850,
-            delay: 500
-        };
-
-        SplashScreen.close(Object.assign({}, opts, options));
     };
 
     handleConfigChanged = (serverVersion) => {

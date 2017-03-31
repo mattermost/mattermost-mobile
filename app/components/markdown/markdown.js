@@ -176,7 +176,7 @@ export default class Markdown extends PureComponent {
     }
 
     renderHardBreak = () => {
-        return <View/>;
+        return <Text>{'\n'}</Text>;
     }
 
     renderThematicBreak = () => {

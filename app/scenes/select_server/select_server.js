@@ -16,9 +16,7 @@ import Button from 'react-native-button';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import Client from 'mattermost-redux/client';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {SplashScreenTypes} from 'app/constants';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 
@@ -57,7 +55,6 @@ export default class SelectServer extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
-        EventEmitter.emit(SplashScreenTypes.CLOSE);
     }
 
     componentWillReceiveProps(nextProps) {
