@@ -1,5 +1,4 @@
-update_fastlane
-fastlane_version '2.9.0'
+fastlane_version '2.23.0'
 skip_docs
 
 platform :ios do
@@ -177,7 +176,7 @@ end
 
 platform :android do
   before_all do |lane|
-    if lane == :beta or lane == :release
+    if lane == :alpha or lane == :release
       ensure_git_branch(
           branch: 'master'
       )
@@ -186,7 +185,7 @@ platform :android do
   end
 
   after_all do |lane|
-    if lane == :beta or lane == :release
+    if lane == :alpha or lane == :release
       reset_git_repo(
           force: true,
           skip_clean: true
@@ -207,7 +206,7 @@ platform :android do
         release: true,
         increment_build: true,
         ensure_git_status_clean: true,
-        branch_name: 'android-beta'
+        branch_name: 'android-alpha'
           })
 
     supply(
