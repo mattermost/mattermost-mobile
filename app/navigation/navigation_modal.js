@@ -20,6 +20,7 @@ export default class NavigationModal extends PureComponent {
             ANIMATION_TYPES.SlideFromBottom,
             ANIMATION_TYPES.Fade
         ]),
+        children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         duration: PropTypes.number,

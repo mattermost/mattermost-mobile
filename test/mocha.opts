@@ -5,5 +5,4 @@
 --require react-native-mock/mock.js
 --require react-native-svg-mock/mock
 --require babel-polyfill
---require isomorphic-fetch
 --recursive
