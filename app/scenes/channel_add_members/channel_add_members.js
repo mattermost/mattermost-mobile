@@ -152,7 +152,8 @@ class ChannelAddMembers extends PureComponent {
 
     handleRowSelect = (id) => {
         const selectedMembers = Object.assign({}, this.state.selectedMembers, {[id]: !this.state.selectedMembers[id]});
-        if (Object.keys(selectedMembers).length) {
+
+        if (Object.values(selectedMembers).filter((selected) => selected).length) {
             this.emitCanAddMembers(true);
         } else {
             this.emitCanAddMembers(false);
