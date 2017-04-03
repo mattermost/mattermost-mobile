@@ -14,17 +14,19 @@ import {Constants} from 'mattermost-redux/constants';
 
 export default class PushNotification extends PureComponent {
     static propTypes = {
-        currentTeamId: PropTypes.string,
-        currentChannelId: PropTypes.string,
-        teams: PropTypes.object,
         actions: PropTypes.shape({
             goToNotification: PropTypes.func.isRequired,
             queueNotification: PropTypes.func.isRequired,
             setDeviceToken: PropTypes.func.isRequired
-        }).isRequired
+        }).isRequired,
+        currentTeamId: PropTypes.string,
+        currentChannelId: PropTypes.string,
+        mentionCount: PropTypes.number,
+        teams: PropTypes.object
     };
 
     static defaultProps: {
+        mentionCount: 0,
         teams: {}
     };
 
@@ -46,7 +48,7 @@ export default class PushNotification extends PureComponent {
 
     componentWillReceiveProps(props) {
         if (this.isConfigured) {
-            DeviceNotification.setApplicationIconBadgeNumber(props.mentionCount || 0);
+            DeviceNotification.setApplicationIconBadgeNumber(props.mentionCount);
         }
     }
 
