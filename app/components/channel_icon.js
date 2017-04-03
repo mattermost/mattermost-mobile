@@ -116,7 +116,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.sidebarUnreadText
         },
         iconInfo: {
-            color: theme.sidebarText
+            color: theme.centerChannelColor
         },
         statusIcon: {
             paddingRight: 12
@@ -138,7 +138,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: theme.sidebarUnreadText
         },
         groupBoxInfo: {
-            borderColor: theme.sidebarText
+            borderColor: theme.centerChannelColor
         },
         group: {
             color: changeOpacity(theme.sidebarText, 0.4),
@@ -152,7 +152,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.sidebarUnreadText
         },
         groupInfo: {
-            color: theme.sidebarText
+            color: theme.centerChannelColor
         }
     });
 });
