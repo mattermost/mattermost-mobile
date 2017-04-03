@@ -57,7 +57,9 @@
     "react-dom": "15.4.2",
     "react-native-mock": "0.3.1",
     "react-native-svg-mock": "1.0.2",
-    "react-test-renderer": "15.4.2"
+    "react-test-renderer": "15.4.2",
+    "remote-redux-devtools": "0.5.7",
+    "remote-redux-devtools-on-debugger": "0.7.0"
   },
   "scripts": {
     "check": "node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .",
