@@ -13,57 +13,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flexDirection: 'row',
-            height: 65,
-            paddingHorizontal: 15,
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg
-        },
-        displayName: {
-            fontSize: 16,
-            color: theme.centerChannelColor
-        },
-        icon: {
-            fontSize: 20,
-            color: theme.centerChannelColor
-        },
-        textContainer: {
-            flexDirection: 'row',
-            marginLeft: 5
-        },
-        username: {
-            marginLeft: 5,
-            fontSize: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        },
-        selector: {
-            height: 28,
-            width: 28,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: '#888',
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        selectorContainer: {
-            height: 50,
-            paddingRight: 15,
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        selectorDisabled: {
-            backgroundColor: '#888'
-        },
-        selectorFilled: {
-            backgroundColor: '#378FD2',
-            borderWidth: 0
-        }
-    });
-});
-
 function createTouchableComponent(children, action) {
     return (
         <TouchableOpacity onPress={action}>
@@ -118,6 +67,8 @@ function MemberListRow(props) {
 
     if (typeof onPress === 'function') {
         return createTouchableComponent(RowComponent, () => onPress(id));
+    } else if (typeof props.onRowSelect === 'function') {
+        return createTouchableComponent(RowComponent, props.onRowSelect);
     }
 
     return RowComponent;
@@ -135,5 +86,56 @@ MemberListRow.propTypes = {
     selected: PropTypes.bool,
     disableSelect: PropTypes.bool
 };
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flexDirection: 'row',
+            height: 65,
+            paddingHorizontal: 15,
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg
+        },
+        displayName: {
+            fontSize: 16,
+            color: theme.centerChannelColor
+        },
+        icon: {
+            fontSize: 20,
+            color: theme.centerChannelColor
+        },
+        textContainer: {
+            flexDirection: 'row',
+            marginLeft: 5
+        },
+        username: {
+            marginLeft: 5,
+            fontSize: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        selector: {
+            height: 28,
+            width: 28,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#888',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        selectorContainer: {
+            height: 50,
+            paddingRight: 15,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        selectorDisabled: {
+            backgroundColor: '#888'
+        },
+        selectorFilled: {
+            backgroundColor: '#378FD2',
+            borderWidth: 0
+        }
+    });
+});
 
 export default MemberListRow;

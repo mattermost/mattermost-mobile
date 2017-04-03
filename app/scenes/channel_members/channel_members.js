@@ -176,7 +176,7 @@ class ChannelMembers extends PureComponent {
 
     handleRowSelect = (id) => {
         const selectedMembers = Object.assign({}, this.state.selectedMembers, {[id]: !this.state.selectedMembers[id]});
-        if (Object.keys(selectedMembers).length) {
+        if (Object.values(selectedMembers).filter((selected) => selected).length) {
             this.emitCanRemoveMembers(true);
         } else {
             this.emitCanRemoveMembers(false);
