@@ -86,8 +86,9 @@ class Post extends PureComponent {
     };
 
     handlePress = () => {
-        if (this.props.onPress) {
-            this.props.onPress(this.props.post);
+        const {post, onPress} = this.props;
+        if (onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
+            onPress(post);
         }
     };
 
