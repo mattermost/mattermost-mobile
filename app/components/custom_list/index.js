@@ -23,7 +23,8 @@ export default class CustomList extends PureComponent {
         selectable: PropTypes.bool,
         onRowSelect: PropTypes.func,
         renderRow: PropTypes.func.isRequired,
-        createSections: PropTypes.func
+        createSections: PropTypes.func,
+        showNoResults: PropTypes.bool
     };
 
     static defaultProps = {
@@ -37,7 +38,8 @@ export default class CustomList extends PureComponent {
         loadingText: null,
         onRowSelect: () => true,
         createSections: () => true,
-        showSections: true
+        showSections: true,
+        showNoResults: true
     };
 
     constructor(props) {
@@ -48,7 +50,6 @@ export default class CustomList extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {data, showSections, searching} = nextProps;
-        this.showNoResults = true;
 
         if (searching || searching !== this.props.searching) {
             this.setState(this.buildDataSource(nextProps));
@@ -161,7 +162,7 @@ export default class CustomList extends PureComponent {
             noResults = this.props.data.length === 0;
         }
 
-        if (this.showNoResults && !this.props.loading && noResults) {
+        if (this.props.showNoResults && !this.props.loading && noResults) {
             return (
                 <View style={style.noResultContainer}>
                     <FormattedText

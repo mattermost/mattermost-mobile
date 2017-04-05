@@ -4,15 +4,19 @@
 import {bindActionCreators} from 'redux';
 
 import {handleSendMessage} from 'app/actions/views/user_profile';
+import navigationSceneConnect from 'app/scenes/navigationSceneConnect';
 import {getTheme} from 'app/selectors/preferences';
+
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import UserProfile from './user_profile';
 
-import navigationSceneConnect from '../navigationSceneConnect';
-
 function mapStateToProps(state, ownProps) {
+    const {config} = state.entities.general;
+
     return {
-        currentUserId: state.entities.users.currentUserId,
+        config,
+        currentUserId: getCurrentUserId(state),
         user: state.entities.users.profiles[ownProps.userId],
         theme: getTheme(state)
     };

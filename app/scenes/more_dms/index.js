@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {goBack} from 'app/actions/navigation';
+import {closeDrawers, goBack} from 'app/actions/navigation';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
 import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
@@ -41,6 +41,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closeDrawers,
             goBack,
             makeDirectChannel,
             getProfiles,

@@ -9,7 +9,7 @@ import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.psykar.cookiemanager.CookieManagerPackage;
 import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
-import com.horcrux.svg.RNSvgPackage;
+import com.horcrux.svg.SvgPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -41,7 +41,7 @@ public class MainApplication extends Application implements ReactApplication {
             new CookieManagerPackage(),
             new ReactNativePushNotificationPackage(),
             new VectorIconsPackage(),
-            new RNSvgPackage(),
+            new SvgPackage(),
             new LinearGradientPackage(),
             new PickerPackage(),
             new OrientationPackage()

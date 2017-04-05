@@ -281,7 +281,6 @@ export function showOptionsModal(options) {
 
 export function showMoreChannelsModal() {
     return async (dispatch, getState) => {
-        closeDrawers()(dispatch, getState);
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.MoreChannels
@@ -291,7 +290,6 @@ export function showMoreChannelsModal() {
 
 export function showDirectMessagesModal() {
     return async (dispatch, getState) => {
-        closeDrawers()(dispatch, getState);
         dispatch({
             type: NavigationTypes.NAVIGATION_MODAL,
             route: Routes.MoreDirectMessages

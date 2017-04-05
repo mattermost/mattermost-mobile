@@ -31,6 +31,7 @@ class MoreDirectMessages extends PureComponent {
         subscribeToHeaderEvent: React.PropTypes.func.isRequired,
         unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
         actions: PropTypes.shape({
+            closeDrawers: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             getProfiles: PropTypes.func.isRequired,
@@ -61,11 +62,12 @@ class MoreDirectMessages extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            profiles: [],
+            profiles: props.profiles,
             page: 0,
             adding: false,
             next: true,
-            searching: false
+            searching: false,
+            showNoResults: false
         };
     }
 
@@ -79,7 +81,7 @@ class MoreDirectMessages extends PureComponent {
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = nextProps.profiles.splice(0, (page + 1) * Constants.PROFILE_CHUNK_SIZE);
-            this.setState({profiles});
+            this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
             const results = nextProps.profiles.filter((p) => {
@@ -87,7 +89,7 @@ class MoreDirectMessages extends PureComponent {
                 return p.username.toLowerCase().includes(term) || p.email.toLowerCase().includes(term) ||
                     p.first_name.toLowerCase().includes(term) || p.last_name.toLowerCase().includes(term);
             });
-            this.setState({profiles: results});
+            this.setState({profiles: results, showNoResults: true});
         }
     }
 
@@ -96,9 +98,11 @@ class MoreDirectMessages extends PureComponent {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
 
-        InteractionManager.runAfterInteractions(() => {
+        // set the timeout to 400 cause is the time that the modal takes to open
+        // Somehow interactionManager doesn't care
+        setTimeout(() => {
             this.props.actions.getProfiles(0);
-        });
+        }, 400);
     }
 
     componentWillUnmount() {
@@ -166,20 +170,24 @@ class MoreDirectMessages extends PureComponent {
         this.setState({adding: true});
         this.searchBar.blur();
         await this.props.actions.makeDirectChannel(id);
+
+        this.props.actions.closeDrawers();
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.goBack();
         });
     };
 
     render() {
-        const {formatMessage} = this.props.intl;
-        const isLoading = (this.props.requestStatus.status === RequestStatus.STARTED) ||
-            (this.props.searchRequest.status === RequestStatus.STARTED);
-        const style = getStyleFromTheme(this.props.theme);
+        const {intl, preferences, requestStatus, searchRequest, theme} = this.props;
+        const {adding, profiles, searching, showNoResults} = this.state;
+        const {formatMessage} = intl;
+        const isLoading = (requestStatus.status === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
+            (searchRequest.status === RequestStatus.STARTED);
+        const style = getStyleFromTheme(theme);
         const more = this.state.searching ? () => true : this.loadMoreProfiles;
 
         let content;
-        if (this.state.adding) {
+        if (adding) {
             content = (
                 <View style={style.container}>
                     <Loading/>
@@ -205,11 +213,11 @@ class MoreDirectMessages extends PureComponent {
                         />
                     </View>
                     <MemberList
-                        data={this.state.profiles}
-                        theme={this.props.theme}
-                        searching={this.state.searching}
+                        data={profiles}
+                        theme={theme}
+                        searching={searching}
                         onListEndReached={more}
-                        preferences={this.props.preferences}
+                        preferences={preferences}
                         loading={isLoading}
                         selectable={false}
                         listScrollRenderAheadDistance={50}
@@ -217,6 +225,7 @@ class MoreDirectMessages extends PureComponent {
                         renderRow={renderMemberRow}
                         onRowPress={this.onSelectMember}
                         loadingText={loadingText}
+                        showNoResults={showNoResults}
                     />
                 </View>
             );

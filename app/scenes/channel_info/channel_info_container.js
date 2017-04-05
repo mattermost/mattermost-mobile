@@ -22,12 +22,14 @@ import {
     getChannelsByCategory,
     canManageChannelMembers
 } from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
+import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getUserIdFromChannelName, showDeleteOption} from 'mattermost-redux/utils/channel_utils';
+import {isAdmin, isChannelAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import ChannelInfo from './channel_info';
 
 function mapStateToProps(state, ownProps) {
+    const {config, license} = state.entities.general;
     const currentChannel = getCurrentChannel(state);
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
@@ -37,6 +39,7 @@ function mapStateToProps(state, ownProps) {
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
     const leaveChannelRequest = state.requests.channels.leaveChannel;
+    const roles = getCurrentUserRoles(state);
 
     let status;
     if (currentChannel.type === Constants.DM_CHANNEL) {
@@ -46,6 +49,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
+        canDeleteChannel: showDeleteOption(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
         currentTeamId: state.entities.teams.currentTeamId,
         currentChannel,
         currentChannelCreatorName,

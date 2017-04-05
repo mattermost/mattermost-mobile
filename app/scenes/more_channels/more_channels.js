@@ -34,6 +34,7 @@ class MoreChannels extends PureComponent {
         subscribeToHeaderEvent: React.PropTypes.func.isRequired,
         unsubscribeFromHeaderEvent: React.PropTypes.func.isRequired,
         actions: PropTypes.shape({
+            closeDrawers: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
@@ -69,11 +70,12 @@ class MoreChannels extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            channels: [],
+            channels: props.channels,
             page: 0,
             adding: false,
             next: true,
-            searching: false
+            searching: false,
+            showNoResults: false
         };
     }
 
@@ -87,12 +89,12 @@ class MoreChannels extends PureComponent {
         if (this.state.searching &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const channels = this.filterChannels(nextProps.channels, this.state.term);
-            this.setState({channels});
+            this.setState({channels, showNoResults: true});
         } else if (requestStatus.status === RequestStatus.STARTED &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const channels = nextProps.channels.splice(0, (page + 1) * Constants.CHANNELS_CHUNK_SIZE);
-            this.setState({channels});
+            this.setState({channels, showNoResults: true});
         }
     }
 
@@ -101,9 +103,11 @@ class MoreChannels extends PureComponent {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
 
-        InteractionManager.runAfterInteractions(() => {
+        // set the timeout to 400 cause is the time that the modal takes to open
+        // Somehow interactionManager doesn't care
+        setTimeout(() => {
             this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
-        });
+        }, 400);
     }
 
     componentWillUnmount() {
@@ -208,6 +212,7 @@ class MoreChannels extends PureComponent {
             id);
         await this.props.actions.handleSelectChannel(id);
 
+        this.props.actions.closeDrawers();
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.goBack();
         });
@@ -218,13 +223,15 @@ class MoreChannels extends PureComponent {
     };
 
     render() {
-        const {formatMessage} = this.props.intl;
-        const isLoading = this.props.requestStatus.status === RequestStatus.STARTED;
-        const style = getStyleFromTheme(this.props.theme);
-        const more = this.state.searching ? () => true : this.loadMoreChannels;
+        const {intl, requestStatus, theme} = this.props;
+        const {adding, channels, searching} = this.state;
+        const {formatMessage} = intl;
+        const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
+        const style = getStyleFromTheme(theme);
+        const more = searching ? () => true : this.loadMoreChannels;
 
         let content;
-        if (this.state.adding) {
+        if (adding) {
             content = (
                 <View style={style.container}>
                     <Loading/>
@@ -250,9 +257,9 @@ class MoreChannels extends PureComponent {
                         />
                     </View>
                     <ChannelList
-                        data={this.state.channels}
-                        theme={this.props.theme}
-                        searching={this.state.searching}
+                        data={channels}
+                        theme={theme}
+                        searching={searching}
                         onListEndReached={more}
                         loading={isLoading}
                         selectable={false}
@@ -261,6 +268,7 @@ class MoreChannels extends PureComponent {
                         renderRow={this.renderChannelRow}
                         onRowPress={this.onSelectChannel}
                         loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
+                        showNoResults={this.state.showNoResults}
                     />
                 </View>
             );
