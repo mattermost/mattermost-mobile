@@ -106,7 +106,7 @@ export const Routes = {
         key: 'CreatePrivateChannel',
         component: CreateChannel,
         navigationProps: {
-            title: {id: 'mobile.create_channel.private', defaultMessage: 'New Private Group'}
+            title: {id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'}
         }
     },
     EditPost: {
