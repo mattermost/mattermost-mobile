@@ -10,6 +10,7 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -27,6 +28,7 @@ export default class Settings extends PureComponent {
             clearErrors: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired
         }).isRequired,
+        config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         errors: PropTypes.array.isRequired,
@@ -53,6 +55,37 @@ export default class Settings extends PureComponent {
         }
     };
 
+    canPress = true;
+
+    errorEmailBody = () => {
+        const {config, currentUserId, currentTeamId, errors} = this.props;
+        let contents = [
+            `Current User Id: ${currentUserId}`,
+            `Current Team Id: ${currentTeamId}`,
+            `Server Version: ${config.Version} (Build ${config.BuildNumber})`,
+            `App Version: ${DeviceInfo.getVersion()} (Build ${DeviceInfo.getBuildNumber()})`,
+            `App Platform: ${Platform.OS}`
+        ];
+        if (errors.length) {
+            contents = contents.concat([
+                '',
+                'Errors:',
+                JSON.stringify(errors.map((e) => e.error))
+            ]);
+        }
+        return contents.join('\n');
+    };
+
+    handlePress = (action) => {
+        if (this.canPress) {
+            this.canPress = false;
+            action();
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
+        }
+    };
+
     logout = () => {
         const {closeDrawers, logout} = this.props.actions;
         closeDrawers();
@@ -68,24 +101,9 @@ export default class Settings extends PureComponent {
         this.props.actions.clearErrors();
     };
 
-    errorEmailBody = () => {
-        const {currentUserId, currentTeamId, errors} = this.props;
-        let contents = [
-            `Current User Id: ${currentUserId}`,
-            `Current Team Id: ${currentTeamId}`
-        ];
-        if (errors.length) {
-            contents = contents.concat([
-                '',
-                'Errors:',
-                JSON.stringify(errors.map((e) => e.error))
-            ]);
-        }
-        return contents.join('\n');
-    };
-
     render() {
-        const {showTeamSelection, theme} = this.props;
+        const {actions, showTeamSelection, theme} = this.props;
+        const {goToAccountSettings, goToSelectTeam, goToAbout} = actions;
         const style = getStyleSheet(theme);
 
         return (
@@ -96,7 +114,7 @@ export default class Settings extends PureComponent {
                         i18nId='sidebar_right_menu.accountSettings'
                         iconName='cog'
                         iconType='fontawesome'
-                        onPress={this.props.actions.goToAccountSettings}
+                        onPress={() => this.handlePress(goToAccountSettings)}
                         separator={true}
                         theme={theme}
                     />
@@ -106,7 +124,7 @@ export default class Settings extends PureComponent {
                             i18nId='sidebar_right_menu.switch_team'
                             iconName='ios-people'
                             iconType='ion'
-                            onPress={this.props.actions.goToSelectTeam}
+                            onPress={() => this.handlePress(goToSelectTeam)}
                             separator={true}
                             theme={theme}
                         />
@@ -116,7 +134,7 @@ export default class Settings extends PureComponent {
                         i18nId='sidebar_right_menu.report'
                         iconName='warning'
                         iconType='material'
-                        onPress={this.openErrorEmail}
+                        onPress={() => this.handlePress(this.openErrorEmail)}
                         separator={true}
                         theme={theme}
                     />
@@ -125,7 +143,7 @@ export default class Settings extends PureComponent {
                         i18nId='about.title'
                         iconName='info-outline'
                         iconType='material'
-                        onPress={this.props.actions.goToAbout}
+                        onPress={() => this.handlePress(goToAbout)}
                         separator={false}
                         theme={theme}
                     />
@@ -139,7 +157,7 @@ export default class Settings extends PureComponent {
                         iconName='exit-to-app'
                         iconType='material'
                         isDestructor={true}
-                        onPress={this.logout}
+                        onPress={() => this.handlePress(this.logout)}
                         separator={false}
                         theme={theme}
                     />
