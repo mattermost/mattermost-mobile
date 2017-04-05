@@ -209,7 +209,7 @@ class ChannelDrawerList extends Component {
         );
 
         data.push(
-            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE GROUPS', this.createPrivateChannel, privateChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE CHANNELS', this.createPrivateChannel, privateChannels.length > 0),
             ...privateChannels
         );
 
