@@ -53,9 +53,11 @@ export default class Channel extends React.PureComponent {
         }
     };
 
+    canPress = true;
+
     componentWillMount() {
-        this.props.subscribeToHeaderEvent('open_channel_drawer', this.openChannelDrawer);
-        this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
+        this.props.subscribeToHeaderEvent('open_channel_drawer', () => this.handleAction(this.openChannelDrawer));
+        this.props.subscribeToHeaderEvent('show_channel_info', () => this.handleAction(this.props.actions.goToChannelInfo));
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         this.props.actions.initWebSocket(Platform.OS);
         if (this.props.currentTeam) {
@@ -88,6 +90,17 @@ export default class Channel extends React.PureComponent {
             this.props.actions.loadProfilesAndTeamMembersForDMSidebar(teamId);
             return this.props.actions.selectInitialChannel(teamId);
         });
+    };
+
+    handleAction = (action) => {
+        if (this.canPress) {
+            this.canPress = false;
+            action();
+
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
+        }
     };
 
     openChannelDrawer = () => {
