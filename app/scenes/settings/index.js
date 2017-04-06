@@ -20,9 +20,11 @@ import Settings from './settings';
 
 function mapStateToProps(state, ownProps) {
     const showTeamSelection = Object.keys(state.entities.teams.teams).length > 1;
+    const {config} = state.entities.general;
 
     return {
         ...ownProps,
+        config,
         theme: getTheme(state),
         errors: state.errors,
         currentUserId: state.entities.users.currentUserId,
