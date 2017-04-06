@@ -20,6 +20,7 @@ import ChannelInfoRow from './channel_info_row';
 class ChannelInfo extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
+        canDeleteChannel: PropTypes.bool.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -152,6 +153,7 @@ class ChannelInfo extends PureComponent {
 
     render() {
         const {
+            canDeleteChannel,
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
@@ -245,7 +247,7 @@ class ChannelInfo extends PureComponent {
                             theme={theme}
                         />
                     </View>
-                    {this.renderLeaveOrDeleteChannelRow() &&
+                    {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel &&
                         <View style={style.footer}>
                             <ChannelInfoRow
                                 action={() => this.handleDeleteOrLeave('delete')}

@@ -22,16 +22,18 @@ function makeMapStateToProps() {
         const commentedOnUser = ownProps.commentedOnPost ? getUser(state, ownProps.commentedOnPost.user_id) : null;
         const user = getUser(state, ownProps.post.user_id);
         const myPreferences = getMyPreferences(state);
+        const {config, license} = state.entities.general;
 
         return {
             ...ownProps,
-            config: state.entities.general.config,
+            config,
             commentCount: getCommentCountForPost(state, ownProps),
             commentedOnDisplayName: displayUsername(commentedOnUser, myPreferences),
             currentTeamId: getCurrentTeamId(state),
             currentUserId: getCurrentUserId(state),
             displayName: displayUsername(user, myPreferences),
             isFlagged: isPostFlagged(ownProps.post.id, myPreferences),
+            license,
             roles: getCurrentUserRoles(state),
             theme: getTheme(state),
             user

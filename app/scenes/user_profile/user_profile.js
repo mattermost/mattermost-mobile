@@ -15,6 +15,95 @@ import {getFullName} from 'mattermost-redux/utils/user_utils';
 
 import UserProfileRow from './user_profile_row';
 
+export default class UserProfile extends PureComponent {
+    static propTypes = {
+        actions: PropTypes.shape({
+            handleSendMessage: PropTypes.func.isRequired
+        }).isRequired,
+        config: PropTypes.object.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired,
+        user: PropTypes.object.isRequired
+    };
+
+    state = {
+        isFavorite: false
+    };
+
+    getDisplayName = () => {
+        const {theme, user} = this.props;
+        const style = createStyleSheet(theme);
+
+        const displayName = getFullName(user);
+
+        if (displayName) {
+            return <Text style={style.displayName}>{displayName}</Text>;
+        }
+
+        return null;
+    };
+
+    buildDisplayBlock = (property) => {
+        const {theme, user} = this.props;
+        const style = createStyleSheet(theme);
+
+        if (user.hasOwnProperty(property) && user[property].length > 0) {
+            return (
+                <View>
+                    <Text style={style.header}>{property.toUpperCase()}</Text>
+                    <Text style={style.text}>{user[property]}</Text>
+                </View>
+            );
+        }
+
+        return null;
+    };
+
+    sendMessage = () => {
+        this.props.actions.handleSendMessage(this.props.user.id);
+    };
+
+    render() {
+        const {config, currentUserId, theme, user} = this.props;
+        const style = createStyleSheet(theme);
+
+        return (
+            <View style={style.container}>
+                <ScrollView
+                    style={style.scrollView}
+                    contentContainerStyle={style.scrollViewContent}
+                >
+                    <View style={style.top}>
+                        <ProfilePicture
+                            user={user}
+                            size={150}
+                            statusBorderWidth={6}
+                            statusSize={40}
+                            statusIconSize={18}
+                        />
+                        {this.getDisplayName()}
+                        <Text style={style.username}>{`@${user.username}`}</Text>
+                    </View>
+                    <View style={style.content}>
+                        {this.buildDisplayBlock('username')}
+                        {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                        {this.buildDisplayBlock('position')}
+                    </View>
+                    {currentUserId !== user.id &&
+                        <UserProfileRow
+                            action={this.sendMessage}
+                            defaultMessage='Send Message'
+                            icon='paper-plane-o'
+                            textId='mobile.routes.user_profile.send_message'
+                            theme={theme}
+                        />
+                    }
+                </ScrollView>
+            </View>
+        );
+    }
+}
+
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         container: {
@@ -60,91 +149,3 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
-
-export default class UserProfile extends PureComponent {
-    static propTypes = {
-        currentUserId: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired,
-        user: PropTypes.object.isRequired,
-        actions: PropTypes.shape({
-            handleSendMessage: PropTypes.func.isRequired
-        }).isRequired
-    };
-
-    state = {
-        isFavorite: false
-    }
-
-    getDisplayName = () => {
-        const {theme, user} = this.props;
-        const style = createStyleSheet(theme);
-
-        const displayName = getFullName(user);
-
-        if (displayName) {
-            return <Text style={style.displayName}>{displayName}</Text>;
-        }
-
-        return null;
-    }
-
-    buildDisplayBlock = (property) => {
-        const {theme, user} = this.props;
-        const style = createStyleSheet(theme);
-
-        if (user.hasOwnProperty(property) && user[property].length > 0) {
-            return (
-                <View>
-                    <Text style={style.header}>{property.toUpperCase()}</Text>
-                    <Text style={style.text}>{user[property]}</Text>
-                </View>
-            );
-        }
-
-        return null;
-    }
-
-    sendMessage = () => {
-        this.props.actions.handleSendMessage(this.props.user.id);
-    }
-
-    render() {
-        const {theme, user} = this.props;
-        const style = createStyleSheet(theme);
-
-        return (
-            <View style={style.container}>
-                <ScrollView
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                >
-                    <View style={style.top}>
-                        <ProfilePicture
-                            user={user}
-                            size={150}
-                            statusBorderWidth={6}
-                            statusSize={40}
-                            statusIconSize={18}
-                        />
-                        {this.getDisplayName()}
-                        <Text style={style.username}>{`@${user.username}`}</Text>
-                    </View>
-                    <View style={style.content}>
-                        {this.buildDisplayBlock('username')}
-                        {this.buildDisplayBlock('email')}
-                        {this.buildDisplayBlock('position')}
-                    </View>
-                    {this.props.currentUserId !== this.props.user.id &&
-                        <UserProfileRow
-                            action={this.sendMessage}
-                            defaultMessage='Send Message'
-                            icon='paper-plane-o'
-                            textId='mobile.routes.user_profile.send_message'
-                            theme={theme}
-                        />
-                    }
-                </ScrollView>
-            </View>
-        );
-    }
-}

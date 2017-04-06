@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
@@ -13,9 +13,6 @@ import {
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import {Constants} from 'mattermost-redux/constants';
-import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {isAdmin} from 'mattermost-redux/utils/user_utils';
 
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
@@ -28,6 +25,11 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import ReplyIcon from 'app/components/reply_icon';
 
 import webhookIcon from 'assets/images/icons/webhook.jpg';
+
+import {Constants} from 'mattermost-redux/constants';
+import DelayedAction from 'mattermost-redux/utils/delayed_action';
+import {canDeletePost, canEditPost, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 const BOT_NAME = 'BOT';
 
@@ -48,6 +50,7 @@ class Post extends PureComponent {
         isLastReply: PropTypes.bool,
         commentedOnDisplayName: PropTypes.string,
         commentedOnPost: PropTypes.object,
+        license: PropTypes.object.isRequired,
         roles: PropTypes.string,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
@@ -58,6 +61,33 @@ class Post extends PureComponent {
             openEditPostModal: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired
         }).isRequired
+    };
+
+    constructor(props) {
+        super(props);
+
+        const {config, license, currentUserId, roles, post} = props;
+        this.editDisableAction = new DelayedAction(this.handleEditDisable);
+        this.state = {
+            canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
+            canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+        };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const {config, license, currentUserId, roles, post} = nextProps;
+        this.setState({
+            canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
+            canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+        });
+    }
+
+    componentWillUnmount() {
+        this.editDisableAction.cancel();
+    }
+
+    handleEditDisable = () => {
+        this.setState({canEdit: false});
     };
 
     handlePostDelete = () => {
@@ -74,6 +104,7 @@ class Post extends PureComponent {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
+                    this.editDisableAction.cancel();
                     actions.deletePost(currentTeamId, post);
                 }
             }]
@@ -183,7 +214,7 @@ class Post extends PureComponent {
 
     renderMessage = (style, messageStyle, replyBar = false) => {
         const {formatMessage} = this.props.intl;
-        const {currentUserId, isFlagged, post, roles, theme} = this.props;
+        const {isFlagged, post, theme} = this.props;
         const {flagPost, unflagPost} = this.props.actions;
         const actions = [];
 
@@ -200,11 +231,11 @@ class Post extends PureComponent {
             });
         }
 
-        if (post.user_id === currentUserId) {
+        if (this.state.canEdit) {
             actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: () => this.handlePostEdit()});
         }
 
-        if (post.user_id === currentUserId || isAdmin(roles)) {
+        if (this.state.canDelete && post.state !== Constants.POST_DELETED) {
             actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
         }
 

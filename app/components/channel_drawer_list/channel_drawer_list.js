@@ -37,6 +37,7 @@ class ChannelDrawerList extends Component {
             showDirectMessagesModal: PropTypes.func.isRequired,
             showMoreChannelsModal: PropTypes.func.isRequired
         }).isRequired,
+        canCreatePrivateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
         currentTeam: PropTypes.object.isRequired,
@@ -186,7 +187,7 @@ class ChannelDrawerList extends Component {
             return data;
         }
 
-        const {theme} = this.props;
+        const {canCreatePrivateChannels, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         const {
@@ -208,8 +209,12 @@ class ChannelDrawerList extends Component {
             ...publicChannels
         );
 
+        let createPrivateChannel;
+        if (canCreatePrivateChannels) {
+            createPrivateChannel = this.createPrivateChannel;
+        }
         data.push(
-            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE CHANNELS', this.createPrivateChannel, privateChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE CHANNELS', createPrivateChannel, privateChannels.length > 0),
             ...privateChannels
         );
 
