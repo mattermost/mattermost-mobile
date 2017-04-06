@@ -15,15 +15,23 @@ import {
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsSince} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
-import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
+import {
+    makeDirectChannelVisibleIfNecessary,
+    makeGroupMessageVisibleIfNecessary,
+    savePreferences,
+    deletePreferences
+} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {Constants, Preferences, UsersTypes} from 'mattermost-redux/constants';
 import {
     getChannelByName,
     getDirectChannelName,
+    getUserIdFromChannelName,
     isDirectChannelVisible,
-    isGroupChannelVisible
+    isGroupChannelVisible,
+    isDirectChannel,
+    isGroupChannel
 } from 'mattermost-redux/utils/channel_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
@@ -59,6 +67,17 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         const gmPrefs = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_GROUP_CHANNEL_SHOW);
         const members = [];
         const loadProfilesForChannels = [];
+
+        // Find DM's and GM's that need to be shown
+        const directChannels = Object.values(channels).filter((c) => (isDirectChannel(c) || isGroupChannel(c)));
+        directChannels.forEach((channel) => {
+            if (isDirectChannel(channel)) {
+                const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+                makeDirectChannelVisibleIfNecessary(teammateId)(dispatch, getState);
+            } else if (isGroupChannel(channel)) {
+                makeGroupMessageVisibleIfNecessary(channel.id)(dispatch, getState);
+            }
+        });
 
         for (const [key, pref] of dmPrefs) {
             if (pref.value === 'true') {
