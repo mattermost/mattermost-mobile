@@ -16,7 +16,19 @@ export default class OptionsModalList extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
         onCancelPress: PropTypes.func
-    }
+    };
+
+    canPress = true;
+
+    handlePress = (action) => {
+        if (this.canPress) {
+            this.canPress = false;
+            action();
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
+        }
+    };
 
     renderOptions = () => {
         const {items, onCancelPress} = this.props;
@@ -37,7 +49,7 @@ export default class OptionsModalList extends PureComponent {
             return (
                 <TouchableOpacity
                     key={index}
-                    onPress={item.action}
+                    onPress={() => this.handlePress(item.action)}
                     style={[style.option, style.optionBorder]}
                 >
                     {textComponent}
@@ -55,7 +67,7 @@ export default class OptionsModalList extends PureComponent {
         const cancel = (
             <TouchableOpacity
                 key={items.length}
-                onPress={onCancelPress}
+                onPress={() => this.handlePress(onCancelPress)}
                 style={style.option}
             >
                 <Text style={style.optionText}>{'Cancel'}</Text>
@@ -66,7 +78,7 @@ export default class OptionsModalList extends PureComponent {
             ...options,
             cancel
         ];
-    }
+    };
 
     render() {
         return (

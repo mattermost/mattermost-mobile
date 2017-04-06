@@ -27,6 +27,19 @@ export default class ChannelDrawer extends PureComponent {
         currentChannel: {}
     };
 
+    canPress = true;
+
+    handlePress = (action, ...args) => {
+        if (this.canPress) {
+            this.canPress = false;
+            action(...args);
+
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
+        }
+    };
+
     selectChannel = (id) => {
         const {
             currentChannel,
@@ -58,6 +71,7 @@ export default class ChannelDrawer extends PureComponent {
                 channels={channels}
                 channelMembers={channelMembers}
                 theme={theme}
+                handlePress={this.handlePress}
                 onSelectChannel={this.selectChannel}
             />
         );

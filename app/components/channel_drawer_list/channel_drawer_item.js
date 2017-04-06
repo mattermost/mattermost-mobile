@@ -15,18 +15,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class ChannelDrawerItem extends PureComponent {
     static propTypes = {
         channel: PropTypes.object.isRequired,
+        handlePress: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        onLongPress: PropTypes.func,
         isActive: PropTypes.bool.isRequired,
         hasUnread: PropTypes.bool.isRequired,
         mentions: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired
-    };
-
-    handleLongPress = (channel) => {
-        if (this.props.onLongPress) {
-            this.props.onLongPress(channel);
-        }
     };
 
     render() {
@@ -35,7 +29,9 @@ export default class ChannelDrawerItem extends PureComponent {
             theme,
             mentions,
             hasUnread,
-            isActive
+            isActive,
+            handlePress,
+            onSelectChannel
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -84,11 +80,8 @@ export default class ChannelDrawerItem extends PureComponent {
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => this.props.onSelectChannel(channel)}
+                onPress={() => handlePress(onSelectChannel, channel)}
                 delayLongPress={1000}
-                onLongPress={() => {
-                    this.handleLongPress(channel);
-                }}
             >
                 <View style={style.container}>
                     {activeBorder}

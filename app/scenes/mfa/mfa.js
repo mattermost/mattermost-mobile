@@ -3,6 +3,7 @@
 
 import React, {Component} from 'react';
 import {
+    ActivityIndicator,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -96,6 +97,32 @@ export default class Mfa extends Component {
     };
 
     render() {
+        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED;
+
+        let proceed;
+        if (isLoading) {
+            proceed = (
+                <ActivityIndicator
+                    animating={true}
+                    size='small'
+                />
+            );
+        } else {
+            proceed = (
+                <Button
+                    onPress={this.submit}
+                    loading={false}
+                    containerStyle={GlobalStyles.signupButton}
+                >
+                    <FormattedText
+                        style={GlobalStyles.signupButtonText}
+                        id='mobile.components.select_server_view.proceed'
+                        defaultMessage='Proceed'
+                    />
+                </Button>
+            );
+        }
+
         return (
             <KeyboardAvoidingView
                 behavior='padding'
@@ -128,17 +155,7 @@ export default class Mfa extends Component {
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                         />
-                        <Button
-                            onPress={this.submit}
-                            loading={false}
-                            containerStyle={GlobalStyles.signupButton}
-                        >
-                            <FormattedText
-                                style={GlobalStyles.signupButtonText}
-                                id='mobile.components.select_server_view.proceed'
-                                defaultMessage='Proceed'
-                            />
-                        </Button>
+                        {proceed}
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>

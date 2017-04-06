@@ -54,6 +54,7 @@ class Post extends PureComponent {
         roles: PropTypes.string,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
+        handlePress: PropTypes.func,
         actions: PropTypes.shape({
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
@@ -118,8 +119,8 @@ class Post extends PureComponent {
 
     handlePress = () => {
         const {post, onPress} = this.props;
-        if (onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
-            onPress(post);
+        if (this.props.handlePress && onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
+            this.props.handlePress(onPress, null, post);
         }
     };
 
@@ -195,7 +196,7 @@ class Post extends PureComponent {
     };
 
     renderFileAttachments() {
-        const {post} = this.props;
+        const {handlePress, post} = this.props;
         const fileIds = post.file_ids || [];
 
         let attachments;
@@ -204,6 +205,7 @@ class Post extends PureComponent {
                 <FileAttachmentList
                     hideOptionsContext={this.hideOptionsContext}
                     onLongPress={this.showOptionsContext}
+                    handlePress={handlePress}
                     post={post}
                     toggleSelected={this.toggleSelected}
                 />
@@ -307,7 +309,9 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        this.props.actions.goToUserProfile(this.props.user.id);
+        if (this.props.handlePress) {
+            this.props.handlePress(this.props.actions.goToUserProfile, null, this.props.user.id);
+        }
     };
 
     toggleSelected = (selected) => {

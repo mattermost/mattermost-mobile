@@ -43,6 +43,8 @@ export default class Thread extends PureComponent {
 
     state = {};
 
+    canPress = true;
+
     componentWillReceiveProps(nextProps) {
         if (!this.state.lastViewedAt) {
             this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
@@ -55,6 +57,17 @@ export default class Thread extends PureComponent {
 
     handleDraftChanged = (value) => {
         this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
+    };
+
+    handlePress = (action, thisArg, ...args) => {
+        if (this.canPress) {
+            this.canPress = false;
+            Reflect.apply(action, thisArg || this, [...args]);
+
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
+        }
     };
 
     render() {
@@ -70,6 +83,7 @@ export default class Thread extends PureComponent {
                 <PostList
                     indicateNewMessages={true}
                     posts={this.props.posts}
+                    handlePress={this.handlePress}
                     currentUserId={this.props.myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                 />

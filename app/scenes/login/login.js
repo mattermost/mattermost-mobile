@@ -4,6 +4,7 @@
 import React, {Component, PropTypes} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    ActivityIndicator,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -226,6 +227,31 @@ class Login extends Component {
     };
 
     render() {
+        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED;
+
+        let proceed;
+        if (isLoading) {
+            proceed = (
+                <ActivityIndicator
+                    animating={true}
+                    size='small'
+                />
+            );
+        } else {
+            proceed = (
+                <Button
+                    onPress={this.preSignIn}
+                    containerStyle={GlobalStyles.signupButton}
+                >
+                    <FormattedText
+                        id='login.signIn'
+                        defaultMessage='Sign in'
+                        style={GlobalStyles.signupButtonText}
+                    />
+                </Button>
+            );
+        }
+
         return (
             <KeyboardAvoidingView
                 behavior='padding'
@@ -274,16 +300,7 @@ class Login extends Component {
                             returnKeyType='go'
                             onSubmitEditing={this.preSignIn}
                         />
-                        <Button
-                            onPress={this.preSignIn}
-                            containerStyle={GlobalStyles.signupButton}
-                        >
-                            <FormattedText
-                                id='login.signIn'
-                                defaultMessage='Sign in'
-                                style={GlobalStyles.signupButtonText}
-                            />
-                        </Button>
+                        {proceed}
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>

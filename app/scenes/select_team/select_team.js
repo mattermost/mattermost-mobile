@@ -49,6 +49,10 @@ export default class SelectTeam extends PureComponent {
         }
     };
 
+    state = {
+        disableButtons: false
+    };
+
     componentWillMount() {
         this.props.subscribeToHeaderEvent('close', this.props.actions.goBack);
     }
@@ -58,15 +62,21 @@ export default class SelectTeam extends PureComponent {
     }
 
     onSelectTeam = async (team) => {
-        const {
-            closeDrawers,
-            closeModal,
-            handleTeamChange
-        } = this.props.actions;
+        if (!this.state.disableButtons) {
+            this.setState({disableButtons: true});
+            const {
+                closeDrawers,
+                closeModal,
+                handleTeamChange
+            } = this.props.actions;
 
-        handleTeamChange(team);
-        closeDrawers();
-        InteractionManager.runAfterInteractions(closeModal);
+            handleTeamChange(team);
+            closeDrawers();
+            InteractionManager.runAfterInteractions(closeModal);
+            setTimeout(() => {
+                this.setState({disableButtons: false});
+            }, 300);
+        }
     };
 
     render() {
@@ -77,6 +87,7 @@ export default class SelectTeam extends PureComponent {
                     onPress={() => this.onSelectTeam(team)}
                     style={GlobalStyles.buttonListItemText}
                     containerStyle={GlobalStyles.buttonListItem}
+                    disabled={this.state.disableButtons}
                 >
                     {team.display_name}
                     <Icon

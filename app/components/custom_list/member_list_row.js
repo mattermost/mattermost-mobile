@@ -68,7 +68,7 @@ function MemberListRow(props) {
     if (typeof onPress === 'function') {
         return createTouchableComponent(RowComponent, () => onPress(id));
     } else if (typeof props.onRowSelect === 'function') {
-        return createTouchableComponent(RowComponent, props.onRowSelect);
+        return createTouchableComponent(RowComponent, disableSelect ? () => false : props.onRowSelect);
     }
 
     return RowComponent;

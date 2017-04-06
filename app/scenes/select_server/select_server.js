@@ -3,6 +3,7 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import {
+    ActivityIndicator,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -112,8 +113,27 @@ export default class SelectServer extends PureComponent {
             configRequest.status === RequestStatus.STARTED ||
             licenseRequest.status === RequestStatus.STARTED;
 
+        let proceed;
         if (isLoading) {
-            return null;
+            proceed = (
+                <ActivityIndicator
+                    animating={true}
+                    size='small'
+                />
+            );
+        } else {
+            proceed = (
+                <Button
+                    onPress={this.onClick}
+                    containerStyle={GlobalStyles.signupButton}
+                >
+                    <FormattedText
+                        style={GlobalStyles.signupButtonText}
+                        id='mobile.components.select_server_view.proceed'
+                        defaultMessage='Proceed'
+                    />
+                </Button>
+            );
         }
 
         const error = pingRequest.error || configRequest.error || licenseRequest.error;
@@ -150,16 +170,7 @@ export default class SelectServer extends PureComponent {
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                         />
-                        <Button
-                            onPress={this.onClick}
-                            containerStyle={GlobalStyles.signupButton}
-                        >
-                            <FormattedText
-                                style={GlobalStyles.signupButtonText}
-                                id='mobile.components.select_server_view.proceed'
-                                defaultMessage='Proceed'
-                            />
-                        </Button>
+                        {proceed}
                         <ErrorText error={this.state.error || error}/>
                     </View>
                 </TouchableWithoutFeedback>

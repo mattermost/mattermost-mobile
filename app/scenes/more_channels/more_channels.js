@@ -17,9 +17,10 @@ import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import {Constants, RequestStatus} from 'mattermost-redux/constants';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CreateButton from './create_button';
 
@@ -81,7 +82,7 @@ class MoreChannels extends PureComponent {
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('close', this.props.actions.goBack);
-        this.props.subscribeToHeaderEvent('new_channel', this.onCreateChannel);
+        this.props.subscribeToHeaderEvent('create_channel', this.onCreateChannel);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -112,12 +113,16 @@ class MoreChannels extends PureComponent {
 
     componentWillUnmount() {
         this.props.unsubscribeFromHeaderEvent('close');
-        this.props.unsubscribeFromHeaderEvent('new_channel');
+        this.props.unsubscribeFromHeaderEvent('create_channel');
 
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
+
+    emitCanCreateChannel = (enabled) => {
+        EventEmitter.emit('can_create_channel', enabled);
+    };
 
     filterChannels = (channels, term) => {
         return channels.filter((c) => {
@@ -204,6 +209,7 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
+        this.emitCanCreateChannel(false);
         this.setState({adding: true});
         this.searchBar.blur();
         await this.props.actions.joinChannel(

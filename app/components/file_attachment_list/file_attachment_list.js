@@ -19,6 +19,7 @@ export default class FileAttachmentList extends Component {
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
+        handlePress: PropTypes.func.isRequired,
         onLongPress: PropTypes.func,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -40,7 +41,7 @@ export default class FileAttachmentList extends Component {
             <TouchableOpacity
                 key={file.id}
                 onLongPress={this.props.onLongPress}
-                onPress={() => this.handleOnPress(file)}
+                onPress={() => this.props.handlePress(this.handleOnPress, this, file)}
                 onPressIn={() => this.props.toggleSelected(true)}
                 onPressOut={() => this.props.toggleSelected(false)}
             >

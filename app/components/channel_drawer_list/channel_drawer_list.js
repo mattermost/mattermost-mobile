@@ -42,6 +42,7 @@ class ChannelDrawerList extends Component {
         channelMembers: PropTypes.object,
         currentTeam: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
+        handlePress: PropTypes.func.isRequired,
         intl: intlShape.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
@@ -169,6 +170,7 @@ class ChannelDrawerList extends Component {
                 channel={channel}
                 hasUnread={unread}
                 mentions={mentions}
+                handlePress={this.props.handlePress}
                 onSelectChannel={this.onSelectChannel}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
@@ -231,11 +233,11 @@ class ChannelDrawerList extends Component {
     };
 
     renderSectionAction = (styles, action) => {
-        const {theme} = this.props;
+        const {handlePress, theme} = this.props;
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
-                onPress={action}
+                onPress={() => handlePress(action)}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             >
                 <MaterialIcon
@@ -286,13 +288,13 @@ class ChannelDrawerList extends Component {
             return <Text>{'Loading'}</Text>;
         }
 
-        const {theme} = this.props;
+        const {handlePress, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         const settings = (
             <TouchableHighlight
                 style={styles.settingsContainer}
-                onPress={() => this.props.actions.openSettingsModal()}
+                onPress={() => handlePress(this.props.actions.openSettingsModal)}
                 underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
             >
                 <AwesomeIcon

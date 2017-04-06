@@ -18,7 +18,7 @@ export default class AccountSettings extends PureComponent {
             goToAccountNotifications: PropTypes.func.isRequired
         }),
         theme: PropTypes.object.isRequired
-    }
+    };
 
     static navigationProps = {
         renderLeftComponent: (props, emitter, theme) => {
@@ -34,6 +34,19 @@ export default class AccountSettings extends PureComponent {
                     />
                 </TouchableOpacity>
             );
+        }
+    };
+
+    canPress = true;
+
+    handlePress = (action) => {
+        if (this.canPress) {
+            this.canPress = false;
+            action();
+
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
         }
     };
 
@@ -53,7 +66,7 @@ export default class AccountSettings extends PureComponent {
             >
                 <TouchableOpacity
                     style={style.item}
-                    onPress={action}
+                    onPress={() => this.handlePress(action)}
                 >
                     <View style={style.itemLeftIconContainer}>
                         <Icon
@@ -76,7 +89,7 @@ export default class AccountSettings extends PureComponent {
                 {separator && <View style={style.separator}/>}
             </View>
         );
-    }
+    };
 
     renderItems = () => {
         return [
@@ -86,7 +99,7 @@ export default class AccountSettings extends PureComponent {
             this.buildItemRow('mobile', 'user.settings.modal.display', 'Display', () => true, true, false),
             this.buildItemRow('wrench', 'user.settings.modal.advanced', 'Advanced', () => true, false, false)
         ];
-    }
+    };
 
     render() {
         const {theme} = this.props;

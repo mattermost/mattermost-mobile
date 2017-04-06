@@ -62,6 +62,7 @@ class ChannelAddMembers extends PureComponent {
     };
 
     state = {
+        canSelect: true,
         profiles: [],
         selectedMembers: {}
     };
@@ -168,6 +169,7 @@ class ChannelAddMembers extends PureComponent {
     };
 
     emitAdding = (loading) => {
+        this.setState({canSelect: false});
         EventEmitter.emit('adding_members', loading);
     };
 
@@ -239,7 +241,7 @@ class ChannelAddMembers extends PureComponent {
                     listScrollRenderAheadDistance={50}
                     loading={isLoading}
                     loadingText={loadingText}
-                    selectable={true}
+                    selectable={this.state.canSelect}
                     onRowSelect={this.handleRowSelect}
                     renderRow={renderMemberRow}
                     createSections={createMembersSections}

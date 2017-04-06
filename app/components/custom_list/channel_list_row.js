@@ -12,58 +12,6 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flexDirection: 'column',
-            height: 65,
-            paddingHorizontal: 15,
-            justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg
-        },
-        titleContainer: {
-            alignItems: 'center',
-            flexDirection: 'row'
-        },
-        displayName: {
-            fontSize: 16,
-            color: theme.centerChannelColor
-        },
-        icon: {
-            fontSize: 16,
-            color: theme.centerChannelColor
-        },
-        textContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            marginLeft: 5
-        },
-        purpose: {
-            fontSize: 13,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        },
-        selector: {
-            height: 28,
-            width: 28,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: '#888',
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        selectorContainer: {
-            height: 50,
-            paddingRight: 15,
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        selectorFilled: {
-            backgroundColor: '#378FD2',
-            borderWidth: 0
-        }
-    });
-});
-
 function createTouchableComponent(children, action) {
     return (
         <TouchableOpacity onPress={action}>
@@ -135,5 +83,57 @@ ChannelListRow.propTypes = {
     onRowSelect: PropTypes.func,
     selected: PropTypes.bool
 };
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flexDirection: 'column',
+            height: 65,
+            paddingHorizontal: 15,
+            justifyContent: 'center',
+            backgroundColor: theme.centerChannelBg
+        },
+        titleContainer: {
+            alignItems: 'center',
+            flexDirection: 'row'
+        },
+        displayName: {
+            fontSize: 16,
+            color: theme.centerChannelColor
+        },
+        icon: {
+            fontSize: 16,
+            color: theme.centerChannelColor
+        },
+        textContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            marginLeft: 5
+        },
+        purpose: {
+            fontSize: 13,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        selector: {
+            height: 28,
+            width: 28,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#888',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        selectorContainer: {
+            height: 50,
+            paddingRight: 15,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        selectorFilled: {
+            backgroundColor: '#378FD2',
+            borderWidth: 0
+        }
+    });
+});
 
 export default ChannelListRow;

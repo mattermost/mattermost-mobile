@@ -45,6 +45,8 @@ class ChannelInfo extends PureComponent {
         })
     };
 
+    canPress = true;
+
     constructor(props) {
         super(props);
 
@@ -63,14 +65,6 @@ class ChannelInfo extends PureComponent {
             this.setState({isFavorite});
         }
     }
-
-    handleFavorite = () => {
-        const {isFavorite, actions, currentChannel} = this.props;
-        const {markFavorite, unmarkFavorite} = actions;
-        const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
-        this.setState({isFavorite: !isFavorite});
-        toggleFavorite(currentChannel.id);
-    };
 
     handleDeleteOrLeave(eventType) {
         const {formatMessage} = this.props.intl;
@@ -131,6 +125,25 @@ class ChannelInfo extends PureComponent {
         case Constants.GM_CHANNEL:
             closeGMChannel(channel).then(goBack);
             break;
+        }
+    };
+
+    handleFavorite = () => {
+        const {isFavorite, actions, currentChannel} = this.props;
+        const {markFavorite, unmarkFavorite} = actions;
+        const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
+        this.setState({isFavorite: !isFavorite});
+        toggleFavorite(currentChannel.id);
+    };
+
+    handlePress = (action, ...args) => {
+        if (this.canPress) {
+            this.canPress = false;
+            Reflect.apply(action, this, [...args]);
+
+            setTimeout(() => {
+                this.canPress = true;
+            }, 300);
         }
     };
 
@@ -218,7 +231,7 @@ class ChannelInfo extends PureComponent {
                              **/
                         }
                         <ChannelInfoRow
-                            action={this.props.actions.goToChannelMembers}
+                            action={() => this.handlePress(this.props.actions.goToChannelMembers)}
                             defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                             detail={currentChannelMemberCount}
                             icon='users'
@@ -229,7 +242,7 @@ class ChannelInfo extends PureComponent {
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
-                                    action={this.props.actions.goToChannelAddMembers}
+                                    action={() => this.handlePress(this.props.actions.goToChannelAddMembers)}
                                     defaultMessage='Add Members'
                                     icon='user-plus'
                                     textId='channel_header.addMembers'
@@ -239,7 +252,7 @@ class ChannelInfo extends PureComponent {
                             </View>
                         }
                         <ChannelInfoRow
-                            action={() => this.handleDeleteOrLeave('leave')}
+                            action={() => this.handlePress(this.handleDeleteOrLeave, 'leave')}
                             defaultMessage='Leave Channel'
                             icon='sign-out'
                             textId='navbar.leave'
@@ -250,7 +263,7 @@ class ChannelInfo extends PureComponent {
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel &&
                         <View style={style.footer}>
                             <ChannelInfoRow
-                                action={() => this.handleDeleteOrLeave('delete')}
+                                action={() => this.handlePress(this.handleDeleteOrLeave, 'delete')}
                                 defaultMessage='Delete Channel'
                                 icon='trash'
                                 iconColor='#CA3B27'
@@ -263,7 +276,7 @@ class ChannelInfo extends PureComponent {
                     {this.renderCloseDirect() &&
                     <View style={style.footer}>
                         <ChannelInfoRow
-                            action={this.handleClose}
+                            action={() => this.handlePress(this.handleClose)}
                             defaultMessage={defaultMessage}
                             icon='times'
                             iconColor='#CA3B27'
