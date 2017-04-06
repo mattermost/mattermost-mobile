@@ -23,6 +23,7 @@ function makeMapStateToProps() {
         const user = getUser(state, ownProps.post.user_id);
         const myPreferences = getMyPreferences(state);
         const {config, license} = state.entities.general;
+        const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
 
         return {
             ...ownProps,
@@ -34,7 +35,7 @@ function makeMapStateToProps() {
             displayName: displayUsername(user, myPreferences),
             isFlagged: isPostFlagged(ownProps.post.id, myPreferences),
             license,
-            roles: getCurrentUserRoles(state),
+            roles,
             theme: getTheme(state),
             user
         };

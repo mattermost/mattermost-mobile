@@ -15,12 +15,7 @@ import {
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsSince} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
-import {
-    makeDirectChannelVisibleIfNecessary,
-    makeGroupMessageVisibleIfNecessary,
-    savePreferences,
-    deletePreferences
-} from 'mattermost-redux/actions/preferences';
+import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {Constants, Preferences, UsersTypes} from 'mattermost-redux/constants';
@@ -60,24 +55,54 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
-        const {channels} = state.entities.channels;
+        const {channels, myMembers} = state.entities.channels;
         const {myPreferences} = state.entities.preferences;
         const {membersInTeam} = state.entities.teams;
         const dmPrefs = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW);
         const gmPrefs = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_GROUP_CHANNEL_SHOW);
         const members = [];
         const loadProfilesForChannels = [];
+        const prefs = [];
+
+        function buildPref(name) {
+            return {
+                user_id: currentUserId,
+                category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW,
+                name,
+                value: 'true'
+            };
+        }
 
         // Find DM's and GM's that need to be shown
         const directChannels = Object.values(channels).filter((c) => (isDirectChannel(c) || isGroupChannel(c)));
         directChannels.forEach((channel) => {
-            if (isDirectChannel(channel)) {
+            const member = myMembers[channel.id];
+            if (isDirectChannel(channel) && !isDirectChannelVisible(currentUserId, myPreferences, channel) && member.mention_count > 0) {
                 const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-                makeDirectChannelVisibleIfNecessary(teammateId)(dispatch, getState);
-            } else if (isGroupChannel(channel)) {
-                makeGroupMessageVisibleIfNecessary(channel.id)(dispatch, getState);
+                let pref = dmPrefs.get(teammateId);
+                if (pref) {
+                    pref = {...pref, value: 'true'};
+                } else {
+                    pref = buildPref(teammateId);
+                }
+                dmPrefs.set(teammateId, pref);
+                prefs.push(pref);
+            } else if (isGroupChannel(channel) && !isGroupChannelVisible(myPreferences, channel) && (member.mention_count > 0 || member.msg_count < channel.total_msg_count)) {
+                const id = channel.id;
+                let pref = gmPrefs.get(id);
+                if (pref) {
+                    pref = {...pref, value: 'true'};
+                } else {
+                    pref = buildPref(id);
+                }
+                gmPrefs.set(id, pref);
+                prefs.push(pref);
             }
         });
+
+        if (prefs.length) {
+            savePreferences(prefs)(dispatch, getState);
+        }
 
         for (const [key, pref] of dmPrefs) {
             if (pref.value === 'true') {
@@ -104,7 +129,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         }
 
         if (membersToLoad.length) {
-            await getTeamMembersByIds(teamId, membersToLoad)(dispatch, getState);
+            getTeamMembersByIds(teamId, membersToLoad)(dispatch, getState);
         }
 
         const actions = [];
