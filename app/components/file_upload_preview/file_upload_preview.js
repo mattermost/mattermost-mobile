@@ -57,12 +57,11 @@ export default class FileUploadPreview extends PureComponent {
                         style={style.removeButtonWrapper}
                         onPress={() => this.props.actions.handleRemoveFile(file.clientId, this.props.channelId, this.props.rootId)}
                     >
-                        <View style={{width: 14, height: 14, borderRadius: 7, backgroundColor: '#fff', position: 'absolute'}}/>
                         <Font
-                            name='ios-close-circle'
-                            color='#000'
-                            size={20}
-                            style={{position: 'absolute'}}
+                            name='md-close'
+                            color='#fff'
+                            size={18}
+                            style={style.removeButtonIcon}
                         />
                     </TouchableOpacity>
                 </View>
@@ -104,27 +103,34 @@ const style = StyleSheet.create({
         width: 115,
         elevation: 10,
         shadowColor: '#000',
-        shadowOpacity: 1,
-        shadowRadius: 8,
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
         shadowOffset: {
             width: 0,
             height: 0
         }
     },
+    removeButtonIcon: Platform.select({
+        ios: {
+            marginTop: 2
+        },
+        android: {
+            marginLeft: 1
+        }
+    }),
     removeButtonWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
+        overflow: 'hidden',
         top: 7,
         right: 7,
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        ...Platform.select({
-            android: {
-                backgroundColor: '#000'
-            }
-        })
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#000',
+        borderWidth: 1,
+        borderColor: '#fff'
     },
     scrollView: {
         flex: 1,
@@ -132,6 +138,6 @@ const style = StyleSheet.create({
     },
     scrollViewContent: {
         alignItems: 'flex-end',
-        marginLeft: 16
+        marginLeft: 14
     }
 });
