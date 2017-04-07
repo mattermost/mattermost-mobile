@@ -6,10 +6,13 @@ import assert from 'assert';
 import * as Actions from 'app/actions/views/options_modal';
 import configureStore from 'app/store';
 
+import TestHelper from 'test/test_helper';
+
 describe('Actions.Views.OptionsModal', () => {
     let store;
-    beforeEach(() => {
+    beforeEach(async () => {
         store = configureStore();
+        await TestHelper.wait();
     });
 
     it('openModal', async () => {

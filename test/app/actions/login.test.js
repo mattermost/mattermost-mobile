@@ -6,10 +6,13 @@ import assert from 'assert';
 import * as Actions from 'app/actions/views/login';
 import configureStore from 'app/store';
 
+import TestHelper from 'test/test_helper';
+
 describe('Actions.Views.Login', () => {
     let store;
-    beforeEach(() => {
+    beforeEach(async () => {
         store = configureStore();
+        await TestHelper.wait();
     });
 
     it('handleLoginIdChanged', async () => {

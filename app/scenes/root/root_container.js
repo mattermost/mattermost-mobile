@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 
-import {loadStorage, removeStorage} from 'app/actions/storage';
 import {goToSelectServer} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import {goToLoadTeam} from 'app/actions/navigation';
@@ -18,6 +17,7 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         credentials: state.entities.general.credentials,
+        hydrationComplete: state.views.root.hydrationComplete,
         logoutRequest: state.requests.users.logout,
         loginRequest: state.requests.users.login
     };
@@ -29,8 +29,6 @@ function mapDispatchToProps(dispatch) {
             goToLoadTeam,
             goToSelectServer,
             handleServerUrlChanged,
-            loadStorage,
-            removeStorage,
             setStoreFromLocalData
         }, dispatch)
     };

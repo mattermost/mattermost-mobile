@@ -6,9 +6,12 @@ import assert from 'assert';
 import * as ThreadActions from 'app/actions/views/thread';
 import configureStore from 'app/store';
 
+import TestHelper from 'test/test_helper';
+
 describe('Actions.Views.Thread', () => {
     it('handleCommentDraftChanged', async () => {
         const store = configureStore();
+        await TestHelper.wait();
 
         await ThreadActions.handleCommentDraftChanged('1234', 'draft1')(store.dispatch, store.getState);
 

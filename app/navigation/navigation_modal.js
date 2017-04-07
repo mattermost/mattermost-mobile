@@ -36,8 +36,9 @@ export default class NavigationModal extends PureComponent {
     constructor(props) {
         super(props);
 
+        const top = props.show ? 0 : props.deviceHeight;
         this.state = {
-            top: new Animated.Value(props.deviceHeight),
+            top: new Animated.Value(top),
             opacity: new Animated.Value(100)
         };
     }

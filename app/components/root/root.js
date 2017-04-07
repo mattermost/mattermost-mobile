@@ -39,7 +39,6 @@ export default class Root extends Component {
             loadConfigAndLicense: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             setAppState: PropTypes.func.isRequired,
-            flushToStorage: PropTypes.func.isRequired,
             unrenderDrawer: PropTypes.func.isRequired
         }).isRequired
     };
@@ -48,11 +47,10 @@ export default class Root extends Component {
         super(props);
 
         this.handleAppStateChange = this.handleAppStateChange.bind(this);
-
-        this.props.actions.setAppState(AppState.currentState === 'active');
     }
 
     componentDidMount() {
+        this.props.actions.setAppState(AppState.currentState === 'active');
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(Constants.CONFIG_CHANGED, this.handleConfigChanged);
         Client.setUserAgent(DeviceInfo.getUserAgent());
@@ -75,7 +73,7 @@ export default class Root extends Component {
         this.props.actions.setAppState(appState === 'active');
 
         if (appState === 'inactive') {
-            this.props.actions.flushToStorage();
+            // TODO: See if we still need this
         }
     }
 
