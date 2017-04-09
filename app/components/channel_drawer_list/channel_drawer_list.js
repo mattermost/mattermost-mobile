@@ -16,6 +16,7 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {Constants} from 'mattermost-redux/constants';
@@ -42,7 +43,6 @@ class ChannelDrawerList extends Component {
         channelMembers: PropTypes.object,
         currentTeam: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
-        handlePress: PropTypes.func.isRequired,
         intl: intlShape.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
@@ -170,7 +170,6 @@ class ChannelDrawerList extends Component {
                 channel={channel}
                 hasUnread={unread}
                 mentions={mentions}
-                handlePress={this.props.handlePress}
                 onSelectChannel={this.onSelectChannel}
                 isActive={channel.isCurrent}
                 theme={this.props.theme}
@@ -233,11 +232,11 @@ class ChannelDrawerList extends Component {
     };
 
     renderSectionAction = (styles, action) => {
-        const {handlePress, theme} = this.props;
+        const {theme} = this.props;
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
-                onPress={() => handlePress(action)}
+                onPress={() => preventDoubleTap(action, this)}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             >
                 <MaterialIcon
@@ -288,13 +287,13 @@ class ChannelDrawerList extends Component {
             return <Text>{'Loading'}</Text>;
         }
 
-        const {handlePress, theme} = this.props;
+        const {theme} = this.props;
         const styles = getStyleSheet(theme);
 
         const settings = (
             <TouchableHighlight
                 style={styles.settingsContainer}
-                onPress={() => handlePress(this.props.actions.openSettingsModal)}
+                onPress={() => preventDoubleTap(this.props.actions.openSettingsModal)}
                 underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
             >
                 <AwesomeIcon

@@ -10,15 +10,6 @@ import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const getStyle = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
-    });
-});
-
 export default class Thread extends PureComponent {
     static propTypes = {
         actions: React.PropTypes.shape({
@@ -43,8 +34,6 @@ export default class Thread extends PureComponent {
 
     state = {};
 
-    canPress = true;
-
     componentWillReceiveProps(nextProps) {
         if (!this.state.lastViewedAt) {
             this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
@@ -57,17 +46,6 @@ export default class Thread extends PureComponent {
 
     handleDraftChanged = (value) => {
         this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
-    };
-
-    handlePress = (action, thisArg, ...args) => {
-        if (this.canPress) {
-            this.canPress = false;
-            Reflect.apply(action, thisArg || this, [...args]);
-
-            setTimeout(() => {
-                this.canPress = true;
-            }, 300);
-        }
     };
 
     render() {
@@ -83,7 +61,6 @@ export default class Thread extends PureComponent {
                 <PostList
                     indicateNewMessages={true}
                     posts={this.props.posts}
-                    handlePress={this.handlePress}
                     currentUserId={this.props.myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                 />
@@ -99,3 +76,12 @@ export default class Thread extends PureComponent {
         );
     }
 }
+
+const getStyle = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});

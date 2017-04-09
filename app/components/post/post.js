@@ -14,15 +14,16 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
+import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import MattermostIcon from 'app/components/mattermost_icon';
 import Markdown from 'app/components/markdown/markdown';
 import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
-import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import ReplyIcon from 'app/components/reply_icon';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import webhookIcon from 'assets/images/icons/webhook.jpg';
 
@@ -54,7 +55,6 @@ class Post extends PureComponent {
         roles: PropTypes.string,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
-        handlePress: PropTypes.func,
         actions: PropTypes.shape({
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
@@ -119,8 +119,8 @@ class Post extends PureComponent {
 
     handlePress = () => {
         const {post, onPress} = this.props;
-        if (this.props.handlePress && onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
-            this.props.handlePress(onPress, null, post);
+        if (onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
+            preventDoubleTap(onPress, null, post);
         }
     };
 
@@ -196,7 +196,7 @@ class Post extends PureComponent {
     };
 
     renderFileAttachments() {
-        const {handlePress, post} = this.props;
+        const {post} = this.props;
         const fileIds = post.file_ids || [];
 
         let attachments;
@@ -205,7 +205,6 @@ class Post extends PureComponent {
                 <FileAttachmentList
                     hideOptionsContext={this.hideOptionsContext}
                     onLongPress={this.showOptionsContext}
-                    handlePress={handlePress}
                     post={post}
                     toggleSelected={this.toggleSelected}
                 />
@@ -309,9 +308,7 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        if (this.props.handlePress) {
-            this.props.handlePress(this.props.actions.goToUserProfile, null, this.props.user.id);
-        }
+        preventDoubleTap(this.props.actions.goToUserProfile, null, this.props.user.id);
     };
 
     toggleSelected = (selected) => {

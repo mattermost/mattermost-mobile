@@ -8,26 +8,15 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Font from 'react-native-vector-icons/FontAwesome';
+import IconFont from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import {preventDoubleTap} from 'app/utils/tap';
 
 export default class OptionsModalList extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
         onCancelPress: PropTypes.func
-    };
-
-    canPress = true;
-
-    handlePress = (action) => {
-        if (this.canPress) {
-            this.canPress = false;
-            action();
-            setTimeout(() => {
-                this.canPress = true;
-            }, 300);
-        }
     };
 
     renderOptions = () => {
@@ -49,12 +38,12 @@ export default class OptionsModalList extends PureComponent {
             return (
                 <TouchableOpacity
                     key={index}
-                    onPress={() => this.handlePress(item.action)}
+                    onPress={() => preventDoubleTap(item.action, this)}
                     style={[style.option, style.optionBorder]}
                 >
                     {textComponent}
                     {item.icon &&
-                        <Font
+                        <IconFont
                             name={item.icon}
                             size={18}
                             style={style.optionIcon}
@@ -67,7 +56,7 @@ export default class OptionsModalList extends PureComponent {
         const cancel = (
             <TouchableOpacity
                 key={items.length}
-                onPress={() => this.handlePress(onCancelPress)}
+                onPress={() => preventDoubleTap(onCancelPress, this)}
                 style={style.option}
             >
                 <Text style={style.optionText}>{'Cancel'}</Text>

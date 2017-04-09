@@ -44,8 +44,6 @@ export default class ChannelPostList extends PureComponent {
         loaderOpacity: new Animated.Value(1)
     };
 
-    canPress = true;
-
     componentDidMount() {
         this.props.actions.loadPostsIfNecessary(this.props.channel);
     }
@@ -86,7 +84,7 @@ export default class ChannelPostList extends PureComponent {
             toValue: 0,
             duration: 500
         }).start();
-    }
+    };
 
     didPostsLoad(nextProps, postsRequest) {
         const nextGetPostsStatus = nextProps.postsRequests[postsRequest].status;
@@ -112,17 +110,6 @@ export default class ChannelPostList extends PureComponent {
         return null;
     };
 
-    handlePress = (action, thisArg, ...args) => {
-        if (this.canPress) {
-            this.canPress = false;
-            Reflect.apply(action, thisArg || this, [...args]);
-
-            setTimeout(() => {
-                this.canPress = true;
-            }, 300);
-        }
-    };
-
     goToThread = (post) => {
         this.props.actions.goToThread(post.channel_id, post.root_id || post.id);
     };
@@ -137,7 +124,6 @@ export default class ChannelPostList extends PureComponent {
                     loadMore={this.loadMorePosts}
                     isLoadingMore={postsRequests.getPostsBefore.status === RequestStatus.STARTED}
                     showLoadMore={posts.length > 0 && !this.state.hasFirstPost}
-                    handlePress={this.handlePress}
                     onPostPress={this.goToThread}
                     renderReplies={true}
                     indicateNewMessages={true}

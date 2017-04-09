@@ -10,12 +10,12 @@ import {
 } from 'react-native';
 
 import ChanneIcon from 'app/components/channel_icon';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelDrawerItem extends PureComponent {
     static propTypes = {
         channel: PropTypes.object.isRequired,
-        handlePress: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         isActive: PropTypes.bool.isRequired,
         hasUnread: PropTypes.bool.isRequired,
@@ -30,7 +30,6 @@ export default class ChannelDrawerItem extends PureComponent {
             mentions,
             hasUnread,
             isActive,
-            handlePress,
             onSelectChannel
         } = this.props;
 
@@ -80,8 +79,7 @@ export default class ChannelDrawerItem extends PureComponent {
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => handlePress(onSelectChannel, channel)}
-                delayLongPress={1000}
+                onPress={() => preventDoubleTap(onSelectChannel, this, channel)}
             >
                 <View style={style.container}>
                     {activeBorder}

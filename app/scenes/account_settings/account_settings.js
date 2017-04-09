@@ -10,6 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AccountSettings extends PureComponent {
@@ -37,19 +38,6 @@ export default class AccountSettings extends PureComponent {
         }
     };
 
-    canPress = true;
-
-    handlePress = (action) => {
-        if (this.canPress) {
-            this.canPress = false;
-            action();
-
-            setTimeout(() => {
-                this.canPress = true;
-            }, 300);
-        }
-    };
-
     // The enabled arg can be removed once all the scenes have been implemented.
     buildItemRow = (icon, id, defaultMessage, action, separator = true, enabled = false) => {
         if (!enabled) {
@@ -66,7 +54,7 @@ export default class AccountSettings extends PureComponent {
             >
                 <TouchableOpacity
                     style={style.item}
-                    onPress={() => this.handlePress(action)}
+                    onPress={() => preventDoubleTap(action)}
                 >
                     <View style={style.itemLeftIconContainer}>
                         <Icon

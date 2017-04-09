@@ -34,7 +34,6 @@ export default class PostList extends Component {
         isLoadingMore: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         onPostPress: PropTypes.func,
-        handlePress: PropTypes.func,
         renderReplies: PropTypes.bool,
         indicateNewMessages: PropTypes.bool,
         currentUserId: PropTypes.string,
@@ -124,7 +123,6 @@ export default class PostList extends Component {
                 isLastReply={post.isLastReply}
                 commentedOnPost={post.commentedOnPost}
                 onPress={this.props.onPostPress}
-                handlePress={this.props.handlePress}
             />
         );
     };

@@ -11,6 +11,7 @@ import {
     TouchableOpacity
 } from 'react-native';
 
+import {preventDoubleTap} from 'app/utils/tap';
 import FileAttachment from './file_attachment';
 
 export default class FileAttachmentList extends Component {
@@ -19,7 +20,6 @@ export default class FileAttachmentList extends Component {
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
-        handlePress: PropTypes.func.isRequired,
         onLongPress: PropTypes.func,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -41,7 +41,7 @@ export default class FileAttachmentList extends Component {
             <TouchableOpacity
                 key={file.id}
                 onLongPress={this.props.onLongPress}
-                onPress={() => this.props.handlePress(this.handleOnPress, this, file)}
+                onPress={() => preventDoubleTap(this.handleOnPress, this, file)}
                 onPressIn={() => this.props.toggleSelected(true)}
                 onPressOut={() => this.props.toggleSelected(false)}
             >

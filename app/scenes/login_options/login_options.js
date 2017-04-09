@@ -11,6 +11,7 @@ import {
 import Button from 'react-native-button';
 import FormattedText from 'app/components/formatted_text';
 import {GlobalStyles} from 'app/styles';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import logo from 'assets/images/logo.png';
 
@@ -24,25 +25,13 @@ export default class LoginOptions extends PureComponent {
         license: PropTypes.object.isRequired
     };
 
-    canPress = true;
-
-    handlePress = (action) => {
-        if (this.canPress) {
-            this.canPress = false;
-            action();
-            setTimeout(() => {
-                this.canPress = true;
-            }, 300);
-        }
-    };
-
     renderEmailOption = () => {
         const config = this.props.config;
         if (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') {
             return (
                 <Button
                     key='email'
-                    onPress={() => this.handlePress(this.props.actions.goToLogin)}
+                    onPress={() => preventDoubleTap(this.props.actions.goToLogin)}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#2389d7'}]}
                 >
                     <FormattedText
@@ -63,7 +52,7 @@ export default class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='saml'
-                    onPress={() => this.handlePress(this.props.actions.goToSaml)}
+                    onPress={() => preventDoubleTap(this.props.actions.goToSaml)}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#34a28b'}]}
                 >
                     <Text
