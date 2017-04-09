@@ -4,6 +4,7 @@
 import {combineReducers} from 'redux';
 
 import channel from './channel';
+import connection from './connection';
 import fetchCache from './fetch_cache';
 import i18n from './i18n';
 import login from './login';
@@ -15,6 +16,7 @@ import team from './team';
 import thread from './thread';
 
 export default combineReducers({
+    connection,
     channel,
     fetchCache,
     i18n,

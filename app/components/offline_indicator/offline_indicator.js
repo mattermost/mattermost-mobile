@@ -1,0 +1,230 @@
+// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
+import React, {PropTypes, PureComponent} from 'react';
+import {
+    ActivityIndicator,
+    Animated,
+    Dimensions,
+    Platform,
+    StyleSheet,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import IonIcon from 'react-native-vector-icons/Ionicons';
+
+import FormattedText from 'app/components/formatted_text';
+
+import {RequestStatus} from 'mattermost-redux/constants';
+
+const INITIAL_TOP = Platform.OS === 'ios' ? -80 : -60;
+const OFFLINE = 'offline';
+const CONNECTING = 'connecting';
+const CONNECTED = 'connected';
+
+export default class OfflineIndicator extends PureComponent {
+    static propTypes = {
+        actions: PropTypes.shape({
+            closeWebSocket: PropTypes.func.isRequired,
+            initWebSocket: PropTypes.func.isRequired
+        }).isRequired,
+        appState: PropTypes.bool,
+        isOnline: PropTypes.bool,
+        websocket: PropTypes.object
+    };
+
+    static defaultProps: {
+        appState: true,
+        isOnline: true
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            forced: false,
+            network: null,
+            top: new Animated.Value(INITIAL_TOP)
+        };
+
+        this.backgroundColor = new Animated.Value(0);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.appState || nextProps.appState) {
+            if (this.state.forced || nextProps.isOnline) {
+                if (nextProps.websocket.status === RequestStatus.STARTED || nextProps.websocket.status === RequestStatus.FAILURE) {
+                    this.connecting();
+                } else if (nextProps.websocket.status === RequestStatus.SUCCESS) {
+                    this.connected();
+                }
+            } else {
+                this.offline();
+            }
+        }
+    }
+
+    offline = () => {
+        this.setState({network: OFFLINE}, () => {
+            this.show();
+        });
+    };
+
+    connect = () => {
+        const {closeWebSocket, initWebSocket} = this.props.actions;
+        this.setState({forced: true}, () => {
+            initWebSocket(Platform.OS);
+
+            // set forced to be false after trying for 3 seconds
+            setTimeout(() => {
+                closeWebSocket();
+                this.setState({forced: false, network: OFFLINE});
+            }, 3000);
+        });
+    };
+
+    connecting = () => {
+        const prevState = this.state.network;
+        this.setState({network: CONNECTING}, () => {
+            if (prevState !== OFFLINE) {
+                this.show();
+            }
+        });
+    };
+
+    connected = () => {
+        this.setState({network: CONNECTED});
+        Animated.sequence([
+            Animated.timing(
+                this.backgroundColor, {
+                    toValue: 1,
+                    duration: 100
+                }
+            ),
+            Animated.timing(
+                this.state.top, {
+                    toValue: INITIAL_TOP,
+                    duration: 300,
+                    delay: 1000
+                }
+            )
+        ]).start(() => {
+            this.backgroundColor.setValue(0);
+            this.setState({forced: false});
+        });
+    };
+
+    show = () => {
+        Animated.timing(
+            this.state.top, {
+                toValue: 0,
+                duration: 300
+            }
+        ).start();
+    };
+
+    render() {
+        if (!this.state.network) {
+            return null;
+        }
+
+        const background = this.backgroundColor.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['#939393', '#629a41']
+        });
+
+        let i18nId;
+        let defaultMessage;
+        let action;
+        switch (this.state.network) {
+        case OFFLINE:
+            i18nId = 'mobile.offlineIndicator.offline';
+            defaultMessage = 'No Internet connection';
+            action = (
+                <TouchableOpacity
+                    onPress={this.connect}
+                    style={[styles.actionContainer, styles.actionButton]}
+                >
+                    <IonIcon
+                        color='#FFFFFF'
+                        name='ios-refresh'
+                        size={20}
+                    />
+                </TouchableOpacity>
+            );
+            break;
+        case CONNECTING:
+            i18nId = 'mobile.offlineIndicator.connecting';
+            defaultMessage = 'Connecting...';
+            action = (
+                <View style={[styles.actionContainer, styles.actionButton]}>
+                    <ActivityIndicator
+                        color='#FFFFFF'
+                        size='small'
+                    />
+                </View>
+            );
+            break;
+        case CONNECTED:
+            i18nId = 'mobile.offlineIndicator.connected';
+            defaultMessage = 'Connected';
+            action = (
+                <View style={styles.actionContainer}>
+                    <IonIcon
+                        color='#FFFFFF'
+                        name='md-checkmark'
+                        size={20}
+                    />
+                </View>
+            );
+            break;
+        }
+
+        return (
+            <Animated.View style={[styles.container, {top: this.state.top}]}>
+                <Animated.View style={[styles.wrapper, {backgroundColor: background}]}>
+                    <FormattedText
+                        defaultMessage={defaultMessage}
+                        id={i18nId}
+                        style={styles.message}
+                    />
+                    {action}
+                </Animated.View>
+            </Animated.View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        zIndex: 10,
+        position: 'absolute',
+        elevation: 2
+    },
+    wrapper: {
+        alignItems: 'center',
+        flex: 1,
+        flexDirection: 'row',
+        height: 38,
+        paddingHorizontal: 12,
+        width: Dimensions.get('window').width,
+        backgroundColor: 'red'
+    },
+    message: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+        flex: 1
+    },
+    actionButton: {
+        borderWidth: 1,
+        borderColor: '#FFFFFF'
+    },
+    actionContainer: {
+        alignItems: 'center',
+        height: 24,
+        justifyContent: 'center',
+        width: 60
+    }
+});

@@ -16,11 +16,12 @@ import {
     selectInitialChannel,
     handlePostDraftChanged
 } from 'app/actions/views/channel';
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
+import {connection} from 'app/actions/views/connection';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
-
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'app/selectors/preferences';
+
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import {
@@ -31,18 +32,22 @@ import {
 import Channel from './channel';
 
 function mapStateToProps(state, ownProps) {
+    const {websocket} = state.requests.general;
+
     return {
         ...ownProps,
         ...state.views.channel,
         currentTeam: getCurrentTeam(state),
         currentChannel: getCurrentChannel(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
+        webSocketRequest: websocket
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            connection,
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
             selectFirstAvailableTeam,
