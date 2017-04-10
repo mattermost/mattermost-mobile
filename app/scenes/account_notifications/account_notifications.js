@@ -20,33 +20,6 @@ import Section from './section';
 import SectionItem from './section_item';
 import SaveNotificationsButton from './save_notifications_button';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        input: {
-            color: theme.centerChannelColor,
-            fontSize: 12,
-            height: 40
-        },
-        separator: {
-            height: 1,
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            marginHorizontal: 15
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
-        },
-        scrollViewContent: {
-            paddingBottom: 30
-        },
-        wrapper: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
-    });
-});
-
 const SAVE_NOTIFY_PROPS = 'save_notify_props';
 const SAVING_NOTIFY_PROPS = 'saving_notify_props';
 
@@ -548,3 +521,30 @@ export default class AccountNotifications extends PureComponent {
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        input: {
+            color: theme.centerChannelColor,
+            fontSize: 12,
+            height: 40
+        },
+        separator: {
+            height: 1,
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            marginHorizontal: 15
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+        },
+        scrollViewContent: {
+            paddingBottom: 30
+        },
+        wrapper: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});

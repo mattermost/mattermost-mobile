@@ -1648,7 +1648,7 @@
   "mobile.account_notifications.threads_mentions": "Mentions in threads",
   "mobile.account_notifications.threads_start": "Threads that I start",
   "mobile.account_notifications.threads_start_participate": "Threads that I start or participate in",
-  "mobile.channel_info.alertMessageDeleteChannel": "Are you sure you want to delete the {term} with {name}?",
+  "mobile.channel_info.alertMessageDeleteChannel": "Are you sure you want to delete the {term} {name}?",
   "mobile.channel_info.alertMessageLeaveChannel": "Are you sure you want to leave the {term} {name}?",
   "mobile.channel_info.alertNo": "No",
   "mobile.channel_info.alertTitleDeleteChannel": "Delete {term}",

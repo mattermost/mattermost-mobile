@@ -84,7 +84,7 @@ export default class ChannelPostList extends PureComponent {
             toValue: 0,
             duration: 500
         }).start();
-    }
+    };
 
     didPostsLoad(nextProps, postsRequest) {
         const nextGetPostsStatus = nextProps.postsRequests[postsRequest].status;

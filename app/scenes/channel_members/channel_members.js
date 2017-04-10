@@ -59,6 +59,7 @@ class ChannelMembers extends PureComponent {
     };
 
     state = {
+        canSelect: true,
         profiles: [],
         selectedMembers: {}
     };
@@ -191,6 +192,7 @@ class ChannelMembers extends PureComponent {
     };
 
     emitRemoving = (loading) => {
+        this.setState({canSelect: false});
         EventEmitter.emit('removing_members', loading);
     };
 
@@ -288,7 +290,7 @@ class ChannelMembers extends PureComponent {
                     listScrollRenderAheadDistance={50}
                     loading={isLoading}
                     loadingText={loadingText}
-                    selectable={canManageUsers}
+                    selectable={canManageUsers && this.state.canSelect}
                     onRowSelect={this.handleRowSelect}
                     renderRow={this.renderMemberRow}
                     createSections={createMembersSections}

@@ -10,15 +10,6 @@ import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const getStyle = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
-    });
-});
-
 export default class Thread extends PureComponent {
     static propTypes = {
         actions: React.PropTypes.shape({
@@ -85,3 +76,12 @@ export default class Thread extends PureComponent {
         );
     }
 }
+
+const getStyle = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        }
+    });
+});

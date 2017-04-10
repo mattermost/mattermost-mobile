@@ -10,6 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AccountSettings extends PureComponent {
@@ -18,7 +19,7 @@ export default class AccountSettings extends PureComponent {
             goToAccountNotifications: PropTypes.func.isRequired
         }),
         theme: PropTypes.object.isRequired
-    }
+    };
 
     static navigationProps = {
         renderLeftComponent: (props, emitter, theme) => {
@@ -53,7 +54,7 @@ export default class AccountSettings extends PureComponent {
             >
                 <TouchableOpacity
                     style={style.item}
-                    onPress={action}
+                    onPress={() => preventDoubleTap(action)}
                 >
                     <View style={style.itemLeftIconContainer}>
                         <Icon
@@ -76,7 +77,7 @@ export default class AccountSettings extends PureComponent {
                 {separator && <View style={style.separator}/>}
             </View>
         );
-    }
+    };
 
     renderItems = () => {
         return [
@@ -86,7 +87,7 @@ export default class AccountSettings extends PureComponent {
             this.buildItemRow('mobile', 'user.settings.modal.display', 'Display', () => true, true, false),
             this.buildItemRow('wrench', 'user.settings.modal.advanced', 'Advanced', () => true, false, false)
         ];
-    }
+    };
 
     render() {
         const {theme} = this.props;

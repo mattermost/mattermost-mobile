@@ -3,12 +3,9 @@
 
 import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
-import {
-    TouchableOpacity,
-    View
-} from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
+import ActionButton from 'app/components/action_button';
+
 import {getTheme} from 'app/selectors/preferences';
 
 import {Constants} from 'mattermost-redux/constants';
@@ -22,18 +19,15 @@ function CreateButton(props) {
     }
 
     return (
-        <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1}}>
-            <TouchableOpacity
-                onPress={() => props.emitter('new_channel')}
-                style={{paddingHorizontal: 15}}
-            >
-                <FormattedText
-                    id='mobile.create_channel'
-                    defaultMessage='Create'
-                    style={{color: props.theme.sidebarHeaderTextColor}}
-                />
-            </TouchableOpacity>
-        </View>
+        <ActionButton
+            actionEventName='create_channel'
+            emitter={props.emitter}
+            enabled={true}
+            enableEventName='can_create_channel'
+            labelDefaultMessage='Create'
+            labelId='mobile.create_channel'
+            loadingEventName='creating_channel'
+        />
     );
 }
 

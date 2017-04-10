@@ -11,6 +11,7 @@ import {
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import PostTextbox from 'app/components/post_textbox';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import {Constants} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -53,9 +54,11 @@ export default class Channel extends React.PureComponent {
         }
     };
 
+    canPress = true;
+
     componentWillMount() {
-        this.props.subscribeToHeaderEvent('open_channel_drawer', this.openChannelDrawer);
-        this.props.subscribeToHeaderEvent('show_channel_info', this.props.actions.goToChannelInfo);
+        this.props.subscribeToHeaderEvent('open_channel_drawer', () => preventDoubleTap(this.openChannelDrawer, this));
+        this.props.subscribeToHeaderEvent('show_channel_info', () => preventDoubleTap(this.props.actions.goToChannelInfo));
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         this.props.actions.initWebSocket(Platform.OS);
         if (this.props.currentTeam) {

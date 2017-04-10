@@ -16,6 +16,7 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {Constants} from 'mattermost-redux/constants';
@@ -235,7 +236,7 @@ class ChannelDrawerList extends Component {
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
-                onPress={action}
+                onPress={() => preventDoubleTap(action, this)}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             >
                 <MaterialIcon
@@ -292,7 +293,7 @@ class ChannelDrawerList extends Component {
         const settings = (
             <TouchableHighlight
                 style={styles.settingsContainer}
-                onPress={() => this.props.actions.openSettingsModal()}
+                onPress={() => preventDoubleTap(this.props.actions.openSettingsModal)}
                 underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
             >
                 <AwesomeIcon

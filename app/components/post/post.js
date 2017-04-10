@@ -14,15 +14,16 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
+import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import MattermostIcon from 'app/components/mattermost_icon';
 import Markdown from 'app/components/markdown/markdown';
 import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
-import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import ReplyIcon from 'app/components/reply_icon';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import webhookIcon from 'assets/images/icons/webhook.jpg';
 
@@ -119,7 +120,7 @@ class Post extends PureComponent {
     handlePress = () => {
         const {post, onPress} = this.props;
         if (onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
-            onPress(post);
+            preventDoubleTap(onPress, null, post);
         }
     };
 
@@ -307,7 +308,7 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        this.props.actions.goToUserProfile(this.props.user.id);
+        preventDoubleTap(this.props.actions.goToUserProfile, null, this.props.user.id);
     };
 
     toggleSelected = (selected) => {

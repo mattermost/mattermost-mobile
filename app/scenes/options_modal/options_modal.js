@@ -28,20 +28,20 @@ export default class OptionsModal extends PureComponent {
             PropTypes.string,
             PropTypes.object
         ])
-    }
+    };
 
     static defaultProps = {
         onCancelPress: () => false
-    }
+    };
 
     static navigationProps = {
         hideNavBar: true,
         modalAnimationType: 'fade'
-    }
+    };
 
     state = {
         top: new Animated.Value(deviceHeight)
-    }
+    };
 
     componentDidMount() {
         Animated.timing(this.state.top, {
@@ -64,7 +64,7 @@ export default class OptionsModal extends PureComponent {
             this.props.actions.closeModal();
             this.props.onCancelPress();
         });
-    }
+    };
 
     render() {
         const {
