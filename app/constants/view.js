@@ -18,6 +18,8 @@ const ViewTypes = keyMirror({
 
     NOTIFICATION_CHANGED: null,
 
+    CONNECTION_CHANGED: null,
+
     SET_POST_DRAFT: null,
     SET_COMMENT_DRAFT: null,
 
