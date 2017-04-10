@@ -100,8 +100,6 @@ export default class Channel extends PureComponent {
         const {actions, webSocketRequest} = this.props;
         const {closeWebSocket, connection, initWebSocket} = actions;
 
-        connection(isConnected);
-
         if (isConnected) {
             if (!webSocketRequest || webSocketRequest.status === RequestStatus.NOT_STARTED) {
                 initWebSocket(Platform.OS);
@@ -109,6 +107,7 @@ export default class Channel extends PureComponent {
         } else {
             closeWebSocket();
         }
+        connection(isConnected);
     };
 
     loadChannels = (teamId) => {
