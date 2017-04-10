@@ -293,9 +293,13 @@ const state = {
             options: [],
             visible: false
         },
+        root: {
+            hydrationComplete: false
+        },
         selectServer: {
             serverUrl: Config.DefaultServerUrl
         },
+        team: {},
         thread: {
             drafts: {}
         }

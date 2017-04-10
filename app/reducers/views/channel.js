@@ -25,7 +25,7 @@ function drafts(state = {}, action) {
     }
     case ChannelTypes.SELECT_CHANNEL: {
         let data = {...state};
-        if (!data[action.data]) {
+        if (action.data && !data[action.data]) {
             data = {
                 ...state,
                 [action.data]: {

@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
-import {AsyncStorage} from 'react-native';
 import Orientation from 'react-native-orientation';
 import Loading from 'app/components/loading';
 
@@ -18,10 +17,9 @@ export default class Root extends PureComponent {
             goToLoadTeam: PropTypes.func,
             goToSelectServer: PropTypes.func,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            loadStorage: PropTypes.func,
-            removeStorage: PropTypes.func,
             setStoreFromLocalData: PropTypes.func
-        }).isRequired
+        }).isRequired,
+        hydrationComplete: PropTypes.bool.isRequired
     };
 
     static navigationProps = {
@@ -31,20 +29,16 @@ export default class Root extends PureComponent {
     componentDidMount() {
         Orientation.lockToPortrait();
 
-        // Any initialization logic for navigation, setting up the client, etc should go here
-        this.init();
+        this.loadStoreAndScene(this.props.credentials);
         setTimeout(() => {
             this.handleCloseSplashScreen();
         }, 1000);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.logoutRequest.status === RequestStatus.STARTED &&
-            nextProps.logoutRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.removeStorage();
-        } else if (this.props.logoutRequest.status === RequestStatus.SUCCESS &&
+        if (this.props.logoutRequest.status === RequestStatus.SUCCESS &&
             nextProps.logoutRequest.status === RequestStatus.NOT_STARTED) {
-            this.init();
+            this.loadStoreAndScene(nextProps.credentials);
         }
     }
 
@@ -58,40 +52,18 @@ export default class Root extends PureComponent {
         SplashScreen.close(Object.assign({}, opts, options));
     };
 
-    init = () => {
-        if (this.props.logoutRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.removeStorage().then(() => {
-                setTimeout(this.loadStoreAndScene, 1000);
-            });
+    loadStoreAndScene = (credentials = {}) => {
+        if (credentials.token && credentials.url) {
+            // Will probably need to make this optimistic since we
+            // assume that the stored token is good.
+            this.props.actions.setStoreFromLocalData(credentials);
+            this.props.actions.goToLoadTeam();
         } else {
-            this.loadStoreAndScene();
+            this.selectServer();
         }
-    };
-
-    loadStoreAndScene = () => {
-        this.props.actions.loadStorage().then(() => {
-            if (this.props.credentials.token && this.props.credentials.url) {
-                this.props.actions.setStoreFromLocalData(this.props.credentials).then(() => {
-                    if (this.props.loginRequest.status === RequestStatus.SUCCESS) {
-                        this.props.actions.goToLoadTeam();
-                    } else {
-                        this.selectServer();
-                    }
-                });
-            } else {
-                this.selectServer();
-            }
-        });
     };
 
     selectServer = async () => {
-        const storage = await AsyncStorage.getItem('storage');
-        if (storage) {
-            const {url} = JSON.parse(await AsyncStorage.getItem('storage'));
-            if (url) {
-                await this.props.actions.handleServerUrlChanged(url);
-            }
-        }
         this.props.actions.goToSelectServer();
     };
 

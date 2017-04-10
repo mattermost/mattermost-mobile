@@ -4,7 +4,6 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {ChannelTypes, TeamsTypes} from 'mattermost-redux/constants';
-import {updateStorage} from 'app/actions/storage';
 
 export function handleTeamChange(team) {
     return async (dispatch, getState) => {
@@ -13,12 +12,12 @@ export function handleTeamChange(team) {
             return;
         }
 
-        const storage = await updateStorage('currentTeamId', team.id);
-        const lastChannelForTeam = storage[team.id] ? storage[team.id].currentChannelId : '';
+        const state = getState();
+        const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
 
         dispatch(batchActions([
             {type: TeamsTypes.SELECT_TEAM, data: team.id},
-            {type: ChannelTypes.SELECT_CHANNEL, data: lastChannelForTeam}
+            {type: ChannelTypes.SELECT_CHANNEL, data: lastChannelId}
         ]), getState);
     };
 }

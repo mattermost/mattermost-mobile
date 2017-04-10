@@ -1,8 +1,8 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
+import {GeneralTypes} from 'mattermost-redux/constants';
 
 import {ViewTypes} from 'app/constants';
-import {updateStorage} from 'app/actions/storage';
 import Client from 'mattermost-redux/client';
 
 export function handleLoginIdChanged(loginId) {
@@ -24,10 +24,13 @@ export function handlePasswordChanged(password) {
 }
 
 export function handleSuccessfulLogin() {
-    return async () => {
-        await updateStorage(null, {
-            url: Client.getUrl(),
-            token: Client.getToken()
+    return async (dispatch) => {
+        dispatch({
+            type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
+            data: {
+                url: Client.getUrl(),
+                token: Client.getToken()
+            }
         });
     };
 }

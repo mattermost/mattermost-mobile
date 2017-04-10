@@ -4,7 +4,6 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
-import {updateStorage} from 'app/actions/storage';
 
 import {
     fetchMyChannelsAndMembers,
@@ -219,7 +218,11 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
-        updateStorage(currentTeamId, {currentChannelId: channelId});
+        dispatch({
+            type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+            teamId: currentTeamId,
+            channelId
+        });
         getChannelStats(currentTeamId, channelId)(dispatch, getState);
         selectChannel(channelId)(dispatch, getState);
     };

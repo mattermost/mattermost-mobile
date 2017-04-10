@@ -9,7 +9,9 @@ import i18n from './i18n';
 import login from './login';
 import notification from './notification';
 import optionsModal from './options_modal';
+import root from './root';
 import selectServer from './select_server';
+import team from './team';
 import thread from './thread';
 
 export default combineReducers({
@@ -19,6 +21,8 @@ export default combineReducers({
     login,
     notification,
     optionsModal,
+    root,
     selectServer,
+    team,
     thread
 });

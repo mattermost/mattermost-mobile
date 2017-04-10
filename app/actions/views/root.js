@@ -10,7 +10,6 @@ import {
 } from 'app/actions/views/channel';
 import {goToChannelView} from 'app/actions/views/load_team';
 import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
-import {updateStorage} from 'app/actions/storage';
 
 import {getClientConfig, getLicenseConfig, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
@@ -29,7 +28,6 @@ export function loadConfigAndLicense(serverVersion) {
         getClientConfig()(dispatch, getState);
         getLicenseConfig()(dispatch, getState);
         setServerVersion(serverVersion)(dispatch, getState);
-        await updateStorage(null, {serverVersion});
     };
 }
 

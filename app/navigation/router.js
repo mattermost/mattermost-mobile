@@ -255,7 +255,6 @@ class Router extends Component {
             leftDrawerOpen,
             leftDrawerRoute,
             modal,
-            rightDrawerRoute,
             shouldRenderDrawer,
             routes
         } = this.props.navigation;
@@ -266,11 +265,6 @@ class Router extends Component {
         let leftDrawerContent;
         if (leftDrawerRoute && shouldRenderDrawer) {
             leftDrawerContent = this.renderRoute(leftDrawerRoute);
-        }
-
-        let rightDrawerContent;
-        if (rightDrawerRoute) {
-            rightDrawerContent = this.renderRoute(rightDrawerRoute);
         }
 
         return (
@@ -307,7 +301,7 @@ class Router extends Component {
                         type='displace'
                         side='right'
                         disabled={true}
-                        content={rightDrawerContent}
+                        content={null}
                         tapToClose={true}
                         openDrawerOffset={50}
                         onRequestClose={this.props.actions.closeDrawers}

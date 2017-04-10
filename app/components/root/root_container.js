@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import Config from 'assets/config.json';
 
 import {closeDrawers, closeModal, goBack, unrenderDrawer} from 'app/actions/navigation';
-import {flushToStorage} from 'app/actions/storage';
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
 import {setAppState, setDeviceToken} from 'mattermost-redux/actions/general';
 import {logout} from 'mattermost-redux/actions/users';
@@ -46,7 +45,6 @@ function mapDispatchToProps(dispatch) {
             queueNotification,
             setAppState,
             setDeviceToken,
-            flushToStorage,
             unrenderDrawer
         }, dispatch)
     };
