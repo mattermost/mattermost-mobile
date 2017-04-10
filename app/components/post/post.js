@@ -545,6 +545,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 4
         },
         time: {
+            alignSelf: 'flex-end',
             color: theme.centerChannelColor,
             fontSize: 12,
             marginLeft: 5,
