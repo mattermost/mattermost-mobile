@@ -1,12 +1,14 @@
 // Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {batchActions} from 'redux-batched-actions';
 import {AsyncStorage} from 'react-native';
 import {configureOfflineServiceStore} from 'mattermost-redux/store';
 import {Constants, RequestStatus} from 'mattermost-redux/constants';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
 
+import {ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 
 import {transformSet} from './utils';
@@ -76,15 +78,30 @@ export default function configureStore(initialState) {
                 });
             });
 
+            let purging = false;
+
             // check to see if the logout request was successful
             store.subscribe(() => {
                 const state = store.getState();
-                if (state.requests.users.logout.status === RequestStatus.SUCCESS) {
+                if (state.requests.users.logout.status === RequestStatus.SUCCESS && !purging) {
+                    purging = true;
+
                     persistor.purge();
-                    store.dispatch({
-                        type: Constants.OFFLINE_STORE_RESET,
-                        data: initialState
-                    });
+
+                    store.dispatch(batchActions([
+                        {
+                            type: Constants.OFFLINE_STORE_RESET,
+                            data: initialState
+                        },
+                        {
+                            type: ViewTypes.SERVER_URL_CHANGED,
+                            serverUrl: state.views.selectServer.serverUrl
+                        }
+                    ]));
+
+                    setTimeout(() => {
+                        purging = false;
+                    }, 500);
                 }
             });
 

@@ -29,20 +29,16 @@ export default class Root extends PureComponent {
     componentDidMount() {
         Orientation.lockToPortrait();
 
-        this.init();
+        this.loadStoreAndScene(this.props.credentials);
         setTimeout(() => {
             this.handleCloseSplashScreen();
         }, 1000);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.logoutRequest.status === RequestStatus.STARTED &&
-            nextProps.logoutRequest.status === RequestStatus.SUCCESS) {
-
-            // TODO: Purse storage here
-        } else if (this.props.logoutRequest.status === RequestStatus.SUCCESS &&
+        if (this.props.logoutRequest.status === RequestStatus.SUCCESS &&
             nextProps.logoutRequest.status === RequestStatus.NOT_STARTED) {
-            this.init();
+            this.loadStoreAndScene(nextProps.credentials);
         }
     }
 
@@ -56,23 +52,12 @@ export default class Root extends PureComponent {
         SplashScreen.close(Object.assign({}, opts, options));
     };
 
-    init = () => {
-        if (this.props.logoutRequest.status === RequestStatus.SUCCESS) {
-            setTimeout(() => this.loadStoreAndScene(), 1000);
-        } else {
-            this.loadStoreAndScene(this.props.credentials);
-        }
-    };
-
     loadStoreAndScene = (credentials = {}) => {
         if (credentials.token && credentials.url) {
-            this.props.actions.setStoreFromLocalData(credentials).then(() => {
-                if (this.props.loginRequest.status === RequestStatus.SUCCESS) {
-                    this.props.actions.goToLoadTeam();
-                } else {
-                    this.selectServer();
-                }
-            });
+            // Will probably need to make this optimistic since we
+            // assume that the stored token is good.
+            this.props.actions.setStoreFromLocalData(credentials);
+            this.props.actions.goToLoadTeam();
         } else {
             this.selectServer();
         }
