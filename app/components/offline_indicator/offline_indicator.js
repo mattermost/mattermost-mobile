@@ -77,7 +77,7 @@ export default class OfflineIndicator extends PureComponent {
 
             // set forced to be false after trying for 3 seconds
             setTimeout(() => {
-                closeWebSocket();
+                closeWebSocket(true);
                 this.setState({forced: false, network: OFFLINE});
             }, 3000);
         });

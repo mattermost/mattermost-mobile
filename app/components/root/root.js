@@ -5,7 +5,6 @@ import React, {Component, PropTypes} from 'react';
 import {
     Alert,
     AppState,
-    AsyncStorage,
     BackAndroid,
     InteractionManager,
     Platform,
@@ -43,12 +42,6 @@ export default class Root extends Component {
         }).isRequired
     };
 
-    constructor(props) {
-        super(props);
-
-        this.handleAppStateChange = this.handleAppStateChange.bind(this);
-    }
-
     componentDidMount() {
         this.props.actions.setAppState(AppState.currentState === 'active');
         AppState.addEventListener('change', this.handleAppStateChange);
@@ -69,13 +62,13 @@ export default class Root extends Component {
         }
     }
 
-    handleAppStateChange(appState) {
+    handleAppStateChange = (appState) => {
         this.props.actions.setAppState(appState === 'active');
 
         if (appState === 'inactive') {
             // TODO: See if we still need this
         }
-    }
+    };
 
     handleAndroidBack = () => {
         const {index, isModal, leftDrawerOpen, modal} = this.props.navigation;
@@ -125,17 +118,9 @@ export default class Root extends Component {
 
         Client.serverVersion = '';
 
-        const storage = await AsyncStorage.getItem('storage');
-        if (storage) {
-            setTimeout(async () => {
-                const {token} = JSON.parse(await AsyncStorage.getItem('storage'));
-                if (token) {
-                    closeDrawers();
-                    unrenderDrawer();
-                    InteractionManager.runAfterInteractions(logout);
-                }
-            }, 1000);
-        }
+        closeDrawers();
+        unrenderDrawer();
+        InteractionManager.runAfterInteractions(logout);
     };
 
     render() {

@@ -14,11 +14,11 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import FileAttachmentList from 'app/components/file_attachment_list/file_attachment_list_container';
+import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import MattermostIcon from 'app/components/mattermost_icon';
-import Markdown from 'app/components/markdown/markdown';
+import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
 import ReplyIcon from 'app/components/reply_icon';

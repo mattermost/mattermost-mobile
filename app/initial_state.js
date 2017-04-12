@@ -279,6 +279,7 @@ const state = {
             drafts: {},
             loading: false
         },
+        connection: true,
         fetchCache: {},
         i18n: {
             locale: ''

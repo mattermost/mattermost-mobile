@@ -64,11 +64,7 @@ export default class Channel extends PureComponent {
         this.props.subscribeToHeaderEvent('show_channel_info', () => preventDoubleTap(this.props.actions.goToChannelInfo));
         NetInfo.isConnected.addEventListener('change', this.handleConnectionChange);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
-
-        // Android won't detect the initial connection change that's why we need this
-        if (Platform.OS === 'android') {
-            NetInfo.isConnected.fetch().then(this.handleConnectionChange);
-        }
+        NetInfo.isConnected.fetch().then(this.handleConnectionChange);
 
         if (this.props.currentTeam) {
             const teamId = this.props.currentTeam.id;
@@ -77,8 +73,13 @@ export default class Channel extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.actions.startPeriodicStatusUpdates();
-        this.props.actions.renderDrawer();
+        const {renderDrawer, startPeriodicStatusUpdates} = this.props.actions;
+        try {
+            startPeriodicStatusUpdates();
+        } catch (error) {
+            // We don't care about the error
+        }
+        renderDrawer();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -102,18 +103,27 @@ export default class Channel extends PureComponent {
 
         if (isConnected) {
             if (!webSocketRequest || webSocketRequest.status === RequestStatus.NOT_STARTED) {
-                initWebSocket(Platform.OS);
+                try {
+                    initWebSocket(Platform.OS);
+                } catch (error) {
+                    // We don't care if it fails
+                }
             }
         } else {
-            closeWebSocket();
+            closeWebSocket(true);
         }
         connection(isConnected);
     };
 
     loadChannels = (teamId) => {
-        this.props.actions.loadChannelsIfNecessary(teamId).then(() => {
-            this.props.actions.loadProfilesAndTeamMembersForDMSidebar(teamId);
-            return this.props.actions.selectInitialChannel(teamId);
+        const {
+            loadChannelsIfNecessary,
+            loadProfilesAndTeamMembersForDMSidebar,
+            selectInitialChannel
+        } = this.props.actions;
+        loadChannelsIfNecessary(teamId).then(() => {
+            loadProfilesAndTeamMembersForDMSidebar(teamId);
+            return selectInitialChannel(teamId);
         });
     };
 
