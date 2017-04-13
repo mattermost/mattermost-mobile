@@ -9,7 +9,7 @@ import {goToSelectServer} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import {goToLoadTeam} from 'app/actions/navigation';
 
-import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
+import {loadMe} from 'mattermost-redux/actions/users';
 
 import Root from './root';
 
@@ -29,7 +29,7 @@ function mapDispatchToProps(dispatch) {
             goToLoadTeam,
             goToSelectServer,
             handleServerUrlChanged,
-            setStoreFromLocalData
+            loadMe
         }, dispatch)
     };
 }

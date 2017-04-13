@@ -5,6 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import Orientation from 'react-native-orientation';
 import Loading from 'app/components/loading';
 
+import Client from 'mattermost-redux/client';
 import {RequestStatus} from 'mattermost-redux/constants';
 import SplashScreen from 'react-native-smart-splash-screen';
 
@@ -17,9 +18,8 @@ export default class Root extends PureComponent {
             goToLoadTeam: PropTypes.func,
             goToSelectServer: PropTypes.func,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            setStoreFromLocalData: PropTypes.func
-        }).isRequired,
-        hydrationComplete: PropTypes.bool.isRequired
+            loadMe: PropTypes.func
+        }).isRequired
     };
 
     static navigationProps = {
@@ -53,18 +53,22 @@ export default class Root extends PureComponent {
     };
 
     loadStoreAndScene = (credentials = {}) => {
+        const {actions, loginRequest} = this.props;
+        const {goToLoadTeam, goToSelectServer, loadMe} = actions;
         if (credentials.token && credentials.url) {
             // Will probably need to make this optimistic since we
             // assume that the stored token is good.
-            this.props.actions.setStoreFromLocalData(credentials);
-            this.props.actions.goToLoadTeam();
-        } else {
-            this.selectServer();
-        }
-    };
+            if (loginRequest.status === RequestStatus.NOT_STARTED) {
+                Client.setToken(credentials.token);
+                Client.setUrl(credentials.url);
 
-    selectServer = async () => {
-        this.props.actions.goToSelectServer();
+                loadMe().then(goToLoadTeam).catch(goToLoadTeam);
+            } else {
+                goToLoadTeam();
+            }
+        } else {
+            goToSelectServer();
+        }
     };
 
     render() {

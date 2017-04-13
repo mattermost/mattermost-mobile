@@ -27,7 +27,7 @@ export default class LoadTeam extends PureComponent {
     static navigationProps = {
         renderBackButton: () => null,
         renderTitleComponent: () => null
-    }
+    };
 
     componentDidMount() {
         const {notification, currentTeam, myMembers, teams} = this.props;
@@ -60,7 +60,8 @@ export default class LoadTeam extends PureComponent {
     }
 
     onSelectTeam(team) {
-        this.props.actions.handleTeamChange(team).then(this.props.actions.goToChannelView);
+        const {handleTeamChange, goToChannelView} = this.props.actions;
+        handleTeamChange(team).then(goToChannelView);
     }
 
     render() {

@@ -1,6 +1,34 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import ProfilePicture from './profile_picture_container';
+import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
 
-export default ProfilePicture;
+import {getTheme} from 'app/selectors/preferences';
+import {getStatusesByIdsBatchedDebounced} from 'mattermost-redux/actions/users';
+import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+
+import ProfilePicture from './profile_picture';
+
+function mapStateToProps(state, ownProps) {
+    let status = ownProps.status;
+    if (!status && ownProps.user) {
+        status = ownProps.user.status || getStatusForUserId(state, ownProps.user.id);
+    }
+
+    return {
+        theme: ownProps.theme || getTheme(state),
+        status,
+        ...ownProps
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            getStatusForId: getStatusesByIdsBatchedDebounced
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProfilePicture);
