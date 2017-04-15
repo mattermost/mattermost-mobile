@@ -1,9 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
-import {GeneralTypes} from 'mattermost-redux/constants';
+import {GeneralTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
-import Client from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -28,8 +28,8 @@ export function handleSuccessfulLogin() {
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
             data: {
-                url: Client.getUrl(),
-                token: Client.getToken()
+                url: Client4.getUrl(),
+                token: Client4.getToken()
             }
         });
     };

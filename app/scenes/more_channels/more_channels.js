@@ -19,7 +19,7 @@ import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import CreateButton from './create_button';
@@ -40,7 +40,7 @@ class MoreChannels extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             goToCreateChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
-            getMoreChannels: PropTypes.func.isRequired,
+            getChannels: PropTypes.func.isRequired,
             searchMoreChannels: PropTypes.func.isRequired
         }).isRequired
     };
@@ -71,7 +71,7 @@ class MoreChannels extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            channels: props.channels,
+            channels: props.channels.splice(0, General.CHANNELS_CHUNK_SIZE),
             page: 0,
             adding: false,
             next: true,
@@ -94,7 +94,7 @@ class MoreChannels extends PureComponent {
         } else if (requestStatus.status === RequestStatus.STARTED &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const channels = nextProps.channels.splice(0, (page + 1) * Constants.CHANNELS_CHUNK_SIZE);
+            const channels = nextProps.channels.splice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
             this.setState({channels, showNoResults: true});
         }
     }
@@ -107,7 +107,7 @@ class MoreChannels extends PureComponent {
         // set the timeout to 400 cause is the time that the modal takes to open
         // Somehow interactionManager doesn't care
         setTimeout(() => {
-            this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
+            this.props.actions.getChannels(this.props.currentTeamId, 0);
         }, 400);
     }
 
@@ -152,14 +152,14 @@ class MoreChannels extends PureComponent {
 
             this.searchTimeoutId = setTimeout(() => {
                 this.props.actions.searchMoreChannels(this.props.currentTeamId, term);
-            }, Constants.SEARCH_TIMEOUT_MILLISECONDS);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
         }
     };
 
     cancelSearch = () => {
-        this.props.actions.getMoreChannels(this.props.currentTeamId, 0);
+        this.props.actions.getChannels(this.props.currentTeamId, 0);
         this.setState({
             term: null,
             searching: false,
@@ -171,12 +171,12 @@ class MoreChannels extends PureComponent {
         let {page} = this.state;
         if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
             page = page + 1;
-            this.props.actions.getMoreChannels(
+            this.props.actions.getChannels(
                 this.props.currentTeamId,
-                page * Constants.CHANNELS_CHUNK_SIZE,
-                Constants.CHANNELS_CHUNK_SIZE).
+                page,
+                General.CHANNELS_CHUNK_SIZE).
             then((data) => {
-                if (Object.keys(data).length) {
+                if (data && data.length) {
                     this.setState({
                         page
                     });
@@ -225,7 +225,7 @@ class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = async () => {
-        this.props.actions.goToCreateChannel(Constants.OPEN_CHANNEL);
+        this.props.actions.goToCreateChannel(General.OPEN_CHANNEL);
     };
 
     render() {

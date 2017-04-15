@@ -9,7 +9,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
 
-import Client from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 const statusToIcon = {
     online: 'check',
@@ -20,6 +20,8 @@ const STATUS_BUFFER = Platform.select({
     ios: 3,
     android: 2
 });
+
+const IMAGE_HEADERS = Client4.getOptions().headers;
 
 export default class ProfilePicture extends React.PureComponent {
     static propTypes = {
@@ -53,7 +55,7 @@ export default class ProfilePicture extends React.PureComponent {
 
         let pictureUrl;
         if (this.props.user) {
-            pictureUrl = Client.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
+            pictureUrl = Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
         }
 
         let statusIcon;
@@ -85,7 +87,7 @@ export default class ProfilePicture extends React.PureComponent {
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 <Image
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
-                    source={{uri: pictureUrl}}
+                    source={{uri: pictureUrl, headers: IMAGE_HEADERS}}
                     defaultSource={placeholder}
                 />
                 {this.props.status &&

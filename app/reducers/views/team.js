@@ -2,13 +2,13 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {TeamsTypes} from 'mattermost-redux/constants';
+import {TeamTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
 function lastTeamId(state = '', action) {
     switch (action.type) {
-    case TeamsTypes.SELECT_TEAM:
+    case TeamTypes.SELECT_TEAM:
         return action.data;
     default:
         return state;

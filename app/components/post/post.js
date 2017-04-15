@@ -27,7 +27,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import webhookIcon from 'assets/images/icons/webhook.jpg';
 
-import {Constants} from 'mattermost-redux/constants';
+import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
 import {canDeletePost, canEditPost, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
@@ -38,7 +38,6 @@ class Post extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
         commentCount: PropTypes.number.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
         style: View.propTypes.style,
@@ -60,6 +59,7 @@ class Post extends PureComponent {
             flagPost: PropTypes.func.isRequired,
             goToUserProfile: PropTypes.func.isRequired,
             openEditPostModal: PropTypes.func.isRequired,
+            removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired
         }).isRequired
     };
@@ -93,7 +93,7 @@ class Post extends PureComponent {
 
     handlePostDelete = () => {
         const {formatMessage} = this.props.intl;
-        const {currentTeamId, post, actions} = this.props;
+        const {post, actions} = this.props;
 
         Alert.alert(
             formatMessage({id: 'mobile.post.delete_title', defaultMessage: 'Delete Post'}),
@@ -106,7 +106,7 @@ class Post extends PureComponent {
                 style: 'destructive',
                 onPress: () => {
                     this.editDisableAction.cancel();
-                    actions.deletePost(currentTeamId, post);
+                    actions.deletePost(post);
                 }
             }]
         );
@@ -119,8 +119,10 @@ class Post extends PureComponent {
 
     handlePress = () => {
         const {post, onPress} = this.props;
-        if (onPress && post.state !== Constants.POST_DELETED && !isSystemMessage(post)) {
+        if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post)) {
             preventDoubleTap(onPress, null, post);
+        } else if (post.state === Posts.POST_DELETED) {
+            preventDoubleTap(this.onRemovePost, this, post);
         }
     };
 
@@ -128,6 +130,11 @@ class Post extends PureComponent {
         if (Platform.OS === 'ios') {
             this.refs.tooltip.hide();
         }
+    };
+
+    onRemovePost = (post) => {
+        const {removePost} = this.props.actions;
+        removePost(post);
     };
 
     showOptionsContext = () => {
@@ -236,13 +243,13 @@ class Post extends PureComponent {
             actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: () => this.handlePostEdit()});
         }
 
-        if (this.state.canDelete && post.state !== Constants.POST_DELETED) {
+        if (this.state.canDelete && post.state !== Posts.POST_DELETED) {
             actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
         }
 
         let messageContainer;
         let message;
-        if (post.state === Constants.POST_DELETED) {
+        if (post.state === Posts.POST_DELETED) {
             message = (
                 <FormattedText
                     style={messageStyle}

@@ -8,8 +8,7 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 
 import {makeGetPostsForThread} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'app/selectors/preferences';
-import {getCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 import navigationSceneConnect from '../navigationSceneConnect';
 import Thread from './thread';
@@ -21,20 +20,12 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const posts = getPostsForThread(state, ownProps);
-
-        let teamId = state.entities.channels.channels[ownProps.channelId].team_id;
-        if (!teamId) {
-            // We can't make a post without a team id, so get it from the current team
-            teamId = getCurrentTeamId(state);
-        }
-
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
 
         return {
             ...ownProps,
-            teamId,
             channelId: ownProps.channelId,
-            myMember: getCurrentChannelMembership(state),
+            myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
             draft: threadDraft.draft,
             files: threadDraft.files,

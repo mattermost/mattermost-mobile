@@ -20,7 +20,7 @@ import {
     unmarkFavorite
 } from 'app/actions/views/channel';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
@@ -32,7 +32,7 @@ function mapStateToProps(state, ownProps) {
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
 
     return {
-        canCreatePrivateChannels: showCreateOption(config, license, Constants.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         ...ownProps
     };
 }

@@ -14,34 +14,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            alignItems: 'center'
-        },
-        detail: {
-            marginHorizontal: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 15
-        },
-        label: {
-            flex: 1,
-            marginLeft: 15,
-            fontSize: 15,
-            paddingVertical: 15
-        },
-        leftIcon: {
-            width: 17
-        },
-        rightIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
-    });
-});
-
 function createTouchableComponent(children, action) {
     return (
         <TouchableHighlight onPress={action}>
@@ -114,5 +86,33 @@ channelInfoRow.defaultProps = {
     togglable: false,
     shouldRender: true
 };
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            paddingHorizontal: 15,
+            flexDirection: 'row',
+            alignItems: 'center'
+        },
+        detail: {
+            marginHorizontal: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 15
+        },
+        label: {
+            flex: 1,
+            marginLeft: 15,
+            fontSize: 15,
+            paddingVertical: 15
+        },
+        leftIcon: {
+            width: 17
+        },
+        rightIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        }
+    });
+});
 
 export default channelInfoRow;

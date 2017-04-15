@@ -15,7 +15,7 @@ import OfflineIndicator from 'app/components/offline_indicator';
 import PostTextbox from 'app/components/post_textbox';
 import {preventDoubleTap} from 'app/utils/tap';
 
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawerButton from './channel_drawer_button';
@@ -159,11 +159,6 @@ export default class Channel extends PureComponent {
             );
         }
 
-        let teamId = currentChannel.team_id;
-        if (currentChannel.type === Constants.DM_CHANNEL || currentChannel.type === Constants.GM_CHANNEL) {
-            teamId = currentTeam.id;
-        }
-
         const channelDraft = this.props.drafts[this.props.currentChannel.id];
 
         return (
@@ -179,7 +174,6 @@ export default class Channel extends PureComponent {
                     ref={this.attachPostTextbox}
                     files={channelDraft.files}
                     value={channelDraft.draft}
-                    teamId={teamId}
                     channelId={currentChannel.id}
                     onChangeText={this.handleDraftChanged}
                 />

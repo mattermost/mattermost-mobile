@@ -5,6 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
+import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelStats,
@@ -17,7 +18,7 @@ import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
-import {Constants, Preferences, UsersTypes} from 'mattermost-redux/constants';
+import {General, Posts, Preferences} from 'mattermost-redux/constants';
 import {
     getChannelByName,
     getDirectChannelName,
@@ -27,6 +28,7 @@ import {
     isDirectChannel,
     isGroupChannel
 } from 'mattermost-redux/utils/channel_utils';
+import {getLastUpdateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
@@ -100,7 +102,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         });
 
         if (prefs.length) {
-            savePreferences(prefs)(dispatch, getState);
+            savePreferences(currentUserId, prefs)(dispatch, getState);
         }
 
         for (const [key, pref] of dmPrefs) {
@@ -118,7 +120,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         if (loadProfilesForChannels.length) {
             for (let i = 0; i < loadProfilesForChannels.length; i++) {
                 const channelId = loadProfilesForChannels[i];
-                getProfilesInChannel(teamId, channelId, 0)(dispatch, getState);
+                getProfilesInChannel(channelId, 0)(dispatch, getState);
             }
         }
 
@@ -137,7 +139,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
             const channel = getChannelByName(channels, channelName);
             if (channel) {
                 actions.push({
-                    type: UsersTypes.RECEIVED_PROFILE_IN_CHANNEL,
+                    type: UserTypes.RECEIVED_PROFILE_IN_CHANNEL,
                     data: {user_id: members[i]},
                     id: channel.id
                 });
@@ -153,30 +155,32 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 export function loadPostsIfNecessary(channel) {
     return async (dispatch, getState) => {
         const state = getState();
-        const postsInChannel = state.entities.posts.postsByChannel[channel.id];
-
-        // Make sure we include a team id for DM channels
-        const teamId = channel.team_id || state.entities.teams.currentTeamId;
+        const {posts, postsInChannel} = state.entities.posts;
+        const postsIds = postsInChannel[channel.id];
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-        if (!postsInChannel || postsInChannel.length < Constants.POST_CHUNK_SIZE) {
-            return getPosts(teamId, channel.id)(dispatch, getState);
+        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE) {
+            return getPosts(channel.id)(dispatch, getState);
         }
 
-        const latestPostInChannel = state.entities.posts.posts[postsInChannel[0]];
+        const postsForChannel = postsIds.map((id) => posts[id]);
+        const latestPostTime = getLastUpdateAt(postsForChannel);
 
-        return getPostsSince(teamId, channel.id, latestPostInChannel.create_at)(dispatch, getState);
+        if (latestPostTime) {
+            return getPostsSince(channel.id, latestPostTime)(dispatch, getState);
+        }
+
+        return null;
     };
 }
 
 export function loadFilesForPostIfNecessary(post) {
     return async (dispatch, getState) => {
-        const {files, teams} = getState().entities;
+        const {files} = getState().entities;
         const fileIdsForPost = files.fileIdsByPostId[post.id];
 
         if (!fileIdsForPost) {
-            const {currentTeamId} = teams;
-            await getFilesForPost(currentTeamId, post.channel_id, post.id)(dispatch, getState);
+            await getFilesForPost(post.id)(dispatch, getState);
         }
     };
 }
@@ -189,10 +193,10 @@ export function selectInitialChannel(teamId) {
         const currentChannel = channels[currentChannelId];
         const {myPreferences} = state.entities.preferences;
 
-        const isDMVisible = currentChannel && currentChannel.type === Constants.DM_CHANNEL &&
+        const isDMVisible = currentChannel && currentChannel.type === General.DM_CHANNEL &&
             isDirectChannelVisible(currentUserId, myPreferences, currentChannel);
 
-        const isGMVisible = currentChannel && currentChannel.type === Constants.GM_CHANNEL &&
+        const isGMVisible = currentChannel && currentChannel.type === General.GM_CHANNEL &&
             isGroupChannelVisible(myPreferences, currentChannel);
 
         if (currentChannel && myMembers[currentChannelId] &&
@@ -201,7 +205,7 @@ export function selectInitialChannel(teamId) {
             return;
         }
 
-        const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === Constants.DEFAULT_CHANNEL);
+        const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         if (channel) {
             await handleSelectChannel(channel.id)(dispatch, getState);
         } else {
@@ -223,7 +227,7 @@ export function handleSelectChannel(channelId) {
             teamId: currentTeamId,
             channelId
         });
-        getChannelStats(currentTeamId, channelId)(dispatch, getState);
+        getChannelStats(channelId)(dispatch, getState);
         selectChannel(channelId)(dispatch, getState);
     };
 }
@@ -250,7 +254,7 @@ export function toggleDMChannel(otherUserId, visible) {
             value: visible
         }];
 
-        savePreferences(dm)(dispatch, getState);
+        savePreferences(currentUserId, dm)(dispatch, getState);
     };
 }
 
@@ -266,7 +270,7 @@ export function toggleGMChannel(channelId, visible) {
             value: visible
         }];
 
-        savePreferences(gm)(dispatch, getState);
+        savePreferences(currentUserId, gm)(dispatch, getState);
     };
 }
 
@@ -303,9 +307,9 @@ export function closeGMChannel(channel) {
 export function closeDirectChannel(channel) {
     return async (dispatch, getState) => {
         switch (channel.type) {
-        case Constants.DM_CHANNEL:
+        case General.DM_CHANNEL:
             return closeDMChannel(channel)(dispatch, getState);
-        case Constants.GM_CHANNEL:
+        case General.GM_CHANNEL:
             return closeGMChannel(channel)(dispatch, getState);
         }
 
@@ -318,12 +322,12 @@ export function markFavorite(channelId) {
         const {currentUserId} = getState().entities.users;
         const fav = [{
             user_id: currentUserId,
-            category: Constants.CATEGORY_FAVORITE_CHANNEL,
+            category: Preferences.CATEGORY_FAVORITE_CHANNEL,
             name: channelId,
             value: 'true'
         }];
 
-        savePreferences(fav)(dispatch, getState);
+        savePreferences(currentUserId, fav)(dispatch, getState);
     };
 }
 
@@ -332,18 +336,18 @@ export function unmarkFavorite(channelId) {
         const {currentUserId} = getState().entities.users;
         const fav = [{
             user_id: currentUserId,
-            category: Constants.CATEGORY_FAVORITE_CHANNEL,
+            category: Preferences.CATEGORY_FAVORITE_CHANNEL,
             name: channelId
         }];
 
-        deletePreferences(fav)(dispatch, getState);
+        deletePreferences(currentUserId, fav)(dispatch, getState);
     };
 }
 
 export function leaveChannel(channel, reset = false) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
-        await serviceLeaveChannel(currentTeamId, channel.id)(dispatch, getState);
+        await serviceLeaveChannel(channel.id)(dispatch, getState);
         if (channel.isCurrent || reset) {
             await selectInitialChannel(currentTeamId)(dispatch, getState);
         }

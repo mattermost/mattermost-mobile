@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -44,21 +44,21 @@ function channelIcon(props) {
         activeGroup = style.groupInfo;
     }
 
-    if (type === Constants.OPEN_CHANNEL) {
+    if (type === General.OPEN_CHANNEL) {
         return (
             <Icon
                 name='globe'
                 style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
             />
         );
-    } else if (type === Constants.PRIVATE_CHANNEL) {
+    } else if (type === General.PRIVATE_CHANNEL) {
         return (
             <Icon
                 name='lock'
                 style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
             />
         );
-    } else if (type === Constants.GM_CHANNEL) {
+    } else if (type === General.GM_CHANNEL) {
         return (
             <View style={style.groupContainer}>
                 <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
@@ -70,7 +70,7 @@ function channelIcon(props) {
         );
     }
     switch (status) {
-    case Constants.ONLINE:
+    case General.ONLINE:
         return (
             <View style={style.statusIcon}>
                 <OnlineStatus
@@ -80,7 +80,7 @@ function channelIcon(props) {
                 />
             </View>
         );
-    case Constants.AWAY:
+    case General.AWAY:
         return (
             <View style={style.statusIcon}>
                 <AwayStatus

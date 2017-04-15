@@ -39,7 +39,7 @@ export default class AccountNotifications extends PureComponent {
         renderRightComponent: (props, emitter) => {
             return <SaveNotificationsButton emitter={emitter}/>;
         }
-    }
+    };
 
     constructor(props) {
         super(props);

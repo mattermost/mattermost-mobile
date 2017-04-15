@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {UsersTypes} from 'mattermost-redux/constants';
+import {UserTypes} from 'mattermost-redux/action_types';
 import {ViewTypes} from 'app/constants';
 
 export default function connection(state = true, action) {
@@ -9,7 +9,7 @@ export default function connection(state = true, action) {
     case ViewTypes.CONNECTION_CHANGED:
         return action.data;
 
-    case UsersTypes.LOGOUT_SUCCESS:
+    case UserTypes.LOGOUT_SUCCESS:
         return true;
     }
 

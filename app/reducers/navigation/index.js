@@ -3,7 +3,7 @@
 
 import {NavigationExperimental} from 'react-native';
 
-import {UsersTypes} from 'mattermost-redux/constants';
+import {UserTypes} from 'mattermost-redux/action_types';
 import {NavigationTypes} from 'app/constants';
 
 import Routes from 'app/navigation/routes';
@@ -220,7 +220,7 @@ export default function(state = initialState, action) {
         };
     }
 
-    case UsersTypes.LOGOUT_SUCCESS:
+    case UserTypes.LOGOUT_SUCCESS:
         return NavigationExperimental.StateUtils.reset(state, initialState.routes, initialState.index);
 
     default:

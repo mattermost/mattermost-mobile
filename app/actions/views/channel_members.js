@@ -3,10 +3,10 @@
 
 import {removeChannelMember} from 'mattermost-redux/actions/channels';
 
-export function handleRemoveChannelMembers(teamId, channelId, members) {
+export function handleRemoveChannelMembers(channelId, members) {
     return async (dispatch, getState) => {
         try {
-            const requests = members.map((m) => dispatch(removeChannelMember(teamId, channelId, m, getState)));
+            const requests = members.map((m) => dispatch(removeChannelMember(channelId, m, getState)));
 
             await Promise.all(requests);
         } catch (error) {

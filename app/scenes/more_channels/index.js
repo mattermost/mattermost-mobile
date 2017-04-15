@@ -7,17 +7,17 @@ import navigationSceneConnect from '../navigationSceneConnect';
 
 import {closeDrawers, goBack, goToCreateChannel} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
-import {getMoreChannels as getMoreChannelsSelector} from 'mattermost-redux/selectors/entities/channels';
+import {getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {handleSelectChannel} from 'app/actions/views/channel';
-import {getMoreChannels, joinChannel, searchMoreChannels} from 'mattermost-redux/actions/channels';
+import {getChannels, joinChannel, searchMoreChannels} from 'mattermost-redux/actions/channels';
 
 import MoreChannels from './more_channels';
 
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
     const {currentTeamId} = state.entities.teams;
-    const {getMoreChannels: requestStatus} = state.requests.channels;
-    const channels = getMoreChannelsSelector(state);
+    const {getChannels: requestStatus} = state.requests.channels;
+    const channels = getOtherChannels(state);
 
     return {
         currentUserId,
@@ -36,7 +36,7 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             goToCreateChannel,
             joinChannel,
-            getMoreChannels,
+            getChannels,
             searchMoreChannels
         }, dispatch)
     };

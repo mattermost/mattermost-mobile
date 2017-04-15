@@ -10,7 +10,7 @@ import {changeOpacity} from 'app/utils/theme';
 import icon from 'assets/images/icon.png';
 import {GooglePlaySenderId} from 'assets/config.json';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 export default class PushNotification extends PureComponent {
     static propTypes = {
@@ -63,7 +63,7 @@ export default class PushNotification extends PureComponent {
     };
 
     onRegisterDevice = (data) => {
-        const prefix = Platform.OS === 'ios' ? Constants.PUSH_NOTIFY_APPLE_REACT_NATIVE : Constants.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
+        const prefix = Platform.OS === 'ios' ? General.PUSH_NOTIFY_APPLE_REACT_NATIVE : General.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
         this.props.actions.setDeviceToken(`${prefix}:${data.token}`);
         this.isConfigured = true;
     };

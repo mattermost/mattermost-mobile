@@ -16,7 +16,7 @@ const store = configureStore(initialState);
 export default class Mattermost extends React.Component {
     state = {
         hydrated: false
-    }
+    };
 
     componentWillMount() {
         this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
@@ -31,7 +31,7 @@ export default class Mattermost extends React.Component {
                 hydrated: true
             });
         }
-    }
+    };
 
     render() {
         if (!this.state.hydrated) {

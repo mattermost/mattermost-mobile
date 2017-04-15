@@ -16,11 +16,11 @@ import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {displayUsername, filterProfiles} from 'mattermost-redux/utils/user_utils';
 
 import ChannelMembersTitle from './channel_members_title';
 import RemoveMemberButton from './remove_member_button';
@@ -33,7 +33,6 @@ class ChannelMembers extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         currentChannelMemberCount: PropTypes.number.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        currentTeam: PropTypes.object,
         preferences: PropTypes.object,
         requestStatus: PropTypes.string,
         searchRequestStatus: PropTypes.string,
@@ -58,11 +57,21 @@ class ChannelMembers extends PureComponent {
         }
     };
 
-    state = {
-        canSelect: true,
-        profiles: [],
-        selectedMembers: {}
-    };
+    constructor(props) {
+        super(props);
+
+        this.searchTimeoutId = 0;
+
+        this.state = {
+            canSelect: true,
+            next: true,
+            page: 0,
+            profiles: [],
+            searching: false,
+            selectedMembers: {},
+            showNoResults: false
+        };
+    }
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('remove_members', this.handleRemoveMembersPress);
@@ -74,7 +83,7 @@ class ChannelMembers extends PureComponent {
         }
 
         InteractionManager.runAfterInteractions(() => {
-            this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, 0);
+            this.props.actions.getProfilesInChannel(this.props.currentChannel.id, 0);
         });
 
         this.emitCanRemoveMembers(false);
@@ -92,15 +101,13 @@ class ChannelMembers extends PureComponent {
         const {requestStatus} = this.props;
         if (requestStatus === RequestStatus.STARTED &&
             nextProps.requestStatus === RequestStatus.SUCCESS) {
-            this.setState({profiles: nextProps.currentChannelMembers});
+            const {page} = this.state;
+            const profiles = nextProps.currentChannelMembers.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
+            this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = nextProps.currentChannelMembers.filter((p) => {
-                const {term} = this.state;
-                return p.username.toLowerCase().includes(term) || p.email.toLowerCase().includes(term) ||
-                    p.first_name.toLowerCase().includes(term) || p.last_name.toLowerCase().includes(term);
-            });
-            this.setState({profiles: results});
+            const results = filterProfiles(nextProps.currentChannelMembers, this.state.term);
+            this.setState({profiles: results, showNoResults: true});
         }
 
         const {removeMembersStatus} = nextProps;
@@ -165,13 +172,26 @@ class ChannelMembers extends PureComponent {
     };
 
     removeMembers = (membersToRemove) => {
-        const {actions, currentTeam, currentChannel} = this.props;
-        actions.handleRemoveChannelMembers(currentTeam.id, currentChannel.id, membersToRemove);
+        const {actions, currentChannel} = this.props;
+        actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove);
     };
 
     loadMoreMembers = () => {
-        if (this.props.requestStatus !== 'started' && this.props.currentChannelMembers.length < this.props.currentChannelMemberCount - 1) {
-            this.props.actions.getProfilesInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.props.currentChannelMembers.length);
+        const {actions, requestStatus, currentChannel} = this.props;
+        const {next, searching} = this.state;
+        let {page} = this.state;
+        if (requestStatus !== RequestStatus.STARTED && next && !searching) {
+            page = page + 1;
+            actions.getProfilesInChannel(currentChannel.id, page, General.PROFILE_CHUNK_SIZE).
+            then((data) => {
+                if (data && data.length) {
+                    this.setState({
+                        page
+                    });
+                } else {
+                    this.setState({next: false});
+                }
+            });
         }
     };
 
@@ -213,7 +233,7 @@ class ChannelMembers extends PureComponent {
 
             this.searchTimeoutId = setTimeout(() => {
                 this.props.actions.searchProfiles(term, {in_channel_id: this.props.currentChannel.id});
-            }, Constants.SEARCH_TIMEOUT_MILLISECONDS);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
         }
@@ -257,8 +277,8 @@ class ChannelMembers extends PureComponent {
     render() {
         const {canManageUsers, intl, preferences, requestStatus, searchRequestStatus, theme} = this.props;
         const {formatMessage} = intl;
-        const {profiles, searching} = this.state;
-        const isLoading = (requestStatus === RequestStatus.STARTED) ||
+        const {profiles, searching, showNoResults} = this.state;
+        const isLoading = (requestStatus === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
             (searchRequestStatus === RequestStatus.STARTED);
         const more = searching ? () => true : this.loadMoreMembers;
         const style = getStyleFromTheme(theme);
@@ -294,6 +314,7 @@ class ChannelMembers extends PureComponent {
                     onRowSelect={this.handleRowSelect}
                     renderRow={this.renderMemberRow}
                     createSections={createMembersSections}
+                    showNoResults={showNoResults}
                 />
             </View>
         );

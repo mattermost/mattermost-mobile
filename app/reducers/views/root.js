@@ -2,11 +2,11 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 function hydrationComplete(state = false, action) {
     switch (action.type) {
-    case Constants.STORE_REHYDRATION_COMPLETE:
+    case General.STORE_REHYDRATION_COMPLETE:
         return true;
     default:
         return state;

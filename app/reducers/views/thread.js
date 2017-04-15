@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {FilesTypes, PostsTypes} from 'mattermost-redux/constants';
+import {FileTypes, PostTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -21,7 +21,7 @@ function drafts(state = {}, action) {
                 files: action.files
             }
         };
-    case PostsTypes.RECEIVED_POST_SELECTED: {
+    case PostTypes.RECEIVED_POST_SELECTED: {
         let data = {...state};
 
         if (!data[action.data]) {
@@ -52,7 +52,7 @@ function drafts(state = {}, action) {
             [action.rootId]: Object.assign({}, state[action.rootId], {files})
         };
     }
-    case FilesTypes.RECEIVED_UPLOAD_FILES: {
+    case FileTypes.RECEIVED_UPLOAD_FILES: {
         if (!action.rootId) {
             return state;
         }

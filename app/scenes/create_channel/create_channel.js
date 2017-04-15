@@ -20,7 +20,7 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ActionButton from 'app/components/action_button';
@@ -41,7 +41,7 @@ class CreateChannel extends PureComponent {
     };
 
     static defaultProps = {
-        channelType: Constants.OPEN_CHANNEL
+        channelType: General.OPEN_CHANNEL
     };
 
     static navigationProps = {
@@ -191,9 +191,9 @@ class CreateChannel extends PureComponent {
         const style = getStyleSheet(theme);
 
         let term;
-        if (channelType === Constants.OPEN_CHANNEL) {
+        if (channelType === General.OPEN_CHANNEL) {
             term = formatMessage({id: 'channel_modal.channel', defaultMessage: 'Channel'});
-        } else if (channelType === Constants.PRIVATE_CHANNEL) {
+        } else if (channelType === General.PRIVATE_CHANNEL) {
             term = formatMessage({id: 'channel_modal.group', defaultMessage: 'Group'});
         }
 

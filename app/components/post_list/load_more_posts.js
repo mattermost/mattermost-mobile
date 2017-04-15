@@ -12,23 +12,6 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 28,
-            marginVertical: 10
-        },
-        text: {
-            fontSize: 14,
-            fontWeight: '600',
-            color: theme.linkColor
-        }
-    });
-});
-
 export default class LoadMorePosts extends PureComponent {
     static propTypes = {
         loading: PropTypes.bool.isRequired,
@@ -71,3 +54,20 @@ export default class LoadMorePosts extends PureComponent {
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 28,
+            marginVertical: 10
+        },
+        text: {
+            fontSize: 14,
+            fontWeight: '600',
+            color: theme.linkColor
+        }
+    });
+});

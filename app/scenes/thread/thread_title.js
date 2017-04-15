@@ -7,7 +7,7 @@ import {
     View
 } from 'react-native';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'app/selectors/preferences';
 
@@ -16,7 +16,7 @@ import FormattedText from 'app/components/formatted_text';
 function ThreadTitle(props) {
     const {currentChannel, theme} = props;
     let label;
-    if (currentChannel.type === Constants.DM_CHANNEL) {
+    if (currentChannel.type === General.DM_CHANNEL) {
         label = (
             <FormattedText
                 id='mobile.routes.thread_dm'

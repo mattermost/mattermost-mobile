@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {ChannelTypes, FilesTypes, UsersTypes} from 'mattermost-redux/constants';
+import {ChannelTypes, FileTypes, UserTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -53,7 +53,7 @@ function drafts(state = {}, action) {
             [action.channelId]: Object.assign({}, state[action.channelId], {files})
         };
     }
-    case FilesTypes.RECEIVED_UPLOAD_FILES: {
+    case FileTypes.RECEIVED_UPLOAD_FILES: {
         if (action.rootId || !state[action.channelId].files) {
             return state;
         }
@@ -128,7 +128,7 @@ function appInitializing(state = true, action) {
     switch (action.type) {
     case ViewTypes.APPLICATION_INITIALIZED:
         return false;
-    case UsersTypes.RESET_LOGOUT_STATE:
+    case UserTypes.RESET_LOGOUT_STATE:
         return true;
     default:
         return state;
