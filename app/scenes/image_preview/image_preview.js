@@ -117,13 +117,20 @@ export default class ImagePreview extends PureComponent {
         }
 
         const {dx, dy} = gestureState;
-        return (Math.abs(dy) > DRAG_VERTICAL_THRESHOLD_START && dx < DRAG_HORIZONTAL_THRESHOLD);
+        const isVerticalDrag = Math.abs(dy) > DRAG_VERTICAL_THRESHOLD_START && dx < DRAG_HORIZONTAL_THRESHOLD;
+        if (isVerticalDrag) {
+            this.setHeaderAndFileInfoVisible(false);
+            return true;
+        }
+
+        return false;
     }
 
     mainViewPanResponderRelease = (evt, gestureState) => {
         if (Math.abs(gestureState.dy) > DRAG_VERTICAL_THRESHOLD_END) {
             this.props.actions.goBack();
         } else {
+            this.setHeaderAndFileInfoVisible(true);
             Animated.spring(this.state.drag, {
                 toValue: {x: 0, y: 0}
             }).start();
@@ -326,7 +333,7 @@ const style = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 100,
+        height: 70,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
         paddingBottom: 16
@@ -337,7 +344,7 @@ const style = StyleSheet.create({
         left: 0
     },
     header: {
-        backgroundColor: '#000',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         height: HEADER_HEIGHT,
         position: 'absolute',
         top: 0,

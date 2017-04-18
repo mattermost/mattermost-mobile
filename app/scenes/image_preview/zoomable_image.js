@@ -310,6 +310,7 @@ class ZoomableImage extends Component {
                     imageHeight={imageHeight * this.state.zoom}
                     imageSize='fullsize'
                     imageWidth={imageWidth * this.state.zoom}
+                    loadingBackgroundColor='#000'
                     resizeMode='contain'
                     wrapperBackgroundColor='#000'
                     wrapperHeight={wrapperHeight * this.state.zoom}
