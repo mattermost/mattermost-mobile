@@ -250,7 +250,7 @@ export function toggleDMChannel(otherUserId, visible) {
             value: visible
         }];
 
-        return savePreferences(dm)(dispatch, getState);
+        savePreferences(dm)(dispatch, getState);
     };
 }
 
@@ -266,7 +266,7 @@ export function toggleGMChannel(channelId, visible) {
             value: visible
         }];
 
-        return savePreferences(gm)(dispatch, getState);
+        savePreferences(gm)(dispatch, getState);
     };
 }
 
@@ -278,11 +278,10 @@ export function closeDMChannel(channel) {
             unmarkFavorite(channel.id)(dispatch, getState);
         }
 
-        toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState).then(() => {
-            if (channel.isCurrent) {
-                selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
-            }
-        });
+        toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState);
+        if (channel.isCurrent) {
+            selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
+        }
     };
 }
 
@@ -294,11 +293,10 @@ export function closeGMChannel(channel) {
             unmarkFavorite(channel.id)(dispatch, getState);
         }
 
-        toggleGMChannel(channel.id, 'false')(dispatch, getState).then(() => {
-            if (channel.isCurrent) {
-                selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
-            }
-        });
+        toggleGMChannel(channel.id, 'false')(dispatch, getState);
+        if (channel.isCurrent) {
+            selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
+        }
     };
 }
 
@@ -324,6 +322,7 @@ export function markFavorite(channelId) {
             name: channelId,
             value: 'true'
         }];
+
         savePreferences(fav)(dispatch, getState);
     };
 }
@@ -336,6 +335,7 @@ export function unmarkFavorite(channelId) {
             category: Constants.CATEGORY_FAVORITE_CHANNEL,
             name: channelId
         }];
+
         deletePreferences(fav)(dispatch, getState);
     };
 }

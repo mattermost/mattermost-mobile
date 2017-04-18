@@ -13,13 +13,10 @@ import navigationSceneConnect from '../navigationSceneConnect';
 import AccountNotifications from './account_notifications';
 
 function mapStateToProps(state) {
-    const {updateUserNotifyProps: updateRequest} = state.requests.users;
-
     return {
         config: state.entities.general.config,
         myPreferences: state.entities.preferences.myPreferences,
         currentUser: getCurrentUser(state),
-        saveRequestStatus: updateRequest.status,
         theme: getTheme(state)
     };
 }
