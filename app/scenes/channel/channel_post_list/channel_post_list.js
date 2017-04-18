@@ -115,7 +115,14 @@ export default class ChannelPostList extends PureComponent {
     };
 
     render() {
-        const {applicationInitializing, channelIsLoading, posts, postsRequests, theme} = this.props;
+        const {
+            applicationInitializing,
+            channel,
+            channelIsLoading,
+            posts,
+            postsRequests,
+            theme
+        } = this.props;
         let component;
         if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
             component = (
@@ -129,6 +136,7 @@ export default class ChannelPostList extends PureComponent {
                     indicateNewMessages={true}
                     currentUserId={this.props.myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
+                    channel={channel}
                 />
             );
         } else {

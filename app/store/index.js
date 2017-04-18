@@ -83,7 +83,7 @@ export default function configureStore(initialState) {
             // check to see if the logout request was successful
             store.subscribe(() => {
                 const state = store.getState();
-                if (state.requests.users.logout.status === RequestStatus.SUCCESS && !purging) {
+                if ((state.requests.users.logout.status === RequestStatus.SUCCESS || state.requests.users.logout.status === RequestStatus.FAILURE) && !purging) {
                     purging = true;
 
                     persistor.purge();
