@@ -23,6 +23,7 @@ If you would like to help with testing the apps, you can:
 2. Sign up to be a beta tester
   - [Android](https://play.google.com/apps/testing/com.mattermost.react.native)
   - [iOS](https://mattermost-fastlane.herokuapp.com/)
+    - **Note:** iOS sign up link is temporarily down because of changes Apple made to their beta testing tools. While we wait for a fix, you can sign up to our team site and direct message "lindsay" your email address for a manual invite. 
 3. Install the `Mattermost 2017 (Beta)` app
   - Note: The app only works with server version 3.7+, you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
 4. Check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what's currently supported
