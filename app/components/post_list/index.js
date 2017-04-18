@@ -9,8 +9,9 @@ import PostList from './post_list';
 
 function mapStateToProps(state, ownProps) {
     return {
-        theme: getTheme(state),
-        ...ownProps
+        ...ownProps,
+        channelIsLoading: state.views.channel.loading,
+        theme: getTheme(state)
     };
 }
 

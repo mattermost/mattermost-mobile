@@ -4,30 +4,24 @@
 import React, {Component, PropTypes} from 'react';
 import {
     ListView,
-    StyleSheet
+    StyleSheet,
+    View
 } from 'react-native';
+import {Constants} from 'mattermost-redux/constants';
+import {addDatesToPostList} from 'mattermost-redux/utils/post_utils';
 
+import ChannelIntro from 'app/components/channel_intro';
 import Post from 'app/components/post';
 import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
 
-import {Constants} from 'mattermost-redux/constants';
-import {addDatesToPostList} from 'mattermost-redux/utils/post_utils';
-
-const style = StyleSheet.create({
-    container: {
-        transform: [{rotate: '180deg'}]
-    },
-    row: {
-        transform: [{rotate: '180deg'}]
-    }
-});
-
 const LOAD_MORE_POSTS = 'load-more-posts';
 
 export default class PostList extends Component {
     static propTypes = {
+        channel: PropTypes.object.isRequired,
+        channelIsLoading: PropTypes.bool.isRequired,
         posts: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
         loadMore: PropTypes.func,
@@ -77,6 +71,22 @@ export default class PostList extends Component {
             loadMore();
         }
     };
+
+    renderChannelIntro = () => {
+        const {channel, channelIsLoading, posts} = this.props;
+
+        const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
+        const messageCount = channel.total_msg_count - posts.length;
+        if (channelIsLoading || !firstPostHasRendered || messageCount > Constants.POST_CHUNK_SIZE) {
+            return null;
+        }
+
+        return (
+            <View style={style.row}>
+                <ChannelIntro/>
+            </View>
+        );
+    }
 
     renderRow = (row) => {
         if (row instanceof Date) {
@@ -132,6 +142,7 @@ export default class PostList extends Component {
             <ListView
                 style={style.container}
                 dataSource={this.state.dataSource.cloneWithRows(this.getPostsWithLoadMore())}
+                renderFooter={this.renderChannelIntro}
                 renderRow={this.renderRow}
                 onEndReached={this.loadMore}
                 enableEmptySections={true}
@@ -143,3 +154,12 @@ export default class PostList extends Component {
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        transform: [{rotate: '180deg'}]
+    },
+    row: {
+        transform: [{rotate: '180deg'}]
+    }
+});
