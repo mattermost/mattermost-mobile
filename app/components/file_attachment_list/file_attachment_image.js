@@ -37,6 +37,7 @@ export default class FileAttachmentImage extends PureComponent {
             IMAGE_SIZE.Thumbnail
         ]),
         imageWidth: PropTypes.number,
+        loadingBackgroundColor: PropTypes.string,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
         wrapperBackgroundColor: PropTypes.string,
@@ -50,6 +51,7 @@ export default class FileAttachmentImage extends PureComponent {
         imageSize: IMAGE_SIZE.Thumbnail,
         imageWidth: 100,
         loading: false,
+        loadingBackgroundColor: '#fff',
         resizeMode: 'cover',
         resizeMethod: 'resize',
         wrapperBackgroundColor: '#fff',
@@ -116,6 +118,7 @@ export default class FileAttachmentImage extends PureComponent {
             file,
             imageHeight,
             imageWidth,
+            loadingBackgroundColor,
             resizeMethod,
             resizeMode,
             wrapperBackgroundColor,
@@ -152,7 +155,7 @@ export default class FileAttachmentImage extends PureComponent {
                     />
                 </AnimatedView>
                 {(!isInFetchCache && (file.loading || this.state.requesting)) &&
-                    <View style={style.loaderContainer}>
+                    <View style={[style.loaderContainer, {backgroundColor: loadingBackgroundColor}]}>
                         <ActivityIndicator size='small'/>
                     </View>
                 }
@@ -171,7 +174,6 @@ const style = StyleSheet.create({
         height: '100%',
         width: '100%',
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fff'
+        justifyContent: 'center'
     }
 });
