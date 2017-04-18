@@ -19,12 +19,12 @@ export function makeDirectChannel(otherUserId) {
         getStatusesByIds([otherUserId])(dispatch, getState);
 
         if (channel && myMembers[channel.id]) {
-            await toggleDMChannel(otherUserId, 'true')(dispatch, getState);
+            toggleDMChannel(otherUserId, 'true')(dispatch, getState);
             handleSelectChannel(channel.id)(dispatch, getState);
         } else {
             const created = await createDirectChannel(currentTeamId, currentUserId, otherUserId)(dispatch, getState);
             if (created) {
-                await toggleDMChannel(otherUserId, 'true')(dispatch, getState);
+                toggleDMChannel(otherUserId, 'true')(dispatch, getState);
                 handleSelectChannel(created.id)(dispatch, getState);
             }
         }

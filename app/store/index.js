@@ -3,7 +3,7 @@
 
 import {batchActions} from 'redux-batched-actions';
 import {AsyncStorage} from 'react-native';
-import {configureOfflineServiceStore} from 'mattermost-redux/store';
+import configureStore from 'mattermost-redux/store';
 import {Constants, RequestStatus} from 'mattermost-redux/constants';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
@@ -32,7 +32,7 @@ const setTransforms = [
     ...teamSetTransform
 ];
 
-export default function configureStore(initialState) {
+export default function configureAppStore(initialState) {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
         ['login']
@@ -81,12 +81,12 @@ export default function configureStore(initialState) {
             let purging = false;
 
             // check to see if the logout request was successful
-            store.subscribe(() => {
+            store.subscribe(async () => {
                 const state = store.getState();
                 if ((state.requests.users.logout.status === RequestStatus.SUCCESS || state.requests.users.logout.status === RequestStatus.FAILURE) && !purging) {
                     purging = true;
 
-                    persistor.purge();
+                    await persistor.purge();
 
                     store.dispatch(batchActions([
                         {
@@ -120,5 +120,5 @@ export default function configureStore(initialState) {
         }
     };
 
-    return configureOfflineServiceStore(appReducer, offlineOptions, getAppReducer);
+    return configureStore({}, appReducer, getAppReducer, offlineOptions);
 }

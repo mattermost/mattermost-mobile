@@ -21,9 +21,9 @@ export function handleUpdateUserNotifyProps(notifyProps) {
                 value: interval
             }];
 
-            await savePreferences(emailInterval)(dispatch, getState);
+            savePreferences(emailInterval)(dispatch, getState);
         }
 
-        await updateUserNotifyProps({...otherProps, email})(dispatch, getState);
+        updateUserNotifyProps({...otherProps, email})(dispatch, getState);
     };
 }

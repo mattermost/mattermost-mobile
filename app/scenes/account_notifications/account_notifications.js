@@ -12,8 +12,7 @@ import {
 
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {Preferences, RequestStatus} from 'mattermost-redux/constants';
+import {Preferences} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import Section from './section';
@@ -21,7 +20,6 @@ import SectionItem from './section_item';
 import SaveNotificationsButton from './save_notifications_button';
 
 const SAVE_NOTIFY_PROPS = 'save_notify_props';
-const SAVING_NOTIFY_PROPS = 'saving_notify_props';
 
 export default class AccountNotifications extends PureComponent {
     static propTypes = {
@@ -32,7 +30,6 @@ export default class AccountNotifications extends PureComponent {
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
         myPreferences: PropTypes.object.isRequired,
-        saveRequestStatus: PropTypes.string.isRequired,
         subscribeToHeaderEvent: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         unsubscribeFromHeaderEvent: PropTypes.func.isRequired
@@ -75,13 +72,6 @@ export default class AccountNotifications extends PureComponent {
             const {notify_props: notifyProps} = nextProps.currentUser;
             this.setStateFromNotifyProps(notifyProps);
         }
-
-        if (nextProps.saveRequestStatus === RequestStatus.SUCCESS && this.props.saveRequestStatus === RequestStatus.STARTED) {
-            this.props.actions.goBack();
-        } else if (nextProps.saveRequestStatus === RequestStatus.FAILURE && this.props.saveRequestStatus === RequestStatus.STARTED) {
-            EventEmitter.emit(SAVING_NOTIFY_PROPS, false);
-            this.setStateFromNotifyProps(nextProps.currentUser.notify_props);
-        }
     }
 
     handleAndroidKeyboard = () => {
@@ -102,8 +92,11 @@ export default class AccountNotifications extends PureComponent {
             interval = emailPreferences.get(Preferences.EMAIL_INTERVAL).value;
         }
 
+        const comments = notifyProps.comments || 'never';
+
         const newState = {
             ...notifyProps,
+            comments,
             email,
             interval,
             usernameMention: usernameMentionIndex > -1,
@@ -177,7 +170,6 @@ export default class AccountNotifications extends PureComponent {
     }
 
     saveUserNotifyProps = () => {
-        EventEmitter.emit(SAVING_NOTIFY_PROPS, true);
         let {mention_keys: mentionKeys, usernameMention, ...notifyProps} = this.state; //eslint-disable-line prefer-const
 
         if (mentionKeys.length > 0) {
@@ -197,6 +189,8 @@ export default class AccountNotifications extends PureComponent {
             mention_keys: mentionKeys,
             user_id: this.props.currentUser.id
         });
+
+        this.props.actions.goBack();
     }
 
     buildMentionSection = () => {
