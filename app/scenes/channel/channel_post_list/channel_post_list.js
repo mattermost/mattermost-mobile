@@ -12,6 +12,7 @@ import {Constants, RequestStatus} from 'mattermost-redux/constants';
 
 import ChannelLoader from 'app/components/channel_loader';
 import PostList from 'app/components/post_list';
+import PostListRetry from 'app/components/post_list_retry';
 
 const {View: AnimatedView} = Animated;
 const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
@@ -116,6 +117,7 @@ export default class ChannelPostList extends PureComponent {
 
     render() {
         const {
+            actions,
             applicationInitializing,
             channel,
             channelIsLoading,
@@ -123,8 +125,16 @@ export default class ChannelPostList extends PureComponent {
             postsRequests,
             theme
         } = this.props;
+
         let component;
-        if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
+        if (!this.state.didInitialPostsLoad && !posts.length && channel.total_msg_count > 0 && postsRequests.getPosts.status !== RequestStatus.STARTED) {
+            component = (
+                <PostListRetry
+                    retry={() => actions.loadPostsIfNecessary(channel)}
+                    theme={theme}
+                />
+            );
+        } else if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
             component = (
                 <PostList
                     posts={posts}
