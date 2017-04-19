@@ -139,7 +139,7 @@ export default class OfflineIndicator extends PureComponent {
         switch (this.state.network) {
         case OFFLINE:
             i18nId = 'mobile.offlineIndicator.offline';
-            defaultMessage = 'No Internet connection';
+            defaultMessage = 'No internet connection';
             action = (
                 <TouchableOpacity
                     onPress={this.connect}
