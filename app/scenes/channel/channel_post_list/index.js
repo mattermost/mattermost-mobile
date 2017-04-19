@@ -74,7 +74,8 @@ function mapStateToProps(state, ownProps) {
         myMember: getCurrentChannelMembership(state),
         postsRequests: state.requests.posts,
         posts: getPostsInCurrentChannelWithReplyProps(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
+        networkOnline: state.offline.online
     };
 }
 

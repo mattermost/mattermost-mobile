@@ -35,7 +35,8 @@ export default class ChannelPostList extends PureComponent {
             getPostsSince: PropTypes.object.isRequired
         }).isRequired,
         posts: PropTypes.array.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        networkOnline: PropTypes.bool.isRequired
     };
 
     state = {
@@ -123,11 +124,12 @@ export default class ChannelPostList extends PureComponent {
             channelIsLoading,
             posts,
             postsRequests,
-            theme
+            theme,
+            networkOnline
         } = this.props;
 
         let component;
-        if (!this.state.didInitialPostsLoad && !posts.length && channel.total_msg_count > 0 && postsRequests.getPosts.status !== RequestStatus.STARTED) {
+        if (!posts.length && channel.total_msg_count > 0 && (postsRequests.getPosts.status === RequestStatus.FAILURE || !networkOnline)) {
             component = (
                 <PostListRetry
                     retry={() => actions.loadPostsIfNecessary(channel)}

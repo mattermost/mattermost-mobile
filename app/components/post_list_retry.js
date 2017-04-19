@@ -38,7 +38,7 @@ export default class PostListRetry extends PureComponent {
                     </View>
                     <FormattedText
                         id='mobile.post.retry'
-                        defaultMessage='Try Refresh'
+                        defaultMessage='Refresh'
                         style={style.text}
                     />
                 </TouchableOpacity>
