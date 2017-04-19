@@ -1702,6 +1702,7 @@
   "mobile.post.cancel": "Cancel",
   "mobile.post.delete_question": "Are you sure you want to delete this post?",
   "mobile.post.delete_title": "Delete Post",
+  "mobile.post.retry": "Refresh",
   "mobile.request.invalid_response": "Received invalid response from the server.",
   "mobile.routes.channelInfo": "Info",
   "mobile.routes.channelInfo.createdBy": "Created by {creator} on ",
