@@ -30,8 +30,7 @@ const state = {
             teams: {},
             myMembers: {},
             membersInTeam: {},
-            stats: {},
-            openTeamIds: new Set()
+            stats: {}
         },
         channels: {
             currentChannelId: '',
@@ -41,7 +40,7 @@ const state = {
         },
         posts: {
             posts: {},
-            postsByChannel: {},
+            postsInChannel: {},
             selectedPostId: '',
             currentFocusedPostId: ''
         },
@@ -93,10 +92,6 @@ const state = {
                 status: 'not_started',
                 error: null
             },
-            getMoreChannels: {
-                status: 'not_started',
-                error: null
-            },
             getChannelStats: {
                 status: 'not_started',
                 error: null
@@ -141,7 +136,7 @@ const state = {
                 status: 'not_started',
                 error: null
             },
-            getPost: {
+            getPostThread: {
                 status: 'not_started',
                 error: null
             },
@@ -163,11 +158,11 @@ const state = {
             }
         },
         teams: {
-            allTeams: {
+            getMyTeams: {
                 status: 'not_started',
                 error: null
             },
-            getAllTeamListings: {
+            getTeams: {
                 status: 'not_started',
                 error: null
             },

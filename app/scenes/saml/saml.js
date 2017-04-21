@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import CookieManager from 'react-native-cookies';
-import Client from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 export default class Saml extends PureComponent {
     static propTypes = {
@@ -40,7 +40,7 @@ export default class Saml extends PureComponent {
                         goToLoadTeam
                     } = this.props.actions;
 
-                    Client.setToken(token);
+                    Client4.setToken(token);
                     handleSuccessfulLogin().
                     then(setStoreFromLocalData.bind(null, {url: this.props.serverUrl, token})).
                     then(goToLoadTeam);

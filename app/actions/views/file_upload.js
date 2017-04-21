@@ -9,11 +9,10 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {generateId} from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
 
-export function handleUploadFiles(files, rootId, requestId) {
+export function handleUploadFiles(files, rootId) {
     return async (dispatch, getState) => {
         const state = getState();
 
-        const teamId = state.entities.teams.currentTeamId;
         const channelId = state.entities.channels.currentChannelId;
         const formData = new FormData();
         const clientIds = [];
@@ -48,7 +47,7 @@ export function handleUploadFiles(files, rootId, requestId) {
             rootId
         });
 
-        await uploadFile(teamId, channelId, formData, formBoundary, rootId, requestId)(dispatch, getState);
+        await uploadFile(channelId, rootId, formData, formBoundary)(dispatch, getState);
     };
 }
 

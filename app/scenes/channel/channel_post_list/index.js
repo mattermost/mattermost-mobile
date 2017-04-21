@@ -6,8 +6,7 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {getPostsBefore} from 'mattermost-redux/actions/posts';
 import {getAllPosts, getPostsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 import {goToThread} from 'app/actions/navigation';
 import {loadPostsIfNecessary} from 'app/actions/views/channel';
@@ -69,9 +68,8 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         applicationInitializing: state.views.channel.appInitializing,
-        currentTeamId: getCurrentTeamId(state),
         channelIsLoading: state.views.channel.loading,
-        myMember: getCurrentChannelMembership(state),
+        myMember: getMyCurrentChannelMembership(state),
         postsRequests: state.requests.posts,
         posts: getPostsInCurrentChannelWithReplyProps(state),
         theme: getTheme(state),

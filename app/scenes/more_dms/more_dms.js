@@ -17,8 +17,10 @@ import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+
+import {General, RequestStatus} from 'mattermost-redux/constants';
+import {filterProfiles} from 'mattermost-redux/utils/user_utils';
 
 class MoreDirectMessages extends PureComponent {
     static propTypes = {
@@ -62,7 +64,7 @@ class MoreDirectMessages extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            profiles: props.profiles,
+            profiles: props.profiles.splice(0, General.PROFILE_CHUNK_SIZE),
             page: 0,
             adding: false,
             next: true,
@@ -80,15 +82,11 @@ class MoreDirectMessages extends PureComponent {
         if (requestStatus.status === RequestStatus.STARTED &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const profiles = nextProps.profiles.splice(0, (page + 1) * Constants.PROFILE_CHUNK_SIZE);
+            const profiles = nextProps.profiles.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
-            const results = nextProps.profiles.filter((p) => {
-                const {term} = this.state;
-                return p.username.toLowerCase().includes(term) || p.email.toLowerCase().includes(term) ||
-                    p.first_name.toLowerCase().includes(term) || p.last_name.toLowerCase().includes(term);
-            });
+            const results = filterProfiles(nextProps.profiles, this.state.term);
             this.setState({profiles: results, showNoResults: true});
         }
     }
@@ -134,7 +132,7 @@ class MoreDirectMessages extends PureComponent {
 
             this.searchTimeoutId = setTimeout(() => {
                 this.props.actions.searchProfiles(term);
-            }, Constants.SEARCH_TIMEOUT_MILLISECONDS);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
         }
@@ -153,9 +151,9 @@ class MoreDirectMessages extends PureComponent {
         let {page} = this.state;
         if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
             page = page + 1;
-            this.props.actions.getProfiles(page * Constants.PROFILE_CHUNK_SIZE, Constants.PROFILE_CHUNK_SIZE).
+            this.props.actions.getProfiles(page, General.PROFILE_CHUNK_SIZE).
             then((data) => {
-                if (Object.keys(data).length) {
+                if (data && data.length) {
                     this.setState({
                         page
                     });

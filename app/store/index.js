@@ -4,7 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 import {AsyncStorage} from 'react-native';
 import configureStore from 'mattermost-redux/store';
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
 
@@ -20,16 +20,22 @@ function getAppReducer() {
 const usersSetTransform = [
     'profilesInChannel',
     'profilesNotInChannel',
-    'profilesInTeam'
+    'profilesInTeam',
+    'profilesNotInTeam'
 ];
 
 const teamSetTransform = [
     'membersInTeam'
 ];
 
+const channelSetTransform = [
+    'channelsInTeam'
+];
+
 const setTransforms = [
     ...usersSetTransform,
-    ...teamSetTransform
+    ...teamSetTransform,
+    ...channelSetTransform
 ];
 
 export default function configureAppStore(initialState) {
@@ -73,7 +79,7 @@ export default function configureAppStore(initialState) {
         persist: (store, options) => {
             const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
                 store.dispatch({
-                    type: Constants.STORE_REHYDRATION_COMPLETE,
+                    type: General.STORE_REHYDRATION_COMPLETE,
                     complete: true
                 });
             });
@@ -90,7 +96,7 @@ export default function configureAppStore(initialState) {
 
                     store.dispatch(batchActions([
                         {
-                            type: Constants.OFFLINE_STORE_RESET,
+                            type: General.OFFLINE_STORE_RESET,
                             data: initialState
                         },
                         {

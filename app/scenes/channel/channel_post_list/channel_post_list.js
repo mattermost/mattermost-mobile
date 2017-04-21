@@ -8,7 +8,7 @@ import {
     View
 } from 'react-native';
 
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {General, Posts, RequestStatus} from 'mattermost-redux/constants';
 
 import ChannelLoader from 'app/components/channel_loader';
 import PostList from 'app/components/post_list';
@@ -26,7 +26,6 @@ export default class ChannelPostList extends PureComponent {
         }).isRequired,
         applicationInitializing: PropTypes.bool.isRequired,
         channel: PropTypes.object.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         myMember: PropTypes.object.isRequired,
         postsRequests: PropTypes.shape({
@@ -60,9 +59,9 @@ export default class ChannelPostList extends PureComponent {
             const didMorePostsLoad = this.didPostsLoad(nextProps, 'getPostsBefore');
             let hasFirstPost = false;
             if (didInitialPostsLoad) {
-                hasFirstPost = nextProps.posts.length < Constants.POST_CHUNK_SIZE;
+                hasFirstPost = nextProps.posts.length < Posts.POST_CHUNK_SIZE;
             } else if (didMorePostsLoad) {
-                hasFirstPost = (nextProps.posts.length - this.props.posts.length) < Constants.POST_CHUNK_SIZE;
+                hasFirstPost = (nextProps.posts.length - this.props.posts.length) < General.POST_CHUNK_SIZE;
             }
             if (hasFirstPost) {
                 this.setState({hasFirstPost});
@@ -95,19 +94,12 @@ export default class ChannelPostList extends PureComponent {
     }
 
     loadMorePosts = () => {
-        const {currentTeamId, channel, posts, postsRequests} = this.props;
-        const {team_id: teamId, id: channelId} = channel;
+        const {channel, posts, postsRequests} = this.props;
+        const {id: channelId} = channel;
         const oldestPost = posts[posts.length - 1];
         const {didInitialPostsLoad, hasFirstPost} = this.state;
         if (didInitialPostsLoad && !hasFirstPost && oldestPost && postsRequests.getPostsBefore.status !== RequestStatus.STARTED) {
-            let postsForTeamId = teamId;
-            switch (channel.type) {
-            case Constants.DM_CHANNEL:
-            case Constants.GM_CHANNEL:
-                postsForTeamId = currentTeamId;
-                break;
-            }
-            return this.props.actions.getPostsBefore(postsForTeamId, channelId, oldestPost.id);
+            return this.props.actions.getPostsBefore(channelId, oldestPost.id);
         }
         return null;
     };

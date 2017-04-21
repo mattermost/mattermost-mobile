@@ -44,7 +44,6 @@ class PostTextbox extends PureComponent {
         intl: intlShape.isRequired,
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
-        teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         typing: PropTypes.array.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired,
@@ -147,7 +146,7 @@ class PostTextbox extends PureComponent {
             message: this.props.value
         };
 
-        this.props.actions.createPost(this.props.teamId, post, this.props.files);
+        this.props.actions.createPost(post, this.props.files);
         this.handleTextChange('');
     };
 
@@ -185,7 +184,7 @@ class PostTextbox extends PureComponent {
             // If user cancels it's considered
             // an error and we have to catch it.
         }
-    }
+    };
 
     attachFileFromLibrary = async () => {
         try {
@@ -200,11 +199,11 @@ class PostTextbox extends PureComponent {
             // If user cancels it's considered
             // an error and we have to catch it.
         }
-    }
+    };
 
     uploadFiles = (images) => {
         this.props.actions.handleUploadFiles(images, this.props.rootId);
-    }
+    };
 
     showFileAttachmentOptions = () => {
         this.blur();
@@ -227,7 +226,7 @@ class PostTextbox extends PureComponent {
         };
 
         this.props.actions.showOptionsModal(options);
-    }
+    };
 
     renderTyping = () => {
         const {typing} = this.props;

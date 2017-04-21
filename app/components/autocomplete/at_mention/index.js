@@ -5,9 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getTheme} from 'app/selectors/preferences';
-import {autocompleteUsersInChannel} from 'mattermost-redux/actions/users';
+import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getAutocompleteUsersInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
+import {getProfilesInCurrentChannel, getProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 
 import AtMention from './at_mention';
 
@@ -28,8 +28,11 @@ function mapStateToProps(state, ownProps) {
         currentTeamId: state.entities.teams.currentTeamId,
         defaultChannel: getDefaultChannel(state),
         postDraft,
-        autocompleteUsersInCurrentChannel: getAutocompleteUsersInCurrentChannel(state),
-        requestStatus: state.requests.users.autocompleteUsersInChannel.status,
+        autocompleteUsersInCurrentChannel: {
+            inChannel: getProfilesInCurrentChannel(state),
+            outChannel: getProfilesNotInCurrentChannel(state)
+        },
+        requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state)
     };
 }
@@ -37,7 +40,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            autocompleteUsersInChannel
+            autocompleteUsers
         }, dispatch)
     };
 }

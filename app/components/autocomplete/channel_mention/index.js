@@ -4,9 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {autocompleteChannels} from 'mattermost-redux/actions/channels';
+import {searchMoreChannels} from 'mattermost-redux/actions/channels';
+import {General} from 'mattermost-redux/constants';
+import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+
 import {getTheme} from 'app/selectors/preferences';
-import {getAutocompleteChannelWithSections} from 'mattermost-redux/selectors/entities/channels';
 
 import ChannelMention from './channel_mention';
 
@@ -20,13 +22,18 @@ function mapStateToProps(state, ownProps) {
         postDraft = state.views.channel.drafts[currentChannelId].draft;
     }
 
+    const autocompleteChannels = {
+        myChannels: getMyChannels(state).filter((c) => c.type !== General.DM_CHANNEL && c.type !== General.GM_CHANNEL),
+        otherChannels: getOtherChannels(state)
+    };
+
     return {
         ...ownProps,
         currentChannelId,
         currentTeamId: state.entities.teams.currentTeamId,
         postDraft,
-        autocompleteChannels: getAutocompleteChannelWithSections(state),
-        requestStatus: state.requests.channels.autocompleteChannels.status,
+        autocompleteChannels,
+        requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state)
     };
 }
@@ -34,7 +41,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            autocompleteChannels
+            searchMoreChannels
         }, dispatch)
     };
 }

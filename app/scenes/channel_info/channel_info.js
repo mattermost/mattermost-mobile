@@ -13,7 +13,7 @@ import {
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
@@ -22,7 +22,6 @@ class ChannelInfo extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
@@ -30,7 +29,6 @@ class ChannelInfo extends PureComponent {
         theme: PropTypes.object.isRequired,
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
-        leaveChannelRequest: PropTypes.object.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             closeDMChannel: PropTypes.func.isRequired,
@@ -55,7 +53,7 @@ class ChannelInfo extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.actions.getChannelStats(this.props.currentTeamId, this.props.currentChannel.id);
+        this.props.actions.getChannelStats(this.props.currentChannel.id);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -68,7 +66,7 @@ class ChannelInfo extends PureComponent {
     handleDeleteOrLeave(eventType) {
         const {formatMessage} = this.props.intl;
         const channel = this.props.currentChannel;
-        const term = channel.type === Constants.OPEN_CHANNEL ?
+        const term = channel.type === General.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
             formatMessage({id: 'mobile.channel_info.privateChannel', defaultMessage: 'Private Channel'});
         let title;
@@ -90,7 +88,7 @@ class ChannelInfo extends PureComponent {
                 defaultMessage: 'Are you sure you want to delete the {term} {name}?'
             };
             onPressAction = () => {
-                this.props.actions.deleteChannel(channel.team_id, channel.id).then(this.props.actions.goBack);
+                this.props.actions.deleteChannel(channel.id).then(this.props.actions.goBack);
             };
         }
 
@@ -118,10 +116,10 @@ class ChannelInfo extends PureComponent {
         const {closeDMChannel, closeGMChannel, goBack} = this.props.actions;
 
         switch (channel.type) {
-        case Constants.DM_CHANNEL:
+        case General.DM_CHANNEL:
             closeDMChannel(channel).then(goBack);
             break;
-        case Constants.GM_CHANNEL:
+        case General.GM_CHANNEL:
             closeGMChannel(channel).then(goBack);
             break;
         }
@@ -137,17 +135,17 @@ class ChannelInfo extends PureComponent {
 
     renderLeaveOrDeleteChannelRow() {
         const channel = this.props.currentChannel;
-        const isDefaultChannel = channel.name === Constants.DEFAULT_CHANNEL;
-        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
-        const isGroupMessage = channel.type === Constants.GM_CHANNEL;
+        const isDefaultChannel = channel.name === General.DEFAULT_CHANNEL;
+        const isDirectMessage = channel.type === General.DM_CHANNEL;
+        const isGroupMessage = channel.type === General.GM_CHANNEL;
 
         return !isDefaultChannel && !isDirectMessage && !isGroupMessage;
     }
 
     renderCloseDirect() {
         const channel = this.props.currentChannel;
-        const isDirectMessage = channel.type === Constants.DM_CHANNEL;
-        const isGroupMessage = channel.type === Constants.GM_CHANNEL;
+        const isDirectMessage = channel.type === General.DM_CHANNEL;
+        const isGroupMessage = channel.type === General.GM_CHANNEL;
 
         return isDirectMessage || isGroupMessage;
     }
@@ -168,11 +166,11 @@ class ChannelInfo extends PureComponent {
         let i18nId;
         let defaultMessage;
         switch (currentChannel.type) {
-        case Constants.DM_CHANNEL:
+        case General.DM_CHANNEL:
             i18nId = 'mobile.channel_list.closeDM';
             defaultMessage = 'Close Direct Message';
             break;
-        case Constants.GM_CHANNEL:
+        case General.GM_CHANNEL:
             i18nId = 'mobile.channel_list.closeGM';
             defaultMessage = 'Close Group Message';
             break;

@@ -18,7 +18,7 @@ function mapStateToProps(state) {
     return {
         config: state.entities.general.config,
         theme: getTheme(state),
-        teamsRequest: state.requests.teams.allTeams,
+        teamsRequest: state.requests.teams.getMyTeams,
         teams: state.entities.teams.teams,
         currentTeam: getCurrentTeam(state),
         myMembers: state.entities.teams.myMembers,

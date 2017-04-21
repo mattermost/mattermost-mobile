@@ -3,9 +3,8 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {deletePost, flagPost, unflagPost} from 'mattermost-redux/actions/posts';
+import {deletePost, flagPost, removePost, unflagPost} from 'mattermost-redux/actions/posts';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
@@ -30,7 +29,6 @@ function makeMapStateToProps() {
             config,
             commentCount: getCommentCountForPost(state, ownProps),
             commentedOnDisplayName: displayUsername(commentedOnUser, myPreferences),
-            currentTeamId: getCurrentTeamId(state),
             currentUserId: getCurrentUserId(state),
             displayName: displayUsername(user, myPreferences),
             isFlagged: isPostFlagged(ownProps.post.id, myPreferences),
@@ -49,6 +47,7 @@ function mapDispatchToProps(dispatch) {
             flagPost,
             goToUserProfile,
             openEditPostModal,
+            removePost,
             unflagPost
         }, dispatch)
     };

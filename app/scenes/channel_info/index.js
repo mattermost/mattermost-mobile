@@ -15,7 +15,7 @@ import navigationSceneConnect from 'app/scenes/navigationSceneConnect';
 import {getTheme} from 'app/selectors/preferences';
 
 import {getChannelStats, deleteChannel} from 'mattermost-redux/actions/channels';
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {
     getCurrentChannel,
     getCurrentChannelStats,
@@ -38,11 +38,10 @@ function mapStateToProps(state, ownProps) {
     const favoriteChannels = getChannelsByCategory(state).favoriteChannels.map((f) => f.id);
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
-    const leaveChannelRequest = state.requests.channels.leaveChannel;
     const roles = getCurrentUserRoles(state);
 
     let status;
-    if (currentChannel.type === Constants.DM_CHANNEL) {
+    if (currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         status = getStatusForUserId(state, teammateId);
     }
@@ -50,13 +49,11 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         canDeleteChannel: showDeleteOption(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
-        currentTeamId: state.entities.teams.currentTeamId,
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
         isCurrent,
         isFavorite,
-        leaveChannelRequest,
         status,
         theme: getTheme(state),
         canManageUsers: canManageChannelMembers(state)

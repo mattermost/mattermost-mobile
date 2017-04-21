@@ -3,7 +3,7 @@
 
 import {NavigationTypes} from 'app/constants';
 import Routes from 'app/navigation/routes';
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {selectPost} from 'mattermost-redux/actions/posts';
 
 export function closeDrawers() {
@@ -90,11 +90,11 @@ export function goToCreateChannel(channelType) {
         let type;
         let route;
         switch (channelType) {
-        case Constants.OPEN_CHANNEL:
+        case General.OPEN_CHANNEL:
             type = NavigationTypes.NAVIGATION_PUSH;
             route = Routes.CreatePublicChannel;
             break;
-        case Constants.PRIVATE_CHANNEL:
+        case General.PRIVATE_CHANNEL:
             type = NavigationTypes.NAVIGATION_MODAL;
             route = Routes.CreatePrivateChannel;
             break;

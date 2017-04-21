@@ -16,7 +16,7 @@ import {
 import Button from 'react-native-button';
 
 import {RequestStatus} from 'mattermost-redux/constants';
-import Client from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -83,7 +83,7 @@ export default class SelectServer extends PureComponent {
         Keyboard.dismiss();
 
         if (isValidUrl(url)) {
-            Client.setUrl(stripTrailingSlashes(url));
+            Client4.setUrl(stripTrailingSlashes(url));
             await this.props.actions.getPing();
         } else {
             error = {

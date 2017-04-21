@@ -20,8 +20,8 @@ import {getTranslations} from 'app/i18n';
 
 import Config from 'assets/config';
 
-import Client from 'mattermost-redux/client';
-import {Constants} from 'mattermost-redux/constants';
+import {Client4} from 'mattermost-redux/client';
+import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 export default class Root extends Component {
@@ -45,8 +45,8 @@ export default class Root extends Component {
     componentDidMount() {
         this.props.actions.setAppState(AppState.currentState === 'active');
         AppState.addEventListener('change', this.handleAppStateChange);
-        EventEmitter.on(Constants.CONFIG_CHANGED, this.handleConfigChanged);
-        Client.setUserAgent(DeviceInfo.getUserAgent());
+        EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
+        Client4.setUserAgent(DeviceInfo.getUserAgent());
 
         if (Platform.OS === 'android') {
             BackAndroid.addEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -55,7 +55,7 @@ export default class Root extends Component {
 
     componentWillUnmount() {
         AppState.removeEventListener('change', this.handleAppStateChange);
-        EventEmitter.off(Constants.CONFIG_CHANGED, this.handleConfigChanged);
+        EventEmitter.off(General.CONFIG_CHANGED, this.handleConfigChanged);
 
         if (Platform.OS === 'android') {
             BackAndroid.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -116,7 +116,7 @@ export default class Root extends Component {
     handleVersionUpgrade = async () => {
         const {closeDrawers, logout, unrenderDrawer} = this.props.actions;
 
-        Client.serverVersion = '';
+        Client4.serverVersion = '';
 
         closeDrawers();
         unrenderDrawer();

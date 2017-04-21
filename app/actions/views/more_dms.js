@@ -13,7 +13,6 @@ export function makeDirectChannel(otherUserId) {
         const channelName = getDirectChannelName(currentUserId, otherUserId);
         const {channels, myMembers} = state.entities.channels;
         const channel = Object.values(channels).find((c) => c.name === channelName);
-        const {currentTeamId} = state.entities.teams;
 
         getProfilesByIds([otherUserId])(dispatch, getState);
         getStatusesByIds([otherUserId])(dispatch, getState);
@@ -22,7 +21,7 @@ export function makeDirectChannel(otherUserId) {
             toggleDMChannel(otherUserId, 'true')(dispatch, getState);
             handleSelectChannel(channel.id)(dispatch, getState);
         } else {
-            const created = await createDirectChannel(currentTeamId, currentUserId, otherUserId)(dispatch, getState);
+            const created = await createDirectChannel(currentUserId, otherUserId)(dispatch, getState);
             if (created) {
                 toggleDMChannel(otherUserId, 'true')(dispatch, getState);
                 handleSelectChannel(created.id)(dispatch, getState);

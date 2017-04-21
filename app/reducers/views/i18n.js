@@ -5,14 +5,15 @@ import {combineReducers} from 'redux';
 
 import Config from 'assets/config.json';
 
-import {UsersTypes} from 'mattermost-redux/constants';
+import {UserTypes} from 'mattermost-redux/action_types';
 
 function locale(state = Config.DefaultLocale, action) {
     switch (action.type) {
-    case UsersTypes.RECEIVED_ME:
-        return action.data.locale;
-
-    case UsersTypes.LOGOUT_SUCCESS:
+    case UserTypes.RECEIVED_ME: {
+        const data = action.data || action.payload;
+        return data.locale;
+    }
+    case UserTypes.LOGOUT_SUCCESS:
         return Config.DefaultLocale;
     }
 

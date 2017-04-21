@@ -1,6 +1,6 @@
 # Mattermost Mobile (unreleased) 
 
-**Supported Server Versions:** Master (no released versions are currently supported) 
+**Supported Server Versions:** 3.8+ (no released versions are currently supported) 
 
 This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is not yet stable, and the instructions are for internal use currently (i.e. probably out-of-date until we stablize). 
 
@@ -49,7 +49,7 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
 
 - General requirements
 
-    - XCode 8.1
+    - XCode 8.3
     - Install watchman
         $ brew install watchman
 

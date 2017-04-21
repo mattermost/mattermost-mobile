@@ -8,7 +8,7 @@ import ActionButton from 'app/components/action_button';
 
 import {getTheme} from 'app/selectors/preferences';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
@@ -46,7 +46,7 @@ function mapStateToProps(state) {
     const roles = getCurrentUserRoles(state);
 
     return {
-        canCreateChannels: showCreateOption(config, license, Constants.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         theme: getTheme(state)
     };
 }

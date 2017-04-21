@@ -18,8 +18,9 @@ import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Constants, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {filterProfiles} from 'mattermost-redux/utils/user_utils';
 
 class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -61,11 +62,21 @@ class ChannelAddMembers extends PureComponent {
         }
     };
 
-    state = {
-        canSelect: true,
-        profiles: [],
-        selectedMembers: {}
-    };
+    constructor(props) {
+        super(props);
+
+        this.searchTimeoutId = 0;
+
+        this.state = {
+            canSelect: true,
+            next: true,
+            page: 0,
+            profiles: [],
+            searching: false,
+            selectedMembers: {},
+            showNoResults: false
+        };
+    }
 
     componentWillMount() {
         this.props.subscribeToHeaderEvent('add_members', this.handleAddMembersPress);
@@ -96,15 +107,13 @@ class ChannelAddMembers extends PureComponent {
         const {loadMoreRequestStatus} = this.props;
         if (loadMoreRequestStatus === RequestStatus.STARTED &&
             nextProps.loadMoreRequestStatus === RequestStatus.SUCCESS) {
-            this.setState({profiles: nextProps.membersNotInChannel});
+            const {page} = this.state;
+            const profiles = nextProps.membersNotInChannel.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
+            this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = nextProps.membersNotInChannel.filter((p) => {
-                const {term} = this.state;
-                return p.username.toLowerCase().includes(term) || p.email.toLowerCase().includes(term) ||
-                    p.first_name.toLowerCase().includes(term) || p.last_name.toLowerCase().includes(term);
-            });
-            this.setState({profiles: results});
+            const results = filterProfiles(nextProps.membersNotInChannel, this.state.term);
+            this.setState({profiles: results, showNoResults: true});
         }
 
         const {addChannelMemberStatus} = nextProps;
@@ -145,9 +154,21 @@ class ChannelAddMembers extends PureComponent {
     };
 
     loadMoreMembers = () => {
-        const {currentChannelMemberCount, currentTeamMemberCount, membersNotInChannel, loadMoreRequestStatus} = this.props;
-        if (loadMoreRequestStatus !== RequestStatus.STARTED && membersNotInChannel.length < (currentTeamMemberCount - currentChannelMemberCount - 1)) {
-            this.props.actions.getProfilesNotInChannel(this.props.currentTeam.id, this.props.currentChannel.id, this.props.membersNotInChannel.length);
+        const {actions, loadMoreRequestStatus, currentChannel, currentTeam} = this.props;
+        const {next, searching} = this.state;
+        let {page} = this.state;
+        if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
+            page = page + 1;
+            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).
+            then((data) => {
+                if (data && data.length) {
+                    this.setState({
+                        page
+                    });
+                } else {
+                    this.setState({next: false});
+                }
+            });
         }
     };
 
@@ -183,14 +204,15 @@ class ChannelAddMembers extends PureComponent {
 
     searchProfiles = (event) => {
         const term = event.nativeEvent.text.toLowerCase();
+        const {actions, currentChannel, currentTeam} = this.props;
 
         if (term) {
             this.setState({searching: true, term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchProfiles(term, {not_in_channel_id: this.props.currentChannel.id});
-            }, Constants.SEARCH_TIMEOUT_MILLISECONDS);
+                actions.searchProfiles(term, {not_in_channel_id: currentChannel.id, team_id: currentTeam.id});
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
         }

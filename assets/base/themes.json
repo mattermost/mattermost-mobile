@@ -18,6 +18,7 @@
         "linkColor": "#2f81b7",
         "buttonBg": "#1dacfc",
         "buttonColor": "#FFFFFF",
+        "errorTextColor": "#a94442",
         "mentionHighlightBg": "#fff2bb",
         "mentionHighlightLink": "#2f81b7",
         "codeTheme": "github"
@@ -41,6 +42,7 @@
         "linkColor": "#2389d7",
         "buttonBg": "#23A2FF",
         "buttonColor": "#FFFFFF",
+        "errorTextColor": "#a94442",
         "mentionHighlightBg": "#fff2bb",
         "mentionHighlightLink": "#2f81b7",
         "codeTheme": "github"
@@ -64,6 +66,7 @@
         "linkColor": "#A4FFEB",
         "buttonBg": "#4CBBA4",
         "buttonColor": "#FFFFFF",
+        "errorTextColor": "#ff6461",
         "mentionHighlightBg": "#984063",
         "mentionHighlightLink": "#A4FFEB",
         "codeTheme": "solarized-dark"
@@ -87,6 +90,7 @@
         "linkColor": "#0D93FF",
         "buttonBg": "#0177e7",
         "buttonColor": "#FFFFFF",
+        "errorTextColor": "#ff6461",
         "mentionHighlightBg": "#784098",
         "mentionHighlightLink": "#A4FFEB",
         "codeTheme": "monokai"

@@ -7,7 +7,8 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import {Constants} from 'mattermost-redux/constants';
+
+import {General, Posts} from 'mattermost-redux/constants';
 import {addDatesToPostList} from 'mattermost-redux/utils/post_utils';
 
 import ChannelIntro from 'app/components/channel_intro';
@@ -77,7 +78,7 @@ export default class PostList extends Component {
 
         const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
         const messageCount = channel.total_msg_count - posts.length;
-        if (channelIsLoading || !firstPostHasRendered || messageCount > Constants.POST_CHUNK_SIZE) {
+        if (channelIsLoading || !firstPostHasRendered || messageCount > Posts.POST_CHUNK_SIZE) {
             return null;
         }
 
@@ -92,7 +93,7 @@ export default class PostList extends Component {
         if (row instanceof Date) {
             return this.renderDateHeader(row);
         }
-        if (row === Constants.START_OF_NEW_MESSAGES) {
+        if (row === General.START_OF_NEW_MESSAGES) {
             return (
                 <NewMessagesDivider
                     theme={this.props.theme}

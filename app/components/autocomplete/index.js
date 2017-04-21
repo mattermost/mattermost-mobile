@@ -35,7 +35,7 @@ export default class Autocomplete extends Component {
         this.setState({
             cursorPosition: event.nativeEvent.selection.end
         });
-    }
+    };
 
     render() {
         return (

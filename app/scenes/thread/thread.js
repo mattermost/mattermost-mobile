@@ -16,7 +16,6 @@ export default class Thread extends PureComponent {
             handleCommentDraftChanged: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,
-        teamId: PropTypes.string.isRequired,
         channelId: PropTypes.string.isRequired,
         myMember: PropTypes.object.isRequired,
         files: PropTypes.array,
@@ -68,7 +67,6 @@ export default class Thread extends PureComponent {
                     rootId={this.props.rootId}
                     value={this.props.draft}
                     files={this.props.files}
-                    teamId={this.props.teamId}
                     channelId={this.props.channelId}
                     onChangeText={this.handleDraftChanged}
                 />

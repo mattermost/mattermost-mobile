@@ -13,7 +13,7 @@ import {
     StyleSheet
 } from 'react-native';
 
-import Client from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 import imageIcon from 'assets/images/icons/image.png';
 
@@ -24,6 +24,8 @@ const IMAGE_SIZE = {
     Preview: 'preview',
     Thumbnail: 'thumbnail'
 };
+
+const IMAGE_HEADERS = Client4.getOptions().headers;
 
 export default class FileAttachmentImage extends PureComponent {
     static propTypes = {
@@ -103,14 +105,14 @@ export default class FileAttachmentImage extends PureComponent {
 
         switch (imageSize) {
         case IMAGE_SIZE.Fullsize:
-            return Client.getFileUrl(file.id, this.state.timestamp);
+            return Client4.getFileUrl(file.id, this.state.timestamp);
         case IMAGE_SIZE.Preview:
-            return Client.getFilePreviewUrl(file.id, this.state.timestamp);
+            return Client4.getFilePreviewUrl(file.id, this.state.timestamp);
         case IMAGE_SIZE.Thumbnail:
         default:
-            return Client.getFileThumbnailUrl(file.id, this.state.timestamp);
+            return Client4.getFileThumbnailUrl(file.id, this.state.timestamp);
         }
-    }
+    };
 
     render() {
         const {
@@ -131,7 +133,7 @@ export default class FileAttachmentImage extends PureComponent {
         if (this.state.retry === 4) {
             source = imageIcon;
         } else if (file.id) {
-            source = {uri: this.handleGetImageURL()};
+            source = {uri: this.handleGetImageURL(), headers: IMAGE_HEADERS};
         }
 
         const isInFetchCache = fetchCache[source.uri];

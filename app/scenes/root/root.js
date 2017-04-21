@@ -3,11 +3,13 @@
 
 import React, {PropTypes, PureComponent} from 'react';
 import Orientation from 'react-native-orientation';
-import Loading from 'app/components/loading';
-
-import Client from 'mattermost-redux/client';
-import {RequestStatus} from 'mattermost-redux/constants';
 import SplashScreen from 'react-native-smart-splash-screen';
+
+import {Client4} from 'mattermost-redux/client';
+import {RequestStatus} from 'mattermost-redux/constants';
+
+import Loading from 'app/components/loading';
+import {stripTrailingSlashes} from 'app/utils/url';
 
 export default class Root extends PureComponent {
     static propTypes = {
@@ -59,8 +61,8 @@ export default class Root extends PureComponent {
             // Will probably need to make this optimistic since we
             // assume that the stored token is good.
             if (loginRequest.status === RequestStatus.NOT_STARTED) {
-                Client.setToken(credentials.token);
-                Client.setUrl(credentials.url);
+                Client4.setToken(credentials.token);
+                Client4.setUrl(stripTrailingSlashes(credentials.url));
 
                 loadMe().then(goToLoadTeam).catch(goToLoadTeam);
             } else {

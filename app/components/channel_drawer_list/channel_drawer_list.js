@@ -19,7 +19,7 @@ import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 import ChannelDrawerItem from './channel_drawer_item';
 import UnreadIndicator from './unread_indicator';
@@ -132,7 +132,7 @@ class ChannelDrawerList extends Component {
             mentions = member.mention_count;
             unreadCount = channel.total_msg_count - member.msg_count;
 
-            if (member.notify_props && member.notify_props.mark_unread === Constants.MENTION) {
+            if (member.notify_props && member.notify_props.mark_unread === General.MENTION) {
                 unreadCount = 0;
             }
         }
@@ -178,7 +178,7 @@ class ChannelDrawerList extends Component {
     };
 
     createPrivateChannel = () => {
-        this.props.actions.goToCreateChannel(Constants.PRIVATE_CHANNEL);
+        this.props.actions.goToCreateChannel(General.PRIVATE_CHANNEL);
     };
 
     buildData = (props) => {
