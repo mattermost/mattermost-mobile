@@ -95,7 +95,7 @@ export default function configureAppStore(initialState) {
                         },
                         {
                             type: ViewTypes.SERVER_URL_CHANGED,
-                            serverUrl: state.views.selectServer.serverUrl
+                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl
                         }
                     ]));
 
@@ -120,5 +120,5 @@ export default function configureAppStore(initialState) {
         }
     };
 
-    return configureStore({}, appReducer, getAppReducer, offlineOptions);
+    return configureStore({}, appReducer, offlineOptions, getAppReducer);
 }
