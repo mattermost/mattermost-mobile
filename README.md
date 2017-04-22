@@ -14,7 +14,7 @@ Mattermost is an open source Slack-alternative used by thousands of companies ar
 
 ### Testing
 
-The apps are currently under development with a beta release planned for March. We cut a new build every Monday, so people can test it out and see what's new.
+The apps are currently under development with a [beta release on March 29, 2017](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md#beta-release). We cut a new build every Monday, so people can test it out and see what's new.
 
 If you would like to help with testing the apps, you can:
 
