@@ -34,4 +34,17 @@ public class MainActivity extends ReactActivity {
         intent.putExtra("newConfig", newConfig);
         this.sendBroadcast(intent);
     }
+
+    /**
+     * When the back button is pressed and the app is closed it will
+     * be sent to the background instead of exiting fixing the newIntent
+     * problem where the splash screen wasn't being removed
+     */
+    @Override
+    public void invokeDefaultOnBackPressed() {
+        Intent setIntent = new Intent(Intent.ACTION_MAIN);
+        setIntent.addCategory(Intent.CATEGORY_HOME);
+        setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(setIntent);
+    }
 }

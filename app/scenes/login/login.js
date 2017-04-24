@@ -123,7 +123,7 @@ class Login extends Component {
         }
         if (this.props.config.EnableMultifactorAuthentication === 'true') {
             this.props.actions.checkMfa(this.props.loginId).then((result) => {
-                if (result.mfa_required === 'true') {
+                if (result) {
                     this.props.actions.goToMfa();
                 } else {
                     this.signIn();

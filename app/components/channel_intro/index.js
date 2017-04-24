@@ -3,7 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUser, getProfilesInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 
@@ -16,12 +16,12 @@ function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);
 
     let currentChannelMembers = [];
-    if (currentChannel.type === Constants.DM_CHANNEL) {
-        const otherChannelMember = currentChannel.name.split('__').find((m) => m.id !== currentUser.id);
+    if (currentChannel.type === General.DM_CHANNEL) {
+        const otherChannelMember = currentChannel.name.split('__').find((m) => m !== currentUser.id);
         currentChannelMembers.push(state.entities.users.profiles[otherChannelMember]);
     }
 
-    if (currentChannel.type === Constants.GM_CHANNEL) {
+    if (currentChannel.type === General.GM_CHANNEL) {
         currentChannelMembers = getProfilesInCurrentChannel(state);
     }
 
