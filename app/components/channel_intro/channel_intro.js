@@ -8,7 +8,7 @@ import {
     View
 } from 'react-native';
 import {getFullName} from 'mattermost-redux/utils/user_utils';
-import {Constants} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
 
 import ProfilePicture from 'app/components/profile_picture';
@@ -55,7 +55,7 @@ class ChannelIntro extends PureComponent {
                 />
             </View>
         ));
-    }
+    };
 
     buildNames = () => {
         const {currentChannelMembers, theme} = this.props;
@@ -64,7 +64,7 @@ class ChannelIntro extends PureComponent {
         const names = currentChannelMembers.map((member) => this.getDisplayName(member));
 
         return <Text style={style.displayName}>{names.join(', ')}</Text>;
-    }
+    };
 
     buildDMContent = () => {
         const {currentChannelMembers, intl, theme} = this.props;
@@ -81,7 +81,7 @@ class ChannelIntro extends PureComponent {
                 })}
             </Text>
         );
-    }
+    };
 
     buildGMContent = () => {
         const {intl, theme} = this.props;
@@ -95,7 +95,7 @@ class ChannelIntro extends PureComponent {
                 })}
             </Text>
         );
-    }
+    };
 
     buildOpenChannelContent = () => {
         const {currentChannel, currentChannelMembers, currentUser, intl, theme} = this.props;
@@ -164,7 +164,7 @@ class ChannelIntro extends PureComponent {
                 </Text>
             </View>
         );
-    }
+    };
 
     buildPrivateChannelContent = () => {
         const {currentChannel, currentChannelMembers, currentUser, intl, theme} = this.props;
@@ -211,7 +211,7 @@ class ChannelIntro extends PureComponent {
                 </Text>
             </View>
         );
-    }
+    };
 
     buildTownSquareContent = () => {
         const {currentChannel, intl, theme} = this.props;
@@ -243,32 +243,32 @@ class ChannelIntro extends PureComponent {
                 </Text>
             </View>
         );
-    }
+    };
 
     buildContent = () => {
         const {currentChannel} = this.props;
 
         switch (currentChannel.type) {
         default:
-        case Constants.DM_CHANNEL:
+        case General.DM_CHANNEL:
             return this.buildDMContent();
 
-        case Constants.GM_CHANNEL:
+        case General.GM_CHANNEL:
             return this.buildGMContent();
 
-        case Constants.OPEN_CHANNEL: {
-            if (currentChannel.name === Constants.DEFAULT_CHANNEL) {
+        case General.OPEN_CHANNEL: {
+            if (currentChannel.name === General.DEFAULT_CHANNEL) {
                 return this.buildTownSquareContent();
             }
 
             return this.buildOpenChannelContent();
         }
 
-        case Constants.PRIVATE_CHANNEL:
+        case General.PRIVATE_CHANNEL:
             return this.buildPrivateChannelContent();
 
         }
-    }
+    };
 
     render() {
         const {theme} = this.props;
