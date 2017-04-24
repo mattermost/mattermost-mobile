@@ -5,7 +5,7 @@ import React, {PropTypes, PureComponent} from 'react';
 import Orientation from 'react-native-orientation';
 import SplashScreen from 'react-native-smart-splash-screen';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client, Client4} from 'mattermost-redux/client';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Loading from 'app/components/loading';
@@ -63,6 +63,7 @@ export default class Root extends PureComponent {
             if (loginRequest.status === RequestStatus.NOT_STARTED) {
                 Client4.setToken(credentials.token);
                 Client4.setUrl(stripTrailingSlashes(credentials.url));
+                Client.setUrl(stripTrailingSlashes(credentials.url));
 
                 loadMe().then(goToLoadTeam).catch(goToLoadTeam);
             } else {
