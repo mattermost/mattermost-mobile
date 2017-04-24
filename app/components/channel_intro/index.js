@@ -17,7 +17,7 @@ function mapStateToProps(state) {
 
     let currentChannelMembers = [];
     if (currentChannel.type === General.DM_CHANNEL) {
-        const otherChannelMember = currentChannel.name.split('__').find((m) => m.id !== currentUser.id);
+        const otherChannelMember = currentChannel.name.split('__').find((m) => m !== currentUser.id);
         currentChannelMembers.push(state.entities.users.profiles[otherChannelMember]);
     }
 
