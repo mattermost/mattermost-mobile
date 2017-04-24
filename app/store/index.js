@@ -24,17 +24,12 @@ const usersSetTransform = [
     'profilesNotInTeam'
 ];
 
-const teamSetTransform = [
-    'membersInTeam'
-];
-
 const channelSetTransform = [
     'channelsInTeam'
 ];
 
 const setTransforms = [
     ...usersSetTransform,
-    ...teamSetTransform,
     ...channelSetTransform
 ];
 
