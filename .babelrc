@@ -2,7 +2,7 @@
   "presets": [ "react-native" ],
   "plugins": [
     ["module-resolver", {
-      "root": ["."],
+      "root": ["./src", "."],
       "alias": {
         "assets": "./dist/assets"
       }
