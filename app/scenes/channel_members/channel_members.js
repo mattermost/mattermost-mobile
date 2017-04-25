@@ -14,7 +14,7 @@ import {injectIntl, intlShape} from 'react-intl';
 
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
-import {createMembersSections, loadingText} from 'app/utils/member_list';
+import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -102,11 +102,17 @@ class ChannelMembers extends PureComponent {
         if (requestStatus === RequestStatus.STARTED &&
             nextProps.requestStatus === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const profiles = nextProps.currentChannelMembers.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
+            const profiles = markSelectedProfiles(
+                nextProps.currentChannelMembers.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
+                this.state.selectedMembers
+            );
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = filterProfilesMatchingTerm(nextProps.currentChannelMembers, this.state.term);
+            const results = markSelectedProfiles(
+                filterProfilesMatchingTerm(nextProps.currentChannelMembers, this.state.term),
+                this.state.selectedMembers
+            );
             this.setState({profiles: results, showNoResults: true});
         }
 
@@ -203,6 +209,7 @@ class ChannelMembers extends PureComponent {
             this.emitCanRemoveMembers(false);
         }
         this.setState({
+            profiles: markSelectedProfiles(this.state.profiles, selectedMembers),
             selectedMembers
         });
     };
@@ -244,7 +251,7 @@ class ChannelMembers extends PureComponent {
             searching: false,
             term: null,
             page: 0,
-            profiles: this.props.currentChannelMembers
+            profiles: markSelectedProfiles(this.props.currentChannelMembers, this.state.selectedMembers)
         });
     };
 
