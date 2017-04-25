@@ -9,7 +9,6 @@ import {closeModal} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
 
 import {editPost} from 'mattermost-redux/actions/posts';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import EditPost from './edit_post';
 
@@ -18,7 +17,6 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        currentTeamId: getCurrentTeamId(state),
         editPostRequest,
         post: ownProps.post,
         theme: getTheme(state)
