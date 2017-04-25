@@ -20,7 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {displayUsername, filterProfiles} from 'mattermost-redux/utils/user_utils';
+import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 import ChannelMembersTitle from './channel_members_title';
 import RemoveMemberButton from './remove_member_button';
@@ -106,7 +106,7 @@ class ChannelMembers extends PureComponent {
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = filterProfiles(nextProps.currentChannelMembers, this.state.term);
+            const results = filterProfilesMatchingTerm(nextProps.currentChannelMembers, this.state.term);
             this.setState({profiles: results, showNoResults: true});
         }
 

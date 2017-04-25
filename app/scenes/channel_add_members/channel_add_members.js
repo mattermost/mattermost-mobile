@@ -20,7 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {filterProfiles} from 'mattermost-redux/utils/user_utils';
+import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -112,7 +112,7 @@ class ChannelAddMembers extends PureComponent {
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = filterProfiles(nextProps.membersNotInChannel, this.state.term);
+            const results = filterProfilesMatchingTerm(nextProps.membersNotInChannel, this.state.term);
             this.setState({profiles: results, showNoResults: true});
         }
 
