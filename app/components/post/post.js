@@ -363,7 +363,7 @@ class Post extends PureComponent {
                                 <OptionsContext
                                     ref='bottomSheet'
                                     actions={actions}
-                                    cancelText={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
                                 />
                                 {this.renderFileAttachments()}
                             </View>
