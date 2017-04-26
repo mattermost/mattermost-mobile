@@ -39,6 +39,10 @@ node_modules/
 npm-debug.log
 .npminstall
 
+# yarn
+#
+.yarninstall
+
 # BUCK
 buck-out/
 \.buckd/
