@@ -22,7 +22,6 @@ export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addFileToFetchCache: PropTypes.func.isRequired,
-            handleClearFiles: PropTypes.func.isRequired,
             handleRemoveFile: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
@@ -35,12 +34,6 @@ export default class FileUploadPreview extends PureComponent {
         uploadFileRequestStatus: PropTypes.string.isRequired
     };
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.createPostRequestStatus === RequestStatus.STARTED && nextProps.createPostRequestStatus === RequestStatus.SUCCESS) {
-            this.props.actions.handleClearFiles(this.props.channelId, this.props.rootId);
-        }
-    }
-
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
             return (
@@ -48,11 +41,13 @@ export default class FileUploadPreview extends PureComponent {
                     key={file.clientId}
                     style={style.preview}
                 >
-                    <FileAttachmentImage
-                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
-                        fetchCache={this.props.fetchCache}
-                        file={file}
-                    />
+                    <View style={style.previewShadow}>
+                        <FileAttachmentImage
+                            addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                            fetchCache={this.props.fetchCache}
+                            file={file}
+                        />
+                    </View>
                     <TouchableOpacity
                         style={style.removeButtonWrapper}
                         onPress={() => this.props.actions.handleRemoveFile(file.clientId, this.props.channelId, this.props.rootId)}
@@ -75,14 +70,16 @@ export default class FileUploadPreview extends PureComponent {
         }
 
         return (
-            <KeyboardLayout style={style.container}>
-                <ScrollView
-                    horizontal={true}
-                    style={style.scrollView}
-                    contentContainerStyle={[style.scrollViewContent, {marginBottom: this.props.inputHeight}]}
-                >
-                    {this.buildFilePreviews()}
-                </ScrollView>
+            <KeyboardLayout>
+                <View style={[style.container]}>
+                    <ScrollView
+                        horizontal={true}
+                        style={style.scrollView}
+                        contentContainerStyle={style.scrollViewContent}
+                    >
+                        {this.buildFilePreviews()}
+                    </ScrollView>
+                </View>
             </KeyboardLayout>
         );
     }
@@ -100,15 +97,23 @@ const style = StyleSheet.create({
     preview: {
         justifyContent: 'flex-end',
         height: 115,
-        width: 115,
+        width: 115
+    },
+    previewShadow: {
+        width: 100,
         elevation: 10,
-        shadowColor: '#000',
-        shadowOpacity: 0.5,
-        shadowRadius: 4,
-        shadowOffset: {
-            width: 0,
-            height: 0
-        }
+        ...Platform.select({
+            ios: {
+                backgroundColor: '#fff',
+                shadowColor: '#000',
+                shadowOpacity: 0.5,
+                shadowRadius: 4,
+                shadowOffset: {
+                    width: 0,
+                    height: 0
+                }
+            }
+        })
     },
     removeButtonIcon: Platform.select({
         ios: {
@@ -123,6 +128,7 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         position: 'absolute',
         overflow: 'hidden',
+        elevation: 11,
         top: 7,
         right: 7,
         width: 24,
@@ -134,7 +140,7 @@ const style = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-        marginBottom: 24
+        marginBottom: 12
     },
     scrollViewContent: {
         alignItems: 'flex-end',

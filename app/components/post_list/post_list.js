@@ -32,7 +32,12 @@ export default class PostList extends Component {
         renderReplies: PropTypes.bool,
         indicateNewMessages: PropTypes.bool,
         currentUserId: PropTypes.string,
-        lastViewedAt: PropTypes.number
+        lastViewedAt: PropTypes.number,
+        isThread: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        channel: {}
     };
 
     constructor(props) {
@@ -75,6 +80,9 @@ export default class PostList extends Component {
 
     renderChannelIntro = () => {
         const {channel, channelIsLoading, posts} = this.props;
+        if (!channel) {
+            return null;
+        }
 
         if (channel) {
             const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;

@@ -10,6 +10,7 @@ import {
     View,
     TouchableOpacity
 } from 'react-native';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import FileAttachment from './file_attachment';
@@ -24,12 +25,22 @@ export default class FileAttachmentList extends Component {
         onPress: PropTypes.func,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        toggleSelected: PropTypes.func.isRequired
+        toggleSelected: PropTypes.func.isRequired,
+        filesForPostRequest: PropTypes.object.isRequired
     };
 
     componentDidMount() {
         const {post} = this.props;
         this.props.actions.loadFilesForPostIfNecessary(post);
+    }
+
+    componentDidUpdate() {
+        const {files, filesForPostRequest, post} = this.props;
+
+        // Fixes an issue where files weren't loading with optimistic post
+        if (!files.length && post.file_ids.length > 0 && filesForPostRequest.status !== RequestStatus.STARTED) {
+            this.props.actions.loadFilesForPostIfNecessary(post);
+        }
     }
 
     handleInfoPress = () => {
@@ -43,26 +54,41 @@ export default class FileAttachmentList extends Component {
     };
 
     render() {
-        const fileAttachments = this.props.files.map((file) => (
-            <TouchableOpacity
-                key={file.id}
-                onLongPress={this.props.onLongPress}
-                onPressIn={() => this.props.toggleSelected(true)}
-                onPressOut={() => this.props.toggleSelected(false)}
-            >
+        const {files, post} = this.props;
+
+        let fileAttachments;
+        if (!files.length && post.file_ids.length > 0) {
+            fileAttachments = post.file_ids.map((id) => (
                 <FileAttachment
+                    key={id}
                     addFileToFetchCache={this.props.actions.addFileToFetchCache}
                     fetchCache={this.props.fetchCache}
-                    file={file}
-                    onInfoPress={this.handleInfoPress}
-                    onPreviewPress={this.handlePreviewPress}
+                    file={{loading: true}}
                     theme={this.props.theme}
                 />
-            </TouchableOpacity>
-        ));
+            ));
+        } else {
+            fileAttachments = files.map((file) => (
+                <TouchableOpacity
+                    key={file.id}
+                    onLongPress={this.props.onLongPress}
+                    onPressIn={() => this.props.toggleSelected(true)}
+                    onPressOut={() => this.props.toggleSelected(false)}
+                >
+                    <FileAttachment
+                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                        fetchCache={this.props.fetchCache}
+                        file={file}
+                        onInfoPress={this.handleInfoPress}
+                        onPreviewPress={this.handlePreviewPress}
+                        theme={this.props.theme}
+                    />
+                </TouchableOpacity>
+            ));
+        }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={[{flex: 1}, (post.failed && {opacity: 0.5})]}>
                 {fileAttachments}
             </View>
         );

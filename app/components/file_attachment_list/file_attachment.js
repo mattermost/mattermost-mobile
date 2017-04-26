@@ -35,6 +35,10 @@ export default class FileAttachment extends PureComponent {
         const {file, theme} = this.props;
         const style = getStyleSheet(theme);
 
+        if (!file.id) {
+            return null;
+        }
+
         return (
             <View>
                 <Text
@@ -66,7 +70,7 @@ export default class FileAttachment extends PureComponent {
         const style = getStyleSheet(theme);
 
         let fileAttachmentComponent;
-        if (file.has_preview_image) {
+        if (file.has_preview_image || file.loading) {
             fileAttachmentComponent = (
                 <FileAttachmentImage
                     addFileToFetchCache={this.props.addFileToFetchCache}

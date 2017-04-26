@@ -42,7 +42,7 @@ function drafts(state = {}, action) {
             return state;
         }
 
-        const tempFiles = action.clientIds.map((id) => ({clientId: id, loading: true}));
+        const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
         const files = [
             ...state[action.channelId].files,
             ...tempFiles
@@ -62,7 +62,10 @@ function drafts(state = {}, action) {
         const files = state[action.channelId].files.map((tempFile) => {
             const file = action.data.find((f) => f.clientId === tempFile.clientId);
             if (file) {
-                return file;
+                return {
+                    ...file,
+                    localPath: tempFile.localPath
+                };
             }
 
             return tempFile;

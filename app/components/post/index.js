@@ -3,14 +3,14 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {deletePost, flagPost, removePost, unflagPost} from 'mattermost-redux/actions/posts';
+import {createPost, deletePost, flagPost, removePost, unflagPost} from 'mattermost-redux/actions/posts';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
-import {goToUserProfile, openEditPostModal} from 'app/actions/navigation';
+import {goToUserProfile, openEditPostModal, requestCloseModal, showOptionsModal} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
 
 import Post from './post';
@@ -43,11 +43,14 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            createPost,
             deletePost,
             flagPost,
             goToUserProfile,
             openEditPostModal,
             removePost,
+            requestCloseModal,
+            showOptionsModal,
             unflagPost
         }, dispatch)
     };
