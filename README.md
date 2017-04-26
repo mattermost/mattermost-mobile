@@ -1,6 +1,6 @@
 # Mattermost Mobile (unreleased) 
 
-**Supported Server Versions:** 3.8+ (no released versions are currently supported) 
+**Supported Server Versions:** 3.8+
 
 This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is not yet stable, and the instructions are for internal use currently (i.e. probably out-of-date until we stablize). 
 
@@ -23,7 +23,6 @@ If you would like to help with testing the apps, you can:
 2. Sign up to be a beta tester
   - [Android](https://play.google.com/apps/testing/com.mattermost.react.native)
   - [iOS](https://mattermost-fastlane.herokuapp.com/)
-    - **Note:** iOS sign up link is temporarily down because of changes Apple made to their beta testing tools. While we wait for a fix, you can sign up to our team site and direct message "lindsay" your email address for a manual invite. 
 3. Install the `Mattermost 2017 (Beta)` app
   - Note: The app only works with server version 3.7+, you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
 4. Check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what's currently supported
