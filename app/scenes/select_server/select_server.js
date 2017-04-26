@@ -25,6 +25,8 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 import {GlobalStyles} from 'app/styles';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 
+import urlParse from 'url-parse';
+
 import logo from 'assets/images/logo.png';
 
 export default class SelectServer extends PureComponent {
@@ -77,7 +79,8 @@ export default class SelectServer extends PureComponent {
     };
 
     onClick = async () => {
-        const url = this.props.serverUrl;
+        const preUrl = urlParse(this.props.serverUrl, true);
+        const url = preUrl.protocol + '//' + preUrl.host;
         let error = null;
 
         Keyboard.dismiss();
