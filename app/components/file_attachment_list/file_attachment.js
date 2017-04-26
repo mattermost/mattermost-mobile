@@ -8,6 +8,7 @@ import React, {
 
 import {
     Text,
+    TouchableOpacity,
     View,
     StyleSheet
 } from 'react-native';
@@ -25,6 +26,8 @@ export default class FileAttachment extends PureComponent {
         addFileToFetchCache: PropTypes.func.isRequired,
         fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object.isRequired,
+        onInfoPress: PropTypes.func.isRequired,
+        onPreviewPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
     };
 
@@ -33,7 +36,7 @@ export default class FileAttachment extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.fileInfoContainer}>
+            <View>
                 <Text
                     numberOfLines={4}
                     style={style.fileName}
@@ -52,6 +55,10 @@ export default class FileAttachment extends PureComponent {
                 </View>
             </View>
         );
+    }
+
+    handlePreviewPress = () => {
+        this.props.onPreviewPress(this.props.file);
     }
 
     render() {
@@ -79,8 +86,15 @@ export default class FileAttachment extends PureComponent {
 
         return (
             <View style={style.fileWrapper}>
-                {fileAttachmentComponent}
-                {this.renderFileInfo()}
+                <TouchableOpacity onPress={this.handlePreviewPress}>
+                    {fileAttachmentComponent}
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={this.props.onInfoPress}
+                    style={style.fileInfoContainer}
+                >
+                    {this.renderFileInfo()}
+                </TouchableOpacity>
             </View>
         );
     }

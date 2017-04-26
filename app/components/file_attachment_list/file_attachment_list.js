@@ -21,6 +21,7 @@ export default class FileAttachmentList extends Component {
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
         onLongPress: PropTypes.func,
+        onPress: PropTypes.func,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         toggleSelected: PropTypes.func.isRequired
@@ -31,9 +32,14 @@ export default class FileAttachmentList extends Component {
         this.props.actions.loadFilesForPostIfNecessary(post);
     }
 
-    handleOnPress = (file) => {
+    handleInfoPress = () => {
         this.props.hideOptionsContext();
-        this.props.actions.goToImagePreviewModal(this.props.post, file.id);
+        this.props.onPress();
+    }
+
+    handlePreviewPress = (file) => {
+        this.props.hideOptionsContext();
+        preventDoubleTap(this.props.actions.goToImagePreviewModal, this, this.props.post, file.id);
     };
 
     render() {
@@ -41,7 +47,6 @@ export default class FileAttachmentList extends Component {
             <TouchableOpacity
                 key={file.id}
                 onLongPress={this.props.onLongPress}
-                onPress={() => preventDoubleTap(this.handleOnPress, this, file)}
                 onPressIn={() => this.props.toggleSelected(true)}
                 onPressOut={() => this.props.toggleSelected(false)}
             >
@@ -49,6 +54,8 @@ export default class FileAttachmentList extends Component {
                     addFileToFetchCache={this.props.actions.addFileToFetchCache}
                     fetchCache={this.props.fetchCache}
                     file={file}
+                    onInfoPress={this.handleInfoPress}
+                    onPreviewPress={this.handlePreviewPress}
                     theme={this.props.theme}
                 />
             </TouchableOpacity>

@@ -212,6 +212,7 @@ class Post extends PureComponent {
                 <FileAttachmentList
                     hideOptionsContext={this.hideOptionsContext}
                     onLongPress={this.showOptionsContext}
+                    onPress={this.handlePress}
                     post={post}
                     toggleSelected={this.toggleSelected}
                 />
