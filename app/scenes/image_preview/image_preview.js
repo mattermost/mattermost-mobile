@@ -60,7 +60,7 @@ export default class ImagePreview extends PureComponent {
         const currentFile = props.files.findIndex((file) => file.id === props.fileId);
         this.state = {
             currentFile,
-            deviceHeight,
+            deviceHeight: deviceHeight - STATUSBAR_HEIGHT,
             deviceWidth,
             drag: new Animated.ValueXY(),
             footerOpacity: new Animated.Value(1),
