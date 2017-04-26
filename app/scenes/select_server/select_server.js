@@ -79,7 +79,7 @@ export default class SelectServer extends PureComponent {
     };
 
     onClick = async () => {
-        var preUrl = urlParse(this.props.serverUrl, true);
+        const preUrl = urlParse(this.props.serverUrl, true);
         const url = preUrl.protocol + '//' + preUrl.host;
         let error = null;
 
