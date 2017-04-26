@@ -126,7 +126,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 
         let membersToLoad = members;
         if (membersInTeam[teamId]) {
-            membersToLoad = members.filter((m) => !membersInTeam[teamId].has(m));
+            membersToLoad = members.filter((m) => !membersInTeam[teamId].hasOwnProperty(m));
         }
 
         if (membersToLoad.length) {

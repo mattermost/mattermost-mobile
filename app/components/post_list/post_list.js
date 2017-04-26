@@ -21,7 +21,7 @@ const LOAD_MORE_POSTS = 'load-more-posts';
 
 export default class PostList extends Component {
     static propTypes = {
-        channel: PropTypes.object.isRequired,
+        channel: PropTypes.object,
         channelIsLoading: PropTypes.bool.isRequired,
         posts: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
@@ -76,18 +76,22 @@ export default class PostList extends Component {
     renderChannelIntro = () => {
         const {channel, channelIsLoading, posts} = this.props;
 
-        const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
-        const messageCount = channel.total_msg_count - posts.length;
-        if (channelIsLoading || !firstPostHasRendered || messageCount > Posts.POST_CHUNK_SIZE) {
-            return null;
+        if (channel) {
+            const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
+            const messageCount = channel.total_msg_count - posts.length;
+            if (channelIsLoading || !firstPostHasRendered || messageCount > Posts.POST_CHUNK_SIZE) {
+                return null;
+            }
+
+            return (
+                <View style={style.row}>
+                    <ChannelIntro/>
+                </View>
+            );
         }
 
-        return (
-            <View style={style.row}>
-                <ChannelIntro/>
-            </View>
-        );
-    }
+        return null;
+    };
 
     renderRow = (row) => {
         if (row instanceof Date) {

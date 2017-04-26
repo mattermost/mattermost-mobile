@@ -21,7 +21,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 export default class EditPost extends PureComponent {
     static propTypes = {
-        currentTeamId: PropTypes.string.isRequired,
         editPostRequest: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -71,7 +70,7 @@ export default class EditPost extends PureComponent {
     onEditPost = async () => {
         const {message} = this.state;
         const post = Object.assign({}, this.props.post, {message});
-        await this.props.actions.editPost(this.props.currentTeamId, post);
+        await this.props.actions.editPost(post);
     };
 
     onPostChangeText = (message) => {

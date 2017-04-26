@@ -15,12 +15,12 @@ import {
 import ActionButton from 'app/components/action_button';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
-import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
+import {createMembersSections, loadingText, markSelectedProfiles, renderMemberRow} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {filterProfiles} from 'mattermost-redux/utils/user_utils';
+import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -108,11 +108,17 @@ class ChannelAddMembers extends PureComponent {
         if (loadMoreRequestStatus === RequestStatus.STARTED &&
             nextProps.loadMoreRequestStatus === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const profiles = nextProps.membersNotInChannel.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
+            const profiles = markSelectedProfiles(
+                nextProps.membersNotInChannel.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
+                this.state.selectedMembers
+            );
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequestStatus === RequestStatus.SUCCESS) {
-            const results = filterProfiles(nextProps.membersNotInChannel, this.state.term);
+            const results = markSelectedProfiles(
+                filterProfilesMatchingTerm(nextProps.membersNotInChannel, this.state.term),
+                this.state.selectedMembers
+            );
             this.setState({profiles: results, showNoResults: true});
         }
 
@@ -138,7 +144,7 @@ class ChannelAddMembers extends PureComponent {
 
     handleAddMembersPress = () => {
         const {selectedMembers} = this.state;
-        const {actions, currentTeam, currentChannel} = this.props;
+        const {actions, currentChannel} = this.props;
         const membersToAdd = Object.keys(selectedMembers).filter((m) => selectedMembers[m]);
 
         if (!membersToAdd.length) {
@@ -146,7 +152,7 @@ class ChannelAddMembers extends PureComponent {
             return;
         }
 
-        actions.handleAddChannelMembers(currentTeam.id, currentChannel.id, membersToAdd);
+        actions.handleAddChannelMembers(currentChannel.id, membersToAdd);
     };
 
     handleAndroidKeyboard = () => {
@@ -181,6 +187,7 @@ class ChannelAddMembers extends PureComponent {
             this.emitCanAddMembers(false);
         }
         this.setState({
+            profiles: markSelectedProfiles(this.state.profiles, selectedMembers),
             selectedMembers
         });
     };
@@ -223,7 +230,7 @@ class ChannelAddMembers extends PureComponent {
             searching: false,
             term: null,
             page: 0,
-            profiles: this.props.membersNotInChannel
+            profiles: markSelectedProfiles(this.props.membersNotInChannel, this.state.selectedMembers)
         });
     };
 

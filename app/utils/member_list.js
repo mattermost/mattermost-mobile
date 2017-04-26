@@ -48,3 +48,11 @@ export function renderMemberRow(user, sectionId, rowId, preferences, theme, sele
         />
     );
 }
+
+export function markSelectedProfiles(profiles, selectedProfiles) {
+    return profiles.map((p) => {
+        const profile = {...p};
+        profile.selected = selectedProfiles[p.id];
+        return profile;
+    });
+}
