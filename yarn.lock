@@ -3518,7 +3518,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/41e9556727f0c401945e51e55b7619f42f75a95a"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/4fc3ebbf07049555969fca691e0ff00dcc61b6d7"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -3528,6 +3528,7 @@ mattermost-redux@mattermost/mattermost-redux#master:
     redux-action-buffer "1.0.1"
     redux-batched-actions "0.2.0"
     redux-offline "git+https://github.com/enahum/redux-offline.git"
+    redux-persist "4.6.0"
     redux-thunk "2.2.0"
     reselect "3.0.0"
     serialize-error "2.1.0"
@@ -4124,6 +4125,10 @@ qs@6.4.0, qs@~6.4.0:
 querystring@0.2.0, querystring@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
+
+querystringify@0.0.x:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-0.0.4.tgz#0cf7f84f9463ff0ae51c4c4b142d95be37724d9c"
 
 raf@^3.2.0:
   version "3.3.0"
@@ -4763,6 +4768,10 @@ require-uncached@^1.0.2:
   dependencies:
     caller-path "^0.1.0"
     resolve-from "^1.0.0"
+
+requires-port@1.0.x:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
 
 reselect@3.0.0:
   version "3.0.0"
@@ -5478,6 +5487,13 @@ ultron@1.0.x:
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
+
+url-parse@1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.1.8.tgz#7a65b3a8d57a1e86af6b4e2276e34774167c0156"
+  dependencies:
+    querystringify "0.0.x"
+    requires-port "1.0.x"
 
 user-home@^1.1.1:
   version "1.1.1"
