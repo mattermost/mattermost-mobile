@@ -13,7 +13,7 @@ import {
     Text
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ImagePicker from 'react-native-image-crop-picker';
+import ImagePicker from 'react-native-image-picker';
 import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -176,33 +176,42 @@ class PostTextbox extends PureComponent {
         this.autocomplete = c;
     };
 
-    attachFileFromCamera = async () => {
-        try {
-            this.props.actions.closeModal();
-            const image = await ImagePicker.openCamera({
-                compressImageQuality: 0.5
-            });
+    attachFileFromCamera = () => {
+        this.props.actions.closeModal();
 
-            this.uploadFiles([image]);
-        } catch (error) {
-            // If user cancels it's considered
-            // an error and we have to catch it.
-        }
+        const options = {
+            quality: 0.5,
+            noData: true,
+            storageOptions: {
+                cameraRoll: true,
+                waitUntilSaved: true
+            }
+        };
+
+        ImagePicker.launchCamera(options, (response) => {
+            if (response.error) {
+                return;
+            }
+
+            this.uploadFiles([response]);
+        });
     };
 
-    attachFileFromLibrary = async () => {
-        try {
-            this.props.actions.closeModal();
-            const images = await ImagePicker.openPicker({
-                multiple: true,
-                compressImageQuality: 0.5
-            });
+    attachFileFromLibrary = () => {
+        this.props.actions.closeModal();
 
-            this.uploadFiles(images);
-        } catch (error) {
-            // If user cancels it's considered
-            // an error and we have to catch it.
-        }
+        const options = {
+            quality: 0.5,
+            noData: true
+        };
+
+        ImagePicker.launchImageLibrary(options, (response) => {
+            if (response.error) {
+                return;
+            }
+
+            this.uploadFiles([response]);
+        });
     };
 
     uploadFiles = (images) => {

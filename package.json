@@ -21,7 +21,7 @@
     "react-native-cookies": "2.0.0",
     "react-native-device-info": "0.10.2",
     "react-native-drawer": "2.3.0",
-    "react-native-image-crop-picker": "0.13.0",
+    "react-native-image-picker": "0.26.3",
     "react-native-keyboard-aware-scroll-view": "0.2.8",
     "react-native-linear-gradient": "2.0.0",
     "react-native-message-bar": "1.6.0",
