@@ -6,15 +6,15 @@
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
 
-.npminstall: package.json
-	@if ! [ $(shell command -v npm 2> /dev/null) ]; then \
-		echo "npm is not installed"; \
+.yarninstall: package.json
+	@if ! [ $(shell command -v yarn 2> /dev/null) ]; then \
+		echo "yarn is not installed https://yarnpkg.com"; \
 		exit 1; \
 	fi
 
 	@echo Getting dependencies using npm
 
-	npm install
+	yarn install
 
 	touch $@
 
@@ -30,7 +30,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 
 	node scripts/make-dist-assets.js
 
-pre-run: .npminstall dist/assets
+pre-run: .yarninstall dist/assets
 
 run: run-ios
 
@@ -78,7 +78,7 @@ run-android: | start prepare-android-build
 test: pre-run
 	npm test
 
-check-style: .npminstall
+check-style: .yarninstall
 	@echo Checking for style guide compliance
 
 	npm run check
@@ -88,7 +88,7 @@ clean:
 
 	npm cache clean
 	rm -rf node_modules
-	rm -f .npminstall
+	rm -f .yarninstall
 	rm -rf dist
 
 post-install:
