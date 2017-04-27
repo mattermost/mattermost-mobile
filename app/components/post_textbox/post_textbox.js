@@ -32,6 +32,7 @@ class PostTextbox extends PureComponent {
         actions: PropTypes.shape({
             closeModal: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
+            handleClearFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
             showOptionsModal: PropTypes.func.isRequired,
@@ -148,6 +149,9 @@ class PostTextbox extends PureComponent {
 
         this.props.actions.createPost(post, this.props.files);
         this.handleTextChange('');
+        if (this.props.files.length) {
+            this.props.actions.handleClearFiles(this.props.channelId, this.props.rootId);
+        }
     };
 
     handleTextChange = (text) => {
@@ -298,7 +302,7 @@ class PostTextbox extends PureComponent {
                     onChangeText={this.props.onChangeText}
                     rootId={this.props.rootId}
                 />
-                <View style={{backgroundColor: theme.centerChannelBg}}>
+                <View style={{backgroundColor: theme.centerChannelBg, elevation: 5}}>
                     <View
                         style={style.inputWrapper}
                     >

@@ -59,7 +59,11 @@ export default class OptionsModalList extends PureComponent {
                 onPress={() => preventDoubleTap(onCancelPress, this)}
                 style={style.option}
             >
-                <Text style={style.optionText}>{'Cancel'}</Text>
+                <FormattedText
+                    id='channel_modal.cancel'
+                    defaultMessage='Cancel'
+                    style={style.optionText}
+                />
             </TouchableOpacity>
         );
 

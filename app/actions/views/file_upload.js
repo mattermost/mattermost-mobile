@@ -22,7 +22,10 @@ export function handleUploadFiles(files, rootId) {
             const mimeType = lookupMimeType(name);
             const clientId = generateId();
 
-            clientIds.push(clientId);
+            clientIds.push({
+                clientId,
+                localPath: file.path
+            });
 
             const fileData = {
                 uri: file.path,

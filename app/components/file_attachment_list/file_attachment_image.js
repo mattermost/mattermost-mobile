@@ -101,6 +101,10 @@ export default class FileAttachmentImage extends PureComponent {
     handleGetImageURL = () => {
         const {file, imageSize} = this.props;
 
+        if (file.localPath && this.state.retry === 0) {
+            return file.localPath;
+        }
+
         switch (imageSize) {
         case IMAGE_SIZE.Fullsize:
             return Client.getFileUrl(file.id, this.state.timestamp);

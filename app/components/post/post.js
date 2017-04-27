@@ -13,6 +13,7 @@ import {
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
@@ -55,12 +56,15 @@ class Post extends PureComponent {
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         actions: PropTypes.shape({
+            createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
             goToUserProfile: PropTypes.func.isRequired,
             openEditPostModal: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired
+            unflagPost: PropTypes.func.isRequired,
+            requestCloseModal: PropTypes.func.isRequired,
+            showOptionsModal: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -117,9 +121,44 @@ class Post extends PureComponent {
         actions.openEditPostModal(post);
     };
 
+    handleFailedPostPress = () => {
+        const options = {
+            title: {
+                id: 'mobile.post.failed_title',
+                defaultMessage: 'Unable to send your message:'
+            },
+            items: [{
+                action: () => {
+                    const {failed, id, ...post} = this.props.post; // eslint-disable-line
+
+                    this.props.actions.requestCloseModal();
+                    this.props.actions.createPost(post);
+                },
+                text: {
+                    id: 'mobile.post.failed_retry',
+                    defaultMessage: 'Try Again'
+                }
+            }, {
+                action: () => {
+                    this.props.actions.requestCloseModal();
+                    this.onRemovePost(this.props.post);
+                },
+                text: {
+                    id: 'mobile.post.failed_delete',
+                    defaultMessage: 'Delete Message'
+                },
+                textStyle: {
+                    color: '#CC3239'
+                }
+            }]
+        };
+
+        this.props.actions.showOptionsModal(options);
+    };
+
     handlePress = () => {
         const {post, onPress} = this.props;
-        if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post)) {
+        if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !post.failed) {
             preventDoubleTap(onPress, null, post);
         } else if (post.state === Posts.POST_DELETED) {
             preventDoubleTap(this.onRemovePost, this, post);
@@ -228,24 +267,26 @@ class Post extends PureComponent {
         const actions = [];
 
         // we should check for the user roles and permissions
-        if (isFlagged) {
-            actions.push({
-                text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                onPress: () => unflagPost(post.id)
-            });
-        } else {
-            actions.push({
-                text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                onPress: () => flagPost(post.id)
-            });
-        }
+        if (!post.failed) {
+            if (isFlagged) {
+                actions.push({
+                    text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
+                    onPress: () => unflagPost(post.id)
+                });
+            } else {
+                actions.push({
+                    text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
+                    onPress: () => flagPost(post.id)
+                });
+            }
 
-        if (this.state.canEdit) {
-            actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: () => this.handlePostEdit()});
-        }
+            if (this.state.canEdit) {
+                actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: () => this.handlePostEdit()});
+            }
 
-        if (this.state.canDelete && post.state !== Posts.POST_DELETED) {
-            actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
+            if (this.state.canDelete && post.state !== Posts.POST_DELETED) {
+                actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
+            }
         }
 
         let messageContainer;
@@ -260,12 +301,16 @@ class Post extends PureComponent {
             );
         } else if (this.props.post.message.length) {
             message = (
-                <Markdown
-                    baseTextStyle={messageStyle}
-                    textStyles={getMarkdownTextStyles(theme)}
-                    blockStyles={getMarkdownBlockStyles(theme)}
-                    value={post.message}
-                />
+                <View style={{flexDirection: 'row'}}>
+                    <View style={[{flex: 1}, (post.failed && style.failedPost)]}>
+                        <Markdown
+                            baseTextStyle={messageStyle}
+                            textStyles={getMarkdownTextStyles(theme)}
+                            blockStyles={getMarkdownBlockStyles(theme)}
+                            value={post.message}
+                        />
+                    </View>
+                </View>
             );
         }
 
@@ -273,16 +318,30 @@ class Post extends PureComponent {
             messageContainer = (
                 <View style={style.messageContainerWithReplyBar}>
                     {replyBar && this.renderReplyBar(style)}
-                    <View style={{flex: 1}}>
-                        <OptionsContext
-                            actions={actions}
-                            ref='tooltip'
-                            onPress={this.handlePress}
-                            toggleSelected={this.toggleSelected}
-                        >
-                            {message}
-                            {this.renderFileAttachments()}
-                        </OptionsContext>
+                    <View style={{flex: 1, flexDirection: 'row'}}>
+                        <View style={{flex: 1}}>
+                            <OptionsContext
+                                actions={actions}
+                                ref='tooltip'
+                                onPress={this.handlePress}
+                                toggleSelected={this.toggleSelected}
+                            >
+                                {message}
+                                {this.renderFileAttachments()}
+                            </OptionsContext>
+                        </View>
+                        {post.failed &&
+                            <TouchableOpacity
+                                onPress={this.handleFailedPostPress}
+                                style={{justifyContent: 'center', marginLeft: 12}}
+                            >
+                                <Icon
+                                    name='ios-information-circle-outline'
+                                    size={26}
+                                    color={theme.errorTextColor}
+                                />
+                            </TouchableOpacity>
+                        }
                     </View>
                 </View>
             );
@@ -296,16 +355,30 @@ class Post extends PureComponent {
                         onPress={this.handlePress}
                         onShowUnderlay={() => this.toggleSelected(true)}
                         underlayColor='transparent'
-                        style={{flex: 1}}
+                        style={{flex: 1, flexDirection: 'row'}}
                     >
-                        <View style={{flex: 1}}>
-                            {message}
-                            <OptionsContext
-                                ref='bottomSheet'
-                                actions={actions}
-                                cancelText={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            />
-                            {this.renderFileAttachments()}
+                        <View style={{flexDirection: 'row', flex: 1}}>
+                            <View style={{flex: 1}}>
+                                {message}
+                                <OptionsContext
+                                    ref='bottomSheet'
+                                    actions={actions}
+                                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                                />
+                                {this.renderFileAttachments()}
+                            </View>
+                            {post.failed &&
+                                <TouchableOpacity
+                                    onPress={this.handleFailedPostPress}
+                                    style={{justifyContent: 'center', marginLeft: 12}}
+                                >
+                                    <Icon
+                                        name='ios-information-circle-outline'
+                                        size={26}
+                                        color={theme.errorTextColor}
+                                    />
+                                </TouchableOpacity>
+                            }
                         </View>
                     </TouchableHighlight>
                 </View>
@@ -432,11 +505,11 @@ class Post extends PureComponent {
         if (this.props.commentedOnPost) {
             contents = (
                 <View style={[style.container, this.props.style, selected]}>
-                    <View style={style.profilePictureContainer}>
+                    <View style={[style.profilePictureContainer, (post.failed && style.failedPost)]}>
                         {profilePicture}
                     </View>
                     <View style={style.rightColumn}>
-                        <View style={style.postInfoContainer}>
+                        <View style={[style.postInfoContainer, (post.failed && style.failedPost)]}>
                             {displayName}
                             <Text style={style.time}>
                                 <FormattedTime value={this.props.post.create_at}/>
@@ -452,13 +525,13 @@ class Post extends PureComponent {
         } else {
             contents = (
                 <View style={[style.container, this.props.style, selected]}>
-                    <View style={style.profilePictureContainer}>
+                    <View style={[style.profilePictureContainer, (post.failed && style.failedPost)]}>
                         {profilePicture}
                     </View>
                     <View style={style.messageContainerWithReplyBar}>
                         {this.renderReplyBar(style)}
                         <View style={[style.rightColumn, (this.props.isLastReply && style.rightColumnPadding)]}>
-                            <View style={style.postInfoContainer}>
+                            <View style={[style.postInfoContainer, (post.failed && style.failedPost)]}>
                                 <View style={{flexDirection: 'row', flex: 1}}>
                                     {displayName}
                                     <Text style={style.time}>
@@ -496,6 +569,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row'
+        },
+        failedPost: {
+            opacity: 0.5
         },
         rightColumn: {
             flex: 1,

@@ -35,6 +35,10 @@ export default class PostList extends Component {
         lastViewedAt: PropTypes.number
     };
 
+    static defaultProps = {
+        channel: {}
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -76,7 +80,7 @@ export default class PostList extends Component {
     renderChannelIntro = () => {
         const {channel, channelIsLoading, posts} = this.props;
 
-        if (channel) {
+        if (channel.hasOwnProperty('id')) {
             const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
             const messageCount = channel.total_msg_count - posts.length;
             if (channelIsLoading || !firstPostHasRendered || messageCount > Posts.POST_CHUNK_SIZE) {

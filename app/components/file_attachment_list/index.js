@@ -19,7 +19,8 @@ function makeMapStateToProps() {
             ...ownProps,
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.post),
-            theme: getTheme(state)
+            theme: getTheme(state),
+            filesForPostRequest: state.requests.files.getFilesForPost
         };
     };
 }
