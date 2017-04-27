@@ -13,8 +13,6 @@ import {
     StyleSheet
 } from 'react-native';
 
-import Icon from 'react-native-vector-icons/FontAwesome';
-
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
@@ -48,11 +46,6 @@ export default class FileAttachment extends PureComponent {
                     {file.name.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    <Icon
-                        name='download'
-                        size={16}
-                        style={style.downloadIcon}
-                    />
                     <Text style={style.fileInfo}>
                         {`${file.extension.toUpperCase()} ${Utils.getFormattedFileSize(file)}`}
                     </Text>
