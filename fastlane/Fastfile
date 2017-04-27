@@ -1,4 +1,4 @@
-fastlane_version '2.23.0'
+fastlane_version '2.28.4'
 skip_docs
 
 platform :ios do
@@ -31,7 +31,8 @@ platform :ios do
     build_ios({
               release: false,
               increment_build: false,
-              ensure_git_status_clean: false
+              ensure_git_status_clean: false,
+              method: 'ad-hoc'
           })
   end
 
@@ -44,10 +45,29 @@ platform :ios do
               release: true,
               increment_build: true,
               ensure_git_status_clean: true,
-              branch_name: 'ios-beta'
+              method: 'app-store'
           })
 
-    pilot
+    pilot(skip_waiting_for_build_processing: true)
+
+    commit = last_git_commit
+
+    push_to_git_remote(
+        remote: 'origin',
+        local_branch: 'ios-beta',
+        force: false,
+        tags: false
+    )
+
+    unless ENV['GITHUB_TOKEN'].nil?
+      create_pull_request(
+          api_token: ENV['GITHUB_TOKEN'],
+          repo: 'mattermost/mattermost-mobile',
+          head: 'mattermost:ios-beta',
+          base: 'master',
+          title: "IOS #{commit[:message]}"
+      )
+    end
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       testflight_url = ENV['TESTFLIGHT_URL']
@@ -71,10 +91,29 @@ platform :ios do
               release: true,
               increment_build: true,
               ensure_git_status_clean: true,
-              branch_name: 'ios-release'
+              method: 'app-store'
           })
 
     deliver(force: true)
+
+    commit = last_git_commit
+
+    push_to_git_remote(
+        remote: 'origin',
+        local_branch: 'ios-release',
+        force: false,
+        tags: false
+    )
+
+    unless ENV['GITHUB_TOKEN'].nil?
+      create_pull_request(
+          api_token: ENV['GITHUB_TOKEN'],
+          repo: 'mattermost/mattermost-mobile',
+          head: 'mattermost:ios-release',
+          base: 'master',
+          title: "IOS #{commit[:message]}"
+      )
+    end
 
     # frameit
 
@@ -107,24 +146,6 @@ platform :ios do
           build_number: latest_testflight_build_number + 1
       )
       commit_version_bump(xcodeproj: './ios/Mattermost.xcodeproj')
-      commit = last_git_commit
-
-      push_to_git_remote(
-          remote: 'origin',
-          local_branch: options[:branch_name],
-          force: false,
-          tags: false
-      )
-
-      unless ENV['GITHUB_TOKEN'].nil?
-        create_pull_request(
-            api_token: ENV['GITHUB_TOKEN'],
-            repo: 'mattermost/mattermost-mobile',
-            head: "mattermost:#{options[:branch_name]}",
-            base: 'master',
-            title: "IOS #{commit[:message]}"
-        )
-      end
     end
 
     update_project_team(
@@ -136,7 +157,8 @@ platform :ios do
         clean: true,
         scheme: 'Mattermost',
         configuration: (options[:release] ? 'Release' : 'Debug'),
-        project: './ios/Mattermost.xcodeproj'
+        project: './ios/Mattermost.xcodeproj',
+        export_method: options[:method]
     )
   end
 
@@ -203,16 +225,34 @@ platform :android do
   desc 'Submit a new Beta Build to Google Play'
   lane :alpha do
     build_android({
-        release: true,
-        increment_build: true,
-        ensure_git_status_clean: true,
-        branch_name: 'android-alpha'
-          })
+                      release: true,
+                      increment_build: true,
+                      ensure_git_status_clean: true
+                  })
 
     supply(
         track: 'alpha',
         apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
     )
+
+    commit = last_git_commit
+
+    push_to_git_remote(
+        remote: 'origin',
+        local_branch: 'android-alpha',
+        force: false,
+        tags: false
+    )
+
+    unless ENV['GITHUB_TOKEN'].nil?
+      create_pull_request(
+          api_token: ENV['GITHUB_TOKEN'],
+          repo: 'mattermost/mattermost-mobile',
+          head: 'mattermost:android-alpha',
+          base: 'master',
+          title: "Android #{commit[:message]}"
+      )
+    end
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       beta_url = ENV['GOOGLE_PLAY_BETA_URL']
@@ -229,16 +269,34 @@ platform :android do
   desc 'Deploy a new version to Google Play'
   lane :release do
     build_android({
-        release: true,
-        increment_build: true,
-        ensure_git_status_clean: true,
-        branch_name: 'android-release'
-          })
+                      release: true,
+                      increment_build: true,
+                      ensure_git_status_clean: true
+                  })
 
     supply(
         track: "production",
         apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
     )
+
+    commit = last_git_commit
+
+    push_to_git_remote(
+        remote: 'origin',
+        local_branch: 'android-release',
+        force: false,
+        tags: false
+    )
+
+    unless ENV['GITHUB_TOKEN'].nil?
+      create_pull_request(
+          api_token: ENV['GITHUB_TOKEN'],
+          repo: 'mattermost/mattermost-mobile',
+          head: 'mattermost:android-release',
+          base: 'master',
+          title: "Android #{commit[:message]}"
+      )
+    end
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       google_play_url = ENV['GOOGLE_PLAY_URL']
@@ -269,24 +327,6 @@ platform :android do
           app_folder_name: 'android/app',
           force: true
       )
-      commit = last_git_commit
-
-      push_to_git_remote(
-          remote: 'origin',
-          local_branch: options[:branch_name],
-          force: false,
-          tags: false
-      )
-
-      unless ENV['GITHUB_TOKEN'].nil?
-        create_pull_request(
-            api_token: ENV['GITHUB_TOKEN'],
-            repo: 'mattermost/mattermost-mobile',
-            head: "mattermost:#{options[:branch_name]}",
-            base: 'master',
-            title: "Android #{commit[:message]}"
-        )
-      end
     end
 
     gradle(
