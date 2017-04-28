@@ -18,8 +18,7 @@ export function handleUploadFiles(files, rootId) {
         const clientIds = [];
 
         files.forEach((file) => {
-            const name = file.path.split('/').pop();
-            const mimeType = lookupMimeType(name);
+            const mimeType = lookupMimeType(file.fileName);
             const clientId = generateId();
 
             clientIds.push({
@@ -28,8 +27,8 @@ export function handleUploadFiles(files, rootId) {
             });
 
             const fileData = {
-                uri: file.path,
-                name,
+                uri: file.uri,
+                name: file.fileName,
                 type: mimeType
             };
 

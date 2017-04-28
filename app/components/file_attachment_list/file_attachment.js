@@ -24,10 +24,15 @@ export default class FileAttachment extends PureComponent {
         addFileToFetchCache: PropTypes.func.isRequired,
         fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object.isRequired,
-        onInfoPress: PropTypes.func.isRequired,
-        onPreviewPress: PropTypes.func.isRequired,
+        onInfoPress: PropTypes.func,
+        onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired
     };
+
+    static defaultProps = {
+        onInfoPress: () => true,
+        onPreviewPress: () => true
+    }
 
     renderFileInfo() {
         const {file, theme} = this.props;

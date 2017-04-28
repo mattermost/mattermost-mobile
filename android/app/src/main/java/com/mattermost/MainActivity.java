@@ -4,7 +4,6 @@ import com.facebook.react.ReactActivity;
 import com.github.yamill.orientation.OrientationPackage;
 import com.psykar.cookiemanager.CookieManagerPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
-import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.facebook.react.ReactApplication;
+import com.imagepicker.ImagePickerPackage;
 import com.gnet.bottomsheet.RNBottomSheetPackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.psykar.cookiemanager.CookieManagerPackage;
@@ -16,7 +17,6 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.BV.LinearGradient.LinearGradientPackage;
-import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.reactnativecomponent.splashscreen.RCTSplashScreenPackage;
 import com.github.yamill.orientation.OrientationPackage;
 
@@ -35,6 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new ImagePickerPackage(),
             new RCTSplashScreenPackage(),
             new RNBottomSheetPackage(),
             new RNDeviceInfo(),
@@ -43,7 +44,6 @@ public class MainApplication extends Application implements ReactApplication {
             new VectorIconsPackage(),
             new SvgPackage(),
             new LinearGradientPackage(),
-            new PickerPackage(),
             new OrientationPackage()
       );
     }
