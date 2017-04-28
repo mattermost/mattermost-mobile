@@ -4279,9 +4279,9 @@ react-native-drawer@2.3.0:
   dependencies:
     tween-functions "^1.0.1"
 
-react-native-image-crop-picker@0.13.0:
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/react-native-image-crop-picker/-/react-native-image-crop-picker-0.13.0.tgz#946b31d2e50c8b658fd2e2488c3f2875b5896a66"
+react-native-image-picker@0.26.3:
+  version "0.26.3"
+  resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-0.26.3.tgz#0ad2eede49501a7046d8046a73813696539c3dcd"
 
 react-native-keyboard-aware-scroll-view@0.2.8:
   version "0.2.8"
