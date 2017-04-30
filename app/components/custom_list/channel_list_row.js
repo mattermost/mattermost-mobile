@@ -111,6 +111,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginLeft: 5
         },
         purpose: {
+            marginTop: 7,
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5)
         },
