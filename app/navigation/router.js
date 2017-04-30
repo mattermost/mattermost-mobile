@@ -216,7 +216,7 @@ class Router extends Component {
 
         return {
             mainOverlay: {
-                backgroundColor: '#000',
+                backgroundColor: this.props.theme.centerChannelBg,
                 opacity
             },
             drawerOverlay: {
