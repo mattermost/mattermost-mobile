@@ -202,9 +202,9 @@ class MoreDirectMessages extends PureComponent {
                             placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
                             height={27}
                             fontSize={14}
-                            textColor={this.props.theme.centerChannelColor}
+                            textColor={changeOpacity('#000', 0.5)}
                             hideBackground={true}
-                            textFieldBackgroundColor={changeOpacity(this.props.theme.centerChannelColor, 0.07)}
+                            textFieldBackgroundColor={'#fff'}
                             onChange={this.searchProfiles}
                             onSearchButtonPress={this.onSearchButtonPress}
                             onCancelButtonPress={this.cancelSearch}

@@ -52,7 +52,7 @@ function channelInfoRow(props) {
                 /> :
                 <Icon
                     name='angle-right'
-                    size={15}
+                    size={20}
                     style={style.rightIcon}
                 />
             }

@@ -421,7 +421,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.sidebarText,
             opacity: 1,
             fontSize: 15,
-            fontWeight: '500',
+            fontWeight: '400',
             letterSpacing: 0.8,
             lineHeight: 18
         },
@@ -437,7 +437,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         action: {
             color: theme.sidebarText,
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: '500',
             lineHeight: 18
         },

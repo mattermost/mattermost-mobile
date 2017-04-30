@@ -110,9 +110,7 @@ export default class Markdown extends PureComponent {
     renderParagraph = ({children}) => {
         return (
             <View style={style.block}>
-                <Text>
-                    {children}
-                </Text>
+                {children}
             </View>
         );
     }
@@ -120,9 +118,7 @@ export default class Markdown extends PureComponent {
     renderHeading = ({children, level}) => {
         return (
             <View style={[style.block, this.props.blockStyles[`heading${level}`]]}>
-                <Text>
-                    {children}
-                </Text>
+                {children}
             </View>
         );
     }

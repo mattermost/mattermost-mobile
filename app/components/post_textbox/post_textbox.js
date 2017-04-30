@@ -321,7 +321,7 @@ class PostTextbox extends PureComponent {
                         >
                             <Icon
                                 size={30}
-                                style={{marginTop: 2}}
+                                style={style.attachIcon}
                                 color={changeOpacity(theme.centerChannelColor, 0.9)}
                                 name='md-add'
                             />
@@ -392,6 +392,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
         },
+        attachIcon: {
+            ...Platform.select({
+                ios: {
+                    marginTop: 2
+                },
+                android: {
+                    marginTop: 0
+                }
+            })
+        },
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
@@ -403,7 +413,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 5
                 },
                 android: {
-                    marginBottom: 3.5
+                    marginBottom: 6.5
                 }
             }),
             alignItems: 'center',

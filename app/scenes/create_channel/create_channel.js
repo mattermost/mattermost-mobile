@@ -232,7 +232,7 @@ class CreateChannel extends PureComponent {
                                 autoCapitalize='none'
                                 autoCorrect={false}
                                 placeholder={{id: 'channel_modal.nameEx', defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
                                 underlineColorAndroid='transparent'
                             />
                         </View>
@@ -255,7 +255,7 @@ class CreateChannel extends PureComponent {
                                 onChangeText={this.onPurposeChangeText}
                                 style={[style.input, {height: 110}]}
                                 placeholder={{id: 'channel_modal.purposeEx', defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
                                 multiline={true}
                                 underlineColorAndroid='transparent'
                             />
@@ -289,7 +289,7 @@ class CreateChannel extends PureComponent {
                                 onChangeText={this.onHeaderChangeText}
                                 style={[style.input, {height: 110}]}
                                 placeholder={{id: 'channel_modal.headerEx', defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                                placeholderTextColor={changeOpacity('#000', 0.5)}
                                 multiline={true}
                                 onFocus={this.scrollToEnd}
                                 underlineColorAndroid='transparent'
@@ -333,14 +333,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContainer: {
             marginTop: 10,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: '#fff'
         },
         input: {
-            color: theme.centerChannelColor,
+            color: '#333',
             fontSize: 14,
             height: 40,
             paddingHorizontal: 15

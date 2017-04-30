@@ -683,29 +683,46 @@ const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             color: theme.linkColor
         },
         heading1: {
-            fontSize: 30,
-            lineHeight: 45
+            fontSize: 17,
+            lineHeight: 25,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 10
         },
         heading2: {
-            fontSize: 24,
-            lineHeight: 36
+            fontSize: 17,
+            lineHeight: 25,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 10
         },
         heading3: {
-            fontSize: 20,
-            lineHeight: 30
+            fontSize: 17,
+            lineHeight: 25,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 10
         },
         heading4: {
-            fontSize: 16,
-            lineHeight: 24
+            fontSize: 17,
+            lineHeight: 25,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 10
         },
         heading5: {
-            fontSize: 14,
-            lineHeight: 21
+            fontSize: 17,
+            lineHeight: 25,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 10
         },
         heading6: {
-            fontSize: 14,
-            lineHeight: 21,
-            opacity: 0.8
+            fontSize: 17,
+            lineHeight: 25,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 10
         },
         code: {
             alignSelf: 'center',
