@@ -44,7 +44,7 @@ function MemberListRow(props) {
             }
             <ProfilePicture
                 user={user}
-                size={40}
+                size={32}
             />
             <View style={style.textContainer}>
                 <View style={{flexDirection: 'column'}}>
@@ -97,7 +97,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg
         },
         displayName: {
-            fontSize: 16,
+            fontSize: 15,
             color: theme.centerChannelColor
         },
         icon: {
@@ -110,7 +110,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         username: {
             marginLeft: 5,
-            fontSize: 16,
+            fontSize: 15,
             color: changeOpacity(theme.centerChannelColor, 0.5)
         },
         selector: {

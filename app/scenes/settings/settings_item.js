@@ -86,7 +86,9 @@ export default class SettingsItem extends PureComponent {
                     style={{flex: 1}}
                 >
                     <View style={style.wrapper}>
-                        {icon}
+                        <View style={style.iconContainer}>
+                            {icon}
+                        </View>
                         <FormattedText
                             id={i18nId}
                             defaultMessage={defaultMessage}
@@ -115,8 +117,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 50,
             paddingLeft: 16
         },
+        iconContainer: {
+            width: 18,
+            marginRight: 15,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
         icon: {
-            color: theme.linkColor,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 20
         },
         label: {

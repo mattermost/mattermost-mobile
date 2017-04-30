@@ -112,7 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         createdBy: {
             flexDirection: 'row',
-            fontSize: 11,
+            fontSize: 12,
             marginTop: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             backgroundColor: 'transparent'
@@ -122,7 +122,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor
         },
         header: {
-            fontSize: 12,
+            fontSize: 13,
             marginBottom: 10,
             color: theme.centerChannelColor,
             backgroundColor: 'transparent'
