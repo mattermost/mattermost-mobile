@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleRemoveFile} from 'app/actions/views/file_upload';
+import {handleRemoveFile, retryFileUpload} from 'app/actions/views/file_upload';
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
 import {getTheme} from 'app/selectors/preferences';
 
@@ -25,7 +25,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             addFileToFetchCache,
-            handleRemoveFile
+            handleRemoveFile,
+            retryFileUpload
         }, dispatch)
     };
 }
