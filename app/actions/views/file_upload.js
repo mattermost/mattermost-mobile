@@ -4,7 +4,7 @@
 import FormData from 'form-data';
 import {Platform} from 'react-native';
 import {uploadFile} from 'mattermost-redux/actions/files';
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {lookupMimeType, parseClientIdsFromFormData} from 'mattermost-redux/utils/file_utils';
 
 import {generateId} from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
@@ -23,7 +23,9 @@ export function handleUploadFiles(files, rootId) {
 
             clientIds.push({
                 clientId,
-                localPath: file.path
+                localPath: file.uri,
+                name: file.fileName,
+                type: mimeType
             });
 
             const fileData = {
@@ -49,7 +51,40 @@ export function handleUploadFiles(files, rootId) {
             rootId
         });
 
-        await uploadFile(channelId, rootId, formData, formBoundary)(dispatch, getState);
+        await uploadFile(channelId, rootId, parseClientIdsFromFormData(formData), formData, formBoundary)(dispatch, getState);
+    };
+}
+
+export function retryFileUpload(file, rootId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+
+        const channelId = state.entities.channels.currentChannelId;
+        const formData = new FormData();
+
+        const fileData = {
+            uri: file.localPath,
+            name: file.name,
+            type: file.type
+        };
+
+        formData.append('files', fileData);
+        formData.append('channel_id', channelId);
+        formData.append('client_ids', file.clientId);
+
+        let formBoundary;
+        if (Platform.os === 'ios') {
+            formBoundary = '--mobile.client.file.upload';
+        }
+
+        dispatch({
+            type: ViewTypes.RETRY_UPLOAD_FILE_FOR_POST,
+            clientId: file.clientId,
+            channelId,
+            rootId
+        });
+
+        await uploadFile(channelId, rootId, [file.clientId], formData, formBoundary)(dispatch, getState);
     };
 }
 

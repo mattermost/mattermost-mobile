@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Font from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
@@ -22,7 +22,8 @@ export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addFileToFetchCache: PropTypes.func.isRequired,
-            handleRemoveFile: PropTypes.func.isRequired
+            handleRemoveFile: PropTypes.func.isRequired,
+            retryFileUpload: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
@@ -32,6 +33,14 @@ export default class FileUploadPreview extends PureComponent {
         inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         uploadFileRequestStatus: PropTypes.string.isRequired
+    };
+
+    handleRetryFileUpload = (file) => {
+        if (!file.failed) {
+            return;
+        }
+
+        this.props.actions.retryFileUpload(file, this.props.rootId);
     };
 
     buildFilePreviews = () => {
@@ -47,12 +56,24 @@ export default class FileUploadPreview extends PureComponent {
                             fetchCache={this.props.fetchCache}
                             file={file}
                         />
+                        {file.failed &&
+                        <TouchableOpacity
+                            style={style.failed}
+                            onPress={() => this.handleRetryFileUpload(file)}
+                        >
+                            <Icon
+                                name='md-refresh'
+                                size={50}
+                                color='#fff'
+                            />
+                        </TouchableOpacity>
+                        }
                     </View>
                     <TouchableOpacity
                         style={style.removeButtonWrapper}
                         onPress={() => this.props.actions.handleRemoveFile(file.clientId, this.props.channelId, this.props.rootId)}
                     >
-                        <Font
+                        <Icon
                             name='md-close'
                             color='#fff'
                             size={18}
@@ -94,12 +115,21 @@ const style = StyleSheet.create({
         position: 'absolute',
         width: '100%'
     },
+    failed: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        position: 'absolute',
+        height: '100%',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
     preview: {
         justifyContent: 'flex-end',
         height: 115,
         width: 115
     },
     previewShadow: {
+        height: 100,
         width: 100,
         elevation: 10,
         ...Platform.select({

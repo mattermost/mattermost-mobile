@@ -53,6 +53,28 @@ function drafts(state = {}, action) {
             [action.channelId]: Object.assign({}, state[action.channelId], {files})
         };
     }
+    case ViewTypes.RETRY_UPLOAD_FILE_FOR_POST: {
+        if (action.rootId) {
+            return state;
+        }
+
+        const files = state[action.channelId].files.map((f) => {
+            if (f.clientId === action.clientId) {
+                return {
+                    ...f,
+                    loading: true,
+                    failed: false
+                };
+            }
+
+            return f;
+        });
+
+        return {
+            ...state,
+            [action.channelId]: Object.assign({}, state[action.channelId], {files})
+        };
+    }
     case FileTypes.RECEIVED_UPLOAD_FILES: {
         if (action.rootId || !state[action.channelId].files) {
             return state;
@@ -65,6 +87,29 @@ function drafts(state = {}, action) {
                 return {
                     ...file,
                     localPath: tempFile.localPath
+                };
+            }
+
+            return tempFile;
+        });
+
+        return {
+            ...state,
+            [action.channelId]: Object.assign({}, state[action.channelId], {files})
+        };
+    }
+    case FileTypes.UPLOAD_FILES_FAILURE: {
+        if (action.rootId) {
+            return state;
+        }
+
+        const clientIds = action.clientIds;
+        const files = state[action.channelId].files.map((tempFile) => {
+            if (clientIds.includes(tempFile.clientId)) {
+                return {
+                    ...tempFile,
+                    loading: false,
+                    failed: true
                 };
             }
 

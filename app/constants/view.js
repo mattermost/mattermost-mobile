@@ -24,6 +24,7 @@ const ViewTypes = keyMirror({
     SET_COMMENT_DRAFT: null,
 
     SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT: null,
+    RETRY_UPLOAD_FILE_FOR_POST: null,
 
     CLEAR_FILES_FOR_POST_DRAFT: null,
 

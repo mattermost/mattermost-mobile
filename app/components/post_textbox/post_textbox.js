@@ -98,7 +98,10 @@ class PostTextbox extends PureComponent {
             );
         }
 
-        const canSend = ((valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) || files.length > 0) && uploadFileRequestStatus !== RequestStatus.STARTED;
+        const canSend = (
+                (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
+                files.filter((f) => !f.failed).length > 0
+            ) && uploadFileRequestStatus !== RequestStatus.STARTED;
         this.setState({
             canSend
         });
@@ -134,11 +137,38 @@ class PostTextbox extends PureComponent {
         return false;
     };
 
-    sendMessage = () => {
+    handleSendMessage = () => {
         if (!this.state.canSend) {
             return;
         }
 
+        const hasFailedImages = this.props.files.some((f) => f.failed);
+        if (hasFailedImages) {
+            const {intl} = this.props;
+
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.post_textbox.uploadFailedTitle',
+                    defaultMessage: 'Attachment failure'
+                }),
+                intl.formatMessage({
+                    id: 'mobile.post_textbox.uploadFailedDesc',
+                    defaultMessage: 'Some attachments failed to upload to the server, Are you sure you want to post the message?'
+                }),
+                [{
+                    text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
+                }, {
+                    text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
+                    onPress: this.sendMessage
+                }],
+            );
+        } else {
+            this.sendMessage();
+        }
+    };
+
+    sendMessage = () => {
+        const files = this.props.files.filter((f) => !f.failed);
         const post = {
             user_id: this.props.currentUserId,
             channel_id: this.props.channelId,
@@ -147,7 +177,7 @@ class PostTextbox extends PureComponent {
             message: this.props.value
         };
 
-        this.props.actions.createPost(post, this.props.files);
+        this.props.actions.createPost(post, files);
         this.handleTextChange('');
         if (this.props.files.length) {
             this.props.actions.handleClearFiles(this.props.channelId, this.props.rootId);
@@ -335,14 +365,14 @@ class PostTextbox extends PureComponent {
                                 onContentSizeChange={this.handleContentSizeChange}
                                 placeholder={placeholder}
                                 placeholderTextColor={changeOpacity('#000', 0.5)}
-                                onSubmitEditing={this.sendMessage}
+                                onSubmitEditing={this.handleSendMessage}
                                 multiline={true}
                                 underlineColorAndroid='transparent'
                                 style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
                             />
                             {this.state.canSend &&
                                 <TouchableOpacity
-                                    onPress={this.sendMessage}
+                                    onPress={this.handleSendMessage}
                                     style={style.sendButton}
                                 >
                                     <PaperPlane

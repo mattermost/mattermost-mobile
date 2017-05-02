@@ -41,7 +41,7 @@ class MoreChannels extends PureComponent {
             goToCreateChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
-            searchMoreChannels: PropTypes.func.isRequired
+            searchChannels: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -151,7 +151,7 @@ class MoreChannels extends PureComponent {
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchMoreChannels(this.props.currentTeamId, term);
+                this.props.actions.searchChannels(this.props.currentTeamId, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();

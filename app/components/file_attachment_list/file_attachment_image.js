@@ -136,6 +136,8 @@ export default class FileAttachmentImage extends PureComponent {
             source = imageIcon;
         } else if (file.id) {
             source = {uri: this.handleGetImageURL()};
+        } else if (file.failed) {
+            source = {uri: file.localPath};
         }
 
         const isInFetchCache = fetchCache[source.uri];
@@ -158,10 +160,10 @@ export default class FileAttachmentImage extends PureComponent {
                         {...imageComponentLoaders}
                     />
                 </AnimatedView>
-                {(!isInFetchCache && (file.loading || this.state.requesting)) &&
-                    <View style={[style.loaderContainer, {backgroundColor: loadingBackgroundColor}]}>
-                        <ActivityIndicator size='small'/>
-                    </View>
+                {(!isInFetchCache && !file.failed && (file.loading || this.state.requesting)) &&
+                <View style={[style.loaderContainer, {backgroundColor: loadingBackgroundColor}]}>
+                    <ActivityIndicator size='small'/>
+                </View>
                 }
             </View>
         );

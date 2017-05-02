@@ -9,7 +9,7 @@ import {closeDrawers, goBack, goToCreateChannel} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
 import {getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {handleSelectChannel} from 'app/actions/views/channel';
-import {getChannels, joinChannel, searchMoreChannels} from 'mattermost-redux/actions/channels';
+import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
 
 import MoreChannels from './more_channels';
 
@@ -37,7 +37,7 @@ function mapDispatchToProps(dispatch) {
             goToCreateChannel,
             joinChannel,
             getChannels,
-            searchMoreChannels
+            searchChannels
         }, dispatch)
     };
 }

@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {searchMoreChannels} from 'mattermost-redux/actions/channels';
+import {searchChannels} from 'mattermost-redux/actions/channels';
 import {General} from 'mattermost-redux/constants';
 import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 
@@ -41,7 +41,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            searchMoreChannels
+            searchChannels
         }, dispatch)
     };
 }

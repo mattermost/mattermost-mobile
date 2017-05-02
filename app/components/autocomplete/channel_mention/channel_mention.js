@@ -28,7 +28,7 @@ export default class ChannelMention extends Component {
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
         actions: PropTypes.shape({
-            searchMoreChannels: PropTypes.func.isRequired
+            searchChannels: PropTypes.func.isRequired
         })
     };
 
@@ -96,7 +96,7 @@ export default class ChannelMention extends Component {
             });
 
             const {currentTeamId} = this.props;
-            this.props.actions.searchMoreChannels(currentTeamId, matchTerm);
+            this.props.actions.searchChannels(currentTeamId, matchTerm);
             return;
         }
 

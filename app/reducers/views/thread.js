@@ -41,11 +41,33 @@ function drafts(state = {}, action) {
             return state;
         }
 
-        const tempFiles = action.clientIds.map((id) => ({clientId: id, loading: true}));
+        const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
         const files = [
             ...state[action.rootId].files,
             ...tempFiles
         ];
+
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        };
+    }
+    case ViewTypes.RETRY_UPLOAD_FILE_FOR_POST: {
+        if (!action.rootId) {
+            return state;
+        }
+
+        const files = state[action.rootId].files.map((f) => {
+            if (f.clientId === action.clientId) {
+                return {
+                    ...f,
+                    loading: true,
+                    failed: false
+                };
+            }
+
+            return f;
+        });
 
         return {
             ...state,
@@ -61,7 +83,33 @@ function drafts(state = {}, action) {
         const files = state[action.rootId].files.map((tempFile) => {
             const file = action.data.find((f) => f.clientId === tempFile.clientId);
             if (file) {
-                return file;
+                return {
+                    ...file,
+                    localPath: tempFile.localPath
+                };
+            }
+
+            return tempFile;
+        });
+
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        };
+    }
+    case FileTypes.UPLOAD_FILES_FAILURE: {
+        if (!action.rootId) {
+            return state;
+        }
+
+        const clientIds = action.clientIds;
+        const files = state[action.rootId].files.map((tempFile) => {
+            if (clientIds.includes(tempFile.clientId)) {
+                return {
+                    ...tempFile,
+                    loading: false,
+                    failed: true
+                };
             }
 
             return tempFile;
