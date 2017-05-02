@@ -10,6 +10,7 @@ import fr from 'assets/i18n/fr.json';
 import ja from 'assets/i18n/ja.json';
 import ko from 'assets/i18n/ko.json';
 import nl from 'assets/i18n/nl.json';
+import pl from 'assets/i18n/pl.json';
 import ptBR from 'assets/i18n/pt-BR.json';
 import ru from 'assets/i18n/ru.json';
 import zhCN from 'assets/i18n/zh-CN.json';
@@ -25,6 +26,7 @@ const TRANSLATIONS = {
     ja,
     ko,
     nl,
+    pl,
     ptBR,
     ru,
     zhCN,
