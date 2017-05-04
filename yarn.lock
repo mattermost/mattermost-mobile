@@ -1379,10 +1379,6 @@ circular-json@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/circular-json/-/circular-json-0.3.1.tgz#be8b36aefccde8b3ca7aa2d6afc07a37242c0d2d"
 
-clamp@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/clamp/-/clamp-1.0.1.tgz#66a0e64011816e37196828fdc8c8c147312c8634"
-
 cli-cursor@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-1.0.2.tgz#64da3f7d56a54412e59794bd62dc35295e8f2987"
@@ -2694,7 +2690,7 @@ hoek@2.x.x:
   version "2.16.3"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
 
-hoist-non-react-statics@^1.0.3, hoist-non-react-statics@^1.2.0:
+hoist-non-react-statics@^1.0.3:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-1.2.0.tgz#aa448cf0986d55cc40773b17174b7dd066cb7cfb"
 
@@ -3489,13 +3485,13 @@ lodash.unset@^4.5.2:
   version "4.5.2"
   resolved "https://registry.yarnpkg.com/lodash.unset/-/lodash.unset-4.5.2.tgz#370d1d3e85b72a7e1b0cdf2d272121306f23e4ed"
 
+lodash@4.x.x, lodash@^4.0.0, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.16.6, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.6.1, lodash@^4.8.0:
+  version "4.17.4"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
+
 lodash@^3.5.0:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
-
-lodash@^4.0.0, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.16.6, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.6.1, lodash@^4.8.0:
-  version "4.17.4"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
 longest@^1.0.1:
   version "1.0.1"
@@ -4093,7 +4089,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.0.0, prop-types@^15.5.4, prop-types@^15.5.8:
+prop-types@^15.0.0, prop-types@^15.5.4:
   version "15.5.8"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.5.8.tgz#6b7b2e141083be38c8595aa51fc55775c7199394"
   dependencies:
@@ -4277,22 +4273,6 @@ react-native-device-info@0.10.2:
   version "0.10.2"
   resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.10.2.tgz#350cd68ed43839022ddea0a3a423439f16fa4fba"
 
-react-native-dismiss-keyboard@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-dismiss-keyboard/-/react-native-dismiss-keyboard-1.0.0.tgz#32886242b3f2317e121f3aeb9b0a585e2b879b49"
-
-react-native-drawer-layout-polyfill@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-drawer-layout-polyfill/-/react-native-drawer-layout-polyfill-1.2.0.tgz#0d77bd3af8964ffe7fd0f1f6550d6be328a5b567"
-  dependencies:
-    react-native-drawer-layout "1.2.0"
-
-react-native-drawer-layout@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-drawer-layout/-/react-native-drawer-layout-1.2.0.tgz#ae274ee17fadce58d9d7ecef4797d9fad672af74"
-  dependencies:
-    react-native-dismiss-keyboard "1.0.0"
-
 react-native-drawer@2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/react-native-drawer/-/react-native-drawer-2.3.0.tgz#a0369ec80ff0b61c9f152dbdea91fe76c843113a"
@@ -4351,6 +4331,12 @@ react-native-mock@^0.2.7:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
+react-native-navigation@1.1.52:
+  version "1.1.52"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.52.tgz#6a29903ba5a99443a58ace6878e573563c2e3420"
+  dependencies:
+    lodash "4.x.x"
+
 react-native-orientation@enahum/react-native-orientation.git:
   version "1.17.0"
   resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/75ba7da814b99a949324846ce3a63fcbaeee9fdc"
@@ -4377,12 +4363,6 @@ react-native-svg@5.1.7:
   dependencies:
     color "^0.11.1"
     lodash "^4.16.6"
-
-react-native-tab-view@^0.0.61:
-  version "0.0.61"
-  resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-0.0.61.tgz#9f5446c9ad33158b87f0bccf5004fbff79ca1f92"
-  dependencies:
-    prop-types "^15.5.8"
 
 react-native-tooltip@5.0.0:
   version "5.0.0"
@@ -4474,18 +4454,6 @@ react-native@0.42.3:
     xcode "^0.8.9"
     xmldoc "^0.4.0"
     yargs "^6.4.0"
-
-react-navigation@1.0.0-beta.9:
-  version "1.0.0-beta.9"
-  resolved "https://registry.yarnpkg.com/react-navigation/-/react-navigation-1.0.0-beta.9.tgz#9fb1f8e4d15cee70cc8b5d58719a986ca443664d"
-  dependencies:
-    clamp "^1.0.1"
-    fbjs "^0.8.5"
-    hoist-non-react-statics "^1.2.0"
-    path-to-regexp "^1.7.0"
-    prop-types "^15.5.8"
-    react-native-drawer-layout-polyfill "1.2.0"
-    react-native-tab-view "^0.0.61"
 
 react-proxy@^1.1.7:
   version "1.1.8"
