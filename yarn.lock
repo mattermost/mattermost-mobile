@@ -828,7 +828,7 @@ babel-plugin-transform-strict-mode@^6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
-babel-polyfill@^6.20.0, babel-polyfill@^6.23.0:
+babel-polyfill@6.23.0, babel-polyfill@^6.20.0, babel-polyfill@^6.23.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-polyfill/-/babel-polyfill-6.23.0.tgz#8364ca62df8eafb830499f699177466c3b03499d"
   dependencies:
@@ -4331,9 +4331,9 @@ react-native-mock@^0.2.7:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.52:
-  version "1.1.52"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.52.tgz#6a29903ba5a99443a58ace6878e573563c2e3420"
+react-native-navigation@1.1.55:
+  version "1.1.55"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.55.tgz#ed6668a3e07f637f9865a4e3e4ee86dd6925c4e5"
   dependencies:
     lodash "4.x.x"
 
@@ -4348,10 +4348,6 @@ react-native-push-notification@2.2.1:
 react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
-
-react-native-smart-splash-screen@2.3.3:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/react-native-smart-splash-screen/-/react-native-smart-splash-screen-2.3.3.tgz#083eb407b721de2b6597aecb25e519315a60feb2"
 
 react-native-svg-mock@1.0.2:
   version "1.0.2"
