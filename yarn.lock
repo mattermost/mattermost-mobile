@@ -4331,9 +4331,9 @@ react-native-mock@^0.2.7:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.55:
-  version "1.1.55"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.55.tgz#ed6668a3e07f637f9865a4e3e4ee86dd6925c4e5"
+react-native-navigation@1.1.61:
+  version "1.1.61"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.61.tgz#a4eea9980ffbfa35cc3c6ff6183cefc0d7d28f1f"
   dependencies:
     lodash "4.x.x"
 
