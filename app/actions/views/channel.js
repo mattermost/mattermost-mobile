@@ -9,7 +9,6 @@ import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelStats,
-    getMyChannelMembers,
     selectChannel,
     leaveChannel as serviceLeaveChannel
 } from 'mattermost-redux/actions/channels';
@@ -33,22 +32,7 @@ import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils'
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
-        const {channels} = getState().entities.channels;
-
-        let hasChannelsForTeam = false;
-        for (const channel of Object.values(channels)) {
-            if (channel.team_id === teamId) {
-                // If we have one channel, assume we have all of them
-                hasChannelsForTeam = true;
-                break;
-            }
-        }
-
-        if (hasChannelsForTeam) {
-            await getMyChannelMembers(teamId)(dispatch, getState);
-        } else {
-            await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
-        }
+        await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
     };
 }
 
