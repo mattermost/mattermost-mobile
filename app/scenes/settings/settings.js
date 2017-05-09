@@ -14,6 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import SettingsItem from './settings_item';
 
@@ -101,8 +102,13 @@ export default class Settings extends PureComponent {
         this.props.actions.clearErrors();
     };
 
+    openHelp = () => {
+        const {config} = this.props;
+        Linking.openURL(config.HelpLink);
+    }
+
     render() {
-        const {actions, showTeamSelection, theme} = this.props;
+        const {actions, config, showTeamSelection, theme} = this.props;
         const {goToAccountSettings, goToSelectTeam, goToAbout} = actions;
         const style = getStyleSheet(theme);
 
@@ -125,6 +131,17 @@ export default class Settings extends PureComponent {
                             iconName='ios-people'
                             iconType='ion'
                             onPress={() => this.handlePress(goToSelectTeam)}
+                            separator={true}
+                            theme={theme}
+                        />
+                    }
+                    {config.HelpLink &&
+                        <SettingsItem
+                            defaultMessage='Help'
+                            i18nId='mobile.help.title'
+                            iconName='help'
+                            iconType='material'
+                            onPress={() => preventDoubleTap(this.openHelp, this)}
                             separator={true}
                             theme={theme}
                         />
