@@ -8,6 +8,8 @@ import navigationSceneConnect from '../navigationSceneConnect';
 import {closeDrawers, closeModal, goBack} from 'app/actions/navigation';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
+import {markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeam, getTeams, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
@@ -27,7 +29,8 @@ function mapStateToProps(state) {
         config: state.entities.general.config,
         teamsRequest: state.requests.teams.allTeams,
         teams: myTeams.sort(sortTeams),
-        currentTeam: getCurrentTeam(state)
+        currentTeam: getCurrentTeam(state),
+        currentChannelId: getCurrentChannelId(state)
     };
 }
 
@@ -37,7 +40,8 @@ function mapDispatchToProps(dispatch) {
             closeDrawers,
             closeModal,
             goBack,
-            handleTeamChange
+            handleTeamChange,
+            markChannelAsRead
         }, dispatch)
     };
 }

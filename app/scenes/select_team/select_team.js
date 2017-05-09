@@ -21,6 +21,7 @@ import logo from 'assets/images/logo.png';
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
+        currentChannelId: PropTypes.string,
         teams: PropTypes.array.isRequired,
         subscribeToHeaderEvent: PropTypes.func.isRequired,
         unsubscribeFromHeaderEvent: PropTypes.func.isRequired,
@@ -28,7 +29,8 @@ export default class SelectTeam extends PureComponent {
             closeDrawers: PropTypes.func.isRequired,
             closeModal: PropTypes.func.isRequired,
             goBack: PropTypes.func.isRequired,
-            handleTeamChange: PropTypes.func.isRequired
+            handleTeamChange: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -67,9 +69,14 @@ export default class SelectTeam extends PureComponent {
             const {
                 closeDrawers,
                 closeModal,
-                handleTeamChange
+                currentChannelId,
+                handleTeamChange,
+                markChannelAsRead
             } = this.props.actions;
 
+            if (currentChannelId) {
+                markChannelAsRead(currentChannelId);
+            }
             handleTeamChange(team);
             closeDrawers();
             InteractionManager.runAfterInteractions(closeModal);
