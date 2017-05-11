@@ -123,10 +123,10 @@ endif
 
 do-build-ios:
 	@echo "Building ios $(ios_target) app"
-	@cd fastlane && bundle exec fastlane ios $(ios_target)
+	@cd fastlane && NODE_ENV=production bundle exec fastlane ios $(ios_target)
 
 
-build-ios: | check-ios-target clean pre-run check-style start-packager do-build-ios stop-packager
+build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
 
 check-android-target:
 ifneq ($(android_target), $(filter $(android_target), dev alpha release))
@@ -142,9 +142,9 @@ prepare-android-build:
 
 do-build-android:
 	@echo "Building android $(android_target) app"
-	@cd fastlane && bundle exec fastlane android $(android_target)
+	@cd fastlane && NODE_ENV=production bundle exec fastlane android $(android_target)
 
-build-android: | check-android-target clean pre-run check-style start-packager prepare-android-build do-build-android stop-packager
+build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
 
 alpha:
 	@:
