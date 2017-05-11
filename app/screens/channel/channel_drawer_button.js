@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
 import {getTheme} from 'app/selectors/preferences';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import {getUnreads} from 'mattermost-redux/selectors/entities/channels';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -87,7 +88,7 @@ class ChannelDrawerButton extends PureComponent {
                     count={badgeCount}
                     minHeight={5}
                     minWidth={5}
-                    onPress={this.handlePress}
+                    onPress={() => preventDoubleTap(this.handlePress, this)}
                 />
             );
         }

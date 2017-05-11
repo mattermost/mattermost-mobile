@@ -6,7 +6,6 @@ import {InteractionManager, Keyboard} from 'react-native';
 
 import Drawer from 'app/components/drawer';
 import ChannelDrawerList from 'app/components/channel_drawer_list';
-import {preventDoubleTap} from 'app/utils/tap';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -38,13 +37,13 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     componentDidMount() {
-        EventEmitter.on('open_channel_drawer', () => preventDoubleTap(this.openChannelDrawer, this));
-        EventEmitter.on('close_channel_drawer', () => preventDoubleTap(this.closeChannelDrawer, this));
+        EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
+        EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
     }
 
     componentWillUnmount() {
-        EventEmitter.off('open_channel_drawer', () => preventDoubleTap(this.openChannelDrawer, this));
-        EventEmitter.off('close_channel_drawer', () => preventDoubleTap(this.closeChannelDrawer, this));
+        EventEmitter.off('open_channel_drawer', this.openChannelDrawer);
+        EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
     }
 
     closeChannelDrawer = () => {
