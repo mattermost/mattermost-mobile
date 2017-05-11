@@ -16,6 +16,7 @@
   "about.teamEditiont1": "Enterprise Edition",
   "about.title": "About Mattermost",
   "about.version": "Version:",
+  "mobile.help.title": "Help",
   "access_history.title": "Access History",
   "activity_log.activeSessions": "Active Sessions",
   "activity_log.browser": "Browser: {browser}",
