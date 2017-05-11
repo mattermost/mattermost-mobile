@@ -9,7 +9,6 @@ import fetchCache from './fetch_cache';
 import i18n from './i18n';
 import login from './login';
 import notification from './notification';
-import optionsModal from './options_modal';
 import root from './root';
 import selectServer from './select_server';
 import team from './team';
@@ -22,7 +21,6 @@ export default combineReducers({
     i18n,
     login,
     notification,
-    optionsModal,
     root,
     selectServer,
     team,

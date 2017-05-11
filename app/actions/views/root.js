@@ -1,8 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {NavigationTypes, ViewTypes} from 'app/constants';
-import Routes from 'app/navigation/routes';
+import {ViewTypes} from 'app/constants';
 import {
     handleSelectChannel,
     loadChannelsIfNecessary,
@@ -13,15 +12,6 @@ import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/sele
 
 import {getClientConfig, getLicenseConfig, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
-
-export function goToSelectServer() {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: NavigationTypes.NAVIGATION_MODAL,
-            route: Routes.SelectServer
-        }, getState);
-    };
-}
 
 export function loadConfigAndLicense(serverVersion) {
     return async (dispatch, getState) => {
@@ -73,7 +63,6 @@ export function goToNotification(notification) {
 }
 
 export default {
-    goToSelectServer,
     loadConfigAndLicense,
     queueNotification,
     clearNotification,

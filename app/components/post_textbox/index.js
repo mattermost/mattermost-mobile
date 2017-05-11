@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {userTyping} from 'mattermost-redux/actions/websocket';
 
-import {showOptionsModal, requestCloseModal} from 'app/actions/navigation';
 import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
 import {getTheme} from 'app/selectors/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
@@ -29,11 +28,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             createPost,
-            closeModal: requestCloseModal,
             handleClearFiles,
             handleRemoveLastFile,
             handleUploadFiles,
-            showOptionsModal,
             userTyping
         }, dispatch)
     };

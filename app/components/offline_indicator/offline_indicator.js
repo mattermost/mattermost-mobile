@@ -17,7 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-const INITIAL_TOP = Platform.OS === 'ios' ? -80 : -60;
+const INITIAL_TOP = -46;
 const OFFLINE = 'offline';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
@@ -197,18 +197,18 @@ export default class OfflineIndicator extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        zIndex: 10,
-        position: 'absolute',
-        elevation: 2
+        height: 38,
+        width: Dimensions.get('window').width,
+        zIndex: 9,
+        position: 'relative',
+        elevation: 1
     },
     wrapper: {
         alignItems: 'center',
         flex: 1,
+        height: 39,
         flexDirection: 'row',
-        height: 38,
         paddingHorizontal: 12,
-        width: Dimensions.get('window').width,
         backgroundColor: 'red'
     },
     message: {

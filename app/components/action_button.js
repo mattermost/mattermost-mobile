@@ -4,20 +4,19 @@
 import React, {PropTypes, PureComponent} from 'react';
 import {connect} from 'react-redux';
 import {
-    TouchableOpacity,
-    View
+    TouchableOpacity
 } from 'react-native';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import {getTheme} from 'app/selectors/preferences';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
 class ActionButton extends PureComponent {
     static propTypes = {
         actionEventName: PropTypes.string.isRequired,
-        emitter: PropTypes.func.isRequired,
         enabled: PropTypes.bool,
         enableEventName: PropTypes.string,
         labelDefaultMessage: PropTypes.string.isRequired,
@@ -60,7 +59,7 @@ class ActionButton extends PureComponent {
 
     onPress = () => {
         if (this.state.enabled) {
-            this.props.emitter(this.props.actionEventName);
+            EventEmitter.emit(this.props.actionEventName);
         }
     };
 
@@ -72,28 +71,23 @@ class ActionButton extends PureComponent {
         if (enabled) {
             color = theme.sidebarHeaderTextColor;
             contents = (
-                <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-                    <TouchableOpacity
-                        onPress={this.onPress}
-                        style={{paddingHorizontal: 15}}
-                    >
-                        <FormattedText
-                            id={labelId}
-                            defaultMessage={labelDefaultMessage}
-                            style={{color}}
-                        />
-                    </TouchableOpacity>
-                </View>
-            );
-        } else {
-            contents = (
-                <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 15}}>
+                <TouchableOpacity
+                    onPress={() => preventDoubleTap(this.onPress, this)}
+                >
                     <FormattedText
                         id={labelId}
                         defaultMessage={labelDefaultMessage}
                         style={{color}}
                     />
-                </View>
+                </TouchableOpacity>
+            );
+        } else {
+            contents = (
+                <FormattedText
+                    id={labelId}
+                    defaultMessage={labelDefaultMessage}
+                    style={{color}}
+                />
             );
         }
 
@@ -102,12 +96,6 @@ class ActionButton extends PureComponent {
                 <Loading
                     color={color}
                     size='small'
-                    style={{
-                        alignItems: 'center',
-                        flex: 1,
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        paddingHorizontal: 20}}
                 />
             );
         }

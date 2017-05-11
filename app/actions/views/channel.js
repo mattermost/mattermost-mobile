@@ -288,19 +288,6 @@ export function closeGMChannel(channel) {
     };
 }
 
-export function closeDirectChannel(channel) {
-    return async (dispatch, getState) => {
-        switch (channel.type) {
-        case General.DM_CHANNEL:
-            return closeDMChannel(channel)(dispatch, getState);
-        case General.GM_CHANNEL:
-            return closeGMChannel(channel)(dispatch, getState);
-        }
-
-        return null;
-    };
-}
-
 export function markFavorite(channelId) {
     return async (dispatch, getState) => {
         const {currentUserId} = getState().entities.users;

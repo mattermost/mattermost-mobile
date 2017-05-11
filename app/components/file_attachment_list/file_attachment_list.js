@@ -21,6 +21,7 @@ export default class FileAttachmentList extends Component {
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
+        navigator: PropTypes.object,
         onLongPress: PropTypes.func,
         onPress: PropTypes.func,
         post: PropTypes.object.isRequired,
@@ -43,14 +44,33 @@ export default class FileAttachmentList extends Component {
         }
     }
 
+    goToImagePreview = (post, fileId) => {
+        this.props.navigator.showModal({
+            screen: 'ImagePreview',
+            title: '',
+            animationType: 'none',
+            passProps: {
+                fileId,
+                post
+            },
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext'
+            }
+        });
+    };
+
     handleInfoPress = () => {
         this.props.hideOptionsContext();
         this.props.onPress();
-    }
+    };
 
     handlePreviewPress = (file) => {
         this.props.hideOptionsContext();
-        preventDoubleTap(this.props.actions.goToImagePreviewModal, this, this.props.post, file.id);
+        preventDoubleTap(this.goToImagePreview, this, this.props.post, file.id);
     };
 
     render() {
