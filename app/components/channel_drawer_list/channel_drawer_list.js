@@ -171,7 +171,7 @@ class ChannelDrawerList extends Component {
     };
 
     createPrivateChannel = () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
 
         navigator.showModal({
             screen: 'CreateChannel',
@@ -180,7 +180,8 @@ class ChannelDrawerList extends Component {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             },
             passProps: {
                 channelType: General.PRIVATE_CHANNEL
@@ -250,7 +251,8 @@ class ChannelDrawerList extends Component {
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
             },
             navigatorButtons: {
                 leftButtons: [{
@@ -273,7 +275,8 @@ class ChannelDrawerList extends Component {
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
             },
             navigatorButtons: {
                 leftButtons: [{
@@ -285,7 +288,7 @@ class ChannelDrawerList extends Component {
     };
 
     showMoreChannelsModal = () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
 
         navigator.showModal({
             screen: 'MoreChannels',
@@ -294,7 +297,8 @@ class ChannelDrawerList extends Component {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };

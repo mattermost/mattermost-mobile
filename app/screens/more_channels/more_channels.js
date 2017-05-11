@@ -205,7 +205,7 @@ class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = async () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'CreateChannel',
@@ -213,7 +213,8 @@ class MoreChannels extends PureComponent {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             },
             passProps: {
                 channelType: General.OPEN_CHANNEL

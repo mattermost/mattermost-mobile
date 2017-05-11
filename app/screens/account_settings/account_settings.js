@@ -61,7 +61,7 @@ export default class AccountSettings extends PureComponent {
     };
 
     goToAccountNotifications = () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
         navigator.push({
             screen: 'AccountNotifications',
             title: '',
@@ -69,7 +69,8 @@ export default class AccountSettings extends PureComponent {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };

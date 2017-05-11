@@ -103,7 +103,8 @@ class Post extends PureComponent {
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };
@@ -134,14 +135,15 @@ class Post extends PureComponent {
     };
 
     handlePostEdit = () => {
-        const {navigator, post} = this.props;
+        const {navigator, post, theme} = this.props;
         navigator.showModal({
             screen: 'EditPost',
             animated: true,
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             },
             passProps: {
                 post

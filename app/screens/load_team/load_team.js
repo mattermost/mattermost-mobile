@@ -31,7 +31,8 @@ export default class LoadTeam extends PureComponent {
         if (notification) {
             clearNotification();
             goToNotification(notification);
-            console.warn('LETS HANDLE THE NOTIFICATION BEING TAPPED');
+
+            //TODO: 'LETS HANDLE THE NOTIFICATION BEING TAPPED'
         } else if (currentTeam) {
             this.onSelectTeam(currentTeam);
         } else if (!currentTeam) {
@@ -61,14 +62,17 @@ export default class LoadTeam extends PureComponent {
     }
 
     goToChannelView = () => {
-        this.props.actions.initialize();
-        this.props.navigator.resetTo({
+        const {actions, navigator, theme} = this.props;
+
+        actions.initialize();
+        navigator.resetTo({
             screen: 'Channel',
             animated: false,
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };

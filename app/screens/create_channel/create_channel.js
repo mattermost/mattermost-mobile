@@ -242,109 +242,111 @@ class CreateChannel extends PureComponent {
         );
 
         return (
-            <KeyboardAwareScrollView
-                ref={this.scrollRef}
-                style={style.container}
-            >
+            <View style={{flex: 1}}>
                 <StatusBar barStyle='light-content'/>
                 <NavBar
                     left={navbarLeft}
                     title={navbarTitle}
                     right={navbarRight}
                 />
-                <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[style.scrollView, {height: height + (Platform.OS === 'android' ? 200 : 0)}]}>
-                        {displayError}
-                        <View>
-                            <FormattedText
-                                style={[style.title, {marginTop: (error ? 10 : 0)}]}
-                                id='channel_modal.name'
-                                defaultMessage='Name'
-                            />
+                <KeyboardAwareScrollView
+                    ref={this.scrollRef}
+                    style={style.container}
+                >
+                    <TouchableWithoutFeedback onPress={this.blur}>
+                        <View style={[style.scrollView, {height: height + (Platform.OS === 'android' ? 200 : 0)}]}>
+                            {displayError}
+                            <View>
+                                <FormattedText
+                                    style={[style.title, {marginTop: (error ? 10 : 0)}]}
+                                    id='channel_modal.name'
+                                    defaultMessage='Name'
+                                />
+                            </View>
+                            <View style={style.inputContainer}>
+                                <TextInputWithLocalizedPlaceholder
+                                    ref={this.channelNameRef}
+                                    value={displayName}
+                                    onChangeText={this.onDisplayNameChangeText}
+                                    style={style.input}
+                                    autoCapitalize='none'
+                                    autoCorrect={false}
+                                    placeholder={{id: 'channel_modal.nameEx', defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
+                                    placeholderTextColor={changeOpacity('#000', 0.5)}
+                                    underlineColorAndroid='transparent'
+                                />
+                            </View>
+                            <View style={style.titleContainer30}>
+                                <FormattedText
+                                    style={style.title}
+                                    id='channel_modal.purpose'
+                                    defaultMessage='Purpose'
+                                />
+                                <FormattedText
+                                    style={style.optional}
+                                    id='channel_modal.optional'
+                                    defaultMessage='(optional)'
+                                />
+                            </View>
+                            <View style={style.inputContainer}>
+                                <TextInputWithLocalizedPlaceholder
+                                    ref={this.channelPurposeRef}
+                                    value={purpose}
+                                    onChangeText={this.onPurposeChangeText}
+                                    style={[style.input, {height: 110}]}
+                                    autoCapitalize='none'
+                                    autoCorrect={false}
+                                    placeholder={{id: 'channel_modal.purposeEx', defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
+                                    placeholderTextColor={changeOpacity('#000', 0.5)}
+                                    multiline={true}
+                                    underlineColorAndroid='transparent'
+                                />
+                            </View>
+                            <View>
+                                <FormattedText
+                                    style={style.helpText}
+                                    id='channel_modal.descriptionHelp'
+                                    defaultMessage='Describe how this channel should be used.'
+                                />
+                            </View>
+                            <View style={style.titleContainer15}>
+                                <FormattedText
+                                    style={style.title}
+                                    id='channel_modal.header'
+                                    defaultMessage='Header'
+                                />
+                                <FormattedText
+                                    style={style.optional}
+                                    id='channel_modal.optional'
+                                    defaultMessage='(optional)'
+                                />
+                            </View>
+                            <View style={style.inputContainer}>
+                                <TextInputWithLocalizedPlaceholder
+                                    ref={this.channelHeaderRef}
+                                    value={header}
+                                    onChangeText={this.onHeaderChangeText}
+                                    style={[style.input, {height: 110}]}
+                                    autoCapitalize='none'
+                                    autoCorrect={false}
+                                    placeholder={{id: 'channel_modal.headerEx', defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
+                                    placeholderTextColor={changeOpacity('#000', 0.5)}
+                                    multiline={true}
+                                    onFocus={this.scrollToEnd}
+                                    underlineColorAndroid='transparent'
+                                />
+                            </View>
+                            <View ref={this.lastTextRef}>
+                                <FormattedText
+                                    style={style.helpText}
+                                    id='channel_modal.headerHelp'
+                                    defaultMessage={'Set text that will appear in the header of the channel beside the channel name. For example, include frequently used links by typing [Link Title](http://example.com).'}
+                                />
+                            </View>
                         </View>
-                        <View style={style.inputContainer}>
-                            <TextInputWithLocalizedPlaceholder
-                                ref={this.channelNameRef}
-                                value={displayName}
-                                onChangeText={this.onDisplayNameChangeText}
-                                style={style.input}
-                                autoCapitalize='none'
-                                autoCorrect={false}
-                                placeholder={{id: 'channel_modal.nameEx', defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                underlineColorAndroid='transparent'
-                            />
-                        </View>
-                        <View style={style.titleContainer30}>
-                            <FormattedText
-                                style={style.title}
-                                id='channel_modal.purpose'
-                                defaultMessage='Purpose'
-                            />
-                            <FormattedText
-                                style={style.optional}
-                                id='channel_modal.optional'
-                                defaultMessage='(optional)'
-                            />
-                        </View>
-                        <View style={style.inputContainer}>
-                            <TextInputWithLocalizedPlaceholder
-                                ref={this.channelPurposeRef}
-                                value={purpose}
-                                onChangeText={this.onPurposeChangeText}
-                                style={[style.input, {height: 110}]}
-                                autoCapitalize='none'
-                                autoCorrect={false}
-                                placeholder={{id: 'channel_modal.purposeEx', defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                multiline={true}
-                                underlineColorAndroid='transparent'
-                            />
-                        </View>
-                        <View>
-                            <FormattedText
-                                style={style.helpText}
-                                id='channel_modal.descriptionHelp'
-                                defaultMessage='Describe how this channel should be used.'
-                            />
-                        </View>
-                        <View style={style.titleContainer15}>
-                            <FormattedText
-                                style={style.title}
-                                id='channel_modal.header'
-                                defaultMessage='Header'
-                            />
-                            <FormattedText
-                                style={style.optional}
-                                id='channel_modal.optional'
-                                defaultMessage='(optional)'
-                            />
-                        </View>
-                        <View style={style.inputContainer}>
-                            <TextInputWithLocalizedPlaceholder
-                                ref={this.channelHeaderRef}
-                                value={header}
-                                onChangeText={this.onHeaderChangeText}
-                                style={[style.input, {height: 110}]}
-                                autoCapitalize='none'
-                                autoCorrect={false}
-                                placeholder={{id: 'channel_modal.headerEx', defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                multiline={true}
-                                onFocus={this.scrollToEnd}
-                                underlineColorAndroid='transparent'
-                            />
-                        </View>
-                        <View ref={this.lastTextRef}>
-                            <FormattedText
-                                style={style.helpText}
-                                id='channel_modal.headerHelp'
-                                defaultMessage={'Set text that will appear in the header of the channel beside the channel name. For example, include frequently used links by typing [Link Title](http://example.com).'}
-                            />
-                        </View>
-                    </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAwareScrollView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAwareScrollView>
+            </View>
         );
     }
 }

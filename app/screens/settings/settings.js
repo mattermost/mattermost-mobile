@@ -82,7 +82,8 @@ class Settings extends PureComponent {
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };
@@ -133,7 +134,7 @@ class Settings extends PureComponent {
     openHelp = () => {
         const {config} = this.props;
         Linking.openURL(config.HelpLink);
-    }
+    };
 
     render() {
         const {config, showTeamSelection, theme} = this.props;

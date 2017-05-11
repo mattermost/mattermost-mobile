@@ -62,7 +62,7 @@ class ChannelInfo extends PureComponent {
     }
 
     goToChannelAddMembers = () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
         navigator.push({
             screen: 'ChannelAddMembers',
             title: '',
@@ -70,13 +70,14 @@ class ChannelInfo extends PureComponent {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };
 
     goToChannelMembers = () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
         navigator.push({
             screen: 'ChannelMembers',
             title: '',
@@ -84,7 +85,8 @@ class ChannelInfo extends PureComponent {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
             }
         });
     };
