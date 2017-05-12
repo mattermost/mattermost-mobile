@@ -140,7 +140,6 @@ export default class Markdown extends PureComponent {
     renderBlockQuote = ({children, ...otherProps}) => {
         return (
             <MarkdownBlockQuote
-                bulletStyle={this.props.baseTextStyle}
                 {...otherProps}
             >
                 {children}

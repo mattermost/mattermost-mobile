@@ -4,16 +4,14 @@
 import React, {PureComponent} from 'react';
 import {
     StyleSheet,
-    Text,
     View
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/FontAwesome';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
-        blockStyle: CustomPropTypes.Style,
-        bulletStyle: CustomPropTypes.Style,
         children: CustomPropTypes.Children.isRequired
     };
 
@@ -21,9 +19,13 @@ export default class MarkdownBlockQuote extends PureComponent {
         return (
             <View style={style.container}>
                 <View>
-                    <Text style={this.props.bulletStyle}>
-                        {'> '}
-                    </Text>
+                    <Icon
+                        name='quote-left'
+                        size={14}
+                        left={0}
+                        top={0}
+                        position='absolute'
+                    />
                 </View>
                 <View>
                     {this.props.children}
@@ -36,6 +38,7 @@ export default class MarkdownBlockQuote extends PureComponent {
 const style = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        alignItems: 'flex-start'
+        alignItems: 'flex-start',
+        paddingLeft: 20
     }
 });
