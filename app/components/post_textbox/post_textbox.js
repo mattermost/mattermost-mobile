@@ -210,7 +210,7 @@ class PostTextbox extends PureComponent {
         this.props.actions.closeModal();
 
         const options = {
-            quality: 0.5,
+            quality: 0.7,
             noData: true,
             storageOptions: {
                 cameraRoll: true,
@@ -231,7 +231,7 @@ class PostTextbox extends PureComponent {
         this.props.actions.closeModal();
 
         const options = {
-            quality: 0.5,
+            quality: 0.7,
             noData: true
         };
 
