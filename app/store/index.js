@@ -4,6 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 import {AsyncStorage} from 'react-native';
 import configureStore from 'mattermost-redux/store';
+import {GeneralTypes} from 'mattermost-redux/action_types';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
@@ -36,7 +37,7 @@ const setTransforms = [
 export default function configureAppStore(initialState) {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
-        ['login']
+        ['login', 'root']
     );
 
     const setTransformer = createTransform(
@@ -97,6 +98,10 @@ export default function configureAppStore(initialState) {
                         {
                             type: ViewTypes.SERVER_URL_CHANGED,
                             serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl
+                        },
+                        {
+                            type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                            data: state.entities.general.deviceToken
                         }
                     ]));
 

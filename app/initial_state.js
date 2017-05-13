@@ -267,6 +267,7 @@ const state = {
         },
         notification: null,
         root: {
+            appInitializing: false,
             hydrationComplete: false
         },
         selectServer: {

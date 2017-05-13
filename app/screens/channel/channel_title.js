@@ -68,7 +68,7 @@ ChannelTitle.defaultProps = {
 
 function mapStateToProps(state) {
     return {
-        applicationInitializing: state.views.channel.appInitializing,
+        applicationInitializing: state.views.root.appInitializing,
         currentChannel: getCurrentChannel(state),
         theme: getTheme(state)
     };

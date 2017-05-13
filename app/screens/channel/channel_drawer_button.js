@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import DeviceNotification from 'react-native-push-notification';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
@@ -54,6 +55,12 @@ class ChannelDrawerButton extends PureComponent {
 
     componentDidMount() {
         EventEmitter.on('drawer_opacity', this.setOpacity);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.mentionCount !== this.props.mentionCount) {
+            DeviceNotification.setApplicationIconBadgeNumber(nextProps.mentionCount);
+        }
     }
 
     componentWillUnmount() {
@@ -151,7 +158,7 @@ const style = StyleSheet.create({
 
 function mapStateToProps(state) {
     return {
-        applicationInitializing: state.views.channel.appInitializing,
+        applicationInitializing: state.views.root.appInitializing,
         theme: getTheme(state),
         ...getUnreads(state)
     };

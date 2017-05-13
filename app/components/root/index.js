@@ -3,6 +3,8 @@
 
 import {connect} from 'react-redux';
 
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+
 import Config from 'assets/config.json';
 
 import Root from './root';
@@ -18,6 +20,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
+        currentChannelId: getCurrentChannelId(state),
         locale
     };
 }

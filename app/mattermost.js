@@ -5,22 +5,24 @@ import 'babel-polyfill';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation} from 'react-native-navigation';
+import DeviceNotification from 'react-native-push-notification';
 import {
     Alert,
     AppState,
-    InteractionManager
+    InteractionManager,
+    Platform
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import semver from 'semver';
 
-import {setAppState} from 'mattermost-redux/actions/general';
+import {setAppState, setDeviceToken} from 'mattermost-redux/actions/general';
 import {logout} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {loadConfigAndLicense} from 'app/actions/views/root';
-import {NavigationTypes} from 'app/constants';
+import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
@@ -32,6 +34,7 @@ registerScreens(store, Provider);
 
 export default class Mattermost {
     constructor() {
+        this.isConfigured = false;
         Orientation.lockToPortrait();
         this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
@@ -96,7 +99,61 @@ export default class Mattermost {
         }
     };
 
+    configurePushNotifications = () => {
+        DeviceNotification.configure({
+            onRegister: this.onRegisterDevice,
+            onNotification: this.onPushNotification,
+            senderID: Config.GooglePlaySenderId,
+            popInitialNotification: true,
+            requestPermissions: true
+        });
+    };
+
+    onRegisterDevice = (data) => {
+        const prefix = Platform.OS === 'ios' ? General.PUSH_NOTIFY_APPLE_REACT_NATIVE : General.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
+        const {dispatch, getState} = store;
+        setDeviceToken(`${prefix}:${data.token}`)(dispatch, getState);
+        this.isConfigured = true;
+    };
+
+    onPushNotification = (deviceNotification) => {
+        const {foreground, userInteraction, data, message} = deviceNotification;
+        let notification;
+
+        if (Platform.OS === 'android') {
+            notification = {
+                data: {
+                    channel_id: deviceNotification.channel_id,
+                    team_id: deviceNotification.team_id
+                },
+                message
+            };
+        } else {
+            notification = {
+                data,
+                message
+            };
+        }
+
+        if (foreground) {
+            EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
+        } else if (userInteraction) {
+            const {dispatch, getState} = store;
+            const state = getState();
+
+            if (!state.views.root.appInitializing) {
+                // go to notification if the app is initialized
+                goToNotification(notification)(dispatch, getState);
+            } else if (state.entities.general.credentials.token) {
+                // queue notification if app is not initialized but we are logged in
+                queueNotification(notification)(dispatch, getState);
+            }
+        }
+    };
+
     startApp = (animationType = 'none') => {
+        this.configurePushNotifications();
+
         Navigation.startSingleScreenApp({
             screen: {
                 screen: 'Root',

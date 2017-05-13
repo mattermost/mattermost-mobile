@@ -20,6 +20,7 @@ import LoginOptions from 'app/screens/login_options';
 import Mfa from 'app/screens/mfa';
 import MoreChannels from 'app/screens/more_channels';
 import MoreDirectMessages from 'app/screens/more_dms';
+import Notification from 'app/screens/notification';
 import OptionsModal from 'app/screens/options_modal';
 import Root from 'app/screens/root';
 import Saml from 'app/screens/saml';
@@ -33,8 +34,9 @@ import IntlWrapper from 'app/components/root';
 
 function wrapWithContextProvider(Comp) {
     return (props) => { //eslint-disable-line react/display-name
+        const {navigator} = props; //eslint-disable-line react/prop-types
         return (
-            <IntlWrapper>
+            <IntlWrapper navigator={navigator}>
                 <Comp {...props}/>
             </IntlWrapper>
         );
@@ -59,6 +61,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(MoreChannels), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
+    Navigation.registerComponent('Notification', () => Notification, store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('SAML', () => wrapWithContextProvider(Saml), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);

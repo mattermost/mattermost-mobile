@@ -66,7 +66,7 @@ const getPostsInCurrentChannelWithReplyProps = createSelector(
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        applicationInitializing: state.views.channel.appInitializing,
+        applicationInitializing: state.views.root.appInitializing,
         channelIsLoading: state.views.channel.loading,
         myMember: getMyCurrentChannelMembership(state),
         postsRequests: state.requests.posts,

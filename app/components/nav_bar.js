@@ -21,6 +21,10 @@ class NavBar extends PureComponent {
         theme: PropTypes.object
     };
 
+    shouldComponentUpdate() {
+        return false;
+    }
+
     render() {
         const {left, right, theme, title} = this.props;
         const style = getStyleSheet(theme);
@@ -33,11 +37,9 @@ class NavBar extends PureComponent {
                 <View style={style.title}>
                     {title}
                 </View>
-                {
-                    right && <View style={style.right}>
-                        {right}
-                    </View>
-                }
+                <View style={style.right}>
+                    {right}
+                </View>
             </View>
         );
     }
@@ -56,8 +58,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             width: Dimensions.get('window').width,
-            zIndex: 10,
-            elevation: 2,
             ...Platform.select({
                 android: {
                     height: 46

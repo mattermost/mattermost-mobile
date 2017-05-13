@@ -7,7 +7,6 @@ import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar
 } from 'app/actions/views/channel';
-import {goToChannelView} from 'app/actions/views/load_team';
 import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
 import {getClientConfig, getLicenseConfig, setServerVersion} from 'mattermost-redux/actions/general';
@@ -44,7 +43,7 @@ export function goToNotification(notification) {
         let teamId = data.team_id || currentTeamId;
 
         if (teamId) {
-            await handleTeamChange(teams[teamId])(dispatch, getState);
+            handleTeamChange(teams[teamId])(dispatch, getState);
             await loadChannelsIfNecessary(teamId)(dispatch, getState);
         } else {
             await selectFirstAvailableTeam()(dispatch, getState);
@@ -52,13 +51,12 @@ export function goToNotification(notification) {
         }
 
         viewChannel(teamId, channelId)(dispatch, getState);
-        await loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
+        loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
 
         // when the notification is tapped go to the channel view before selecting the channel to prevent
         // weird behavior
-        goToChannelView()(dispatch, getState);
-        await handleSelectChannel(channelId)(dispatch, getState);
-        markChannelAsRead(teamId, channelId)(dispatch, getState);
+        handleSelectChannel(channelId)(dispatch, getState);
+        markChannelAsRead(teamId, channelId)(dispatch, getState).then(() => true).catch(() => true);
     };
 }
 

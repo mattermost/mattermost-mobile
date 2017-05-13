@@ -12,6 +12,9 @@ import {
     View
 } from 'react-native';
 
+import {RequestStatus} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import ChannelDrawer from 'app/components/channel_drawer';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
@@ -19,9 +22,6 @@ import OfflineIndicator from 'app/components/offline_indicator';
 import PostTextbox from 'app/components/post_textbox';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelTitle from './channel_title';
@@ -66,6 +66,7 @@ class Channel extends PureComponent {
 
     componentDidMount() {
         const {startPeriodicStatusUpdates} = this.props.actions;
+
         try {
             startPeriodicStatusUpdates();
         } catch (error) {
@@ -81,11 +82,12 @@ class Channel extends PureComponent {
     }
 
     componentWillUnmount() {
+        const {closeWebSocket, stopPeriodicStatusUpdates} = this.props.actions;
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         NetInfo.isConnected.removeEventListener('change', this.handleConnectionChange);
 
-        this.props.actions.closeWebSocket();
-        this.props.actions.stopPeriodicStatusUpdates();
+        closeWebSocket();
+        stopPeriodicStatusUpdates();
     }
 
     attachPostTextbox = (ref) => {
@@ -178,21 +180,12 @@ class Channel extends PureComponent {
                 blurPostTextBox={this.blurPostTextBox}
                 navigator={navigator}
             >
+                <StatusBar barStyle='light-content'/>
                 <KeyboardLayout
                     behavior='padding'
                     style={{flex: 1, backgroundColor: theme.centerChannelBg}}
                     keyboardVerticalOffset={0}
                 >
-                    <StatusBar barStyle='light-content'/>
-                    <View style={{flex: 1, position: 'absolute', zIndex: 10}}>
-                        <View style={style.header}>
-                            <ChannelDrawerButton/>
-                            <ChannelTitle
-                                onPress={() => preventDoubleTap(this.goToChannelInfo, this)}
-                            />
-                        </View>
-                        <OfflineIndicator/>
-                    </View>
                     <ChannelPostList
                         channel={currentChannel}
                         navigator={navigator}
@@ -206,6 +199,15 @@ class Channel extends PureComponent {
                         navigator={navigator}
                     />
                 </KeyboardLayout>
+                <View style={{flex: 1, position: 'absolute'}}>
+                    <View style={style.header}>
+                        <ChannelDrawerButton/>
+                        <ChannelTitle
+                            onPress={() => preventDoubleTap(this.goToChannelInfo, this)}
+                        />
+                    </View>
+                    <OfflineIndicator/>
+                </View>
             </ChannelDrawer>
         );
     }
