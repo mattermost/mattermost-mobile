@@ -177,14 +177,24 @@ class CreateChannel extends PureComponent {
         if (channelType === General.OPEN_CHANNEL) {
             i18nId = 'mobile.create_channel.public';
             defaultMessage = 'New Public Channel';
-            icon = (
-                <FontAwesomeIcon
-                    style={{fontWeight: 'bold'}}
-                    name='angle-left'
-                    size={35}
-                    color={theme.sidebarHeaderTextColor}
-                />
-            );
+            if (Platform.OS === 'ios') {
+                icon = (
+                    <FontAwesomeIcon
+                        style={{fontWeight: 'bold'}}
+                        name='angle-left'
+                        size={35}
+                        color={theme.sidebarHeaderTextColor}
+                    />
+                );
+            } else {
+                icon = (
+                    <MaterialIcon
+                        name='arrow-back'
+                        size={30}
+                        color={theme.sidebarHeaderTextColor}
+                    />
+                );
+            }
         } else if (channelType === General.PRIVATE_CHANNEL) {
             i18nId = 'mobile.create_channel.private';
             defaultMessage = 'New Private Channel';
@@ -222,11 +232,7 @@ class CreateChannel extends PureComponent {
                 defaultMessage={defaultMessage}
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={{
-                    color: theme.sidebarHeaderTextColor,
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }}
+                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
             />
         );
 
@@ -403,6 +409,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 10,
             marginHorizontal: 15
+        },
+        navTitle: {
+            ...Platform.select({
+                android: {
+                    fontSize: 18
+                },
+                ios: {
+                    fontSize: 15,
+                    fontWeight: 'bold'
+                }
+            })
         }
     });
 });

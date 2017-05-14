@@ -83,6 +83,7 @@ class Channel extends PureComponent {
 
     componentWillUnmount() {
         const {closeWebSocket, stopPeriodicStatusUpdates} = this.props.actions;
+
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         NetInfo.isConnected.removeEventListener('change', this.handleConnectionChange);
 

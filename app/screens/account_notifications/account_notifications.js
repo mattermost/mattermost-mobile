@@ -8,19 +8,19 @@ import {
     ScrollView,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {Preferences, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import ActionButton from 'app/components/action_button';
+import BackButton from 'app/components/back_button';
 import FormattedText from 'app/components/formatted_text';
 import NavBar from 'app/components/nav_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Section from './section';
@@ -527,17 +527,11 @@ export default class AccountNotifications extends PureComponent {
         const style = getStyleSheet(theme);
 
         const navbarLeft = (
-            <TouchableOpacity
+            <BackButton
+                color={theme.sidebarHeaderTextColor}
+                onPress={() => preventDoubleTap(this.close, this)}
                 style={style.left}
-                onPress={this.close}
-            >
-                <Icon
-                    style={{fontWeight: 'bold'}}
-                    name='angle-left'
-                    size={35}
-                    color={theme.sidebarHeaderTextColor}
-                />
-            </TouchableOpacity>
+            />
         );
 
         const navbarTitle = (
@@ -546,11 +540,7 @@ export default class AccountNotifications extends PureComponent {
                 defaultMessage='Notifications'
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={{
-                    color: theme.sidebarHeaderTextColor,
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }}
+                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
             />
         );
 
@@ -610,6 +600,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollViewContent: {
             paddingBottom: 30
+        },
+        navTitle: {
+            ...Platform.select({
+                android: {
+                    fontSize: 18
+                },
+                ios: {
+                    fontSize: 15,
+                    fontWeight: 'bold'
+                }
+            })
         }
     });
 });

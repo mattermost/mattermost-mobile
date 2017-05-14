@@ -76,8 +76,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
+            ...Platform.select({
+                android: {
+                    justifyContent: 'flex-start'
+                },
+                ios: {
+                    justifyContent: 'center'
+                }
+            })
         },
         right: {
             alignItems: 'center',

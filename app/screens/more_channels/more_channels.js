@@ -248,11 +248,7 @@ class MoreChannels extends PureComponent {
                 defaultMessage='More Channels'
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={{
-                    color: theme.sidebarHeaderTextColor,
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }}
+                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
             />
         );
 
@@ -319,6 +315,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
+        },
+        navTitle: {
+            ...Platform.select({
+                android: {
+                    fontSize: 18
+                },
+                ios: {
+                    fontSize: 15,
+                    fontWeight: 'bold'
+                }
+            })
         }
     });
 });

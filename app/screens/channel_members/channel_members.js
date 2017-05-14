@@ -9,19 +9,19 @@ import {
     InteractionManager,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import ActionButton from 'app/components/action_button';
+import BackButton from 'app/components/back_button';
 import FormattedText from 'app/components/formatted_text';
 import MemberList from 'app/components/custom_list';
 import NavBar from 'app/components/nav_bar';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -287,24 +287,18 @@ class ChannelMembers extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         const navbarLeft = (
-            <TouchableOpacity
+            <BackButton
+                color={theme.sidebarHeaderTextColor}
+                onPress={() => preventDoubleTap(this.close, this)}
                 style={style.left}
-                onPress={this.close}
-            >
-                <Icon
-                    style={{fontWeight: 'bold'}}
-                    name='angle-left'
-                    size={35}
-                    color={theme.sidebarHeaderTextColor}
-                />
-            </TouchableOpacity>
+            />
         );
 
         const navbarTitle = (
             <FormattedText
                 id={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                 defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
-                style={{color: theme.sidebarHeaderTextColor, fontSize: 15, fontWeight: 'bold', textAlign: 'center'}}
+                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
             />
         );
 
@@ -370,6 +364,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
+        },
+        navTitle: {
+            ...Platform.select({
+                android: {
+                    fontSize: 18
+                },
+                ios: {
+                    fontSize: 15,
+                    fontWeight: 'bold'
+                }
+            })
         }
     });
 });
