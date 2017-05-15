@@ -38,6 +38,7 @@ export default class AtMention extends Component {
 
     static defaultProps = {
         autocompleteUsersInCurrentChannel: {},
+        defaultChannel: {},
         postDraft: ''
     };
 
