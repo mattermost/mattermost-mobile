@@ -120,7 +120,7 @@ export default class ChannelDrawer extends PureComponent {
 
         markChannelAsRead(id, currentChannel.id);
         setChannelLoading();
-        viewChannel(id);
+        viewChannel(id, currentChannel.id);
         this.closeChannelDrawer();
         InteractionManager.runAfterInteractions(() => {
             handleSelectChannel(id);

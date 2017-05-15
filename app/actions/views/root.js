@@ -50,7 +50,7 @@ export function goToNotification(notification) {
             teamId = currentTeamId;
         }
 
-        viewChannel(teamId, channelId)(dispatch, getState);
+        viewChannel(channelId)(dispatch, getState);
         loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
 
         // when the notification is tapped go to the channel view before selecting the channel to prevent
