@@ -4573,8 +4573,8 @@ redux-devtools-instrument@^1.3.3:
     symbol-observable "^1.0.2"
 
 "redux-offline@git+https://github.com/enahum/redux-offline.git":
-  version "1.1.3"
-  resolved "git+https://github.com/enahum/redux-offline.git#6e51ebd7a87d62df1cbf59a79d033a231227ebfa"
+  version "1.1.4"
+  resolved "git+https://github.com/enahum/redux-offline.git#454d32a14ae50b9727bccbcdd295cad3cd037335"
   dependencies:
     redux-persist "^4.5.0"
 
