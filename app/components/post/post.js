@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
@@ -23,6 +24,7 @@ import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
 import ReplyIcon from 'app/components/reply_icon';
+import {NavigationTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -30,6 +32,7 @@ import webhookIcon from 'assets/images/icons/webhook.jpg';
 
 import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {canDeletePost, canEditPost, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
@@ -52,6 +55,7 @@ class Post extends PureComponent {
         commentedOnDisplayName: PropTypes.string,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
         roles: PropTypes.string,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
@@ -59,12 +63,8 @@ class Post extends PureComponent {
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
-            goToUserProfile: PropTypes.func.isRequired,
-            openEditPostModal: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired,
-            requestCloseModal: PropTypes.func.isRequired,
-            showOptionsModal: PropTypes.func.isRequired
+            unflagPost: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -90,6 +90,25 @@ class Post extends PureComponent {
     componentWillUnmount() {
         this.editDisableAction.cancel();
     }
+
+    goToUserProfile = (userId) => {
+        const {intl, navigator, theme} = this.props;
+        navigator.push({
+            screen: 'UserProfile',
+            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                userId
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
+    };
 
     handleEditDisable = () => {
         this.setState({canEdit: false});
@@ -117,8 +136,25 @@ class Post extends PureComponent {
     };
 
     handlePostEdit = () => {
-        const {actions, post} = this.props;
-        actions.openEditPostModal(post);
+        const {intl, navigator, post, theme} = this.props;
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
+        then((source) => {
+            navigator.showModal({
+                screen: 'EditPost',
+                title: intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg
+                },
+                passProps: {
+                    post,
+                    closeButton: source
+                }
+            });
+        });
     };
 
     handleFailedPostPress = () => {
@@ -131,7 +167,7 @@ class Post extends PureComponent {
                 action: () => {
                     const {failed, id, ...post} = this.props.post; // eslint-disable-line
 
-                    this.props.actions.requestCloseModal();
+                    EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
                     this.props.actions.createPost(post);
                 },
                 text: {
@@ -140,7 +176,7 @@ class Post extends PureComponent {
                 }
             }, {
                 action: () => {
-                    this.props.actions.requestCloseModal();
+                    EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
                     this.onRemovePost(this.props.post);
                 },
                 text: {
@@ -153,7 +189,22 @@ class Post extends PureComponent {
             }]
         };
 
-        this.props.actions.showOptionsModal(options);
+        this.props.navigator.showModal({
+            screen: 'OptionsModal',
+            title: '',
+            animationType: 'none',
+            passProps: {
+                items: options.items,
+                title: options.title
+            },
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext'
+            }
+        });
     };
 
     handlePress = () => {
@@ -242,7 +293,7 @@ class Post extends PureComponent {
     };
 
     renderFileAttachments() {
-        const {post} = this.props;
+        const {navigator, post} = this.props;
         const fileIds = post.file_ids || [];
 
         let attachments;
@@ -254,6 +305,7 @@ class Post extends PureComponent {
                     onPress={this.handlePress}
                     post={post}
                     toggleSelected={this.toggleSelected}
+                    navigator={navigator}
                 />
             );
         }
@@ -389,7 +441,7 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        preventDoubleTap(this.props.actions.goToUserProfile, null, this.props.user.id);
+        preventDoubleTap(this.goToUserProfile, null, this.props.user.id);
     };
 
     toggleSelected = (selected) => {

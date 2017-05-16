@@ -828,7 +828,7 @@ babel-plugin-transform-strict-mode@^6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
-babel-polyfill@^6.20.0, babel-polyfill@^6.23.0:
+babel-polyfill@6.23.0, babel-polyfill@^6.20.0, babel-polyfill@^6.23.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-polyfill/-/babel-polyfill-6.23.0.tgz#8364ca62df8eafb830499f699177466c3b03499d"
   dependencies:
@@ -3485,13 +3485,13 @@ lodash.unset@^4.5.2:
   version "4.5.2"
   resolved "https://registry.yarnpkg.com/lodash.unset/-/lodash.unset-4.5.2.tgz#370d1d3e85b72a7e1b0cdf2d272121306f23e4ed"
 
+lodash@4.x.x, lodash@^4.0.0, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.16.6, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.6.1, lodash@^4.8.0:
+  version "4.17.4"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
+
 lodash@^3.5.0:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
-
-lodash@^4.0.0, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.16.6, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.6.1, lodash@^4.8.0:
-  version "4.17.4"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
 longest@^1.0.1:
   version "1.0.1"
@@ -4293,10 +4293,6 @@ react-native-linear-gradient@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-native-linear-gradient/-/react-native-linear-gradient-2.0.0.tgz#7442c00e1fcd9fca329119dcbaf744d12bcd1b5a"
 
-react-native-message-bar@1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/react-native-message-bar/-/react-native-message-bar-1.6.0.tgz#79623e89655475216927090771b0238616b6f1c7"
-
 react-native-mock@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/react-native-mock/-/react-native-mock-0.3.1.tgz#13d22433c5351a8a7fb8aedd7862b614d087851c"
@@ -4331,6 +4327,12 @@ react-native-mock@^0.2.7:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
+react-native-navigation@1.1.70:
+  version "1.1.70"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.70.tgz#1631e30994a75dea1b81cf06b23660c048af447d"
+  dependencies:
+    lodash "4.x.x"
+
 react-native-orientation@enahum/react-native-orientation.git:
   version "1.17.0"
   resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/75ba7da814b99a949324846ce3a63fcbaeee9fdc"
@@ -4342,10 +4344,6 @@ react-native-push-notification@2.2.1:
 react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
-
-react-native-smart-splash-screen@2.3.3:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/react-native-smart-splash-screen/-/react-native-smart-splash-screen-2.3.3.tgz#083eb407b721de2b6597aecb25e519315a60feb2"
 
 react-native-svg-mock@1.0.2:
   version "1.0.2"

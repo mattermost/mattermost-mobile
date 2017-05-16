@@ -26,24 +26,13 @@ import UnreadIndicator from './unread_indicator';
 
 class ChannelDrawerList extends Component {
     static propTypes = {
-        actions: PropTypes.shape({
-            closeDirectChannel: PropTypes.func.isRequired,
-            closeOptionsModal: PropTypes.func.isRequired,
-            goToCreateChannel: PropTypes.func.isRequired,
-            leaveChannel: PropTypes.func.isRequired,
-            markFavorite: PropTypes.func.isRequired,
-            openSettingsModal: React.PropTypes.func.isRequired,
-            unmarkFavorite: PropTypes.func.isRequired,
-            showOptionsModal: PropTypes.func.isRequired,
-            showDirectMessagesModal: PropTypes.func.isRequired,
-            showMoreChannelsModal: PropTypes.func.isRequired
-        }).isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
         currentTeam: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         intl: intlShape.isRequired,
+        navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -64,6 +53,10 @@ class ChannelDrawerList extends Component {
                 rowHasChanged: (a, b) => a !== b
             }).cloneWithRows(this.buildData(props))
         };
+        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
+        then((source) => {
+            this.closeButton = source;
+        });
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -178,7 +171,25 @@ class ChannelDrawerList extends Component {
     };
 
     createPrivateChannel = () => {
-        this.props.actions.goToCreateChannel(General.PRIVATE_CHANNEL);
+        const {intl, navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'CreateChannel',
+            animationType: 'slide-up',
+            title: intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'}),
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            passProps: {
+                channelType: General.PRIVATE_CHANNEL,
+                closeButton: this.closeButton
+            }
+        });
     };
 
     buildData = (props) => {
@@ -206,7 +217,7 @@ class ChannelDrawerList extends Component {
         }
 
         data.push(
-            this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', this.props.actions.showMoreChannelsModal, publicChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', this.showMoreChannelsModal, publicChannels.length > 0),
             ...publicChannels
         );
 
@@ -220,7 +231,7 @@ class ChannelDrawerList extends Component {
         );
 
         data.push(
-            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.props.actions.showDirectMessagesModal, directAndGroupChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.showDirectMessagesModal, directAndGroupChannels.length > 0),
             ...directAndGroupChannels
         );
 
@@ -229,6 +240,76 @@ class ChannelDrawerList extends Component {
         this.findUnreadChannels(data);
 
         return data;
+    };
+
+    openSettingsModal = () => {
+        const {intl, navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'Settings',
+            title: intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton
+                }]
+            }
+        });
+    };
+
+    showDirectMessagesModal = () => {
+        const {intl, navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'MoreDirectMessages',
+            title: intl.formatMessage({id: 'more_direct_channels.title', defaultMessage: 'Direct Messages'}),
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-dms',
+                    icon: this.closeButton
+                }]
+            }
+        });
+    };
+
+    showMoreChannelsModal = () => {
+        const {intl, navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'MoreChannels',
+            animationType: 'slide-up',
+            title: intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'}),
+            backButtonTitle: '',
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            passProps: {
+                channelType: General.PRIVATE_CHANNEL,
+                closeButton: this.closeButton
+            }
+        });
     };
 
     renderSectionAction = (styles, action) => {
@@ -293,7 +374,7 @@ class ChannelDrawerList extends Component {
         const settings = (
             <TouchableHighlight
                 style={styles.settingsContainer}
-                onPress={() => preventDoubleTap(this.props.actions.openSettingsModal)}
+                onPress={() => preventDoubleTap(this.openSettingsModal)}
                 underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
             >
                 <AwesomeIcon

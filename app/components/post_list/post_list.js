@@ -26,6 +26,7 @@ export default class PostList extends Component {
         posts: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
         loadMore: PropTypes.func,
+        navigator: PropTypes.object,
         isLoadingMore: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         onPostPress: PropTypes.func,
@@ -142,6 +143,7 @@ export default class PostList extends Component {
                 isLastReply={post.isLastReply}
                 commentedOnPost={post.commentedOnPost}
                 onPress={this.props.onPostPress}
+                navigator={this.props.navigator}
             />
         );
     };

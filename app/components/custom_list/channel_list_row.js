@@ -24,6 +24,21 @@ function ChannelListRow(props) {
     const {id, displayName, purpose, onPress, theme} = props;
     const style = getStyleFromTheme(theme);
 
+    let purposeComponent;
+    if (purpose) {
+        purposeComponent = (
+            <View style={{flexShrink: 1, flexDirection: 'column', flexWrap: 'wrap'}}>
+                <Text
+                    style={style.purpose}
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                >
+                    {purpose}
+                </Text>
+            </View>
+        );
+    }
+
     const RowComponent = (
         <View style={style.container}>
             <View style={style.titleContainer}>
@@ -54,15 +69,7 @@ function ChannelListRow(props) {
                     </View>
                 </View>
             </View>
-            <View style={{flexShrink: 1, flexDirection: 'column', flexWrap: 'wrap'}}>
-                <Text
-                    style={style.purpose}
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                >
-                    {purpose}
-                </Text>
-            </View>
+            {purposeComponent}
         </View>
     );
 

@@ -30,12 +30,10 @@ const MAX_MESSAGE_LENGTH = 4000;
 class PostTextbox extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            closeModal: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
-            showOptionsModal: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
@@ -43,6 +41,7 @@ class PostTextbox extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         files: PropTypes.array,
         intl: intlShape.isRequired,
+        navigator: PropTypes.object,
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -207,7 +206,9 @@ class PostTextbox extends PureComponent {
     };
 
     attachFileFromCamera = () => {
-        this.props.actions.closeModal();
+        this.props.navigator.dismissModal({
+            animationType: 'none'
+        });
 
         const options = {
             quality: 0.7,
@@ -228,7 +229,9 @@ class PostTextbox extends PureComponent {
     };
 
     attachFileFromLibrary = () => {
-        this.props.actions.closeModal();
+        this.props.navigator.dismissModal({
+            animationType: 'none'
+        });
 
         const options = {
             quality: 0.7,
@@ -268,7 +271,21 @@ class PostTextbox extends PureComponent {
             }]
         };
 
-        this.props.actions.showOptionsModal(options);
+        this.props.navigator.showModal({
+            screen: 'OptionsModal',
+            title: '',
+            animationType: 'none',
+            passProps: {
+                items: options.items
+            },
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext'
+            }
+        });
     };
 
     renderTyping = () => {

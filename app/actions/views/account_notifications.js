@@ -26,6 +26,10 @@ export function handleUpdateUserNotifyProps(notifyProps) {
         }
 
         const props = {...otherProps, email};
-        updateMe({notify_props: props})(dispatch, getState);
+        try {
+            await updateMe({notify_props: props})(dispatch, getState);
+        } catch (error) {
+            // do nothing
+        }
     };
 }

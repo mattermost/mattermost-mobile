@@ -1,8 +1,8 @@
 rootProject.name = 'Mattermost'
+include ':react-native-navigation'
+project(':react-native-navigation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-navigation/android/app/')
 include ':react-native-image-picker'
 project(':react-native-image-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-picker/android')
-include ':react-native-smart-splashscreen'
-project(':react-native-smart-splashscreen').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-smart-splash-screen/android')
 include ':react-native-bottom-sheet'
 project(':react-native-bottom-sheet').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-bottom-sheet/android')
 include ':react-native-device-info'

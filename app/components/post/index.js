@@ -10,7 +10,6 @@ import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/s
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
-import {goToUserProfile, openEditPostModal, requestCloseModal, showOptionsModal} from 'app/actions/navigation';
 import {getTheme} from 'app/selectors/preferences';
 
 import Post from './post';
@@ -46,11 +45,7 @@ function mapDispatchToProps(dispatch) {
             createPost,
             deletePost,
             flagPost,
-            goToUserProfile,
-            openEditPostModal,
             removePost,
-            requestCloseModal,
-            showOptionsModal,
             unflagPost
         }, dispatch)
     };

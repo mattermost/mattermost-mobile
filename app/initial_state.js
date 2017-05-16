@@ -3,8 +3,6 @@
 
 import Config from 'assets/config.json';
 
-import Routes from 'app/navigation/routes';
-
 const state = {
     entities: {
         general: {
@@ -252,23 +250,7 @@ const state = {
             }
         }
     },
-    navigation: {
-        index: 0,
-        routes: [
-            Routes.Root
-        ],
-        modal: {
-            index: 0,
-            requestClose: false,
-            routes: []
-        },
-        isModal: false,
-        leftDrawerOpen: false,
-        leftDrawerRoute: Routes.ChannelDrawer,
-        rightDrawerOpen: false,
-        rightDrawerRoute: null,
-        shouldRenderDrawer: false
-    },
+    navigation: '',
     views: {
         channel: {
             drafts: {},
@@ -284,12 +266,8 @@ const state = {
             password: ''
         },
         notification: null,
-        optionsModal: {
-            title: '',
-            options: [],
-            visible: false
-        },
         root: {
+            appInitializing: false,
             hydrationComplete: false
         },
         selectServer: {
