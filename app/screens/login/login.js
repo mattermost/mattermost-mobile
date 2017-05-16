@@ -1,7 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent, PropTypes} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     ActivityIndicator,
@@ -31,12 +32,12 @@ class Login extends PureComponent {
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object,
-        actions: React.PropTypes.shape({
-            handleLoginIdChanged: React.PropTypes.func.isRequired,
-            handlePasswordChanged: React.PropTypes.func.isRequired,
-            handleSuccessfulLogin: React.PropTypes.func.isRequired,
-            checkMfa: React.PropTypes.func.isRequired,
-            login: React.PropTypes.func.isRequired
+        actions: PropTypes.shape({
+            handleLoginIdChanged: PropTypes.func.isRequired,
+            handlePasswordChanged: PropTypes.func.isRequired,
+            handleSuccessfulLogin: PropTypes.func.isRequired,
+            checkMfa: PropTypes.func.isRequired,
+            login: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,

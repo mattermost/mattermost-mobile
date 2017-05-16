@@ -1,17 +1,18 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import Svg, {
     G,
     Path
 } from 'react-native-svg';
 
-export default class AwayStatus extends React.Component {
+export default class AwayStatus extends PureComponent {
     static propTypes = {
-        width: React.PropTypes.number.isRequired,
-        height: React.PropTypes.number.isRequired,
-        color: React.PropTypes.string.isRequired
+        width: PropTypes.number.isRequired,
+        height: PropTypes.number.isRequired,
+        color: PropTypes.string.isRequired
     };
 
     render() {

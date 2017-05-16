@@ -1,7 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes, PureComponent} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {StatusBar, StyleSheet} from 'react-native';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -11,7 +12,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Thread extends PureComponent {
     static propTypes = {
-        actions: React.PropTypes.shape({
+        actions: PropTypes.shape({
             handleCommentDraftChanged: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,

@@ -1,7 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {Image, Platform, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -21,17 +22,17 @@ const STATUS_BUFFER = Platform.select({
     android: 2
 });
 
-export default class ProfilePicture extends React.PureComponent {
+export default class ProfilePicture extends PureComponent {
     static propTypes = {
-        size: React.PropTypes.number,
-        statusBorderWidth: React.PropTypes.number,
-        statusSize: React.PropTypes.number,
-        statusIconSize: React.PropTypes.number,
-        user: React.PropTypes.object,
-        status: React.PropTypes.string,
-        theme: React.PropTypes.object.isRequired,
-        actions: React.PropTypes.shape({
-            getStatusForId: React.PropTypes.func.isRequired
+        size: PropTypes.number,
+        statusBorderWidth: PropTypes.number,
+        statusSize: PropTypes.number,
+        statusIconSize: PropTypes.number,
+        user: PropTypes.object,
+        status: PropTypes.string,
+        theme: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            getStatusForId: PropTypes.func.isRequired
         })
     };
 

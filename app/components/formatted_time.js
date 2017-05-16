@@ -1,16 +1,17 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
-class FormattedTime extends React.Component {
+class FormattedTime extends Component {
     static propTypes = {
         intl: intlShape.isRequired,
-        value: React.PropTypes.any.isRequired,
-        format: React.PropTypes.string,
-        children: React.PropTypes.func
+        value: PropTypes.any.isRequired,
+        format: PropTypes.string,
+        children: PropTypes.func
     };
 
     render() {

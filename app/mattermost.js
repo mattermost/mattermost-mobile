@@ -144,6 +144,7 @@ export default class Mattermost {
             if (!state.views.root.appInitializing) {
                 // go to notification if the app is initialized
                 goToNotification(notification)(dispatch, getState);
+                EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
             } else if (state.entities.general.credentials.token) {
                 // queue notification if app is not initialized but we are logged in
                 queueNotification(notification)(dispatch, getState);

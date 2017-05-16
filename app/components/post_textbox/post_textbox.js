@@ -1,17 +1,18 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes, PureComponent} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {
     Alert,
-    BackAndroid,
+    BackHandler,
     Keyboard,
     Platform,
     StyleSheet,
-    TouchableOpacity,
-    View,
     Text,
-    TextInput
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-picker';
@@ -70,7 +71,7 @@ class PostTextbox extends PureComponent {
     componentDidMount() {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-            BackAndroid.addEventListener('hardwareBackPress', this.handleAndroidBack);
+            BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
 
@@ -107,7 +108,7 @@ class PostTextbox extends PureComponent {
     componentWillUnmount() {
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
-            BackAndroid.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+            BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
 
@@ -116,8 +117,12 @@ class PostTextbox extends PureComponent {
     };
 
     handleContentSizeChange = (e) => {
+        let height = e.nativeEvent.contentSize.height;
+        if (height < INITIAL_HEIGHT) {
+            height = INITIAL_HEIGHT;
+        }
         this.setState({
-            contentHeight: e.nativeEvent.contentSize.height
+            contentHeight: height
         });
     };
 
@@ -334,7 +339,7 @@ class PostTextbox extends PureComponent {
     };
 
     render() {
-        const {channelIsLoading, theme, value, intl} = this.props;
+        const {channelIsLoading, intl, theme, value} = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
@@ -436,7 +441,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingBottom: 8,
             paddingLeft: 12,
             paddingRight: 12,
-            paddingTop: 6,
+            paddingTop: 8,
             textAlignVertical: 'top'
         },
         inputContainer: {

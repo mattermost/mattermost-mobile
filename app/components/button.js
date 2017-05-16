@@ -1,7 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 
 import {ActivityIndicator, StyleSheet, TouchableHighlight, View} from 'react-native';
 
@@ -18,18 +19,18 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class Button extends React.Component {
+export default class Button extends PureComponent {
     static propTypes = {
-        children: React.PropTypes.node,
-        loading: React.PropTypes.bool,
-        onPress: React.PropTypes.func.isRequired
-    }
+        children: PropTypes.node,
+        loading: PropTypes.bool,
+        onPress: PropTypes.func.isRequired
+    };
 
     onPress = () => {
         if (!this.props.loading) {
             this.props.onPress();
         }
-    }
+    };
 
     render() {
         let loading = null;

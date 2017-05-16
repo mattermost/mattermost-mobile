@@ -1,14 +1,15 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {TextInput} from 'react-native';
 
-class TextInputWithLocalizedPlaceholder extends React.PureComponent {
+class TextInputWithLocalizedPlaceholder extends PureComponent {
     static propTypes = {
         ...TextInput.propTypes,
-        placeholder: React.PropTypes.object.isRequired,
+        placeholder: PropTypes.object.isRequired,
         intl: intlShape.isRequired
     };
 

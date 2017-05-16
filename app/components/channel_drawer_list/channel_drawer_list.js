@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import deepEqual from 'deep-equal';
-import React, {PropTypes, Component} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {
     ListView,
     Platform,
