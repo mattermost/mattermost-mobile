@@ -9,23 +9,17 @@ import {
     InteractionManager,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     View
 } from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
-import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
-import NavBar from 'app/components/nav_bar';
 import SearchBar from 'app/components/search_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-
-import CreateButton from './create_button';
 
 class MoreChannels extends PureComponent {
     static propTypes = {
@@ -34,7 +28,9 @@ class MoreChannels extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
+        canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
+        closeButton: PropTypes.object,
         requestStatus: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
@@ -42,6 +38,15 @@ class MoreChannels extends PureComponent {
             getChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired
         }).isRequired
+    };
+
+    leftButton = {
+        id: 'close-more-channels'
+    };
+
+    rightButton = {
+        id: 'create-pub-channel',
+        showAsAction: 'never'
     };
 
     constructor(props) {
@@ -57,10 +62,19 @@ class MoreChannels extends PureComponent {
             searching: false,
             showNoResults: false
         };
-    }
+        this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        this.leftButton = {...this.leftButton, icon: props.closeButton};
 
-    componentWillMount() {
-        EventEmitter.on('create_channel', this.onCreateChannel);
+        const buttons = {
+            leftButtons: [this.leftButton]
+        };
+
+        if (props.canCreateChannels) {
+            buttons.rightButtons = [this.rightButton];
+        }
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
@@ -90,7 +104,6 @@ class MoreChannels extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off('create_channel', this.onCreateChannel);
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
@@ -101,7 +114,15 @@ class MoreChannels extends PureComponent {
     };
 
     emitCanCreateChannel = (enabled) => {
-        EventEmitter.emit('can_create_channel', enabled);
+        const buttons = {
+            leftButtons: [this.leftButton]
+        };
+
+        if (this.props.canCreateChannels) {
+            buttons.rightButtons = [{...this.rightButton, disabled: !enabled}];
+        }
+
+        this.props.navigator.setButtons(buttons);
     };
 
     filterChannels = (channels, term) => {
@@ -188,6 +209,19 @@ class MoreChannels extends PureComponent {
         );
     };
 
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case 'close-more-channels':
+                this.close();
+                break;
+            case 'create-pub-channel':
+                this.onCreateChannel();
+                break;
+            }
+        }
+    };
+
     onSelectChannel = async (id) => {
         this.emitCanCreateChannel(false);
         this.setState({adding: true});
@@ -204,16 +238,19 @@ class MoreChannels extends PureComponent {
         });
     };
 
-    onCreateChannel = async () => {
-        const {navigator, theme} = this.props;
+    onCreateChannel = () => {
+        const {intl, navigator, theme} = this.props;
 
         navigator.push({
             screen: 'CreateChannel',
+            animationType: 'slide-up',
+            title: intl.formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'}),
+            backButtonTitle: '',
             animated: true,
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
             },
             passProps: {
@@ -229,32 +266,6 @@ class MoreChannels extends PureComponent {
         const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
         const style = getStyleFromTheme(theme);
         const more = searching ? () => true : this.loadMoreChannels;
-
-        const navbarLeft = (
-            <TouchableOpacity
-                onPress={this.close}
-            >
-                <MaterialIcon
-                    name='close'
-                    size={20}
-                    color={theme.sidebarHeaderTextColor}
-                />
-            </TouchableOpacity>
-        );
-
-        const navbarTitle = (
-            <FormattedText
-                id='more_channels.title'
-                defaultMessage='More Channels'
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
-            />
-        );
-
-        const navbarRight = (
-            <CreateButton/>
-        );
 
         let content;
         if (adding) {
@@ -299,11 +310,6 @@ class MoreChannels extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar barStyle='light-content'/>
-                <NavBar
-                    left={navbarLeft}
-                    title={navbarTitle}
-                    right={navbarRight}
-                />
                 {content}
             </View>
         );

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
@@ -135,19 +136,24 @@ class Post extends PureComponent {
     };
 
     handlePostEdit = () => {
-        const {navigator, post, theme} = this.props;
-        navigator.showModal({
-            screen: 'EditPost',
-            animated: true,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg
-            },
-            passProps: {
-                post
-            }
+        const {intl, navigator, post, theme} = this.props;
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
+        then((source) => {
+            navigator.showModal({
+                screen: 'EditPost',
+                title: intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg
+                },
+                passProps: {
+                    post,
+                    closeButton: source
+                }
+            });
         });
     };
 

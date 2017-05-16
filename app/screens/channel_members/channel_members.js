@@ -13,19 +13,14 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import ActionButton from 'app/components/action_button';
-import BackButton from 'app/components/back_button';
-import FormattedText from 'app/components/formatted_text';
+import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
-import NavBar from 'app/components/nav_bar';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
-import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 class ChannelMembers extends PureComponent {
@@ -49,6 +44,12 @@ class ChannelMembers extends PureComponent {
         })
     };
 
+    removeButton = {
+        disabled: true,
+        id: 'remove-members',
+        showAsAction: 'never'
+    };
+
     constructor(props) {
         super(props);
 
@@ -63,10 +64,14 @@ class ChannelMembers extends PureComponent {
             selectedMembers: {},
             showNoResults: false
         };
-    }
+        this.removeButton.title = props.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'});
 
-    componentWillMount() {
-        EventEmitter.on('remove_members', this.handleRemoveMembersPress);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        if (props.canManageUsers) {
+            props.navigator.setButtons({
+                rightButtons: [this.removeButton]
+            });
+        }
     }
 
     componentDidMount() {
@@ -82,8 +87,6 @@ class ChannelMembers extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off('remove_members', this.handleRemoveMembersPress);
-
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
@@ -114,15 +117,16 @@ class ChannelMembers extends PureComponent {
             switch (removeMembersStatus) {
             case RequestStatus.STARTED:
                 this.emitRemoving(true);
-                this.setState({error: null});
+                this.setState({error: null, canSelect: false, removing: true});
                 break;
             case RequestStatus.SUCCESS:
                 this.emitRemoving(false);
-                this.setState({error: null});
+                this.setState({error: null, canSelect: false, removing: false});
                 this.close();
                 break;
             case RequestStatus.FAILURE:
                 this.emitRemoving(false);
+                this.setState({canSelect: true, removing: false});
                 break;
             }
         }
@@ -142,12 +146,16 @@ class ChannelMembers extends PureComponent {
     };
 
     emitCanRemoveMembers = (enabled) => {
-        EventEmitter.emit('can_remove_members', enabled);
+        this.props.navigator.setButtons({
+            rightButtons: [{...this.removeButton, disabled: !enabled}]
+        });
     };
 
     emitRemoving = (loading) => {
-        this.setState({canSelect: false});
-        EventEmitter.emit('removing_members', loading);
+        this.setState({canSelect: false, removing: loading});
+        this.props.navigator.setButtons({
+            rightButtons: [{...this.removeButton, disabled: loading}]
+        });
     };
 
     handleAndroidKeyboard = () => {
@@ -223,6 +231,14 @@ class ChannelMembers extends PureComponent {
         }
     };
 
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === 'remove-members') {
+                this.handleRemoveMembersPress();
+            }
+        }
+    };
+
     onSearchButtonPress = () => {
         this.searchBar.blur();
     };
@@ -280,49 +296,24 @@ class ChannelMembers extends PureComponent {
     render() {
         const {canManageUsers, intl, preferences, requestStatus, searchRequestStatus, theme} = this.props;
         const {formatMessage} = intl;
-        const {profiles, searching, showNoResults} = this.state;
+        const {profiles, removing, searching, showNoResults} = this.state;
         const isLoading = (requestStatus === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
             (searchRequestStatus === RequestStatus.STARTED);
         const more = searching ? () => true : this.loadMoreMembers;
         const style = getStyleFromTheme(theme);
 
-        const navbarLeft = (
-            <BackButton
-                color={theme.sidebarHeaderTextColor}
-                onPress={() => preventDoubleTap(this.close, this)}
-                style={style.left}
-            />
-        );
-
-        const navbarTitle = (
-            <FormattedText
-                id={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
-                defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
-                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
-            />
-        );
-
-        let navbarRight;
-        if (canManageUsers) {
-            navbarRight = (
-                <ActionButton
-                    actionEventName='remove_members'
-                    enabled={false}
-                    enableEventName='can_remove_members'
-                    labelDefaultMessage='Remove'
-                    labelId='channel_members_modal.remove'
-                    loadingEventName='removing_members'
-                />
+        if (removing) {
+            return (
+                <View style={style.container}>
+                    <StatusBar barStyle='light-content'/>
+                    <Loading/>
+                </View>
             );
         }
+
         return (
             <View style={style.container}>
                 <StatusBar barStyle='light-content'/>
-                <NavBar
-                    left={navbarLeft}
-                    title={navbarTitle}
-                    right={navbarRight}
-                />
                 <View
                     style={{marginVertical: 5}}
                 >
@@ -364,17 +355,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
-        },
-        navTitle: {
-            ...Platform.select({
-                android: {
-                    fontSize: 18
-                },
-                ios: {
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }
-            })
         }
     });
 });

@@ -7,6 +7,7 @@ import {
     Keyboard,
     Platform,
     InteractionManager,
+    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -176,12 +177,14 @@ class MoreDirectMessages extends PureComponent {
         if (adding) {
             content = (
                 <View style={style.container}>
+                    <StatusBar barStyle='light-content'/>
                     <Loading/>
                 </View>
             );
         } else {
             content = (
                 <View style={style.container}>
+                    <StatusBar barStyle='light-content'/>
                     <View
                         style={{marginVertical: 5}}
                     >

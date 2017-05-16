@@ -9,22 +9,18 @@ import {
     Platform,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     TouchableWithoutFeedback,
     View,
     findNodeHandle
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import ActionButton from 'app/components/action_button';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import NavBar from 'app/components/nav_bar';
+import Loading from 'app/components/loading';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -36,6 +32,7 @@ class CreateChannel extends PureComponent {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         channelType: PropTypes.string,
+        closeButton: PropTypes.object,
         actions: PropTypes.shape({
             handleCreateChannel: PropTypes.func.isRequired
         })
@@ -43,6 +40,16 @@ class CreateChannel extends PureComponent {
 
     static defaultProps = {
         channelType: General.OPEN_CHANNEL
+    };
+
+    leftButton = {
+        id: 'close-new-channel'
+    };
+
+    rightButton = {
+        id: 'create-channel',
+        disabled: true,
+        showAsAction: 'never'
     };
 
     constructor(props) {
@@ -53,10 +60,22 @@ class CreateChannel extends PureComponent {
             header: '',
             purpose: ''
         };
-    }
+        this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
 
-    componentWillMount() {
-        EventEmitter.on('create_new_channel', this.onCreateChannel);
+        if (props.channelType === General.PRIVATE_CHANNEL) {
+            this.left = {...this.leftButton, icon: props.closeButton};
+        }
+
+        const buttons = {
+            rightButtons: [this.rightButton]
+        };
+
+        if (this.left) {
+            buttons.leftButtons = [this.left];
+        }
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons(buttons);
     }
 
     componentDidMount() {
@@ -70,26 +89,22 @@ class CreateChannel extends PureComponent {
             switch (createChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitCreating(true);
-                this.setState({error: null});
+                this.setState({error: null, creating: true});
                 break;
             case RequestStatus.SUCCESS:
                 EventEmitter.emit('close_channel_drawer');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitCreating(false);
-                    this.setState({error: null});
+                    this.setState({error: null, creating: false});
                     this.close(false);
                 });
                 break;
             case RequestStatus.FAILURE:
                 this.emitCreating(false);
-                this.setState({error: createChannelRequest.error});
+                this.setState({error: createChannelRequest.error, creating: false});
                 break;
             }
         }
-    }
-
-    componentWillUnmount() {
-        EventEmitter.off('create_new_channel', this.onCreateChannel);
     }
 
     blur = () => {
@@ -122,21 +137,37 @@ class CreateChannel extends PureComponent {
     };
 
     emitCanCreateChannel = (enabled) => {
-        EventEmitter.emit('can_create_new_channel', enabled);
+        const buttons = {
+            rightButtons: [{...this.rightButton, disabled: !enabled}]
+        };
+
+        if (this.left) {
+            buttons.leftButtons = [this.left];
+        }
+
+        this.props.navigator.setButtons(buttons);
     };
 
     emitCreating = (loading) => {
-        EventEmitter.emit('creating_new_channel', loading);
+        const buttons = {
+            rightButtons: [{...this.rightButton, disabled: loading}]
+        };
+
+        if (this.left) {
+            buttons.leftButtons = [this.left];
+        }
+
+        this.props.navigator.setButtons(buttons);
     };
 
     lastTextRef = (ref) => {
         this.lastText = ref;
     };
 
-    onCreateChannel = async () => {
+    onCreateChannel = () => {
         Keyboard.dismiss();
         const {displayName, purpose, header} = this.state;
-        await this.props.actions.handleCreateChannel(displayName, purpose, header, this.props.channelType);
+        this.props.actions.handleCreateChannel(displayName, purpose, header, this.props.channelType);
     };
 
     onDisplayNameChangeText = (displayName) => {
@@ -145,6 +176,19 @@ class CreateChannel extends PureComponent {
             this.emitCanCreateChannel(true);
         } else {
             this.emitCanCreateChannel(false);
+        }
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case 'close-new-channel':
+                this.close(this.props.channelType === General.OPEN_CHANNEL);
+                break;
+            case 'create-channel':
+                this.onCreateChannel();
+                break;
+            }
         }
     };
 
@@ -165,45 +209,18 @@ class CreateChannel extends PureComponent {
     };
 
     render() {
-        const {channelType, theme} = this.props;
-        const {displayName, header, purpose, error} = this.state;
+        const {theme} = this.props;
+        const {creating, displayName, header, purpose, error} = this.state;
         const {height, width} = Dimensions.get('window');
 
         const style = getStyleSheet(theme);
 
-        let i18nId;
-        let defaultMessage;
-        let icon;
-        if (channelType === General.OPEN_CHANNEL) {
-            i18nId = 'mobile.create_channel.public';
-            defaultMessage = 'New Public Channel';
-            if (Platform.OS === 'ios') {
-                icon = (
-                    <FontAwesomeIcon
-                        style={{fontWeight: 'bold'}}
-                        name='angle-left'
-                        size={35}
-                        color={theme.sidebarHeaderTextColor}
-                    />
-                );
-            } else {
-                icon = (
-                    <MaterialIcon
-                        name='arrow-back'
-                        size={30}
-                        color={theme.sidebarHeaderTextColor}
-                    />
-                );
-            }
-        } else if (channelType === General.PRIVATE_CHANNEL) {
-            i18nId = 'mobile.create_channel.private';
-            defaultMessage = 'New Private Channel';
-            icon = (
-                <MaterialIcon
-                    name='close'
-                    size={20}
-                    color={theme.sidebarHeaderTextColor}
-                />
+        if (creating) {
+            return (
+                <View style={{flex: 1}}>
+                    <StatusBar barStyle='light-content'/>
+                    <Loading/>
+                </View>
             );
         }
 
@@ -218,43 +235,9 @@ class CreateChannel extends PureComponent {
             );
         }
 
-        const navbarLeft = (
-            <TouchableOpacity
-                onPress={() => this.close(channelType === General.OPEN_CHANNEL)}
-            >
-                {icon}
-            </TouchableOpacity>
-        );
-
-        const navbarTitle = (
-            <FormattedText
-                id={i18nId}
-                defaultMessage={defaultMessage}
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
-            />
-        );
-
-        const navbarRight = (
-            <ActionButton
-                actionEventName='create_new_channel'
-                enabled={false}
-                enableEventName='can_create_new_channel'
-                labelDefaultMessage='Create'
-                labelId='mobile.create_channel'
-                loadingEventName='creating_new_channel'
-            />
-        );
-
         return (
             <View style={{flex: 1}}>
                 <StatusBar barStyle='light-content'/>
-                <NavBar
-                    left={navbarLeft}
-                    title={navbarTitle}
-                    right={navbarRight}
-                />
                 <KeyboardAwareScrollView
                     ref={this.scrollRef}
                     style={style.container}

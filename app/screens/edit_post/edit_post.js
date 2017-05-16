@@ -1,75 +1,60 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 import React, {PropTypes, PureComponent} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
     Platform,
     StatusBar,
     StyleSheet,
-    TouchableOpacity,
     View
 } from 'react-native';
 
-import ActionButton from 'app/components/action_button';
 import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import NavBar from 'app/components/nav_bar';
+import Loading from 'app/components/loading';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-export default class EditPost extends PureComponent {
+class EditPost extends PureComponent {
     static propTypes = {
-        editPostRequest: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
-        post: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired
-        })
+        }),
+        closeButton: PropTypes.object,
+        editPostRequest: PropTypes.object.isRequired,
+        intl: intlShape.isRequired,
+        navigator: PropTypes.object,
+        post: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired
+    };
+
+    leftButton = {
+        id: 'close-edit-post'
+    };
+
+    rightButton = {
+        id: 'edit-post',
+        showAsAction: 'always'
     };
 
     constructor(props) {
         super(props);
+
         this.state = {message: props.post.message};
+        this.rightButton.title = props.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons({
+            leftButtons: [{...this.leftButton, icon: props.closeButton}],
+            rightButtons: [this.rightButton]
+        });
     }
 
-    onEditPost = async () => {
-        const {message} = this.state;
-        const post = Object.assign({}, this.props.post, {message});
-        await this.props.actions.editPost(post);
-    };
-
-    onPostChangeText = (message) => {
-        this.setState({message});
-        if (message) {
-            this.emitCanEditPost(true);
-        } else {
-            this.emitCanEditPost(false);
-        }
-    };
-
-    emitCanEditPost = (enabled) => {
-        EventEmitter.emit('can_edit_post', enabled);
-    };
-
-    emitEditing = (loading) => {
-        EventEmitter.emit('editing_post', loading);
-    };
-
-    focus = () => {
-        this.messageInput.refs.wrappedInstance.focus();
-    };
-
-    messageRef = (ref) => {
-        this.messageInput = ref;
-    };
-
-    componentWillMount() {
-        EventEmitter.on('edit_post', this.onEditPost);
+    componentDidMount() {
+        this.focus();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -79,33 +64,43 @@ export default class EditPost extends PureComponent {
             switch (editPostRequest.status) {
             case RequestStatus.STARTED:
                 this.emitEditing(true);
-                this.setState({error: null});
+                this.setState({error: null, editing: true});
                 break;
             case RequestStatus.SUCCESS:
                 this.emitEditing(false);
-                this.setState({error: null});
+                this.setState({error: null, editing: false});
                 this.close();
                 break;
             case RequestStatus.FAILURE:
                 this.emitEditing(false);
-                this.setState({error: editPostRequest.error});
+                this.setState({error: editPostRequest.error, editing: false});
                 break;
             }
         }
-    }
-
-    componentDidMount() {
-        this.focus();
-    }
-
-    componentWillUnmount() {
-        EventEmitter.off('edit_post', this.onEditPost);
     }
 
     close = () => {
         this.props.navigator.dismissModal({
             animationType: 'slide-down'
         });
+    };
+
+    emitCanEditPost = (enabled) => {
+        this.props.navigator.setButtons({
+            leftButtons: [this.leftButton],
+            rightButtons: [{...this.rightButton, disabled: !enabled}]
+        });
+    };
+
+    emitEditing = (loading) => {
+        this.props.navigator.setButtons({
+            leftButtons: [this.leftButton],
+            rightButtons: [{...this.rightButton, disabled: loading}]
+        });
+    };
+
+    focus = () => {
+        this.messageInput.refs.wrappedInstance.focus();
     };
 
     handleSubmit = () => {
@@ -122,12 +117,53 @@ export default class EditPost extends PureComponent {
         }
     };
 
+    messageRef = (ref) => {
+        this.messageInput = ref;
+    };
+
+    onEditPost = () => {
+        const {message} = this.state;
+        const post = Object.assign({}, this.props.post, {message});
+        this.props.actions.editPost(post);
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            switch (event.id) {
+            case 'close-edit-post':
+                this.close();
+                break;
+            case 'edit-post':
+                this.onEditPost();
+                break;
+            }
+        }
+    };
+
+    onPostChangeText = (message) => {
+        this.setState({message});
+        if (message) {
+            this.emitCanEditPost(true);
+        } else {
+            this.emitCanEditPost(false);
+        }
+    };
+
     render() {
         const {theme} = this.props;
-        const {message, error} = this.state;
+        const {editing, message, error} = this.state;
         const {height, width} = Dimensions.get('window');
 
         const style = getStyleSheet(theme);
+
+        if (editing) {
+            return (
+                <View style={style.container}>
+                    <StatusBar barStyle='light-content'/>
+                    <Loading/>
+                </View>
+            );
+        }
 
         let displayError;
         if (error) {
@@ -140,43 +176,6 @@ export default class EditPost extends PureComponent {
             );
         }
 
-        const navbarLeft = (
-            <TouchableOpacity
-                onPress={this.close}
-            >
-                <FormattedText
-                    id='edit_post.cancel'
-                    defaultMessage='Cancel'
-                    style={{color: theme.sidebarHeaderTextColor}}
-                />
-            </TouchableOpacity>
-        );
-
-        const navbarTitle = (
-            <FormattedText
-                id='mobile.edit_post.title'
-                defaultMessage='Editing Message'
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={{
-                    color: theme.sidebarHeaderTextColor,
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }}
-            />
-        );
-
-        const navbarRight = (
-            <ActionButton
-                actionEventName='edit_post'
-                enabled={true}
-                enableEventName='can_edit_post'
-                labelDefaultMessage='Save'
-                labelId='edit_post.save'
-                loadingEventName='editing_post'
-            />
-        );
-
         return (
             <KeyboardLayout
                 behavior='padding'
@@ -184,11 +183,6 @@ export default class EditPost extends PureComponent {
                 keyboardVerticalOffset={0}
             >
                 <StatusBar barStyle='light-content'/>
-                <NavBar
-                    left={navbarLeft}
-                    title={navbarTitle}
-                    right={navbarRight}
-                />
                 <View style={style.scrollView}>
                     {displayError}
                     <View style={[style.inputContainer, {height: Platform.OS === 'android' ? (height / 2) - 20 : (height / 2)}]}>
@@ -248,3 +242,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
+
+export default injectIntl(EditPost);

@@ -171,20 +171,23 @@ class ChannelDrawerList extends Component {
     };
 
     createPrivateChannel = () => {
-        const {navigator, theme} = this.props;
+        const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
             screen: 'CreateChannel',
             animationType: 'slide-up',
+            title: intl.formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'}),
+            backButtonTitle: '',
             animated: true,
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
             },
             passProps: {
-                channelType: General.PRIVATE_CHANNEL
+                channelType: General.PRIVATE_CHANNEL,
+                closeButton: this.closeButton
             }
         });
     };
@@ -288,17 +291,23 @@ class ChannelDrawerList extends Component {
     };
 
     showMoreChannelsModal = () => {
-        const {navigator, theme} = this.props;
+        const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
             screen: 'MoreChannels',
             animationType: 'slide-up',
+            title: intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'}),
+            backButtonTitle: '',
             animated: true,
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
+            },
+            passProps: {
+                channelType: General.PRIVATE_CHANNEL,
+                closeButton: this.closeButton
             }
         });
     };

@@ -2,8 +2,10 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {
     StyleSheet,
+    StatusBar,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -13,8 +15,9 @@ import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class AccountSettings extends PureComponent {
+class AccountSettings extends PureComponent {
     static propTypes = {
+        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired
     };
@@ -61,15 +64,16 @@ export default class AccountSettings extends PureComponent {
     };
 
     goToAccountNotifications = () => {
-        const {navigator, theme} = this.props;
+        const {intl, navigator, theme} = this.props;
         navigator.push({
+            backButtonTitle: '',
             screen: 'AccountNotifications',
-            title: '',
+            title: intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'}),
             animated: true,
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
@@ -91,6 +95,7 @@ export default class AccountSettings extends PureComponent {
 
         return (
             <View style={style.wrapper}>
+                <StatusBar barStyle='light-content'/>
                 <View style={style.container}>
                     <View style={style.itemsContainer}>
                         {this.renderItems()}
@@ -151,3 +156,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
+export default injectIntl(AccountSettings);

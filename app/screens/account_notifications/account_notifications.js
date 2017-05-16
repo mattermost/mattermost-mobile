@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React, {PropTypes, PureComponent} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {
     Keyboard,
     Platform,
@@ -12,33 +13,32 @@ import {
 } from 'react-native';
 
 import {Preferences, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
-import ActionButton from 'app/components/action_button';
-import BackButton from 'app/components/back_button';
-import FormattedText from 'app/components/formatted_text';
-import NavBar from 'app/components/nav_bar';
+import Loading from 'app/components/loading';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Section from './section';
 import SectionItem from './section_item';
 
-const SAVE_NOTIFY_PROPS = 'save_notify_props';
-
-export default class AccountNotifications extends PureComponent {
+class AccountNotifications extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleUpdateUserNotifyProps: PropTypes.func.isRequired
         }),
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
+        intl: intlShape.isRequired,
         myPreferences: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired
+    };
+
+    saveButton = {
+        id: 'save-notifications',
+        showAsAction: 'never'
     };
 
     constructor(props) {
@@ -46,11 +46,16 @@ export default class AccountNotifications extends PureComponent {
 
         const {currentUser} = props;
         const notifyProps = currentUser.notify_props || {};
-        this.setStateFromNotifyProps(notifyProps);
-    }
 
-    componentWillMount() {
-        EventEmitter.on(SAVE_NOTIFY_PROPS, this.saveUserNotifyProps);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons({
+            rightButtons: [{
+                ...this.saveButton,
+                title: props.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'})
+            }]
+        });
+
+        this.setStateFromNotifyProps(notifyProps);
     }
 
     componentDidMount() {
@@ -60,8 +65,6 @@ export default class AccountNotifications extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off(SAVE_NOTIFY_PROPS, this.saveUserNotifyProps);
-
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
@@ -78,16 +81,16 @@ export default class AccountNotifications extends PureComponent {
             switch (updateMeRequest.status) {
             case RequestStatus.STARTED:
                 this.savingNotifyProps(true);
-                this.setState({error: null});
+                this.setState({error: null, saving: true});
                 break;
             case RequestStatus.SUCCESS:
                 this.savingNotifyProps(false);
-                this.setState({error: null});
+                this.setState({error: null, saving: false});
                 this.close();
                 break;
             case RequestStatus.FAILURE:
                 this.savingNotifyProps(false);
-                this.setState({error: updateMeRequest.error});
+                this.setState({error: updateMeRequest.error, saving: false});
                 break;
             }
         }
@@ -95,6 +98,14 @@ export default class AccountNotifications extends PureComponent {
 
     handleAndroidKeyboard = () => {
         this.refs.mention_keys.getWrappedInstance().blur();
+    };
+
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === 'save-notifications') {
+                this.saveUserNotifyProps();
+            }
+        }
     };
 
     setStateFromNotifyProps = (notifyProps) => {
@@ -154,7 +165,9 @@ export default class AccountNotifications extends PureComponent {
     };
 
     savingNotifyProps = (loading) => {
-        EventEmitter.emit('saving_notify_props', loading);
+        this.props.navigator.setButtons({
+            rightButtons: [{...this.saveButton, disabled: loading}]
+        });
     };
 
     setEmailNotifications = (value) => {
@@ -212,8 +225,6 @@ export default class AccountNotifications extends PureComponent {
             mention_keys: mentionKeys,
             user_id: this.props.currentUser.id
         });
-
-        this.close();
     };
 
     buildMentionSection = () => {
@@ -526,42 +537,18 @@ export default class AccountNotifications extends PureComponent {
         const {theme} = this.props;
         const style = getStyleSheet(theme);
 
-        const navbarLeft = (
-            <BackButton
-                color={theme.sidebarHeaderTextColor}
-                onPress={() => preventDoubleTap(this.close, this)}
-                style={style.left}
-            />
-        );
-
-        const navbarTitle = (
-            <FormattedText
-                id='user.settings.modal.notifications'
-                defaultMessage='Notifications'
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
-            />
-        );
-
-        const navbarRight = (
-            <ActionButton
-                actionEventName={SAVE_NOTIFY_PROPS}
-                enabled={true}
-                labelDefaultMessage='Save'
-                labelId='edit_post.save'
-                loadingEventName='saving_notify_props'
-            />
-        );
+        if (this.state.saving) {
+            return (
+                <View style={style.wrapper}>
+                    <StatusBar barStyle='light-content'/>
+                    <Loading/>
+                </View>
+            );
+        }
 
         return (
             <View style={style.wrapper}>
                 <StatusBar barStyle='light-content'/>
-                <NavBar
-                    left={navbarLeft}
-                    title={navbarTitle}
-                    right={navbarRight}
-                />
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
@@ -600,17 +587,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollViewContent: {
             paddingBottom: 30
-        },
-        navTitle: {
-            ...Platform.select({
-                android: {
-                    fontSize: 18
-                },
-                ios: {
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }
-            })
         }
     });
 });
+
+export default injectIntl(AccountNotifications);

@@ -13,18 +13,13 @@ import {
     View
 } from 'react-native';
 
-import ActionButton from 'app/components/action_button';
-import BackButton from 'app/components/back_button';
-import FormattedText from 'app/components/formatted_text';
+import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
-import NavBar from 'app/components/nav_bar';
 import SearchBar from 'app/components/search_bar';
 import {createMembersSections, loadingText, markSelectedProfiles, renderMemberRow} from 'app/utils/member_list';
-import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 class ChannelAddMembers extends PureComponent {
@@ -49,6 +44,12 @@ class ChannelAddMembers extends PureComponent {
         })
     };
 
+    addButton = {
+        disabled: true,
+        id: 'add-members',
+        showAsAction: 'never'
+    };
+
     constructor(props) {
         super(props);
 
@@ -63,10 +64,12 @@ class ChannelAddMembers extends PureComponent {
             selectedMembers: {},
             showNoResults: false
         };
-    }
+        this.addButton.title = props.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'});
 
-    componentWillMount() {
-        EventEmitter.on('add_members', this.handleAddMembersPress);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        props.navigator.setButtons({
+            rightButtons: [this.addButton]
+        });
     }
 
     componentDidMount() {
@@ -83,8 +86,6 @@ class ChannelAddMembers extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off('add_members', this.handleAddMembersPress);
-
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
@@ -115,15 +116,16 @@ class ChannelAddMembers extends PureComponent {
             switch (addChannelMemberStatus) {
             case RequestStatus.STARTED:
                 this.emitAdding(true);
-                this.setState({error: null});
+                this.setState({error: null, adding: true, canSelect: false});
                 break;
             case RequestStatus.SUCCESS:
                 this.emitAdding(false);
-                this.setState({error: null});
+                this.setState({error: null, adding: false, canSelect: false});
                 this.close();
                 break;
             case RequestStatus.FAILURE:
                 this.emitAdding(false);
+                this.setState({adding: false, canSelect: true});
                 break;
             }
         }
@@ -143,12 +145,15 @@ class ChannelAddMembers extends PureComponent {
     };
 
     emitAdding = (loading) => {
-        this.setState({canSelect: false});
-        EventEmitter.emit('adding_members', loading);
+        this.props.navigator.setButtons({
+            rightButtons: [{...this.addButton, disabled: loading}]
+        });
     };
 
     emitCanAddMembers = (enabled) => {
-        EventEmitter.emit('can_add_members', enabled);
+        this.props.navigator.setButtons({
+            rightButtons: [{...this.addButton, disabled: !enabled}]
+        });
     };
 
     handleAddMembersPress = () => {
@@ -201,6 +206,14 @@ class ChannelAddMembers extends PureComponent {
         }
     };
 
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === 'add-members') {
+                this.handleAddMembersPress();
+            }
+        }
+    };
+
     onSearchButtonPress = () => {
         this.searchBar.blur();
     };
@@ -227,50 +240,25 @@ class ChannelAddMembers extends PureComponent {
 
     render() {
         const {intl, loadMoreRequestStatus, searchRequestStatus, preferences, theme} = this.props;
-        const {profiles, searching} = this.state;
+        const {adding, profiles, searching} = this.state;
         const {formatMessage} = intl;
         const isLoading = (loadMoreRequestStatus === RequestStatus.STARTED) ||
             (searchRequestStatus === RequestStatus.STARTED);
         const style = getStyleFromTheme(theme);
         const more = searching ? () => true : this.loadMoreMembers;
 
-        const navbarLeft = (
-            <BackButton
-                color={theme.sidebarHeaderTextColor}
-                onPress={() => preventDoubleTap(this.close, this)}
-                style={style.left}
-            />
-        );
-
-        const navbarTitle = (
-            <FormattedText
-                id='channel_header.addMembers'
-                defaultMessage='Add Members'
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={[style.navTitle, {color: theme.sidebarHeaderTextColor}]}
-            />
-        );
-
-        const navbarRight = (
-            <ActionButton
-                actionEventName='add_members'
-                enabled={false}
-                enableEventName='can_add_members'
-                labelDefaultMessage='Add'
-                labelId='integrations.add'
-                loadingEventName='adding_members'
-            />
-        );
+        if (adding) {
+            return (
+                <View style={style.container}>
+                    <StatusBar barStyle='light-content'/>
+                    <Loading/>
+                </View>
+            );
+        }
 
         return (
             <View style={style.container}>
                 <StatusBar barStyle='light-content'/>
-                <NavBar
-                    left={navbarLeft}
-                    title={navbarTitle}
-                    right={navbarRight}
-                />
                 <View
                     style={{marginVertical: 5}}
                 >
@@ -311,17 +299,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
-        },
-        navTitle: {
-            ...Platform.select({
-                android: {
-                    fontSize: 18
-                },
-                ios: {
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }
-            })
         }
     });
 });

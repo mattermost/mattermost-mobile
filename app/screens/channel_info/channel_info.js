@@ -6,6 +6,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
     ScrollView,
+    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -62,30 +63,35 @@ class ChannelInfo extends PureComponent {
     }
 
     goToChannelAddMembers = () => {
-        const {navigator, theme} = this.props;
+        const {intl, navigator, theme} = this.props;
         navigator.push({
+            backButtonTitle: '',
             screen: 'ChannelAddMembers',
-            title: '',
+            title: intl.formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'}),
             animated: true,
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
     };
 
     goToChannelMembers = () => {
-        const {navigator, theme} = this.props;
+        const {canManageUsers, intl, navigator, theme} = this.props;
+        const id = canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers';
+        const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
+
         navigator.push({
+            backButtonTitle: '',
             screen: 'ChannelMembers',
-            title: '',
+            title: intl.formatMessage({id, defaultMessage}),
             animated: true,
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
@@ -214,6 +220,7 @@ class ChannelInfo extends PureComponent {
 
         return (
             <View style={style.container}>
+                <StatusBar barStyle='light-content'/>
                 <ScrollView
                     style={style.scrollView}
                 >
