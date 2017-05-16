@@ -10,7 +10,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     View,
-    Text
+    Text,
+    TextInput
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-picker';
@@ -20,10 +21,10 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import FormattedText from 'app/components/formatted_text';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 31;
 const MAX_CONTENT_HEIGHT = 100;
 const MAX_MESSAGE_LENGTH = 4000;
 
@@ -62,10 +63,7 @@ class PostTextbox extends PureComponent {
 
         this.state = {
             canSend: false,
-            contentHeight: Platform.select({
-                ios: 34,
-                android: 34
-            })
+            contentHeight: INITIAL_HEIGHT
         };
     }
 
@@ -114,7 +112,7 @@ class PostTextbox extends PureComponent {
     }
 
     blur = () => {
-        this.refs.input.getWrappedInstance().blur();
+        this.refs.input.blur();
     };
 
     handleContentSizeChange = (e) => {
@@ -163,6 +161,20 @@ class PostTextbox extends PureComponent {
             );
         } else {
             this.sendMessage();
+        }
+    };
+
+    handleSubmit = () => {
+        // Workaround for android as the multiline is not working
+        if (Platform.OS === 'android') {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            this.timeout = setTimeout(() => {
+                let {value: msg} = this.props;
+                msg += '\n';
+                this.handleTextChange(msg);
+            }, 10);
         }
     };
 
@@ -322,7 +334,7 @@ class PostTextbox extends PureComponent {
     };
 
     render() {
-        const {channelIsLoading, theme, value} = this.props;
+        const {channelIsLoading, theme, value, intl} = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
@@ -374,18 +386,20 @@ class PostTextbox extends PureComponent {
                             />
                         </TouchableOpacity>
                         <View style={style.inputContainer}>
-                            <TextInputWithLocalizedPlaceholder
+                            <TextInput
                                 ref='input'
                                 value={textValue}
                                 onChangeText={this.handleTextChange}
                                 onSelectionChange={this.handleSelectionChange}
-                                onContentSizeChange={this.handleContentSizeChange}
-                                placeholder={placeholder}
+                                placeholder={intl.formatMessage(placeholder)}
                                 placeholderTextColor={changeOpacity('#000', 0.5)}
-                                onSubmitEditing={this.handleSendMessage}
                                 multiline={true}
+                                numberOfLines={10}
+                                blurOnSubmit={false}
                                 underlineColorAndroid='transparent'
-                                style={[style.input, {height: Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT)}]}
+                                style={[style.input, {height: textInputHeight}]}
+                                onSubmitEditing={this.handleSubmit}
+                                onChange={this.handleContentSizeChange}
                             />
                             {this.state.canSend &&
                                 <TouchableOpacity
@@ -422,7 +436,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingBottom: 8,
             paddingLeft: 12,
             paddingRight: 12,
-            paddingTop: 6
+            paddingTop: 6,
+            textAlignVertical: 'top'
         },
         inputContainer: {
             flex: 1,
@@ -460,7 +475,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 5
                 },
                 android: {
-                    marginBottom: 6.5
+                    marginBottom: 2.5
                 }
             }),
             alignItems: 'center',
