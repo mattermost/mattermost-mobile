@@ -2,11 +2,7 @@
 
 **Supported Server Versions:** 3.8+
 
-This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is not yet stable, and the instructions are for internal use currently (i.e. probably out-of-date until we stablize). 
-
-We'll post updates to our [Forums](http://forum.mattermost.org/) and [Twitter](https://twitter.com/mattermosthq) when we're ready to bring in more community contributors. 
-
-[Our early roadmap was discussed on the Mattermost forums in October 2016](http://forum.mattermost.org/t/roadmap-for-next-generation-mobile-apps-in-react-native/2339) and we'll have more updates as the project evolves. Priorities are shifting so please only use the dates in the post as a highly approximate guide. 
+This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is currently in beta, with a planned release date of July 2017. 
 
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 11 languages. Learn more at https://mattermost.com.
 
@@ -14,7 +10,7 @@ Mattermost is an open source Slack-alternative used by thousands of companies ar
 
 ### Testing
 
-The apps are currently under development with a [beta release on March 29, 2017](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md#beta-release). We cut a new build every Monday, so people can test it out and see what's new.
+The apps are currently in beta [(released on March 29, 2017)](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md#beta-release). We cut new builds regularly, so people can test it out and see what's new.
 
 If you would like to help with testing the apps, you can:
 
@@ -24,7 +20,7 @@ If you would like to help with testing the apps, you can:
   - [Android](https://play.google.com/apps/testing/com.mattermost.react.native)
   - [iOS](https://mattermost-fastlane.herokuapp.com/)
 3. Install the `Mattermost 2017 (Beta)` app
-  - Note: The app only works with server version 3.7+, you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
+  - Note: If your server version is not compatible, you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
 4. Check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what's currently supported
 5. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
   - Device information
