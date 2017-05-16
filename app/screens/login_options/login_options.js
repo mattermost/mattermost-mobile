@@ -10,12 +10,15 @@ import {
     Text,
     View
 } from 'react-native';
-
 import Button from 'react-native-button';
+import semver from 'semver';
+
+import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 
+import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
 
 class LoginOptions extends PureComponent {
@@ -24,6 +27,7 @@ class LoginOptions extends PureComponent {
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        serverVersion: PropTypes.string.isRequired,
         theme: PropTypes.object
     };
 
@@ -43,11 +47,11 @@ class LoginOptions extends PureComponent {
         });
     };
 
-    goToSaml = () => {
+    goToSSO = (ssoType) => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
-            screen: 'SAML',
-            title: intl.formatMessage({id: 'mobile.routes.saml', defaultMessage: 'Single SignOn'}),
+            screen: 'SSO',
+            title: intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -55,6 +59,9 @@ class LoginOptions extends PureComponent {
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
+            },
+            passProps: {
+                ssoType
             }
         });
     };
@@ -80,13 +87,39 @@ class LoginOptions extends PureComponent {
         return null;
     };
 
+    renderGitlabOption = () => {
+        const {config, serverVersion} = this.props;
+        const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
+        if (config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0')) {
+            return (
+                <Button
+                    key='saml'
+                    onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.GITLAB)}
+                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
+                >
+                    <Image
+                        source={gitlab}
+                        style={{height: 18, marginRight: 5, width: 18}}
+                    />
+                    <Text
+                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                    >
+                        {'GitLab'}
+                    </Text>
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     renderSamlOption = () => {
         const {config, license} = this.props;
         if (config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
             return (
                 <Button
                     key='saml'
-                    onPress={() => preventDoubleTap(this.goToSaml, this)}
+                    onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.SAML)}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#34a28b'}]}
                 >
                     <Text
@@ -122,6 +155,7 @@ class LoginOptions extends PureComponent {
                     defaultMessage='Choose your login method'
                 />
                 {this.renderEmailOption()}
+                {this.renderGitlabOption()}
                 {this.renderSamlOption()}
             </View>
         );

@@ -23,7 +23,7 @@ import MoreDirectMessages from 'app/screens/more_dms';
 import Notification from 'app/screens/notification';
 import OptionsModal from 'app/screens/options_modal';
 import Root from 'app/screens/root';
-import Saml from 'app/screens/saml';
+import SSO from 'app/screens/sso';
 import SelectServer from 'app/screens/select_server';
 import SelectTeam from 'app/screens/select_team';
 import Settings from 'app/screens/settings';
@@ -63,10 +63,10 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
     Navigation.registerComponent('Notification', () => Notification, store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
-    Navigation.registerComponent('SAML', () => wrapWithContextProvider(Saml), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(SelectTeam), store, Provider);
     Navigation.registerComponent('Settings', () => wrapWithContextProvider(Settings), store, Provider);
+    Navigation.registerComponent('SSO', () => wrapWithContextProvider(SSO), store, Provider);
     Navigation.registerComponent('Thread', () => wrapWithContextProvider(Thread), store, Provider);
     Navigation.registerComponent('UserProfile', () => wrapWithContextProvider(UserProfile), store, Provider);
 }

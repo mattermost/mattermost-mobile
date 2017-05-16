@@ -1736,7 +1736,7 @@
   "mobile.routes.loginOptions": "Login Chooser",
   "mobile.routes.mfa": "Multi-factor Authentication",
   "mobile.routes.postsList": "Posts List",
-  "mobile.routes.saml": "Single SignOn",
+  "mobile.routes.sso": "Single Sign-On",
   "mobile.routes.selectTeam": "Select Team",
   "mobile.routes.settings": "Settings",
   "mobile.routes.thread": "{channelName} Thread",

@@ -15,17 +15,36 @@ import PushNotification from 'react-native-push-notification';
 
 import {Client4} from 'mattermost-redux/client';
 
-class Saml extends PureComponent {
+import {ViewTypes} from 'app/constants';
+import Loading from 'app/components/loading';
+
+class SSO extends PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
+        ssoType: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             handleSuccessfulLogin: PropTypes.func.isRequired,
             setStoreFromLocalData: PropTypes.func.isRequired
         }).isRequired
     };
+
+    constructor(props) {
+        super(props);
+
+        switch (props.ssoType) {
+        case ViewTypes.GITLAB:
+            this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
+            this.completedUrl = `${props.serverUrl}/signup/gitlab/complete`;
+            break;
+        case ViewTypes.SAML:
+            this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
+            this.completedUrl = '/login/sso/saml';
+            break;
+        }
+    }
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
@@ -69,22 +88,21 @@ class Saml extends PureComponent {
     onNavigationStateChange = (navState) => {
         const {url} = navState;
 
-        if (url.includes('/login/sso/saml')) {
+        if (url.includes(this.completedUrl)) {
             CookieManager.get(this.props.serverUrl, (err, res) => {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
+                    this.setState({renderWebview: false});
                     const {
                         handleSuccessfulLogin,
                         setStoreFromLocalData
                     } = this.props.actions;
 
                     Client4.setToken(token);
-                    handleSuccessfulLogin().
-                    then(async (expiresAt) => {
-                        await setStoreFromLocalData({url: this.props.serverUrl, token});
-                        this.goToLoadTeam(expiresAt);
-                    });
+                    setStoreFromLocalData({url: this.props.serverUrl, token}).
+                    then(handleSuccessfulLogin).
+                    then(this.goToLoadTeam);
                 }
             });
         }
@@ -92,22 +110,30 @@ class Saml extends PureComponent {
 
     render() {
         if (!this.state || !this.state.renderWebview) {
-            return null;
+            return (
+                <View style={{flex: 1}}>
+                    <StatusBar barStyle='light-content'/>
+                    <Loading/>
+                </View>
+            );
         }
 
         return (
             <View style={{flex: 1}}>
                 <StatusBar barStyle='light-content'/>
                 <WebView
-                    source={{uri: `${this.props.serverUrl}/login/sso/saml?action=mobile`}}
+                    source={{uri: this.loginUrl}}
                     javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
                     scalesPageToFit={true}
+                    startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
+                    onShouldStartLoadWithRequest={() => true}
+                    renderLoading={() => (<Loading/>)}
                 />
             </View>
         );
     }
 }
 
-export default injectIntl(Saml);
+export default injectIntl(SSO);

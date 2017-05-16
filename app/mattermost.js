@@ -15,7 +15,7 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import semver from 'semver';
 
-import {setAppState, setDeviceToken} from 'mattermost-redux/actions/general';
+import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {logout} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
@@ -64,14 +64,17 @@ export default class Mattermost {
                     }]
                 );
             } else {
+                setServerVersion('')(dispatch, getState);
                 loadConfigAndLicense(serverVersion)(dispatch, getState);
             }
         }
     };
 
     handleReset = () => {
+        const {dispatch, getState} = store;
         Client4.serverVersion = '';
         PushNotification.cancelAllLocalNotifications();
+        setServerVersion('')(dispatch, getState);
         this.startApp('fade');
     };
 

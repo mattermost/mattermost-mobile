@@ -9,7 +9,7 @@ import {getTheme} from 'app/selectors/preferences';
 
 import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
 
-import Saml from './saml';
+import SSO from './sso';
 
 function mapStateToProps(state, ownProps) {
     return {
@@ -28,4 +28,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Saml);
+export default connect(mapStateToProps, mapDispatchToProps)(SSO);

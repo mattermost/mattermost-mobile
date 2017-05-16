@@ -35,7 +35,10 @@ const ViewTypes = keyMirror({
 
     SET_CHANNEL_LOADER: null,
 
-    SET_LAST_CHANNEL_FOR_TEAM: null
+    SET_LAST_CHANNEL_FOR_TEAM: null,
+
+    GITLAB: null,
+    SAML: null
 });
 
 export default ViewTypes;
