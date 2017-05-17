@@ -140,6 +140,7 @@ export default class Markdown extends PureComponent {
     renderBlockQuote = ({children, ...otherProps}) => {
         return (
             <MarkdownBlockQuote
+                blockStyle={this.props.blockStyles.quoteBlock}
                 {...otherProps}
             >
                 {children}

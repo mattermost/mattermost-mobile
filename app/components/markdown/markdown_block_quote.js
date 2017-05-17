@@ -12,6 +12,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
+        blockStyle: CustomPropTypes.Style,
         children: CustomPropTypes.Children.isRequired
     };
 
@@ -21,13 +22,14 @@ export default class MarkdownBlockQuote extends PureComponent {
                 <View>
                     <Icon
                         name='quote-left'
+                        style={this.props.blockStyle}
                         size={14}
                         left={0}
                         top={0}
                         position='absolute'
                     />
                 </View>
-                <View>
+                <View style={{paddingLeft: 5}}>
                     {this.props.children}
                 </View>
             </View>
