@@ -322,8 +322,8 @@ platform :android do
     end
 
     if options[:increment_build]
-      increment_version_code(app_folder_name: 'android/app')
-      commit_android_version_bump(
+      android_increment_version_code(app_folder_name: 'android/app')
+      android_commit_version_bump(
           app_folder_name: 'android/app',
           force: true
       )
