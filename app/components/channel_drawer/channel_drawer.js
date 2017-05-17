@@ -1,8 +1,9 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes, PureComponent} from 'react';
-import {BackAndroid, InteractionManager, Keyboard} from 'react-native';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
+import {BackHandler, InteractionManager, Keyboard} from 'react-native';
 
 import Drawer from 'app/components/drawer';
 import ChannelDrawerList from 'app/components/channel_drawer_list';
@@ -39,13 +40,13 @@ export default class ChannelDrawer extends PureComponent {
     componentDidMount() {
         EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
-        BackAndroid.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
     componentWillUnmount() {
         EventEmitter.off('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
-        BackAndroid.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
     handleAndroidBack = () => {

@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
+import {getTheme} from 'app/selectors/preferences';
 import Config from 'assets/config.json';
 
 import Root from './root';
@@ -20,6 +21,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
+        theme: getTheme(state),
         currentChannelId: getCurrentChannelId(state),
         locale
     };

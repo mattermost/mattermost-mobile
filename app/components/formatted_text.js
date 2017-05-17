@@ -1,10 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component, PropTypes} from 'react';
-
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {Text} from 'react-native';
-
 import {injectIntl, intlShape} from 'react-intl';
 
 class FormattedText extends Component {

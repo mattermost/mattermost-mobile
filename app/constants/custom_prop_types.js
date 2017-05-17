@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {PropTypes} from 'react';
+import PropTypes from 'prop-types';
 
 export const Children = PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]);
 

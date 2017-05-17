@@ -1,6 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
-import React, {PropTypes, PureComponent} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {ListView, Platform, StyleSheet, Text, View} from 'react-native';
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';

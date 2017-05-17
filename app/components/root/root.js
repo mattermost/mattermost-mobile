@@ -1,7 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PropTypes, PureComponent} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {IntlProvider} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -14,15 +15,18 @@ export default class Root extends PureComponent {
         children: PropTypes.node,
         navigator: PropTypes.object,
         currentChannelId: PropTypes.string,
-        locale: PropTypes.string.isRequired
+        locale: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     componentWillMount() {
         EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
     }
 
     componentWillUnmount() {
         EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
     }
 
     handleInAppNotification = (notification) => {
@@ -40,6 +44,21 @@ export default class Root extends PureComponent {
                 }
             });
         }
+    };
+
+    handleNotificationTapped = () => {
+        const {navigator, theme} = this.props;
+
+        navigator.resetTo({
+            screen: 'Channel',
+            animated: true,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
     };
 
     render() {

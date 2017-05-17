@@ -2,7 +2,8 @@
 // See License.txt for license information.
 
 import {connect} from 'react-redux';
-import React, {PropTypes, PureComponent} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {StyleSheet, Text} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';

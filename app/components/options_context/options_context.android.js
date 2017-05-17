@@ -1,7 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {PropTypes, PureComponent} from 'react';
+import {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import RNBottomSheet from 'react-native-bottom-sheet';
 
 export default class OptionsContext extends PureComponent {

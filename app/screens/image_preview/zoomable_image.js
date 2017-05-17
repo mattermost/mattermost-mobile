@@ -2,7 +2,8 @@
 // http://stackoverflow.com/users/219449/leonti
 // http://stackoverflow.com/questions/36368919/scrollable-image-with-pinch-to-zoom
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {
   View,
   PanResponder
