@@ -4307,6 +4307,10 @@ react-native-image-picker@0.26.3:
   version "0.26.3"
   resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-0.26.3.tgz#0ad2eede49501a7046d8046a73813696539c3dcd"
 
+react-native-image-picker@jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4:
+  version "0.26.2"
+  resolved "https://codeload.github.com/jp928/react-native-image-picker/tar.gz/6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4"
+
 react-native-keyboard-aware-scroll-view@0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/react-native-keyboard-aware-scroll-view/-/react-native-keyboard-aware-scroll-view-0.2.8.tgz#e9843c0d7467a2e6a2a737883bd9c2b7c7e38e35"
