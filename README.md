@@ -45,9 +45,12 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
 - General requirements
 
     - XCode 8.3
-    - Install watchman
-        $ brew install watchman
-
+    - Install required packages using homebrew:
+      ```bash
+      $ brew install watchman
+      $ brew install yarn
+      ```
+	  
 - Clone repository and configure:
     ```bash
     $ git clone git@github.com:mattermost/mattermost-mobile.git
