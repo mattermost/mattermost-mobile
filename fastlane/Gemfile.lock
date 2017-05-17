@@ -54,8 +54,6 @@ GEM
       xcodeproj (>= 1.4.4, < 2.0.0)
       xcpretty (>= 0.2.4, < 1.0.0)
       xcpretty-travis-formatter (>= 0.0.3)
-    fastlane-plugin-commit_android_version_bump (0.1.3)
-    fastlane-plugin-increment_version_code (0.3.1)
     gh_inspector (1.0.3)
     google-api-client (0.9.28)
       addressable (~> 2.3)
@@ -134,8 +132,6 @@ PLATFORMS
 
 DEPENDENCIES
   fastlane
-  fastlane-plugin-commit_android_version_bump
-  fastlane-plugin-increment_version_code
 
 BUNDLED WITH
    1.13.7
