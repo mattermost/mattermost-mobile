@@ -27,17 +27,14 @@ export default class LoadTeam extends PureComponent {
     };
 
     componentDidMount() {
-        const {currentTeam, myMembers, teams} = this.props;
+        const {notification, currentTeam, myMembers, teams} = this.props;
+        const {clearNotification, goToNotification} = this.props.actions;
 
-        // TODO: GO TO CHANNEL WHEN NOTIFICATION IS TAPPED AND THE APP IS CLOSED
-        // const {notification, currentTeam, myMembers, teams} = this.props;
-        // const {clearNotification, goToNotification} = this.props.actions;
-
-        // if (notification) {
-        //     clearNotification();
-            // goToNotification(notification);
-            // this.goToChannelView();
-        if (currentTeam) {
+        if (notification) {
+            clearNotification();
+            goToNotification(notification);
+            this.goToChannelView();
+        } else if (currentTeam) {
             this.onSelectTeam(currentTeam);
         } else if (!currentTeam) {
             this.selectFirstTeam(teams, myMembers);
