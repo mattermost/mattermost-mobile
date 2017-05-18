@@ -5,7 +5,7 @@ import 'babel-polyfill';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation} from 'react-native-navigation';
-import DeviceNotification from 'react-native-push-notification';
+import PushNotification from 'react-native-push-notification';
 import {
     Alert,
     AppState,
@@ -71,6 +71,7 @@ export default class Mattermost {
 
     handleReset = () => {
         Client4.serverVersion = '';
+        PushNotification.cancelAllLocalNotifications();
         this.startApp('fade');
     };
 
@@ -100,7 +101,7 @@ export default class Mattermost {
     };
 
     configurePushNotifications = () => {
-        DeviceNotification.configure({
+        PushNotification.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             senderID: Config.GooglePlaySenderId,
@@ -117,7 +118,7 @@ export default class Mattermost {
     };
 
     onPushNotification = (deviceNotification) => {
-        const {foreground, userInteraction, data, message} = deviceNotification;
+        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
         let notification;
 
         if (Platform.OS === 'android') {
@@ -135,19 +136,25 @@ export default class Mattermost {
             };
         }
 
+        if (userInfo) {
+            notification.localNotification = userInfo.localNotification;
+        }
+
         if (foreground) {
             EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
         } else if (userInteraction) {
             const {dispatch, getState} = store;
             const state = getState();
 
-            if (!state.views.root.appInitializing) {
-                // go to notification if the app is initialized
-                goToNotification(notification)(dispatch, getState);
-                EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
-            } else if (state.entities.general.credentials.token) {
-                // queue notification if app is not initialized but we are logged in
-                queueNotification(notification)(dispatch, getState);
+            if (!notification.localNotification) {
+                if (!state.views.root.appInitializing) {
+                    // go to notification if the app is initialized
+                    goToNotification(notification)(dispatch, getState);
+                    EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+                } else if (state.entities.general.credentials.token) {
+                    // queue notification if app is not initialized but we are logged in
+                    queueNotification(notification)(dispatch, getState);
+                }
             }
         }
     };

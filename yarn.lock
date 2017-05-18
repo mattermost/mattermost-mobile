@@ -3526,7 +3526,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/894523bf84013922d344aa4aae374889604097c0"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/3219aed65ab3ddfd738199db6ae42fe746226782"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4302,10 +4302,6 @@ react-native-drawer@2.3.0:
   resolved "https://registry.yarnpkg.com/react-native-drawer/-/react-native-drawer-2.3.0.tgz#a0369ec80ff0b61c9f152dbdea91fe76c843113a"
   dependencies:
     tween-functions "^1.0.1"
-
-react-native-image-picker@0.26.3:
-  version "0.26.3"
-  resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-0.26.3.tgz#0ad2eede49501a7046d8046a73813696539c3dcd"
 
 react-native-image-picker@jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4:
   version "0.26.2"

@@ -31,17 +31,19 @@ export default class Notification extends PureComponent {
         const {actions, navigator, notification, theme} = this.props;
 
         navigator.dismissInAppNotification();
-        actions.goToNotification(notification);
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: false,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg
-            }
-        });
+        if (!notification.localNotification) {
+            actions.goToNotification(notification);
+            navigator.resetTo({
+                screen: 'Channel',
+                animated: false,
+                navigatorStyle: {
+                    navBarHidden: true,
+                    statusBarHidden: false,
+                    statusBarHideWithNavBar: false,
+                    screenBackgroundColor: theme.centerChannelBg
+                }
+            });
+        }
     };
 
     render() {

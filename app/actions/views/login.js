@@ -1,9 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 import {GeneralTypes} from 'mattermost-redux/action_types';
+import {Client4} from 'mattermost-redux/client';
 
 import {ViewTypes} from 'app/constants';
-import {Client4} from 'mattermost-redux/client';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -24,14 +24,25 @@ export function handlePasswordChanged(password) {
 }
 
 export function handleSuccessfulLogin() {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
+        const {currentUserId} = getState().entities.users;
+        const token = Client4.getToken();
+        const session = await Client4.getSessions(currentUserId, token);
+
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
             data: {
                 url: Client4.getUrl(),
-                token: Client4.getToken()
+                token
             }
         });
+
+        if (Array.isArray(session) && session[0]) {
+            const s = session[0];
+            return s.expires_at;
+        }
+
+        return false;
     };
 }
 
