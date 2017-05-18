@@ -14,7 +14,7 @@ import SelectServer from './select_server';
 
 function mapStateToProps(state) {
     const {config: configRequest, license: licenseRequest, server: pingRequest} = state.requests.general;
-    const {config, license} = state.entities.general;
+    const {config, license, serverVersion} = state.entities.general;
 
     const success = RequestStatus.SUCCESS;
     const transition = (pingRequest.status === success && configRequest.status === success && licenseRequest.status === success);
@@ -26,6 +26,7 @@ function mapStateToProps(state) {
         licenseRequest,
         config,
         license,
+        serverVersion,
         transition,
         theme: getTheme(state)
     };

@@ -8,7 +8,9 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 export default function(state = '', action) {
     switch (action.type) {
     case UserTypes.LOGOUT_SUCCESS:
-        EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+        setTimeout(() => {
+            EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+        });
         break;
     }
 

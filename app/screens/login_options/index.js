@@ -8,11 +8,12 @@ import {getTheme} from 'app/selectors/preferences';
 import LoginOptions from './login_options';
 
 function mapStateToProps(state, ownProps) {
-    const {config, license} = state.entities.general;
+    const {config, license, serverVersion} = state.entities.general;
     return {
         ...ownProps,
         config,
         license,
+        serverVersion,
         theme: getTheme(state)
     };
 }
