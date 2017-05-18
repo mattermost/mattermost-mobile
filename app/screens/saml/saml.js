@@ -3,18 +3,21 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
     StatusBar,
     View,
     WebView
 } from 'react-native';
-
 import CookieManager from 'react-native-cookies';
+import PushNotification from 'react-native-push-notification';
+
 import {Client4} from 'mattermost-redux/client';
 
-export default class Saml extends PureComponent {
+class Saml extends PureComponent {
     static propTypes = {
+        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
@@ -30,8 +33,23 @@ export default class Saml extends PureComponent {
         });
     }
 
-    goToLoadTeam = () => {
-        const {navigator, theme} = this.props;
+    goToLoadTeam = (expiresAt) => {
+        const {intl, navigator, theme} = this.props;
+
+        if (expiresAt) {
+            PushNotification.localNotificationSchedule({
+                alertAction: null,
+                date: new Date(expiresAt),
+                message: intl.formatMessage({
+                    id: 'mobile.session_expired',
+                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.'
+                }),
+                userInfo: {
+                    localNotification: true
+                }
+            });
+        }
+
         navigator.resetTo({
             screen: 'LoadTeam',
             title: '',
@@ -63,8 +81,10 @@ export default class Saml extends PureComponent {
 
                     Client4.setToken(token);
                     handleSuccessfulLogin().
-                    then(setStoreFromLocalData.bind(null, {url: this.props.serverUrl, token})).
-                    then(this.goToLoadTeam);
+                    then(async (expiresAt) => {
+                        await setStoreFromLocalData({url: this.props.serverUrl, token});
+                        this.goToLoadTeam(expiresAt);
+                    });
                 }
             });
         }
@@ -89,3 +109,5 @@ export default class Saml extends PureComponent {
         );
     }
 }
+
+export default injectIntl(Saml);

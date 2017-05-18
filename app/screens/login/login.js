@@ -18,6 +18,7 @@ import {
     View
 } from 'react-native';
 import Button from 'react-native-button';
+import PushNotification from 'react-native-push-notification';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -73,8 +74,23 @@ class Login extends PureComponent {
         }
     }
 
-    goToLoadTeam = () => {
-        const {navigator, theme} = this.props;
+    goToLoadTeam = (expiresAt) => {
+        const {intl, navigator, theme} = this.props;
+
+        if (expiresAt) {
+            PushNotification.localNotificationSchedule({
+                alertAction: null,
+                date: new Date(expiresAt),
+                message: intl.formatMessage({
+                    id: 'mobile.session_expired',
+                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.'
+                }),
+                userInfo: {
+                    localNotification: true
+                }
+            });
+        }
+
         navigator.resetTo({
             screen: 'LoadTeam',
             title: '',
