@@ -5,7 +5,7 @@ import deepEqual from 'deep-equal';
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
-    ListView,
+    FlatList,
     Platform,
     StyleSheet,
     Text,
@@ -50,9 +50,7 @@ class ChannelDrawerList extends Component {
         this.state = {
             showAbove: false,
             showBelow: false,
-            dataSource: new ListView.DataSource({
-                rowHasChanged: (a, b) => a !== b
-            }).cloneWithRows(this.buildData(props))
+            dataSource: this.buildData(props)
         };
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
         then((source) => {
@@ -66,40 +64,39 @@ class ChannelDrawerList extends Component {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(this.buildData(nextProps))
+            dataSource: this.buildData(nextProps)
+        }, () => {
+            if (this.refs.list) {
+                this.refs.list.recordInteraction();
+                this.updateUnreadIndicators({
+                    viewableItems: Array.from(this.refs.list._listRef._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+                });
+            }
         });
-        const container = this.scrollContainer;
-        if (container && container._visibleRows && container._visibleRows.s1) { //eslint-disable-line no-underscore-dangle
-            this.updateUnreadIndicators(container._visibleRows);  //eslint-disable-line no-underscore-dangle
-        }
     }
 
-    getRowIndex = (displayName) => {
-        const data = this.state.dataSource._dataBlob.s1; //eslint-disable-line no-underscore-dangle
-        return data.findIndex((obj) => obj.display_name === displayName);
-    };
-
-    updateUnreadIndicators = (v) => {
+    updateUnreadIndicators = ({viewableItems}) => {
         let showAbove = false;
         let showBelow = false;
+        const visibleIndexes = viewableItems.map((v) => v.index);
 
-        if (v.s1) {
-            const visibleIndexes = Object.keys(v.s1);
+        if (visibleIndexes.length) {
+            const {dataSource} = this.state;
             const firstVisible = parseInt(visibleIndexes[0], 10);
             const lastVisible = parseInt(visibleIndexes[visibleIndexes.length - 1], 10);
 
             if (this.firstUnreadChannel) {
-                const index = this.getRowIndex(this.firstUnreadChannel);
-                if (index < firstVisible) {
-                    showAbove = true;
-                }
+                const index = dataSource.findIndex((item) => {
+                    return item.display_name === this.firstUnreadChannel;
+                });
+                showAbove = index < firstVisible;
             }
 
             if (this.lastUnreadChannel) {
-                const index = this.getRowIndex(this.lastUnreadChannel);
-                if (index > lastVisible) {
-                    showBelow = true;
-                }
+                const index = dataSource.findIndex((item) => {
+                    return item.display_name === this.lastUnreadChannel;
+                });
+                showBelow = index > lastVisible;
             }
 
             this.setState({
@@ -337,31 +334,31 @@ class ChannelDrawerList extends Component {
         );
     };
 
-    renderRow = (rowData) => {
-        if (rowData && rowData.id) {
-            return this.createChannelElement(rowData);
+    renderItem = ({item}) => {
+        if (!item.isTitle) {
+            return this.createChannelElement(item);
         }
-        return rowData;
+        return item.title;
     };
 
     renderTitle = (styles, id, defaultMessage, action, bottomDivider) => {
         const {formatMessage} = this.props.intl;
-        return (
-            <View>
-                {this.renderDivider(styles, 0)}
-                <View style={styles.titleContainer}>
-                    <Text style={styles.title}>
-                        {formatMessage({id, defaultMessage}).toUpperCase()}
-                    </Text>
-                    {action && this.renderSectionAction(styles, action)}
+        return {
+            id,
+            isTitle: true,
+            title: (
+                <View>
+                    {this.renderDivider(styles, 0)}
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>
+                            {formatMessage({id, defaultMessage}).toUpperCase()}
+                        </Text>
+                        {action && this.renderSectionAction(styles, action)}
+                    </View>
+                    {bottomDivider && this.renderDivider(styles, 16)}
                 </View>
-                {bottomDivider && this.renderDivider(styles, 16)}
-            </View>
-        );
-    };
-
-    setScrollContainer = (ref) => {
-        this.scrollContainer = ref;
+            )
+        };
     };
 
     render() {
@@ -434,13 +431,17 @@ class ChannelDrawerList extends Component {
                         {settings}
                     </View>
                 </View>
-                <ListView
-                    ref={this.setScrollContainer}
-                    style={styles.scrollContainer}
-                    dataSource={this.state.dataSource}
-                    renderRow={this.renderRow}
-                    onChangeVisibleRows={this.updateUnreadIndicators}
-                    pageSize={10}
+                <FlatList
+                    ref='list'
+                    data={this.state.dataSource}
+                    renderItem={this.renderItem}
+                    keyExtractor={(item) => item.id}
+                    onViewableItemsChanged={this.updateUnreadIndicators}
+                    maxToRenderPerBatch={10}
+                    viewabilityConfig={{
+                        viewAreaCoveragePercentThreshold: 3,
+                        waitForInteraction: false
+                    }}
                 />
                 {above}
                 {below}
