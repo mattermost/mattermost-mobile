@@ -23,6 +23,7 @@
     "react-native-device-info": "0.10.2",
     "react-native-drawer": "2.3.0",
     "react-native-image-picker": "jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4",
+    "react-native-invertible-scroll-view": "1.0.0",
     "react-native-keyboard-aware-scroll-view": "0.2.8",
     "react-native-linear-gradient": "2.0.0",
     "react-native-navigation": "1.1.72",
