@@ -29,6 +29,7 @@ class ChannelPostList extends PureComponent {
         applicationInitializing: PropTypes.bool.isRequired,
         channel: PropTypes.object.isRequired,
         channelIsLoading: PropTypes.bool,
+        channelIsRefreshing: PropTypes.bool,
         intl: intlShape.isRequired,
         myMember: PropTypes.object.isRequired,
         navigator: PropTypes.object,
@@ -147,6 +148,7 @@ class ChannelPostList extends PureComponent {
             applicationInitializing,
             channel,
             channelIsLoading,
+            channelIsRefreshing,
             navigator,
             posts,
             postsRequests,
@@ -162,7 +164,7 @@ class ChannelPostList extends PureComponent {
                     theme={theme}
                 />
             );
-        } else if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || !this.state.didInitialPostsLoad)) {
+        } else if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || channelIsRefreshing || !this.state.didInitialPostsLoad)) {
             component = (
                 <PostList
                     posts={posts}

@@ -5,6 +5,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     ListView,
+    RefreshControl,
     View
 } from 'react-native';
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
@@ -22,6 +23,10 @@ const LOAD_MORE_POSTS = 'load-more-posts';
 
 export default class PostList extends Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            loadPostsIfNecessary: PropTypes.func.isRequired,
+            setChannelRefreshing: PropTypes.func.isRequired
+        }).isRequired,
         channel: PropTypes.object,
         channelIsLoading: PropTypes.bool.isRequired,
         posts: PropTypes.array.isRequired,
@@ -31,6 +36,7 @@ export default class PostList extends Component {
         isLoadingMore: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         onPostPress: PropTypes.func,
+        refreshing: PropTypes.bool,
         renderReplies: PropTypes.bool,
         indicateNewMessages: PropTypes.bool,
         currentUserId: PropTypes.string,
@@ -53,6 +59,7 @@ export default class PostList extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
+            this.props.actions.setChannelRefreshing(false);
             const posts = this.getPostsWithDates(nextProps);
             this.setState({posts});
         }
@@ -76,6 +83,15 @@ export default class PostList extends Component {
         const {loadMore} = this.props;
         if (typeof loadMore === 'function') {
             loadMore();
+        }
+    };
+
+    onRefresh = () => {
+        const {actions, channel} = this.props;
+
+        if (Object.keys(channel).length) {
+            actions.setChannelRefreshing(true);
+            actions.loadPostsIfNecessary(channel);
         }
     };
 
@@ -145,18 +161,35 @@ export default class PostList extends Component {
         );
     };
 
+    renderRefreshControl = () => {
+        const {theme, refreshing} = this.props;
+
+        return (
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={this.onRefresh}
+                tintColor={theme.centerChannelColor}
+                colors={[theme.centerChannelColor]}
+            />
+        );
+    };
+
+    renderScrollComponent = (props) => {
+        return (
+            <InvertibleScrollView
+                {...props}
+                inverted={true}
+            />
+        );
+    };
+
     render() {
+        const {dataSource} = this.state;
+
         return (
             <ListView
-                renderScrollComponent={(props) => {
-                    return (
-                        <InvertibleScrollView
-                            {...props}
-                            inverted={true}
-                        />
-                    );
-                }}
-                dataSource={this.state.dataSource.cloneWithRows(this.getPostsWithLoadMore())}
+                renderScrollComponent={this.renderScrollComponent}
+                dataSource={dataSource.cloneWithRows(this.getPostsWithLoadMore())}
                 renderFooter={this.renderChannelIntro}
                 renderRow={this.renderRow}
                 onEndReached={this.loadMore}
@@ -165,6 +198,7 @@ export default class PostList extends Component {
                 initialListSize={30}
                 onEndReachedThreshold={200}
                 pageSize={10}
+                refreshControl={this.renderRefreshControl()}
             />
         );
     }
