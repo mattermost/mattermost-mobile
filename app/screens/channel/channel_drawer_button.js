@@ -18,7 +18,7 @@ import Badge from 'app/components/badge';
 import {getTheme} from 'app/selectors/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 
-import {getUnreads} from 'mattermost-redux/selectors/entities/channels';
+import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 class ChannelDrawerButton extends PureComponent {
@@ -159,7 +159,7 @@ function mapStateToProps(state) {
     return {
         applicationInitializing: state.views.root.appInitializing,
         theme: getTheme(state),
-        ...getUnreads(state)
+        ...getUnreadsInCurrentTeam(state)
     };
 }
 
