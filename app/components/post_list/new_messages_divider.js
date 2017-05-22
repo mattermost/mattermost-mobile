@@ -2,9 +2,33 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    ViewPropTypes
+} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
+
+function NewMessagesDivider(props) {
+    return (
+        <View style={[style.container, props.style]}>
+            <View style={style.line}/>
+            <View style={style.textContainer}>
+                <FormattedText
+                    id='post_list.newMsg'
+                    defaultMessage='New Messages'
+                    style={style.text}
+                />
+            </View>
+            <View style={style.line}/>
+        </View>
+    );
+}
+
+NewMessagesDivider.propTypes = {
+    style: ViewPropTypes.style
+};
 
 const style = StyleSheet.create({
     container: {
@@ -26,25 +50,5 @@ const style = StyleSheet.create({
         color: '#ffaf53'
     }
 });
-
-function NewMessagesDivider(props) {
-    return (
-        <View style={[style.container, props.style]}>
-            <View style={style.line}/>
-            <View style={style.textContainer}>
-                <FormattedText
-                    id='post_list.newMsg'
-                    defaultMessage='New Messages'
-                    style={style.text}
-                />
-            </View>
-            <View style={style.line}/>
-        </View>
-    );
-}
-
-NewMessagesDivider.propTypes = {
-    style: View.propTypes.style
-};
 
 export default NewMessagesDivider;

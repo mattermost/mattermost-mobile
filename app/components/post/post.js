@@ -11,7 +11,8 @@ import {
     Text,
     TouchableHighlight,
     TouchableOpacity,
-    View
+    View,
+    ViewPropTypes
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -45,7 +46,7 @@ class Post extends PureComponent {
         commentCount: PropTypes.number.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
-        style: View.propTypes.style,
+        style: ViewPropTypes.style,
         post: PropTypes.object.isRequired,
         user: PropTypes.object,
         displayName: PropTypes.string,

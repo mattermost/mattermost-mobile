@@ -3,23 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text, View} from 'react-native';
-
-const Styles = StyleSheet.create({
-    container: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-        position: 'absolute',
-        borderRadius: 15,
-        marginHorizontal: 15,
-        height: 25
-    }
-});
+import {
+    StyleSheet,
+    Text,
+    View,
+    ViewPropTypes
+} from 'react-native';
 
 export default class UnreadIndicator extends PureComponent {
     static propTypes = {
-        style: View.propTypes.style,
+        style: ViewPropTypes.style,
         textStyle: Text.propTypes.style,
         text: PropTypes.node.isRequired
     };
@@ -34,3 +27,15 @@ export default class UnreadIndicator extends PureComponent {
         );
     }
 }
+
+const Styles = StyleSheet.create({
+    container: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        position: 'absolute',
+        borderRadius: 15,
+        marginHorizontal: 15,
+        height: 25
+    }
+});

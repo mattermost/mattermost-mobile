@@ -3,34 +3,14 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    ViewPropTypes
+} from 'react-native';
 
 import FormattedDate from 'app/components/formatted_date';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            height: 28
-        },
-        dateContainer: {
-            marginHorizontal: 15
-        },
-        line: {
-            flex: 1,
-            height: StyleSheet.hairlineWidth,
-            backgroundColor: theme.centerChannelColor,
-            opacity: 0.2
-        },
-        date: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
-            fontWeight: '600'
-        }
-    });
-});
 
 function DateHeader(props) {
     const style = getStyleSheet(props.theme);
@@ -56,7 +36,31 @@ function DateHeader(props) {
 DateHeader.propTypes = {
     date: PropTypes.object.isRequired,
     theme: PropTypes.object.isRequired,
-    style: View.propTypes.style
+    style: ViewPropTypes.style
 };
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            height: 28
+        },
+        dateContainer: {
+            marginHorizontal: 15
+        },
+        line: {
+            flex: 1,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: theme.centerChannelColor,
+            opacity: 0.2
+        },
+        date: {
+            color: theme.centerChannelColor,
+            fontSize: 14,
+            fontWeight: '600'
+        }
+    });
+});
 
 export default DateHeader;
