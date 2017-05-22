@@ -34,6 +34,7 @@ const ViewTypes = keyMirror({
     ADD_FILE_TO_FETCH_CACHE: null,
 
     SET_CHANNEL_LOADER: null,
+    SET_CHANNEL_REFRESHING: null,
 
     SET_LAST_CHANNEL_FOR_TEAM: null,
 

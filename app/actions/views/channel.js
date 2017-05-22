@@ -331,3 +331,10 @@ export function setChannelLoading(loading = true) {
         loading
     };
 }
+
+export function setChannelRefreshing(refreshing = true) {
+    return {
+        type: ViewTypes.SET_CHANNEL_REFRESHING,
+        refreshing
+    };
+}

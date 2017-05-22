@@ -172,7 +172,17 @@ function loading(state = false, action) {
     }
 }
 
+function refreshing(state = false, action) {
+    switch (action.type) {
+    case ViewTypes.SET_CHANNEL_REFRESHING:
+        return action.refreshing;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     drafts,
-    loading
+    loading,
+    refreshing
 });

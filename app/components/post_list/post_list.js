@@ -5,9 +5,10 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     ListView,
-    StyleSheet,
+    RefreshControl,
     View
 } from 'react-native';
+import InvertibleScrollView from 'react-native-invertible-scroll-view';
 
 import {General, Posts} from 'mattermost-redux/constants';
 import {addDatesToPostList} from 'mattermost-redux/utils/post_utils';
@@ -22,6 +23,10 @@ const LOAD_MORE_POSTS = 'load-more-posts';
 
 export default class PostList extends Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            loadPostsIfNecessary: PropTypes.func.isRequired,
+            setChannelRefreshing: PropTypes.func.isRequired
+        }).isRequired,
         channel: PropTypes.object,
         channelIsLoading: PropTypes.bool.isRequired,
         posts: PropTypes.array.isRequired,
@@ -31,6 +36,7 @@ export default class PostList extends Component {
         isLoadingMore: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         onPostPress: PropTypes.func,
+        refreshing: PropTypes.bool,
         renderReplies: PropTypes.bool,
         indicateNewMessages: PropTypes.bool,
         currentUserId: PropTypes.string,
@@ -53,6 +59,7 @@ export default class PostList extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
+            this.props.actions.setChannelRefreshing(false);
             const posts = this.getPostsWithDates(nextProps);
             this.setState({posts});
         }
@@ -79,6 +86,15 @@ export default class PostList extends Component {
         }
     };
 
+    onRefresh = () => {
+        const {actions, channel} = this.props;
+
+        if (Object.keys(channel).length) {
+            actions.setChannelRefreshing(true);
+            actions.loadPostsIfNecessary(channel);
+        }
+    };
+
     renderChannelIntro = () => {
         const {channel, channelIsLoading, posts} = this.props;
 
@@ -90,7 +106,7 @@ export default class PostList extends Component {
             }
 
             return (
-                <View style={style.row}>
+                <View>
                     <ChannelIntro/>
                 </View>
             );
@@ -107,7 +123,6 @@ export default class PostList extends Component {
             return (
                 <NewMessagesDivider
                     theme={this.props.theme}
-                    style={style.row}
                 />
             );
         }
@@ -116,7 +131,6 @@ export default class PostList extends Component {
                 <LoadMorePosts
                     loading={this.props.isLoadingMore}
                     theme={this.props.theme}
-                    style={style.row}
                 />
             );
         }
@@ -128,7 +142,6 @@ export default class PostList extends Component {
         return (
             <DateHeader
                 theme={this.props.theme}
-                style={style.row}
                 date={date}
             />
         );
@@ -137,7 +150,6 @@ export default class PostList extends Component {
     renderPost = (post) => {
         return (
             <Post
-                style={style.row}
                 post={post}
                 renderReplies={this.props.renderReplies}
                 isFirstReply={post.isFirstReply}
@@ -149,29 +161,45 @@ export default class PostList extends Component {
         );
     };
 
+    renderRefreshControl = () => {
+        const {theme, refreshing} = this.props;
+
+        return (
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={this.onRefresh}
+                tintColor={theme.centerChannelColor}
+                colors={[theme.centerChannelColor]}
+            />
+        );
+    };
+
+    renderScrollComponent = (props) => {
+        return (
+            <InvertibleScrollView
+                {...props}
+                inverted={true}
+            />
+        );
+    };
+
     render() {
+        const {dataSource} = this.state;
+
         return (
             <ListView
-                style={style.container}
-                dataSource={this.state.dataSource.cloneWithRows(this.getPostsWithLoadMore())}
+                renderScrollComponent={this.renderScrollComponent}
+                dataSource={dataSource.cloneWithRows(this.getPostsWithLoadMore())}
                 renderFooter={this.renderChannelIntro}
                 renderRow={this.renderRow}
                 onEndReached={this.loadMore}
                 enableEmptySections={true}
-                showsVerticalScrollIndicator={false}
+                showsVerticalScrollIndicator={true}
                 initialListSize={30}
                 onEndReachedThreshold={200}
                 pageSize={10}
+                refreshControl={this.renderRefreshControl()}
             />
         );
     }
 }
-
-const style = StyleSheet.create({
-    container: {
-        transform: [{rotate: '180deg'}]
-    },
-    row: {
-        transform: [{rotate: '180deg'}]
-    }
-});
