@@ -4,25 +4,18 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-
-    loading: {
-        marginLeft: 3
-    }
-});
+import {
+    ActivityIndicator,
+    StyleSheet,
+    View,
+    ViewPropTypes
+} from 'react-native';
 
 export default class Loading extends PureComponent {
     static propTypes = {
         size: PropTypes.string,
         color: PropTypes.string,
-        style: View.propTypes.style
+        style: ViewPropTypes.style
     };
 
     static defaultProps = {
@@ -44,3 +37,15 @@ export default class Loading extends PureComponent {
         );
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+
+    loading: {
+        marginLeft: 3
+    }
+});

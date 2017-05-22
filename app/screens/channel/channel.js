@@ -174,7 +174,7 @@ class Channel extends PureComponent {
             );
         }
 
-        const channelDraft = this.props.drafts[currentChannel.id];
+        const channelDraft = this.props.drafts[currentChannel.id] || {};
         const style = getStyleFromTheme(theme);
 
         return (

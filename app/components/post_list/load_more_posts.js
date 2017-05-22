@@ -4,9 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    View,
     StyleSheet,
-    TouchableOpacity
+    TouchableOpacity,
+    View,
+    ViewPropTypes
 } from 'react-native';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -18,7 +19,7 @@ export default class LoadMorePosts extends PureComponent {
         loading: PropTypes.bool.isRequired,
         loadMore: PropTypes.func,
         theme: PropTypes.object.isRequired,
-        style: View.propTypes.style
+        style: ViewPropTypes.style
     };
 
     loadMore = () => {

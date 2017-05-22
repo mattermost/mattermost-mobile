@@ -59,9 +59,14 @@ export default class PostList extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.posts !== this.props.posts) {
-            this.props.actions.setChannelRefreshing(false);
             const posts = this.getPostsWithDates(nextProps);
-            this.setState({posts});
+            this.setState({posts}, () => {
+                if (nextProps.refreshing) {
+                    this.props.actions.setChannelRefreshing(false);
+                }
+            });
+        } else if (nextProps.refreshing) {
+            this.props.actions.setChannelRefreshing(false);
         }
     }
 

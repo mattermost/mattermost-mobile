@@ -8,7 +8,8 @@ import {
     StyleSheet,
     Text,
     TouchableWithoutFeedback,
-    View
+    View,
+    ViewPropTypes
 } from 'react-native';
 
 export default class Badge extends PureComponent {
@@ -21,7 +22,7 @@ export default class Badge extends PureComponent {
     static propTypes = {
         count: PropTypes.number.isRequired,
         extraPaddingHorizontal: PropTypes.number,
-        style: View.propTypes.style,
+        style: ViewPropTypes.style,
         countStyle: Text.propTypes.style,
         minHeight: PropTypes.number,
         minWidth: PropTypes.number,
