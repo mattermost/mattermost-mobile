@@ -61,7 +61,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(MoreChannels), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
-    Navigation.registerComponent('Notification', () => Notification, store, Provider);
+    Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(SelectTeam), store, Provider);

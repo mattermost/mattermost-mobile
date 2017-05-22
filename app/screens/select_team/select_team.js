@@ -99,7 +99,7 @@ export default class SelectTeam extends PureComponent {
                     />
                     <FormattedText
                         style={GlobalStyles.subheader}
-                        id='signup_team.choose'
+                        id='mobile.select_team.choose'
                         defaultMessage='Your teams:'
                     />
                     {content}
