@@ -18,6 +18,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {NavigationTypes} from 'app/constants';
 import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
@@ -26,7 +27,7 @@ import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
 import ProfilePicture from 'app/components/profile_picture';
 import ReplyIcon from 'app/components/reply_icon';
-import {NavigationTypes} from 'app/constants';
+import SlackAttachments from 'app/components/slack_attachments';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -314,6 +315,30 @@ class Post extends PureComponent {
         return attachments;
     }
 
+    renderSlackAttachments = (baseStyle) => {
+        const {post, theme} = this.props;
+
+        if (post.props) {
+            const {attachments} = post.props;
+            const textStyles = getMarkdownTextStyles(theme);
+            const blockStyles = getMarkdownBlockStyles(theme);
+
+            if (attachments && attachments.length) {
+                return (
+                    <SlackAttachments
+                        attachments={attachments}
+                        baseTextStyle={baseStyle}
+                        blockStyles={blockStyles}
+                        textStyles={textStyles}
+                        theme={theme}
+                    />
+                );
+            }
+        }
+
+        return null;
+    };
+
     renderMessage = (style, messageStyle, replyBar = false) => {
         const {formatMessage} = this.props.intl;
         const {isFlagged, post, theme} = this.props;
@@ -381,6 +406,7 @@ class Post extends PureComponent {
                                 toggleSelected={this.toggleSelected}
                             >
                                 {message}
+                                {this.renderSlackAttachments(messageStyle)}
                                 {this.renderFileAttachments()}
                             </OptionsContext>
                         </View>
@@ -419,6 +445,7 @@ class Post extends PureComponent {
                                     actions={actions}
                                     cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
                                 />
+                                {this.renderSlackAttachments(messageStyle)}
                                 {this.renderFileAttachments()}
                             </View>
                             {post.failed &&
@@ -522,7 +549,7 @@ class Post extends PureComponent {
                     </Text>
                 </View>
             );
-            messageStyle = [style.message, style.webhookMessage];
+            messageStyle = style.message;
         } else {
             profilePicture = (
                 <TouchableOpacity onPress={this.viewUserProfile}>
@@ -701,11 +728,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         systemMessage: {
             opacity: 0.6
-        },
-        webhookMessage: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            fontWeight: '600'
         },
         selected: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
