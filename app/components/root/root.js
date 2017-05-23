@@ -37,7 +37,7 @@ export default class Root extends PureComponent {
             navigator.showInAppNotification({
                 screen: 'Notification',
                 position: 'top',
-                autoDismissTimerSec: 15,
+                autoDismissTimerSec: 5,
                 dismissWithSwipe: true,
                 passProps: {
                     notification

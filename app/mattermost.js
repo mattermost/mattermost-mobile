@@ -128,6 +128,11 @@ export default class Mattermost {
             notification = {
                 data: {
                     channel_id: deviceNotification.channel_id,
+                    channel_name: deviceNotification.channel_name,
+                    sender_id: deviceNotification.sender_id,
+                    override_username: deviceNotification.override_username,
+                    override_icon_url: deviceNotification.override_icon_url,
+                    from_webhook: deviceNotification.from_webhook,
                     team_id: deviceNotification.team_id
                 },
                 message
