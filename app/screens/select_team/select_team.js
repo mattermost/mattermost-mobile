@@ -51,7 +51,7 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange(team);
             EventEmitter.emit('close_channel_drawer');
             InteractionManager.runAfterInteractions(() => {
-                this.props.navigator.dismissAllModals({
+                this.props.navigator.dismissModal({
                     animationType: 'slide-down'
                 });
             });

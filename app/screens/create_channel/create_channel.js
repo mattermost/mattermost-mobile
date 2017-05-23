@@ -131,7 +131,7 @@ class CreateChannel extends PureComponent {
         if (goBack) {
             this.props.navigator.pop({animated: true});
         } else {
-            this.props.navigator.dismissAllModals({
+            this.props.navigator.dismissModal({
                 animationType: 'slide-down'
             });
         }
