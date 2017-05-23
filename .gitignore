@@ -62,3 +62,6 @@ fastlane/report.xml
 *.zip
 server.PID
 mattermost.keystore
+
+# Sentry
+android/sentry.properties
