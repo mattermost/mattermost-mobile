@@ -484,7 +484,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             backgroundColor: '#fff',
             alignItems: 'flex-end',
-            marginRight: 4
+            marginRight: 10
         },
         inputWrapper: {
             alignItems: 'flex-end',
@@ -508,14 +508,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
             marginRight: 5,
-            height: 26,
-            width: 26,
+            height: 28,
+            width: 28,
             ...Platform.select({
                 ios: {
-                    marginBottom: 5
+                    marginBottom: 3
                 },
                 android: {
-                    marginBottom: 2.5
+                    height: 29,
+                    width: 29,
+                    marginBottom: 5
                 }
             }),
             alignItems: 'center',
