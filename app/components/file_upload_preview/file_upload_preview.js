@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
+import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 
 const {height: deviceHeight} = Dimensions.get('window');
@@ -33,6 +34,7 @@ export default class FileUploadPreview extends PureComponent {
         files: PropTypes.array.isRequired,
         inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
+        theme: PropTypes.object.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired
     };
 
@@ -46,17 +48,30 @@ export default class FileUploadPreview extends PureComponent {
 
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
+            let filePreviewComponent;
+            if (file.loading | file.has_preview_image) {
+                filePreviewComponent = (
+                    <FileAttachmentImage
+                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                        fetchCache={this.props.fetchCache}
+                        file={file}
+                    />
+                );
+            } else {
+                filePreviewComponent = (
+                    <FileAttachmentIcon
+                        file={file}
+                        theme={this.props.theme}
+                    />
+                );
+            }
             return (
                 <View
                     key={file.clientId}
                     style={style.preview}
                 >
                     <View style={style.previewShadow}>
-                        <FileAttachmentImage
-                            addFileToFetchCache={this.props.actions.addFileToFetchCache}
-                            fetchCache={this.props.fetchCache}
-                            file={file}
-                        />
+                        {filePreviewComponent}
                         {file.failed &&
                         <TouchableOpacity
                             style={style.failed}
