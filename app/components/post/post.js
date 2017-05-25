@@ -36,7 +36,7 @@ import webhookIcon from 'assets/images/icons/webhook.jpg';
 import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {canDeletePost, canEditPost, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {canDeletePost, canEditPost, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 const BOT_NAME = 'BOT';
@@ -214,7 +214,7 @@ class Post extends PureComponent {
         const {post, onPress} = this.props;
         if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !post.failed) {
             preventDoubleTap(onPress, null, post);
-        } else if (post.state === Posts.POST_DELETED) {
+        } else if (isPostEphemeral(post)) {
             preventDoubleTap(this.onRemovePost, this, post);
         }
     };
