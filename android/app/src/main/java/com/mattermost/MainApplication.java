@@ -5,6 +5,7 @@ import android.util.Log;
 import android.support.annotation.NonNull;
 
 import com.facebook.react.ReactApplication;
+import io.sentry.RNSentryPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -66,7 +67,8 @@ public class MainApplication extends NavigationApplication {
             new VectorIconsPackage(),
             new SvgPackage(),
             new LinearGradientPackage(),
-            new OrientationPackage()
+            new OrientationPackage(),
+            new RNSentryPackage(MainApplication.this)
     );
   }
 

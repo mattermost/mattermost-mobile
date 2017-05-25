@@ -66,6 +66,7 @@ import com.android.build.OutputFile
  */
 
 apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 /**
@@ -144,6 +145,7 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-sentry')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:25.0.1"
     compile "com.facebook.react:react-native:+"  // From node_modules
