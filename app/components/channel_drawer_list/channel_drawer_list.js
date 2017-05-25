@@ -201,11 +201,19 @@ class ChannelDrawerList extends Component {
         const styles = getStyleSheet(theme);
 
         const {
+            unreadChannels,
             favoriteChannels,
             publicChannels,
             privateChannels,
             directAndGroupChannels
         } = props.channels;
+
+        if (unreadChannels.length) {
+            data.push(
+                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, unreadChannels.length > 0),
+                ...unreadChannels
+            );
+        }
 
         if (favoriteChannels.length) {
             data.push(

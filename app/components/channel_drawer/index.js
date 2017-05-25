@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel';
 
-import {getChannelsByCategory, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getChannelsWithUnreadSection, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'app/selectors/preferences';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
@@ -19,7 +19,7 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         currentTeam: getCurrentTeam(state),
         currentChannel: getCurrentChannel(state),
-        channels: getChannelsByCategory(state),
+        channels: getChannelsWithUnreadSection(state),
         channelMembers: state.entities.channels.myMembers,
         theme: getTheme(state)
     };

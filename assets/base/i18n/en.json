@@ -1695,6 +1695,7 @@
   "mobile.channel_list.openGM": "Open Group Message",
   "mobile.channel_list.privateChannel": "Private Channel",
   "mobile.channel_list.publicChannel": "Public Channel",
+  "mobile.channel_list.unreads": "UNREADS",
   "mobile.components.channels_list_view.yourChannels": "Your channels:",
   "mobile.components.error_list.dismiss_all": "Dismiss All",
   "mobile.components.select_server_view.continue": "Continue",
