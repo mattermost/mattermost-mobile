@@ -255,6 +255,10 @@ class PostTextbox extends PureComponent {
             noData: true
         };
 
+        if (Platform.OS === 'ios') {
+            options.mediaType = 'mixed';
+        }
+
         ImagePicker.launchImageLibrary(options, (response) => {
             if (response.error) {
                 return;
@@ -263,6 +267,26 @@ class PostTextbox extends PureComponent {
             this.uploadFiles([response]);
         });
     };
+
+    attachVideoFromLibraryAndroid = () => {
+        this.props.navigator.dismissModal({
+            animationType: 'none'
+        });
+
+        const options = {
+            quality: 0.7,
+            mediaType: 'video',
+            noData: true
+        };
+
+        ImagePicker.launchImageLibrary(options, (response) => {
+            if (response.error) {
+                return;
+            }
+
+            this.uploadFiles([response]);
+        });
+    }
 
     uploadFiles = (images) => {
         this.props.actions.handleUploadFiles(images, this.props.rootId);
@@ -287,6 +311,17 @@ class PostTextbox extends PureComponent {
                 icon: 'photo'
             }]
         };
+
+        if (Platform.OS === 'android') {
+            options.items.push({
+                action: this.attachVideoFromLibraryAndroid,
+                text: {
+                    id: 'mobile.file_upload.video',
+                    defaultMessage: 'Video Libary'
+                },
+                icon: 'file-video-o'
+            });
+        }
 
         this.props.navigator.showModal({
             screen: 'OptionsModal',
