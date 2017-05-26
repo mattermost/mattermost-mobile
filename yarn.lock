@@ -2262,9 +2262,11 @@ external-editor@^1.0.1:
     tmp "^0.0.29"
 
 external-editor@^2.0.1:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/external-editor/-/external-editor-2.0.2.tgz#384f6d8ae02054235c19e0a142c6d6fc36ad9363"
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/external-editor/-/external-editor-2.0.4.tgz#1ed9199da9cbfe2ef2f7a31b2fde8b0d12368972"
   dependencies:
+    iconv-lite "^0.4.17"
+    jschardet "^1.4.2"
     tmp "^0.0.31"
 
 extglob@^0.3.1:
@@ -2788,6 +2790,10 @@ iconv-lite@0.4.15:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.15.tgz#fe265a218ac6a57cfe854927e9d04c19825eddeb"
 
+iconv-lite@^0.4.17:
+  version "0.4.17"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.17.tgz#4fdaa3b38acbc2c031b045d0edcdfe1ecab18c8d"
+
 ignore@^3.2.0:
   version "3.2.7"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-3.2.7.tgz#4810ca5f1d8eca5595213a34b94f2eb4ed926bbd"
@@ -3165,6 +3171,10 @@ jsan@^3.1.0, jsan@^3.1.5:
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
+
+jschardet@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/jschardet/-/jschardet-1.4.2.tgz#2aa107f142af4121d145659d44f50830961e699a"
 
 jsdom-global@3.0.2:
   version "3.0.2"
@@ -4438,14 +4448,16 @@ react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
 
-react-native-sentry@getsentry/react-native-sentry.git:
-  version "0.9.1"
-  resolved "https://codeload.github.com/getsentry/react-native-sentry/tar.gz/1fb1a4ca201a814389bd33a6277ab4e3dc085fed"
+react-native-sentry@0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/react-native-sentry/-/react-native-sentry-0.10.0.tgz#1dda468942adc786860f5add31aa8c7b320fbfc8"
   dependencies:
+    chalk "^1.1.1"
     glob "7.1.1"
     inquirer "3.0.6"
     raven-js "^3.15.0"
     sentry-cli-binary "^1.9.0"
+    xcode "0.9.3"
 
 react-native-svg-mock@1.0.2:
   version "1.0.2"
@@ -5130,8 +5142,8 @@ send@0.15.1:
     statuses "~1.3.1"
 
 sentry-cli-binary@^1.9.0:
-  version "1.10.1"
-  resolved "https://registry.yarnpkg.com/sentry-cli-binary/-/sentry-cli-binary-1.10.1.tgz#c1099c9830dab81d205d62687f3a3eb68d5e1a60"
+  version "1.10.2"
+  resolved "https://registry.yarnpkg.com/sentry-cli-binary/-/sentry-cli-binary-1.10.2.tgz#a3ed11c673093d83206d01d2d87a16fcb331db7b"
   dependencies:
     progress "2.0.0"
 
@@ -5867,7 +5879,7 @@ ws@^2.0.3:
     safe-buffer "~5.0.1"
     ultron "~1.1.0"
 
-xcode@^0.9.1:
+xcode@0.9.3, xcode@^0.9.1:
   version "0.9.3"
   resolved "https://registry.yarnpkg.com/xcode/-/xcode-0.9.3.tgz#910a89c16aee6cc0b42ca805a6d0b4cf87211cf3"
   dependencies:
