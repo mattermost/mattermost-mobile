@@ -11,11 +11,6 @@
 #import "RCTPushNotificationManager.h"
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
-#if __has_include(<React/RNSentry.h>)
-#import <React/RNSentry.h> // This is used for versions of react >= 0.40
-#else
-#import "RNSentry.h" // This is used for versions of react < 0.40
-#endif
 #import "Orientation.h"
 #import "RCCManager.h"
 
@@ -44,9 +39,6 @@
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   self.window.backgroundColor = [UIColor whiteColor];
   [[RCCManager sharedInstance] initBridgeWithBundleURL:jsCodeLocation];
-  
-  RCTBridge *bridge = [[RCCManager sharedIntance] getBridge];
-  [RNSentry installWithBridge:bridge];
 
   return YES;
 }
