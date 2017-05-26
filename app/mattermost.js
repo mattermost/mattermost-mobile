@@ -167,26 +167,8 @@ export default class Mattermost {
         }
     };
 
-    configureSentry = () => {
-        // Only require Sentry if we are using it so the packager doesn't
-        // doesn't add it to the bundle
-        const {Sentry} = require('react-native-sentry'); // eslint-disable-line
-        Sentry.config(Config.SentryDSN, {
-            deactivateStacktraceMerging: true,
-            autoBreadcrumbs: {
-                xhr: false,
-                console: true,
-                dom: true,
-                location: true
-            }
-        }).install();
-    }
-
     startApp = (animationType = 'none') => {
         this.configurePushNotifications();
-        if (Config.EnableSentryLogging) {
-            this.configureSentry();
-        }
 
         Navigation.startSingleScreenApp({
             screen: {
