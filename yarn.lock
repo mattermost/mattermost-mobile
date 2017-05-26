@@ -4448,7 +4448,7 @@ react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
 
-react-native-sentry@^0.10.0:
+react-native-sentry@0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/react-native-sentry/-/react-native-sentry-0.10.0.tgz#1dda468942adc786860f5add31aa8c7b320fbfc8"
   dependencies:
