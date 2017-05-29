@@ -832,6 +832,10 @@ const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
         },
         horizontalRule: {
             backgroundColor: theme.centerChannelColor
+        },
+        quoteBlock: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            padding: 5
         }
     });
 });
