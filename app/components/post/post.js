@@ -29,6 +29,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import ReplyIcon from 'app/components/reply_icon';
 import SlackAttachments from 'app/components/slack_attachments';
 import {preventDoubleTap} from 'app/utils/tap';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import webhookIcon from 'assets/images/icons/webhook.jpg';
@@ -315,13 +316,11 @@ class Post extends PureComponent {
         return attachments;
     }
 
-    renderSlackAttachments = (baseStyle) => {
+    renderSlackAttachments = (baseStyle, blockStyles, textStyles) => {
         const {post, theme} = this.props;
 
         if (post.props) {
             const {attachments} = post.props;
-            const textStyles = getMarkdownTextStyles(theme);
-            const blockStyles = getMarkdownBlockStyles(theme);
 
             if (attachments && attachments.length) {
                 return (
@@ -339,7 +338,7 @@ class Post extends PureComponent {
         return null;
     };
 
-    renderMessage = (style, messageStyle, replyBar = false) => {
+    renderMessage = (style, messageStyle, blockStyles, textStyles, replyBar = false) => {
         const {formatMessage} = this.props.intl;
         const {isFlagged, post, theme} = this.props;
         const {flagPost, unflagPost} = this.props.actions;
@@ -384,8 +383,8 @@ class Post extends PureComponent {
                     <View style={[{flex: 1}, (post.failed && style.failedPost)]}>
                         <Markdown
                             baseTextStyle={messageStyle}
-                            textStyles={getMarkdownTextStyles(theme)}
-                            blockStyles={getMarkdownBlockStyles(theme)}
+                            textStyles={textStyles}
+                            blockStyles={blockStyles}
                             value={post.message}
                         />
                     </View>
@@ -406,7 +405,7 @@ class Post extends PureComponent {
                                 toggleSelected={this.toggleSelected}
                             >
                                 {message}
-                                {this.renderSlackAttachments(messageStyle)}
+                                {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
                                 {this.renderFileAttachments()}
                             </OptionsContext>
                         </View>
@@ -445,7 +444,7 @@ class Post extends PureComponent {
                                     actions={actions}
                                     cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
                                 />
-                                {this.renderSlackAttachments(messageStyle)}
+                                {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
                                 {this.renderFileAttachments()}
                             </View>
                             {post.failed &&
@@ -581,6 +580,9 @@ class Post extends PureComponent {
             messageStyle = style.message;
         }
 
+        const blockStyles = getMarkdownBlockStyles(theme);
+        const textStyles = getMarkdownTextStyles(theme);
+
         const selected = this.state && this.state.selected ? style.selected : null;
         let contents;
         if (this.props.commentedOnPost) {
@@ -599,7 +601,7 @@ class Post extends PureComponent {
                         <View>
                             {this.renderCommentedOnMessage(style)}
                         </View>
-                        {this.renderMessage(style, messageStyle, true)}
+                        {this.renderMessage(style, messageStyle, blockStyles, textStyles, true)}
                     </View>
                 </View>
             );
@@ -741,101 +743,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             marginLeft: 3,
             color: theme.linkColor
-        }
-    });
-});
-
-const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
-    const codeFont = Platform.OS === 'ios' ? 'Courier New' : 'monospace';
-
-    return StyleSheet.create({
-        emph: {
-            fontStyle: 'italic'
-        },
-        strong: {
-            fontWeight: 'bold'
-        },
-        link: {
-            color: theme.linkColor
-        },
-        heading1: {
-            fontSize: 17,
-            lineHeight: 25,
-            fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
-        },
-        heading2: {
-            fontSize: 17,
-            lineHeight: 25,
-            fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
-        },
-        heading3: {
-            fontSize: 17,
-            lineHeight: 25,
-            fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
-        },
-        heading4: {
-            fontSize: 17,
-            lineHeight: 25,
-            fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
-        },
-        heading5: {
-            fontSize: 17,
-            lineHeight: 25,
-            fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
-        },
-        heading6: {
-            fontSize: 17,
-            lineHeight: 25,
-            fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
-        },
-        code: {
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            fontFamily: codeFont,
-            paddingHorizontal: 4,
-            paddingVertical: 2
-        },
-        codeBlock: {
-            fontFamily: codeFont
-        },
-        horizontalRule: {
-            backgroundColor: theme.centerChannelColor,
-            height: StyleSheet.hairlineWidth,
-            flex: 1,
-            marginVertical: 10
-        },
-        mention: {
-            color: theme.linkColor
-        }
-    });
-});
-
-const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        codeBlock: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderRadius: 4,
-            paddingHorizontal: 4,
-            paddingVertical: 2
-        },
-        horizontalRule: {
-            backgroundColor: theme.centerChannelColor
-        },
-        quoteBlock: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            padding: 5
         }
     });
 });

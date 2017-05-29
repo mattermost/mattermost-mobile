@@ -12,12 +12,16 @@ import {
 import ChanneIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
+import Markdown from 'app/components/markdown';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 function channelInfoHeader(props) {
     const {createAt, creator, displayName, header, memberCount, purpose, status, theme, type} = props;
 
     const style = getStyleSheet(theme);
+    const textStyles = getMarkdownTextStyles(theme);
+    const blockStyles = getMarkdownBlockStyles(theme);
 
     return (
         <View style={style.container}>
@@ -45,7 +49,12 @@ function channelInfoHeader(props) {
                         id='channel_info.purpose'
                         defaultMessage='Purpose'
                     />
-                    <Text style={style.detail}>{purpose}</Text>
+                    <Markdown
+                        baseTextStyle={style.detail}
+                        textStyles={textStyles}
+                        blockStyles={blockStyles}
+                        value={purpose}
+                    />
                 </View>
             }
             {header.length > 0 &&
@@ -55,7 +64,12 @@ function channelInfoHeader(props) {
                         id='channel_info.header'
                         defaultMessage='Header'
                     />
-                    <Text style={style.detail}>{header}</Text>
+                    <Markdown
+                        baseTextStyle={style.detail}
+                        textStyles={textStyles}
+                        blockStyles={blockStyles}
+                        value={header}
+                    />
                 </View>
             }
             {creator &&
