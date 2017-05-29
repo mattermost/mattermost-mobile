@@ -24,12 +24,9 @@ export default class MarkdownBlockQuote extends PureComponent {
                         name='quote-left'
                         style={this.props.blockStyle}
                         size={14}
-                        left={0}
-                        top={0}
-                        position='absolute'
                     />
                 </View>
-                <View style={{paddingLeft: 5}}>
+                <View>
                     {this.props.children}
                 </View>
             </View>
@@ -40,7 +37,6 @@ export default class MarkdownBlockQuote extends PureComponent {
 const style = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
-        paddingLeft: 20
+        alignItems: 'flex-start'
     }
 });
