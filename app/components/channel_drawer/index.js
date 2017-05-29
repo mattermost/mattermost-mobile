@@ -8,7 +8,7 @@ import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel'
 
 import {getChannelsWithUnreadSection, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'app/selectors/preferences';
-import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeam, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 
 import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
 
@@ -21,6 +21,7 @@ function mapStateToProps(state, ownProps) {
         currentChannel: getCurrentChannel(state),
         channels: getChannelsWithUnreadSection(state),
         channelMembers: state.entities.channels.myMembers,
+        myTeamMembers: getTeamMemberships(state),
         theme: getTheme(state)
     };
 }

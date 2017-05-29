@@ -9,3 +9,7 @@ export function isValidUrl(url) {
 export function stripTrailingSlashes(url) {
     return url.replace(/\/+$/, '').trim();
 }
+
+export function removeProtocol(url) {
+    return url.replace(/(^\w+:|^)\/\//, '');
+}

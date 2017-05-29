@@ -19,11 +19,14 @@ import {getTheme} from 'app/selectors/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 
 import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 class ChannelDrawerButton extends PureComponent {
     static propTypes = {
         applicationInitializing: PropTypes.bool.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
+        myTeamMembers: PropTypes.object,
         theme: PropTypes.object,
         messageCount: PropTypes.number,
         mentionCount: PropTypes.number
@@ -75,14 +78,32 @@ class ChannelDrawerButton extends PureComponent {
     };
 
     render() {
-        if (this.props.applicationInitializing) {
+        const {
+            applicationInitializing,
+            currentTeamId,
+            mentionCount,
+            messageCount,
+            myTeamMembers,
+            theme
+        } = this.props;
+
+        if (applicationInitializing) {
             return null;
         }
 
-        let badge;
-        let badgeCount = this.props.mentionCount;
+        let mentions = mentionCount;
+        let messages = messageCount;
 
-        if (!badgeCount && this.props.messageCount) {
+        const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
+        members.forEach((m) => {
+            mentions = mentions + m.mention_count;
+            messages = messages + m.msg_count;
+        });
+
+        let badge;
+        let badgeCount = mentions;
+
+        if (!badgeCount && messages) {
             badgeCount = -1;
         }
 
@@ -109,7 +130,7 @@ class ChannelDrawerButton extends PureComponent {
                     <Icon
                         name='md-menu'
                         size={25}
-                        color={this.props.theme.sidebarHeaderTextColor}
+                        color={theme.sidebarHeaderTextColor}
                     />
                     {badge}
                 </View>
@@ -158,6 +179,8 @@ const style = StyleSheet.create({
 function mapStateToProps(state) {
     return {
         applicationInitializing: state.views.root.appInitializing,
+        currentTeamId: getCurrentTeamId(state),
+        myTeamMembers: getTeamMemberships(state),
         theme: getTheme(state),
         ...getUnreadsInCurrentTeam(state)
     };

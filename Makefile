@@ -12,9 +12,9 @@ android_target := $(filter-out build-android,$(MAKECMDGOALS))
 		exit 1; \
 	fi
 
-	@echo Getting dependencies using npm
+	@echo Getting dependencies using yarn
 
-	yarn install
+	yarn install --pure-lockfile
 
 	touch $@
 

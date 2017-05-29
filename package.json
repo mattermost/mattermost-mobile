@@ -31,6 +31,7 @@
     "react-native-push-notification": "3.0.0",
     "react-native-search-bar": "enahum/react-native-search-bar.git",
     "react-native-svg": "5.1.8",
+    "react-native-swiper": "1.5.4",
     "react-native-tooltip": "5.0.0",
     "react-native-vector-icons": "4.1.1",
     "react-redux": "5.0.4",
@@ -81,5 +82,10 @@
     "start": "node node_modules/react-native/local-cli/cli.js start -- --reset-cache",
     "test": "NODE_ENV=test mocha --opts test/mocha.opts",
     "postinstall": "make post-install"
+  },
+  "rnpm": {
+    "assets": [
+      "./assets/fonts"
+    ]
   }
 }

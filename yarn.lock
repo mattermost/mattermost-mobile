@@ -3526,7 +3526,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/dd0d59b2b29aea9c9e6407b72c8eb6e6e0ba091f"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/1755fccae9f6e11899e128f29023b0f7e1475bef"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4390,6 +4390,10 @@ react-native-svg@5.1.8:
   dependencies:
     color "^0.11.1"
     lodash "^4.16.6"
+
+react-native-swiper@1.5.4:
+  version "1.5.4"
+  resolved "https://registry.yarnpkg.com/react-native-swiper/-/react-native-swiper-1.5.4.tgz#a85535b5374ef8d605a7a720e447ac46816ac448"
 
 react-native-tooltip@5.0.0:
   version "5.0.0"

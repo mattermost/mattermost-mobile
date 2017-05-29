@@ -3,12 +3,21 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {BackHandler, InteractionManager, Keyboard} from 'react-native';
+import {
+    BackHandler,
+    InteractionManager,
+    Keyboard,
+    View
+} from 'react-native';
 
 import Drawer from 'app/components/drawer';
 import ChannelDrawerList from 'app/components/channel_drawer_list';
+import ChannelDrawerSwiper from 'app/components/channel_drawer_swiper';
+import ChannelDrawerTeams from 'app/components/channel_drawer_teams';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+const DRAWER_INITIAL_OFFSET = 40;
 
 export default class ChannelDrawer extends PureComponent {
     static propTypes = {
@@ -25,6 +34,7 @@ export default class ChannelDrawer extends PureComponent {
         currentChannel: PropTypes.object,
         channels: PropTypes.object,
         channelMembers: PropTypes.object,
+        myTeamMembers: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
 
@@ -34,8 +44,11 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     state = {
-        openDrawer: false
+        openDrawer: false,
+        openDrawerOffset: DRAWER_INITIAL_OFFSET
     };
+
+    swiperIndex = 1;
 
     componentDidMount() {
         EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
@@ -63,6 +76,7 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     handleDrawerClose = () => {
+        this.resetDrawer();
         setTimeout(() => {
             InteractionManager.clearInteractionHandle(this.closeLeftHandle);
         });
@@ -128,20 +142,85 @@ export default class ChannelDrawer extends PureComponent {
         });
     };
 
-    render() {
+    onPageSelected = (index) => {
+        this.swiperIndex = index;
+    };
+
+    showTeams = () => {
+        const teamsCount = Object.keys(this.props.myTeamMembers).length;
+        if (this.swiperIndex === 1 && teamsCount > 1) {
+            this.refs.swiper.showTeamsPage();
+        }
+    };
+
+    resetDrawer = () => {
+        const teamsCount = Object.keys(this.props.myTeamMembers).length;
+        if (this.swiperIndex === 0 && teamsCount > 1) {
+            this.refs.swiper.resetPage();
+        }
+    };
+
+    renderContent = () => {
         const {
-            children,
             currentChannel,
             currentTeam,
             channels,
             channelMembers,
             navigator,
+            myTeamMembers,
             theme
         } = this.props;
+        const showTeams = Object.keys(myTeamMembers).length > 1;
+
+        let teams;
+        if (showTeams) {
+            teams = (
+                <View style={{flex: 1, marginBottom: 10}}>
+                    <ChannelDrawerTeams
+                        closeChannelDrawer={this.closeChannelDrawer}
+                        myTeamMembers={myTeamMembers}
+                    />
+                </View>
+            );
+        }
+
+        const channelsList = (
+            <View style={{flex: 1, marginBottom: 10}}>
+                <ChannelDrawerList
+                    currentTeam={currentTeam}
+                    currentChannel={currentChannel}
+                    channels={channels}
+                    channelMembers={channelMembers}
+                    myTeamMembers={myTeamMembers}
+                    theme={theme}
+                    onSelectChannel={this.selectChannel}
+                    navigator={navigator}
+                    onShowTeams={this.showTeams}
+                />
+            </View>
+        );
+
+        return (
+            <ChannelDrawerSwiper
+                ref='swiper'
+                onPageSelected={this.onPageSelected}
+                openDrawerOffset={this.state.openDrawerOffset}
+                showTeams={showTeams}
+                theme={theme}
+            >
+                {teams}
+                {channelsList}
+            </ChannelDrawerSwiper>
+        );
+    };
+
+    render() {
+        const {children} = this.props;
+        const {openDrawer, openDrawerOffset} = this.state;
 
         return (
             <Drawer
-                open={this.state.openDrawer}
+                open={openDrawer}
                 onOpenStart={this.handleDrawerOpenStart}
                 onOpen={this.handleDrawerOpen}
                 onCloseStart={this.handleDrawerCloseStart}
@@ -150,22 +229,12 @@ export default class ChannelDrawer extends PureComponent {
                 type='static'
                 acceptTap={true}
                 disabled={false}
-                content={
-                    <ChannelDrawerList
-                        currentTeam={currentTeam}
-                        currentChannel={currentChannel}
-                        channels={channels}
-                        channelMembers={channelMembers}
-                        theme={theme}
-                        onSelectChannel={this.selectChannel}
-                        navigator={navigator}
-                    />
-                }
+                content={this.renderContent()}
                 tapToClose={true}
-                openDrawerOffset={40}
+                openDrawerOffset={openDrawerOffset}
                 onRequestClose={this.closeChannelDrawer}
                 panOpenMask={0.2}
-                panCloseMask={40}
+                panCloseMask={openDrawerOffset}
                 panThreshold={0.25}
                 acceptPan={true}
                 negotiatePan={true}
