@@ -17,6 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Badge from 'app/components/badge';
 import {getTheme} from 'app/selectors/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
@@ -107,6 +108,8 @@ class ChannelDrawerButton extends PureComponent {
             badgeCount = -1;
         }
 
+        const style = getStyleFromTheme(theme);
+
         if (badgeCount !== 0) {
             badge = (
                 <Badge
@@ -139,41 +142,45 @@ class ChannelDrawerButton extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        width: 40
-    },
-    wrapper: {
-        alignItems: 'center',
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 10,
-        zIndex: 30
-    },
-    badge: {
-        backgroundColor: 'rgb(214, 73, 70)',
-        borderRadius: 10,
-        flexDirection: 'row',
-        height: 20,
-        left: 5,
-        padding: 3,
-        position: 'absolute',
-        right: 0,
-        ...Platform.select({
-            android: {
-                top: 10
-            },
-            ios: {
-                top: 5
-            }
-        }),
-        width: 20
-    },
-    mention: {
-        color: '#fff',
-        fontSize: 10
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            width: 40
+        },
+        wrapper: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'column',
+            justifyContent: 'center',
+            paddingHorizontal: 10,
+            zIndex: 30
+        },
+        badge: {
+            backgroundColor: theme.mentionBj,
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 10,
+            borderWidth: 1,
+            flexDirection: 'row',
+            height: 20,
+            left: 5,
+            padding: 3,
+            position: 'absolute',
+            right: 0,
+            ...Platform.select({
+                android: {
+                    top: 10
+                },
+                ios: {
+                    top: 5
+                }
+            }),
+            width: 20
+        },
+        mention: {
+            color: theme.mentionColor,
+            fontSize: 10
+        }
+    });
 });
 
 function mapStateToProps(state) {
