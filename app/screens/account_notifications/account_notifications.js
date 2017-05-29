@@ -120,7 +120,9 @@ class AccountNotifications extends PureComponent {
         let interval;
         if (this.props.config.EnableEmailBatching === 'true') {
             const emailPreferences = getPreferencesByCategory(this.props.myPreferences, Preferences.CATEGORY_NOTIFICATIONS);
-            interval = emailPreferences.get(Preferences.EMAIL_INTERVAL).value;
+            if (emailPreferences.size) {
+                interval = emailPreferences.get(Preferences.EMAIL_INTERVAL).value;
+            }
         }
 
         const comments = notifyProps.comments || 'never';
