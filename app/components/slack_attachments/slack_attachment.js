@@ -175,7 +175,7 @@ export default class SlackAttachment extends PureComponent {
         let preText;
         if (attachment.pretext) {
             preText = (
-                <View style={{marginVertical: 5}}>
+                <View style={{marginTop: 5}}>
                     <Markdown
                         baseTextStyle={baseTextStyle}
                         textStyles={textStyles}
@@ -334,6 +334,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.15),
             borderWidth: 1,
             flex: 1,
+            marginTop: 5,
             paddingHorizontal: 10,
             paddingVertical: 7
         },
@@ -384,6 +385,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 10
         },
         heading: {
+            color: theme.centerChannelColor,
             fontWeight: '600'
         },
         bodyContainer: {
