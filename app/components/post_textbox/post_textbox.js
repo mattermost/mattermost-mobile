@@ -116,8 +116,8 @@ class PostTextbox extends PureComponent {
         this.refs.input.blur();
     };
 
-    handleContentSizeChange = (e) => {
-        let height = e.nativeEvent.contentSize.height;
+    handleContentSizeChange = (h) => {
+        let height = h;
         if (height < INITIAL_HEIGHT) {
             height = INITIAL_HEIGHT;
         }
@@ -216,6 +216,10 @@ class PostTextbox extends PureComponent {
         if (this.autocomplete) {
             this.autocomplete.handleSelectionChange(event);
         }
+    };
+
+    initialHeight = (event) => {
+        this.handleContentSizeChange(event.nativeEvent.layout.height);
     };
 
     attachAutocomplete = (c) => {
@@ -390,6 +394,12 @@ class PostTextbox extends PureComponent {
 
         return (
             <View>
+                <Text
+                    style={[style.input, style.hidden]}
+                    onLayout={this.initialHeight}
+                >
+                    {textValue}
+                </Text>
                 <View>
                     <Text
                         style={[style.typing]}
@@ -439,7 +449,6 @@ class PostTextbox extends PureComponent {
                                 underlineColorAndroid='transparent'
                                 style={[style.input, {height: textInputHeight}]}
                                 onSubmitEditing={this.handleSubmit}
-                                onChange={this.handleContentSizeChange}
                             />
                             {this.state.canSend &&
                                 <TouchableOpacity
@@ -478,6 +487,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 12,
             paddingTop: 8,
             textAlignVertical: 'top'
+        },
+        hidden: {
+            position: 'absolute',
+            top: 10000,  // way off screen
+            left: 10000, // way off screen
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+            color: 'transparent'
         },
         inputContainer: {
             flex: 1,
