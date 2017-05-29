@@ -1756,7 +1756,6 @@
   "mobile.server_ping_failed": "Cannot connect to the server. Please check your server URL and internet connection.",
   "mobile.server_url.invalid_format": "URL must start with http:// or https://",
   "mobile.session_expired": "Session Expired: Please log in to continue receiving notifications.",
-  "mobile.settings.team_selection": "Team Selection",
   "more_channels.close": "Close",
   "more_channels.create": "Create New Channel",
   "more_channels.createClick": "Click 'Create New Channel' to make a new one",

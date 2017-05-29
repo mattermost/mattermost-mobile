@@ -12,7 +12,6 @@ import {getTheme} from 'app/selectors/preferences';
 import Settings from './settings';
 
 function mapStateToProps(state, ownProps) {
-    const showTeamSelection = Object.keys(state.entities.teams.teams).length > 1;
     const {config} = state.entities.general;
 
     return {
@@ -21,8 +20,7 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         errors: state.errors,
         currentUserId: state.entities.users.currentUserId,
-        currentTeamId: state.entities.teams.currentTeamId,
-        showTeamSelection
+        currentTeamId: state.entities.teams.currentTeamId
     };
 }
 

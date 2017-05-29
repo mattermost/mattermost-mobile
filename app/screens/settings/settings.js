@@ -30,7 +30,6 @@ class Settings extends PureComponent {
         errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        showTeamSelection: PropTypes.bool.isRequired,
         theme: PropTypes.object
     };
 
@@ -89,21 +88,6 @@ class Settings extends PureComponent {
         });
     };
 
-    goToSelectTeam = () => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'SelectTeam',
-            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
-            }
-        });
-    };
-
     handlePress = (action) => {
         preventDoubleTap(action, this);
     };
@@ -138,7 +122,7 @@ class Settings extends PureComponent {
     };
 
     render() {
-        const {config, showTeamSelection, theme} = this.props;
+        const {config, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -153,17 +137,6 @@ class Settings extends PureComponent {
                         separator={true}
                         theme={theme}
                     />
-                    {showTeamSelection &&
-                        <SettingsItem
-                            defaultMessage='Team Selection'
-                            i18nId='mobile.settings.team_selection'
-                            iconName='ios-people'
-                            iconType='ion'
-                            onPress={() => this.handlePress(this.goToSelectTeam)}
-                            separator={true}
-                            theme={theme}
-                        />
-                    }
                     {config.HelpLink &&
                         <SettingsItem
                             defaultMessage='Help'

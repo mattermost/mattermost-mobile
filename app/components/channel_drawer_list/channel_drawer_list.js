@@ -16,6 +16,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import Badge from 'app/components/badge';
 import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -33,8 +34,10 @@ class ChannelDrawerList extends Component {
         currentTeam: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         intl: intlShape.isRequired,
+        myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
+        onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
     };
 
@@ -210,20 +213,20 @@ class ChannelDrawerList extends Component {
 
         if (unreadChannels.length) {
             data.push(
-                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, unreadChannels.length > 0),
+                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, unreadChannels.length > 0),
                 ...unreadChannels
             );
         }
 
         if (favoriteChannels.length) {
             data.push(
-                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, favoriteChannels.length > 0),
+                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, unreadChannels.length > 0, favoriteChannels.length > 0),
                 ...favoriteChannels
             );
         }
 
         data.push(
-            this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', this.showMoreChannelsModal, publicChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', this.showMoreChannelsModal, favoriteChannels.length > 0, publicChannels.length > 0),
             ...publicChannels
         );
 
@@ -232,12 +235,12 @@ class ChannelDrawerList extends Component {
             createPrivateChannel = this.createPrivateChannel;
         }
         data.push(
-            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE CHANNELS', createPrivateChannel, privateChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE CHANNELS', createPrivateChannel, true, privateChannels.length > 0),
             ...privateChannels
         );
 
         data.push(
-            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.showDirectMessagesModal, directAndGroupChannels.length > 0),
+            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.showDirectMessagesModal, true, directAndGroupChannels.length > 0),
             ...directAndGroupChannels
         );
 
@@ -349,14 +352,15 @@ class ChannelDrawerList extends Component {
         return item.title;
     };
 
-    renderTitle = (styles, id, defaultMessage, action, bottomDivider) => {
+    renderTitle = (styles, id, defaultMessage, action, topDivider, bottomDivider) => {
         const {formatMessage} = this.props.intl;
+
         return {
             id,
             isTitle: true,
             title: (
                 <View>
-                    {this.renderDivider(styles, 0)}
+                    {topDivider && this.renderDivider(styles, 0)}
                     <View style={styles.titleContainer}>
                         <Text style={styles.title}>
                             {formatMessage({id, defaultMessage}).toUpperCase()}
@@ -370,11 +374,20 @@ class ChannelDrawerList extends Component {
     };
 
     render() {
-        if (!this.props.currentChannel) {
+        const {
+            currentChannel,
+            currentTeam,
+            myTeamMembers,
+            onShowTeams,
+            theme
+        } = this.props;
+
+        const {dataSource, showAbove, showBelow} = this.state;
+        const teamMembers = Object.values(myTeamMembers);
+
+        if (!currentChannel) {
             return <Text>{'Loading'}</Text>;
         }
-
-        const {theme} = this.props;
         const styles = getStyleSheet(theme);
 
         const settings = (
@@ -391,8 +404,7 @@ class ChannelDrawerList extends Component {
         );
 
         let above;
-        let below;
-        if (this.state.showAbove) {
+        if (showAbove) {
             above = (
                 <UnreadIndicator
                     style={[styles.above, {width: (this.width - 40)}]}
@@ -407,7 +419,8 @@ class ChannelDrawerList extends Component {
             );
         }
 
-        if (this.state.showBelow) {
+        let below;
+        if (showBelow) {
             below = (
                 <UnreadIndicator
                     style={[styles.below, {width: (this.width - 40)}]}
@@ -422,6 +435,66 @@ class ChannelDrawerList extends Component {
             );
         }
 
+        const title = (
+            <Text
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={styles.header}
+                onPress={onShowTeams}
+            >
+                {currentTeam.display_name}
+            </Text>
+        );
+
+        let badge;
+        let switcher;
+        if (teamMembers.length > 1) {
+            let mentionCount = 0;
+            let messageCount = 0;
+            teamMembers.forEach((m) => {
+                if (m.team_id !== currentTeam.id) {
+                    mentionCount = mentionCount + m.mention_count;
+                    messageCount = messageCount + m.msg_count;
+                }
+            });
+
+            let badgeCount = mentionCount;
+            if (!badgeCount && messageCount) {
+                badgeCount = -1;
+            }
+
+            if (badgeCount !== 0) {
+                badge = (
+                    <Badge
+                        style={styles.badge}
+                        countStyle={styles.mention}
+                        count={badgeCount}
+                        minHeight={5}
+                        minWidth={5}
+                    />
+                );
+            }
+
+            switcher = (
+                <TouchableHighlight
+                    onPress={() => preventDoubleTap(onShowTeams)}
+                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+                >
+                    <View style={styles.switcherContainer}>
+                        <AwesomeIcon
+                            name='chevron-left'
+                            size={12}
+                            color={theme.sidebarHeaderBg}
+                        />
+                        <View style={styles.switcherDivider}/>
+                        <Text style={styles.switcherTeam}>
+                            {currentTeam.display_name.substr(0, 2).toUpperCase()}
+                        </Text>
+                    </View>
+                </TouchableHighlight>
+            );
+        }
+
         return (
             <View
                 style={styles.container}
@@ -429,19 +502,15 @@ class ChannelDrawerList extends Component {
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
-                        <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={styles.header}
-                        >
-                            {this.props.currentTeam.display_name}
-                        </Text>
+                        {switcher}
+                        {title}
                         {settings}
+                        {badge}
                     </View>
                 </View>
                 <FlatList
                     ref='list'
-                    data={this.state.dataSource}
+                    data={dataSource}
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
@@ -472,22 +541,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 }
             })
         },
-        scrollContainer: {
-            flex: 1
-        },
         headerContainer: {
             alignItems: 'center',
             backgroundColor: theme.sidebarHeaderBg,
             flexDirection: 'row',
-            height: 44,
-            paddingLeft: 16
+            borderBottomWidth: 1,
+            borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
+            ...Platform.select({
+                android: {
+                    height: 46
+                },
+                ios: {
+                    height: 44
+                }
+            })
         },
         header: {
             color: theme.sidebarHeaderTextColor,
             flex: 1,
-            fontSize: 14,
+            fontSize: 17,
             fontWeight: 'normal',
-            lineHeight: 16
+            paddingLeft: 16
         },
         settingsContainer: {
             alignItems: 'center',
@@ -515,6 +589,44 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '400',
             letterSpacing: 0.8,
             lineHeight: 18
+        },
+        switcherContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.sidebarHeaderTextColor,
+            borderRadius: 2,
+            flexDirection: 'row',
+            height: 32,
+            justifyContent: 'center',
+            marginLeft: 16,
+            paddingHorizontal: 6
+        },
+        switcherDivider: {
+            backgroundColor: theme.sidebarHeaderBg,
+            height: 15,
+            marginHorizontal: 6,
+            width: 1
+        },
+        switcherTeam: {
+            color: theme.sidebarHeaderBg,
+            fontFamily: 'OpenSans',
+            fontSize: 14
+        },
+        badge: {
+            backgroundColor: theme.mentionBj,
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 10,
+            borderWidth: 1,
+            flexDirection: 'row',
+            height: 20,
+            padding: 3,
+            position: 'absolute',
+            left: 5,
+            top: 0,
+            width: 20
+        },
+        mention: {
+            color: theme.mentionColor,
+            fontSize: 10
         },
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),

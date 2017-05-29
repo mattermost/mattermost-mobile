@@ -81,12 +81,9 @@ export default class Mattermost {
     handleVersionUpgrade = async () => {
         const {dispatch, getState} = store;
 
-        // const {closeDrawers, logout, unrenderDrawer} = this.props.actions;
-
         Client4.serverVersion = '';
+        PushNotification.setApplicationIconBadgeNumber(0);
 
-        // closeDrawers();
-        // unrenderDrawer();
         if (getState().entities.general.credentials.token) {
             InteractionManager.runAfterInteractions(() => {
                 logout()(dispatch, getState);
