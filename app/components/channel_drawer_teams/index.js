@@ -4,12 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {General} from 'mattermost-redux/constants';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeamId, getMyTeams} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
-import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {getTheme} from 'app/selectors/preferences';
@@ -18,9 +15,7 @@ import {removeProtocol} from 'app/utils/url';
 import ChannelDrawerTeams from './channel_drawer_teams';
 
 function mapStateToProps(state, ownProps) {
-    const {config, license} = state.entities.general;
     const user = getCurrentUser(state);
-    const roles = user ? getCurrentUserRoles(state) : '';
 
     function sortTeams(locale, a, b) {
         if (a.display_name !== b.display_name) {
@@ -31,7 +26,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        canCreateTeams: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreateTeams: false,
         canJoinTeams: false,
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),

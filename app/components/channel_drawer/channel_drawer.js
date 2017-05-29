@@ -5,23 +5,19 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
-    Dimensions,
     InteractionManager,
     Keyboard,
-    Platform,
-    View,
-    ViewPagerAndroid
+    View
 } from 'react-native';
-import Swiper from 'react-native-swiper';
 
 import Drawer from 'app/components/drawer';
 import ChannelDrawerList from 'app/components/channel_drawer_list';
+import ChannelDrawerSwiper from 'app/components/channel_drawer_swiper';
 import ChannelDrawerTeams from 'app/components/channel_drawer_teams';
-import {changeOpacity} from 'app/utils/theme';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
+const DRAWER_INITIAL_OFFSET = 40;
 
 export default class ChannelDrawer extends PureComponent {
     static propTypes = {
@@ -49,7 +45,7 @@ export default class ChannelDrawer extends PureComponent {
 
     state = {
         openDrawer: false,
-        openDrawerOffset: 40
+        openDrawerOffset: DRAWER_INITIAL_OFFSET
     };
 
     swiperIndex = 1;
@@ -146,80 +142,22 @@ export default class ChannelDrawer extends PureComponent {
         });
     };
 
-    swiperPageSelectedAndroid = (event) => {
-        this.swiperIndex = event.nativeEvent.position;
-    };
-
-    swiperPageSelectedIos = (e, state, context) => {
-        this.swiperIndex = context.state.index;
+    onPageSelected = (index) => {
+        this.swiperIndex = index;
     };
 
     showTeams = () => {
         const teamsCount = Object.keys(this.props.myTeamMembers).length;
         if (this.swiperIndex === 1 && teamsCount > 1) {
-            if (Platform.OS === 'android') {
-                this.swiper.setPage(0);
-            } else {
-                this.swiper.scrollBy(-1, true);
-            }
+            this.refs.swiper.showTeamsPage();
         }
     };
 
     resetDrawer = () => {
         const teamsCount = Object.keys(this.props.myTeamMembers).length;
         if (this.swiperIndex === 0 && teamsCount > 1) {
-            if (Platform.OS === 'android') {
-                this.swiper.setPageWithoutAnimation(1);
-            } else {
-                this.swiper.scrollBy(1, false);
-            }
+            this.refs.swiper.resetPage();
         }
-    };
-
-    renderAndroid = (theme, teams, channelsList, showTeams) => {
-        return (
-            <ViewPagerAndroid
-                ref={(r) => {
-                    this.swiper = r;
-                }}
-                style={{flex: 1, backgroundColor: theme.sidebarBg}}
-                initialPage={1}
-                scrollEnabled={showTeams}
-                onPageSelected={this.swiperPageSelectedAndroid}
-            >
-                {teams}
-                {channelsList}
-            </ViewPagerAndroid>
-        );
-    };
-
-    renderIos = (theme, teams, channelsList, showTeams) => {
-        const {openDrawerOffset} = this.state;
-
-        return (
-            <Swiper
-                ref={(r) => {
-                    this.swiper = r;
-                }}
-                horizontal={true}
-                loop={false}
-                index={1}
-                onMomentumScrollEnd={this.swiperPageSelectedIos}
-                paginationStyle={{position: 'relative', bottom: 10}}
-                width={deviceWidth - openDrawerOffset}
-                height={deviceHeight}
-                style={{backgroundColor: theme.sidebarBg}}
-                activeDotColor={theme.sidebarText}
-                dotColor={changeOpacity(theme.sidebarText, 0.5)}
-                removeClippedSubviews={true}
-                automaticallyAdjustContentInsets={true}
-                scrollEnabled={showTeams}
-                showsPagination={showTeams}
-            >
-                {teams}
-                {channelsList}
-            </Swiper>
-        );
     };
 
     renderContent = () => {
@@ -262,11 +200,18 @@ export default class ChannelDrawer extends PureComponent {
             </View>
         );
 
-        if (Platform.OS === 'android') {
-            return this.renderAndroid(theme, teams, channelsList, showTeams);
-        }
-
-        return this.renderIos(theme, teams, channelsList, showTeams);
+        return (
+            <ChannelDrawerSwiper
+                ref='swiper'
+                onPageSelected={this.onPageSelected}
+                openDrawerOffset={this.state.openDrawerOffset}
+                showTeams={showTeams}
+                theme={theme}
+            >
+                {teams}
+                {channelsList}
+            </ChannelDrawerSwiper>
+        );
     };
 
     render() {
