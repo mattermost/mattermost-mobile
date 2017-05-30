@@ -65,3 +65,6 @@ mattermost.keystore
 
 # Sentry
 android/sentry.properties
+
+# Testing
+.nyc_output
