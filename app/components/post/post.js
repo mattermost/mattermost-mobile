@@ -635,7 +635,7 @@ class Post extends PureComponent {
                                     </TouchableOpacity>
                                 }
                             </View>
-                            {this.renderMessage(style, messageStyle)}
+                            {this.renderMessage(style, messageStyle, blockStyles, textStyles)}
                         </View>
                     </View>
                 </View>
