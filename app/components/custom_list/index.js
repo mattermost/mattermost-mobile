@@ -3,6 +3,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ListView, Platform, StyleSheet, Text, View} from 'react-native';
+
+import Loading from 'app/components/loading';
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -155,15 +157,33 @@ export default class CustomList extends PureComponent {
     };
 
     render() {
-        const style = getStyleFromTheme(this.props.theme);
+        const {
+            data,
+            listInitialSize,
+            listPageSize,
+            listScrollRenderAheadDistance,
+            loading,
+            onListEndReached,
+            onListEndReachedThreshold,
+            showNoResults,
+            showSections,
+            theme
+        } = this.props;
+        const {dataSource} = this.state;
+        const style = getStyleFromTheme(theme);
         let noResults = false;
-        if (typeof this.props.data === 'object') {
-            noResults = Object.keys(this.props.data).length === 0;
+
+        if (typeof data === 'object') {
+            noResults = Object.keys(data).length === 0;
         } else {
-            noResults = this.props.data.length === 0;
+            noResults = data.length === 0;
         }
 
-        if (this.props.showNoResults && !this.props.loading && noResults) {
+        if (loading) {
+            return <Loading/>;
+        }
+
+        if (showNoResults && noResults) {
             return (
                 <View style={style.noResultContainer}>
                     <FormattedText
@@ -178,17 +198,17 @@ export default class CustomList extends PureComponent {
         return (
             <ListView
                 style={style.listView}
-                dataSource={this.state.dataSource}
+                dataSource={dataSource}
                 renderRow={this.renderRow}
-                renderSectionHeader={this.props.showSections ? this.renderSectionHeader : null}
+                renderSectionHeader={showSections ? this.renderSectionHeader : null}
                 renderSeparator={this.renderSeparator}
                 renderFooter={this.renderFooter}
                 enableEmptySections={true}
-                onEndReached={this.props.onListEndReached}
-                onEndReachedThreshold={this.props.onListEndReachedThreshold}
-                pageSize={this.props.listPageSize}
-                initialListSize={this.props.listInitialSize}
-                scrollRenderAheadDistance={this.props.listScrollRenderAheadDistance}
+                onEndReached={onListEndReached}
+                onEndReachedThreshold={onListEndReachedThreshold}
+                pageSize={listPageSize}
+                initialListSize={listInitialSize}
+                scrollRenderAheadDistance={listScrollRenderAheadDistance}
             />
         );
     }
