@@ -98,8 +98,8 @@ class ChannelDrawerButton extends PureComponent {
 
         const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
         members.forEach((m) => {
-            mentions = mentions + m.mention_count;
-            messages = messages + m.msg_count;
+            mentions = mentions + (m.mention_count || 0);
+            messages = messages + (m.msg_count || 0);
         });
 
         let badgeCount = 0;

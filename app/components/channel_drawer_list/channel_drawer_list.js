@@ -453,8 +453,8 @@ class ChannelDrawerList extends Component {
             let messageCount = 0;
             teamMembers.forEach((m) => {
                 if (m.team_id !== currentTeam.id) {
-                    mentionCount = mentionCount + m.mention_count;
-                    messageCount = messageCount + m.msg_count;
+                    mentionCount = mentionCount + (m.mention_count || 0);
+                    messageCount = messageCount + (m.msg_count || 0);
                 }
             });
 
