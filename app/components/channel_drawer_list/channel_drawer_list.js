@@ -458,12 +458,14 @@ class ChannelDrawerList extends Component {
                 }
             });
 
-            let badgeCount = mentionCount;
-            if (!badgeCount && messageCount) {
+            let badgeCount = 0;
+            if (mentionCount) {
+                badgeCount = mentionCount;
+            } else if (messageCount) {
                 badgeCount = -1;
             }
 
-            if (badgeCount !== 0) {
+            if (badgeCount) {
                 badge = (
                     <Badge
                         style={styles.badge}

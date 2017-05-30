@@ -63,12 +63,15 @@ export default class ChannelDrawerTeams extends PureComponent {
             );
         } else {
             const member = myTeamMembers[item.id];
-            let badgeCount = member.mention_count;
-            if (!badgeCount && member.msg_count) {
+
+            let badgeCount = 0;
+            if (member.mention_count) {
+                badgeCount = member.mention_count;
+            } else if (member.msg_count) {
                 badgeCount = -1;
             }
 
-            if (badgeCount !== 0) {
+            if (badgeCount) {
                 badge = (
                     <Badge
                         style={styles.badge}
