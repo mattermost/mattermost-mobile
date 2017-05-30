@@ -87,6 +87,7 @@ class ChannelDrawerButton extends PureComponent {
             myTeamMembers,
             theme
         } = this.props;
+        const style = getStyleFromTheme(theme);
 
         if (applicationInitializing) {
             return null;
@@ -97,20 +98,19 @@ class ChannelDrawerButton extends PureComponent {
 
         const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
         members.forEach((m) => {
-            mentions = mentions + m.mention_count;
-            messages = messages + m.msg_count;
+            mentions = mentions + (m.mention_count || 0);
+            messages = messages + (m.msg_count || 0);
         });
 
-        let badge;
-        let badgeCount = mentions;
-
-        if (!badgeCount && messages) {
+        let badgeCount = 0;
+        if (mentions) {
+            badgeCount = mentions;
+        } else if (messages) {
             badgeCount = -1;
         }
 
-        const style = getStyleFromTheme(theme);
-
-        if (badgeCount !== 0) {
+        let badge;
+        if (badgeCount) {
             badge = (
                 <Badge
                     style={style.badge}
