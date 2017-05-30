@@ -4,107 +4,209 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
+    FlatList,
     InteractionManager,
-    ScrollView,
+    StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
-import Button from 'react-native-button';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {GlobalStyles} from 'app/styles';
 import FormattedText from 'app/components/formatted_text';
-
-import logo from 'assets/images/logo.png';
+import Loading from 'app/components/loading';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SelectTeam extends PureComponent {
     static propTypes = {
-        config: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            getTeams: PropTypes.func.isRequired,
+            handleTeamChange: PropTypes.func.isRequired,
+            joinTeam: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired
+        }).isRequired,
         currentChannelId: PropTypes.string,
+        currentUrl: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         teams: PropTypes.array.isRequired,
-        actions: PropTypes.shape({
-            handleTeamChange: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired
-        }).isRequired
+        theme: PropTypes.object
     };
 
-    state = {
-        disableButtons: false
+    constructor(props) {
+        super(props);
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+
+        this.state = {
+            joining: false
+        };
+    }
+
+    close = () => {
+        this.props.navigator.dismissModal({
+            animationType: 'slide-down'
+        });
     };
 
-    onSelectTeam = async (team) => {
-        if (!this.state.disableButtons) {
-            this.setState({disableButtons: true});
-            const {
-                currentChannelId,
-                handleTeamChange,
-                markChannelAsRead
-            } = this.props.actions;
-
-            if (currentChannelId) {
-                markChannelAsRead(currentChannelId);
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === 'close-teams') {
+                this.close();
             }
-            handleTeamChange(team);
-            EventEmitter.emit('close_channel_drawer');
-            InteractionManager.runAfterInteractions(() => {
-                this.props.navigator.dismissModal({
-                    animationType: 'slide-down'
-                });
-            });
         }
     };
 
-    render() {
-        const content = this.props.teams.map((team) => {
-            return (
-                <Button
-                    key={team.id}
-                    onPress={() => this.onSelectTeam(team)}
-                    style={GlobalStyles.buttonListItemText}
-                    containerStyle={GlobalStyles.buttonListItem}
-                    disabled={this.state.disableButtons}
-                >
-                    {team.display_name}
-                    <Icon
-                        name='keyboard-arrow-right'
-                        size={24}
-                        color='#777'
-                    />
-                </Button>
-            );
+    onSelectTeam = async (team) => {
+        this.setState({joining: true});
+        const {currentChannelId} = this.props;
+        const {
+            joinTeam,
+            handleTeamChange,
+            markChannelAsRead
+        } = this.props.actions;
+
+        if (currentChannelId) {
+            markChannelAsRead(currentChannelId);
+        }
+        await joinTeam(team.invite_id, team.id);
+        handleTeamChange(team);
+        EventEmitter.emit('close_channel_drawer');
+        InteractionManager.runAfterInteractions(() => {
+            this.close();
         });
+    };
+
+    renderItem = ({item}) => {
+        const {currentUrl, theme} = this.props;
+        const styles = getStyleSheet(theme);
 
         return (
-            <View style={GlobalStyles.container}>
-                <ScrollView
-                    style={{flex: 1}}
-                    contentContainerStyle={{alignItems: 'center', paddingVertical: 64}}
-                    showsVerticalScrollIndicator={false}
+            <View style={styles.teamWrapper}>
+                <TouchableOpacity
+                    onPress={() => preventDoubleTap(this.onSelectTeam, this, item)}
                 >
-                    <Image
-                        style={GlobalStyles.logo}
-                        source={logo}
-                    />
-                    <Text style={GlobalStyles.header}>
-                        {this.props.config.SiteName}
-                    </Text>
-                    <FormattedText
-                        style={GlobalStyles.subheader}
-                        id='web.root.signup_info'
-                        defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                    />
-                    <FormattedText
-                        style={GlobalStyles.subheader}
-                        id='mobile.select_team.choose'
-                        defaultMessage='Your teams:'
-                    />
-                    {content}
-                </ScrollView>
+                    <View style={styles.teamContainer}>
+                        <View style={styles.teamIconContainer}>
+                            <Text style={styles.teamIcon}>
+                                {item.display_name.substr(0, 2).toUpperCase()}
+                            </Text>
+                        </View>
+                        <View style={styles.teamNameContainer}>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode='tail'
+                                style={styles.teamName}
+                            >
+                                {item.display_name}
+                            </Text>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode='tail'
+                                style={styles.teamUrl}
+                            >
+                                {`${currentUrl}/${item.name}`}
+                            </Text>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    render() {
+        const {teams, theme} = this.props;
+        const styles = getStyleSheet(theme);
+
+        if (this.state.joining) {
+            return <Loading/>;
+        }
+
+        return (
+            <View style={styles.container}>
+                <View style={styles.headingContainer}>
+                    <View style={styles.headingWrapper}>
+                        <FormattedText
+                            id='mobile.select_team.join_open'
+                            defaultMessage='Open teams you can join'
+                            style={styles.heading}
+                        />
+                    </View>
+                    <View style={styles.line}/>
+                </View>
+                <FlatList
+                    data={teams}
+                    renderItem={this.renderItem}
+                    keyExtractor={(item) => item.id}
+                    viewabilityConfig={{
+                        viewAreaCoveragePercentThreshold: 3,
+                        waitForInteraction: false
+                    }}
+                />
             </View>
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            flex: 1
+        },
+        headingContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            marginHorizontal: 16,
+            marginTop: 20
+        },
+        headingWrapper: {
+            marginRight: 15
+        },
+        heading: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 13
+        },
+        line: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            width: '100%',
+            height: StyleSheet.hairlineWidth
+        },
+        teamWrapper: {
+            marginTop: 20
+        },
+        teamContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            marginHorizontal: 16
+        },
+        teamIconContainer: {
+            alignItems: 'center',
+            backgroundColor: theme.buttonBg,
+            borderRadius: 2,
+            height: 40,
+            justifyContent: 'center',
+            width: 40
+        },
+        teamIcon: {
+            color: theme.buttonColor,
+            fontFamily: 'OpenSans',
+            fontSize: 18,
+            fontWeight: '600'
+        },
+        teamNameContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            marginLeft: 10
+        },
+        teamName: {
+            color: theme.centerChannelColor,
+            fontSize: 18
+        },
+        teamUrl: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 12
+        }
+    });
+});

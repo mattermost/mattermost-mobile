@@ -179,6 +179,7 @@ export default class ChannelDrawer extends PureComponent {
                     <ChannelDrawerTeams
                         closeChannelDrawer={this.closeChannelDrawer}
                         myTeamMembers={myTeamMembers}
+                        navigator={navigator}
                     />
                 </View>
             );

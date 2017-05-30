@@ -567,9 +567,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         settingsContainer: {
             alignItems: 'center',
-            height: 44,
             justifyContent: 'center',
-            width: 50
+            width: 50,
+            ...Platform.select({
+                android: {
+                    height: 46
+                },
+                ios: {
+                    height: 44
+                }
+            })
         },
         settings: {
             color: theme.sidebarHeaderTextColor,
