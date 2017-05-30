@@ -109,7 +109,6 @@ class ChannelDrawerButton extends PureComponent {
             badgeCount = -1;
         }
 
-
         let badge;
         if (badgeCount) {
             badge = (
