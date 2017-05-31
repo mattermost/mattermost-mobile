@@ -4,8 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {getTeams} from 'mattermost-redux/actions/teams';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeamId, getMyTeams} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getJoinableTeams, getMyTeams} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
@@ -27,7 +30,8 @@ function mapStateToProps(state, ownProps) {
 
     return {
         canCreateTeams: false,
-        canJoinTeams: false,
+        joinableTeams: getJoinableTeams(state),
+        currentChannelId: getCurrentChannelId(state),
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
         teams: getMyTeams(state).sort(sortTeams.bind(null, (user.locale))),
@@ -39,7 +43,9 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleTeamChange
+            getTeams,
+            handleTeamChange,
+            markChannelAsRead
         }, dispatch)
     };
 }

@@ -12,38 +12,89 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import Badge from 'app/components/badge';
 import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class ChannelDrawerTeams extends PureComponent {
+class ChannelDrawerTeams extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleTeamChange: PropTypes.func.isRequired
+            getTeams: PropTypes.func.isRequired,
+            handleTeamChange: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired
         }).isRequired,
         canCreateTeams: PropTypes.bool.isRequired,
-        canJoinTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
+        currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
+        intl: intlShape.isRequired,
+        joinableTeams: PropTypes.object.isRequired,
         myTeamMembers: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired
     };
 
+    constructor(props) {
+        super(props);
+
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).
+        then((source) => {
+            this.closeButton = source;
+        });
+    }
+
+    componentWillMount() {
+        this.props.actions.getTeams();
+    }
+
     selectTeam = (team) => {
-        const {actions, closeChannelDrawer, currentTeamId} = this.props;
+        const {actions, closeChannelDrawer, currentChannelId, currentTeamId} = this.props;
         if (team.id === currentTeamId) {
             closeChannelDrawer();
         } else {
+            if (currentChannelId) {
+                actions.markChannelAsRead(currentChannelId);
+            }
             closeChannelDrawer();
             InteractionManager.runAfterInteractions(() => {
                 actions.handleTeamChange(team);
             });
         }
+    };
+
+    goToSelectTeam = () => {
+        const {currentUrl, intl, navigator, theme} = this.props;
+
+        navigator.showModal({
+            screen: 'SelectTeam',
+            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-teams',
+                    icon: this.closeButton
+                }]
+            },
+            passProps: {
+                currentUrl,
+                theme
+            }
+        });
     };
 
     renderItem = ({item}) => {
@@ -121,10 +172,25 @@ export default class ChannelDrawerTeams extends PureComponent {
     };
 
     render() {
-        const {teams, theme} = this.props;
+        const {joinableTeams, teams, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         let moreAction;
+        if (Object.keys(joinableTeams).length) {
+            moreAction = (
+                <TouchableHighlight
+                    style={styles.moreActionContainer}
+                    onPress={() => preventDoubleTap(this.goToSelectTeam)}
+                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+                >
+                    <Text
+                        style={styles.moreAction}
+                    >
+                        {'+'}
+                    </Text>
+                </TouchableHighlight>
+            );
+        }
 
         return (
             <View style={styles.container}>
@@ -188,6 +254,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             fontWeight: 'normal'
         },
+        moreActionContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 50,
+            ...Platform.select({
+                android: {
+                    height: 46
+                },
+                ios: {
+                    height: 44
+                }
+            })
+        },
+        moreAction: {
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 30
+        },
         teamWrapper: {
             marginTop: 20
         },
@@ -250,3 +333,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
+
+export default injectIntl(ChannelDrawerTeams);
