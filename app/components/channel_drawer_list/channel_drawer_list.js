@@ -408,6 +408,7 @@ class ChannelDrawerList extends Component {
             above = (
                 <UnreadIndicator
                     style={[styles.above, {width: (this.width - 40)}]}
+                    onPress={() => this.refs.list.scrollToOffset({x: 0, y: 0, animated: true})}
                     text={(
                         <FormattedText
                             style={styles.indicatorText}

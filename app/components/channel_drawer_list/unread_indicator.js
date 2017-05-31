@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     StyleSheet,
     Text,
+    TouchableWithoutFeedback,
     View,
     ViewPropTypes
 } from 'react-native';
@@ -14,16 +15,23 @@ export default class UnreadIndicator extends PureComponent {
     static propTypes = {
         style: ViewPropTypes.style,
         textStyle: Text.propTypes.style,
-        text: PropTypes.node.isRequired
+        text: PropTypes.node.isRequired,
+        onPress: PropTypes.func
+    };
+
+    static defaultProps = {
+        onPress: () => true
     };
 
     render() {
         return (
-            <View
-                style={[Styles.container, this.props.style]}
-            >
-                {this.props.text}
-            </View>
+            <TouchableWithoutFeedback onPress={this.props.onPress}>
+                <View
+                    style={[Styles.container, this.props.style]}
+                >
+                    {this.props.text}
+                </View>
+            </TouchableWithoutFeedback>
         );
     }
 }
