@@ -43,7 +43,7 @@ export default class SettingsItem extends PureComponent {
 
         const destructor = {};
         if (isDestructor) {
-            destructor.color = '#CA3B27';
+            destructor.color = theme.errorTextColor;
         }
 
         let divider;
@@ -131,7 +131,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         label: {
             color: theme.centerChannelColor,
             fontSize: 16,
-            fontWeight: '600',
             lineHeight: 19,
             marginLeft: 8
         },
