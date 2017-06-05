@@ -7,6 +7,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Animated,
     Dimensions,
+    Platform,
     View
 } from 'react-native';
 
@@ -124,7 +125,7 @@ class ChannelPostList extends PureComponent {
             title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName});
         }
 
-        navigator.push({
+        const options = {
             screen: 'Thread',
             title,
             animated: true,
@@ -139,7 +140,13 @@ class ChannelPostList extends PureComponent {
                 channelId,
                 rootId
             }
-        });
+        };
+
+        if (Platform.OS === 'android') {
+            navigator.showModal(options);
+        } else {
+            navigator.push(options);
+        }
     };
 
     render() {

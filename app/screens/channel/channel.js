@@ -102,8 +102,7 @@ class Channel extends PureComponent {
 
     goToChannelInfo = () => {
         const {intl, navigator, theme} = this.props;
-
-        navigator.push({
+        const options = {
             screen: 'ChannelInfo',
             title: intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'}),
             animated: true,
@@ -114,7 +113,13 @@ class Channel extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg
             }
-        });
+        };
+
+        if (Platform.OS === 'android') {
+            navigator.showModal(options);
+        } else {
+            navigator.push(options);
+        }
     };
 
     handleConnectionChange = (isConnected) => {

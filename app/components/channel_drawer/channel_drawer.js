@@ -154,10 +154,7 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     resetDrawer = () => {
-        const teamsCount = Object.keys(this.props.myTeamMembers).length;
-        if (this.swiperIndex === 0 && teamsCount > 1) {
-            this.refs.swiper.resetPage();
-        }
+        this.refs.swiper.resetPage();
     };
 
     renderContent = () => {
