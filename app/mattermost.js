@@ -5,7 +5,6 @@ import 'babel-polyfill';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation} from 'react-native-navigation';
-import PushNotification from 'react-native-push-notification';
 import {
     Alert,
     AppState,
@@ -24,6 +23,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
+import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 
@@ -73,7 +73,7 @@ export default class Mattermost {
     handleReset = () => {
         const {dispatch, getState} = store;
         Client4.serverVersion = '';
-        PushNotification.cancelAllLocalNotifications();
+        PushNotifications.cancelAllLocalNotifications();
         setServerVersion('')(dispatch, getState);
         this.startApp('fade');
     };
@@ -82,7 +82,7 @@ export default class Mattermost {
         const {dispatch, getState} = store;
 
         Client4.serverVersion = '';
-        PushNotification.setApplicationIconBadgeNumber(0);
+        PushNotifications.setApplicationIconBadgeNumber(0);
 
         if (getState().entities.general.credentials.token) {
             InteractionManager.runAfterInteractions(() => {
@@ -101,10 +101,9 @@ export default class Mattermost {
     };
 
     configurePushNotifications = () => {
-        PushNotification.configure({
+        PushNotifications.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
-            senderID: Config.GooglePlaySenderId,
             popInitialNotification: true,
             requestPermissions: true
         });
@@ -119,27 +118,10 @@ export default class Mattermost {
 
     onPushNotification = (deviceNotification) => {
         const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
-        let notification;
-
-        if (Platform.OS === 'android') {
-            notification = {
-                data: {
-                    channel_id: deviceNotification.channel_id,
-                    channel_name: deviceNotification.channel_name,
-                    sender_id: deviceNotification.sender_id,
-                    override_username: deviceNotification.override_username,
-                    override_icon_url: deviceNotification.override_icon_url,
-                    from_webhook: deviceNotification.from_webhook,
-                    team_id: deviceNotification.team_id
-                },
-                message
-            };
-        } else {
-            notification = {
-                data,
-                message
-            };
-        }
+        const notification = {
+            data,
+            message
+        };
 
         if (userInfo) {
             notification.localNotification = userInfo.localNotification;
@@ -165,7 +147,9 @@ export default class Mattermost {
     };
 
     startApp = (animationType = 'none') => {
-        this.configurePushNotifications();
+        if (animationType === 'none') {
+            this.configurePushNotifications();
+        }
 
         Navigation.startSingleScreenApp({
             screen: {

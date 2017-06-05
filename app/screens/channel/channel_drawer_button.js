@@ -11,10 +11,11 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import DeviceNotification from 'react-native-push-notification';
+
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
+import PushNotifications from 'app/push_notifications';
 import {getTheme} from 'app/selectors/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -63,7 +64,7 @@ class ChannelDrawerButton extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        DeviceNotification.setApplicationIconBadgeNumber(nextProps.mentionCount);
+        PushNotifications.setApplicationIconBadgeNumber(nextProps.mentionCount);
     }
 
     componentWillUnmount() {

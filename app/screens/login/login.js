@@ -18,10 +18,10 @@ import {
     View
 } from 'react-native';
 import Button from 'react-native-button';
-import PushNotification from 'react-native-push-notification';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 
 import logo from 'assets/images/logo.png';
@@ -78,8 +78,7 @@ class Login extends PureComponent {
         const {intl, navigator, theme} = this.props;
 
         if (expiresAt) {
-            PushNotification.localNotificationSchedule({
-                alertAction: null,
+            PushNotifications.localNotificationSchedule({
                 date: new Date(expiresAt),
                 message: intl.formatMessage({
                     id: 'mobile.session_expired',

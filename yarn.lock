@@ -4537,13 +4537,16 @@ react-native-navigation@1.1.72:
   dependencies:
     lodash "4.x.x"
 
+react-native-notifications@enahum/react-native-notifications.git:
+  version "1.1.11"
+  resolved "https://codeload.github.com/enahum/react-native-notifications/tar.gz/a8450bcbfc6ae46ed4b97f6fe723aac44c8ad598"
+  dependencies:
+    core-js "^1.0.0"
+    uuid "^2.0.3"
+
 react-native-orientation@enahum/react-native-orientation.git:
   version "1.17.0"
   resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/75ba7da814b99a949324846ce3a63fcbaeee9fdc"
-
-react-native-push-notification@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-push-notification/-/react-native-push-notification-3.0.0.tgz#00282ea656443e89df6057f14b10500e7b89551f"
 
 react-native-scrollable-mixin@^1.0.1:
   version "1.0.1"

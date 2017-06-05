@@ -11,12 +11,12 @@ import {
     WebView
 } from 'react-native';
 import CookieManager from 'react-native-cookies';
-import PushNotification from 'react-native-push-notification';
 
 import {Client4} from 'mattermost-redux/client';
 
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
+import PushNotifications from 'app/push_notifications';
 
 class SSO extends PureComponent {
     static propTypes = {
@@ -56,8 +56,7 @@ class SSO extends PureComponent {
         const {intl, navigator, theme} = this.props;
 
         if (expiresAt) {
-            PushNotification.localNotificationSchedule({
-                alertAction: null,
+            PushNotifications.localNotificationSchedule({
                 date: new Date(expiresAt),
                 message: intl.formatMessage({
                     id: 'mobile.session_expired',
