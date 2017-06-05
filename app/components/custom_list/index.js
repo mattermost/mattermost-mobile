@@ -165,6 +165,7 @@ export default class CustomList extends PureComponent {
             loading,
             onListEndReached,
             onListEndReachedThreshold,
+            searching,
             showNoResults,
             showSections,
             theme
@@ -179,8 +180,15 @@ export default class CustomList extends PureComponent {
             noResults = data.length === 0;
         }
 
-        if (loading) {
-            return <Loading/>;
+        let loadingComponent;
+        if (loading && searching) {
+            loadingComponent = (
+                <View
+                    style={style.searching}
+                >
+                    <Loading/>
+                </View>
+            );
         }
 
         if (showNoResults && noResults) {
@@ -196,20 +204,23 @@ export default class CustomList extends PureComponent {
         }
 
         return (
-            <ListView
-                style={style.listView}
-                dataSource={dataSource}
-                renderRow={this.renderRow}
-                renderSectionHeader={showSections ? this.renderSectionHeader : null}
-                renderSeparator={this.renderSeparator}
-                renderFooter={this.renderFooter}
-                enableEmptySections={true}
-                onEndReached={onListEndReached}
-                onEndReachedThreshold={onListEndReachedThreshold}
-                pageSize={listPageSize}
-                initialListSize={listInitialSize}
-                scrollRenderAheadDistance={listScrollRenderAheadDistance}
-            />
+            <View style={{flex: 1}}>
+                <ListView
+                    style={style.listView}
+                    dataSource={dataSource}
+                    renderRow={this.renderRow}
+                    renderSectionHeader={showSections ? this.renderSectionHeader : null}
+                    renderSeparator={this.renderSeparator}
+                    renderFooter={this.renderFooter}
+                    enableEmptySections={true}
+                    onEndReached={onListEndReached}
+                    onEndReachedThreshold={onListEndReachedThreshold}
+                    pageSize={listPageSize}
+                    initialListSize={listInitialSize}
+                    scrollRenderAheadDistance={listScrollRenderAheadDistance}
+                />
+                {loadingComponent}
+            </View>
         );
     }
 }
@@ -227,6 +238,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         loadingText: {
             color: changeOpacity(theme.centerChannelColor, 0.6)
+        },
+        searching: {
+            backgroundColor: theme.centerChannelBg,
+            height: '100%',
+            position: 'absolute',
+            width: '100%'
         },
         sectionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
