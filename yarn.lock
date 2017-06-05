@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/67a40ea6c89a5065b751f434094183956817b1d3"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/969e3ef432a077025ae13d3ad917bf5aaf054086"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4531,9 +4531,9 @@ react-native-mock@^0.2.7:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.72:
-  version "1.1.72"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.72.tgz#18e5067e74d5690b7bfddd100b06d5a7126ba2a8"
+react-native-navigation@1.1.88:
+  version "1.1.88"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.88.tgz#22239c8c722b13a8750a5b99debd45bded13c2f5"
   dependencies:
     lodash "4.x.x"
 
