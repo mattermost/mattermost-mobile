@@ -14,19 +14,24 @@ export default class Root extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
         navigator: PropTypes.object,
+        excludeEvents: PropTypes.bool,
         currentChannelId: PropTypes.string,
         locale: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
 
-    componentWillMount() {
-        EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-        EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+    componentDidMount() {
+        if (!this.props.excludeEvents) {
+            EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+            EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+        }
     }
 
     componentWillUnmount() {
-        EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-        EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+        if (!this.props.excludeEvents) {
+            EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+            EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+        }
     }
 
     handleInAppNotification = (notification) => {

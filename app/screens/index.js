@@ -32,11 +32,14 @@ import UserProfile from 'app/screens/user_profile';
 
 import IntlWrapper from 'app/components/root';
 
-function wrapWithContextProvider(Comp) {
+function wrapWithContextProvider(Comp, excludeEvents = false) {
     return (props) => { //eslint-disable-line react/display-name
         const {navigator} = props; //eslint-disable-line react/prop-types
         return (
-            <IntlWrapper navigator={navigator}>
+            <IntlWrapper
+                navigator={navigator}
+                excludeEvents={excludeEvents}
+            >
                 <Comp {...props}/>
             </IntlWrapper>
         );
@@ -61,7 +64,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(MoreChannels), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
-    Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification), store, Provider);
+    Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification, true), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(SelectTeam), store, Provider);
