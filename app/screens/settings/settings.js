@@ -27,8 +27,10 @@ class Settings extends PureComponent {
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        currentUrl: PropTypes.string.isRequired,
         errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
+        joinableTeams: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object
     };
@@ -88,6 +90,28 @@ class Settings extends PureComponent {
         });
     };
 
+    goToSelectTeam = () => {
+        const {currentUrl, intl, navigator, theme} = this.props;
+
+        navigator.push({
+            screen: 'SelectTeam',
+            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            passProps: {
+                currentUrl,
+                theme
+            }
+        });
+    };
+
     handlePress = (action) => {
         preventDoubleTap(action, this);
     };
@@ -122,8 +146,9 @@ class Settings extends PureComponent {
     };
 
     render() {
-        const {config, theme} = this.props;
+        const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
+        const showTeams = Object.keys(joinableTeams).length > 0;
 
         return (
             <View style={style.container}>
@@ -137,6 +162,17 @@ class Settings extends PureComponent {
                         separator={true}
                         theme={theme}
                     />
+                    {showTeams &&
+                        <SettingsItem
+                            defaultMessage='Open teams you can join'
+                            i18nId='mobile.select_team.join_open'
+                            iconName='group'
+                            iconType='material'
+                            onPress={() => preventDoubleTap(this.goToSelectTeam, this)}
+                            separator={true}
+                            theme={theme}
+                        />
+                    }
                     {config.HelpLink &&
                         <SettingsItem
                             defaultMessage='Help'

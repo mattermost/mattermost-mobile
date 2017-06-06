@@ -22,6 +22,7 @@ const DRAWER_INITIAL_OFFSET = 40;
 export default class ChannelDrawer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            getTeams: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             viewChannel: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
@@ -49,6 +50,10 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     swiperIndex = 1;
+
+    componentWillMount() {
+        this.props.actions.getTeams();
+    }
 
     componentDidMount() {
         EventEmitter.on('open_channel_drawer', this.openChannelDrawer);

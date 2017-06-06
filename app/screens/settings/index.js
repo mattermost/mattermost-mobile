@@ -6,8 +6,11 @@ import {connect} from 'react-redux';
 
 import {clearErrors} from 'mattermost-redux/actions/errors';
 import {logout} from 'mattermost-redux/actions/users';
+import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
+import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 
 import {getTheme} from 'app/selectors/preferences';
+import {removeProtocol} from 'app/utils/url';
 
 import Settings from './settings';
 
@@ -20,7 +23,9 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         errors: state.errors,
         currentUserId: state.entities.users.currentUserId,
-        currentTeamId: state.entities.teams.currentTeamId
+        currentTeamId: state.entities.teams.currentTeamId,
+        currentUrl: removeProtocol(getCurrentUrl(state)),
+        joinableTeams: getJoinableTeams(state)
     };
 }
 

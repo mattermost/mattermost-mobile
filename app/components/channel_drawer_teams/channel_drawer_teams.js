@@ -24,7 +24,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 class ChannelDrawerTeams extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            getTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired
         }).isRequired,
@@ -48,10 +47,6 @@ class ChannelDrawerTeams extends PureComponent {
         then((source) => {
             this.closeButton = source;
         });
-    }
-
-    componentWillMount() {
-        this.props.actions.getTeams();
     }
 
     selectTeam = (team) => {

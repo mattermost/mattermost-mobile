@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
-import {getTeams} from 'mattermost-redux/actions/teams';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeamId, getJoinableTeams, getMyTeams} from 'mattermost-redux/selectors/entities/teams';
@@ -43,7 +42,6 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getTeams,
             handleTeamChange,
             markChannelAsRead
         }, dispatch)

@@ -4,13 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel';
-
+import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {getTeams} from 'mattermost-redux/actions/teams';
 import {getChannelsWithUnreadSection, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'app/selectors/preferences';
 import {getCurrentTeam, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 
-import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel';
+import {getTheme} from 'app/selectors/preferences';
 
 import ChannelDrawer from './channel_drawer.js';
 
@@ -29,6 +29,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            getTeams,
             handleSelectChannel,
             viewChannel,
             markChannelAsRead,
