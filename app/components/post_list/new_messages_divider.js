@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
     StyleSheet,
     View,
@@ -9,14 +10,17 @@ import {
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 function NewMessagesDivider(props) {
+    const style = getStyleFromTheme(props.theme);
+
     return (
         <View style={[style.container, props.style]}>
             <View style={style.line}/>
             <View style={style.textContainer}>
                 <FormattedText
-                    id='post_list.newMsg'
+                    id='posts_view.newMsg'
                     defaultMessage='New Messages'
                     style={style.text}
                 />
@@ -27,28 +31,30 @@ function NewMessagesDivider(props) {
 }
 
 NewMessagesDivider.propTypes = {
-    style: ViewPropTypes.style
+    style: ViewPropTypes.style,
+    theme: PropTypes.object
 };
 
-const style = StyleSheet.create({
-    container: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: 28
-    },
-    textContainer: {
-        marginHorizontal: 15
-    },
-    line: {
-        flex: 1,
-        height: StyleSheet.hairlineWidth,
-        backgroundColor: '#f80'
-    },
-    text: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#ffaf53'
-    }
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        container: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            height: 28
+        },
+        textContainer: {
+            marginHorizontal: 15
+        },
+        line: {
+            flex: 1,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: theme.newMessageSeparator
+        },
+        text: {
+            fontSize: 14,
+            color: theme.newMessageSeparator
+        }
+    });
 });
 
 export default NewMessagesDivider;

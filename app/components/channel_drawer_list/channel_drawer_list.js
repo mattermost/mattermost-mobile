@@ -18,10 +18,13 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import Badge from 'app/components/badge';
 import FormattedText from 'app/components/formatted_text';
+import SearchBar from 'app/components/search_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
+import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ChannelDrawerItem from './channel_drawer_item';
 import UnreadIndicator from './unread_indicator';
@@ -29,6 +32,8 @@ import UnreadIndicator from './unread_indicator';
 class ChannelDrawerList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
+            searchChannels: PropTypes.func.isRequired,
+            searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
@@ -37,10 +42,17 @@ class ChannelDrawerList extends Component {
         currentTeam: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         intl: intlShape.isRequired,
+        myPreferences: PropTypes.object,
         myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
+        onJoinChannel: PropTypes.func.isRequired,
+        onSearchEnds: PropTypes.func.isRequired,
+        onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
+        otherChannels: PropTypes.array,
+        profiles: PropTypes.object,
+        statuses: PropTypes.object,
         theme: PropTypes.object.isRequired
     };
 
@@ -53,9 +65,13 @@ class ChannelDrawerList extends Component {
         super(props);
         this.firstUnreadChannel = null;
         this.state = {
+            dataSource: this.buildData(props),
+            searching: false,
             showAbove: false,
-            dataSource: this.buildData(props)
+            showBelow: false,
+            term: null
         };
+
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
         then((source) => {
             this.closeButton = source;
@@ -63,12 +79,26 @@ class ChannelDrawerList extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
+        const currentProps = {...this.props};
+        const props = {...nextProps};
+
+        // remove the profiles, otherChannels, myPreferences and statuses
+        // to prevent the component to re-render every time they change
+        Reflect.deleteProperty(currentProps, 'profiles');
+        Reflect.deleteProperty(currentProps, 'otherChannels');
+        Reflect.deleteProperty(currentProps, 'myPreferences');
+        Reflect.deleteProperty(currentProps, 'statuses');
+        Reflect.deleteProperty(props, 'profiles');
+        Reflect.deleteProperty(props, 'otherChannels');
+        Reflect.deleteProperty(props, 'myPreferences');
+        Reflect.deleteProperty(props, 'statuses');
+
+        return !deepEqual(currentProps, props, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            dataSource: this.buildData(nextProps)
+            dataSource: this.buildData(nextProps, this.state.term)
         }, () => {
             if (this.refs.list) {
                 this.refs.list.recordInteraction();
@@ -102,7 +132,14 @@ class ChannelDrawerList extends Component {
 
     onSelectChannel = (channel) => {
         this.props.actions.setChannelDisplayName(channel.display_name);
-        this.props.onSelectChannel(channel.id);
+
+        if (channel.fake) {
+            this.props.onJoinChannel(channel);
+        } else {
+            this.props.onSelectChannel(channel.id);
+        }
+
+        this.refs.search_bar.cancel();
     };
 
     onLayout = (event) => {
@@ -146,8 +183,13 @@ class ChannelDrawerList extends Component {
 
     createChannelElement = (channel) => {
         const {mentions, unreadCount} = this.getUnreadMessages(channel);
-        const msgCount = mentions + unreadCount;
-        const unread = msgCount > 0;
+
+        let msgCount = 0;
+        let unread = false;
+        if (!this.state.term) {
+            msgCount = mentions + unreadCount;
+            unread = msgCount > 0;
+        }
 
         return (
             <ChannelDrawerItem
@@ -156,7 +198,7 @@ class ChannelDrawerList extends Component {
                 hasUnread={unread}
                 mentions={mentions}
                 onSelectChannel={this.onSelectChannel}
-                isActive={channel.isCurrent}
+                isActive={channel.isCurrent || false}
                 theme={this.props.theme}
             />
         );
@@ -184,16 +226,19 @@ class ChannelDrawerList extends Component {
         });
     };
 
-    buildData = (props) => {
-        const data = [];
-
-        if (!props.currentChannel) {
-            return data;
+    filterChannels = (channels, term) => {
+        if (!term) {
+            return channels;
         }
 
-        const {canCreatePrivateChannels, theme} = this.props;
-        const styles = getStyleSheet(theme);
+        const text = term.toLowerCase();
+        return channels.filter((c) => {
+            return c.display_name.toLowerCase().includes(text);
+        });
+    };
 
+    buildChannels = (props) => {
+        const {canCreatePrivateChannels, theme} = props;
         const {
             unreadChannels,
             favoriteChannels,
@@ -202,16 +247,19 @@ class ChannelDrawerList extends Component {
             directAndGroupChannels
         } = props.channels;
 
+        const data = [];
+        const styles = getStyleSheet(theme);
+
         if (unreadChannels.length) {
             data.push(
-                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, unreadChannels.length > 0),
+                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, true),
                 ...unreadChannels
             );
         }
 
         if (favoriteChannels.length) {
             data.push(
-                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, unreadChannels.length > 0, favoriteChannels.length > 0),
+                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, unreadChannels.length > 0, true),
                 ...favoriteChannels
             );
         }
@@ -235,8 +283,103 @@ class ChannelDrawerList extends Component {
             ...directAndGroupChannels
         );
 
+        return data;
+    };
+
+    buildChannelsForSearch = (props, term) => {
+        const data = [];
+        const {otherChannels, theme} = props;
+        const styles = getStyleSheet(theme);
+        const {
+            unreadChannels,
+            favoriteChannels,
+            publicChannels,
+            privateChannels,
+            directAndGroupChannels
+        } = props.channels;
+
+        const notMemberOf = otherChannels.map((o) => {
+            return {
+                ...o,
+                fake: true
+            };
+        });
+
+        const favorites = favoriteChannels.filter((c) => {
+            return c.type !== General.DM_CHANNEL && c.type !== General.GM_CHANNEL;
+        });
+
+        const unreads = this.filterChannels(unreadChannels, term);
+        const channels = this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term);
+        const others = this.filterChannels(notMemberOf, term);
+        const groups = this.filterChannels([...directAndGroupChannels, ...favoriteChannels].filter((c) => c.type === General.GM_CHANNEL), term);
+        const fakeDms = this.filterChannels(this.buildFakeDms(props), term);
+        const directMessages = [...groups, ...fakeDms].sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+
+        if (unreads.length) {
+            data.push(
+                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, true),
+                ...unreads
+            );
+        }
+
+        if (channels.length) {
+            data.push(
+                this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', null, unreads.length > 0, true),
+                ...channels
+            );
+        }
+
+        if (others.length) {
+            data.push(
+                this.renderTitle(styles, 'mobile.channel_list.not_member', 'NOT A MEMBER', null, channels.length > 0, true),
+                ...others
+            );
+        }
+
+        if (directMessages.length) {
+            data.push(
+                this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', null, others.length > 0, true),
+                ...directMessages
+            );
+        }
+
+        return data;
+    };
+
+    buildFakeDms = (props) => {
+        const {myPreferences, profiles, statuses} = props;
+        const users = Object.values(profiles);
+
+        return users.map((u) => {
+            return {
+                id: u.id,
+                status: statuses[u.id],
+                display_name: displayUsername(u, myPreferences),
+                type: General.DM_CHANNEL,
+                fake: true
+            };
+        });
+    };
+
+    buildData = (props, term) => {
+        let data;
+
+        if (!props.currentChannel) {
+            return data;
+        }
+
+        if (term) {
+            data = this.buildChannelsForSearch(props, term);
+        } else {
+            data = this.buildChannels(props);
+        }
+
         this.firstUnreadChannel = null;
-        this.findUnreadChannels(data);
+
+        if (!term) {
+            this.findUnreadChannels(data);
+        }
 
         return data;
     };
@@ -363,16 +506,42 @@ class ChannelDrawerList extends Component {
         };
     };
 
+    onSearch = (term) => {
+        const {actions, currentTeam} = this.props;
+        const {searchChannels, searchProfiles} = actions;
+        const dataSource = this.buildData(this.props, term);
+
+        this.setState({dataSource, term});
+        clearTimeout(this.searchTimeoutId);
+
+        this.searchTimeoutId = setTimeout(() => {
+            searchProfiles(term);
+            searchChannels(currentTeam.id, term);
+        }, General.SEARCH_TIMEOUT_MILLISECONDS);
+    };
+
+    onSearchFocused = () => {
+        this.setState({searching: true});
+        this.props.onSearchStart();
+    };
+
+    cancelSearch = () => {
+        this.props.onSearchEnds();
+        this.setState({searching: false});
+        this.onSearch(null);
+    };
+
     render() {
         const {
             currentChannel,
             currentTeam,
+            intl,
             myTeamMembers,
             onShowTeams,
             theme
         } = this.props;
 
-        const {dataSource, showAbove} = this.state;
+        const {dataSource, searching, showAbove} = this.state;
         const teamMembers = Object.values(myTeamMembers);
 
         if (!currentChannel) {
@@ -380,21 +549,24 @@ class ChannelDrawerList extends Component {
         }
         const styles = getStyleSheet(theme);
 
-        const settings = (
-            <TouchableHighlight
-                style={styles.settingsContainer}
-                onPress={() => preventDoubleTap(this.openSettingsModal)}
-                underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
-            >
-                <AwesomeIcon
-                    name='cog'
-                    style={styles.settings}
-                />
-            </TouchableHighlight>
-        );
+        let settings;
+        if (!searching) {
+            settings = (
+                <TouchableHighlight
+                    style={styles.settingsContainer}
+                    onPress={() => preventDoubleTap(this.openSettingsModal)}
+                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+                >
+                    <AwesomeIcon
+                        name='cog'
+                        style={styles.settings}
+                    />
+                </TouchableHighlight>
+            );
+        }
 
         let above;
-        if (showAbove) {
+        if (showAbove && !searching) {
             above = (
                 <UnreadIndicator
                     style={[styles.above, {width: (this.width - 40)}]}
@@ -411,19 +583,33 @@ class ChannelDrawerList extends Component {
         }
 
         const title = (
-            <Text
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={styles.header}
-                onPress={onShowTeams}
-            >
-                {currentTeam.display_name}
-            </Text>
+            <View style={styles.searchContainer}>
+                <SearchBar
+                    ref='search_bar'
+                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to a conversation'})}
+                    cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                    backgroundColor='transparent'
+                    inputHeight={Platform.OS === 'android' ? 32 : 33}
+                    inputStyle={{
+                        backgroundColor: changeOpacity(theme.sidebarText, 0.4),
+                        color: theme.sidebarText,
+                        fontSize: 13
+                    }}
+                    placeholderTextColor={changeOpacity(theme.sidebarText, 0.5)}
+                    tintColorSearch={changeOpacity(theme.sidebarText, 0.5)}
+                    tintColorDelete={changeOpacity(theme.sidebarText, 0.5)}
+                    titleCancelColor={theme.sidebarHeaderTextColor}
+                    onSearchButtonPress={this.onSearch}
+                    onCancelButtonPress={this.cancelSearch}
+                    onChangeText={this.onSearch}
+                    onFocus={this.onSearchFocused}
+                />
+            </View >
         );
 
         let badge;
         let switcher;
-        if (teamMembers.length > 1) {
+        if (teamMembers.length > 1 && !searching) {
             let mentionCount = 0;
             let messageCount = 0;
             teamMembers.forEach((m) => {
@@ -491,6 +677,7 @@ class ChannelDrawerList extends Component {
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
+                    keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 3,
@@ -542,7 +729,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         settingsContainer: {
             alignItems: 'center',
             justifyContent: 'center',
-            width: 50,
+            paddingHorizontal: 10,
             ...Platform.select({
                 android: {
                     height: 46
@@ -572,6 +759,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '400',
             letterSpacing: 0.8,
             lineHeight: 18
+        },
+        searchContainer: {
+            flex: 1,
+            ...Platform.select({
+                android: {
+                    marginBottom: 1
+                },
+                ios: {
+                    marginBottom: 3
+                }
+            })
         },
         switcherContainer: {
             alignItems: 'center',

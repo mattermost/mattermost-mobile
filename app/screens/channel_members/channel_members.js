@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    Keyboard,
     Platform,
     InteractionManager,
     StyleSheet,
@@ -76,21 +75,11 @@ class ChannelMembers extends PureComponent {
     }
 
     componentDidMount() {
-        if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
-
         InteractionManager.runAfterInteractions(() => {
             this.props.actions.getProfilesInChannel(this.props.currentChannel.id, 0);
         });
 
         this.emitCanRemoveMembers(false);
-    }
-
-    componentWillUnmount() {
-        if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -157,10 +146,6 @@ class ChannelMembers extends PureComponent {
         this.props.navigator.setButtons({
             rightButtons: [{...this.removeButton, disabled: loading}]
         });
-    };
-
-    handleAndroidKeyboard = () => {
-        this.onSearchButtonPress();
     };
 
     handleRemoveMembersPress = () => {
@@ -240,10 +225,6 @@ class ChannelMembers extends PureComponent {
         }
     };
 
-    onSearchButtonPress = () => {
-        this.searchBar.blur();
-    };
-
     removeMembers = (membersToRemove) => {
         const {actions, currentChannel} = this.props;
         actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove);
@@ -275,12 +256,8 @@ class ChannelMembers extends PureComponent {
         );
     };
 
-    searchBarRef = (ref) => {
-        this.searchBar = ref;
-    };
-
-    searchProfiles = (event) => {
-        const term = event.nativeEvent.text.toLowerCase();
+    searchProfiles = (text) => {
+        const term = text.toLowerCase();
 
         if (term) {
             this.setState({searching: true, term});
@@ -319,15 +296,22 @@ class ChannelMembers extends PureComponent {
                     style={{marginVertical: 5}}
                 >
                     <SearchBar
-                        ref={this.searchBarRef}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
-                        height={27}
-                        fontSize={14}
-                        textColor={changeOpacity('#000', 0.5)}
-                        hideBackground={true}
-                        textFieldBackgroundColor={'#fff'}
-                        onChange={this.searchProfiles}
-                        onSearchButtonPress={this.onSearchButtonPress}
+                        ref='search_bar'
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        backgroundColor='transparent'
+                        inputHeight={30}
+                        inputStyle={{
+                            backgroundColor: '#fff',
+                            color: changeOpacity('#000', 0.5),
+                            fontSize: 13
+                        }}
+                        placeholderTextColor={changeOpacity('#000', 0.5)}
+                        tintColorSearch={changeOpacity('#000', 0.5)}
+                        tintColorDelete={changeOpacity('#000', 0.5)}
+                        titleCancelColor={Platform.OS === 'android' ? changeOpacity('#000', 0.5) : theme.sidebarHeaderBg}
+                        onChangeText={this.searchProfiles}
+                        onSearchButtonPress={this.searchProfiles}
                         onCancelButtonPress={this.cancelSearch}
                     />
                 </View>

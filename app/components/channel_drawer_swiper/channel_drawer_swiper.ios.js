@@ -61,6 +61,7 @@ export default class ChannelDrawerSwiper extends PureComponent {
                 automaticallyAdjustContentInsets={true}
                 scrollEnabled={showTeams}
                 showsPagination={showTeams}
+                keyboardShouldPersistTaps={'always'}
             >
                 {children}
             </Swiper>

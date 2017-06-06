@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Keyboard,
     Platform,
     InteractionManager,
     StyleSheet,
@@ -79,10 +78,6 @@ class MoreChannels extends PureComponent {
     }
 
     componentDidMount() {
-        if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
-
         // set the timeout to 400 cause is the time that the modal takes to open
         // Somehow interactionManager doesn't care
         setTimeout(() => {
@@ -101,12 +96,6 @@ class MoreChannels extends PureComponent {
             const {page} = this.state;
             const channels = nextProps.channels.splice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
             this.setState({channels, showNoResults: true});
-        }
-    }
-
-    componentWillUnmount() {
-        if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
 
@@ -132,20 +121,8 @@ class MoreChannels extends PureComponent {
         });
     };
 
-    handleAndroidKeyboard = () => {
-        this.onSearchButtonPress();
-    };
-
-    searchBarRef = (ref) => {
-        this.searchBar = ref;
-    };
-
-    onSearchButtonPress = () => {
-        this.searchBar.blur();
-    };
-
-    searchProfiles = (event) => {
-        const term = event.nativeEvent.text.toLowerCase();
+    searchProfiles = (text) => {
+        const term = text.toLowerCase();
 
         if (term) {
             const channels = this.filterChannels(this.state.channels, term);
@@ -226,7 +203,6 @@ class MoreChannels extends PureComponent {
     onSelectChannel = async (id) => {
         this.emitCanCreateChannel(false);
         this.setState({adding: true});
-        this.searchBar.blur();
         await this.props.actions.joinChannel(
             this.props.currentUserId,
             this.props.currentTeamId,
@@ -278,15 +254,22 @@ class MoreChannels extends PureComponent {
                         style={{marginVertical: 5}}
                     >
                         <SearchBar
-                            ref={this.searchBarRef}
-                            placeholder={formatMessage({id: 'search_bar.search', defaultMesage: 'Search'})}
-                            height={27}
-                            fontSize={14}
-                            textColor={changeOpacity('#000', 0.5)}
-                            hideBackground={true}
-                            textFieldBackgroundColor={'#fff'}
-                            onChange={this.searchProfiles}
-                            onSearchButtonPress={this.onSearchButtonPress}
+                            ref='search_bar'
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={30}
+                            inputStyle={{
+                                backgroundColor: '#fff',
+                                color: changeOpacity('#000', 0.5),
+                                fontSize: 13
+                            }}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            tintColorSearch={changeOpacity('#000', 0.5)}
+                            tintColorDelete={changeOpacity('#000', 0.5)}
+                            titleCancelColor={Platform.OS === 'android' ? changeOpacity('#000', 0.5) : theme.sidebarHeaderBg}
+                            onChangeText={this.searchProfiles}
+                            onSearchButtonPress={this.searchProfiles}
                             onCancelButtonPress={this.cancelSearch}
                         />
                     </View>

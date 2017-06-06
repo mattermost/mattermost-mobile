@@ -5,7 +5,11 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
-import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {searchChannels} from 'mattermost-redux/actions/channels';
+import {searchProfiles} from 'mattermost-redux/actions/users';
+import {getCurrentUserId, getCurrentUserRoles, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
+import {getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
@@ -19,6 +23,10 @@ function mapStateToProps(state, ownProps) {
 
     return {
         canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        otherChannels: getOtherChannels(state),
+        profiles: getUsers(state),
+        myPreferences: getMyPreferences(state),
+        statuses: getUserStatuses(state),
         ...ownProps
     };
 }
@@ -26,6 +34,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            searchChannels,
+            searchProfiles,
             setChannelDisplayName
         }, dispatch)
     };

@@ -4556,6 +4556,10 @@ react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
 
+react-native-search-box@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/react-native-search-box/-/react-native-search-box-0.0.9.tgz#c1677e127d6d2b346850b031b2cb216447fa66f0"
+
 react-native-svg-mock@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-native-svg-mock/-/react-native-svg-mock-1.0.2.tgz#2dc35fb97ca1e0ea393ece6d23782ba4f58e178f"
