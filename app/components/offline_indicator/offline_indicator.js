@@ -158,7 +158,7 @@ export default class OfflineIndicator extends PureComponent {
             i18nId = 'mobile.offlineIndicator.connecting';
             defaultMessage = 'Connecting...';
             action = (
-                <View style={[styles.actionContainer, styles.actionButton]}>
+                <View style={styles.actionContainer}>
                     <ActivityIndicator
                         color='#FFFFFF'
                         size='small'
