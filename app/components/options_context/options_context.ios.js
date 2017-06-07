@@ -32,10 +32,10 @@ export default class OptionsContext extends PureComponent {
                 actions={this.props.actions}
                 arrowDirection='down'
                 longPress={true}
-                onHideUnderlay={() => this.props.toggleSelected(false)}
                 onPress={this.props.onPress}
-                onShowUnderlay={() => this.props.toggleSelected(true)}
                 underlayColor='transparent'
+                onShow={() => this.props.toggleSelected(true)}
+                onHide={() => this.props.toggleSelected(false)}
             >
                 {this.props.children}
             </ToolTip>

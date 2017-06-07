@@ -338,3 +338,10 @@ export function setChannelRefreshing(refreshing = true) {
         refreshing
     };
 }
+
+export function setPostTooltipVisible(visible = true) {
+    return {
+        type: ViewTypes.POST_TOOLTIP_VISIBLE,
+        visible
+    };
+}

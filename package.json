@@ -32,7 +32,7 @@
     "react-native-search-bar": "enahum/react-native-search-bar.git",
     "react-native-svg": "5.1.8",
     "react-native-swiper": "1.5.4",
-    "react-native-tooltip": "5.0.0",
+    "react-native-tooltip": "enahum/react-native-tooltip",
     "react-native-vector-icons": "4.1.1",
     "react-redux": "5.0.4",
     "redux": "3.6.0",

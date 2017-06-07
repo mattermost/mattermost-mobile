@@ -254,7 +254,9 @@ const state = {
     views: {
         channel: {
             drafts: {},
-            loading: false
+            loading: false,
+            refreshing: false,
+            tooltipVisible: false
         },
         connection: true,
         fetchCache: {},

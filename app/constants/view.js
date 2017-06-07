@@ -36,6 +36,8 @@ const ViewTypes = keyMirror({
     SET_CHANNEL_LOADER: null,
     SET_CHANNEL_REFRESHING: null,
 
+    POST_TOOLTIP_VISIBLE: null,
+
     SET_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,

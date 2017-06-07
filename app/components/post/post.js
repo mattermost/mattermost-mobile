@@ -61,6 +61,7 @@ class Post extends PureComponent {
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         roles: PropTypes.string,
+        tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         actions: PropTypes.shape({
@@ -68,6 +69,7 @@ class Post extends PureComponent {
             deletePost: PropTypes.func.isRequired,
             flagPost: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
+            setPostTooltipVisible: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired
         }).isRequired
     };
@@ -212,11 +214,13 @@ class Post extends PureComponent {
     };
 
     handlePress = () => {
-        const {post, onPress} = this.props;
-        if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !post.failed) {
-            preventDoubleTap(onPress, null, post);
-        } else if (isPostEphemeral(post)) {
-            preventDoubleTap(this.onRemovePost, this, post);
+        const {post, onPress, tooltipVisible} = this.props;
+        if (!tooltipVisible) {
+            if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !post.failed) {
+                preventDoubleTap(onPress, null, post);
+            } else if (isPostEphemeral(post)) {
+                preventDoubleTap(this.onRemovePost, this, post);
+            }
         }
     };
 
@@ -473,6 +477,7 @@ class Post extends PureComponent {
     };
 
     toggleSelected = (selected) => {
+        this.props.actions.setPostTooltipVisible(selected);
         this.setState({selected});
     };
 
@@ -584,6 +589,7 @@ class Post extends PureComponent {
         const textStyles = getMarkdownTextStyles(theme);
 
         const selected = this.state && this.state.selected ? style.selected : null;
+
         let contents;
         if (this.props.commentedOnPost) {
             contents = (

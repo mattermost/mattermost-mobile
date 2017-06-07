@@ -4571,9 +4571,13 @@ react-native-swiper@1.5.4:
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/react-native-swiper/-/react-native-swiper-1.5.4.tgz#a85535b5374ef8d605a7a720e447ac46816ac448"
 
-react-native-tooltip@5.0.0:
+react-native-tooltip@enahum/react-native-tooltip:
   version "5.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-tooltip/-/react-native-tooltip-5.0.0.tgz#90477f257081ce168d2a27d2ac29e74759b7a7d6"
+  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/97d58d19636df8d8df66d6b5737154c9fab727c8"
+
+react-native-tooltip@enahum/react-native-tooltip.git:
+  version "5.0.0"
+  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/d4b491c7ef1f93cc6c62e5012e36be1087b45b34"
 
 react-native-vector-icons@4.1.1:
   version "4.1.1"
