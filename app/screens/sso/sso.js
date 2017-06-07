@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
-    StatusBar,
     View,
     WebView
 } from 'react-native';
@@ -16,6 +15,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 
 class SSO extends PureComponent {
@@ -111,7 +111,7 @@ class SSO extends PureComponent {
         if (!this.state || !this.state.renderWebview) {
             return (
                 <View style={{flex: 1}}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <Loading/>
                 </View>
             );
@@ -119,7 +119,7 @@ class SSO extends PureComponent {
 
         return (
             <View style={{flex: 1}}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <WebView
                     source={{uri: this.loginUrl}}
                     javaScriptEnabledAndroid={true}

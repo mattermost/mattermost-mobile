@@ -11,7 +11,6 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    StatusBar,
     Text,
     TextInput,
     TouchableWithoutFeedback,
@@ -21,6 +20,7 @@ import Button from 'react-native-button';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 
@@ -316,7 +316,7 @@ class Login extends PureComponent {
                 style={{flex: 1}}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 65 : 0}
             >
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image

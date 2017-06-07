@@ -8,7 +8,6 @@ import {
     Keyboard,
     InteractionManager,
     Platform,
-    StatusBar,
     StyleSheet,
     TouchableWithoutFeedback,
     View,
@@ -22,6 +21,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -219,7 +219,7 @@ class CreateChannel extends PureComponent {
         if (creating) {
             return (
                 <View style={{flex: 1}}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <Loading/>
                 </View>
             );
@@ -238,7 +238,7 @@ class CreateChannel extends PureComponent {
 
         return (
             <View style={{flex: 1}}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <KeyboardAwareScrollView
                     ref={this.scrollRef}
                     style={style.container}

@@ -3,11 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StatusBar, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
+import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Thread extends PureComponent {
@@ -52,7 +53,7 @@ export default class Thread extends PureComponent {
                 style={style.container}
                 keyboardVerticalOffset={65}
             >
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <PostList
                     indicateNewMessages={true}
                     posts={posts}

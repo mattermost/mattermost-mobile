@@ -16,6 +16,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -124,6 +125,7 @@ export default class SelectTeam extends PureComponent {
 
         return (
             <View style={styles.container}>
+                <StatusBar/>
                 <View style={styles.headingContainer}>
                     <View style={styles.headingWrapper}>
                         <FormattedText

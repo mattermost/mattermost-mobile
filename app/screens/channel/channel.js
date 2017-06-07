@@ -8,7 +8,6 @@ import {
     Dimensions,
     NetInfo,
     Platform,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -21,6 +20,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import OfflineIndicator from 'app/components/offline_indicator';
 import PostTextbox from 'app/components/post_textbox';
+import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -187,7 +187,7 @@ class Channel extends PureComponent {
                 blurPostTextBox={this.blurPostTextBox}
                 navigator={navigator}
             >
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <KeyboardLayout
                     behavior='padding'
                     style={{flex: 1, backgroundColor: theme.centerChannelBg}}

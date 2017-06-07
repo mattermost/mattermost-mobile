@@ -8,7 +8,6 @@ import {
     Keyboard,
     Platform,
     InteractionManager,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -20,6 +19,7 @@ import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
+import StatusBar from 'app/components/status_bar';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -178,14 +178,14 @@ class MoreDirectMessages extends PureComponent {
         if (adding) {
             content = (
                 <View style={style.container}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <Loading/>
                 </View>
             );
         } else {
             content = (
                 <View style={style.container}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <View
                         style={{marginVertical: 5}}
                     >

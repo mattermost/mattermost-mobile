@@ -7,11 +7,11 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
     ScrollView,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
 
+import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -221,7 +221,7 @@ class ChannelInfo extends PureComponent {
 
         return (
             <View style={style.container}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                 >

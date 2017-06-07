@@ -8,7 +8,6 @@ import {
     Keyboard,
     Platform,
     InteractionManager,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -17,6 +16,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
+import StatusBar from 'app/components/status_bar';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import MemberListRow from 'app/components/custom_list/member_list_row';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -306,7 +306,7 @@ class ChannelMembers extends PureComponent {
         if (removing) {
             return (
                 <View style={style.container}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <Loading/>
                 </View>
             );
@@ -314,7 +314,7 @@ class ChannelMembers extends PureComponent {
 
         return (
             <View style={style.container}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <View
                     style={{marginVertical: 5}}
                 >

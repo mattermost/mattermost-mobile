@@ -3,11 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StatusBar, View} from 'react-native';
+import {View} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import ChannelLoader from 'app/components/channel_loader';
+import StatusBar from 'app/components/status_bar';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {
@@ -81,7 +82,7 @@ export default class LoadTeam extends PureComponent {
     render() {
         return (
             <View style={{flex: 1}}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <ChannelLoader theme={this.props.theme}/>
             </View>
         );

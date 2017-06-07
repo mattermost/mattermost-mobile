@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Image,
-    StatusBar,
     Text,
     View
 } from 'react-native';
@@ -15,6 +14,7 @@ import semver from 'semver';
 
 import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
+import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 
@@ -137,7 +137,7 @@ class LoginOptions extends PureComponent {
     render() {
         return (
             <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <Image
                     source={logo}
                 />

@@ -10,7 +10,6 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    StatusBar,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -22,7 +21,7 @@ import {Client, Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-
+import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
@@ -187,7 +186,7 @@ class SelectServer extends PureComponent {
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
             >
-                <StatusBar barStyle='dark-content'/>
+                <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image
