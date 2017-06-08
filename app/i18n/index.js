@@ -33,62 +33,36 @@ import zhTW from 'assets/i18n/zh-TW.json';
 const DEFAULT_LOCALE = 'en';
 
 const TRANSLATIONS = {
-    de: {
-        data: deLocaleData,
-        messages: de
-    },
-    en: {
-        data: enLocaleData,
-        messages: en
-    },
-    es: {
-        data: esLocaleData,
-        messages: es
-    },
-    fr: {
-        data: frLocaleData,
-        messages: fr
-    },
-    ja: {
-        data: jaLocaleData,
-        messages: ja
-    },
-    ko: {
-        data: koLocaleData,
-        messages: ko
-    },
-    nl: {
-        data: nlLocaleData,
-        messages: nl
-    },
-    pl: {
-        data: plLocaleData,
-        messages: pl
-    },
-    'pt-BR': {
-        data: ptLocaleData,
-        messages: ptBR
-    },
-    tr: {
-        data: trLocaleData,
-        messages: tr
-    },
-    ru: {
-        data: ruLocaleData,
-        messages: ru
-    },
-    'zh-CN': {
-        data: zhLocaleData,
-        messages: zhCN
-    },
-    'zh-TW': {
-        data: zhLocaleData,
-        messages: zhTW
-    }
+    de,
+    en,
+    es,
+    fr,
+    ja,
+    ko,
+    nl,
+    pl,
+    'pt-BR': ptBR,
+    tr,
+    ru,
+    'zh-CN': zhCN,
+    'zh-TW': zhTW
 };
 
+addLocaleData([
+    deLocaleData,
+    enLocaleData,
+    esLocaleData,
+    frLocaleData,
+    jaLocaleData,
+    koLocaleData,
+    nlLocaleData,
+    plLocaleData,
+    ptLocaleData,
+    trLocaleData,
+    ruLocaleData,
+    zhLocaleData
+]);
+
 export function getTranslations(locale) {
-    const translations = TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
-    addLocaleData(translations.data);
-    return translations.messages;
+    return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
 }
