@@ -49,10 +49,8 @@ class ChannelDrawerList extends Component {
     constructor(props) {
         super(props);
         this.firstUnreadChannel = null;
-        this.lastUnreadChannel = null;
         this.state = {
             showAbove: false,
-            showBelow: false,
             dataSource: this.buildData(props)
         };
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
@@ -80,13 +78,11 @@ class ChannelDrawerList extends Component {
 
     updateUnreadIndicators = ({viewableItems}) => {
         let showAbove = false;
-        let showBelow = false;
         const visibleIndexes = viewableItems.map((v) => v.index);
 
         if (visibleIndexes.length) {
             const {dataSource} = this.state;
             const firstVisible = parseInt(visibleIndexes[0], 10);
-            const lastVisible = parseInt(visibleIndexes[visibleIndexes.length - 1], 10);
 
             if (this.firstUnreadChannel) {
                 const index = dataSource.findIndex((item) => {
@@ -95,16 +91,8 @@ class ChannelDrawerList extends Component {
                 showAbove = index < firstVisible;
             }
 
-            if (this.lastUnreadChannel) {
-                const index = dataSource.findIndex((item) => {
-                    return item.display_name === this.lastUnreadChannel;
-                });
-                showBelow = index > lastVisible;
-            }
-
             this.setState({
-                showAbove,
-                showBelow
+                showAbove
             });
         }
     };
@@ -147,7 +135,6 @@ class ChannelDrawerList extends Component {
                     if (!this.firstUnreadChannel) {
                         this.firstUnreadChannel = c.display_name;
                     }
-                    this.lastUnreadChannel = c.display_name;
                 }
             }
         });
@@ -245,7 +232,6 @@ class ChannelDrawerList extends Component {
         );
 
         this.firstUnreadChannel = null;
-        this.lastUnreadChannel = null;
         this.findUnreadChannels(data);
 
         return data;
@@ -382,7 +368,7 @@ class ChannelDrawerList extends Component {
             theme
         } = this.props;
 
-        const {dataSource, showAbove, showBelow} = this.state;
+        const {dataSource, showAbove} = this.state;
         const teamMembers = Object.values(myTeamMembers);
 
         if (!currentChannel) {
@@ -414,22 +400,6 @@ class ChannelDrawerList extends Component {
                             style={styles.indicatorText}
                             id='sidebar.unreadAbove'
                             defaultMessage='Unread post(s) above'
-                        />
-                    )}
-                />
-            );
-        }
-
-        let below;
-        if (showBelow) {
-            below = (
-                <UnreadIndicator
-                    style={[styles.below, {width: (this.width - 40)}]}
-                    text={(
-                        <FormattedText
-                            style={styles.indicatorText}
-                            id='sidebar.unreadBelow'
-                            defaultMessage='Unread post(s) below'
                         />
                     )}
                 />
@@ -524,7 +494,6 @@ class ChannelDrawerList extends Component {
                     }}
                 />
                 {above}
-                {below}
             </View>
         );
     }
@@ -657,10 +626,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         above: {
             backgroundColor: theme.mentionBj,
             top: 79
-        },
-        below: {
-            backgroundColor: theme.mentionBj,
-            bottom: 15
         },
         indicatorText: {
             backgroundColor: 'transparent',
