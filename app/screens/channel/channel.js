@@ -193,10 +193,12 @@ class Channel extends PureComponent {
                     style={{flex: 1, backgroundColor: theme.centerChannelBg}}
                     keyboardVerticalOffset={0}
                 >
-                    <ChannelPostList
-                        channel={currentChannel}
-                        navigator={navigator}
-                    />
+                    <View style={style.postList}>
+                        <ChannelPostList
+                            channel={currentChannel}
+                            navigator={navigator}
+                        />
+                    </View>
                     <PostTextbox
                         ref={this.attachPostTextbox}
                         files={channelDraft.files}
@@ -236,6 +238,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 ios: {
                     height: 64,
                     paddingTop: 20
+                }
+            })
+        },
+        postList: {
+            flex: 1,
+            ...Platform.select({
+                android: {
+                    marginTop: 46
+                },
+                ios: {
+                    marginTop: 64
                 }
             })
         }
