@@ -107,27 +107,27 @@ class ChannelDrawerTeams extends PureComponent {
                     />
                 </View>
             );
-        } else {
-            const member = myTeamMembers[item.id];
+        }
 
-            let badgeCount = 0;
-            if (member.mention_count) {
-                badgeCount = member.mention_count;
-            } else if (member.msg_count) {
-                badgeCount = -1;
-            }
+        const member = myTeamMembers[item.id];
 
-            if (badgeCount) {
-                badge = (
-                    <Badge
-                        style={styles.badge}
-                        countStyle={styles.mention}
-                        count={badgeCount}
-                        minHeight={5}
-                        minWidth={5}
-                    />
-                );
-            }
+        let badgeCount = 0;
+        if (member.mention_count) {
+            badgeCount = member.mention_count;
+        } else if (member.msg_count) {
+            badgeCount = -1;
+        }
+
+        if (badgeCount) {
+            badge = (
+                <Badge
+                    style={styles.badge}
+                    countStyle={styles.mention}
+                    count={badgeCount}
+                    minHeight={5}
+                    minWidth={5}
+                />
+            );
         }
 
         return (
