@@ -28,6 +28,9 @@ import UnreadIndicator from './unread_indicator';
 
 class ChannelDrawerList extends Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            setChannelDisplayName: PropTypes.func.isRequired
+        }).isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
@@ -98,6 +101,7 @@ class ChannelDrawerList extends Component {
     };
 
     onSelectChannel = (channel) => {
+        this.props.actions.setChannelDisplayName(channel.display_name);
         this.props.onSelectChannel(channel.id);
     };
 

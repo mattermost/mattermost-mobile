@@ -20,7 +20,7 @@ function ChannelTitle(props) {
         return null;
     }
 
-    const channelName = props.currentChannel.display_name;
+    const channelName = props.displayName || props.currentChannel.display_name;
     let icon;
     if (channelName) {
         icon = (
@@ -58,12 +58,14 @@ function ChannelTitle(props) {
 ChannelTitle.propTypes = {
     applicationInitializing: PropTypes.bool.isRequired,
     currentChannel: PropTypes.object,
+    displayName: PropTypes.string,
     onPress: PropTypes.func,
     theme: PropTypes.object
 };
 
 ChannelTitle.defaultProps = {
     currentChannel: {},
+    displayName: null,
     theme: {}
 };
 
@@ -71,6 +73,7 @@ function mapStateToProps(state) {
     return {
         applicationInitializing: state.views.root.appInitializing,
         currentChannel: getCurrentChannel(state),
+        displayName: state.views.channel.displayName,
         theme: getTheme(state)
     };
 }

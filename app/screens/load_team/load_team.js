@@ -1,14 +1,10 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
-
-import ChannelLoader from 'app/components/channel_loader';
-import StatusBar from 'app/components/status_bar';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {
@@ -80,11 +76,6 @@ export default class LoadTeam extends PureComponent {
     };
 
     render() {
-        return (
-            <View style={{flex: 1}}>
-                <StatusBar/>
-                <ChannelLoader theme={this.props.theme}/>
-            </View>
-        );
+        return null;
     }
 }
