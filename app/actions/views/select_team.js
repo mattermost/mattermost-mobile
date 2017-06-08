@@ -5,6 +5,8 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
 
+import {setChannelDisplayName} from './channel';
+
 export function handleTeamChange(team) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
@@ -14,6 +16,8 @@ export function handleTeamChange(team) {
 
         const state = getState();
         const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
+
+        dispatch(setChannelDisplayName(''), getState);
 
         dispatch(batchActions([
             {type: TeamTypes.SELECT_TEAM, data: team.id},
