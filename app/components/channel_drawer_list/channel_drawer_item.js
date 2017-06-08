@@ -24,14 +24,20 @@ export default class ChannelDrawerItem extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    onPress = () => {
+        const {channel, onSelectChannel} = this.props;
+        setTimeout(() => {
+            preventDoubleTap(onSelectChannel, this, channel);
+        }, 100);
+    };
+
     render() {
         const {
             channel,
             theme,
             mentions,
             hasUnread,
-            isActive,
-            onSelectChannel
+            isActive
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -80,7 +86,7 @@ export default class ChannelDrawerItem extends PureComponent {
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => preventDoubleTap(onSelectChannel, this, channel)}
+                onPress={this.onPress}
             >
                 <View style={style.container}>
                     {activeBorder}
