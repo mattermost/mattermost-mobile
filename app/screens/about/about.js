@@ -14,6 +14,7 @@ import {
 import DeviceInfo from 'react-native-device-info';
 
 import FormattedText from 'app/components/formatted_text';
+import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import MattermostIcon from 'app/components/mattermost_icon';
@@ -157,6 +158,7 @@ export default class About extends PureComponent {
 
         return (
             <View style={style.wrapper}>
+                <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}

@@ -8,7 +8,6 @@ import {
     Keyboard,
     Platform,
     ScrollView,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -17,6 +16,7 @@ import {Preferences, RequestStatus} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -543,7 +543,7 @@ class AccountNotifications extends PureComponent {
         if (this.state.saving) {
             return (
                 <View style={style.wrapper}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <Loading/>
                 </View>
             );
@@ -551,7 +551,7 @@ class AccountNotifications extends PureComponent {
 
         return (
             <View style={style.wrapper}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}

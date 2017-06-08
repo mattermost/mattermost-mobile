@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import ProfilePicture from 'app/components/profile_picture';
+import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 
@@ -71,6 +72,7 @@ export default class UserProfile extends PureComponent {
 
         return (
             <View style={style.container}>
+                <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}

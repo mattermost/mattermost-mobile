@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -152,6 +153,7 @@ class Settings extends PureComponent {
 
         return (
             <View style={style.container}>
+                <StatusBar/>
                 <View style={style.wrapper}>
                     <SettingsItem
                         defaultMessage='Account Settings'

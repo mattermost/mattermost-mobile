@@ -6,7 +6,6 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
     Platform,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -14,6 +13,7 @@ import {
 import ErrorText from 'app/components/error_text';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -160,7 +160,7 @@ class EditPost extends PureComponent {
         if (editing) {
             return (
                 <View style={style.container}>
-                    <StatusBar barStyle='light-content'/>
+                    <StatusBar/>
                     <Loading/>
                 </View>
             );
@@ -183,7 +183,7 @@ class EditPost extends PureComponent {
                 style={style.container}
                 keyboardVerticalOffset={0}
             >
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
                     <View style={[style.inputContainer, {height: Platform.OS === 'android' ? (height / 2) - 20 : (height / 2)}]}>

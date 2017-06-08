@@ -6,13 +6,13 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     StyleSheet,
-    StatusBar,
     TouchableOpacity,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -96,7 +96,7 @@ class AccountSettings extends PureComponent {
 
         return (
             <View style={style.wrapper}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 <View style={style.container}>
                     <View style={style.itemsContainer}>
                         {this.renderItems()}

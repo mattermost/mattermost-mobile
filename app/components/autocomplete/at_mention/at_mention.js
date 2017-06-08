@@ -124,7 +124,7 @@ export default class AtMention extends Component {
             defaultMessage: 'Notifies everyone in the channel'
         }, {
             completeHandle: 'here',
-            id: 'suggestions.mention.here',
+            id: 'suggestion.mention.here',
             defaultMessage: 'Notifies everyone in the channel and online'
         }];
     };

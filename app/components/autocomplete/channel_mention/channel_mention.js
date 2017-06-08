@@ -194,7 +194,7 @@ export default class ChannelMention extends Component {
             return (
                 <View style={style.loading}>
                     <FormattedText
-                        id='analytics.chart.loading": "Loading...'
+                        id='analytics.chart.loading'
                         defaultMessage='Loading...'
                         style={style.sectionText}
                     />

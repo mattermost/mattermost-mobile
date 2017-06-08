@@ -8,7 +8,6 @@ import {
     Keyboard,
     Platform,
     InteractionManager,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -20,6 +19,7 @@ import ChannelList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
+import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 class MoreChannels extends PureComponent {
@@ -310,7 +310,7 @@ class MoreChannels extends PureComponent {
 
         return (
             <View style={style.container}>
-                <StatusBar barStyle='light-content'/>
+                <StatusBar/>
                 {content}
             </View>
         );

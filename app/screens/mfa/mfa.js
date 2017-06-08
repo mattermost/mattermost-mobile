@@ -16,6 +16,7 @@ import Button from 'react-native-button';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 
@@ -132,6 +133,7 @@ export default class Mfa extends PureComponent {
                 style={{flex: 1}}
                 keyboardVerticalOffset={5}
             >
+                <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image
