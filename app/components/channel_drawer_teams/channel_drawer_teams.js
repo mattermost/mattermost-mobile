@@ -134,7 +134,11 @@ class ChannelDrawerTeams extends PureComponent {
             <View style={styles.teamWrapper}>
                 <TouchableHighlight
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                    onPress={() => preventDoubleTap(this.selectTeam, this, item)}
+                    onPress={() => {
+                        setTimeout(() => {
+                            preventDoubleTap(this.selectTeam, this, item);
+                        }, 100);
+                    }}
                 >
                     <View style={styles.teamContainer}>
                         <View style={styles.teamIconContainer}>

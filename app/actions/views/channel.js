@@ -345,3 +345,10 @@ export function setPostTooltipVisible(visible = true) {
         visible
     };
 }
+
+export function setChannelDisplayName(displayName) {
+    return {
+        type: ViewTypes.SET_CHANNEL_DISPLAY_NAME,
+        displayName
+    };
+}

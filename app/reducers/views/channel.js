@@ -6,6 +6,15 @@ import {ChannelTypes, FileTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
+function displayName(state = '', action) {
+    switch (action.type) {
+    case ViewTypes.SET_CHANNEL_DISPLAY_NAME:
+        return action.displayName;
+    default:
+        return state;
+    }
+}
+
 function drafts(state = {}, action) {
     switch (action.type) {
     case ViewTypes.POST_DRAFT_CHANGED: {
@@ -191,6 +200,7 @@ function tooltipVisible(state = false, action) {
 }
 
 export default combineReducers({
+    displayName,
     drafts,
     loading,
     refreshing,
