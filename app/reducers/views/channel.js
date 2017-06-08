@@ -181,8 +181,18 @@ function refreshing(state = false, action) {
     }
 }
 
+function tooltipVisible(state = false, action) {
+    switch (action.type) {
+    case ViewTypes.POST_TOOLTIP_VISIBLE:
+        return action.visible;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     drafts,
     loading,
-    refreshing
+    refreshing,
+    tooltipVisible
 });

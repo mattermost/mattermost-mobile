@@ -3,6 +3,7 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+
 import {createPost, deletePost, flagPost, removePost, unflagPost} from 'mattermost-redux/actions/posts';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
@@ -10,6 +11,7 @@ import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/s
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
+import {setPostTooltipVisible} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import Post from './post';
@@ -22,6 +24,7 @@ function makeMapStateToProps() {
         const myPreferences = getMyPreferences(state);
         const {config, license} = state.entities.general;
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+        const {tooltipVisible} = state.views.channel;
 
         return {
             ...ownProps,
@@ -34,6 +37,7 @@ function makeMapStateToProps() {
             license,
             roles,
             theme: getTheme(state),
+            tooltipVisible,
             user
         };
     };
@@ -46,6 +50,7 @@ function mapDispatchToProps(dispatch) {
             deletePost,
             flagPost,
             removePost,
+            setPostTooltipVisible,
             unflagPost
         }, dispatch)
     };
