@@ -117,8 +117,8 @@ class PostTextbox extends PureComponent {
     };
 
     handleContentSizeChange = (h) => {
-        let height = h;
-        if (height < INITIAL_HEIGHT) {
+        let height = h + 5;
+        if (height < INITIAL_HEIGHT || !this.state.canSend) {
             height = INITIAL_HEIGHT;
         }
         this.setState({
@@ -524,19 +524,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
+            marginBottom: 3,
             marginRight: 5,
             height: 28,
             width: 28,
-            ...Platform.select({
-                ios: {
-                    marginBottom: 3
-                },
-                android: {
-                    height: 29,
-                    width: 29,
-                    marginBottom: 5
-                }
-            }),
             alignItems: 'center',
             justifyContent: 'center',
             paddingLeft: 2
