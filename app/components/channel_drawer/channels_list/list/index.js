@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
-import {getCurrentUserId, getCurrentUserRoles, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
