@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/9a2e8099daea436dab76aa612be60492311387b3"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/488faa22c03e1c187c714a5db7f0a42b69d50ae8"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4556,6 +4556,10 @@ react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
 
+react-native-search-box@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/react-native-search-box/-/react-native-search-box-0.0.9.tgz#c1677e127d6d2b346850b031b2cb216447fa66f0"
+
 react-native-svg-mock@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-native-svg-mock/-/react-native-svg-mock-1.0.2.tgz#2dc35fb97ca1e0ea393ece6d23782ba4f58e178f"
@@ -4574,10 +4578,6 @@ react-native-swiper@1.5.4:
 react-native-tooltip@enahum/react-native-tooltip:
   version "5.0.0"
   resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/97d58d19636df8d8df66d6b5737154c9fab727c8"
-
-react-native-tooltip@enahum/react-native-tooltip.git:
-  version "5.0.0"
-  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/d4b491c7ef1f93cc6c62e5012e36be1087b45b34"
 
 react-native-vector-icons@4.1.1:
   version "4.1.1"

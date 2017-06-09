@@ -11,7 +11,7 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
 
-import ChannelDrawerList from './channel_drawer_list';
+import List from './list';
 
 function mapStateToProps(state, ownProps) {
     const {config, license} = state.entities.general;
@@ -31,4 +31,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelDrawerList);
+export default connect(mapStateToProps, mapDispatchToProps)(List);

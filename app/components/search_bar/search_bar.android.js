@@ -3,176 +3,225 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    InteractionManager,
     Keyboard,
     TextInput,
     StyleSheet,
     View,
-    TouchableOpacity
+    TouchableWithoutFeedback
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const styles = StyleSheet.create({
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        margin: 8
-    },
-    searchBarInput: {
-        flex: 1,
-        fontWeight: 'normal',
-        backgroundColor: 'transparent'
-    }
-});
+import {changeOpacity} from 'app/utils/theme';
 
 export default class SearchBarAndroid extends PureComponent {
     static propTypes = {
-        height: PropTypes.number.isRequired,
-        fontSize: PropTypes.number.isRequired,
-        text: PropTypes.string,
-        placeholder: PropTypes.string,
-        showCancelButton: PropTypes.bool,
-        textFieldBackgroundColor: PropTypes.string,
-        placeholderTextColor: PropTypes.string,
-        textColor: PropTypes.string,
-        onChange: PropTypes.func,
+        onCancelButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
         onFocus: PropTypes.func,
-        onBlur: PropTypes.func,
         onSearchButtonPress: PropTypes.func,
-        onCancelButtonPress: PropTypes.func
+        backgroundColor: PropTypes.string,
+        placeholderTextColor: PropTypes.string,
+        titleCancelColor: PropTypes.string,
+        tintColorSearch: PropTypes.string,
+        tintColorDelete: PropTypes.string,
+        inputStyle: PropTypes.oneOfType([
+            PropTypes.number,
+            PropTypes.object
+        ]),
+        placeholder: PropTypes.string,
+        returnKeyType: PropTypes.string,
+        keyboardType: PropTypes.string,
+        autoCapitalize: PropTypes.string,
+        inputHeight: PropTypes.number,
+        inputBorderRadius: PropTypes.number,
+        blurOnSubmit: PropTypes.bool
     };
 
     static defaultProps = {
+        blurOnSubmit: false,
         placeholder: 'Search',
         showCancelButton: true,
-        placeholderTextColor: '#bdbdbd',
-        textColor: '#212121',
+        placeholderTextColor: changeOpacity('#000', 0.5),
         onSearchButtonPress: () => true,
         onCancelButtonPress: () => true,
         onChangeText: () => true,
-        onFocus: () => true,
-        onBlur: () => true
+        onFocus: () => true
     };
 
     constructor(props) {
         super(props);
         this.state = {
-            isOnFocus: false,
-            value: this.props.text
-        };
-        this.onFocus = this.onFocus.bind(this);
-        this.onBlur = this.onBlur.bind(this);
-        this.onCancelButtonPress = this.onCancelButtonPress.bind(this);
-        this.onSearchButtonPress = this.onSearchButtonPress.bind(this);
-        this.onChangeText = this.onChangeText.bind(this);
-    }
-
-    onSearchButtonPress() {
-        const onSearchButtonPress = this.props.onSearchButtonPress;
-        if (this.state.value) {
-            onSearchButtonPress(this.state.value);
-        }
-    }
-
-    onCancelButtonPress() {
-        const onCancelButtonPress = this.props.onCancelButtonPress;
-        this.setState({
-            isOnFocus: false,
+            isFocused: false,
             value: ''
+        };
+    }
+
+    cancel = () => {
+        this.onCancelButtonPress();
+    };
+
+    onSearchButtonPress = () => {
+        const {onSearchButtonPress} = this.props;
+        const {value} = this.state;
+
+        if (value && onSearchButtonPress) {
+            onSearchButtonPress(value);
+        }
+    };
+
+    onCancelButtonPress = () => {
+        const {onCancelButtonPress} = this.props;
+
+        Keyboard.dismiss();
+        InteractionManager.runAfterInteractions(() => {
+            this.setState({
+                isFocused: false,
+                value: ''
+            }, () => {
+                if (onCancelButtonPress) {
+                    onCancelButtonPress();
+                }
+            });
         });
+    };
 
-        onCancelButtonPress();
-        Keyboard.dismiss();
-    }
-
-    onChangeText(value) {
-        const onChangeText = this.props.onChangeText;
+    onChangeText = (value) => {
+        const {onChangeText} = this.props;
         this.setState({value});
-        onChangeText(value);
-    }
+        if (onChangeText) {
+            onChangeText(value);
+        }
+    };
 
-    onFocus() {
-        const onFocus = this.props.onFocus;
-        this.setState({isOnFocus: true});
-        onFocus();
-    }
+    onFocus = () => {
+        const {onFocus} = this.props;
 
-    onBlur() {
-        const onBlur = this.props.onBlur;
-        this.setState({isOnFocus: false});
-        onBlur();
-        Keyboard.dismiss();
-    }
+        this.setState({isFocused: true});
 
-    blur = () => {
-        this.onBlur();
+        if (onFocus) {
+            onFocus();
+        }
     };
 
     render() {
         const {
-            height,
+            autoCapitalize,
+            backgroundColor,
+            blurOnSubmit,
+            inputHeight,
+            inputStyle,
+            keyboardType,
             placeholder,
-            fontSize,
             placeholderTextColor,
-            textColor,
-            textFieldBackgroundColor
+            returnKeyType,
+            titleCancelColor,
+            tintColorDelete,
+            tintColorSearch
         } = this.props;
+        const {isFocused, value} = this.state;
 
-        const searchBarStyle = {
-            height: height + 10,
-            paddingLeft: height * 0.25,
-            backgroundColor: textFieldBackgroundColor
+        const inputNoBackground = {
+            ...inputStyle
         };
+        Reflect.deleteProperty(inputNoBackground, 'backgroundColor');
 
-        const inputStyle = {
-            paddingLeft: height * 0.5,
-            fontSize,
-            color: textColor
-        };
+        let inputColor = styles.searchBarInput.backgroundColor;
+        if (inputStyle) {
+            inputColor = inputStyle.backgroundColor;
+        } else {
+            inputNoBackground.backgroundColor = '#fff';
+        }
 
         return (
             <View
-                style={[styles.searchBar, searchBarStyle]}
+                style={[
+                    styles.container,
+                    {height: inputHeight},
+                    backgroundColor && {backgroundColor}
+                ]}
             >
-                {this.state.isOnFocus && this.props.showCancelButton ?
-                    <TouchableOpacity onPress={this.onCancelButtonPress}>
+                <View
+                    style={[
+                        styles.searchBar,
+                        {
+                            backgroundColor: inputColor,
+                            height: inputHeight,
+                            paddingLeft: inputHeight * 0.25
+                        }
+                    ]}
+                >
+                    {isFocused ?
+                        <TouchableWithoutFeedback
+                            onPress={this.onCancelButtonPress}
+                            style={{paddingRight: 5}}
+                        >
+                            <Icon
+                                name='arrow-back'
+                                size={24}
+                                color={titleCancelColor || placeholderTextColor}
+                            />
+                        </TouchableWithoutFeedback> :
                         <Icon
-                            name='arrow-back'
-                            size={height}
-                            color={placeholderTextColor}
+                            name={'search'}
+                            size={16}
+                            color={tintColorSearch || placeholderTextColor}
                         />
-                    </TouchableOpacity> :
-                    <Icon
-                        name={'search'}
-                        size={height}
-                        color={placeholderTextColor}
+                    }
+                    <TextInput
+                        blurOnSubmit={blurOnSubmit}
+                        value={value}
+                        autoCapitalize={autoCapitalize}
+                        autoCorrect={false}
+                        returnKeyType={returnKeyType || 'search'}
+                        keyboardType={keyboardType || 'default'}
+                        onFocus={this.onFocus}
+                        onChangeText={this.onChangeText}
+                        onSubmitEditing={this.onSearchButtonPress}
+                        placeholder={placeholder}
+                        placeholderTextColor={placeholderTextColor}
+                        underlineColorAndroid='transparent'
+                        style={[
+                            styles.searchBarInput,
+                            inputNoBackground,
+                            {height: this.props.inputHeight}
+                        ]}
                     />
-                }
-                <TextInput
-                    value={this.state.value}
-                    returnKeyType='search'
-                    onFocus={this.onFocus}
-                    onBlur={this.onBlur}
-                    onChange={this.props.onChange}
-                    onChangeText={this.onChangeText}
-                    onSubmitEditing={this.onSearchButtonPress}
-                    placeholder={placeholder}
-                    placeholderTextColor={placeholderTextColor}
-                    underlineColorAndroid='transparent'
-                    style={[styles.searchBarInput, inputStyle]}
-                />
-                {this.state.isOnFocus && this.state.value ?
-                    <TouchableOpacity onPress={() => this.setState({value: ''})}>
-                        <Icon
-                            style={{paddingRight: (height * 0.2)}}
-                            name='close'
-                            size={height}
-                            color={placeholderTextColor}
-                        />
-                    </TouchableOpacity> : null
-                }
+                    {isFocused && value ?
+                        <TouchableWithoutFeedback onPress={() => this.onChangeText('')}>
+                            <Icon
+                                style={[{paddingRight: (inputHeight * 0.2)}]}
+                                name='close'
+                                size={16}
+                                color={tintColorDelete || placeholderTextColor}
+                            />
+                        </TouchableWithoutFeedback> : null
+                    }
+                </View>
             </View>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: 'grey',
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        padding: 5
+    },
+    searchBar: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'red',
+        alignItems: 'center'
+    },
+    searchBarInput: {
+        flex: 1,
+        fontWeight: 'normal',
+        textAlignVertical: 'center',
+        padding: 0,
+        includeFontPadding: false
+    }
+});

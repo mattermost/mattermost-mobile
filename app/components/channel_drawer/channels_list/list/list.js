@@ -6,27 +6,23 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
-    Platform,
-    StyleSheet,
     Text,
     TouchableHighlight,
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import Badge from 'app/components/badge';
 import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
 
-import ChannelDrawerItem from './channel_drawer_item';
-import UnreadIndicator from './unread_indicator';
+import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
+import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
 
-class ChannelDrawerList extends Component {
+class List extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             setChannelDisplayName: PropTypes.func.isRequired
@@ -34,18 +30,15 @@ class ChannelDrawerList extends Component {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
-        currentTeam: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         intl: intlShape.isRequired,
-        myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
-        onShowTeams: PropTypes.func.isRequired,
+        styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        currentTeam: {},
         currentChannel: {}
     };
 
@@ -53,9 +46,10 @@ class ChannelDrawerList extends Component {
         super(props);
         this.firstUnreadChannel = null;
         this.state = {
-            showAbove: false,
-            dataSource: this.buildData(props)
+            dataSource: this.buildData(props),
+            showAbove: false
         };
+
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
         then((source) => {
             this.closeButton = source;
@@ -102,7 +96,7 @@ class ChannelDrawerList extends Component {
 
     onSelectChannel = (channel) => {
         this.props.actions.setChannelDisplayName(channel.display_name);
-        this.props.onSelectChannel(channel.id);
+        this.props.onSelectChannel(channel);
     };
 
     onLayout = (event) => {
@@ -150,7 +144,7 @@ class ChannelDrawerList extends Component {
         const unread = msgCount > 0;
 
         return (
-            <ChannelDrawerItem
+            <ChannelItem
                 ref={channel.id}
                 channel={channel}
                 hasUnread={unread}
@@ -184,16 +178,8 @@ class ChannelDrawerList extends Component {
         });
     };
 
-    buildData = (props) => {
-        const data = [];
-
-        if (!props.currentChannel) {
-            return data;
-        }
-
-        const {canCreatePrivateChannels, theme} = this.props;
-        const styles = getStyleSheet(theme);
-
+    buildChannels = (props) => {
+        const {canCreatePrivateChannels, styles} = props;
         const {
             unreadChannels,
             favoriteChannels,
@@ -202,16 +188,18 @@ class ChannelDrawerList extends Component {
             directAndGroupChannels
         } = props.channels;
 
+        const data = [];
+
         if (unreadChannels.length) {
             data.push(
-                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, unreadChannels.length > 0),
+                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, true),
                 ...unreadChannels
             );
         }
 
         if (favoriteChannels.length) {
             data.push(
-                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, unreadChannels.length > 0, favoriteChannels.length > 0),
+                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, unreadChannels.length > 0, true),
                 ...favoriteChannels
             );
         }
@@ -235,34 +223,19 @@ class ChannelDrawerList extends Component {
             ...directAndGroupChannels
         );
 
+        return data;
+    };
+
+    buildData = (props) => {
+        if (!props.currentChannel) {
+            return null;
+        }
+
+        const data = this.buildChannels(props);
         this.firstUnreadChannel = null;
         this.findUnreadChannels(data);
 
         return data;
-    };
-
-    openSettingsModal = () => {
-        const {intl, navigator, theme} = this.props;
-
-        navigator.showModal({
-            screen: 'Settings',
-            title: intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            },
-            navigatorButtons: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: this.closeButton
-                }]
-            }
-        });
     };
 
     showDirectMessagesModal = () => {
@@ -364,34 +337,9 @@ class ChannelDrawerList extends Component {
     };
 
     render() {
-        const {
-            currentChannel,
-            currentTeam,
-            myTeamMembers,
-            onShowTeams,
-            theme
-        } = this.props;
+        const {styles} = this.props;
 
         const {dataSource, showAbove} = this.state;
-        const teamMembers = Object.values(myTeamMembers);
-
-        if (!currentChannel) {
-            return <Text>{'Loading'}</Text>;
-        }
-        const styles = getStyleSheet(theme);
-
-        const settings = (
-            <TouchableHighlight
-                style={styles.settingsContainer}
-                onPress={() => preventDoubleTap(this.openSettingsModal)}
-                underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
-            >
-                <AwesomeIcon
-                    name='cog'
-                    style={styles.settings}
-                />
-            </TouchableHighlight>
-        );
 
         let above;
         if (showAbove) {
@@ -410,87 +358,18 @@ class ChannelDrawerList extends Component {
             );
         }
 
-        const title = (
-            <Text
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={styles.header}
-                onPress={onShowTeams}
-            >
-                {currentTeam.display_name}
-            </Text>
-        );
-
-        let badge;
-        let switcher;
-        if (teamMembers.length > 1) {
-            let mentionCount = 0;
-            let messageCount = 0;
-            teamMembers.forEach((m) => {
-                if (m.team_id !== currentTeam.id) {
-                    mentionCount = mentionCount + (m.mention_count || 0);
-                    messageCount = messageCount + (m.msg_count || 0);
-                }
-            });
-
-            let badgeCount = 0;
-            if (mentionCount) {
-                badgeCount = mentionCount;
-            } else if (messageCount) {
-                badgeCount = -1;
-            }
-
-            if (badgeCount) {
-                badge = (
-                    <Badge
-                        style={styles.badge}
-                        countStyle={styles.mention}
-                        count={badgeCount}
-                        minHeight={5}
-                        minWidth={5}
-                    />
-                );
-            }
-
-            switcher = (
-                <TouchableHighlight
-                    onPress={() => preventDoubleTap(onShowTeams)}
-                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
-                >
-                    <View style={styles.switcherContainer}>
-                        <AwesomeIcon
-                            name='chevron-left'
-                            size={12}
-                            color={theme.sidebarHeaderBg}
-                        />
-                        <View style={styles.switcherDivider}/>
-                        <Text style={styles.switcherTeam}>
-                            {currentTeam.display_name.substr(0, 2).toUpperCase()}
-                        </Text>
-                    </View>
-                </TouchableHighlight>
-            );
-        }
-
         return (
             <View
                 style={styles.container}
                 onLayout={this.onLayout}
             >
-                <View style={styles.statusBar}>
-                    <View style={styles.headerContainer}>
-                        {switcher}
-                        {title}
-                        {settings}
-                        {badge}
-                    </View>
-                </View>
                 <FlatList
                     ref='list'
                     data={dataSource}
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
                     onViewableItemsChanged={this.updateUnreadIndicators}
+                    keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 3,
@@ -503,144 +382,4 @@ class ChannelDrawerList extends Component {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
-        container: {
-            backgroundColor: theme.sidebarBg,
-            flex: 1
-        },
-        statusBar: {
-            backgroundColor: theme.sidebarHeaderBg,
-            ...Platform.select({
-                ios: {
-                    paddingTop: 20
-                }
-            })
-        },
-        headerContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.sidebarHeaderBg,
-            flexDirection: 'row',
-            borderBottomWidth: 1,
-            borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
-            ...Platform.select({
-                android: {
-                    height: 46
-                },
-                ios: {
-                    height: 44
-                }
-            })
-        },
-        header: {
-            color: theme.sidebarHeaderTextColor,
-            flex: 1,
-            fontSize: 17,
-            fontWeight: 'normal',
-            paddingLeft: 16
-        },
-        settingsContainer: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 50,
-            ...Platform.select({
-                android: {
-                    height: 46
-                },
-                ios: {
-                    height: 44
-                }
-            })
-        },
-        settings: {
-            color: theme.sidebarHeaderTextColor,
-            fontSize: 18,
-            fontWeight: '300'
-        },
-        titleContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            height: 48,
-            marginLeft: 16
-        },
-        title: {
-            flex: 1,
-            color: theme.sidebarText,
-            opacity: 1,
-            fontSize: 15,
-            fontWeight: '400',
-            letterSpacing: 0.8,
-            lineHeight: 18
-        },
-        switcherContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.sidebarHeaderTextColor,
-            borderRadius: 2,
-            flexDirection: 'row',
-            height: 32,
-            justifyContent: 'center',
-            marginLeft: 16,
-            paddingHorizontal: 6
-        },
-        switcherDivider: {
-            backgroundColor: theme.sidebarHeaderBg,
-            height: 15,
-            marginHorizontal: 6,
-            width: 1
-        },
-        switcherTeam: {
-            color: theme.sidebarHeaderBg,
-            fontFamily: 'OpenSans',
-            fontSize: 14
-        },
-        badge: {
-            backgroundColor: theme.mentionBj,
-            borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
-            flexDirection: 'row',
-            height: 20,
-            padding: 3,
-            position: 'absolute',
-            left: 5,
-            top: 0,
-            width: 20
-        },
-        mention: {
-            color: theme.mentionColor,
-            fontSize: 10
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.sidebarText, 0.1),
-            height: 1
-        },
-        actionContainer: {
-            alignItems: 'center',
-            height: 48,
-            justifyContent: 'center',
-            width: 50
-        },
-        action: {
-            color: theme.sidebarText,
-            fontSize: 20,
-            fontWeight: '500',
-            lineHeight: 18
-        },
-        above: {
-            backgroundColor: theme.mentionBj,
-            top: 79
-        },
-        indicatorText: {
-            backgroundColor: 'transparent',
-            color: theme.mentionColor,
-            fontSize: 14,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
-            textAlign: 'center',
-            textAlignVertical: 'center'
-        }
-    });
-});
-
-export default injectIntl(ChannelDrawerList);
+export default injectIntl(List);

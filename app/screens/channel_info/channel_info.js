@@ -16,6 +16,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
@@ -62,6 +63,11 @@ class ChannelInfo extends PureComponent {
             this.setState({isFavorite});
         }
     }
+
+    close = () => {
+        EventEmitter.emit(General.DEFAULT_CHANNEL, '');
+        this.props.navigator.pop({animated: true});
+    };
 
     goToChannelAddMembers = () => {
         const {intl, navigator, theme} = this.props;
@@ -115,7 +121,7 @@ class ChannelInfo extends PureComponent {
             };
             onPressAction = () => {
                 this.props.actions.leaveChannel(channel, true).then(() => {
-                    this.props.navigator.pop({animated: true});
+                    this.close();
                 });
             };
         } else if (eventType === 'delete') {
@@ -126,7 +132,7 @@ class ChannelInfo extends PureComponent {
             };
             onPressAction = () => {
                 this.props.actions.deleteChannel(channel.id).then(() => {
-                    this.props.navigator.pop({animated: true});
+                    this.close();
                 });
             };
         }
@@ -157,12 +163,12 @@ class ChannelInfo extends PureComponent {
         switch (channel.type) {
         case General.DM_CHANNEL:
             closeDMChannel(channel).then(() => {
-                this.props.navigator.pop({animated: true});
+                this.close();
             });
             break;
         case General.GM_CHANNEL:
             closeGMChannel(channel).then(() => {
-                this.props.navigator.pop({animated: true});
+                this.close();
             });
             break;
         }
