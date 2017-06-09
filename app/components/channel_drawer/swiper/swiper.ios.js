@@ -10,7 +10,7 @@ import {changeOpacity} from 'app/utils/theme';
 
 const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 
-export default class ChannelDrawerSwiper extends PureComponent {
+export default class SwiperIos extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         onPageSelected: PropTypes.func,

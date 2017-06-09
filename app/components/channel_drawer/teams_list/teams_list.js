@@ -21,7 +21,7 @@ import FormattedText from 'app/components/formatted_text';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-class ChannelDrawerTeams extends PureComponent {
+class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
@@ -333,4 +333,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     });
 });
 
-export default injectIntl(ChannelDrawerTeams);
+export default injectIntl(TeamsList);

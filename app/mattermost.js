@@ -21,6 +21,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
+import {setChannelDisplayName} from 'app/actions/views/channel';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
 import PushNotifications from 'app/push_notifications';
@@ -40,6 +41,7 @@ export default class Mattermost {
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
+        EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetDisplayName);
 
         this.handleAppStateChange(AppState.currentState);
         Client4.setUserAgent(DeviceInfo.getUserAgent());
@@ -76,6 +78,10 @@ export default class Mattermost {
         PushNotifications.cancelAllLocalNotifications();
         setServerVersion('')(dispatch, getState);
         this.startApp('fade');
+    };
+
+    handleResetDisplayName = (displayName) => {
+        store.dispatch(setChannelDisplayName(displayName));
     };
 
     handleVersionUpgrade = async () => {

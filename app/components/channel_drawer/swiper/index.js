@@ -2,5 +2,5 @@
 // See License.txt for license information.
 
 // Used to leverage the platform specific components
-import ChannelDrawerSwiper from './channel_drawer_swiper';
-export default ChannelDrawerSwiper;
+import Swiper from './swiper';
+export default Swiper;

@@ -14,7 +14,7 @@ import {handleTeamChange} from 'app/actions/views/select_team';
 import {getTheme} from 'app/selectors/preferences';
 import {removeProtocol} from 'app/utils/url';
 
-import ChannelDrawerTeams from './channel_drawer_teams';
+import TeamsList from './teams_list';
 
 function mapStateToProps(state, ownProps) {
     const user = getCurrentUser(state);
@@ -48,4 +48,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelDrawerTeams);
+export default connect(mapStateToProps, mapDispatchToProps)(TeamsList);

@@ -4,27 +4,26 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {General} from 'mattermost-redux/constants';
 import {searchChannels} from 'mattermost-redux/actions/channels';
 import {searchProfiles} from 'mattermost-redux/actions/users';
-import {getCurrentUserId, getCurrentUserRoles, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
-import {getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/preferences';
+import {getUserIdsInChannels, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
+import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
-import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
 
-import ChannelDrawerList from './channel_drawer_list';
+import FilteredList from './filtered_list';
 
 function mapStateToProps(state, ownProps) {
-    const {config, license} = state.entities.general;
-    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const {currentUserId} = state.entities.users;
 
     return {
-        canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        currentUserId,
         otherChannels: getOtherChannels(state),
+        groupChannels: getGroupChannels(state),
         profiles: getUsers(state),
+        profilesInChannel: getUserIdsInChannels(state),
         myPreferences: getMyPreferences(state),
         statuses: getUserStatuses(state),
         ...ownProps
@@ -34,6 +33,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            makeGroupMessageVisibleIfNecessary,
             searchChannels,
             searchProfiles,
             setChannelDisplayName
@@ -41,4 +41,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelDrawerList);
+export default connect(mapStateToProps, mapDispatchToProps)(FilteredList);

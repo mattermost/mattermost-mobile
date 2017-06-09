@@ -14,7 +14,7 @@ import ChanneIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class ChannelDrawerItem extends PureComponent {
+export default class ChannelItem extends PureComponent {
     static propTypes = {
         channel: PropTypes.object.isRequired,
         onSelectChannel: PropTypes.func.isRequired,

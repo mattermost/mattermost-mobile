@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 
 import Drawer from 'app/components/drawer';
-import ChannelDrawerList from 'app/components/channel_drawer_list';
-import ChannelDrawerSwiper from 'app/components/channel_drawer_swiper';
-import ChannelDrawerTeams from 'app/components/channel_drawer_teams';
+
+import ChannelsList from './channels_list';
+import Swiper from './swiper';
+import TeamsList from './teams_list';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -234,7 +235,7 @@ export default class ChannelDrawer extends PureComponent {
         if (showTeams) {
             teams = (
                 <View style={{flex: 1, marginBottom: 10}}>
-                    <ChannelDrawerTeams
+                    <TeamsList
                         closeChannelDrawer={this.closeChannelDrawer}
                         myTeamMembers={myTeamMembers}
                         navigator={navigator}
@@ -245,7 +246,7 @@ export default class ChannelDrawer extends PureComponent {
 
         const channelsList = (
             <View style={{flex: 1, marginBottom: 10}}>
-                <ChannelDrawerList
+                <ChannelsList
                     currentTeam={currentTeam}
                     currentChannel={currentChannel}
                     channels={channels}
@@ -263,7 +264,7 @@ export default class ChannelDrawer extends PureComponent {
         );
 
         return (
-            <ChannelDrawerSwiper
+            <Swiper
                 ref='swiper'
                 onPageSelected={this.onPageSelected}
                 openDrawerOffset={openDrawerOffset}
@@ -272,7 +273,7 @@ export default class ChannelDrawer extends PureComponent {
             >
                 {teams}
                 {channelsList}
-            </ChannelDrawerSwiper>
+            </Swiper>
         );
     };
 

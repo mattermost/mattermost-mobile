@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ViewPagerAndroid} from 'react-native';
 
-export default class ChannelDrawerSwiper extends PureComponent {
+export default class SwiperAndroid extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         onPageSelected: PropTypes.func,
