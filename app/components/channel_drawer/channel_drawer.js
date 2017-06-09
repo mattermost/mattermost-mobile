@@ -111,6 +111,7 @@ export default class ChannelDrawer extends PureComponent {
         return {
             mainOverlay: {
                 backgroundColor: this.props.theme.centerChannelBg,
+                elevation: 3,
                 opacity
             },
             drawerOverlay: {
