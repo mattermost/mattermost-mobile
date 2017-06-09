@@ -474,7 +474,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         buttonContainer: {
             height: 36,
-            width: 36,
+            width: 45,
             alignItems: 'center',
             justifyContent: 'center'
         },
