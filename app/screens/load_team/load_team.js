@@ -30,12 +30,14 @@ export default class LoadTeam extends PureComponent {
         if (notification) {
             clearNotification();
             goToNotification(notification);
-            this.goToChannelView();
-        } else if (currentTeam) {
-            this.onSelectTeam(currentTeam);
-        } else if (!currentTeam) {
-            this.selectFirstTeam(teams, myMembers);
+            return this.goToChannelView();
         }
+
+        if (currentTeam && myMembers[currentTeam.id]) {
+            return this.onSelectTeam(currentTeam);
+        }
+
+        return this.selectFirstTeam(teams, myMembers);
     }
 
     componentWillReceiveProps(nextProps) {

@@ -27,7 +27,6 @@ import {
     isDirectChannel,
     isGroupChannel
 } from 'mattermost-redux/utils/channel_utils';
-import {getLastUpdateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
@@ -139,22 +138,17 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 export function loadPostsIfNecessary(channel) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {posts, postsInChannel} = state.entities.posts;
+        const {channelsLastFetch} = state.internal;
+        const lastFetchTime = channelsLastFetch[channel.id] || 0;
+        const {postsInChannel} = state.entities.posts;
         const postsIds = postsInChannel[channel.id];
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE) {
+        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE || !lastFetchTime) {
             return getPosts(channel.id)(dispatch, getState);
         }
 
-        const postsForChannel = postsIds.map((id) => posts[id]);
-        const latestPostTime = getLastUpdateAt(postsForChannel);
-
-        if (latestPostTime) {
-            return getPostsSince(channel.id, latestPostTime)(dispatch, getState);
-        }
-
-        return null;
+        return getPostsSince(channel.id, lastFetchTime)(dispatch, getState);
     };
 }
 
@@ -191,12 +185,14 @@ export function selectInitialChannel(teamId) {
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         if (channel) {
+            dispatch(setChannelDisplayName(''));
             await handleSelectChannel(channel.id)(dispatch, getState);
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
             const firstChannel = channelsInTeam[0].id;
+            dispatch(setChannelDisplayName(''));
             await handleSelectChannel(firstChannel.id)(dispatch, getState);
         }
     };
