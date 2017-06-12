@@ -321,7 +321,7 @@ class PostTextbox extends PureComponent {
                 action: this.attachVideoFromLibraryAndroid,
                 text: {
                     id: 'mobile.file_upload.video',
-                    defaultMessage: 'Video Libary'
+                    defaultMessage: 'Video Library'
                 },
                 icon: 'file-video-o'
             });
