@@ -8,8 +8,8 @@
   "private": true,
   "dependencies": {
     "babel-polyfill": "6.23.0",
-    "commonmark": "hmhealey/commonmark.js#46784f1461fa34e148940534c1763af6d344ab0f",
-    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#7479202c42ab1b722359adadaa13f738edf5f88a",
+    "commonmark": "hmhealey/commonmark.js#0e1c57aff4e0729e12ae1453fadc6c8bfd86cf96",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#1cec47814455f2eb3858864334eb4300b5103523",
     "deep-equal": "1.0.1",
     "intl": "1.2.5",
     "mattermost-redux": "mattermost/mattermost-redux#master",
