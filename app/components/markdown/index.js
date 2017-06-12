@@ -3,15 +3,17 @@
 
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     StyleSheet,
     Text,
     View
 } from 'react-native';
 
 import AtMention from 'app/components/at_mention';
+import Emoji from 'app/components/emoji';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {concatStyles} from 'app/utils/theme';
 
@@ -21,17 +23,40 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 
-export default class Markdown extends PureComponent {
+export default class Markdown extends React.PureComponent {
     static propTypes = {
         baseTextStyle: CustomPropTypes.Style,
         textStyles: PropTypes.object,
         blockStyles: PropTypes.object,
+        emojiSizes: PropTypes.object,
         value: PropTypes.string.isRequired
     };
 
     static defaultProps = {
         textStyles: {},
-        blockStyles: {}
+        blockStyles: {},
+        emojiSizes: {
+            ...Platform.select({
+                ios: {
+                    heading1: 25,
+                    heading2: 25,
+                    heading3: 25,
+                    heading4: 25,
+                    heading5: 25,
+                    heading6: 25,
+                    text: 20
+                },
+                android: {
+                    heading1: 80,
+                    heading2: 80,
+                    heading3: 80,
+                    heading4: 80,
+                    heading5: 80,
+                    heading6: 80,
+                    text: 65
+                }
+            })
+        }
     };
 
     constructor(props) {
@@ -52,6 +77,7 @@ export default class Markdown extends PureComponent {
                 link: MarkdownLink,
                 image: this.renderImage,
                 atMention: this.renderAtMention,
+                emoji: this.renderEmoji,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -104,6 +130,25 @@ export default class Markdown extends PureComponent {
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
                 mentionName={mentionName}
+            />
+        );
+    }
+
+    renderEmoji = ({context, emojiName, literal}) => {
+        let size;
+        const headingType = context.find((type) => type.startsWith('heading'));
+        if (headingType) {
+            size = this.props.emojiSizes[headingType];
+        } else {
+            size = this.props.emojiSizes.text;
+        }
+
+        return (
+            <Emoji
+                emojiName={emojiName}
+                literal={literal}
+                size={size}
+                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
     }
