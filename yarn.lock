@@ -4493,6 +4493,17 @@ react-native-keyboard-aware-scroll-view@0.2.8:
   dependencies:
     react-timer-mixin "^0.13.3"
 
+react-native-keyboard-input@^3.0.22:
+  version "3.0.22"
+  resolved "https://registry.yarnpkg.com/react-native-keyboard-input/-/react-native-keyboard-input-3.0.22.tgz#b3a0ff4caf83ef58df462f1e9009a4a900187d34"
+  dependencies:
+    lodash "^4.17.4"
+    react-native-keyboard-tracking-view "^3.0.12"
+
+react-native-keyboard-tracking-view@^3.0.12:
+  version "3.0.13"
+  resolved "https://registry.yarnpkg.com/react-native-keyboard-tracking-view/-/react-native-keyboard-tracking-view-3.0.13.tgz#a1eafebbed8300211ee89c19d4c3ca3f75039bc5"
+
 react-native-linear-gradient@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-native-linear-gradient/-/react-native-linear-gradient-2.0.0.tgz#7442c00e1fcd9fca329119dcbaf744d12bcd1b5a"
