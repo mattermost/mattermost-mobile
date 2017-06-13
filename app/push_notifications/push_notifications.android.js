@@ -10,17 +10,15 @@ class PushNotification {
         this.onNotification = null;
 
         NotificationsAndroid.setNotificationReceivedListener((notification) => {
-            const data = notification.getData();
-
             if (notification) {
+                const data = notification.getData();
                 this.handleNotification(data, false);
             }
         });
 
         NotificationsAndroid.setNotificationOpenedListener((notification) => {
-            const data = notification.getData();
-
             if (notification) {
+                const data = notification.getData();
                 this.handleNotification(data, true);
             }
         });
