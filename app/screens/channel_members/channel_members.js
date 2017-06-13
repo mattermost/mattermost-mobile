@@ -47,7 +47,7 @@ class ChannelMembers extends PureComponent {
     removeButton = {
         disabled: true,
         id: 'remove-members',
-        showAsAction: 'never'
+        showAsAction: 'always'
     };
 
     constructor(props) {
