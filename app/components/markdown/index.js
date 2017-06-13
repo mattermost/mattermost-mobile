@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import AtMention from 'app/components/at_mention';
+import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {concatStyles} from 'app/utils/theme';
@@ -77,6 +78,7 @@ export default class Markdown extends React.PureComponent {
                 link: MarkdownLink,
                 image: this.renderImage,
                 atMention: this.renderAtMention,
+                channelLink: this.renderChannelLink,
                 emoji: this.renderEmoji,
 
                 paragraph: this.renderParagraph,
@@ -130,6 +132,16 @@ export default class Markdown extends React.PureComponent {
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
                 mentionName={mentionName}
+            />
+        );
+    }
+
+    renderChannelLink = ({context, channelName}) => {
+        return (
+            <ChannelLink
+                linkStyle={this.props.textStyles.link}
+                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                channelName={channelName}
             />
         );
     }
