@@ -23,14 +23,16 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            getTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
+            initialize: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
+            logout: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
         navigator: PropTypes.object,
+        userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object
     };
@@ -40,9 +42,32 @@ export default class SelectTeam extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
-            joining: false
+            joining: false,
+            teams: null
         };
     }
+
+    componentDidMount() {
+        this.buildData(this.props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.teams !== nextProps.teams) {
+            this.buildData(nextProps);
+        }
+    }
+
+    buildData = (props) => {
+        if (props.teams.length) {
+            this.setState({teams: props.teams});
+        } else {
+            const teams = [{
+                id: 'mobile.select_team.no_teams',
+                defaultMessage: 'There are no available teams for you to join.'
+            }];
+            this.setState({teams});
+        }
+    };
 
     close = () => {
         this.props.navigator.dismissModal({
@@ -50,17 +75,40 @@ export default class SelectTeam extends PureComponent {
         });
     };
 
+    goToChannelView = () => {
+        const {actions, navigator, theme} = this.props;
+
+        actions.initialize();
+        navigator.resetTo({
+            screen: 'Channel',
+            animated: false,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
+    };
+
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-teams') {
+            const {logout} = this.props.actions;
+
+            switch (event.id) {
+            case 'close-teams':
                 this.close();
+                break;
+            case 'logout':
+                InteractionManager.runAfterInteractions(logout);
+                break;
             }
         }
     };
 
     onSelectTeam = async (team) => {
         this.setState({joining: true});
-        const {currentChannelId} = this.props;
+        const {currentChannelId, userWithoutTeams} = this.props;
         const {
             joinTeam,
             handleTeamChange,
@@ -72,15 +120,34 @@ export default class SelectTeam extends PureComponent {
         }
         await joinTeam(team.invite_id, team.id);
         handleTeamChange(team);
-        EventEmitter.emit('close_channel_drawer');
-        InteractionManager.runAfterInteractions(() => {
-            this.close();
-        });
+
+        if (userWithoutTeams) {
+            this.goToChannelView();
+        } else {
+            EventEmitter.emit('close_channel_drawer');
+            InteractionManager.runAfterInteractions(() => {
+                this.close();
+            });
+        }
     };
 
     renderItem = ({item}) => {
         const {currentUrl, theme} = this.props;
         const styles = getStyleSheet(theme);
+
+        if (item.id === 'mobile.select_team.no_teams') {
+            return (
+                <View style={styles.teamWrapper}>
+                    <View style={styles.teamContainer}>
+                        <FormattedText
+                            id={item.id}
+                            defaultMessage={item.defaultMessage}
+                            style={styles.noTeam}
+                        />
+                    </View>
+                </View>
+            );
+        }
 
         return (
             <View style={styles.teamWrapper}>
@@ -116,7 +183,8 @@ export default class SelectTeam extends PureComponent {
     };
 
     render() {
-        const {teams, theme} = this.props;
+        const {theme} = this.props;
+        const {teams} = this.state;
         const styles = getStyleSheet(theme);
 
         if (this.state.joining) {
@@ -190,6 +258,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 40,
             justifyContent: 'center',
             width: 40
+        },
+        noTeam: {
+            color: theme.centerChannelColor,
+            fontSize: 14
         },
         teamIcon: {
             color: theme.buttonColor,

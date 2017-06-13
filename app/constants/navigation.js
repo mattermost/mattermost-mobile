@@ -5,7 +5,8 @@ import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 const NavigationTypes = keyMirror({
     NAVIGATION_RESET: null,
-    NAVIGATION_CLOSE_MODAL: null
+    NAVIGATION_CLOSE_MODAL: null,
+    NAVIGATION_NO_TEAMS: null
 });
 
 export default NavigationTypes;

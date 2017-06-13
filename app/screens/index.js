@@ -57,7 +57,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('CreateChannel', () => wrapWithContextProvider(CreateChannel), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(ImagePreview), store, Provider);
-    Navigation.registerComponent('LoadTeam', () => LoadTeam, store, Provider);
+    Navigation.registerComponent('LoadTeam', () => wrapWithContextProvider(LoadTeam), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(Login), store, Provider);
     Navigation.registerComponent('LoginOptions', () => wrapWithContextProvider(LoginOptions), store, Provider);
     Navigation.registerComponent('MFA', () => wrapWithContextProvider(Mfa), store, Provider);

@@ -97,7 +97,6 @@ class Settings extends PureComponent {
         navigator.push({
             screen: 'SelectTeam',
             title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
-            animationType: 'slide-up',
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
