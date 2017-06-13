@@ -50,7 +50,7 @@ class CreateChannel extends PureComponent {
     rightButton = {
         id: 'create-channel',
         disabled: true,
-        showAsAction: 'never'
+        showAsAction: 'always'
     };
 
     constructor(props) {
