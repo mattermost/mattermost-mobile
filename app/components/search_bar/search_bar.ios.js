@@ -116,9 +116,9 @@ export default class SearchBarIos extends Component {
                     {...this.props}
                     ref='search'
                     placeholderCollapsedMargin={this.state.placeholderWidth}
-                    placeholderExpandedMargin={20}
-                    searchIconCollapsedMargin={this.state.placeholderWidth + 10}
-                    searchIconExpandedMargin={10}
+                    placeholderExpandedMargin={30}
+                    searchIconCollapsedMargin={this.state.placeholderWidth + 15}
+                    searchIconExpandedMargin={15}
                     shadowVisible={false}
                     onCancel={this.onCancel}
                     onChangeText={this.onChangeText}

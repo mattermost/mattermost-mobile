@@ -155,15 +155,15 @@ class ChannelsList extends Component {
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to a conversation'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
-                    inputHeight={Platform.OS === 'android' ? 32 : 33}
+                    inputHeight={33}
                     inputStyle={{
-                        backgroundColor: changeOpacity(theme.sidebarText, 0.4),
-                        color: theme.sidebarText,
+                        backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
+                        color: theme.sidebarHeaderTextColor,
                         fontSize: 13
                     }}
-                    placeholderTextColor={changeOpacity(theme.sidebarText, 0.5)}
-                    tintColorSearch={changeOpacity(theme.sidebarText, 0.5)}
-                    tintColorDelete={changeOpacity(theme.sidebarText, 0.5)}
+                    placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                    tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
+                    tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     titleCancelColor={theme.sidebarHeaderTextColor}
                     onSearchButtonPress={this.onSearch}
                     onCancelButtonPress={this.cancelSearch}
@@ -331,6 +331,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 32,
             justifyContent: 'center',
             marginLeft: 16,
+            marginRight: 10,
             paddingHorizontal: 6
         },
         switcherDivider: {
