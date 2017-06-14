@@ -63,12 +63,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         codeBlock: {
             fontFamily: codeFont
         },
-        horizontalRule: {
-            backgroundColor: theme.centerChannelColor,
-            height: StyleSheet.hairlineWidth,
-            flex: 1,
-            marginVertical: 10
-        },
         mention: {
             color: theme.linkColor
         }
@@ -84,7 +78,10 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 2
         },
         horizontalRule: {
-            backgroundColor: theme.centerChannelColor
+            backgroundColor: theme.centerChannelColor,
+            height: StyleSheet.hairlineWidth,
+            flex: 1,
+            marginVertical: 10
         },
         quoteBlock: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
