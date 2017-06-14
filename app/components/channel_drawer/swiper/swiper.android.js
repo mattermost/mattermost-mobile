@@ -23,6 +23,7 @@ export default class SwiperAndroid extends PureComponent {
 
     showTeamsPage = () => {
         this.refs.swiper.setPage(0);
+        this.props.onPageSelected(0);
     };
 
     resetPage = () => {
