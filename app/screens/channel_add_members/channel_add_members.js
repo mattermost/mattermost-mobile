@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
-    Platform,
     InteractionManager,
     StyleSheet,
     View
