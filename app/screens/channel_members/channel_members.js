@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    Platform,
     InteractionManager,
     StyleSheet,
     View
@@ -300,16 +299,16 @@ class ChannelMembers extends PureComponent {
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
-                        inputHeight={30}
+                        inputHeight={33}
                         inputStyle={{
-                            backgroundColor: '#fff',
-                            color: changeOpacity('#000', 0.5),
+                            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
+                            color: theme.sidebarHeaderTextColor,
                             fontSize: 13
                         }}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
-                        tintColorSearch={changeOpacity('#000', 0.5)}
-                        tintColorDelete={changeOpacity('#000', 0.5)}
-                        titleCancelColor={Platform.OS === 'android' ? changeOpacity('#000', 0.5) : theme.sidebarHeaderBg}
+                        placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
+                        tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        titleCancelColor={theme.sidebarHeaderTextColor}
                         onChangeText={this.searchProfiles}
                         onSearchButtonPress={this.searchProfiles}
                         onCancelButtonPress={this.cancelSearch}
