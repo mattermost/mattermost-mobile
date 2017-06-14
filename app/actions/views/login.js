@@ -27,7 +27,6 @@ export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {
         const {currentUserId} = getState().entities.users;
         const token = Client4.getToken();
-        const session = await Client4.getSessions(currentUserId, token);
 
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
@@ -37,6 +36,7 @@ export function handleSuccessfulLogin() {
             }
         });
 
+        const session = await Client4.getSessions(currentUserId, token);
         if (Array.isArray(session) && session[0]) {
             const s = session[0];
             return s.expires_at;
