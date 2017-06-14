@@ -74,7 +74,8 @@ class PostTextbox extends PureComponent {
         canSend: false,
         contentHeight: INITIAL_HEIGHT,
         customKeyboard: {
-            component: undefined
+            component: undefined,
+            initialProps: undefined
         }
     };
 
@@ -392,7 +393,11 @@ class PostTextbox extends PureComponent {
     };
 
     showEmojiKeyboard = () => {
-        this.showKeyboardView('EmojiKeyboard');
+        this.showKeyboardView('EmojiKeyboard', {
+            backgroundColor: this.props.theme.centerChannelBg,
+            containerBackgroundColor: changeOpacity(
+                this.props.theme.centerChannelColor, 0.05)
+        });
     };
 
     toolbarButtons = () => {
@@ -414,10 +419,11 @@ class PostTextbox extends PureComponent {
         }
     }
 
-    showKeyboardView = (component) => {
+    showKeyboardView = (component, initialProps) => {
         this.setState({
             customKeyboard: {
-                component
+                component,
+                initialProps
             }
         });
     }
@@ -428,6 +434,10 @@ class PostTextbox extends PureComponent {
 
     onKeyboardResigned() {
         this.resetKeyboardView();
+    }
+
+    onEmojiSelected = (keyboard, {emojiName}) => {
+        this.props.onChangeText(`${this.props.value} :${emojiName}:`);
     }
 
     render() {
@@ -532,6 +542,8 @@ class PostTextbox extends PureComponent {
                                 kbInputRef={this.textInputRef}
                                 kbComponent={this.state.customKeyboard.component}
                                 onKeyboardResigned={() => this.onKeyboardResigned()}
+                                onItemSelected={this.onEmojiSelected}
+                                kbInitialProps={this.state.customKeyboard.initialProps}
                             />
                         </View>
                     </View>
