@@ -46,7 +46,7 @@ class MoreChannels extends PureComponent {
 
     rightButton = {
         id: 'create-pub-channel',
-        showAsAction: 'never'
+        showAsAction: 'always'
     };
 
     constructor(props) {

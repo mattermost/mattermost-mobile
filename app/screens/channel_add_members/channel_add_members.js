@@ -47,7 +47,7 @@ class ChannelAddMembers extends PureComponent {
     addButton = {
         disabled: true,
         id: 'add-members',
-        showAsAction: 'never'
+        showAsAction: 'always'
     };
 
     constructor(props) {

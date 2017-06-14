@@ -39,7 +39,7 @@ class AccountNotifications extends PureComponent {
 
     saveButton = {
         id: 'save-notifications',
-        showAsAction: 'never'
+        showAsAction: 'always'
     };
 
     constructor(props) {
