@@ -4,10 +4,11 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {IntlProvider} from 'react-intl';
+import {Platform} from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 
 export default class Root extends PureComponent {
@@ -16,6 +17,7 @@ export default class Root extends PureComponent {
         navigator: PropTypes.object,
         excludeEvents: PropTypes.bool,
         currentChannelId: PropTypes.string,
+        currentUrl: PropTypes.string,
         locale: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -24,6 +26,7 @@ export default class Root extends PureComponent {
         if (!this.props.excludeEvents) {
             EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+            EventEmitter.on(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
         }
     }
 
@@ -31,6 +34,7 @@ export default class Root extends PureComponent {
         if (!this.props.excludeEvents) {
             EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.off(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
+            EventEmitter.off(NavigationTypes.NAVIGATION_NO_TEAMS, this.handleNoTeams);
         }
     }
 
@@ -49,6 +53,50 @@ export default class Root extends PureComponent {
                 }
             });
         }
+    };
+
+    handleNoTeams = () => {
+        const {currentUrl, navigator, theme} = this.props;
+        const {intl} = this.refs.provider.getChildContext();
+
+        let navigatorButtons;
+        if (Platform.OS === 'android') {
+            navigatorButtons = {
+                rightButtons: [{
+                    title: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
+                    id: 'logout',
+                    buttonColor: theme.sidebarHeaderTextColor,
+                    showAsAction: 'always'
+                }]
+            };
+        } else {
+            navigatorButtons = {
+                leftButtons: [{
+                    title: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
+                    id: 'logout',
+                    buttonColor: theme.sidebarHeaderTextColor
+                }]
+            };
+        }
+
+        navigator.resetTo({
+            screen: 'SelectTeam',
+            title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            navigatorButtons,
+            passProps: {
+                currentUrl,
+                userWithoutTeams: true,
+                theme
+            }
+        });
     };
 
     handleNotificationTapped = () => {
@@ -71,6 +119,7 @@ export default class Root extends PureComponent {
 
         return (
             <IntlProvider
+                ref='provider'
                 locale={locale}
                 messages={getTranslations(locale)}
             >

@@ -4,6 +4,9 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {NavigationTypes} from 'app/constants';
 
 import {setChannelDisplayName} from './channel';
 
@@ -34,6 +37,8 @@ export function selectFirstAvailableTeam() {
 
         if (firstTeam) {
             handleTeamChange(firstTeam)(dispatch, getState);
+        } else {
+            EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
         }
     };
 }

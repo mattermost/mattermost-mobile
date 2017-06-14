@@ -4,22 +4,24 @@
 import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import {RequestStatus} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {NavigationTypes} from 'app/constants';
 
 export default class LoadTeam extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
-        notification: PropTypes.object,
-        teams: PropTypes.object.isRequired,
-        myMembers: PropTypes.object.isRequired,
-        teamsRequest: PropTypes.object.isRequired,
-        currentTeam: PropTypes.object,
         actions: PropTypes.shape({
             clearNotification: PropTypes.func.isRequired,
+            getTeams: PropTypes.func.isRequired,
             goToNotification: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             initialize: PropTypes.func.isRequired
         }).isRequired,
+        currentTeam: PropTypes.object,
+        myMembers: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
+        notification: PropTypes.object,
+        teams: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
 
@@ -40,19 +42,17 @@ export default class LoadTeam extends PureComponent {
         return this.selectFirstTeam(teams, myMembers);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.teamsRequest.status === RequestStatus.STARTED &&
-            nextProps.teamsRequest.status === RequestStatus.SUCCESS) {
-            this.selectFirstTeam(nextProps.teams, nextProps.myMembers);
-        }
-    }
-
     selectFirstTeam(allTeams, myMembers) {
         const teams = Object.keys(myMembers).map((key) => allTeams[key]);
         const firstTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
 
         if (firstTeam) {
             this.onSelectTeam(firstTeam);
+        } else {
+            const {getTeams} = this.props.actions;
+            getTeams().then(() => {
+                EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
+            });
         }
     }
 

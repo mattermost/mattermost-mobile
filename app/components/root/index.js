@@ -5,8 +5,10 @@ import {connect} from 'react-redux';
 import DeviceInfo from 'react-native-device-info';
 
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 
 import {getTheme} from 'app/selectors/preferences';
+import {removeProtocol} from 'app/utils/url';
 
 import Root from './root';
 
@@ -23,6 +25,7 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         theme: getTheme(state),
         currentChannelId: getCurrentChannelId(state),
+        currentUrl: removeProtocol(getCurrentUrl(state)),
         locale
     };
 }
