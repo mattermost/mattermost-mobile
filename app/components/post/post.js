@@ -731,8 +731,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         message: {
             color: theme.centerChannelColor,
-            fontSize: 14,
-            lineHeight: 21
+            fontSize: 14
         },
         systemMessage: {
             opacity: 0.6
