@@ -29,7 +29,6 @@ class ChannelMembers extends PureComponent {
         theme: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
         currentChannelMembers: PropTypes.array.isRequired,
-        currentChannelMemberCount: PropTypes.number.isRequired,
         currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         preferences: PropTypes.object,
