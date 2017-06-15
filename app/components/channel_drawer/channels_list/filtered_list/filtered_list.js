@@ -214,10 +214,13 @@ class ChannelDrawerList extends Component {
         const users = Object.values(profiles);
 
         return users.map((u) => {
+            const displayName = displayUsername(u, myPreferences);
+
             return {
                 id: u.id,
                 status: statuses[u.id],
-                display_name: displayUsername(u, myPreferences),
+                display_name: displayName,
+                name: displayName,
                 type: General.DM_CHANNEL,
                 fake: true
             };
