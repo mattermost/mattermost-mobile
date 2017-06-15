@@ -13,27 +13,29 @@ import {
 import ProfilePicture from 'app/components/profile_picture';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getFullName} from 'mattermost-redux/utils/user_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import UserProfileRow from './user_profile_row';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSendMessage: PropTypes.func.isRequired
+            handleSendMessage: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
+        myPreferences: PropTypes.object,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired
     };
 
     getDisplayName = () => {
-        const {theme, user} = this.props;
+        const {theme, myPreferences, user} = this.props;
         const style = createStyleSheet(theme);
 
-        const displayName = getFullName(user);
+        const displayName = displayUsername(user, myPreferences);
 
         if (displayName) {
             return <Text style={style.displayName}>{displayName}</Text>;
@@ -59,7 +61,8 @@ export default class UserProfile extends PureComponent {
     };
 
     sendMessage = () => {
-        const {actions, navigator, user} = this.props;
+        const {actions, myPreferences, navigator, user} = this.props;
+        actions.setChannelDisplayName(displayUsername(user, myPreferences));
         actions.handleSendMessage(user.id);
         navigator.pop({
             animated: true
@@ -75,7 +78,6 @@ export default class UserProfile extends PureComponent {
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.top}>
                         <ProfilePicture
@@ -133,9 +135,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
-        },
-        scrollViewContent: {
-            flex: 1
         },
         text: {
             fontSize: 15,
