@@ -260,14 +260,14 @@ class MoreChannels extends PureComponent {
                             backgroundColor='transparent'
                             inputHeight={33}
                             inputStyle={{
-                                backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
-                                color: theme.sidebarHeaderTextColor,
+                                backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+                                color: theme.centerChannelColor,
                                 fontSize: 13
                             }}
-                            placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
-                            tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                            titleCancelColor={theme.sidebarHeaderTextColor}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
                             onChangeText={this.searchProfiles}
                             onSearchButtonPress={this.searchProfiles}
                             onCancelButtonPress={this.cancelSearch}
