@@ -12,7 +12,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
-        blockStyle: CustomPropTypes.Style,
+        iconStyle: CustomPropTypes.Style,
         children: CustomPropTypes.Children.isRequired
     };
 
@@ -22,11 +22,11 @@ export default class MarkdownBlockQuote extends PureComponent {
                 <View>
                     <Icon
                         name='quote-left'
-                        style={this.props.blockStyle}
+                        style={this.props.iconStyle}
                         size={14}
                     />
                 </View>
-                <View>
+                <View style={style.childContainer}>
                     {this.props.children}
                 </View>
             </View>
@@ -36,7 +36,10 @@ export default class MarkdownBlockQuote extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        flexDirection: 'row',
-        alignItems: 'flex-start'
+        alignItems: 'flex-start',
+        flexDirection: 'row'
+    },
+    childContainer: {
+        flex: 1
     }
 });

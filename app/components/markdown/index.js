@@ -202,7 +202,7 @@ export default class Markdown extends React.PureComponent {
     renderBlockQuote = ({children, ...otherProps}) => {
         return (
             <MarkdownBlockQuote
-                blockStyle={this.props.blockStyles.quoteBlock}
+                iconStyle={this.props.blockStyles.quoteBlockIcon}
                 {...otherProps}
             >
                 {children}

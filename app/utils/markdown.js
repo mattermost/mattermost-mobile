@@ -83,7 +83,7 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             marginVertical: 10
         },
-        quoteBlock: {
+        quoteBlockIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             padding: 5
         }
