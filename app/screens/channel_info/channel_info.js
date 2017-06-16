@@ -273,9 +273,9 @@ class ChannelInfo extends PureComponent {
                             textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                             theme={theme}
                         />
-                        {canManageUsers && this.renderLeaveOrDeleteChannelRow() &&
+                        <View style={style.separator}/>
+                        {canManageUsers &&
                             <View>
-                                <View style={style.separator}/>
                                 <ChannelInfoRow
                                     action={() => preventDoubleTap(this.goToChannelAddMembers)}
                                     defaultMessage='Add Members'
