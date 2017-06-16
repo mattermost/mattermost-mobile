@@ -226,7 +226,7 @@ class ChannelsList extends Component {
 
         return (
             <View
-                style={styles.container}
+                style={[styles.container, styles.extraPadding]}
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
@@ -247,6 +247,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.sidebarBg,
             flex: 1
+        },
+        extraPadding: {
+            ...Platform.select({
+                ios: {
+                    paddingBottom: 10
+                }
+            })
         },
         statusBar: {
             backgroundColor: theme.sidebarHeaderBg,
