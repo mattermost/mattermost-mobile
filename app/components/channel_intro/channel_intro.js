@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 import {getFullName} from 'mattermost-redux/utils/user_utils';
@@ -21,7 +22,27 @@ class ChannelIntro extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
+    };
+
+    goToUserProfile = (userId) => {
+        const {intl, navigator, theme} = this.props;
+        navigator.push({
+            screen: 'UserProfile',
+            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                userId
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
     };
 
     getDisplayName = (member) => {
@@ -43,8 +64,9 @@ class ChannelIntro extends PureComponent {
         const style = getStyleSheet(theme);
 
         return currentChannelMembers.map((member) => (
-            <View
+            <TouchableOpacity
                 key={member.id}
+                onPress={() => this.goToUserProfile(member.id)}
                 style={style.profile}
             >
                 <ProfilePicture
@@ -54,7 +76,7 @@ class ChannelIntro extends PureComponent {
                     statusSize={25}
                     statusIconSize={15}
                 />
-            </View>
+            </TouchableOpacity>
         ));
     };
 
@@ -62,9 +84,18 @@ class ChannelIntro extends PureComponent {
         const {currentChannelMembers, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        const names = currentChannelMembers.map((member) => this.getDisplayName(member));
+        const names = currentChannelMembers.map((member, index) => (
+            <TouchableOpacity
+                key={member.id}
+                onPress={() => this.goToUserProfile(member.id)}
+            >
+                <Text style={style.displayName}>
+                    {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
+                </Text>
+            </TouchableOpacity>
+        ));
 
-        return <Text style={style.displayName}>{names.join(', ')}</Text>;
+        return <View style={{flexDirection: 'row'}}>{names}</View>;
     };
 
     buildDMContent = () => {
