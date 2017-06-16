@@ -170,7 +170,7 @@ class ChannelsList extends Component {
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
                 />
-            </View >
+            </View>
         );
 
         let badge;
