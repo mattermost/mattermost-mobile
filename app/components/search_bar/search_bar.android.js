@@ -16,6 +16,7 @@ import {changeOpacity} from 'app/utils/theme';
 
 export default class SearchBarAndroid extends PureComponent {
     static propTypes = {
+        autoFocus: PropTypes.bool,
         onCancelButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
         onFocus: PropTypes.func,
@@ -35,7 +36,8 @@ export default class SearchBarAndroid extends PureComponent {
         autoCapitalize: PropTypes.string,
         inputHeight: PropTypes.number,
         inputBorderRadius: PropTypes.number,
-        blurOnSubmit: PropTypes.bool
+        blurOnSubmit: PropTypes.bool,
+        value: PropTypes.string
     };
 
     static defaultProps = {
@@ -53,7 +55,7 @@ export default class SearchBarAndroid extends PureComponent {
         super(props);
         this.state = {
             isFocused: false,
-            value: ''
+            value: props.value || ''
         };
     }
 
@@ -102,6 +104,10 @@ export default class SearchBarAndroid extends PureComponent {
         if (onFocus) {
             onFocus();
         }
+    };
+
+    focus = () => {
+        this.refs.input.focus();
     };
 
     render() {
@@ -169,6 +175,7 @@ export default class SearchBarAndroid extends PureComponent {
                         />
                     }
                     <TextInput
+                        ref='input'
                         blurOnSubmit={blurOnSubmit}
                         value={value}
                         autoCapitalize={autoCapitalize}
