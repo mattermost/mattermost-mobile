@@ -219,13 +219,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
         },
-        errorContainer: {
-            position: 'absolute'
-        },
         errorWrapper: {
             justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 10
+            alignItems: 'center'
         },
         inputContainer: {
             borderTopWidth: 1,
