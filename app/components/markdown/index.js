@@ -30,7 +30,8 @@ export default class Markdown extends React.PureComponent {
         textStyles: PropTypes.object,
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
-        value: PropTypes.string.isRequired
+        value: PropTypes.string.isRequired,
+        onLongPress: PropTypes.func
     };
 
     static defaultProps = {
@@ -57,7 +58,8 @@ export default class Markdown extends React.PureComponent {
                     text: 65
                 }
             })
-        }
+        },
+        onLongPress: () => true
     };
 
     constructor(props) {
@@ -75,7 +77,7 @@ export default class Markdown extends React.PureComponent {
                 emph: Renderer.forwardChildren,
                 strong: Renderer.forwardChildren,
                 code: this.renderCodeSpan,
-                link: MarkdownLink,
+                link: this.renderLink,
                 image: this.renderImage,
                 atMention: this.renderAtMention,
                 channelLink: this.renderChannelLink,
@@ -257,6 +259,17 @@ export default class Markdown extends React.PureComponent {
         }
 
         return rendered;
+    }
+
+    renderLink = ({children, href}) => {
+        return (
+            <MarkdownLink
+                href={href}
+                onLongPress={this.props.onLongPress}
+            >
+                {children}
+            </MarkdownLink>
+        );
     }
 
     render() {
