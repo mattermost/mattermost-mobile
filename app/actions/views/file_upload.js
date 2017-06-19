@@ -19,19 +19,22 @@ export function handleUploadFiles(files, rootId) {
 
         files.forEach((file) => {
             const mimeType = lookupMimeType(file.fileName);
+            const extension = file.fileName.split('.').pop().replace('.', '');
             const clientId = generateId();
 
             clientIds.push({
                 clientId,
                 localPath: file.uri,
                 name: file.fileName,
-                type: mimeType
+                type: mimeType,
+                extension
             });
 
             const fileData = {
                 uri: file.uri,
                 name: file.fileName,
-                type: mimeType
+                type: mimeType,
+                extension
             };
 
             formData.append('files', fileData);
