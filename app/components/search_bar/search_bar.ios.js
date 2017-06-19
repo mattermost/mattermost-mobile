@@ -39,11 +39,11 @@ export default class SearchBarIos extends Component {
         value: PropTypes.string
     };
 
-    afterDelete = () => {
-        return new Promise((resolve) => {
-            this.refs.search.focus();
-            resolve();
-        });
+    static defaultProps = {
+        onSearchButtonPress: () => true,
+        onCancelButtonPress: () => true,
+        onChangeText: () => true,
+        onFocus: () => true
     };
 
     cancel = () => {
@@ -53,32 +53,24 @@ export default class SearchBarIos extends Component {
     onCancel = () => {
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(() => {
-            if (this.props.onCancelButtonPress) {
-                this.props.onCancelButtonPress();
-            }
+            this.props.onCancelButtonPress();
         });
     };
 
     onChangeText = (text) => {
-        if (this.props.onChangeText) {
-            this.props.onChangeText(text);
-        }
+        this.props.onChangeText(text);
     };
 
     onDelete = () => {
-        if (this.props.onChangeText) {
-            this.props.onChangeText('');
-        }
+        this.props.onChangeText('');
     };
 
     onFocus = () => {
-        if (this.props.onFocus) {
-            this.props.onFocus();
-        }
+        this.props.onFocus();
     };
 
     onSearch = (text) => {
-        if (this.props.onSearchButtonPress) {
+        if (text) {
             this.props.onSearchButtonPress(text);
         }
     };

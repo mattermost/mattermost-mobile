@@ -64,46 +64,33 @@ export default class SearchBarAndroid extends PureComponent {
     };
 
     onSearchButtonPress = () => {
-        const {onSearchButtonPress} = this.props;
         const {value} = this.state;
 
-        if (value && onSearchButtonPress) {
-            onSearchButtonPress(value);
+        if (value) {
+            this.props.onSearchButtonPress(value);
         }
     };
 
     onCancelButtonPress = () => {
-        const {onCancelButtonPress} = this.props;
-
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(() => {
             this.setState({
                 isFocused: false,
                 value: ''
             }, () => {
-                if (onCancelButtonPress) {
-                    onCancelButtonPress();
-                }
+                this.props.onCancelButtonPress();
             });
         });
     };
 
     onChangeText = (value) => {
-        const {onChangeText} = this.props;
         this.setState({value});
-        if (onChangeText) {
-            onChangeText(value);
-        }
+        this.props.onChangeText(value);
     };
 
     onFocus = () => {
-        const {onFocus} = this.props;
-
         this.setState({isFocused: true});
-
-        if (onFocus) {
-            onFocus();
-        }
+        this.props.onFocus();
     };
 
     focus = () => {
