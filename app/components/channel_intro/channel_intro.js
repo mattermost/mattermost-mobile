@@ -14,6 +14,7 @@ import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
 
 import ProfilePicture from 'app/components/profile_picture';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 class ChannelIntro extends PureComponent {
@@ -28,6 +29,7 @@ class ChannelIntro extends PureComponent {
 
     goToUserProfile = (userId) => {
         const {intl, navigator, theme} = this.props;
+
         navigator.push({
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
@@ -66,7 +68,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={() => this.goToUserProfile(member.id)}
+                onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
                 style={style.profile}
             >
                 <ProfilePicture
@@ -87,7 +89,7 @@ class ChannelIntro extends PureComponent {
         const names = currentChannelMembers.map((member, index) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={() => this.goToUserProfile(member.id)}
+                onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
             >
                 <Text style={style.displayName}>
                     {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
