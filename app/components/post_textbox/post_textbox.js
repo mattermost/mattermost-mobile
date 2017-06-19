@@ -25,7 +25,7 @@ import FormattedText from 'app/components/formatted_text';
 import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 31;
+const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
 const MAX_MESSAGE_LENGTH = 4000;
 
@@ -64,7 +64,8 @@ class PostTextbox extends PureComponent {
 
         this.state = {
             canSend: false,
-            contentHeight: INITIAL_HEIGHT
+            contentHeight: INITIAL_HEIGHT,
+            inputWidth: null
         };
     }
 
@@ -116,16 +117,6 @@ class PostTextbox extends PureComponent {
         this.refs.input.blur();
     };
 
-    handleContentSizeChange = (h) => {
-        let height = h + 5;
-        if (height < INITIAL_HEIGHT || !this.state.canSend) {
-            height = INITIAL_HEIGHT;
-        }
-        this.setState({
-            contentHeight: height
-        });
-    };
-
     handleAndroidKeyboard = () => {
         this.blur();
     };
@@ -169,20 +160,6 @@ class PostTextbox extends PureComponent {
         }
     };
 
-    handleSubmit = () => {
-        // Workaround for android as the multiline is not working
-        if (Platform.OS === 'android') {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            this.timeout = setTimeout(() => {
-                let {value: msg} = this.props;
-                msg += '\n';
-                this.handleTextChange(msg);
-            }, 10);
-        }
-    };
-
     sendMessage = () => {
         const files = this.props.files.filter((f) => !f.failed);
         const post = {
@@ -198,6 +175,11 @@ class PostTextbox extends PureComponent {
         if (this.props.files.length) {
             this.props.actions.handleClearFiles(this.props.channelId, this.props.rootId);
         }
+
+        // Shrink the input textbox since the layout events lag slightly
+        this.setState({
+            contentHeight: INITIAL_HEIGHT
+        });
     };
 
     handleTextChange = (text) => {
@@ -218,8 +200,21 @@ class PostTextbox extends PureComponent {
         }
     };
 
-    initialHeight = (event) => {
-        this.handleContentSizeChange(event.nativeEvent.layout.height);
+    handleContentSizeChange = (event) => {
+        let contentHeight = event.nativeEvent.layout.height;
+        if (contentHeight < INITIAL_HEIGHT) {
+            contentHeight = INITIAL_HEIGHT;
+        }
+
+        this.setState({
+            contentHeight
+        });
+    };
+
+    handleInputSizeChange = (event) => {
+        this.setState({
+            inputWidth: event.nativeEvent.layout.width
+        });
     };
 
     attachAutocomplete = (c) => {
@@ -395,10 +390,10 @@ class PostTextbox extends PureComponent {
         return (
             <View>
                 <Text
-                    style={[style.input, style.hidden]}
-                    onLayout={this.initialHeight}
+                    style={[style.input, style.hidden, {width: this.state.inputWidth}]}
+                    onLayout={this.handleContentSizeChange}
                 >
-                    {textValue}
+                    {textValue + ' '}
                 </Text>
                 <View>
                     <Text
@@ -448,7 +443,7 @@ class PostTextbox extends PureComponent {
                                 blurOnSubmit={false}
                                 underlineColorAndroid='transparent'
                                 style={[style.input, {height: textInputHeight}]}
-                                onSubmitEditing={this.handleSubmit}
+                                onLayout={this.handleInputSizeChange}
                             />
                             {this.state.canSend &&
                                 <TouchableOpacity
