@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {getTeams} from 'mattermost-redux/actions/teams';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import {initialize} from 'app/actions/views/load_team';
@@ -18,7 +19,6 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         config: state.entities.general.config,
         theme: getTheme(state),
-        teamsRequest: state.requests.teams.getMyTeams,
         teams: state.entities.teams.teams,
         currentTeam: getCurrentTeam(state),
         myMembers: state.entities.teams.myMembers,
@@ -30,6 +30,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearNotification,
+            getTeams,
             goToNotification,
             handleTeamChange,
             initialize

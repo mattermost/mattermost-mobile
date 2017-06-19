@@ -10,11 +10,16 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
-        href: PropTypes.string.isRequired
+        href: PropTypes.string.isRequired,
+        onLongPress: PropTypes.func
     };
 
+    static defaultProps = {
+        onLongPress: () => true
+    }
+
     handlePress = () => {
-        const url = this.props.href;
+        const url = this.props.href.toLowerCase();
 
         Linking.canOpenURL(url).then((supported) => {
             if (supported) {
@@ -24,6 +29,13 @@ export default class MarkdownLink extends PureComponent {
     };
 
     render() {
-        return <Text onPress={this.handlePress}>{this.props.children}</Text>;
+        return (
+            <Text
+                onPress={this.handlePress}
+                onLongPress={this.props.onLongPress}
+            >
+                {this.props.children}
+            </Text>
+        );
     }
 }

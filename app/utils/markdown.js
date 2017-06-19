@@ -19,42 +19,36 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         heading1: {
             fontSize: 17,
-            lineHeight: 25,
             fontWeight: '700',
             marginTop: 10,
             marginBottom: 10
         },
         heading2: {
             fontSize: 17,
-            lineHeight: 25,
             fontWeight: '700',
             marginTop: 10,
             marginBottom: 10
         },
         heading3: {
             fontSize: 17,
-            lineHeight: 25,
             fontWeight: '700',
             marginTop: 10,
             marginBottom: 10
         },
         heading4: {
             fontSize: 17,
-            lineHeight: 25,
             fontWeight: '700',
             marginTop: 10,
             marginBottom: 10
         },
         heading5: {
             fontSize: 17,
-            lineHeight: 25,
             fontWeight: '700',
             marginTop: 10,
             marginBottom: 10
         },
         heading6: {
             fontSize: 17,
-            lineHeight: 25,
             fontWeight: '700',
             marginTop: 10,
             marginBottom: 10
@@ -68,12 +62,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         codeBlock: {
             fontFamily: codeFont
-        },
-        horizontalRule: {
-            backgroundColor: theme.centerChannelColor,
-            height: StyleSheet.hairlineWidth,
-            flex: 1,
-            marginVertical: 10
         },
         mention: {
             color: theme.linkColor
@@ -90,9 +78,12 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 2
         },
         horizontalRule: {
-            backgroundColor: theme.centerChannelColor
+            backgroundColor: theme.centerChannelColor,
+            height: StyleSheet.hairlineWidth,
+            flex: 1,
+            marginVertical: 10
         },
-        quoteBlock: {
+        quoteBlockIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             padding: 5
         }

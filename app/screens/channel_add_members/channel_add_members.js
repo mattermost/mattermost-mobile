@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
-    Platform,
     InteractionManager,
     StyleSheet,
     View
@@ -27,10 +26,8 @@ class ChannelAddMembers extends PureComponent {
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
         currentChannel: PropTypes.object,
-        currentChannelMemberCount: PropTypes.number,
         membersNotInChannel: PropTypes.array.isRequired,
         currentTeam: PropTypes.object,
-        currentTeamMemberCount: PropTypes.number,
         navigator: PropTypes.object,
         preferences: PropTypes.object,
         loadMoreRequestStatus: PropTypes.string,
@@ -47,7 +44,7 @@ class ChannelAddMembers extends PureComponent {
     addButton = {
         disabled: true,
         id: 'add-members',
-        showAsAction: 'never'
+        showAsAction: 'always'
     };
 
     constructor(props) {
@@ -245,16 +242,16 @@ class ChannelAddMembers extends PureComponent {
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
-                        inputHeight={30}
+                        inputHeight={33}
                         inputStyle={{
-                            backgroundColor: '#fff',
-                            color: changeOpacity('#000', 0.5),
+                            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+                            color: theme.centerChannelColor,
                             fontSize: 13
                         }}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
-                        tintColorSearch={changeOpacity('#000', 0.5)}
-                        tintColorDelete={changeOpacity('#000', 0.5)}
-                        titleCancelColor={Platform.OS === 'android' ? changeOpacity('#000', 0.5) : theme.sidebarHeaderBg}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                        titleCancelColor={theme.centerChannelColor}
                         onChangeText={this.searchProfiles}
                         onSearchButtonPress={this.searchProfiles}
                         onCancelButtonPress={this.cancelSearch}

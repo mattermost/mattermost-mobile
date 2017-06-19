@@ -16,6 +16,7 @@ import {changeOpacity} from 'app/utils/theme';
 
 export default class SearchBarAndroid extends PureComponent {
     static propTypes = {
+        autoFocus: PropTypes.bool,
         onCancelButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
         onFocus: PropTypes.func,
@@ -35,7 +36,8 @@ export default class SearchBarAndroid extends PureComponent {
         autoCapitalize: PropTypes.string,
         inputHeight: PropTypes.number,
         inputBorderRadius: PropTypes.number,
-        blurOnSubmit: PropTypes.bool
+        blurOnSubmit: PropTypes.bool,
+        value: PropTypes.string
     };
 
     static defaultProps = {
@@ -53,7 +55,7 @@ export default class SearchBarAndroid extends PureComponent {
         super(props);
         this.state = {
             isFocused: false,
-            value: ''
+            value: props.value || ''
         };
     }
 
@@ -62,46 +64,37 @@ export default class SearchBarAndroid extends PureComponent {
     };
 
     onSearchButtonPress = () => {
-        const {onSearchButtonPress} = this.props;
         const {value} = this.state;
 
-        if (value && onSearchButtonPress) {
-            onSearchButtonPress(value);
+        if (value) {
+            this.props.onSearchButtonPress(value);
         }
     };
 
     onCancelButtonPress = () => {
-        const {onCancelButtonPress} = this.props;
-
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(() => {
             this.setState({
                 isFocused: false,
                 value: ''
             }, () => {
-                if (onCancelButtonPress) {
-                    onCancelButtonPress();
-                }
+                this.props.onCancelButtonPress();
             });
         });
     };
 
     onChangeText = (value) => {
-        const {onChangeText} = this.props;
         this.setState({value});
-        if (onChangeText) {
-            onChangeText(value);
-        }
+        this.props.onChangeText(value);
     };
 
     onFocus = () => {
-        const {onFocus} = this.props;
-
         this.setState({isFocused: true});
+        this.props.onFocus();
+    };
 
-        if (onFocus) {
-            onFocus();
-        }
+    focus = () => {
+        this.refs.input.focus();
     };
 
     render() {
@@ -169,6 +162,7 @@ export default class SearchBarAndroid extends PureComponent {
                         />
                     }
                     <TextInput
+                        ref='input'
                         blurOnSubmit={blurOnSubmit}
                         value={value}
                         autoCapitalize={autoCapitalize}

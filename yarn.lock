@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/909f75d50678998a1fcb9d3b35d1fae9e918147f"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/a31265e306e862ba75b30c3d396847d21319b524"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4566,10 +4566,6 @@ react-native-scrollable-mixin@^1.0.1:
 react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
   resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
-
-react-native-search-box@0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/react-native-search-box/-/react-native-search-box-0.0.9.tgz#c1677e127d6d2b346850b031b2cb216447fa66f0"
 
 react-native-svg-mock@1.0.2:
   version "1.0.2"

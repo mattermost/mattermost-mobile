@@ -16,6 +16,7 @@ import DeviceInfo from 'react-native-device-info';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {isValidUrl} from 'app/utils/url';
 
 import SettingsItem from './settings_item';
 
@@ -97,7 +98,6 @@ class Settings extends PureComponent {
         navigator.push({
             screen: 'SelectTeam',
             title: intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'}),
-            animationType: 'slide-up',
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -143,13 +143,14 @@ class Settings extends PureComponent {
 
     openHelp = () => {
         const {config} = this.props;
-        Linking.openURL(config.HelpLink);
+        Linking.openURL(config.HelpLink.toLowerCase());
     };
 
     render() {
         const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
         const showTeams = Object.keys(joinableTeams).length > 0;
+        const showHelp = isValidUrl(config.HelpLink);
 
         return (
             <View style={style.container}>
@@ -165,26 +166,26 @@ class Settings extends PureComponent {
                         theme={theme}
                     />
                     {showTeams &&
-                        <SettingsItem
-                            defaultMessage='Open teams you can join'
-                            i18nId='mobile.select_team.join_open'
-                            iconName='group'
-                            iconType='material'
-                            onPress={() => preventDoubleTap(this.goToSelectTeam, this)}
-                            separator={true}
-                            theme={theme}
-                        />
+                    <SettingsItem
+                        defaultMessage='Open teams you can join'
+                        i18nId='mobile.select_team.join_open'
+                        iconName='group'
+                        iconType='material'
+                        onPress={() => preventDoubleTap(this.goToSelectTeam, this)}
+                        separator={true}
+                        theme={theme}
+                    />
                     }
-                    {config.HelpLink &&
-                        <SettingsItem
-                            defaultMessage='Help'
-                            i18nId='mobile.help.title'
-                            iconName='help'
-                            iconType='material'
-                            onPress={() => preventDoubleTap(this.openHelp, this)}
-                            separator={true}
-                            theme={theme}
-                        />
+                    {showHelp &&
+                    <SettingsItem
+                        defaultMessage='Help'
+                        i18nId='mobile.help.title'
+                        iconName='help'
+                        iconType='material'
+                        onPress={() => preventDoubleTap(this.openHelp, this)}
+                        separator={true}
+                        theme={theme}
+                    />
                     }
                     <SettingsItem
                         defaultMessage='Report a Problem'

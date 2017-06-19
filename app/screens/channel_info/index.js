@@ -32,7 +32,8 @@ function mapStateToProps(state, ownProps) {
     const currentChannel = getCurrentChannel(state);
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
-    const currentChannelMemberCount = getCurrentChannelStats(state) && getCurrentChannelStats(state).member_count;
+    const currentChannelStats = getCurrentChannelStats(state);
+    const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
     const currentUserId = getCurrentUserId(state);
     const favoriteChannels = getChannelsByCategory(state).favoriteChannels.map((f) => f.id);
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;

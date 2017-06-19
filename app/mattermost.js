@@ -15,6 +15,7 @@ import DeviceInfo from 'react-native-device-info';
 import semver from 'semver';
 
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
+import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {logout} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
@@ -124,6 +125,8 @@ export default class Mattermost {
 
     onPushNotification = (deviceNotification) => {
         const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
+        const {dispatch, getState} = store;
+        const state = getState();
         const notification = {
             data,
             message
@@ -133,12 +136,11 @@ export default class Mattermost {
             notification.localNotification = userInfo.localNotification;
         }
 
-        if (foreground) {
+        if (data.type === 'clear') {
+            markChannelAsRead(data.channel_id)(dispatch, getState);
+        } else if (foreground) {
             EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
         } else if (userInteraction) {
-            const {dispatch, getState} = store;
-            const state = getState();
-
             if (!notification.localNotification) {
                 if (!state.views.root.appInitializing) {
                     // go to notification if the app is initialized
@@ -153,7 +155,7 @@ export default class Mattermost {
     };
 
     startApp = (animationType = 'none') => {
-        if (animationType === 'none') {
+        if (!this.isConfigured) {
             this.configurePushNotifications();
         }
 

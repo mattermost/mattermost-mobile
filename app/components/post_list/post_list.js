@@ -101,7 +101,7 @@ export default class PostList extends Component {
     };
 
     renderChannelIntro = () => {
-        const {channel, channelIsLoading, posts} = this.props;
+        const {channel, channelIsLoading, navigator, posts} = this.props;
 
         if (channel.hasOwnProperty('id')) {
             const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
@@ -112,7 +112,7 @@ export default class PostList extends Component {
 
             return (
                 <View>
-                    <ChannelIntro/>
+                    <ChannelIntro navigator={navigator}/>
                 </View>
             );
         }

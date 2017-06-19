@@ -85,6 +85,7 @@ export default class ProfilePicture extends PureComponent {
         return (
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 <Image
+                    key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={{uri: pictureUrl}}
                     defaultSource={placeholder}
