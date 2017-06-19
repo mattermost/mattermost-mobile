@@ -390,6 +390,7 @@ class Post extends PureComponent {
                             textStyles={textStyles}
                             blockStyles={blockStyles}
                             value={post.message}
+                            onLongPress={this.showOptionsContext}
                         />
                     </View>
                 </View>
