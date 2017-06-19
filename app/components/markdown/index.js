@@ -167,9 +167,14 @@ export default class Markdown extends React.PureComponent {
         );
     }
 
-    renderParagraph = ({children}) => {
+    renderParagraph = ({children, first}) => {
+        const blockStyle = [style.block];
+        if (!first) {
+            blockStyle.push(this.props.blockStyles.adjacentParagraph);
+        }
+
         return (
-            <View style={style.block}>
+            <View style={blockStyle}>
                 <Text>
                     {children}
                 </Text>
