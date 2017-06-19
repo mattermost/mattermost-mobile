@@ -11,8 +11,12 @@ export default class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func.isRequired
+        onLongPress: PropTypes.func
     };
+
+    static defaultProps = {
+        onLongPress: () => true
+    }
 
     handlePress = () => {
         const url = this.props.href.toLowerCase();

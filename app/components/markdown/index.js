@@ -31,7 +31,7 @@ export default class Markdown extends React.PureComponent {
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
         value: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func.isRequired
+        onLongPress: PropTypes.func
     };
 
     static defaultProps = {
@@ -58,7 +58,8 @@ export default class Markdown extends React.PureComponent {
                     text: 65
                 }
             })
-        }
+        },
+        onLongPress: () => true
     };
 
     constructor(props) {
