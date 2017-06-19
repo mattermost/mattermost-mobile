@@ -37,6 +37,7 @@ class Login extends PureComponent {
             handleLoginIdChanged: PropTypes.func.isRequired,
             handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
+            getSession: PropTypes.func.isRequired,
             checkMfa: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired
         }).isRequired,
@@ -64,7 +65,7 @@ class Login extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.handleSuccessfulLogin().then(this.goToLoadTeam);
+            this.props.actions.handleSuccessfulLogin().then(this.props.actions.getSession).then(this.goToLoadTeam);
         }
     }
 
@@ -193,8 +194,9 @@ class Login extends PureComponent {
     };
 
     signIn = () => {
-        if (this.props.loginRequest.status !== RequestStatus.STARTED) {
-            this.props.actions.login(this.props.loginId, this.props.password);
+        const {actions, loginId, loginRequest, password} = this.props;
+        if (loginRequest.status !== RequestStatus.STARTED) {
+            actions.login(loginId.toLowerCase(), password);
         }
     };
 

@@ -26,6 +26,7 @@ class SSO extends PureComponent {
         serverUrl: PropTypes.string.isRequired,
         ssoType: PropTypes.string.isRequired,
         actions: PropTypes.shape({
+            getSession: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             setStoreFromLocalData: PropTypes.func.isRequired
         }).isRequired
@@ -94,6 +95,7 @@ class SSO extends PureComponent {
                 if (token) {
                     this.setState({renderWebview: false});
                     const {
+                        getSession,
                         handleSuccessfulLogin,
                         setStoreFromLocalData
                     } = this.props.actions;
@@ -101,6 +103,7 @@ class SSO extends PureComponent {
                     Client4.setToken(token);
                     setStoreFromLocalData({url: this.props.serverUrl, token}).
                     then(handleSuccessfulLogin).
+                    then(getSession).
                     then(this.goToLoadTeam);
                 }
             });

@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleSuccessfulLogin} from 'app/actions/views/login';
+import {getSession, handleSuccessfulLogin} from 'app/actions/views/login';
 import {getTheme} from 'app/selectors/preferences';
 
 import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
@@ -22,6 +22,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            getSession,
             handleSuccessfulLogin,
             setStoreFromLocalData
         }, dispatch)
