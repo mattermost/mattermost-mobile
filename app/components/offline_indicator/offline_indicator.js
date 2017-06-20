@@ -172,7 +172,7 @@ export default class OfflineIndicator extends PureComponent {
             i18nId = 'mobile.offlineIndicator.connected';
             defaultMessage = 'Connected';
             action = (
-                <View style={styles.actionContainer}>
+                <View style={[styles.actionContainer, {paddingRight: 10}]}>
                     <IonIcon
                         color='#FFFFFF'
                         name='md-checkmark'
@@ -210,7 +210,8 @@ const styles = StyleSheet.create({
         flex: 1,
         height: HEIGHT,
         flexDirection: 'row',
-        paddingHorizontal: 12,
+        paddingLeft: 12,
+        paddingRight: 5,
         backgroundColor: 'red'
     },
     message: {
@@ -220,11 +221,12 @@ const styles = StyleSheet.create({
         flex: 1
     },
     actionButton: {
+        alignItems: 'center',
         borderWidth: 1,
         borderColor: '#FFFFFF'
     },
     actionContainer: {
-        alignItems: 'center',
+        alignItems: 'flex-end',
         height: 24,
         justifyContent: 'center',
         width: 60
