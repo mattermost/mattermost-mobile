@@ -28,6 +28,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelTitle from './channel_title';
 import ChannelPostList from './channel_post_list';
+import ChannelSearchButton from './channel_search_button';
 
 class Channel extends PureComponent {
     static propTypes = {
@@ -239,6 +240,7 @@ class Channel extends PureComponent {
                         <ChannelTitle
                             onPress={() => preventDoubleTap(this.goToChannelInfo, this)}
                         />
+                        <ChannelSearchButton navigator={navigator}/>
                     </View>
                     <OfflineIndicator/>
                 </View>

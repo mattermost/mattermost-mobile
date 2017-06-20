@@ -154,6 +154,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             justifyContent: 'center',
             paddingHorizontal: 10,
+            paddingTop: 5,
             zIndex: 30
         },
         badge: {

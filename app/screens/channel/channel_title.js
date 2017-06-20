@@ -35,7 +35,7 @@ function ChannelTitle(props) {
 
     return (
         <TouchableOpacity
-            style={{flexDirection: 'row', flex: 1, marginRight: 40}}
+            style={{flexDirection: 'row', flex: 1}}
             onPress={props.onPress}
         >
             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginHorizontal: 15}}>
