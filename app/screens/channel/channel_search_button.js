@@ -17,13 +17,17 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {clearSearch} from 'mattermost-redux/actions/search';
 
+import {handlePostDraftChanged} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
+
+const SEARCH = 'search';
 
 class ChannelSearchButton extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            clearSearch: PropTypes.func.isRequired
+            clearSearch: PropTypes.func.isRequired,
+            handlePostDraftChanged: PropTypes.func.isRequired
         }).isRequired,
         applicationInitializing: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
@@ -34,6 +38,7 @@ class ChannelSearchButton extends PureComponent {
         const {actions, navigator, theme} = this.props;
 
         await actions.clearSearch();
+        actions.handlePostDraftChanged(SEARCH, '');
 
         navigator.showModal({
             screen: 'Search',
@@ -101,7 +106,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            clearSearch
+            clearSearch,
+            handlePostDraftChanged
         }, dispatch)
     };
 }

@@ -14,6 +14,7 @@ import {
     View
 } from 'react-native';
 
+import Autocomplete from 'app/components/autocomplete';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -48,11 +49,21 @@ class Search extends PureComponent {
         this.refs.search_bar.focus();
     }
 
+    attachAutocomplete = (c) => {
+        this.autocomplete = c;
+    };
+
     cancelSearch = () => {
         const {actions, navigator} = this.props;
         actions.clearSearch();
         this.handleTextChanged('');
         navigator.dismissModal({animationType: 'slide-down'});
+    };
+
+    handleSelectionChange = (event) => {
+        if (this.autocomplete) {
+            this.autocomplete.handleSelectionChange(event);
+        }
     };
 
     handleTextChanged = (value) => {
@@ -177,12 +188,19 @@ class Search extends PureComponent {
                         onChangeText={this.handleTextChanged}
                         onSearchButtonPress={(text) => preventDoubleTap(this.search, this, text)}
                         onCancelButtonPress={() => preventDoubleTap(this.cancelSearch, this)}
+                        onSelectionChange={this.handleSelectionChange}
                         autoCapitalize='none'
                         value={value}
                         containerStyle={{padding: 0}}
                         backArrowSize={28}
                     />
                 </View>
+                <Autocomplete
+                    ref={this.attachAutocomplete}
+                    onChangeText={this.handleTextChanged}
+                    rootId={SEARCH}
+                    isSearch={true}
+                />
                 <SectionList
                     style={{flex: 1}}
                     renderSectionHeader={this.renderSectionHeader}

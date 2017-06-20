@@ -17,6 +17,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 const CHANNEL_MENTION_REGEX = /\B(~([^~\r\n]*))$/i;
+const CHANNEL_SEARCH_REGEX = /\b(?:in|channel):\s*(\S*)$/i;
 
 export default class ChannelMention extends Component {
     static propTypes = {
@@ -25,6 +26,7 @@ export default class ChannelMention extends Component {
         cursorPosition: PropTypes.number.isRequired,
         autocompleteChannels: PropTypes.object.isRequired,
         postDraft: PropTypes.string,
+        isSearch: PropTypes.bool,
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
@@ -34,7 +36,8 @@ export default class ChannelMention extends Component {
     };
 
     static defaultProps = {
-        postDraft: ''
+        postDraft: '',
+        isSearch: false
     };
 
     constructor(props) {
@@ -52,7 +55,9 @@ export default class ChannelMention extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(CHANNEL_MENTION_REGEX);
+        const {isSearch} = nextProps;
+        const regex = isSearch ? CHANNEL_SEARCH_REGEX : CHANNEL_MENTION_REGEX;
+        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(regex);
 
         // If not match or if user clicked on a channel
         if (!match || this.state.mentionComplete) {
@@ -70,7 +75,7 @@ export default class ChannelMention extends Component {
             return;
         }
 
-        const matchTerm = match[2];
+        const matchTerm = isSearch ? match[1] : match[2];
         const myChannels = this.filter(nextProps.autocompleteChannels.myChannels, matchTerm);
         const otherChannels = this.filter(nextProps.autocompleteChannels.otherChannels, matchTerm);
 
@@ -84,7 +89,14 @@ export default class ChannelMention extends Component {
         }
 
         // Still matching the same term that didn't return any results
-        if (match[0].startsWith(`~${this.state.matchTerm}`) && (myChannels.length === 0 && otherChannels.length === 0)) {
+        let startsWith;
+        if (isSearch) {
+            startsWith = match[0].startsWith(`in:${this.state.matchTerm}`) || match[0].startsWith(`channel:${this.state.matchTerm}`);
+        } else {
+            startsWith = match[0].startsWith(`~${this.state.matchTerm}`);
+        }
+
+        if (startsWith && (myChannels.length === 0 && otherChannels.length === 0)) {
             this.setState({
                 active: false
             });
@@ -123,14 +135,22 @@ export default class ChannelMention extends Component {
     };
 
     completeMention = (mention) => {
-        const mentionPart = this.props.postDraft.substring(0, this.props.cursorPosition);
+        const {cursorPosition, isSearch, onChangeText, postDraft} = this.props;
+        const mentionPart = postDraft.substring(0, cursorPosition);
 
-        let completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
-        if (this.props.postDraft.length > this.props.cursorPosition) {
-            completedDraft += this.props.postDraft.substring(this.props.cursorPosition);
+        let completedDraft;
+        if (isSearch) {
+            const channelOrIn = mentionPart.includes('in:') ? 'in:' : 'channel:';
+            completedDraft = mentionPart.replace(CHANNEL_SEARCH_REGEX, `${channelOrIn} ${mention} `);
+        } else {
+            completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }
 
-        this.props.onChangeText(completedDraft);
+        if (postDraft.length > cursorPosition) {
+            completedDraft += postDraft.substring(cursorPosition);
+        }
+
+        onChangeText(completedDraft);
         this.setState({
             active: false,
             mentionComplete: true,

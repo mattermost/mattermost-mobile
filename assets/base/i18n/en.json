@@ -1788,6 +1788,7 @@
   "mobile.settings.clear_button": "Clear",
   "mobile.settings.clear_message": "\nThis will clear all offline data and restart the app. You will be automatically logged back in once the app restarts.\n",
   "mobile.settings.team_selection": "Team Selection",
+  "mobile.suggestion.members": "Members",
   "modal.manaul_status.ask": "Do not ask me again",
   "modal.manaul_status.button": "Yes, set my status to \"Online\"",
   "modal.manaul_status.cancel": "No, keep it as \"{status}\"",

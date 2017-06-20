@@ -15,7 +15,12 @@ function mapStateToProps(state, ownProps) {
     const {currentChannelId} = state.entities.channels;
 
     let postDraft;
-    if (ownProps.rootId.length) {
+    if (ownProps.isSearch) {
+        const searchDraft = state.views.channel.drafts[ownProps.rootId];
+        if (searchDraft) {
+            postDraft = searchDraft.draft;
+        }
+    } else if (ownProps.rootId.length) {
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;
@@ -28,18 +33,18 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        ...ownProps,
         currentUserId: state.entities.users.currentUserId,
         currentChannelId,
         currentTeamId: state.entities.teams.currentTeamId,
         defaultChannel: getDefaultChannel(state),
         postDraft,
-        autocompleteUsersInCurrentChannel: {
+        autocompleteUsers: {
             inChannel: getProfilesInCurrentChannel(state),
             outChannel: getProfilesNotInCurrentChannel(state)
         },
         requestStatus: state.requests.users.autocompleteUsers.status,
-        theme: getTheme(state)
+        theme: getTheme(state),
+        ...ownProps
     };
 }
 
