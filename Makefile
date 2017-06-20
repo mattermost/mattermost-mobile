@@ -105,12 +105,12 @@ post-install:
 	sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 
 start-packager:
-	@if [ $(shell ps -a | grep "cli.js start" | grep -civ grep) -eq 0 ]; then \
+	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID; \
 	else \
 		echo React Native packager server already running; \
-		ps -a | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
+		ps -e | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
 	fi
 
 stop-packager:
