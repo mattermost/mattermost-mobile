@@ -37,7 +37,7 @@ import webhookIcon from 'assets/images/icons/webhook.jpg';
 import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {canDeletePost, canEditPost, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 const BOT_NAME = 'BOT';
@@ -216,7 +216,7 @@ class Post extends PureComponent {
     handlePress = () => {
         const {post, onPress, tooltipVisible} = this.props;
         if (!tooltipVisible) {
-            if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !post.failed) {
+            if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
                 preventDoubleTap(onPress, null, post);
             } else if (isPostEphemeral(post)) {
                 preventDoubleTap(this.onRemovePost, this, post);
@@ -349,7 +349,7 @@ class Post extends PureComponent {
         const actions = [];
 
         // we should check for the user roles and permissions
-        if (!post.failed) {
+        if (!isPostPendingOrFailed(post)) {
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
@@ -384,7 +384,7 @@ class Post extends PureComponent {
         } else if (this.props.post.message.length) {
             message = (
                 <View style={{flexDirection: 'row'}}>
-                    <View style={[{flex: 1}, (post.failed && style.failedPost)]}>
+                    <View style={[{flex: 1}, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                         <Markdown
                             baseTextStyle={messageStyle}
                             textStyles={textStyles}
@@ -595,11 +595,11 @@ class Post extends PureComponent {
         if (this.props.commentedOnPost) {
             contents = (
                 <View style={[style.container, this.props.style, selected]}>
-                    <View style={[style.profilePictureContainer, (post.failed && style.failedPost)]}>
+                    <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                         {profilePicture}
                     </View>
                     <View style={style.rightColumn}>
-                        <View style={[style.postInfoContainer, (post.failed && style.failedPost)]}>
+                        <View style={[style.postInfoContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                             {displayName}
                             <Text style={style.time}>
                                 <FormattedTime value={this.props.post.create_at}/>
@@ -615,13 +615,13 @@ class Post extends PureComponent {
         } else {
             contents = (
                 <View style={[style.container, this.props.style, selected]}>
-                    <View style={[style.profilePictureContainer, (post.failed && style.failedPost)]}>
+                    <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                         {profilePicture}
                     </View>
                     <View style={style.messageContainerWithReplyBar}>
                         {this.renderReplyBar(style)}
                         <View style={[style.rightColumn, (this.props.isLastReply && style.rightColumnPadding)]}>
-                            <View style={[style.postInfoContainer, (post.failed && style.failedPost)]}>
+                            <View style={[style.postInfoContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                                 <View style={{flexDirection: 'row', flex: 1}}>
                                     {displayName}
                                     <Text style={style.time}>
@@ -660,7 +660,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row'
         },
-        failedPost: {
+        pendingPost: {
             opacity: 0.5
         },
         rightColumn: {

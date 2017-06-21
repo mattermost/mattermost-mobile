@@ -71,6 +71,9 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
 
 export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
+        adjacentParagraph: {
+            marginTop: 6
+        },
         codeBlock: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderRadius: 4,

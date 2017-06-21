@@ -9,7 +9,7 @@
   "dependencies": {
     "babel-polyfill": "6.23.0",
     "commonmark": "hmhealey/commonmark.js#10bc18c0c8054088c0ec4737a8766c6b5794a323",
-    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#7be9f10cdb3408a64366a20e60975edff0b5c710",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#11bf3a089900eda6f3e951f8b8c80663cff4d6a3",
     "deep-equal": "1.0.1",
     "intl": "1.2.5",
     "mattermost-redux": "mattermost/mattermost-redux#master",

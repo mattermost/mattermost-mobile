@@ -27,6 +27,7 @@ import {
     isDirectChannel,
     isGroupChannel
 } from 'mattermost-redux/utils/channel_utils';
+import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 export function loadChannelsIfNecessary(teamId) {
@@ -138,17 +139,19 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 export function loadPostsIfNecessary(channel) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {channelsLastFetch} = state.internal;
-        const lastFetchTime = channelsLastFetch[channel.id] || 0;
-        const {postsInChannel} = state.entities.posts;
+        const {posts, postsInChannel} = state.entities.posts;
+
         const postsIds = postsInChannel[channel.id];
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE || !lastFetchTime) {
+        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE) {
             return getPosts(channel.id)(dispatch, getState);
         }
 
-        return getPostsSince(channel.id, lastFetchTime)(dispatch, getState);
+        const postsForChannel = postsIds.map((id) => posts[id]);
+        const latestPostTime = getLastCreateAt(postsForChannel);
+
+        return getPostsSince(channel.id, latestPostTime)(dispatch, getState);
     };
 }
 

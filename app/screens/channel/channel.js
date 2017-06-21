@@ -171,16 +171,17 @@ class Channel extends PureComponent {
             theme
         } = this.props;
 
+        const style = getStyleFromTheme(theme);
+
         if (!currentTeam || !currentChannel) {
             return (
-                <View style={{flex: 1, backgroundColor: theme.centerChannelBg}}>
+                <View style={style.loading}>
                     <Loading/>
                 </View>
             );
         }
 
         const channelDraft = this.props.drafts[currentChannel.id] || {};
-        const style = getStyleFromTheme(theme);
 
         return (
             <ChannelDrawer
@@ -190,7 +191,7 @@ class Channel extends PureComponent {
                 <StatusBar/>
                 <KeyboardLayout
                     behavior='padding'
-                    style={{flex: 1, backgroundColor: theme.centerChannelBg}}
+                    style={style.keyboardLayout}
                     keyboardVerticalOffset={0}
                 >
                     <View style={style.postList}>
@@ -208,7 +209,7 @@ class Channel extends PureComponent {
                         navigator={navigator}
                     />
                 </KeyboardLayout>
-                <View style={{flex: 1, position: 'absolute'}}>
+                <View style={style.headerContainer}>
                     <View style={style.header}>
                         <ChannelDrawerButton/>
                         <ChannelTitle
@@ -224,6 +225,10 @@ class Channel extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
+        headerContainer: {
+            flex: 1,
+            position: 'absolute'
+        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             flexDirection: 'row',
@@ -251,6 +256,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     marginTop: 64
                 }
             })
+        },
+        loading: {
+            backgroundColor: theme.centerChannelBg,
+            flex: 1
+        },
+        keyboardLayout: {
+            backgroundColor: theme.centerChannelBg,
+            flex: 1
         }
     });
 });

@@ -25,21 +25,31 @@ export function handlePasswordChanged(password) {
 
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {
-        const {currentUserId} = getState().entities.users;
-        const token = Client4.getToken();
-
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
             data: {
                 url: Client4.getUrl(),
-                token
+                token: Client4.getToken()
             }
-        });
+        }, getState);
 
-        const session = await Client4.getSessions(currentUserId, token);
-        if (Array.isArray(session) && session[0]) {
-            const s = session[0];
-            return s.expires_at;
+        return true;
+    };
+}
+
+export function getSession() {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+        const {credentials} = state.entities.general;
+        const token = credentials && credentials.token;
+
+        if (currentUserId && token) {
+            const session = await Client4.getSessions(currentUserId, token);
+            if (Array.isArray(session) && session[0]) {
+                const s = session[0];
+                return s.expires_at;
+            }
         }
 
         return false;
@@ -49,5 +59,6 @@ export function handleSuccessfulLogin() {
 export default {
     handleLoginIdChanged,
     handlePasswordChanged,
-    handleSuccessfulLogin
+    handleSuccessfulLogin,
+    getSession
 };

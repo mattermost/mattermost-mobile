@@ -93,7 +93,7 @@ class LoginOptions extends PureComponent {
         if (config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0')) {
             return (
                 <Button
-                    key='saml'
+                    key='gitlab'
                     onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.GITLAB)}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
                 >
