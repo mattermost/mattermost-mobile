@@ -40,6 +40,7 @@ class PostTextbox extends PureComponent {
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool.isRequired,
+        config: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
         files: PropTypes.array,
         intl: intlShape.isRequired,
@@ -97,10 +98,10 @@ class PostTextbox extends PureComponent {
             );
         }
 
-        const canSend = (
-                (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
-                files.filter((f) => !f.failed).length > 0
-            ) && uploadFileRequestStatus !== RequestStatus.STARTED;
+        const canSend =
+            (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) &&
+            files.filter((f) => !f.failed).length === 0 &&
+            uploadFileRequestStatus !== RequestStatus.STARTED;
         this.setState({
             canSend
         });
@@ -387,6 +388,26 @@ class PostTextbox extends PureComponent {
             placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
         }
 
+        let fileUpload = null;
+        const inputContainerStyle = [style.inputContainer];
+        if (this.props.config.EnableFileAttachments === 'true') {
+            fileUpload = (
+                <TouchableOpacity
+                    onPress={this.showFileAttachmentOptions}
+                    style={style.buttonContainer}
+                >
+                    <Icon
+                        size={30}
+                        style={style.attachIcon}
+                        color={changeOpacity(theme.centerChannelColor, 0.9)}
+                        name='md-add'
+                    />
+                </TouchableOpacity>
+            );
+        } else {
+            inputContainerStyle.push(style.inputContainerWithoutFileUpload);
+        }
+
         return (
             <View>
                 <Text
@@ -415,49 +436,35 @@ class PostTextbox extends PureComponent {
                     onChangeText={this.props.onChangeText}
                     rootId={this.props.rootId}
                 />
-                <View style={{backgroundColor: theme.centerChannelBg, elevation: 5}}>
-                    <View
-                        style={style.inputWrapper}
-                    >
-                        <TouchableOpacity
-                            onPress={this.showFileAttachmentOptions}
-                            style={style.buttonContainer}
-                        >
-                            <Icon
-                                size={30}
-                                style={style.attachIcon}
-                                color={changeOpacity(theme.centerChannelColor, 0.9)}
-                                name='md-add'
-                            />
-                        </TouchableOpacity>
-                        <View style={style.inputContainer}>
-                            <TextInput
-                                ref='input'
-                                value={textValue}
-                                onChangeText={this.handleTextChange}
-                                onSelectionChange={this.handleSelectionChange}
-                                placeholder={intl.formatMessage(placeholder)}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                multiline={true}
-                                numberOfLines={10}
-                                blurOnSubmit={false}
-                                underlineColorAndroid='transparent'
-                                style={[style.input, {height: textInputHeight}]}
-                                onLayout={this.handleInputSizeChange}
-                            />
-                            {this.state.canSend &&
-                                <TouchableOpacity
-                                    onPress={this.handleSendMessage}
-                                    style={style.sendButton}
-                                >
-                                    <PaperPlane
-                                        height={13}
-                                        width={15}
-                                        color={theme.buttonColor}
-                                    />
-                                </TouchableOpacity>
-                            }
-                        </View>
+                <View style={style.inputWrapper}>
+                    {fileUpload}
+                    <View style={inputContainerStyle}>
+                        <TextInput
+                            ref='input'
+                            value={textValue}
+                            onChangeText={this.handleTextChange}
+                            onSelectionChange={this.handleSelectionChange}
+                            placeholder={intl.formatMessage(placeholder)}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            multiline={true}
+                            numberOfLines={10}
+                            blurOnSubmit={false}
+                            underlineColorAndroid='transparent'
+                            style={[style.input, {height: textInputHeight}]}
+                            onLayout={this.handleInputSizeChange}
+                        />
+                        {this.state.canSend &&
+                            <TouchableOpacity
+                                onPress={this.handleSendMessage}
+                                style={style.sendButton}
+                            >
+                                <PaperPlane
+                                    height={13}
+                                    width={15}
+                                    color={theme.buttonColor}
+                                />
+                            </TouchableOpacity>
+                        }
                     </View>
                 </View>
             </View>
@@ -468,7 +475,10 @@ class PostTextbox extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         buttonContainer: {
-            height: 36,
+            height: Platform.select({
+                ios: 34,
+                android: 36
+            }),
             width: 45,
             alignItems: 'center',
             justifyContent: 'center'
@@ -485,7 +495,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         hidden: {
             position: 'absolute',
-            top: 10000,  // way off screen
+            top: 10000, // way off screen
             left: 10000, // way off screen
             backgroundColor: 'transparent',
             borderColor: 'transparent',
@@ -498,22 +508,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'flex-end',
             marginRight: 10
         },
+        inputContainerWithoutFileUpload: {
+            marginLeft: 10
+        },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
             paddingVertical: 4,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
+            backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
         },
         attachIcon: {
-            ...Platform.select({
-                ios: {
-                    marginTop: 2
-                },
-                android: {
-                    marginTop: 0
-                }
+            marginTop: Platform.select({
+                ios: 2,
+                android: 0
             })
         },
         sendButton: {
