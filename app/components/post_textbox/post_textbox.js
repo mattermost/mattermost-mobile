@@ -26,15 +26,9 @@ import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {
-    KeyboardAccessoryView,
-    KeyboardRegistry
+    KeyboardAccessoryView
 } from 'react-native-keyboard-input';
 import EmojiKeyboard from 'app/components/emoji_keyboard';
-
-const kbs = KeyboardRegistry.getAllKeyboards();
-if (!kbs.hasOwnProperty('EmojiKeyboard')) {
-    KeyboardRegistry.registerKeyboard('EmojiKeyboard', () => EmojiKeyboard);
-}
 
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 31;
 const MAX_CONTENT_HEIGHT = 100;
@@ -388,7 +382,7 @@ class PostTextbox extends PureComponent {
     };
 
     showEmojiKeyboard = () => {
-        this.showKeyboardView('EmojiKeyboard', {
+        this.showKeyboardView(EmojiKeyboard.CUSTOM_KEYBOARD_NAME, {
             backgroundColor: this.props.theme.centerChannelBg,
             containerBackgroundColor: changeOpacity(
                 this.props.theme.centerChannelColor, 0.05)

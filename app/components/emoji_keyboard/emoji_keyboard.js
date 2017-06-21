@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
     View,
     Text,
@@ -9,63 +10,65 @@ import {
     FlatList,
     TouchableOpacity
 } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {KeyboardRegistry} from 'react-native-keyboard-input';
+
 import {store} from 'app/mattermost';
-import {CategoryNames, EmojiIndicesByCategory, Emojis} from 'app/utils/emojis';
-import Emoji from 'app/components/emoji/index';
-import PropTypes from 'prop-types';
+import Emoji from 'app/components/emoji';
+import {
+    CategoryNames,
+    EmojiIndicesByCategory,
+    Emojis,
+    CategoryIconsFontAwesome
+} from 'app/utils/emojis';
 
-function buildCategory(category) {
-    return {
-        key: category,
-        data: EmojiIndicesByCategory.get(category).map(
-                (index) => Emojis[index].aliases[0])
-    };
-}
-const emojiCategories = CategoryNames.map(buildCategory);
-
-const EMOJI_SIZE = 32;
-const EMOJI_PADDING = 4;
-
-const styles = StyleSheet.create({
-    category: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexWrap: 'wrap',
-        alignContent: 'flex-end'
-    },
-    categoriesToolbar: {
-        flex: 0,
-        flexDirection: 'row'
-    }
-});
+const EMPTY_STRING = '';
 
 class EmojiKeyboard extends React.PureComponent {
     static propTypes = {
-        containerBackgroundColor: PropTypes.string.isRequired
+        containerBackgroundColor: PropTypes.string
     }
 
-    static emptyLayout = () => ({layout: {}})
-    static emojiRange = [...(new Array(emojiCategories.length)).keys()]
+    static defaultProps = {
+        containerBackgroundColor: 'white'
+    }
+
+    static EMOJI_SIZE = 32;
+    static EMOJI_PADDING = 4;
+    static NUM_CATEGORIES = CategoryNames.length;
+    static CUSTOM_KEYBOARD_NAME = 'EmojiKeyboard';
+
+    static emojiRange = [...(new Array(EmojiKeyboard.NUM_CATEGORIES)).keys()]
+    static emojiCategories = CategoryNames.map((category) => (
+        {
+            key: category,
+            data: EmojiIndicesByCategory.get(category).map(
+                (index) => Emojis[index].aliases[0])
+        }
+    ));
 
     static getCategoryNameByIndex = (index) => {
         const nonNegativeIndex = Math.max(0, index);
-        const bounded = Math.min(emojiCategories.length - 1, nonNegativeIndex);
-        return emojiCategories[bounded].key;
+        const limited = Math.min(EmojiKeyboard.NUM_CATEGORIES - 1, nonNegativeIndex);
+        const category = EmojiKeyboard.emojiCategories[limited];
+        if (category && category.key) {
+            return category.key;
+        }
+        return EMPTY_STRING;
     }
 
     state = {
-        layout: EmojiKeyboard.emojiRange.map(EmojiKeyboard.emptyLayout),
+        layout: EmojiKeyboard.emojiRange.map(() => ({layout: {}})),
         currentCategoryName: EmojiKeyboard.getCategoryNameByIndex(0)
     }
 
     onEmojiSelected = (emojiName) => {
-        KeyboardRegistry.onItemSelected('EmojiKeyboard', {emojiName});
+        KeyboardRegistry.onItemSelected(
+            EmojiKeyboard.CUSTOM_KEYBOARD_NAME, {emojiName});
     }
 
     scrollToCategoryByIndex = (index) => {
-        if (index === emojiCategories.length - 1) {
+        if (index === EmojiKeyboard.NUM_CATEGORIES - 1) {
             this.categoryListRef.scrollToEnd();
         } else {
             this.categoryListRef.scrollToIndex({index});
@@ -76,16 +79,15 @@ class EmojiKeyboard extends React.PureComponent {
         this.categoryListRef = ref;
     }
 
-    renderEmoji = (item, index) => (
+    renderEmoji = (item) => (
         <TouchableOpacity
-            key={index}
-            style={{padding: EMOJI_PADDING}}
+            key={item}
+            style={{padding: EmojiKeyboard.EMOJI_PADDING}}
             onPress={() => this.onEmojiSelected(item)}
         >
             <Emoji
-                size={EMOJI_SIZE}
+                size={EmojiKeyboard.EMOJI_SIZE}
                 store={store}
-                key={item}
                 emojiName={item}
             />
         </TouchableOpacity>
@@ -121,13 +123,9 @@ class EmojiKeyboard extends React.PureComponent {
         );
     }
 
-    getCategoryNameByIndex = (index) => {
-        return EmojiKeyboard.getCategoryNameByIndex(index);
-    }
-
     getCategoryNameByOffset = (offset, index = 0) => {
         if (offset < 0) {
-            return this.getCategoryNameByIndex(index - 1);
+            return EmojiKeyboard.getCategoryNameByIndex(index - 1);
         }
         const categoryData = this.state.layout[index];
         return this.getCategoryNameByOffset(
@@ -135,10 +133,16 @@ class EmojiKeyboard extends React.PureComponent {
             index + 1);
     }
 
+    getCategoryIconNameByIndex = (index) => {
+        return CategoryIconsFontAwesome[index];
+    }
+
     handleScroll = ({nativeEvent}) => {
         const currentScrollOffset = nativeEvent.contentOffset.x;
         const currentCategoryName = this.getCategoryNameByOffset(currentScrollOffset);
-        this.setState({currentCategoryName});
+        if (this.state.currentCategoryName !== currentCategoryName) {
+            this.setState({currentCategoryName});
+        }
     }
 
     renderCategory = ({item, index}) => {
@@ -155,24 +159,30 @@ class EmojiKeyboard extends React.PureComponent {
         );
     }
 
-    renderCategoryIcon = ({item, index}) => {
+    renderCategoryIcon = ({index}) => {
         return (
             <TouchableOpacity
-                style={styles.categoryIcon}
                 onPress={() => this.scrollToCategoryByIndex(index)}
+                style={styles.categoryIcon}
             >
-                <Text> {item.key} </Text>
+                <Icon
+                    color={'#BABABA'}
+                    size={20}
+                    name={this.getCategoryIconNameByIndex(index)}
+                />
             </TouchableOpacity>
         );
     }
 
     render() {
         const {containerBackgroundColor} = this.props;
+        const {currentCategoryName} = this.state;
+        const categoryNameToDisplay = currentCategoryName.toUpperCase();
         return (
             <View style={{flex: 1, backgroundColor: containerBackgroundColor}}>
                 <View>
-                    <Text>
-                        {this.state.currentCategoryName}
+                    <Text style={{color: '#BABABA'}}>
+                        {categoryNameToDisplay}
                     </Text>
                 </View>
                 <FlatList
@@ -182,7 +192,7 @@ class EmojiKeyboard extends React.PureComponent {
                     horizontal={true}
                     renderItem={this.renderCategory}
                     keyExtractor={(item, index) => JSON.stringify(index)}
-                    data={emojiCategories}
+                    data={EmojiKeyboard.emojiCategories}
                     showsHorizontalScrollIndicator={false}
                     onScroll={this.handleScroll}
                 />
@@ -191,7 +201,7 @@ class EmojiKeyboard extends React.PureComponent {
                         horizontal={true}
                         renderItem={this.renderCategoryIcon}
                         keyExtractor={(item, index) => JSON.stringify(index)}
-                        data={emojiCategories}
+                        data={EmojiKeyboard.emojiCategories}
                         showsHorizontalScrollIndicator={false}
                     />
                 </View>
@@ -200,4 +210,33 @@ class EmojiKeyboard extends React.PureComponent {
     }
 }
 
+const kbs = KeyboardRegistry.getAllKeyboards();
+if (!kbs.hasOwnProperty(EmojiKeyboard.CUSTOM_KEYBOARD_NAME)) {
+    KeyboardRegistry.registerKeyboard(
+        EmojiKeyboard.CUSTOM_KEYBOARD_NAME, () => EmojiKeyboard);
+}
+
 export default EmojiKeyboard;
+
+const styles = StyleSheet.create({
+    category: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        alignContent: 'flex-end'
+    },
+    categoriesToolbar: {
+        flex: 0,
+        flexDirection: 'row'
+    },
+    categoryIcon: {
+        margin: 4,
+        borderRadius: 28,
+        width: 28,
+        height: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.1)'
+    }
+});
