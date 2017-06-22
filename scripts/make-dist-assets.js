@@ -5,7 +5,7 @@
 
 var fs = require('fs');
 
-// Takes the files in rootA/path, overwrites or merges them with the corresponding fiel in rootB/path, and places the
+// Takes the files in rootA/path, overwrites or merges them with the corresponding file in rootB/path, and places the
 // resulting file in dest/path. JSON files that exist in both places are shallowly (TODO maybe deeply) merged and all
 // other types of files are overwritten.
 function leftMergeDirs(rootA, rootB, dest, path) {
