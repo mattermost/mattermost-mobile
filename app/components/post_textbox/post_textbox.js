@@ -374,7 +374,7 @@ class PostTextbox extends PureComponent {
     };
 
     render() {
-        const {channelIsLoading, intl, theme, value} = this.props;
+        const {channelIsLoading, config, intl, theme, value} = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
@@ -390,7 +390,7 @@ class PostTextbox extends PureComponent {
 
         let fileUpload = null;
         const inputContainerStyle = [style.inputContainer];
-        if (this.props.config.EnableFileAttachments === 'true') {
+        if (!config.EnableFileAttachments || config.EnableFileAttachments === 'true') {
             fileUpload = (
                 <TouchableOpacity
                     onPress={this.showFileAttachmentOptions}

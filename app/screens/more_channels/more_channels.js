@@ -36,7 +36,8 @@ class MoreChannels extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
-            searchChannels: PropTypes.func.isRequired
+            searchChannels: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -201,13 +202,20 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
+        const {actions, currentTeamId, currentUserId} = this.props;
+        const {channels} = this.state;
+
         this.emitCanCreateChannel(false);
         this.setState({adding: true});
-        await this.props.actions.joinChannel(
-            this.props.currentUserId,
-            this.props.currentTeamId,
-            id);
-        await this.props.actions.handleSelectChannel(id);
+        await actions.joinChannel(currentUserId, currentTeamId, id);
+
+        const channel = channels.find((c) => c.id === id);
+        if (channel) {
+            actions.setChannelDisplayName(channel.display_name);
+        } else {
+            actions.setChannelDisplayName('');
+        }
+        await actions.handleSelectChannel(id);
 
         EventEmitter.emit('close_channel_drawer');
         InteractionManager.runAfterInteractions(() => {

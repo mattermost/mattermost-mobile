@@ -11,7 +11,7 @@ import {getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {handleSelectChannel} from 'app/actions/views/channel';
+import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import MoreChannels from './more_channels';
@@ -41,7 +41,8 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             joinChannel,
             getChannels,
-            searchChannels
+            searchChannels,
+            setChannelDisplayName
         }, dispatch)
     };
 }
