@@ -28,6 +28,7 @@ export default class SwiperAndroid extends PureComponent {
 
     resetPage = () => {
         this.refs.swiper.setPageWithoutAnimation(1);
+        this.props.onPageSelected(1);
     };
 
     render() {
