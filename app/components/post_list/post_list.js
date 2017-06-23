@@ -82,16 +82,9 @@ export default class PostList extends PureComponent {
     };
 
     renderChannelIntro = () => {
-        const {channel, channelIsLoading, navigator, posts} = this.props;
+        const {channel, channelIsLoading, navigator, refreshing, showLoadMore} = this.props;
 
-        // Check the webapp for atEnd, and replace it here
-        if (channel.hasOwnProperty('id')) {
-            const firstPostHasRendered = channel.total_msg_count ? posts.length > 0 : true;
-            const messageCount = channel.total_msg_count - posts.length;
-            if (channelIsLoading || !firstPostHasRendered || messageCount > 0) {
-                return null;
-            }
-
+        if (channel.hasOwnProperty('id') && !showLoadMore && !refreshing && !channelIsLoading) {
             return (
                 <View>
                     <ChannelIntro navigator={navigator}/>
@@ -122,7 +115,7 @@ export default class PostList extends PureComponent {
                 />
             );
         }
-        if (item === LOAD_MORE_POSTS) {
+        if (item === LOAD_MORE_POSTS && this.props.showLoadMore) {
             return (
                 <LoadMorePosts
                     loading={this.props.isLoadingMore}

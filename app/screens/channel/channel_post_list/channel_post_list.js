@@ -70,6 +70,11 @@ class ChannelPostList extends PureComponent {
             // Load the posts when the channel actually changes
             this.loadPosts(nextProps.channel.id);
         }
+
+        const showLoadMore = nextProps.posts.length === this.props.posts.length && nextProps.posts.length > nextProps.postVisibility;
+        this.setState({
+            showLoadMore
+        });
     }
 
     channelLoaded = () => {
@@ -119,8 +124,10 @@ class ChannelPostList extends PureComponent {
     };
 
     loadMorePosts = () => {
-        const {actions, channel} = this.props;
-        actions.increasePostVisibility(channel.id);
+        if (this.state.showLoadMore) {
+            const {actions, channel} = this.props;
+            actions.increasePostVisibility(channel.id);
+        }
     };
 
     loadPosts = async (channelId) => {
@@ -162,7 +169,7 @@ class ChannelPostList extends PureComponent {
                     posts={posts.slice(0, postVisibility)}
                     loadMore={this.loadMorePosts}
                     isLoadingMore={loadingPosts}
-                    showLoadMore={(channel.total_msg_count - posts.length) > 0}
+                    showLoadMore={this.state.showLoadMore}
                     onPostPress={this.goToThread}
                     renderReplies={true}
                     indicateNewMessages={true}
