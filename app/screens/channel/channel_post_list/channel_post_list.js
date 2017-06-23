@@ -136,6 +136,7 @@ class ChannelPostList extends PureComponent {
             channelIsRefreshing,
             loadingPosts,
             myMember,
+            navigator,
             networkOnline,
             posts,
             postVisibility,
