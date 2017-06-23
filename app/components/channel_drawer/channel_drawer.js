@@ -86,13 +86,17 @@ export default class ChannelDrawer extends PureComponent {
 
     handleDrawerClose = () => {
         this.resetDrawer();
-        setTimeout(() => {
+
+        if (this.closeLeftHandle) {
             InteractionManager.clearInteractionHandle(this.closeLeftHandle);
-        });
+            this.closeLeftHandle = null;
+        }
     };
 
     handleDrawerCloseStart = () => {
-        this.closeLeftHandle = InteractionManager.createInteractionHandle();
+        if (!this.closeLeftHandle) {
+            this.closeLeftHandle = InteractionManager.createInteractionHandle();
+        }
     };
 
     handleDrawerOpen = () => {
@@ -100,13 +104,17 @@ export default class ChannelDrawer extends PureComponent {
         if (this.state.openDrawerOffset === DRAWER_INITIAL_OFFSET) {
             Keyboard.dismiss();
         }
-        setTimeout(() => {
+
+        if (this.openLeftHandle) {
             InteractionManager.clearInteractionHandle(this.openLeftHandle);
-        });
+            this.openLeftHandle = null;
+        }
     };
 
     handleDrawerOpenStart = () => {
-        this.openLeftHandle = InteractionManager.createInteractionHandle();
+        if (!this.openLeftHandle) {
+            this.openLeftHandle = InteractionManager.createInteractionHandle();
+        }
     };
 
     handleDrawerTween = (ratio) => {

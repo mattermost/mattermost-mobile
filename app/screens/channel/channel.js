@@ -26,7 +26,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelTitle from './channel_title';
-import ChannelPostList from './channel_post_list/index';
+import ChannelPostList from './channel_post_list';
 
 class Channel extends PureComponent {
     static propTypes = {

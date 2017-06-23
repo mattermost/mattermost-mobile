@@ -4,31 +4,37 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectPost, getPostsBefore} from 'mattermost-redux/actions/posts';
+import {selectPost} from 'mattermost-redux/actions/posts';
+import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
-import {loadPostsIfNecessary} from 'app/actions/views/channel';
+import {loadPostsIfNecessary, increasePostVisibility} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelPostList from './channel_post_list';
 
-const getPostsInCurrentChannelWithReplyProps = makeGetPostsInChannel();
+function makeMapStateToProps() {
+    const getPostsInChannel = makeGetPostsInChannel();
 
-function mapStateToProps(state, ownProps) {
-    const {loading, refreshing} = state.views.channel;
-    const {currentChannelId} = state.entities.channels;
+    return function mapStateToProps(state, ownProps) {
+        const channelId = ownProps.channel.id;
+        const {displayName, refreshing} = state.views.channel;
+        const {getPosts} = state.requests.posts;
+        const posts = getPostsInChannel(state, channelId) || [];
 
-    return {
-        ...ownProps,
-        applicationInitializing: state.views.root.appInitializing,
-        channelIsLoading: loading,
-        channelIsRefreshing: refreshing,
-        myMember: getMyCurrentChannelMembership(state),
-        postsRequests: state.requests.posts,
-        posts: getPostsInCurrentChannelWithReplyProps(state, currentChannelId) || [],
-        theme: getTheme(state),
-        networkOnline: state.offline.online
+        return {
+            channelIsLoading: (getPosts.status === RequestStatus.STARTED),
+            channelIsRefreshing: refreshing,
+            channelName: displayName,
+            posts,
+            postVisibility: state.views.channel.postVisibility[channelId],
+            loadingPosts: state.views.channel.loadingPosts[channelId],
+            myMember: getMyCurrentChannelMembership(state),
+            networkOnline: state.offline.online,
+            theme: getTheme(state),
+            ...ownProps
+        };
     };
 }
 
@@ -36,10 +42,10 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadPostsIfNecessary,
-            getPostsBefore,
+            increasePostVisibility,
             selectPost
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelPostList);
+export default connect(makeMapStateToProps, mapDispatchToProps)(ChannelPostList);
