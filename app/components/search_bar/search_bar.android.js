@@ -71,12 +71,6 @@ export default class SearchBarAndroid extends PureComponent {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.value !== nextProps.value) {
-            this.setState({value: nextProps.value});
-        }
-    }
-
     cancel = () => {
         this.onCancelButtonPress();
     };
