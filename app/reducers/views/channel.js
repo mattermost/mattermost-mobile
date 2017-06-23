@@ -3,7 +3,6 @@
 
 import {combineReducers} from 'redux';
 import {ChannelTypes, FileTypes, PostTypes} from 'mattermost-redux/action_types';
-import {Posts} from 'mattermost-redux/constants';
 
 import {ViewTypes} from 'app/constants';
 
@@ -204,7 +203,7 @@ function postVisibility(state = {}, action) {
     switch (action.type) {
     case ChannelTypes.SELECT_CHANNEL: {
         const nextState = {...state};
-        nextState[action.data] = Posts.POST_CHUNK_SIZE / 2;
+        nextState[action.data] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
         return nextState;
     }
     case ViewTypes.INCREASE_POST_VISIBILITY: {
@@ -214,7 +213,7 @@ function postVisibility(state = {}, action) {
     }
     case ViewTypes.RECEIVED_FOCUSED_POST: {
         const nextState = {...state};
-        nextState[action.channelId] = Posts.POST_CHUNK_SIZE / 2;
+        nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
         return nextState;
     }
     case PostTypes.RECEIVED_POST: {

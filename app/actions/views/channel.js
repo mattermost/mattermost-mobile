@@ -17,7 +17,7 @@ import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
-import {General, Posts, Preferences} from 'mattermost-redux/constants';
+import {General, Preferences} from 'mattermost-redux/constants';
 import {
     getChannelByName,
     getDirectChannelName,
@@ -29,8 +29,6 @@ import {
 } from 'mattermost-redux/utils/channel_utils';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
-
-const POST_INCREASE_AMOUNT = Posts.POST_CHUNK_SIZE / 2;
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
@@ -146,7 +144,7 @@ export function loadPostsIfNecessary(channelId) {
         const postsIds = postsInChannel[channelId];
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-        if (!postsIds || postsIds.length < POST_INCREASE_AMOUNT) {
+        if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
             return getPosts(channelId)(dispatch, getState);
         }
 
@@ -381,13 +379,13 @@ export function increasePostVisibility(channelId, focusedPostId) {
             }
         ]));
 
-        const page = Math.floor(currentPostVisibility / POST_INCREASE_AMOUNT);
+        const page = Math.floor(currentPostVisibility / ViewTypes.POST_VISIBILITY_CHUNK_SIZE);
 
         let posts;
         if (focusedPostId) {
-            posts = await getPostsBefore(channelId, focusedPostId, page, POST_INCREASE_AMOUNT)(dispatch, getState);
+            posts = await getPostsBefore(channelId, focusedPostId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
         } else {
-            posts = await getPosts(channelId, page, POST_INCREASE_AMOUNT)(dispatch, getState);
+            posts = await getPosts(channelId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
         }
 
         if (posts) {
@@ -396,7 +394,7 @@ export function increasePostVisibility(channelId, focusedPostId) {
             dispatch({
                 type: ViewTypes.INCREASE_POST_VISIBILITY,
                 data: channelId,
-                amount: POST_INCREASE_AMOUNT
+                amount: ViewTypes.POST_VISIBILITY_CHUNK_SIZE
             });
         }
 
@@ -406,6 +404,6 @@ export function increasePostVisibility(channelId, focusedPostId) {
             channelId
         });
 
-        return posts && posts.order.length >= POST_INCREASE_AMOUNT;
+        return posts && posts.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
     };
 }

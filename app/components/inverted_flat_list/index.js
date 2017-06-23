@@ -21,6 +21,12 @@ export default class InvertibleFlatList extends PureComponent {
         inverted: true
     };
 
+    constructor(props) {
+        super(props);
+
+        this.inversionDirection = props.horizontal ? styles.horizontal : styles.vertical;
+    }
+
     getMetrics = () => {
         return this.flatListRef.getMetrics();
     };
@@ -105,7 +111,6 @@ export default class InvertibleFlatList extends PureComponent {
             );
         }
 
-        this.inversionDirection = this.props.horizontal ? styles.horizontal : styles.vertical;
         return (
             <View style={[styles.container, this.inversionDirection]}>
                 <VirtualList
