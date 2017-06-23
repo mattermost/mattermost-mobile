@@ -235,7 +235,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.sidebarHeaderBg,
             flexDirection: 'row',
-            paddingLeft: 16,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
@@ -251,7 +250,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.sidebarHeaderTextColor,
             flex: 1,
             fontSize: 17,
-            fontWeight: 'normal'
+            textAlign: 'center',
+            fontWeight: '600'
         },
         moreActionContainer: {
             alignItems: 'center',
