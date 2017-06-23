@@ -11,7 +11,7 @@ import {
     View
 } from 'react-native';
 
-import {General, Posts, RequestStatus} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 import ChannelLoader from 'app/components/channel_loader';
 import PostList from 'app/components/post_list';
@@ -24,90 +24,59 @@ class ChannelPostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessary: PropTypes.func.isRequired,
-            getPostsBefore: PropTypes.func.isRequired,
+            increasePostVisibility: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,
-        applicationInitializing: PropTypes.bool.isRequired,
         channel: PropTypes.object.isRequired,
         channelIsLoading: PropTypes.bool,
         channelIsRefreshing: PropTypes.bool,
+        channelName: PropTypes.string,
         intl: intlShape.isRequired,
+        loadingPosts: PropTypes.bool,
         myMember: PropTypes.object.isRequired,
         navigator: PropTypes.object,
-        postsRequests: PropTypes.shape({
-            getPosts: PropTypes.object.isRequired,
-            getPostsBefore: PropTypes.object.isRequired,
-            getPostsSince: PropTypes.object.isRequired
-        }).isRequired,
         posts: PropTypes.array.isRequired,
+        postVisibility: PropTypes.number,
         theme: PropTypes.object.isRequired,
         networkOnline: PropTypes.bool.isRequired
     };
 
-    state = {
-        didInitialPostsLoad: false,
-        hasFirstPost: false,
-        lastViewedAt: this.props.myMember.last_viewed_at,
-        loaderOpacity: new Animated.Value(1)
+    static defaultProps = {
+        loadingPosts: false,
+        postVisibility: 0
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            loaderOpacity: new Animated.Value(1)
+        };
+    }
+
     componentDidMount() {
-        this.props.actions.loadPostsIfNecessary(this.props.channel);
+        this.loadPosts(this.props.channel.id);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.channel.id === nextProps.channel.id) {
-            const didInitialPostsLoad = this.didPostsLoad(nextProps, 'getPosts') ||
-                this.didPostsLoad(nextProps, 'getPostsSince');
-            if (didInitialPostsLoad) {
-                this.setState({didInitialPostsLoad});
-            }
-            const didMorePostsLoad = this.didPostsLoad(nextProps, 'getPostsBefore');
-            let hasFirstPost = false;
-            if (didInitialPostsLoad) {
-                hasFirstPost = nextProps.posts.length < Posts.POST_CHUNK_SIZE;
-            } else if (didMorePostsLoad) {
-                hasFirstPost = (nextProps.posts.length - this.props.posts.length) < General.POST_CHUNK_SIZE;
-            }
-            if (hasFirstPost) {
-                this.setState({hasFirstPost});
-            }
-            if (!nextProps.applicationInitializing) {
-                this.loaderAnimationRunner();
-            }
-        } else {
+        // Show the loader if the channel names change
+        if (this.props.channelName !== nextProps.channelName) {
             this.setState({
-                didInitialPostsLoad: false,
-                hasFirstPost: false,
-                lastViewedAt: nextProps.myMember.last_viewed_at,
                 loaderOpacity: new Animated.Value(1)
             });
-            this.props.actions.loadPostsIfNecessary(nextProps.channel);
+        }
+
+        if (this.props.channel.id !== nextProps.channel.id) {
+            // Load the posts when the channel actually changes
+            this.loadPosts(nextProps.channel.id);
         }
     }
 
-    loaderAnimationRunner = () => {
+    channelLoaded = () => {
         Animated.timing(this.state.loaderOpacity, {
             toValue: 0,
             duration: 500
-        }).start();
-    };
-
-    didPostsLoad(nextProps, postsRequest) {
-        const nextGetPostsStatus = nextProps.postsRequests[postsRequest].status;
-        const getPostsStatus = this.props.postsRequests[postsRequest].status;
-        return getPostsStatus === RequestStatus.STARTED && nextGetPostsStatus === RequestStatus.SUCCESS;
-    }
-
-    loadMorePosts = () => {
-        const {channel, posts, postsRequests} = this.props;
-        const {id: channelId} = channel;
-        const oldestPost = posts[posts.length - 1];
-        const {didInitialPostsLoad, hasFirstPost} = this.state;
-        if (didInitialPostsLoad && !hasFirstPost && oldestPost && postsRequests.getPostsBefore.status !== RequestStatus.STARTED) {
-            return this.props.actions.getPostsBefore(channelId, oldestPost.id);
-        }
-        return null;
+        }).start(() => this.setState({channelLoaded: true}));
     };
 
     goToThread = (post) => {
@@ -149,46 +118,59 @@ class ChannelPostList extends PureComponent {
         }
     };
 
+    loadMorePosts = () => {
+        const {actions, channel} = this.props;
+        actions.increasePostVisibility(channel.id);
+    };
+
+    loadPosts = async (channelId) => {
+        this.setState({channelLoaded: false});
+        await this.props.actions.loadPostsIfNecessary(channelId);
+        this.channelLoaded();
+    };
+
     render() {
         const {
-            actions,
-            applicationInitializing,
             channel,
             channelIsLoading,
             channelIsRefreshing,
-            navigator,
+            loadingPosts,
+            myMember,
+            networkOnline,
             posts,
-            postsRequests,
-            theme,
-            networkOnline
+            postVisibility,
+            theme
         } = this.props;
 
+        const {channelLoaded, loaderOpacity} = this.state;
+
         let component;
-        if (!posts.length && channel.total_msg_count > 0 && (postsRequests.getPosts.status === RequestStatus.FAILURE || !networkOnline)) {
+        if (!posts.length && channel.total_msg_count > 0 && !networkOnline) {
+            // If no posts has been loaded and we are offline
             component = (
                 <PostListRetry
-                    retry={() => actions.loadPostsIfNecessary(channel)}
+                    retry={() => this.loadPosts(channel.id)}
                     theme={theme}
                 />
             );
-        } else if (!applicationInitializing && !channelIsLoading && posts && (postsRequests.getPosts.status !== RequestStatus.STARTED || channelIsRefreshing || !this.state.didInitialPostsLoad)) {
+        } else if ((channelIsLoading || !channelLoaded) && !channelIsRefreshing && !loadingPosts) {
+            component = <ChannelLoader theme={theme}/>;
+        } else {
             component = (
                 <PostList
-                    posts={posts}
+                    posts={posts.slice(0, postVisibility)}
                     loadMore={this.loadMorePosts}
-                    isLoadingMore={postsRequests.getPostsBefore.status === RequestStatus.STARTED}
-                    showLoadMore={posts.length > 0 && !this.state.hasFirstPost}
+                    isLoadingMore={loadingPosts}
+                    showLoadMore={(channel.total_msg_count - posts.length) > 0}
                     onPostPress={this.goToThread}
                     renderReplies={true}
                     indicateNewMessages={true}
-                    currentUserId={this.props.myMember.user_id}
-                    lastViewedAt={this.state.lastViewedAt}
+                    currentUserId={myMember.user_id}
+                    lastViewedAt={myMember.last_viewed_at}
                     channel={channel}
                     navigator={navigator}
                 />
             );
-        } else {
-            component = <ChannelLoader theme={theme}/>;
         }
 
         return (
@@ -202,7 +184,7 @@ class ChannelPostList extends PureComponent {
                         width: deviceWidth,
                         top: 0,
                         left: 0,
-                        opacity: this.state.loaderOpacity
+                        opacity: loaderOpacity
                     }}
                 >
                     <ChannelLoader theme={theme}/>

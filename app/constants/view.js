@@ -42,7 +42,11 @@ const ViewTypes = keyMirror({
     SET_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
-    SAML: null
+    SAML: null,
+
+    INCREASE_POST_VISIBILITY: null,
+    RECEIVED_FOCUSED_POST: null,
+    LOADING_POSTS: null
 });
 
 export default ViewTypes;
