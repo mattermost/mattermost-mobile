@@ -131,8 +131,18 @@ class ChannelInfo extends PureComponent {
                 defaultMessage: 'Are you sure you want to delete the {term} {name}?'
             };
             onPressAction = () => {
-                this.props.actions.deleteChannel(channel.id).then(() => {
-                    this.close();
+                this.props.actions.deleteChannel(channel.id).then((result) => {
+                    if (result) {
+                        this.close();
+                    } else {
+                        Alert.alert(
+                            '',
+                            formatMessage({
+                                id: 'mobile.channel_info.delete_failed',
+                                defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again."
+                            }, {displayName: channel.display_name})
+                        );
+                    }
                 });
             };
         }

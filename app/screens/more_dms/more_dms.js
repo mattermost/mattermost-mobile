@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Alert,
     InteractionManager,
     StyleSheet,
     View
@@ -23,11 +24,13 @@ import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 class MoreDirectMessages extends PureComponent {
     static propTypes = {
+        currentDisplayName: PropTypes.string,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         preferences: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
+        createChannelRequest: PropTypes.object.isRequired,
         requestStatus: PropTypes.object.isRequired,
         searchRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
@@ -60,11 +63,21 @@ class MoreDirectMessages extends PureComponent {
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = nextProps.profiles.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
-            this.setState({profiles, showNoResults: true});
+            this.setState({profiles, showNoResults: true, error: null});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
             const results = filterProfilesMatchingTerm(nextProps.profiles, this.state.term);
-            this.setState({profiles: results, showNoResults: true});
+            this.setState({profiles: results, showNoResults: true, error: null});
+        } else if (nextProps.createChannelRequest.status === RequestStatus.FAILURE && this.state.displayName) {
+            const {intl} = this.props;
+            Alert.alert(
+                '',
+                intl.formatMessage({
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                }, {displayName: this.state.displayName})
+            );
+            this.setState({adding: false, displayName: null});
         }
     }
 
@@ -109,6 +122,7 @@ class MoreDirectMessages extends PureComponent {
         this.setState({
             searching: false,
             term: null,
+            error: null,
             page: 0,
             profiles: this.props.profiles
         });
@@ -132,22 +146,30 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
-        const {actions, preferences, profiles} = this.props;
+        const {actions, currentDisplayName, preferences, profiles} = this.props;
         const user = profiles.find((p) => p.id === id);
 
         this.setState({adding: true});
+
+        // save the current channel display name in case it fails
+        const currentChannelDisplayName = currentDisplayName;
 
         if (user) {
             actions.setChannelDisplayName(displayUsername(user, preferences));
         } else {
             actions.setChannelDisplayName('');
         }
-        await actions.makeDirectChannel(id);
+        const result = await actions.makeDirectChannel(id);
 
-        EventEmitter.emit('close_channel_drawer');
-        InteractionManager.runAfterInteractions(() => {
-            this.close();
-        });
+        if (result) {
+            EventEmitter.emit('close_channel_drawer');
+            InteractionManager.runAfterInteractions(() => {
+                this.close();
+            });
+        } else {
+            this.setState({displayName: displayUsername(user, preferences)});
+            actions.setChannelDisplayName(currentChannelDisplayName);
+        }
     };
 
     render() {

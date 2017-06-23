@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Alert,
     Platform,
     InteractionManager,
     StyleSheet,
@@ -202,25 +203,38 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
-        const {actions, currentTeamId, currentUserId} = this.props;
+        const {actions, currentTeamId, currentUserId, intl} = this.props;
         const {channels} = this.state;
 
         this.emitCanCreateChannel(false);
         this.setState({adding: true});
-        await actions.joinChannel(currentUserId, currentTeamId, id);
 
         const channel = channels.find((c) => c.id === id);
-        if (channel) {
-            actions.setChannelDisplayName(channel.display_name);
-        } else {
-            actions.setChannelDisplayName('');
-        }
-        await actions.handleSelectChannel(id);
+        const result = await actions.joinChannel(currentUserId, currentTeamId, id);
 
-        EventEmitter.emit('close_channel_drawer');
-        InteractionManager.runAfterInteractions(() => {
-            this.close();
-        });
+        if (result) {
+            if (channel) {
+                actions.setChannelDisplayName(channel.display_name);
+            } else {
+                actions.setChannelDisplayName('');
+            }
+            await actions.handleSelectChannel(id);
+
+            EventEmitter.emit('close_channel_drawer');
+            InteractionManager.runAfterInteractions(() => {
+                this.close();
+            });
+        } else {
+            Alert.alert(
+                '',
+                intl.formatMessage({
+                    id: 'mobile.join_channel.error',
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                }, {displayName: channel ? channel.display_name : ''})
+            );
+            this.emitCanCreateChannel(true);
+            this.setState({adding: false});
+        }
     };
 
     onCreateChannel = () => {

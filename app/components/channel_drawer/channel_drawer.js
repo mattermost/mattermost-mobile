@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     BackHandler,
     InteractionManager,
     Keyboard,
@@ -29,15 +30,18 @@ export default class ChannelDrawer extends PureComponent {
             viewChannel: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         channels: PropTypes.object,
         currentChannel: PropTypes.object,
+        currentDisplayName: PropTypes.string,
         channelMembers: PropTypes.object,
         currentTeam: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
+        intl: PropTypes.object.isRequired,
         myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired
@@ -166,8 +170,10 @@ export default class ChannelDrawer extends PureComponent {
         const {
             actions,
             currentChannel,
+            currentDisplayName,
             currentTeam,
-            currentUserId
+            currentUserId,
+            intl
         } = this.props;
 
         const {
@@ -175,26 +181,51 @@ export default class ChannelDrawer extends PureComponent {
             joinChannel,
             makeDirectChannel,
             markChannelAsRead,
+            setChannelDisplayName,
             setChannelLoading,
             viewChannel
         } = actions;
 
+        markChannelAsRead(currentChannel.id);
+        setChannelLoading();
+        viewChannel(currentChannel.id);
+        setChannelDisplayName(channel.display_name);
+
         if (channel.type === General.DM_CHANNEL) {
-            markChannelAsRead(currentChannel.id);
-            setChannelLoading();
-            viewChannel(currentChannel.id);
             this.closeChannelDrawer();
-            InteractionManager.runAfterInteractions(() => {
-                makeDirectChannel(channel.id);
+            InteractionManager.runAfterInteractions(async () => {
+                const result = await makeDirectChannel(channel.id);
+                if (!result) {
+                    setChannelDisplayName(currentDisplayName);
+                    Alert.alert(
+                        '',
+                        intl.formatMessage({
+                            id: 'mobile.open_dm.error',
+                            defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                        }, {displayName: channel.display_name})
+                    );
+                }
             });
         } else {
-            markChannelAsRead(currentChannel.id);
-            setChannelLoading();
-            viewChannel(currentChannel.id);
-            joinChannel(currentUserId, currentTeam.id, channel.id);
+            let didJoin = false;
+            joinChannel(currentUserId, currentTeam.id, channel.id).then((result) => {
+                didJoin = result;
+            });
+
             this.closeChannelDrawer();
             InteractionManager.runAfterInteractions(() => {
-                handleSelectChannel(channel.id);
+                if (didJoin) {
+                    handleSelectChannel(channel.id);
+                } else {
+                    setChannelDisplayName(currentDisplayName);
+                    Alert.alert(
+                        '',
+                        intl.formatMessage({
+                            id: 'mobile.join_channel.error',
+                            defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                        }, {displayName: channel.display_name})
+                    );
+                }
             });
         }
     };

@@ -167,6 +167,7 @@ class Channel extends PureComponent {
         const {
             currentTeam,
             currentChannel,
+            intl,
             navigator,
             theme
         } = this.props;
@@ -186,6 +187,7 @@ class Channel extends PureComponent {
         return (
             <ChannelDrawer
                 blurPostTextBox={this.blurPostTextBox}
+                intl={intl}
                 navigator={navigator}
             >
                 <StatusBar/>

@@ -14,6 +14,7 @@ import MoreDirectMessages from './more_dms';
 
 function mapStateToProps(state, ownProps) {
     const {getProfiles: requestStatus, searchProfiles: searchRequest} = state.requests.users;
+    const {createChannel: createChannelRequest} = state.requests.channels;
 
     function getUsers() {
         const {profiles, currentUserId} = state.entities.users;
@@ -32,6 +33,8 @@ function mapStateToProps(state, ownProps) {
         preferences: getMyPreferences(state),
         profiles: getUsers(),
         theme: getTheme(state),
+        currentDisplayName: state.views.channel.displayName,
+        createChannelRequest,
         requestStatus,
         searchRequest
     };
