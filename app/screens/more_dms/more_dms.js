@@ -12,7 +12,7 @@ import {
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
@@ -33,7 +33,8 @@ class MoreDirectMessages extends PureComponent {
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
             getProfiles: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired
+            searchProfiles: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -131,8 +132,17 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
+        const {actions, preferences, profiles} = this.props;
+        const user = profiles.find((p) => p.id === id);
+
         this.setState({adding: true});
-        await this.props.actions.makeDirectChannel(id);
+
+        if (user) {
+            actions.setChannelDisplayName(displayUsername(user, preferences));
+        } else {
+            actions.setChannelDisplayName('');
+        }
+        await actions.makeDirectChannel(id);
 
         EventEmitter.emit('close_channel_drawer');
         InteractionManager.runAfterInteractions(() => {
