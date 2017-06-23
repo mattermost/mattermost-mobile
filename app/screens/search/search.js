@@ -1,28 +1,34 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
     Platform,
-    SectionList,
     StyleSheet,
     Text,
     TouchableHighlight,
+    TouchableOpacity,
     View
 } from 'react-native';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import Autocomplete from 'app/components/autocomplete';
+import Post from 'app/components/post';
+import SectionList from 'app/components/scrollable_section_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const SEARCH = 'search';
+const SECTION_HEIGHT = 20;
+const RECENT_LABEL_HEIGHT = 42;
+const RECENT_SEPARATOR_HEIGHT = 3;
 
-class Search extends PureComponent {
+class Search extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
@@ -30,23 +36,47 @@ class Search extends PureComponent {
             removeSearchTerms: PropTypes.func.isRequired,
             searchPosts: PropTypes.func.isRequired
         }).isRequired,
+        channels: PropTypes.array.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         recent: PropTypes.object,
+        posts: PropTypes.array,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        recent: {}
+        recent: {},
+        posts: []
     };
 
     state = {
+        isFocused: true,
         value: ''
     };
 
     componentDidMount() {
         this.refs.search_bar.focus();
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return (
+            this.props.recent !== nextProps.recent ||
+            this.props.posts !== nextProps.posts ||
+            this.state !== nextState
+        );
+    }
+
+    componentDidUpdate() {
+        const {posts, recent} = this.props;
+        const recentLenght = Object.keys(recent).length;
+
+        if (posts.length && !this.state.isFocused) {
+            this.refs.list.getWrapperRef().getListRef().scrollToOffset({
+                animated: true,
+                offset: SECTION_HEIGHT + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght - 1) * RECENT_SEPARATOR_HEIGHT)
+            });
+        }
     }
 
     attachAutocomplete = (c) => {
@@ -75,10 +105,80 @@ class Search extends PureComponent {
         return `recent-${item.terms}`;
     };
 
-    renderSeparatorComponent = () => {
+    keyPostExtractor = (item) => {
+        return `result-${item.id}`;
+    };
+
+    onBlur = () => {
+        this.setState({isFocused: false});
+    };
+
+    onFocus = () => {
+        const {posts} = this.props;
+        this.setState({isFocused: true});
+        if (posts.length) {
+            this.refs.list.getWrapperRef().getListRef().scrollToOffset({
+                animated: true,
+                offset: 0
+            });
+        }
+    };
+
+    removeSearchTerms = (item) => {
+        const {actions, currentTeamId} = this.props;
+        actions.removeSearchTerms(currentTeamId, item.terms);
+    };
+
+    renderPost = ({item}) => {
+        const {channels, theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        const channel = channels.find((c) => c.id === item.channel_id);
+        let displayName = '';
+
+        if (channel) {
+            displayName = channel.display_name;
+        }
+
+        return (
+            <View>
+                <Text style={style.channelName}>
+                    {displayName}
+                </Text>
+                <Post
+                    post={item}
+                    renderReplies={false}
+                    isFirstReply={false}
+                    isLastReply={false}
+                    commentedOnPost={null}
+                    onPress={() => true}
+                    isSearchResult={true}
+                    navigator={this.props.navigator}
+                />
+            </View>
+        );
+    };
+
+    renderRecentSeparator = () => {
         const {theme} = this.props;
         const style = getStyleFromTheme(theme);
-        return <View style={style.recentSeparator}/>;
+
+        return (
+            <View style={style.separatorContainer}>
+                <View style={style.separator}/>
+            </View>
+        );
+    };
+
+    renderPostSeparator = () => {
+        const {theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        return (
+            <View style={[style.separatorContainer, style.postsSeparator]}>
+                <View style={style.separator}/>
+            </View>
+        );
     };
 
     renderSectionHeader = ({section}) => {
@@ -87,10 +187,12 @@ class Search extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         return (
-            <View style={style.sectionContainer}>
-                <Text style={style.sectionLabel}>
-                    {title}
-                </Text>
+            <View style={style.sectionWrapper}>
+                <View style={style.sectionContainer}>
+                    <Text style={style.sectionLabel}>
+                        {title}
+                    </Text>
+                </View>
             </View>
         );
     };
@@ -101,7 +203,7 @@ class Search extends PureComponent {
 
         return (
             <TouchableHighlight
-                key={item.tems}
+                key={item.terms}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={() => preventDoubleTap(this.setRecentValue, this, item)}
             >
@@ -113,6 +215,16 @@ class Search extends PureComponent {
                     >
                         {item.terms}
                     </Text>
+                    <TouchableOpacity
+                        onPress={() => preventDoubleTap(this.removeSearchTerms, this, item)}
+                        style={style.recentRemove}
+                    >
+                        <IonIcon
+                            name='ios-close-circle-outline'
+                            size={20}
+                            color={changeOpacity(theme.centerChannelColor, 0.6)}
+                        />
+                    </TouchableOpacity>
                 </View>
             </TouchableHighlight>
         );
@@ -127,12 +239,14 @@ class Search extends PureComponent {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);
+        this.refs.search_bar.blur();
     };
 
     render() {
         const {
             intl,
             recent,
+            posts,
             theme
         } = this.props;
 
@@ -155,7 +269,18 @@ class Search extends PureComponent {
                 title: intl.formatMessage({id: 'mobile.search.recentTitle', defaultMessage: 'Recent Searches'}),
                 renderItem: this.renderRecentItem,
                 keyExtractor: this.keyRecentExtractor,
-                ItemSeparatorComponent: this.renderSeparatorComponent
+                ItemSeparatorComponent: this.renderRecentSeparator
+            });
+        }
+
+        if (posts.length) {
+            sections.push({
+                data: posts,
+                key: 'results',
+                title: intl.formatMessage({id: 'search_header.results', defaultMessage: 'Search Results'}),
+                renderItem: this.renderPost,
+                keyExtractor: this.keyPostExtractor,
+                ItemSeparatorComponent: this.renderPostSeparator
             });
         }
 
@@ -186,6 +311,8 @@ class Search extends PureComponent {
                         tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         titleCancelColor={theme.sidebarHeaderTextColor}
                         onChangeText={this.handleTextChanged}
+                        onBlur={this.onBlur}
+                        onFocus={this.onFocus}
                         onSearchButtonPress={(text) => preventDoubleTap(this.search, this, text)}
                         onCancelButtonPress={() => preventDoubleTap(this.cancelSearch, this)}
                         onSelectionChange={this.handleSelectionChange}
@@ -202,10 +329,12 @@ class Search extends PureComponent {
                     isSearch={true}
                 />
                 <SectionList
-                    style={{flex: 1}}
+                    ref='list'
+                    style={style.sectionList}
                     renderSectionHeader={this.renderSectionHeader}
                     sections={sections}
-                    keyboardShouldPersistTaps='always'
+                    keyboardShouldPersistTaps='handled'
+                    stickySectionHeadersEnabled={true}
                 />
             </View>
         );
@@ -228,11 +357,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 }
             })
         },
+        sectionWrapper: {
+            backgroundColor: theme.centerChannelBg
+        },
         sectionContainer: {
             justifyContent: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
             paddingLeft: 16,
-            height: 20
+            height: SECTION_HEIGHT
         },
         sectionLabel: {
             color: theme.centerChannelColor,
@@ -240,30 +372,46 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600'
         },
         recentItemContainer: {
+            alignItems: 'center',
             flex: 1,
-            height: 42,
-            justifyContent: 'center',
-            paddingHorizontal: 16
+            flexDirection: 'row',
+            height: RECENT_LABEL_HEIGHT
         },
         recentItemLabel: {
             color: theme.centerChannelColor,
-            fontSize: 14
-        },
-        recentSeparator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            fontSize: 14,
+            height: 20,
             flex: 1,
+            paddingHorizontal: 16
+        },
+        recentRemove: {
+            alignItems: 'center',
+            height: RECENT_LABEL_HEIGHT,
+            justifyContent: 'center',
+            width: 50
+        },
+        separatorContainer: {
+            justifyContent: 'center',
+            flex: 1,
+            height: RECENT_SEPARATOR_HEIGHT
+        },
+        postsSeparator: {
+            height: 15
+        },
+        separator: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: StyleSheet.hairlineWidth
         },
-        postList: {
+        channelName: {
+            color: changeOpacity(theme.centerChannelColor, 0.8),
+            fontSize: 14,
+            fontWeight: '600',
+            marginTop: 5,
+            paddingHorizontal: 16
+        },
+        sectionList: {
             flex: 1,
-            ...Platform.select({
-                android: {
-                    marginTop: 46
-                },
-                ios: {
-                    marginTop: 64
-                }
-            })
+            zIndex: -1
         }
     });
 });

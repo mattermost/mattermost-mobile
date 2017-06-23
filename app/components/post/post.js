@@ -42,6 +42,7 @@ class Post extends PureComponent {
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
+        isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object,
@@ -49,6 +50,10 @@ class Post extends PureComponent {
         tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func
+    };
+
+    static defaultProps = {
+        isSearchResult: false
     };
 
     constructor(props) {
@@ -247,6 +252,7 @@ class Post extends PureComponent {
         const {
             commentedOnPost,
             isLastReply,
+            isSearchResult,
             post,
             renderReplies,
             theme
@@ -269,6 +275,7 @@ class Post extends PureComponent {
                             postId={post.id}
                             commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
                             createAt={post.create_at}
+                            isSearchResult={isSearchResult}
                             onPress={this.handlePress}
                             onViewUserProfile={this.viewUserProfile}
                             renderReplies={renderReplies}
@@ -277,6 +284,7 @@ class Post extends PureComponent {
                         <PostBody
                             canDelete={this.state.canDelete}
                             canEdit={this.state.canEdit}
+                            isSearchResult={isSearchResult}
                             navigator={this.props.navigator}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
