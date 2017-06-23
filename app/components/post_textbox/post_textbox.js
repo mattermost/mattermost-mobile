@@ -528,13 +528,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
-            marginBottom: 3,
             marginRight: 5,
             height: 28,
             width: 28,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingLeft: 2
+            paddingLeft: 2,
+            ...Platform.select({
+                ios: {
+                    marginBottom: 3
+                },
+                android: {
+                    height: 29,
+                    marginBottom: 4,
+                    width: 29
+                }
+            })
         },
         typing: {
             paddingLeft: 10,
