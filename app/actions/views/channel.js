@@ -146,7 +146,7 @@ export function loadPostsIfNecessary(channelId) {
         const postsIds = postsInChannel[channelId];
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE / 2) {
+        if (!postsIds || postsIds.length < POST_INCREASE_AMOUNT) {
             return getPosts(channelId)(dispatch, getState);
         }
 

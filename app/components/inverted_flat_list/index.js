@@ -50,6 +50,29 @@ export default class InvertibleFlatList extends PureComponent {
         );
     };
 
+    renderScrollComponent = (props) => {
+        const {theme} = this.props;
+
+        if (props.onRefresh) {
+            return (
+                <ScrollView
+                    {...props}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={props.refreshing}
+                            onRefresh={props.onRefresh}
+                            tintColor={theme.centerChannelColor}
+                            colors={[theme.centerChannelColor]}
+                            style={this.inversionDirection}
+                        />
+                    }
+                />
+            );
+        }
+
+        return <ScrollView {...props}/>;
+    };
+
     scrollToEnd = (params) => {
         this.flatListRef.scrollToEnd(params);
     };
@@ -83,7 +106,6 @@ export default class InvertibleFlatList extends PureComponent {
         }
 
         this.inversionDirection = this.props.horizontal ? styles.horizontal : styles.vertical;
-        const {theme} = this.props;
         return (
             <View style={[styles.container, this.inversionDirection]}>
                 <VirtualList
@@ -91,26 +113,7 @@ export default class InvertibleFlatList extends PureComponent {
                     {...forwardedProps}
                     ListFooterComponent={this.renderFooter}
                     renderItem={this.renderItem}
-                    renderScrollComponent={(props) => {
-                        if (props.onRefresh) {
-                            return (
-                                <ScrollView
-                                    {...props}
-                                    refreshControl={
-                                        <RefreshControl
-                                            refreshing={props.refreshing}
-                                            onRefresh={props.onRefresh}
-                                            tintColor={theme.centerChannelColor}
-                                            colors={[theme.centerChannelColor]}
-                                            style={this.inversionDirection}
-                                        />
-                                    }
-                                />
-                            );
-                        }
-
-                        return <ScrollView {...props}/>;
-                    }}
+                    renderScrollComponent={this.renderScrollComponent}
                 />
             </View>
         );
