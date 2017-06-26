@@ -64,14 +64,9 @@ class PostTextbox extends PureComponent {
         super(props);
 
         this.state = {
-            canSend: false,
             contentHeight: INITIAL_HEIGHT,
             inputWidth: null
         };
-    }
-
-    componentWillMount() {
-        this.canSend(this.props);
     }
 
     componentDidMount() {
@@ -101,8 +96,6 @@ class PostTextbox extends PureComponent {
                 })
             );
         }
-
-        this.canSend(nextProps);
     }
 
     componentWillUnmount() {
@@ -116,13 +109,12 @@ class PostTextbox extends PureComponent {
         this.refs.input.blur();
     };
 
-    canSend = (props) => {
-        const {files, uploadFileRequestStatus, value} = props;
+    canSend = () => {
+        const {files, uploadFileRequestStatus, value} = this.props;
         const valueLength = value.trim().length;
-        const canSend = (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
-            (files.filter((f) => !f.failed).length > 0 && uploadFileRequestStatus !== RequestStatus.STARTED);
 
-        this.setState({canSend});
+        return (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
+            (files.filter((f) => !f.failed).length > 0 && uploadFileRequestStatus !== RequestStatus.STARTED);
     };
 
     handleAndroidKeyboard = () => {
@@ -139,7 +131,7 @@ class PostTextbox extends PureComponent {
     };
 
     handleSendMessage = () => {
-        if (!this.state.canSend) {
+        if (!this.canSend()) {
             return;
         }
 
@@ -460,7 +452,7 @@ class PostTextbox extends PureComponent {
                             style={[style.input, {height: textInputHeight}]}
                             onLayout={this.handleInputSizeChange}
                         />
-                        {this.state.canSend &&
+                        {this.canSend() &&
                             <TouchableOpacity
                                 onPress={this.handleSendMessage}
                                 style={style.sendButton}
