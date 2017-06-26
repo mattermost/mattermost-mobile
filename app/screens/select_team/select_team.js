@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     FlatList,
     InteractionManager,
     StyleSheet,
@@ -12,11 +13,13 @@ import {
     View
 } from 'react-native';
 
+import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
+
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -31,6 +34,7 @@ export default class SelectTeam extends PureComponent {
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
+        joinTeamRequest: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
@@ -54,6 +58,11 @@ export default class SelectTeam extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.teams !== nextProps.teams) {
             this.buildData(nextProps);
+        }
+
+        if (this.props.joinTeamRequest.status !== RequestStatus.FAILURE &&
+            nextProps.joinTeamRequest.status === RequestStatus.FAILURE) {
+            Alert.alert('', nextProps.joinTeamRequest.error.message);
         }
     }
 
@@ -118,7 +127,13 @@ export default class SelectTeam extends PureComponent {
         if (currentChannelId) {
             markChannelAsRead(currentChannelId);
         }
-        await joinTeam(team.invite_id, team.id);
+
+        const success = await joinTeam(team.invite_id, team.id);
+        if (!success) {
+            this.setState({joining: false});
+            return;
+        }
+
         handleTeamChange(team);
 
         if (userWithoutTeams) {
