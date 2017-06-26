@@ -49,7 +49,7 @@ class ChannelsList extends Component {
         this.firstUnreadChannel = null;
         this.state = {
             searching: false,
-            term: null
+            term: ''
         };
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
@@ -104,7 +104,7 @@ class ChannelsList extends Component {
     cancelSearch = () => {
         this.props.onSearchEnds();
         this.setState({searching: false});
-        this.onSearch(null);
+        this.onSearch('');
     };
 
     render() {
@@ -169,6 +169,7 @@ class ChannelsList extends Component {
                     onCancelButtonPress={this.cancelSearch}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
+                    value={term}
                 />
             </View>
         );

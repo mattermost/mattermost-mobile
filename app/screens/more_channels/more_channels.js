@@ -62,7 +62,8 @@ class MoreChannels extends PureComponent {
             adding: false,
             next: true,
             searching: false,
-            showNoResults: false
+            showNoResults: false,
+            term: ''
         };
         this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         this.leftButton = {...this.leftButton, icon: props.closeButton};
@@ -142,7 +143,7 @@ class MoreChannels extends PureComponent {
     cancelSearch = () => {
         this.props.actions.getChannels(this.props.currentTeamId, 0);
         this.setState({
-            term: null,
+            term: '',
             searching: false,
             page: 0
         });
@@ -264,7 +265,7 @@ class MoreChannels extends PureComponent {
 
     render() {
         const {intl, requestStatus, theme} = this.props;
-        const {adding, channels, searching} = this.state;
+        const {adding, channels, searching, term} = this.state;
         const {formatMessage} = intl;
         const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
         const style = getStyleFromTheme(theme);
@@ -297,6 +298,7 @@ class MoreChannels extends PureComponent {
                             onChangeText={this.searchProfiles}
                             onSearchButtonPress={this.searchProfiles}
                             onCancelButtonPress={this.cancelSearch}
+                            value={term}
                         />
                     </View>
                     <ChannelList

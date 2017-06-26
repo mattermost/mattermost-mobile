@@ -52,7 +52,8 @@ class MoreDirectMessages extends PureComponent {
             adding: false,
             next: true,
             searching: false,
-            showNoResults: false
+            showNoResults: false,
+            term: ''
         };
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
     }
@@ -63,11 +64,11 @@ class MoreDirectMessages extends PureComponent {
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = nextProps.profiles.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
-            this.setState({profiles, showNoResults: true, error: null});
+            this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
             const results = filterProfilesMatchingTerm(nextProps.profiles, this.state.term);
-            this.setState({profiles: results, showNoResults: true, error: null});
+            this.setState({profiles: results, showNoResults: true});
         }
     }
 
@@ -111,8 +112,7 @@ class MoreDirectMessages extends PureComponent {
     cancelSearch = () => {
         this.setState({
             searching: false,
-            term: null,
-            error: null,
+            term: '',
             page: 0,
             profiles: this.props.profiles
         });
@@ -178,7 +178,7 @@ class MoreDirectMessages extends PureComponent {
 
     render() {
         const {intl, preferences, requestStatus, searchRequest, theme} = this.props;
-        const {adding, profiles, searching, showNoResults} = this.state;
+        const {adding, profiles, searching, showNoResults, term} = this.state;
         const {formatMessage} = intl;
         const isLoading = (requestStatus.status === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
             (searchRequest.status === RequestStatus.STARTED);
@@ -218,6 +218,7 @@ class MoreDirectMessages extends PureComponent {
                             onChangeText={this.searchProfiles}
                             onSearchButtonPress={this.searchProfiles}
                             onCancelButtonPress={this.cancelSearch}
+                            value={term}
                         />
                     </View>
                     <MemberList
