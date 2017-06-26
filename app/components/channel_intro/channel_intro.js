@@ -19,9 +19,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
+        creator: PropTypes.object,
         currentChannel: PropTypes.object.isRequired,
         currentChannelMembers: PropTypes.array.isRequired,
-        currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
@@ -86,7 +86,7 @@ class ChannelIntro extends PureComponent {
         const {currentChannelMembers, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        const names = currentChannelMembers.map((member, index) => (
+        return currentChannelMembers.map((member, index) => (
             <TouchableOpacity
                 key={member.id}
                 onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
@@ -96,8 +96,6 @@ class ChannelIntro extends PureComponent {
                 </Text>
             </TouchableOpacity>
         ));
-
-        return <View style={{flexDirection: 'row'}}>{names}</View>;
     };
 
     buildDMContent = () => {
@@ -132,7 +130,7 @@ class ChannelIntro extends PureComponent {
     };
 
     buildOpenChannelContent = () => {
-        const {currentChannel, currentChannelMembers, currentUser, intl, theme} = this.props;
+        const {creator, currentChannel, intl, theme} = this.props;
         const style = getStyleSheet(theme);
 
         const date = intl.formatDate(currentChannel.create_at, {
@@ -142,8 +140,7 @@ class ChannelIntro extends PureComponent {
         });
 
         let mainMessageIntl;
-        if (currentChannel.creator_id) {
-            const creator = currentChannel.creator_id === currentUser.id ? currentUser : currentChannelMembers[currentChannel.creator_id];
+        if (creator) {
             const creatorName = this.getDisplayName(creator);
             mainMessageIntl = {
                 id: 'intro_messages.creator',
@@ -201,10 +198,9 @@ class ChannelIntro extends PureComponent {
     };
 
     buildPrivateChannelContent = () => {
-        const {currentChannel, currentChannelMembers, currentUser, intl, theme} = this.props;
+        const {creator, currentChannel, intl, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        const creator = currentChannel.creator_id === currentUser.id ? currentUser : currentChannelMembers[currentChannel.creator_id];
         const creatorName = this.getDisplayName(creator);
         const date = intl.formatDate(currentChannel.create_at, {
             year: 'numeric',
@@ -352,14 +348,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18
         },
         namesContainer: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
             marginBottom: 12
         },
         profile: {
+            height: 67,
+            marginBottom: 12,
             marginRight: 12
         },
         profilesContainer: {
             flexDirection: 'row',
-            marginBottom: 12
+            flexWrap: 'wrap',
+            justifyContent: 'flex-start'
         }
     });
 });
