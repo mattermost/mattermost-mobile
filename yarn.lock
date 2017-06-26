@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/b21461562fefc6abe2e31373045059652d814ad1"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/caf81fd083fb4f883c787e4ca11bf17e5898e031"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
