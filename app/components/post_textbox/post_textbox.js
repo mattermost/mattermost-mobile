@@ -64,7 +64,6 @@ class PostTextbox extends PureComponent {
         super(props);
 
         this.state = {
-            canSend: false,
             contentHeight: INITIAL_HEIGHT,
             inputWidth: null
         };
@@ -79,7 +78,7 @@ class PostTextbox extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {intl} = this.props;
-        const {files, uploadFileRequestStatus, value} = nextProps;
+        const {value} = nextProps;
         const valueLength = value.trim().length;
 
         if (valueLength > MAX_MESSAGE_LENGTH) {
@@ -97,14 +96,6 @@ class PostTextbox extends PureComponent {
                 })
             );
         }
-
-        const canSend =
-            (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) &&
-            files.filter((f) => !f.failed).length === 0 &&
-            uploadFileRequestStatus !== RequestStatus.STARTED;
-        this.setState({
-            canSend
-        });
     }
 
     componentWillUnmount() {
@@ -116,6 +107,14 @@ class PostTextbox extends PureComponent {
 
     blur = () => {
         this.refs.input.blur();
+    };
+
+    canSend = () => {
+        const {files, uploadFileRequestStatus, value} = this.props;
+        const valueLength = value.trim().length;
+
+        return (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
+            (files.filter((f) => !f.failed).length > 0 && uploadFileRequestStatus !== RequestStatus.STARTED);
     };
 
     handleAndroidKeyboard = () => {
@@ -132,7 +131,7 @@ class PostTextbox extends PureComponent {
     };
 
     handleSendMessage = () => {
-        if (!this.state.canSend) {
+        if (!this.canSend()) {
             return;
         }
 
@@ -453,7 +452,7 @@ class PostTextbox extends PureComponent {
                             style={[style.input, {height: textInputHeight}]}
                             onLayout={this.handleInputSizeChange}
                         />
-                        {this.state.canSend &&
+                        {this.canSend() &&
                             <TouchableOpacity
                                 onPress={this.handleSendMessage}
                                 style={style.sendButton}
