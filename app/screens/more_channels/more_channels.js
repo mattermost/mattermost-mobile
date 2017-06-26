@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Alert,
     Platform,
     InteractionManager,
     StyleSheet,
@@ -20,6 +19,7 @@ import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 class MoreChannels extends PureComponent {
@@ -212,7 +212,21 @@ class MoreChannels extends PureComponent {
         const channel = channels.find((c) => c.id === id);
         const result = await actions.joinChannel(currentUserId, currentTeamId, id);
 
-        if (result) {
+        if (result.error) {
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.join_channel.error',
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                },
+                {
+                    displayName: channel ? channel.display_name : ''
+                }
+            );
+            this.emitCanCreateChannel(true);
+            this.setState({adding: false});
+        } else {
             if (channel) {
                 actions.setChannelDisplayName(channel.display_name);
             } else {
@@ -224,16 +238,6 @@ class MoreChannels extends PureComponent {
             InteractionManager.runAfterInteractions(() => {
                 this.close();
             });
-        } else {
-            Alert.alert(
-                '',
-                intl.formatMessage({
-                    id: 'mobile.join_channel.error',
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
-                }, {displayName: channel ? channel.display_name : ''})
-            );
-            this.emitCanCreateChannel(true);
-            this.setState({adding: false});
         }
     };
 

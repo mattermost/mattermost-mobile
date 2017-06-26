@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Alert,
     InteractionManager,
     StyleSheet,
     View
@@ -19,6 +18,7 @@ import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -68,16 +68,6 @@ class MoreDirectMessages extends PureComponent {
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
             const results = filterProfilesMatchingTerm(nextProps.profiles, this.state.term);
             this.setState({profiles: results, showNoResults: true, error: null});
-        } else if (nextProps.createChannelRequest.status === RequestStatus.FAILURE && this.state.displayName) {
-            const {intl} = this.props;
-            Alert.alert(
-                '',
-                intl.formatMessage({
-                    id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
-                }, {displayName: this.state.displayName})
-            );
-            this.setState({adding: false, displayName: null});
         }
     }
 
@@ -146,7 +136,7 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
-        const {actions, currentDisplayName, preferences, profiles} = this.props;
+        const {actions, currentDisplayName, intl, preferences, profiles} = this.props;
         const user = profiles.find((p) => p.id === id);
 
         this.setState({adding: true});
@@ -154,21 +144,35 @@ class MoreDirectMessages extends PureComponent {
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
 
+        const userDisplayName = displayUsername(user, preferences);
+
         if (user) {
-            actions.setChannelDisplayName(displayUsername(user, preferences));
+            actions.setChannelDisplayName(userDisplayName);
         } else {
             actions.setChannelDisplayName('');
         }
+
         const result = await actions.makeDirectChannel(id);
 
-        if (result) {
+        if (result.error) {
+            actions.setChannelDisplayName(currentChannelDisplayName);
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                },
+                {
+                    displayName: userDisplayName
+                }
+            );
+            this.setState({adding: false});
+        } else {
             EventEmitter.emit('close_channel_drawer');
             InteractionManager.runAfterInteractions(() => {
                 this.close();
             });
-        } else {
-            this.setState({displayName: displayUsername(user, preferences)});
-            actions.setChannelDisplayName(currentChannelDisplayName);
         }
     };
 

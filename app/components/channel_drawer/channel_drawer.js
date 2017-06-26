@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Alert,
     BackHandler,
     InteractionManager,
     Keyboard,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import Drawer from 'app/components/drawer';
+import {alertErrorWithFallback} from 'app/utils/general';
 
 import ChannelsList from './channels_list';
 import Swiper from './swiper';
@@ -166,7 +166,7 @@ export default class ChannelDrawer extends PureComponent {
         });
     };
 
-    joinChannel = (channel) => {
+    joinChannel = async (channel) => {
         const {
             actions,
             currentChannel,
@@ -191,42 +191,36 @@ export default class ChannelDrawer extends PureComponent {
         viewChannel(currentChannel.id);
         setChannelDisplayName(channel.display_name);
 
-        if (channel.type === General.DM_CHANNEL) {
-            this.closeChannelDrawer();
-            InteractionManager.runAfterInteractions(async () => {
-                const result = await makeDirectChannel(channel.id);
-                if (!result) {
-                    setChannelDisplayName(currentDisplayName);
-                    Alert.alert(
-                        '',
-                        intl.formatMessage({
-                            id: 'mobile.open_dm.error',
-                            defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
-                        }, {displayName: channel.display_name})
-                    );
-                }
-            });
-        } else {
-            let didJoin = false;
-            joinChannel(currentUserId, currentTeam.id, channel.id).then((result) => {
-                didJoin = result;
-            });
+        const displayValue = {displayName: channel.display_name};
 
-            this.closeChannelDrawer();
-            InteractionManager.runAfterInteractions(() => {
-                if (didJoin) {
+        if (channel.type === General.DM_CHANNEL) {
+            const result = await makeDirectChannel(channel.id);
+            if (result.error) {
+                const dmFailedMessage = {
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                };
+                setChannelDisplayName(currentDisplayName);
+                alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
+            } else {
+                this.closeChannelDrawer();
+            }
+        } else {
+            const result = await joinChannel(currentUserId, currentTeam.id, channel.id);
+
+            if (result.error) {
+                const joinFailedMessage = {
+                    id: 'mobile.join_channel.error',
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                };
+                setChannelDisplayName(currentDisplayName);
+                alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
+            } else {
+                this.closeChannelDrawer();
+                InteractionManager.runAfterInteractions(() => {
                     handleSelectChannel(channel.id);
-                } else {
-                    setChannelDisplayName(currentDisplayName);
-                    Alert.alert(
-                        '',
-                        intl.formatMessage({
-                            id: 'mobile.join_channel.error',
-                            defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
-                        }, {displayName: channel.display_name})
-                    );
-                }
-            });
+                });
+            }
         }
     };
 

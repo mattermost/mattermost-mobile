@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,12 +11,12 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import {RequestStatus} from 'mattermost-redux/constants';
 import {getDirectChannelName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import UserProfileRow from './user_profile_row';
@@ -39,28 +38,6 @@ class UserProfile extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired
     };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {error: false};
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.createChannelRequest.status === RequestStatus.FAILURE && this.state.error) {
-            const {intl, myPreferences, user} = this.props;
-            const displayName = displayUsername(user, myPreferences);
-
-            Alert.alert(
-                '',
-                intl.formatMessage({
-                    id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
-                }, {displayName})
-            );
-            this.setState({error: false});
-        }
-    }
 
     displaySendMessageOption = () => {
         const {currentChannel, currentUserId, user} = this.props;
@@ -98,21 +75,32 @@ class UserProfile extends PureComponent {
     };
 
     sendMessage = async () => {
-        const {actions, currentDisplayName, myPreferences, navigator, user} = this.props;
+        const {actions, currentDisplayName, intl, myPreferences, navigator, user} = this.props;
 
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
 
-        actions.setChannelDisplayName(displayUsername(user, myPreferences));
+        const userDisplayName = displayUsername(user, myPreferences);
+        actions.setChannelDisplayName(userDisplayName);
 
         const result = await actions.makeDirectChannel(user.id);
-        if (result) {
+        if (result.error) {
+            actions.setChannelDisplayName(currentChannelDisplayName);
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                },
+                {
+                    displayName: userDisplayName
+                }
+            );
+        } else {
             navigator.pop({
                 animated: true
             });
-        } else {
-            actions.setChannelDisplayName(currentChannelDisplayName);
-            this.setState({error: true});
         }
     };
 
