@@ -48,20 +48,18 @@ const TRANSLATIONS = {
     'zh-TW': zhTW
 };
 
-addLocaleData([
-    deLocaleData,
-    enLocaleData,
-    esLocaleData,
-    frLocaleData,
-    jaLocaleData,
-    koLocaleData,
-    nlLocaleData,
-    plLocaleData,
-    ptLocaleData,
-    trLocaleData,
-    ruLocaleData,
-    zhLocaleData
-]);
+addLocaleData(deLocaleData);
+addLocaleData(enLocaleData);
+addLocaleData(esLocaleData);
+addLocaleData(frLocaleData);
+addLocaleData(jaLocaleData);
+addLocaleData(koLocaleData);
+addLocaleData(nlLocaleData);
+addLocaleData(plLocaleData);
+addLocaleData(ptLocaleData);
+addLocaleData(trLocaleData);
+addLocaleData(ruLocaleData);
+addLocaleData(zhLocaleData);
 
 export function getTranslations(locale) {
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];

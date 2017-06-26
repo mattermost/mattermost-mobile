@@ -90,7 +90,7 @@ export const GlobalStyles = StyleSheet.create({
         marginTop: 15,
         marginBottom: 15,
         fontSize: 12,
-        textAlign: 'center'
+        textAlign: 'left'
     },
 
     switchUp: {
