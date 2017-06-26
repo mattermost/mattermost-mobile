@@ -88,14 +88,14 @@ class EditPost extends PureComponent {
 
     emitCanEditPost = (enabled) => {
         this.props.navigator.setButtons({
-            leftButtons: [this.leftButton],
+            leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, disabled: !enabled}]
         });
     };
 
     emitEditing = (loading) => {
         this.props.navigator.setButtons({
-            leftButtons: [this.leftButton],
+            leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, disabled: loading}]
         });
     };
@@ -219,8 +219,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
         },
+        errorContainer: {
+            paddingHorizontal: 10
+        },
         errorWrapper: {
-            justifyContent: 'center',
             alignItems: 'center'
         },
         inputContainer: {
