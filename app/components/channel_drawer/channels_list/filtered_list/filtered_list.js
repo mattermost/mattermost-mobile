@@ -27,8 +27,7 @@ class ChannelDrawerList extends Component {
         actions: PropTypes.shape({
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired
+            searchProfiles: PropTypes.func.isRequired
         }).isRequired,
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
@@ -40,7 +39,6 @@ class ChannelDrawerList extends Component {
         myPreferences: PropTypes.object,
         myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
-        onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
@@ -88,12 +86,8 @@ class ChannelDrawerList extends Component {
     }
 
     onSelectChannel = (channel) => {
-        const {
-            makeGroupMessageVisibleIfNecessary,
-            setChannelDisplayName
-        } = this.props.actions;
+        const {makeGroupMessageVisibleIfNecessary} = this.props.actions;
 
-        setChannelDisplayName(channel.display_name);
         if (channel.type === General.GM_CHANNEL) {
             makeGroupMessageVisibleIfNecessary(channel.id);
         }

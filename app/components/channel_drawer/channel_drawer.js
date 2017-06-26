@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import Drawer from 'app/components/drawer';
+import {alertErrorWithFallback} from 'app/utils/general';
 
 import ChannelsList from './channels_list';
 import Swiper from './swiper';
@@ -29,15 +30,18 @@ export default class ChannelDrawer extends PureComponent {
             viewChannel: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         channels: PropTypes.object,
         currentChannel: PropTypes.object,
+        currentDisplayName: PropTypes.string,
         channelMembers: PropTypes.object,
         currentTeam: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
+        intl: PropTypes.object.isRequired,
         myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired
@@ -162,12 +166,14 @@ export default class ChannelDrawer extends PureComponent {
         });
     };
 
-    joinChannel = (channel) => {
+    joinChannel = async (channel) => {
         const {
             actions,
             currentChannel,
+            currentDisplayName,
             currentTeam,
-            currentUserId
+            currentUserId,
+            intl
         } = this.props;
 
         const {
@@ -175,27 +181,46 @@ export default class ChannelDrawer extends PureComponent {
             joinChannel,
             makeDirectChannel,
             markChannelAsRead,
+            setChannelDisplayName,
             setChannelLoading,
             viewChannel
         } = actions;
 
+        markChannelAsRead(currentChannel.id);
+        setChannelLoading();
+        viewChannel(currentChannel.id);
+        setChannelDisplayName(channel.display_name);
+
+        const displayValue = {displayName: channel.display_name};
+
         if (channel.type === General.DM_CHANNEL) {
-            markChannelAsRead(currentChannel.id);
-            setChannelLoading();
-            viewChannel(currentChannel.id);
-            this.closeChannelDrawer();
-            InteractionManager.runAfterInteractions(() => {
-                makeDirectChannel(channel.id);
-            });
+            const result = await makeDirectChannel(channel.id);
+            if (result.error) {
+                const dmFailedMessage = {
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                };
+                setChannelDisplayName(currentDisplayName);
+                alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
+            } else {
+                this.closeChannelDrawer();
+            }
         } else {
-            markChannelAsRead(currentChannel.id);
-            setChannelLoading();
-            viewChannel(currentChannel.id);
-            joinChannel(currentUserId, currentTeam.id, channel.id);
-            this.closeChannelDrawer();
-            InteractionManager.runAfterInteractions(() => {
-                handleSelectChannel(channel.id);
-            });
+            const result = await joinChannel(currentUserId, currentTeam.id, channel.id);
+
+            if (result.error) {
+                const joinFailedMessage = {
+                    id: 'mobile.join_channel.error',
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                };
+                setChannelDisplayName(currentDisplayName);
+                alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
+            } else {
+                this.closeChannelDrawer();
+                InteractionManager.runAfterInteractions(() => {
+                    handleSelectChannel(channel.id);
+                });
+            }
         }
     };
 

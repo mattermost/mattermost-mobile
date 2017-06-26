@@ -30,7 +30,7 @@ class ChannelPostList extends PureComponent {
         channel: PropTypes.object.isRequired,
         channelIsLoading: PropTypes.bool,
         channelIsRefreshing: PropTypes.bool,
-        channelName: PropTypes.string,
+        currentChannelId: PropTypes.string,
         intl: intlShape.isRequired,
         loadingPosts: PropTypes.bool,
         myMember: PropTypes.object.isRequired,
@@ -60,7 +60,7 @@ class ChannelPostList extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         // Show the loader if the channel names change
-        if (this.props.channelName !== nextProps.channelName) {
+        if (this.props.currentChannelId !== nextProps.currentChannelId) {
             this.setState({
                 loaderOpacity: new Animated.Value(1)
             });
@@ -146,7 +146,7 @@ class ChannelPostList extends PureComponent {
         const {channelLoaded, loaderOpacity} = this.state;
 
         let component;
-        if (!posts.length && channel.total_msg_count > 0 && !networkOnline) {
+        if (!posts.length && channel.total_msg_count > 0 && (!channelIsLoading || !networkOnline)) {
             // If no posts has been loaded and we are offline
             component = (
                 <PostListRetry

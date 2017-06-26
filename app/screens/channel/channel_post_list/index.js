@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 import {loadPostsIfNecessary, increasePostVisibility} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
@@ -19,14 +19,14 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const channelId = ownProps.channel.id;
-        const {displayName, refreshing} = state.views.channel;
+        const {refreshing} = state.views.channel;
         const {getPosts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
 
         return {
             channelIsLoading: (getPosts.status === RequestStatus.STARTED),
             channelIsRefreshing: refreshing,
-            channelName: displayName,
+            currentChannelId: getCurrentChannelId(state),
             posts,
             postVisibility: state.views.channel.postVisibility[channelId],
             loadingPosts: state.views.channel.loadingPosts[channelId],

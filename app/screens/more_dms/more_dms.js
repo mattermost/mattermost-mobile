@@ -18,16 +18,19 @@ import Loading from 'app/components/loading';
 import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 class MoreDirectMessages extends PureComponent {
     static propTypes = {
+        currentDisplayName: PropTypes.string,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         preferences: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
+        createChannelRequest: PropTypes.object.isRequired,
         requestStatus: PropTypes.object.isRequired,
         searchRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
@@ -60,11 +63,11 @@ class MoreDirectMessages extends PureComponent {
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = nextProps.profiles.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
-            this.setState({profiles, showNoResults: true});
+            this.setState({profiles, showNoResults: true, error: null});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
             const results = filterProfilesMatchingTerm(nextProps.profiles, this.state.term);
-            this.setState({profiles: results, showNoResults: true});
+            this.setState({profiles: results, showNoResults: true, error: null});
         }
     }
 
@@ -109,6 +112,7 @@ class MoreDirectMessages extends PureComponent {
         this.setState({
             searching: false,
             term: null,
+            error: null,
             page: 0,
             profiles: this.props.profiles
         });
@@ -132,22 +136,44 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
-        const {actions, preferences, profiles} = this.props;
+        const {actions, currentDisplayName, intl, preferences, profiles} = this.props;
         const user = profiles.find((p) => p.id === id);
 
         this.setState({adding: true});
 
+        // save the current channel display name in case it fails
+        const currentChannelDisplayName = currentDisplayName;
+
+        const userDisplayName = displayUsername(user, preferences);
+
         if (user) {
-            actions.setChannelDisplayName(displayUsername(user, preferences));
+            actions.setChannelDisplayName(userDisplayName);
         } else {
             actions.setChannelDisplayName('');
         }
-        await actions.makeDirectChannel(id);
 
-        EventEmitter.emit('close_channel_drawer');
-        InteractionManager.runAfterInteractions(() => {
-            this.close();
-        });
+        const result = await actions.makeDirectChannel(id);
+
+        if (result.error) {
+            actions.setChannelDisplayName(currentChannelDisplayName);
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                },
+                {
+                    displayName: userDisplayName
+                }
+            );
+            this.setState({adding: false});
+        } else {
+            EventEmitter.emit('close_channel_drawer');
+            InteractionManager.runAfterInteractions(() => {
+                this.close();
+            });
+        }
     };
 
     render() {

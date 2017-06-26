@@ -13,6 +13,7 @@ import {
 
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
@@ -130,10 +131,23 @@ class ChannelInfo extends PureComponent {
                 id: 'mobile.channel_info.alertMessageDeleteChannel',
                 defaultMessage: 'Are you sure you want to delete the {term} {name}?'
             };
-            onPressAction = () => {
-                this.props.actions.deleteChannel(channel.id).then(() => {
+            onPressAction = async () => {
+                const result = await this.props.actions.deleteChannel(channel.id);
+                if (result.error) {
+                    alertErrorWithFallback(
+                        this.props.intl,
+                        result.error,
+                        {
+                            id: 'mobile.channel_info.delete_failed',
+                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again."
+                        },
+                        {
+                            displayName: channel.display_name
+                        }
+                    );
+                } else {
                     this.close();
-                });
+                }
             };
         }
 
