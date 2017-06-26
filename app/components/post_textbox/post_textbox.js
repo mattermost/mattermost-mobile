@@ -70,6 +70,10 @@ class PostTextbox extends PureComponent {
         };
     }
 
+    componentWillMount() {
+        this.canSend(this.props);
+    }
+
     componentDidMount() {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -79,7 +83,7 @@ class PostTextbox extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {intl} = this.props;
-        const {files, uploadFileRequestStatus, value} = nextProps;
+        const {value} = nextProps;
         const valueLength = value.trim().length;
 
         if (valueLength > MAX_MESSAGE_LENGTH) {
@@ -98,13 +102,7 @@ class PostTextbox extends PureComponent {
             );
         }
 
-        const canSend =
-            (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) &&
-            files.filter((f) => !f.failed).length === 0 &&
-            uploadFileRequestStatus !== RequestStatus.STARTED;
-        this.setState({
-            canSend
-        });
+        this.canSend(nextProps);
     }
 
     componentWillUnmount() {
@@ -116,6 +114,15 @@ class PostTextbox extends PureComponent {
 
     blur = () => {
         this.refs.input.blur();
+    };
+
+    canSend = (props) => {
+        const {files, uploadFileRequestStatus, value} = props;
+        const valueLength = value.trim().length;
+        const canSend = (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
+            (files.filter((f) => !f.failed).length > 0 && uploadFileRequestStatus !== RequestStatus.STARTED);
+
+        this.setState({canSend});
     };
 
     handleAndroidKeyboard = () => {
