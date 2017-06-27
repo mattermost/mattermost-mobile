@@ -27,6 +27,7 @@ function mapStateToProps(state, ownProps) {
         teamsRequest: state.requests.teams.getMyTeams,
         teams: Object.values(getJoinableTeams(state)).sort(sortTeams),
         currentChannelId: getCurrentChannelId(state),
+        joinTeamRequest: state.requests.teams.joinTeam,
         ...ownProps
     };
 }
