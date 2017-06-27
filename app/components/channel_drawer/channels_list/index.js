@@ -123,6 +123,7 @@ class ChannelsList extends Component {
 
         const {searching, term} = this.state;
         const teamMembers = Object.values(myTeamMembers);
+        const showMembers = teamMembers.length > 1;
         const styles = getStyleSheet(theme);
 
         let settings;
@@ -175,7 +176,7 @@ class ChannelsList extends Component {
 
         let badge;
         let switcher;
-        if (teamMembers.length > 1 && !searching) {
+        if (showMembers && !searching) {
             let mentionCount = 0;
             let messageCount = 0;
             teamMembers.forEach((m) => {
@@ -226,7 +227,7 @@ class ChannelsList extends Component {
 
         return (
             <View
-                style={[styles.container, styles.extraPadding]}
+                style={[styles.container, showMembers ? styles.extraPadding : {}]}
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
