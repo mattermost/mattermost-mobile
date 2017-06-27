@@ -601,9 +601,11 @@ class Post extends PureComponent {
                     <View style={style.rightColumn}>
                         <View style={[style.postInfoContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                             {displayName}
-                            <Text style={style.time}>
-                                <FormattedTime value={this.props.post.create_at}/>
-                            </Text>
+                            <View style={style.timeContainer}>
+                                <Text style={style.time}>
+                                    <FormattedTime value={this.props.post.create_at}/>
+                                </Text>
+                            </View>
                         </View>
                         <View>
                             {this.renderCommentedOnMessage(style)}
@@ -624,9 +626,11 @@ class Post extends PureComponent {
                             <View style={[style.postInfoContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                                 <View style={{flexDirection: 'row', flex: 1}}>
                                     {displayName}
-                                    <Text style={style.time}>
-                                        <FormattedTime value={this.props.post.create_at}/>
-                                    </Text>
+                                    <View style={style.timeContainer}>
+                                        <Text style={style.time}>
+                                            <FormattedTime value={this.props.post.create_at}/>
+                                        </Text>
+                                    </View>
                                 </View>
                                 {(commentCount > 0 && renderReplies) &&
                                     <TouchableOpacity
@@ -720,11 +724,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 4
         },
         time: {
-            alignSelf: 'flex-end',
             color: theme.centerChannelColor,
             fontSize: 12,
             marginLeft: 5,
             opacity: 0.5
+        },
+        timeContainer: {
+            justifyContent: 'center'
         },
         commentedOn: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
