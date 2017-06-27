@@ -56,7 +56,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new OrientationPackage(),
-            new RNNotificationsPackage(MainApplication.this)
+            new RNNotificationsPackage(MainApplication.this),
+            new KeyboardInputPackage(MainApplication.this)
     );
   }
 
@@ -82,10 +83,5 @@ public class MainApplication extends NavigationApplication implements INotificat
             defaultAppLaunchHelper,
             new JsIOHelper()
     );
-  }
-
-  @Override
-  protected List<ReactPackage> getPackages() {
-    return Arrays.<ReactPackage>asList(new KeyboardInputPackage(MainApplication.this));
   }
 }
