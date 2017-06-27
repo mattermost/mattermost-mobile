@@ -5,6 +5,7 @@ import 'babel-polyfill';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation} from 'react-native-navigation';
+import {IntlProvider} from 'react-intl';
 import {
     Alert,
     AppState,
@@ -12,10 +13,12 @@ import {
     Platform
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {setJSExceptionHandler} from 'react-native-exception-handler';
 import semver from 'semver';
 
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {logError} from 'mattermost-redux/actions/errors';
 import {logout} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
@@ -24,6 +27,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {NavigationTypes, ViewTypes} from 'app/constants';
+import {getTranslations} from 'app/i18n';
 import initialState from 'app/initial_state';
 import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
@@ -37,16 +41,49 @@ registerScreens(store, Provider);
 export default class Mattermost {
     constructor() {
         this.isConfigured = false;
+        setJSExceptionHandler(this.errorHandler, true);
         Orientation.lockToPortrait();
         this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
         EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetDisplayName);
+        EventEmitter.on(NavigationTypes.RESTART_APP, this.restartApp);
 
         this.handleAppStateChange(AppState.currentState);
         Client4.setUserAgent(DeviceInfo.getUserAgent());
     }
+
+    errorHandler = (e, isFatal) => {
+        const intl = this.getIntl();
+        logError(e)(store.dispatch);
+
+        if (isFatal) {
+            Alert.alert(
+                intl.formatMessage({id: 'mobile.error_handler.title', defaultMessage: 'Unexpected error occurred'}),
+                intl.formatMessage({id: 'mobile.error_handler.description', defaultMessage: '\nClick relaunch to open the app again. After restart, you can report the problem from the settings menu.\n'}),
+                [{
+                    text: intl.formatMessage({id: 'mobile.error_handler.button', defaultMessage: 'Relaunch'}),
+                    onPress: () => {
+                        // purge the store
+                        store.dispatch({type: General.OFFLINE_STORE_PURGE});
+                    }
+                }]
+            );
+        }
+    };
+
+    getIntl = () => {
+        const state = store.getState();
+        let locale = DeviceInfo.getDeviceLocale().split('-')[0];
+        if (state.views.i18n.locale) {
+            locale = state.views.i18n.locale;
+        }
+
+        const intlProvider = new IntlProvider({locale, messages: getTranslations(locale)}, {});
+        const {intl} = intlProvider.getChildContext();
+        return intl;
+    };
 
     handleAppStateChange = (appState) => {
         const {dispatch, getState} = store;
@@ -56,13 +93,15 @@ export default class Mattermost {
     handleConfigChanged = (serverVersion) => {
         const {dispatch, getState} = store;
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
+        const intl = this.getIntl();
+
         if (serverVersion) {
             if (semver.valid(version) && semver.lt(version, Config.MinServerVersion)) {
                 Alert.alert(
-                    'Server upgrade required',
-                    'A server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.',
+                    intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'}),
+                    intl.formatMessage({id: 'mobile.server_upgrade.description', defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n'}),
                     [{
-                        text: 'OK',
+                        text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
                         onPress: this.handleVersionUpgrade
                     }]
                 );
@@ -102,6 +141,7 @@ export default class Mattermost {
     listenForHydration = () => {
         const state = store.getState();
         if (state.views.root.hydrationComplete) {
+            // console.log('initialState', state);
             this.unsubscribeFromStore();
             this.startApp();
         }
@@ -152,6 +192,11 @@ export default class Mattermost {
                 }
             }
         }
+    };
+
+    restartApp = () => {
+        Navigation.dismissModal({animationType: 'none'});
+        this.startApp('fade');
     };
 
     startApp = (animationType = 'none') => {
