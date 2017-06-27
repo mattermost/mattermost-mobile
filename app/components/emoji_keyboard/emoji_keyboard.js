@@ -23,22 +23,19 @@ import {
 } from 'app/utils/emojis';
 
 const EMPTY_STRING = '';
+const NUM_CATEGORIES = CategoryNames.length;
 
 class EmojiKeyboard extends React.PureComponent {
     static propTypes = {
         containerBackgroundColor: PropTypes.string
     }
-
     static defaultProps = {
         containerBackgroundColor: 'white'
     }
-
     static EMOJI_SIZE = 32;
-    static EMOJI_PADDING = 4;
-    static NUM_CATEGORIES = CategoryNames.length;
+    static BASE_PADDING = 4;
     static CUSTOM_KEYBOARD_NAME = 'EmojiKeyboard';
-
-    static emojiRange = [...(new Array(EmojiKeyboard.NUM_CATEGORIES)).keys()]
+    static emojiRange = [...(new Array(NUM_CATEGORIES)).keys()]
     static emojiCategories = CategoryNames.map((category) => (
         {
             key: category,
@@ -49,12 +46,16 @@ class EmojiKeyboard extends React.PureComponent {
 
     static getCategoryNameByIndex = (index) => {
         const nonNegativeIndex = Math.max(0, index);
-        const limited = Math.min(EmojiKeyboard.NUM_CATEGORIES - 1, nonNegativeIndex);
+        const limited = Math.min(NUM_CATEGORIES - 1, nonNegativeIndex);
         const category = EmojiKeyboard.emojiCategories[limited];
         if (category && category.key) {
             return category.key;
         }
         return EMPTY_STRING;
+    }
+
+    static getCategoryIconNameByIndex = (index) => {
+        return CategoryIconsFontAwesome[index];
     }
 
     state = {
@@ -68,7 +69,7 @@ class EmojiKeyboard extends React.PureComponent {
     }
 
     scrollToCategoryByIndex = (index) => {
-        if (index === EmojiKeyboard.NUM_CATEGORIES - 1) {
+        if (index === NUM_CATEGORIES - 1) {
             this.categoryListRef.scrollToEnd();
         } else {
             this.categoryListRef.scrollToIndex({index});
@@ -82,7 +83,7 @@ class EmojiKeyboard extends React.PureComponent {
     renderEmoji = (item) => (
         <TouchableOpacity
             key={item}
-            style={{padding: EmojiKeyboard.EMOJI_PADDING}}
+            style={{padding: EmojiKeyboard.BASE_PADDING}}
             onPress={() => this.onEmojiSelected(item)}
         >
             <Emoji
@@ -133,10 +134,6 @@ class EmojiKeyboard extends React.PureComponent {
             index + 1);
     }
 
-    getCategoryIconNameByIndex = (index) => {
-        return CategoryIconsFontAwesome[index];
-    }
-
     handleScroll = ({nativeEvent}) => {
         const currentScrollOffset = nativeEvent.contentOffset.x;
         const currentCategoryName = this.getCategoryNameByOffset(currentScrollOffset);
@@ -159,16 +156,21 @@ class EmojiKeyboard extends React.PureComponent {
         );
     }
 
-    renderCategoryIcon = ({index}) => {
+    renderCategoryIcon = (category, index) => {
+        const iconName = EmojiKeyboard.getCategoryIconNameByIndex(index);
+        const categoryName = EmojiKeyboard.getCategoryNameByIndex(index);
+        const isActive = this.state.currentCategoryName === categoryName;
+        const dynamicStyle = isActive ? styles.activeCategoryIcon : {};
         return (
             <TouchableOpacity
                 onPress={() => this.scrollToCategoryByIndex(index)}
-                style={styles.categoryIcon}
+                style={[styles.categoryIcon, dynamicStyle]}
+                key={category.key}
             >
                 <Icon
                     color={'#BABABA'}
                     size={20}
-                    name={this.getCategoryIconNameByIndex(index)}
+                    name={iconName}
                 />
             </TouchableOpacity>
         );
@@ -181,7 +183,7 @@ class EmojiKeyboard extends React.PureComponent {
         return (
             <View style={{flex: 1, backgroundColor: containerBackgroundColor}}>
                 <View>
-                    <Text style={{color: '#BABABA'}}>
+                    <Text style={styles.currentCategoryName}>
                         {categoryNameToDisplay}
                     </Text>
                 </View>
@@ -197,13 +199,9 @@ class EmojiKeyboard extends React.PureComponent {
                     onScroll={this.handleScroll}
                 />
                 <View style={styles.categoriesToolbar}>
-                    <FlatList
-                        horizontal={true}
-                        renderItem={this.renderCategoryIcon}
-                        keyExtractor={(item, index) => JSON.stringify(index)}
-                        data={EmojiKeyboard.emojiCategories}
-                        showsHorizontalScrollIndicator={false}
-                    />
+                    {
+                        EmojiKeyboard.emojiCategories.map(this.renderCategoryIcon)
+                    }
                 </View>
             </View>
         );
@@ -228,7 +226,8 @@ const styles = StyleSheet.create({
     },
     categoriesToolbar: {
         flex: 0,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        paddingLeft: EmojiKeyboard.BASE_PADDING
     },
     categoryIcon: {
         margin: 4,
@@ -236,7 +235,14 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28,
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.1)'
+        justifyContent: 'center'
+    },
+    activeCategoryIcon: {
+        backgroundColor: 'rgba(0,0,0,0.0618)'
+    },
+    currentCategoryName: {
+        color: '#BABABA',
+        paddingTop: EmojiKeyboard.BASE_PADDING,
+        paddingLeft: EmojiKeyboard.BASE_PADDING
     }
 });

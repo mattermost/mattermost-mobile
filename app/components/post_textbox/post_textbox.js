@@ -15,6 +15,7 @@ import {
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import ImagePicker from 'react-native-image-picker';
 import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -392,17 +393,17 @@ class PostTextbox extends PureComponent {
 
     toolbarButtons = () => {
         switch (this.state.customKeyboard.component) {
-        case 'EmojiKeyboard':
+        case EmojiKeyboard.CUSTOM_KEYBOARD_NAME:
             return [
                 {
-                    label: 'normal',
+                    iconName: 'keyboard-o',
                     onPress: () => this.resetKeyboardView()
                 }
             ];
         default:
             return [
                 {
-                    label: 'emoji',
+                    iconName: 'smile-o',
                     onPress: () => this.showEmojiKeyboard()
                 }
             ];
@@ -493,6 +494,23 @@ class PostTextbox extends PureComponent {
                     onChangeText={this.props.onChangeText}
                     rootId={this.props.rootId}
                 />
+                <View>
+                    {
+                        this.toolbarButtons().map((button, index) => (
+                            <TouchableOpacity
+                                onPress={button.onPress}
+                                style={{paddingLeft: 15, paddingBottom: 10}}
+                                key={index}
+                            >
+                                <IconFontAwesome
+                                    color={'#BABABA'}
+                                    size={20}
+                                    name={button.iconName}
+                                />
+                            </TouchableOpacity>
+                        ))
+                    }
+                </View>
                 <View style={{backgroundColor: theme.centerChannelBg, elevation: 5}}>
                     <View
                         style={style.inputWrapper}
@@ -513,17 +531,6 @@ class PostTextbox extends PureComponent {
                                 style={[style.input, {height: textInputHeight}]}
                                 onLayout={this.handleInputSizeChange}
                             />
-                            {
-                                this.toolbarButtons().map((button, index) => (
-                                    <TouchableOpacity
-                                        onPress={button.onPress}
-                                        style={{paddingLeft: 15, paddingBottom: 10}}
-                                        key={index}
-                                    >
-                                        <Text>{button.label}</Text>
-                                    </TouchableOpacity>
-                                ))
-                            }
                             {
                                 this.state.canSend &&
                                 <TouchableOpacity
