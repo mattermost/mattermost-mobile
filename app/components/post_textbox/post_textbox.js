@@ -222,10 +222,6 @@ class PostTextbox extends PureComponent {
     };
 
     attachFileFromCamera = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
         const options = {
             quality: 0.7,
             noData: true,
@@ -245,10 +241,6 @@ class PostTextbox extends PureComponent {
     };
 
     attachFileFromLibrary = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
         const options = {
             quality: 0.7,
             noData: true
@@ -268,10 +260,6 @@ class PostTextbox extends PureComponent {
     };
 
     attachVideoFromLibraryAndroid = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
         const options = {
             quality: 0.7,
             mediaType: 'video',
@@ -291,18 +279,33 @@ class PostTextbox extends PureComponent {
         this.props.actions.handleUploadFiles(images, this.props.rootId);
     };
 
+    handleFileAttachmentOption = (action) => {
+        this.props.navigator.dismissModal({
+            animationType: 'none'
+        });
+
+        // Have to wait to launch the library attachment action.
+        // If we call the action after dismissModal with no delay then the
+        // Wix navigator will dismiss the library attachment modal as well.
+        setTimeout(() => {
+            if (typeof action === 'function') {
+                action();
+            }
+        }, 100);
+    }
+
     showFileAttachmentOptions = () => {
         this.blur();
         const options = {
             items: [{
-                action: this.attachFileFromCamera,
+                action: () => this.handleFileAttachmentOption(this.attachFileFromCamera),
                 text: {
                     id: 'mobile.file_upload.camera',
                     defaultMessage: 'Take Photo or Video'
                 },
                 icon: 'camera'
             }, {
-                action: this.attachFileFromLibrary,
+                action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {
                     id: 'mobile.file_upload.library',
                     defaultMessage: 'Photo Library'
@@ -313,7 +316,7 @@ class PostTextbox extends PureComponent {
 
         if (Platform.OS === 'android') {
             options.items.push({
-                action: this.attachVideoFromLibraryAndroid,
+                action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
                 text: {
                     id: 'mobile.file_upload.video',
                     defaultMessage: 'Video Library'
