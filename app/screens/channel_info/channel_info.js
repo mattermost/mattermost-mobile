@@ -287,9 +287,9 @@ class ChannelInfo extends PureComponent {
                             textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                             theme={theme}
                         />
-                        <View style={style.separator}/>
                         {canManageUsers &&
                             <View>
+                                <View style={style.separator}/>
                                 <ChannelInfoRow
                                     action={() => preventDoubleTap(this.goToChannelAddMembers)}
                                     defaultMessage='Add Members'
@@ -297,17 +297,20 @@ class ChannelInfo extends PureComponent {
                                     textId='channel_header.addMembers'
                                     theme={theme}
                                 />
-                                <View style={style.separator}/>
                             </View>
                         }
-                        <ChannelInfoRow
-                            action={() => preventDoubleTap(this.handleDeleteOrLeave, this, 'leave')}
-                            defaultMessage='Leave Channel'
-                            icon='sign-out'
-                            textId='navbar.leave'
-                            shouldRender={this.renderLeaveOrDeleteChannelRow()}
-                            theme={theme}
-                        />
+                        {this.renderLeaveOrDeleteChannelRow() && currentChannelMemberCount > 1 &&
+                            <View>
+                                <View style={style.separator}/>
+                                <ChannelInfoRow
+                                    action={() => preventDoubleTap(this.handleDeleteOrLeave, this, 'leave')}
+                                    defaultMessage='Leave Channel'
+                                    icon='sign-out'
+                                    textId='navbar.leave'
+                                    theme={theme}
+                                />
+                            </View>
+                        }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel &&
                         <View style={style.footer}>
