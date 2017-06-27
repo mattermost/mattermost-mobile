@@ -217,6 +217,20 @@ class PostTextbox extends PureComponent {
         });
     };
 
+    handleSubmit = () => {
+        // Workaround for android as the multiline is not working
+        if (Platform.OS === 'android') {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            this.timeout = setTimeout(() => {
+                let {value: msg} = this.props;
+                msg += '\n';
+                this.handleTextChange(msg);
+            }, 10);
+        }
+    };
+
     attachAutocomplete = (c) => {
         this.autocomplete = c;
     };
@@ -450,6 +464,7 @@ class PostTextbox extends PureComponent {
                             blurOnSubmit={false}
                             underlineColorAndroid='transparent'
                             style={[style.input, {height: textInputHeight}]}
+                            onSubmitEditing={this.handleSubmit}
                             onLayout={this.handleInputSizeChange}
                         />
                         {this.canSend() &&
