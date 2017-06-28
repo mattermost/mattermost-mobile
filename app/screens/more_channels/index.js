@@ -29,7 +29,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        canCreateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreateChannels: showCreateOption(config, license, General.OPEN_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         currentUserId,
         currentTeamId,
         channels,
