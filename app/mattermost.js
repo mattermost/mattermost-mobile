@@ -141,7 +141,6 @@ export default class Mattermost {
     listenForHydration = () => {
         const state = store.getState();
         if (state.views.root.hydrationComplete) {
-            // console.log('initialState', state);
             this.unsubscribeFromStore();
             this.startApp();
         }
