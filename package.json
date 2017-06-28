@@ -29,7 +29,6 @@
     "react-native-navigation": "1.1.88",
     "react-native-notifications": "enahum/react-native-notifications.git",
     "react-native-orientation": "yamill/react-native-orientation.git",
-    "react-native-search-bar": "enahum/react-native-search-bar.git",
     "react-native-svg": "5.1.8",
     "react-native-swiper": "1.5.4",
     "react-native-tooltip": "enahum/react-native-tooltip",

@@ -4545,10 +4545,6 @@ react-native-orientation@yamill/react-native-orientation.git:
   version "1.17.0"
   resolved "https://codeload.github.com/yamill/react-native-orientation/tar.gz/ef221b5720ced0d9ed0c9de14082a5eabba4db7a"
 
-react-native-search-bar@enahum/react-native-search-bar.git:
-  version "2.16.0"
-  resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
-
 react-native-svg-mock@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-native-svg-mock/-/react-native-svg-mock-1.0.2.tgz#2dc35fb97ca1e0ea393ece6d23782ba4f58e178f"
