@@ -60,7 +60,8 @@ class ChannelMembers extends PureComponent {
             profiles: [],
             searching: false,
             selectedMembers: {},
-            showNoResults: false
+            showNoResults: false,
+            term: ''
         };
         this.removeButton.title = props.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'});
 
@@ -123,7 +124,7 @@ class ChannelMembers extends PureComponent {
     cancelSearch = () => {
         this.setState({
             searching: false,
-            term: null,
+            term: '',
             page: 0,
             profiles: markSelectedProfiles(this.props.currentChannelMembers, this.state.selectedMembers)
         });
@@ -272,7 +273,7 @@ class ChannelMembers extends PureComponent {
     render() {
         const {canManageUsers, intl, preferences, requestStatus, searchRequestStatus, theme} = this.props;
         const {formatMessage} = intl;
-        const {profiles, removing, searching, showNoResults} = this.state;
+        const {profiles, removing, searching, showNoResults, term} = this.state;
         const isLoading = (requestStatus === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
             (searchRequestStatus === RequestStatus.STARTED);
         const more = searching ? () => true : this.loadMoreMembers;
@@ -311,6 +312,7 @@ class ChannelMembers extends PureComponent {
                         onChangeText={this.searchProfiles}
                         onSearchButtonPress={this.searchProfiles}
                         onCancelButtonPress={this.cancelSearch}
+                        value={term}
                     />
                 </View>
                 <MemberList
