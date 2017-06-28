@@ -100,6 +100,8 @@ class MoreChannels extends PureComponent {
             const channels = nextProps.channels.splice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
             this.setState({channels, showNoResults: true});
         }
+
+        this.headerButtons(nextProps.canCreateChannels, true);
     }
 
     close = () => {
@@ -107,11 +109,15 @@ class MoreChannels extends PureComponent {
     };
 
     emitCanCreateChannel = (enabled) => {
+        this.headerButtons(this.props.canCreateChannels, enabled);
+    };
+
+    headerButtons = (canCreateChannels, enabled) => {
         const buttons = {
             leftButtons: [this.leftButton]
         };
 
-        if (this.props.canCreateChannels) {
+        if (canCreateChannels) {
             buttons.rightButtons = [{...this.rightButton, disabled: !enabled}];
         }
 
