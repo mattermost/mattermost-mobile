@@ -19,7 +19,14 @@ export default class MarkdownLink extends PureComponent {
     }
 
     handlePress = () => {
-        const url = this.props.href.toLowerCase();
+        // Android doesn't like the protocol being upper case
+        let url = this.props.href;
+
+        const index = url.indexOf(':');
+        if (index !== -1) {
+            const protocol = url.substring(0, index);
+            url = protocol.toLowerCase() + url.substring(index);
+        }
 
         Linking.canOpenURL(url).then((supported) => {
             if (supported) {
