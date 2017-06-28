@@ -1,5 +1,47 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.0 Release 
+
+- Planned Release Date: July 5, 2017 
+- Server Versions Supported: Server v3.8+ is required, Self-Signed SSL Certificates are not yet supported
+
+### Highlights 
+
+#### Authentication
+- GitLab login 
+
+#### Offline Support
+- Added offline support, so already loaded portions of the app are accessible without a connection
+- Retry mechanism for posts sent while offline 
+- See [FAQ](https://github.com/mattermost/mattermost-mobile#frequently-asked-questions) for information on how data is handled for deactivated users
+
+#### Notifications (Requires latest push proxy server) 
+- Notifications are cleared when read on another device
+- Notification sent just before session expires to let people know login is required to continue receiving notifications
+
+#### Channel and Team Sidebar
+- Unreads section to easily access channels with new messages
+- Search filter to jump to conversations quickly 
+- Improved team switching design for better cross-team notifications 
+- Added ability to join open teams on the server 
+
+#### Posts
+- Emojis now render
+- Integration attachments now render 
+- ~channel links now render 
+
+#### Navigation
+- Updated navigation to have smoother transitions 
+
+### Known Issues
+- [Android: Swipe to close in-app notifications does not work](https://mattermost.atlassian.net/browse/RN-45)
+- Apps are not yet at feature parity for desktop, so features not mentioned in the changelog are not yet supported
+
+### Contributors
+
+Many thanks to all our contributors. In alphabetical order:
+- asaadmahmood, cpanato, csduarte, enahum, hmhealey, jarredwitt, JeffSchering, jasonblais, lfbrock, omar-dev, rthill
+
 ## Beta Release
 
 - Release Date: March 29, 2017
