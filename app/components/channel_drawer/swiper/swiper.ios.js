@@ -44,6 +44,11 @@ export default class SwiperIos extends PureComponent {
             theme
         } = this.props;
 
+        const pagination = {bottom: 0};
+        if (showTeams) {
+            pagination.bottom = 10;
+        }
+
         return (
             <Swiper
                 ref='swiper'
@@ -51,7 +56,7 @@ export default class SwiperIos extends PureComponent {
                 loop={false}
                 index={1}
                 onMomentumScrollEnd={this.swiperPageSelected}
-                paginationStyle={{position: 'relative', bottom: 10}}
+                paginationStyle={[{position: 'relative'}, pagination]}
                 width={deviceWidth - openDrawerOffset}
                 height={deviceHeight}
                 style={{backgroundColor: theme.sidebarBg}}
