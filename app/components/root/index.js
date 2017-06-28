@@ -4,6 +4,7 @@
 import {connect} from 'react-redux';
 import DeviceInfo from 'react-native-device-info';
 
+import {Client, Client4} from 'mattermost-redux/client';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 
@@ -20,6 +21,9 @@ function mapStateToProps(state, ownProps) {
     if (currentUserId && users.profiles[currentUserId]) {
         locale = users.profiles[currentUserId].locale;
     }
+
+    Client.setLocale(locale);
+    Client4.setLocale(locale);
 
     return {
         ...ownProps,

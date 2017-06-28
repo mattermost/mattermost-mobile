@@ -4,10 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {setChannelRefreshing} from 'app/actions/views/channel';
+import {refreshChannel} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
-
-import {getPosts} from 'mattermost-redux/actions/posts';
 
 import PostList from './post_list';
 
@@ -25,8 +23,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getPosts,
-            setChannelRefreshing
+            refreshChannel
         }, dispatch)
     };
 }

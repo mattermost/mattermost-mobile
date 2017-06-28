@@ -19,6 +19,7 @@ import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 class MoreChannels extends PureComponent {
@@ -36,7 +37,8 @@ class MoreChannels extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
-            searchChannels: PropTypes.func.isRequired
+            searchChannels: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired
     };
 
@@ -201,18 +203,42 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
+        const {actions, currentTeamId, currentUserId, intl} = this.props;
+        const {channels} = this.state;
+
         this.emitCanCreateChannel(false);
         this.setState({adding: true});
-        await this.props.actions.joinChannel(
-            this.props.currentUserId,
-            this.props.currentTeamId,
-            id);
-        await this.props.actions.handleSelectChannel(id);
 
-        EventEmitter.emit('close_channel_drawer');
-        InteractionManager.runAfterInteractions(() => {
-            this.close();
-        });
+        const channel = channels.find((c) => c.id === id);
+        const result = await actions.joinChannel(currentUserId, currentTeamId, id);
+
+        if (result.error) {
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.join_channel.error',
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                },
+                {
+                    displayName: channel ? channel.display_name : ''
+                }
+            );
+            this.emitCanCreateChannel(true);
+            this.setState({adding: false});
+        } else {
+            if (channel) {
+                actions.setChannelDisplayName(channel.display_name);
+            } else {
+                actions.setChannelDisplayName('');
+            }
+            await actions.handleSelectChannel(id);
+
+            EventEmitter.emit('close_channel_drawer');
+            InteractionManager.runAfterInteractions(() => {
+                this.close();
+            });
+        }
     };
 
     onCreateChannel = () => {

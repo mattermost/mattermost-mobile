@@ -19,16 +19,17 @@ function mapStateToProps(state) {
     if (currentChannel.type === General.DM_CHANNEL) {
         const otherChannelMember = currentChannel.name.split('__').find((m) => m !== currentUser.id);
         currentChannelMembers.push(state.entities.users.profiles[otherChannelMember]);
+    } else {
+        currentChannelMembers = getProfilesInCurrentChannel(state);
+        currentChannelMembers = currentChannelMembers.filter((m) => m.id !== currentUser.id);
     }
 
-    if (currentChannel.type === General.GM_CHANNEL) {
-        currentChannelMembers = getProfilesInCurrentChannel(state);
-    }
+    const creator = currentChannel.creator_id === currentUser.id ? currentUser : state.entities.users.profiles[currentChannel.creator_id];
 
     return {
+        creator,
         currentChannel,
         currentChannelMembers,
-        currentUser,
         theme: getTheme(state)
     };
 }

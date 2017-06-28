@@ -330,7 +330,7 @@ class List extends Component {
                         </Text>
                         {action && this.renderSectionAction(styles, action)}
                     </View>
-                    {bottomDivider && this.renderDivider(styles, 16)}
+                    {bottomDivider && this.renderDivider(styles, 0)}
                 </View>
             )
         };

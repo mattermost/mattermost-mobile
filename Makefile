@@ -113,7 +113,9 @@ start-packager:
 
 stop-packager:
 	@echo Stopping React Native packager server
-	@kill -9 `cat server.PID` && rm server.PID
+	@if [ -e "server.PID" ] ; then \
+		kill -9 `cat server.PID` && rm server.PID; \
+	fi
 
 check-ios-target:
 ifneq ($(ios_target), $(filter $(ios_target), dev beta release))

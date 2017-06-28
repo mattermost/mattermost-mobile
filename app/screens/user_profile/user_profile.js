@@ -9,26 +9,40 @@ import {
     Text,
     View
 } from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
+
+import {getDirectChannelName} from 'mattermost-redux/utils/channel_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import UserProfileRow from './user_profile_row';
 
-export default class UserProfile extends PureComponent {
+class UserProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSendMessage: PropTypes.func.isRequired,
+            makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
+        currentChannel: PropTypes.object.isRequired,
+        currentDisplayName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
+        createChannelRequest: PropTypes.object.isRequired,
+        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         myPreferences: PropTypes.object,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired
+    };
+
+    displaySendMessageOption = () => {
+        const {currentChannel, currentUserId, user} = this.props;
+
+        return currentUserId !== user.id && currentChannel.name !== getDirectChannelName(currentUserId, user.id);
     };
 
     getDisplayName = () => {
@@ -60,17 +74,38 @@ export default class UserProfile extends PureComponent {
         return null;
     };
 
-    sendMessage = () => {
-        const {actions, myPreferences, navigator, user} = this.props;
-        actions.setChannelDisplayName(displayUsername(user, myPreferences));
-        actions.handleSendMessage(user.id);
-        navigator.pop({
-            animated: true
-        });
+    sendMessage = async () => {
+        const {actions, currentDisplayName, intl, myPreferences, navigator, user} = this.props;
+
+        // save the current channel display name in case it fails
+        const currentChannelDisplayName = currentDisplayName;
+
+        const userDisplayName = displayUsername(user, myPreferences);
+        actions.setChannelDisplayName(userDisplayName);
+
+        const result = await actions.makeDirectChannel(user.id);
+        if (result.error) {
+            actions.setChannelDisplayName(currentChannelDisplayName);
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.open_dm.error',
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                },
+                {
+                    displayName: userDisplayName
+                }
+            );
+        } else {
+            navigator.pop({
+                animated: true
+            });
+        }
     };
 
     render() {
-        const {config, currentUserId, theme, user} = this.props;
+        const {config, theme, user} = this.props;
         const style = createStyleSheet(theme);
 
         return (
@@ -95,14 +130,14 @@ export default class UserProfile extends PureComponent {
                         {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                         {this.buildDisplayBlock('position')}
                     </View>
-                    {currentUserId !== user.id &&
-                        <UserProfileRow
-                            action={this.sendMessage}
-                            defaultMessage='Send Message'
-                            icon='paper-plane-o'
-                            textId='mobile.routes.user_profile.send_message'
-                            theme={theme}
-                        />
+                    {this.displaySendMessageOption() &&
+                    <UserProfileRow
+                        action={this.sendMessage}
+                        defaultMessage='Send Message'
+                        icon='paper-plane-o'
+                        textId='mobile.routes.user_profile.send_message'
+                        theme={theme}
+                    />
                     }
                 </ScrollView>
             </View>
@@ -152,3 +187,5 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
+
+export default injectIntl(UserProfile);

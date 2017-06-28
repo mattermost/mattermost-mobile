@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/86454a4eafa5f5676748cfbfa883539be1e6ce90"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/caf81fd083fb4f883c787e4ca11bf17e5898e031"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4480,13 +4480,6 @@ react-native-image-picker@jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f58
   version "0.26.2"
   resolved "https://codeload.github.com/jp928/react-native-image-picker/tar.gz/6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4"
 
-react-native-invertible-scroll-view@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-invertible-scroll-view/-/react-native-invertible-scroll-view-1.0.0.tgz#60ceb384dc950c34eba3a5aeda39f97cdc7d4e23"
-  dependencies:
-    react-clone-referenced-element "^1.0.1"
-    react-native-scrollable-mixin "^1.0.1"
-
 react-native-keyboard-aware-scroll-view@0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/react-native-keyboard-aware-scroll-view/-/react-native-keyboard-aware-scroll-view-0.2.8.tgz#e9843c0d7467a2e6a2a737883bd9c2b7c7e38e35"
@@ -4558,10 +4551,6 @@ react-native-notifications@enahum/react-native-notifications.git:
 react-native-orientation@enahum/react-native-orientation.git:
   version "1.17.0"
   resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/75ba7da814b99a949324846ce3a63fcbaeee9fdc"
-
-react-native-scrollable-mixin@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/react-native-scrollable-mixin/-/react-native-scrollable-mixin-1.0.1.tgz#34a32167b64248594154fd0d6a8b03f22740548e"
 
 react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"

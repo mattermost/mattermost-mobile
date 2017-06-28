@@ -6,12 +6,12 @@ import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
 import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
-import {getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {handleSelectChannel} from 'app/actions/views/channel';
+import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import MoreChannels from './more_channels';
@@ -22,7 +22,10 @@ function mapStateToProps(state, ownProps) {
     const {getChannels: requestStatus} = state.requests.channels;
     const {config, license} = state.entities.general;
     const roles = getCurrentUserRoles(state);
-    const channels = getOtherChannels(state);
+    const myMembers = getMyChannelMemberships(state);
+    const channels = getChannelsInCurrentTeam(state).filter((c) => {
+        return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL);
+    });
 
     return {
         ...ownProps,
@@ -41,7 +44,8 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             joinChannel,
             getChannels,
-            searchChannels
+            searchChannels,
+            setChannelDisplayName
         }, dispatch)
     };
 }

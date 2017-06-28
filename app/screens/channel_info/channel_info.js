@@ -13,6 +13,7 @@ import {
 
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
@@ -130,10 +131,23 @@ class ChannelInfo extends PureComponent {
                 id: 'mobile.channel_info.alertMessageDeleteChannel',
                 defaultMessage: 'Are you sure you want to delete the {term} {name}?'
             };
-            onPressAction = () => {
-                this.props.actions.deleteChannel(channel.id).then(() => {
+            onPressAction = async () => {
+                const result = await this.props.actions.deleteChannel(channel.id);
+                if (result.error) {
+                    alertErrorWithFallback(
+                        this.props.intl,
+                        result.error,
+                        {
+                            id: 'mobile.channel_info.delete_failed',
+                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again."
+                        },
+                        {
+                            displayName: channel.display_name
+                        }
+                    );
+                } else {
                     this.close();
-                });
+                }
             };
         }
 
@@ -273,9 +287,9 @@ class ChannelInfo extends PureComponent {
                             textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
                             theme={theme}
                         />
-                        <View style={style.separator}/>
                         {canManageUsers &&
                             <View>
+                                <View style={style.separator}/>
                                 <ChannelInfoRow
                                     action={() => preventDoubleTap(this.goToChannelAddMembers)}
                                     defaultMessage='Add Members'
@@ -283,17 +297,20 @@ class ChannelInfo extends PureComponent {
                                     textId='channel_header.addMembers'
                                     theme={theme}
                                 />
-                                <View style={style.separator}/>
                             </View>
                         }
-                        <ChannelInfoRow
-                            action={() => preventDoubleTap(this.handleDeleteOrLeave, this, 'leave')}
-                            defaultMessage='Leave Channel'
-                            icon='sign-out'
-                            textId='navbar.leave'
-                            shouldRender={this.renderLeaveOrDeleteChannelRow()}
-                            theme={theme}
-                        />
+                        {this.renderLeaveOrDeleteChannelRow() && currentChannelMemberCount > 1 &&
+                            <View>
+                                <View style={style.separator}/>
+                                <ChannelInfoRow
+                                    action={() => preventDoubleTap(this.handleDeleteOrLeave, this, 'leave')}
+                                    defaultMessage='Leave Channel'
+                                    icon='sign-out'
+                                    textId='navbar.leave'
+                                    theme={theme}
+                                />
+                            </View>
+                        }
                     </View>
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel &&
                         <View style={style.footer}>

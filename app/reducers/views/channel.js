@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {ChannelTypes, FileTypes} from 'mattermost-redux/action_types';
+import {ChannelTypes, FileTypes, PostTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -199,10 +199,54 @@ function tooltipVisible(state = false, action) {
     }
 }
 
+function postVisibility(state = {}, action) {
+    switch (action.type) {
+    case ChannelTypes.SELECT_CHANNEL: {
+        const nextState = {...state};
+        nextState[action.data] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+        return nextState;
+    }
+    case ViewTypes.INCREASE_POST_VISIBILITY: {
+        const nextState = {...state};
+        nextState[action.data] += action.amount;
+        return nextState;
+    }
+    case ViewTypes.RECEIVED_FOCUSED_POST: {
+        const nextState = {...state};
+        nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+        return nextState;
+    }
+    case PostTypes.RECEIVED_POST: {
+        if (action.data && state[action.data.channel_id]) {
+            const nextState = {...state};
+            nextState[action.data.channel_id] += 1;
+            return nextState;
+        }
+        return state;
+    }
+    default:
+        return state;
+    }
+}
+
+function loadingPosts(state = {}, action) {
+    switch (action.type) {
+    case ViewTypes.LOADING_POSTS: {
+        const nextState = {...state};
+        nextState[action.channelId] = action.data;
+        return nextState;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
     loading,
     refreshing,
-    tooltipVisible
+    tooltipVisible,
+    postVisibility,
+    loadingPosts
 });

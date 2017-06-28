@@ -1,6 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {Posts} from 'mattermost-redux/constants';
 import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 const ViewTypes = keyMirror({
@@ -42,7 +43,14 @@ const ViewTypes = keyMirror({
     SET_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
-    SAML: null
+    SAML: null,
+
+    INCREASE_POST_VISIBILITY: null,
+    RECEIVED_FOCUSED_POST: null,
+    LOADING_POSTS: null
 });
 
-export default ViewTypes;
+export default {
+    ...ViewTypes,
+    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2
+};

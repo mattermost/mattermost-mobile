@@ -12,12 +12,12 @@ import {
     selectChannel,
     leaveChannel as serviceLeaveChannel
 } from 'mattermost-redux/actions/channels';
-import {getPosts, getPostsSince} from 'mattermost-redux/actions/posts';
+import {getPosts, getPostsBefore, getPostsSince} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
-import {General, Posts, Preferences} from 'mattermost-redux/constants';
+import {General, Preferences} from 'mattermost-redux/constants';
 import {
     getChannelByName,
     getDirectChannelName,
@@ -136,22 +136,22 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
     };
 }
 
-export function loadPostsIfNecessary(channel) {
+export function loadPostsIfNecessary(channelId) {
     return async (dispatch, getState) => {
         const state = getState();
         const {posts, postsInChannel} = state.entities.posts;
 
-        const postsIds = postsInChannel[channel.id];
+        const postsIds = postsInChannel[channelId];
 
         // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-        if (!postsIds || postsIds.length < Posts.POST_CHUNK_SIZE) {
-            return getPosts(channel.id)(dispatch, getState);
+        if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
+            return getPosts(channelId)(dispatch, getState);
         }
 
         const postsForChannel = postsIds.map((id) => posts[id]);
         const latestPostTime = getLastCreateAt(postsForChannel);
 
-        return getPostsSince(channel.id, latestPostTime)(dispatch, getState);
+        return getPostsSince(channelId, latestPostTime)(dispatch, getState);
     };
 }
 
@@ -314,6 +314,14 @@ export function unmarkFavorite(channelId) {
     };
 }
 
+export function refreshChannel(channelId) {
+    return async (dispatch, getState) => {
+        dispatch(setChannelRefreshing());
+        await getPosts(channelId)(dispatch, getState);
+        dispatch(setChannelRefreshing(false));
+    };
+}
+
 export function leaveChannel(channel, reset = false) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
@@ -349,5 +357,53 @@ export function setChannelDisplayName(displayName) {
     return {
         type: ViewTypes.SET_CHANNEL_DISPLAY_NAME,
         displayName
+    };
+}
+
+// Returns true if there are more posts to load
+export function increasePostVisibility(channelId, focusedPostId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {loadingPosts, postVisibility} = state.views.channel;
+        const currentPostVisibility = postVisibility[channelId] || 0;
+
+        if (loadingPosts[channelId]) {
+            return true;
+        }
+
+        dispatch(batchActions([
+            {
+                type: ViewTypes.LOADING_POSTS,
+                data: true,
+                channelId
+            }
+        ]));
+
+        const page = Math.floor(currentPostVisibility / ViewTypes.POST_VISIBILITY_CHUNK_SIZE);
+
+        let posts;
+        if (focusedPostId) {
+            posts = await getPostsBefore(channelId, focusedPostId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
+        } else {
+            posts = await getPosts(channelId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
+        }
+
+        if (posts) {
+            // make sure to increment the posts visibility
+            // only if we got results
+            dispatch({
+                type: ViewTypes.INCREASE_POST_VISIBILITY,
+                data: channelId,
+                amount: ViewTypes.POST_VISIBILITY_CHUNK_SIZE
+            });
+        }
+
+        dispatch({
+            type: ViewTypes.LOADING_POSTS,
+            data: false,
+            channelId
+        });
+
+        return posts && posts.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
     };
 }

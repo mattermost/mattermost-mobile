@@ -7,6 +7,7 @@ import deLocaleData from 'react-intl/locale-data/de';
 import enLocaleData from 'react-intl/locale-data/en';
 import esLocaleData from 'react-intl/locale-data/es';
 import frLocaleData from 'react-intl/locale-data/fr';
+import itLocaleData from 'react-intl/locale-data/it';
 import jaLocaleData from 'react-intl/locale-data/ja';
 import koLocaleData from 'react-intl/locale-data/ko';
 import nlLocaleData from 'react-intl/locale-data/nl';
@@ -20,6 +21,7 @@ import de from 'assets/i18n/de.json';
 import en from 'assets/i18n/en.json';
 import es from 'assets/i18n/es.json';
 import fr from 'assets/i18n/fr.json';
+import it from 'assets/i18n/it.json';
 import ja from 'assets/i18n/ja.json';
 import ko from 'assets/i18n/ko.json';
 import nl from 'assets/i18n/nl.json';
@@ -37,6 +39,7 @@ const TRANSLATIONS = {
     en,
     es,
     fr,
+    it,
     ja,
     ko,
     nl,
@@ -48,20 +51,19 @@ const TRANSLATIONS = {
     'zh-TW': zhTW
 };
 
-addLocaleData([
-    deLocaleData,
-    enLocaleData,
-    esLocaleData,
-    frLocaleData,
-    jaLocaleData,
-    koLocaleData,
-    nlLocaleData,
-    plLocaleData,
-    ptLocaleData,
-    trLocaleData,
-    ruLocaleData,
-    zhLocaleData
-]);
+addLocaleData(deLocaleData);
+addLocaleData(enLocaleData);
+addLocaleData(esLocaleData);
+addLocaleData(frLocaleData);
+addLocaleData(itLocaleData);
+addLocaleData(jaLocaleData);
+addLocaleData(koLocaleData);
+addLocaleData(nlLocaleData);
+addLocaleData(plLocaleData);
+addLocaleData(ptLocaleData);
+addLocaleData(trLocaleData);
+addLocaleData(ruLocaleData);
+addLocaleData(zhLocaleData);
 
 export function getTranslations(locale) {
     return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];

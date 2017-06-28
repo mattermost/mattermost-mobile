@@ -18,7 +18,9 @@ import FormattedText from 'app/components/formatted_text';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-const INITIAL_TOP = -46;
+const HEIGHT = 38;
+const NAVBAR = Platform.OS === 'ios' ? 64 : 46;
+const INITIAL_TOP = NAVBAR - HEIGHT;
 const OFFLINE = 'offline';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
@@ -118,7 +120,7 @@ export default class OfflineIndicator extends PureComponent {
     show = () => {
         Animated.timing(
             this.state.top, {
-                toValue: 0,
+                toValue: NAVBAR,
                 duration: 300
             }
         ).start();
@@ -198,16 +200,15 @@ export default class OfflineIndicator extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
-        height: 38,
+        height: HEIGHT,
         width: Dimensions.get('window').width,
         zIndex: 9,
-        position: 'relative',
-        elevation: 1
+        position: 'absolute'
     },
     wrapper: {
         alignItems: 'center',
         flex: 1,
-        height: 39,
+        height: HEIGHT,
         flexDirection: 'row',
         paddingHorizontal: 12,
         backgroundColor: 'red'

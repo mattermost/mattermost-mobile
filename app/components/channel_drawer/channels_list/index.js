@@ -265,6 +265,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         headerContainer: {
             alignItems: 'center',
+            paddingLeft: 10,
             backgroundColor: theme.sidebarHeaderBg,
             flexDirection: 'row',
             borderBottomWidth: 1,
@@ -337,7 +338,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 32,
             justifyContent: 'center',
-            marginLeft: 16,
+            marginLeft: 6,
             marginRight: 10,
             paddingHorizontal: 6
         },

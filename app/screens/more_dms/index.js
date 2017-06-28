@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {setChannelDisplayName} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
 import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
@@ -13,6 +14,7 @@ import MoreDirectMessages from './more_dms';
 
 function mapStateToProps(state, ownProps) {
     const {getProfiles: requestStatus, searchProfiles: searchRequest} = state.requests.users;
+    const {createChannel: createChannelRequest} = state.requests.channels;
 
     function getUsers() {
         const {profiles, currentUserId} = state.entities.users;
@@ -31,6 +33,8 @@ function mapStateToProps(state, ownProps) {
         preferences: getMyPreferences(state),
         profiles: getUsers(),
         theme: getTheme(state),
+        currentDisplayName: state.views.channel.displayName,
+        createChannelRequest,
         requestStatus,
         searchRequest
     };
@@ -41,7 +45,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             makeDirectChannel,
             getProfiles,
-            searchProfiles
+            searchProfiles,
+            setChannelDisplayName
         }, dispatch)
     };
 }

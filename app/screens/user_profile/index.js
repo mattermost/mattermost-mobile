@@ -5,9 +5,10 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
-import {handleSendMessage} from 'app/actions/views/user_profile';
+import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
 
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
@@ -15,10 +16,14 @@ import UserProfile from './user_profile';
 
 function mapStateToProps(state, ownProps) {
     const {config} = state.entities.general;
+    const {createChannel: createChannelRequest} = state.requests.channels;
 
     return {
         navigator: ownProps.navigator,
         config,
+        createChannelRequest,
+        currentChannel: getCurrentChannel(state),
+        currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
         user: state.entities.users.profiles[ownProps.userId],
         myPreferences: getMyPreferences(state),
@@ -29,7 +34,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleSendMessage,
+            makeDirectChannel,
             setChannelDisplayName
         }, dispatch)
     };

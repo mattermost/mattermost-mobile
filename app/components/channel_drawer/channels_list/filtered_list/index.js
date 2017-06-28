@@ -11,8 +11,6 @@ import {getUserIdsInChannels, getUsers, getUserStatuses} from 'mattermost-redux/
 import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 
-import {setChannelDisplayName} from 'app/actions/views/channel';
-
 import FilteredList from './filtered_list';
 
 function mapStateToProps(state, ownProps) {
@@ -35,8 +33,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             makeGroupMessageVisibleIfNecessary,
             searchChannels,
-            searchProfiles,
-            setChannelDisplayName
+            searchProfiles
         }, dispatch)
     };
 }

@@ -85,7 +85,7 @@ class PostTextbox extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {intl} = this.props;
-        const {files, uploadFileRequestStatus, value} = nextProps;
+        const {value} = nextProps;
         const valueLength = value.trim().length;
 
         if (valueLength > MAX_MESSAGE_LENGTH) {
@@ -103,14 +103,6 @@ class PostTextbox extends PureComponent {
                 })
             );
         }
-
-        const canSend =
-            (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) &&
-            files.filter((f) => !f.failed).length === 0 &&
-            uploadFileRequestStatus !== RequestStatus.STARTED;
-        this.setState({
-            canSend
-        });
     }
 
     componentWillUnmount() {
@@ -122,6 +114,14 @@ class PostTextbox extends PureComponent {
 
     blur = () => {
         this.textInputRef.blur();
+    };
+
+    canSend = () => {
+        const {files, uploadFileRequestStatus, value} = this.props;
+        const valueLength = value.trim().length;
+
+        return (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
+            (files.filter((f) => !f.failed).length > 0 && uploadFileRequestStatus !== RequestStatus.STARTED);
     };
 
     handleAndroidKeyboard = () => {
@@ -138,7 +138,7 @@ class PostTextbox extends PureComponent {
     };
 
     handleSendMessage = () => {
-        if (!this.state.canSend) {
+        if (!this.canSend()) {
             return;
         }
 
@@ -224,15 +224,25 @@ class PostTextbox extends PureComponent {
         });
     };
 
+    handleSubmit = () => {
+        // Workaround for android as the multiline is not working
+        if (Platform.OS === 'android') {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            this.timeout = setTimeout(() => {
+                let {value: msg} = this.props;
+                msg += '\n';
+                this.handleTextChange(msg);
+            }, 10);
+        }
+    };
+
     attachAutocomplete = (c) => {
         this.autocomplete = c;
     };
 
     attachFileFromCamera = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
         const options = {
             quality: 0.7,
             noData: true,
@@ -252,10 +262,6 @@ class PostTextbox extends PureComponent {
     };
 
     attachFileFromLibrary = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
         const options = {
             quality: 0.7,
             noData: true
@@ -275,10 +281,6 @@ class PostTextbox extends PureComponent {
     };
 
     attachVideoFromLibraryAndroid = () => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
         const options = {
             quality: 0.7,
             mediaType: 'video',
@@ -298,18 +300,33 @@ class PostTextbox extends PureComponent {
         this.props.actions.handleUploadFiles(images, this.props.rootId);
     };
 
+    handleFileAttachmentOption = (action) => {
+        this.props.navigator.dismissModal({
+            animationType: 'none'
+        });
+
+        // Have to wait to launch the library attachment action.
+        // If we call the action after dismissModal with no delay then the
+        // Wix navigator will dismiss the library attachment modal as well.
+        setTimeout(() => {
+            if (typeof action === 'function') {
+                action();
+            }
+        }, 100);
+    }
+
     showFileAttachmentOptions = () => {
         this.blur();
         const options = {
             items: [{
-                action: this.attachFileFromCamera,
+                action: () => this.handleFileAttachmentOption(this.attachFileFromCamera),
                 text: {
                     id: 'mobile.file_upload.camera',
                     defaultMessage: 'Take Photo or Video'
                 },
                 icon: 'camera'
             }, {
-                action: this.attachFileFromLibrary,
+                action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {
                     id: 'mobile.file_upload.library',
                     defaultMessage: 'Photo Library'
@@ -320,7 +337,7 @@ class PostTextbox extends PureComponent {
 
         if (Platform.OS === 'android') {
             options.items.push({
-                action: this.attachVideoFromLibraryAndroid,
+                action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
                 text: {
                     id: 'mobile.file_upload.video',
                     defaultMessage: 'Video Library'
@@ -432,7 +449,7 @@ class PostTextbox extends PureComponent {
     }
 
     render() {
-        const {channelIsLoading, intl, theme, value} = this.props;
+        const {channelIsLoading, config, intl, theme, value} = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
@@ -448,7 +465,7 @@ class PostTextbox extends PureComponent {
 
         let fileUpload = null;
         const inputContainerStyle = [style.inputContainer];
-        if (this.props.config.EnableFileAttachments === 'true') {
+        if (!config.EnableFileAttachments || config.EnableFileAttachments === 'true') {
             fileUpload = (
                 <TouchableOpacity
                     onPress={this.showFileAttachmentOptions}
@@ -511,48 +528,43 @@ class PostTextbox extends PureComponent {
                         ))
                     }
                 </View>
-                <View style={{backgroundColor: theme.centerChannelBg, elevation: 5}}>
-                    <View
-                        style={style.inputWrapper}
-                    >
-                        {fileUpload}
-                        <View style={inputContainerStyle}>
-                            <TextInput
-                                ref={this.handleTextInputRef}
-                                value={textValue}
-                                onChangeText={this.handleTextChange}
-                                onSelectionChange={this.handleSelectionChange}
-                                placeholder={intl.formatMessage(placeholder)}
-                                placeholderTextColor={changeOpacity('#000', 0.5)}
-                                multiline={true}
-                                numberOfLines={10}
-                                blurOnSubmit={false}
-                                underlineColorAndroid='transparent'
-                                style={[style.input, {height: textInputHeight}]}
-                                onLayout={this.handleInputSizeChange}
-                            />
-                            {
-                                this.state.canSend &&
-                                <TouchableOpacity
-                                    onPress={this.handleSendMessage}
-                                    style={style.sendButton}
-                                >
-                                    <PaperPlane
-                                        height={13}
-                                        width={15}
-                                        color={theme.buttonColor}
-                                    />
-                                </TouchableOpacity>
-                            }
-                            <KeyboardAccessoryView
-                                trackInteractive={true}
-                                kbInputRef={this.textInputRef}
-                                kbComponent={this.state.customKeyboard.component}
-                                onKeyboardResigned={() => this.onKeyboardResigned()}
-                                onItemSelected={this.onEmojiSelected}
-                                kbInitialProps={this.state.customKeyboard.initialProps}
-                            />
-                        </View>
+                <View style={style.inputWrapper}>
+                    {fileUpload}
+                    <View style={inputContainerStyle}>
+                        <TextInput
+                            ref={this.handleTextInputRef}
+                            value={textValue}
+                            onChangeText={this.handleTextChange}
+                            onSelectionChange={this.handleSelectionChange}
+                            placeholder={intl.formatMessage(placeholder)}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            multiline={true}
+                            numberOfLines={10}
+                            blurOnSubmit={false}
+                            underlineColorAndroid='transparent'
+                            style={[style.input, {height: textInputHeight}]}
+                            onLayout={this.handleInputSizeChange}
+                        />
+                        {this.canSend() &&
+                            <TouchableOpacity
+                                onPress={this.handleSendMessage}
+                                style={style.sendButton}
+                            >
+                                <PaperPlane
+                                    height={13}
+                                    width={15}
+                                    color={theme.buttonColor}
+                                />
+                            </TouchableOpacity>
+                        }
+                        <KeyboardAccessoryView
+                            trackInteractive={true}
+                            kbInputRef={this.textInputRef}
+                            kbComponent={this.state.customKeyboard.component}
+                            onKeyboardResigned={() => this.onKeyboardResigned()}
+                            onItemSelected={this.onEmojiSelected}
+                            kbInitialProps={this.state.customKeyboard.initialProps}
+                        />
                     </View>
                 </View>
             </View>
@@ -616,13 +628,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
-            marginBottom: 3,
             marginRight: 5,
             height: 28,
             width: 28,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingLeft: 2
+            paddingLeft: 2,
+            ...Platform.select({
+                ios: {
+                    marginBottom: 3
+                },
+                android: {
+                    height: 29,
+                    marginBottom: 4,
+                    width: 29
+                }
+            })
         },
         typing: {
             paddingLeft: 10,
