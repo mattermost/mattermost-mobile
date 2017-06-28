@@ -44,6 +44,8 @@ export function goToNotification(notification) {
         // if the notification does not have a team id is because its from a DM or GM
         let teamId = data.team_id || currentTeamId;
 
+        dispatch(setChannelDisplayName(''));
+
         if (teamId) {
             handleTeamChange(teams[teamId])(dispatch, getState);
             await loadChannelsIfNecessary(teamId)(dispatch, getState);
@@ -56,7 +58,6 @@ export function goToNotification(notification) {
         loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
 
         if (channelId !== currentChannelId) {
-            dispatch(setChannelDisplayName(''));
             handleSelectChannel(channelId)(dispatch, getState);
         }
         markChannelAsRead(teamId, channelId)(dispatch, getState).then(() => true).catch(() => true);

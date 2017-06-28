@@ -68,7 +68,8 @@ export default class Mattermost {
                         // purge the store
                         store.dispatch({type: General.OFFLINE_STORE_PURGE});
                     }
-                }]
+                }],
+                {cancelable: false}
             );
         }
     };
@@ -103,7 +104,8 @@ export default class Mattermost {
                     [{
                         text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
                         onPress: this.handleVersionUpgrade
-                    }]
+                    }],
+                    {cancelable: false}
                 );
             } else {
                 setServerVersion('')(dispatch, getState);
