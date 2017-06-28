@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/6f9a8c71aa857ef043cc0794957917ac6f304f6a"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/5e3133b5041e45252baa23b5a0c2e5b298198c4c"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4541,9 +4541,9 @@ react-native-notifications@enahum/react-native-notifications.git:
     core-js "^1.0.0"
     uuid "^2.0.3"
 
-react-native-orientation@enahum/react-native-orientation.git:
+react-native-orientation@yamill/react-native-orientation.git:
   version "1.17.0"
-  resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/75ba7da814b99a949324846ce3a63fcbaeee9fdc"
+  resolved "https://codeload.github.com/yamill/react-native-orientation/tar.gz/ef221b5720ced0d9ed0c9de14082a5eabba4db7a"
 
 react-native-search-bar@enahum/react-native-search-bar.git:
   version "2.16.0"
