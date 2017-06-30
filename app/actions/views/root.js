@@ -51,7 +51,7 @@ export function goToNotification(notification) {
             await loadChannelsIfNecessary(teamId)(dispatch, getState);
         } else {
             await selectFirstAvailableTeam()(dispatch, getState);
-            teamId = currentTeamId;
+            teamId = state.entities.team.currentTeamId;
         }
 
         viewChannel(channelId)(dispatch, getState);
@@ -60,7 +60,7 @@ export function goToNotification(notification) {
         if (channelId !== currentChannelId) {
             handleSelectChannel(channelId)(dispatch, getState);
         }
-        markChannelAsRead(teamId, channelId)(dispatch, getState).then(() => true).catch(() => true);
+        markChannelAsRead(channelId, currentChannelId)(dispatch, getState);
     };
 }
 
