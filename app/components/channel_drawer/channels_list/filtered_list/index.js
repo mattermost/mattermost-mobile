@@ -10,7 +10,7 @@ import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/prefe
 import {General} from 'mattermost-redux/constants';
 import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getUserIdsInChannels, getProfilesInCurrentTeam, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
+import {getProfilesInCurrentTeam, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 
 import FilteredList from './filtered_list';
@@ -30,7 +30,6 @@ function mapStateToProps(state, ownProps) {
         otherChannels: getOtherChannels(state),
         groupChannels: getGroupChannels(state),
         profiles,
-        profilesInChannel: getUserIdsInChannels(state),
         myPreferences: getMyPreferences(state),
         statuses: getUserStatuses(state),
         ...ownProps
