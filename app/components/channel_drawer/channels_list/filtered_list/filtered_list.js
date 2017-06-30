@@ -22,7 +22,7 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ChannelDrawerItem from 'app/components/channel_drawer/channels_list/channel_item';
 
-class ChannelDrawerList extends Component {
+class FilteredList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
@@ -44,7 +44,10 @@ class ChannelDrawerList extends Component {
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
-        profiles: PropTypes.object,
+        profiles: PropTypes.oneOfType(
+            PropTypes.object,
+            PropTypes.array
+        ),
         profilesInChannel: PropTypes.object,
         statuses: PropTypes.object,
         styles: PropTypes.object.isRequired,
@@ -143,7 +146,7 @@ class ChannelDrawerList extends Component {
 
         const unreads = this.filterChannels(unreadChannels, term);
         const channels = this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
-        sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+            sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
 
         const others = this.filterChannels(notMemberOf, term);
         const groups = this.filterChannels(groupChannels, term);
@@ -286,4 +289,4 @@ class ChannelDrawerList extends Component {
     }
 }
 
-export default injectIntl(ChannelDrawerList);
+export default injectIntl(FilteredList);
