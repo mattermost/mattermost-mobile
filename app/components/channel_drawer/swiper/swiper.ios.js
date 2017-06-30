@@ -8,8 +8,6 @@ import Swiper from 'react-native-swiper';
 
 import {changeOpacity} from 'app/utils/theme';
 
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
-
 export default class SwiperIos extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
@@ -44,6 +42,14 @@ export default class SwiperIos extends PureComponent {
             theme
         } = this.props;
 
+        const pagination = {bottom: 0};
+        if (showTeams) {
+            pagination.bottom = 10;
+        }
+
+        // Get the dimensions here so when the orientation changes we get the right dimensions
+        const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
+
         return (
             <Swiper
                 ref='swiper'
@@ -51,7 +57,7 @@ export default class SwiperIos extends PureComponent {
                 loop={false}
                 index={1}
                 onMomentumScrollEnd={this.swiperPageSelected}
-                paginationStyle={{position: 'relative', bottom: 10}}
+                paginationStyle={[{position: 'relative'}, pagination]}
                 width={deviceWidth - openDrawerOffset}
                 height={deviceHeight}
                 style={{backgroundColor: theme.sidebarBg}}

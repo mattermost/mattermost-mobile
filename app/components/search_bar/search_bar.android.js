@@ -17,10 +17,15 @@ import {changeOpacity} from 'app/utils/theme';
 export default class SearchBarAndroid extends PureComponent {
     static propTypes = {
         autoFocus: PropTypes.bool,
+        backArrowSize: PropTypes.number,
+        deleteIconSize: PropTypes.number,
+        searchIconSize: PropTypes.number,
         onCancelButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
         onFocus: PropTypes.func,
+        onBlur: PropTypes.func,
         onSearchButtonPress: PropTypes.func,
+        onSelectionChange: PropTypes.func,
         backgroundColor: PropTypes.string,
         placeholderTextColor: PropTypes.string,
         titleCancelColor: PropTypes.string,
@@ -37,25 +42,32 @@ export default class SearchBarAndroid extends PureComponent {
         inputHeight: PropTypes.number,
         inputBorderRadius: PropTypes.number,
         blurOnSubmit: PropTypes.bool,
-        value: PropTypes.string
+        value: PropTypes.string,
+        containerStyle: PropTypes.object
     };
 
     static defaultProps = {
+        backArrowSize: 24,
+        deleteIconSize: 16,
+        searchIconSize: 16,
         blurOnSubmit: false,
         placeholder: 'Search',
         showCancelButton: true,
         placeholderTextColor: changeOpacity('#000', 0.5),
+        containerStyle: {},
         onSearchButtonPress: () => true,
         onCancelButtonPress: () => true,
         onChangeText: () => true,
-        onFocus: () => true
+        onFocus: () => true,
+        onBlur: () => true,
+        onSelectionChange: () => true,
+        value: ''
     };
 
     constructor(props) {
         super(props);
         this.state = {
-            isFocused: false,
-            value: props.value || ''
+            isFocused: false
         };
     }
 
@@ -63,8 +75,12 @@ export default class SearchBarAndroid extends PureComponent {
         this.onCancelButtonPress();
     };
 
+    onBlur = () => {
+        this.props.onBlur();
+    };
+
     onSearchButtonPress = () => {
-        const {value} = this.state;
+        const {value} = this.props;
 
         if (value) {
             this.props.onSearchButtonPress(value);
@@ -75,8 +91,7 @@ export default class SearchBarAndroid extends PureComponent {
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(() => {
             this.setState({
-                isFocused: false,
-                value: ''
+                isFocused: false
             }, () => {
                 this.props.onCancelButtonPress();
             });
@@ -84,13 +99,20 @@ export default class SearchBarAndroid extends PureComponent {
     };
 
     onChangeText = (value) => {
-        this.setState({value});
         this.props.onChangeText(value);
+    };
+
+    onSelectionChange = (event) => {
+        this.props.onSelectionChange(event);
     };
 
     onFocus = () => {
         this.setState({isFocused: true});
         this.props.onFocus();
+    };
+
+    blur = () => {
+        this.refs.input.blur();
     };
 
     focus = () => {
@@ -100,6 +122,9 @@ export default class SearchBarAndroid extends PureComponent {
     render() {
         const {
             autoCapitalize,
+            backArrowSize,
+            deleteIconSize,
+            searchIconSize,
             backgroundColor,
             blurOnSubmit,
             inputHeight,
@@ -110,9 +135,11 @@ export default class SearchBarAndroid extends PureComponent {
             returnKeyType,
             titleCancelColor,
             tintColorDelete,
-            tintColorSearch
+            tintColorSearch,
+            containerStyle,
+            value
         } = this.props;
-        const {isFocused, value} = this.state;
+        const {isFocused} = this.state;
 
         const inputNoBackground = {
             ...inputStyle
@@ -130,6 +157,7 @@ export default class SearchBarAndroid extends PureComponent {
             <View
                 style={[
                     styles.container,
+                    containerStyle,
                     {height: inputHeight},
                     backgroundColor && {backgroundColor}
                 ]}
@@ -140,24 +168,24 @@ export default class SearchBarAndroid extends PureComponent {
                         {
                             backgroundColor: inputColor,
                             height: inputHeight,
-                            paddingLeft: inputHeight * 0.25
+                            paddingLeft: isFocused ? 0 : inputHeight * 0.25
                         }
                     ]}
                 >
                     {isFocused ?
                         <TouchableWithoutFeedback
                             onPress={this.onCancelButtonPress}
-                            style={{paddingRight: 5}}
+                            style={{paddingRight: 15}}
                         >
                             <Icon
                                 name='arrow-back'
-                                size={24}
+                                size={backArrowSize}
                                 color={titleCancelColor || placeholderTextColor}
                             />
                         </TouchableWithoutFeedback> :
                         <Icon
                             name={'search'}
-                            size={16}
+                            size={searchIconSize}
                             color={tintColorSearch || placeholderTextColor}
                         />
                     }
@@ -170,8 +198,10 @@ export default class SearchBarAndroid extends PureComponent {
                         returnKeyType={returnKeyType || 'search'}
                         keyboardType={keyboardType || 'default'}
                         onFocus={this.onFocus}
+                        onBlur={this.onBlur}
                         onChangeText={this.onChangeText}
                         onSubmitEditing={this.onSearchButtonPress}
+                        onSelectionChange={this.onSelectionChange}
                         placeholder={placeholder}
                         placeholderTextColor={placeholderTextColor}
                         underlineColorAndroid='transparent'
@@ -186,7 +216,7 @@ export default class SearchBarAndroid extends PureComponent {
                             <Icon
                                 style={[{paddingRight: (inputHeight * 0.2)}]}
                                 name='close'
-                                size={16}
+                                size={deleteIconSize}
                                 color={tintColorDelete || placeholderTextColor}
                             />
                         </TouchableWithoutFeedback> : null
@@ -208,7 +238,6 @@ const styles = StyleSheet.create({
     searchBar: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: 'red',
         alignItems: 'center'
     },
     searchBarInput: {

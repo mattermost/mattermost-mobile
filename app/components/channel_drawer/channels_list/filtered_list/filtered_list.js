@@ -120,30 +120,6 @@ class ChannelDrawerList extends Component {
         });
     };
 
-    completeDirectGroupInfo = (channel) => {
-        const {currentUserId, myPreferences, profiles, profilesInChannel} = this.props;
-        const profilesIds = profilesInChannel[channel.id];
-        if (profilesIds) {
-            function sortUsernames(a, b) {
-                const locale = profiles[currentUserId].locale;
-                return a.localeCompare(b, locale, {numeric: true});
-            }
-
-            const displayName = [];
-            profilesIds.forEach((teammateId) => {
-                if (teammateId !== currentUserId) {
-                    displayName.push(displayUsername(profiles[teammateId], myPreferences));
-                }
-            });
-
-            const gm = {...channel};
-            return Object.assign(gm, {
-                display_name: displayName.sort(sortUsernames).join(', ')
-            });
-        }
-        return channel;
-    };
-
     buildChannelsForSearch = (props, term) => {
         const data = [];
         const {groupChannels, otherChannels, styles} = props;
@@ -166,9 +142,11 @@ class ChannelDrawerList extends Component {
         });
 
         const unreads = this.filterChannels(unreadChannels, term);
-        const channels = this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term);
+        const channels = this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
+        sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+
         const others = this.filterChannels(notMemberOf, term);
-        const groups = this.filterChannels(groupChannels.map((g) => this.completeDirectGroupInfo(g)), term);
+        const groups = this.filterChannels(groupChannels, term);
         const fakeDms = this.filterChannels(this.buildFakeDms(props), term);
         const directMessages = [...groups, ...fakeDms].sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
 
@@ -204,8 +182,8 @@ class ChannelDrawerList extends Component {
     };
 
     buildFakeDms = (props) => {
-        const {myPreferences, profiles, statuses} = props;
-        const users = Object.values(profiles);
+        const {currentUserId, myPreferences, profiles, statuses} = props;
+        const users = Object.values(profiles).filter((p) => p.id !== currentUserId);
 
         return users.map((u) => {
             const displayName = displayUsername(u, myPreferences);

@@ -52,10 +52,16 @@ class Settings extends PureComponent {
             `App Platform: ${Platform.OS}`
         ];
         if (errors.length) {
+            const errorArray = errors.map((e) => {
+                const {error} = e;
+                const stack = error.stack || '';
+                return `Date: ${e.date}\nMessage: ${error.message}\nStack trace:\n${stack}\n\n`;
+            }).join('');
+
             contents = contents.concat([
                 '',
                 'Errors:',
-                JSON.stringify(errors.map((e) => e.error))
+                errorArray
             ]);
         }
         return contents.join('\n');
@@ -135,8 +141,9 @@ class Settings extends PureComponent {
     openErrorEmail = () => {
         const recipient = 'feedback@mattermost.com';
         const subject = 'Problem with Mattermost React Native app';
+        const body = this.errorEmailBody();
         Linking.openURL(
-            `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`
+            `mailto:${recipient}?subject=${subject}&body=${body}`
         );
         this.props.actions.clearErrors();
     };

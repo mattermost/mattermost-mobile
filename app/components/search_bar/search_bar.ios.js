@@ -11,7 +11,9 @@ export default class SearchBarIos extends Component {
         onCancelButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
         onFocus: PropTypes.func,
+        onBlur: PropTypes.func,
         onSearchButtonPress: PropTypes.func,
+        onSelectionChange: PropTypes.func,
         backgroundColor: PropTypes.string,
         placeholderTextColor: PropTypes.string,
         titleCancelColor: PropTypes.string,
@@ -43,11 +45,17 @@ export default class SearchBarIos extends Component {
         onSearchButtonPress: () => true,
         onCancelButtonPress: () => true,
         onChangeText: () => true,
-        onFocus: () => true
+        onFocus: () => true,
+        onBlur: () => true,
+        onSelectionChange: () => true
     };
 
     cancel = () => {
         this.refs.search.onCancel();
+    };
+
+    onBlur = () => {
+        this.props.onBlur();
     };
 
     onCancel = () => {
@@ -75,6 +83,14 @@ export default class SearchBarIos extends Component {
         }
     };
 
+    onSelectionChange = (event) => {
+        this.props.onSelectionChange(event);
+    };
+
+    blur = () => {
+        this.refs.search.blur();
+    };
+
     focus = () => {
         this.refs.search.focus();
     };
@@ -92,8 +108,9 @@ export default class SearchBarIos extends Component {
                 onCancel={this.onCancel}
                 onChangeText={this.onChangeText}
                 onFocus={this.onFocus}
+                onBlur={this.onBlur}
                 onSearch={this.onSearch}
-                afterDelete={this.afterDelete}
+                onSelectionChange={this.onSelectionChange}
                 onDelete={this.onDelete}
             />
         );

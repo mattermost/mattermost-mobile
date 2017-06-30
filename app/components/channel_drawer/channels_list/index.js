@@ -49,7 +49,7 @@ class ChannelsList extends Component {
         this.firstUnreadChannel = null;
         this.state = {
             searching: false,
-            term: null
+            term: ''
         };
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
@@ -104,7 +104,7 @@ class ChannelsList extends Component {
     cancelSearch = () => {
         this.props.onSearchEnds();
         this.setState({searching: false});
-        this.onSearch(null);
+        this.onSearch('');
     };
 
     render() {
@@ -123,6 +123,7 @@ class ChannelsList extends Component {
 
         const {searching, term} = this.state;
         const teamMembers = Object.values(myTeamMembers);
+        const showMembers = teamMembers.length > 1;
         const styles = getStyleSheet(theme);
 
         let settings;
@@ -169,13 +170,14 @@ class ChannelsList extends Component {
                     onCancelButtonPress={this.cancelSearch}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
+                    value={term}
                 />
             </View>
         );
 
         let badge;
         let switcher;
-        if (teamMembers.length > 1 && !searching) {
+        if (showMembers && !searching) {
             let mentionCount = 0;
             let messageCount = 0;
             teamMembers.forEach((m) => {
@@ -226,7 +228,7 @@ class ChannelsList extends Component {
 
         return (
             <View
-                style={[styles.container, styles.extraPadding]}
+                style={[styles.container, showMembers ? styles.extraPadding : {}]}
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>

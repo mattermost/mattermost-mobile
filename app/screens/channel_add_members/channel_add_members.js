@@ -59,7 +59,8 @@ class ChannelAddMembers extends PureComponent {
             profiles: [],
             searching: false,
             selectedMembers: {},
-            showNoResults: false
+            showNoResults: false,
+            term: ''
         };
         this.addButton.title = props.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'});
 
@@ -121,7 +122,7 @@ class ChannelAddMembers extends PureComponent {
     cancelSearch = () => {
         this.setState({
             searching: false,
-            term: null,
+            term: '',
             page: 0,
             profiles: markSelectedProfiles(this.props.membersNotInChannel, this.state.selectedMembers)
         });
@@ -215,7 +216,7 @@ class ChannelAddMembers extends PureComponent {
 
     render() {
         const {intl, loadMoreRequestStatus, searchRequestStatus, preferences, theme} = this.props;
-        const {adding, profiles, searching} = this.state;
+        const {adding, profiles, searching, term} = this.state;
         const {formatMessage} = intl;
         const isLoading = (loadMoreRequestStatus === RequestStatus.STARTED) ||
             (searchRequestStatus === RequestStatus.STARTED);
@@ -255,6 +256,7 @@ class ChannelAddMembers extends PureComponent {
                         onChangeText={this.searchProfiles}
                         onSearchButtonPress={this.searchProfiles}
                         onCancelButtonPress={this.cancelSearch}
+                        value={term}
                     />
                 </View>
                 <MemberList

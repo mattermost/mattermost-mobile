@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/caf81fd083fb4f883c787e4ca11bf17e5898e031"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/5e3133b5041e45252baa23b5a0c2e5b298198c4c"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4476,6 +4476,10 @@ react-native-drawer@2.3.0:
   dependencies:
     tween-functions "^1.0.1"
 
+react-native-exception-handler@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-exception-handler/-/react-native-exception-handler-1.1.0.tgz#320b7fc9c104e11d66173a2b0daeac97831a1a37"
+
 react-native-image-picker@jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4:
   version "0.26.2"
   resolved "https://codeload.github.com/jp928/react-native-image-picker/tar.gz/6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4"
@@ -4548,13 +4552,9 @@ react-native-notifications@enahum/react-native-notifications.git:
     core-js "^1.0.0"
     uuid "^2.0.3"
 
-react-native-orientation@enahum/react-native-orientation.git:
+react-native-orientation@yamill/react-native-orientation.git:
   version "1.17.0"
-  resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/75ba7da814b99a949324846ce3a63fcbaeee9fdc"
-
-react-native-search-bar@enahum/react-native-search-bar.git:
-  version "2.16.0"
-  resolved "https://codeload.github.com/enahum/react-native-search-bar/tar.gz/88e6f5ba68012440ec21bde8388ca9e3124921c0"
+  resolved "https://codeload.github.com/yamill/react-native-orientation/tar.gz/ef221b5720ced0d9ed0c9de14082a5eabba4db7a"
 
 react-native-svg-mock@1.0.2:
   version "1.0.2"

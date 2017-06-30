@@ -24,11 +24,13 @@ const middleHeight = 20;
 
 export default class Search extends Component {
     static propTypes = {
+        onBlur: PropTypes.func,
         onFocus: PropTypes.func,
         onSearch: PropTypes.func,
         onChangeText: PropTypes.func,
         onCancel: PropTypes.func,
         onDelete: PropTypes.func,
+        onSelectionChange: PropTypes.func,
         backgroundColor: PropTypes.string,
         placeholderTextColor: PropTypes.string,
         titleCancelColor: PropTypes.string,
@@ -76,6 +78,8 @@ export default class Search extends Component {
     };
 
     static defaultProps = {
+        onSelectionChange: () => true,
+        onBlur: () => true,
         editable: true,
         blurOnSubmit: false,
         keyboardShouldPersist: false,
@@ -91,7 +95,8 @@ export default class Search extends Component {
         shadowOpacityCollapsed: 0.12,
         shadowOpacityExpanded: 0.24,
         shadowRadius: 4,
-        shadowVisible: false
+        shadowVisible: false,
+        value: ''
     };
 
     constructor(props) {
@@ -117,6 +122,26 @@ export default class Search extends Component {
         this.shadowHeight = this.props.shadowOffsetHeightCollapsed;
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.value !== nextProps.value) {
+            if (nextProps.value) {
+                this.iconDeleteAnimated = new Animated.Value(1);
+            }
+        }
+    }
+
+    blur = () => {
+        this.refs.input_keyword.getNode().blur();
+    };
+
+    focus = () => {
+        this.refs.input_keyword.getNode().focus();
+    };
+
+    onBlur = () => {
+        this.props.onBlur();
+    };
+
     onLayout = (event) => {
         const contentWidth = event.nativeEvent.layout.width;
         this.contentWidth = contentWidth;
@@ -134,12 +159,11 @@ export default class Search extends Component {
         }
 
         if (this.props.onSearch) {
-            this.props.onSearch(this.state.keyword);
+            this.props.onSearch(this.props.value);
         }
     };
 
     onChangeText = (text) => {
-        this.setState({keyword: text});
         Animated.timing(
             this.iconDeleteAnimated,
             {
@@ -149,7 +173,7 @@ export default class Search extends Component {
         ).start();
 
         if (this.props.onChangeText) {
-            this.props.onChangeText(this.state.keyword);
+            this.props.onChangeText(text);
         }
     };
 
@@ -164,16 +188,12 @@ export default class Search extends Component {
             await this.expandAnimation();
 
             if (this.props.onFocus) {
-                this.props.onFocus(this.state.keyword);
+                this.props.onFocus(this.props.value);
             }
         });
     };
 
-    focus = async () => {
-        this.refs.input_keyword.getNode().focus();
-    };
-
-    onDelete = async () => {
+    onDelete = () => {
         Animated.timing(
             this.iconDeleteAnimated,
             {
@@ -195,6 +215,10 @@ export default class Search extends Component {
         if (this.props.onCancel) {
             this.props.onCancel();
         }
+    };
+
+    onSelectionChange = (event) => {
+        this.props.onSelectionChange(event);
     };
 
     expandAnimation = () => {
@@ -231,7 +255,7 @@ export default class Search extends Component {
                 Animated.timing(
                     this.iconDeleteAnimated,
                     {
-                        toValue: (this.state.keyword.length > 0) ? 1 : 0,
+                        toValue: (this.props.value.length > 0) ? 1 : 0,
                         duration: 200
                     }
                 ).start(),
@@ -339,18 +363,21 @@ export default class Search extends Component {
                     ]}
                     autoFocus={this.props.autoFocus}
                     editable={this.props.editable}
-                    value={this.state.keyword}
+                    value={this.props.value}
                     onChangeText={this.onChangeText}
                     placeholder={this.placeholder}
                     placeholderTextColor={this.props.placeholderTextColor}
                     onSubmitEditing={this.onSearch}
+                    onSelectionChange={this.onSelectionChange}
                     autoCorrect={false}
                     blurOnSubmit={this.props.blurOnSubmit}
                     returnKeyType={this.props.returnKeyType || 'search'}
                     keyboardType={this.props.keyboardType || 'default'}
                     autoCapitalize={this.props.autoCapitalize}
+                    onBlur={this.onBlur}
                     onFocus={this.onFocus}
                     underlineColorAndroid='transparent'
+                    enablesReturnKeyAutomatically={true}
                 />
                 <TouchableWithoutFeedback onPress={this.onFocus}>
                     {((this.props.iconSearch) ?

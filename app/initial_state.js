@@ -74,10 +74,6 @@ const state = {
                 status: 'not_started',
                 error: null
             },
-            leaveChannel: {
-                status: 'not_started',
-                error: null
-            },
             joinChannel: {
                 status: 'not_started',
                 error: null
@@ -270,7 +266,8 @@ const state = {
         notification: null,
         root: {
             appInitializing: false,
-            hydrationComplete: false
+            hydrationComplete: false,
+            purge: false
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl

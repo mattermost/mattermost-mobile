@@ -3,13 +3,15 @@
 
 import {batchActions} from 'redux-batched-actions';
 import {AsyncStorage} from 'react-native';
-import configureStore from 'mattermost-redux/store';
-import {GeneralTypes} from 'mattermost-redux/action_types';
-import {General, RequestStatus} from 'mattermost-redux/constants';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
 
-import {ViewTypes} from 'app/constants';
+import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
+import {General, RequestStatus} from 'mattermost-redux/constants';
+import configureStore from 'mattermost-redux/store';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 
 import {transformSet} from './utils';
@@ -108,6 +110,41 @@ export default function configureAppStore(initialState) {
                     setTimeout(() => {
                         purging = false;
                     }, 500);
+                } else if (state.views.root.purge && !purging) {
+                    purging = true;
+
+                    await persistor.purge();
+
+                    store.dispatch(batchActions([
+                        {
+                            type: General.OFFLINE_STORE_RESET,
+                            data: initialState
+                        },
+                        {
+                            type: ErrorTypes.RESTORE_ERRORS,
+                            data: [...state.errors]
+                        },
+                        {
+                            type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                            data: state.entities.general.deviceToken
+                        },
+                        {
+                            type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
+                            data: {
+                                url: state.entities.general.credentials.url,
+                                token: state.entities.general.credentials.token
+                            }
+                        },
+                        {
+                            type: ViewTypes.SERVER_URL_CHANGED,
+                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl
+                        }
+                    ], 'BATCH_FOR_RESTART'));
+
+                    setTimeout(() => {
+                        purging = false;
+                        EventEmitter.emit(NavigationTypes.RESTART_APP);
+                    }, 500);
                 }
             });
 
@@ -117,7 +154,7 @@ export default function configureAppStore(initialState) {
             autoRehydrate: {
                 log: false
             },
-            blacklist: ['errors', 'navigation', 'offline', 'requests'],
+            blacklist: ['navigation', 'offline', 'requests'],
             debounce: 500,
             transforms: [
                 setTransformer,
@@ -126,5 +163,5 @@ export default function configureAppStore(initialState) {
         }
     };
 
-    return configureStore({}, appReducer, offlineOptions, getAppReducer);
+    return configureStore(initialState, appReducer, offlineOptions, getAppReducer);
 }

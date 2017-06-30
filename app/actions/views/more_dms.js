@@ -23,8 +23,8 @@ export function makeDirectChannel(otherUserId) {
             return true;
         }
         const created = await createDirectChannel(currentUserId, otherUserId)(dispatch, getState);
-        if (created) {
-            handleSelectChannel(created.id)(dispatch, getState);
+        if (created.data) {
+            handleSelectChannel(created.data.id)(dispatch, getState);
         }
 
         return created;
