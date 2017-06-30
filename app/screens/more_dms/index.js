@@ -43,7 +43,6 @@ const getUsersForMoreDirectMessages = createSelector(
 
 function mapStateToProps(state, ownProps) {
     const {searchProfiles: searchRequest} = state.requests.users;
-    const {createChannel: createChannelRequest} = state.requests.channels;
 
     const config = getConfig(state);
 
@@ -65,7 +64,6 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
         currentTeamId: getCurrentTeamId(state),
-        createChannelRequest,
         getRequest,
         searchRequest
     };

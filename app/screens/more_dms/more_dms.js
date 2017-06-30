@@ -32,7 +32,6 @@ class MoreDirectMessages extends PureComponent {
         preferences: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
-        createChannelRequest: PropTypes.object.isRequired,
         getRequest: PropTypes.object.isRequired,
         searchRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
