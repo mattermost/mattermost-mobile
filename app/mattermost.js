@@ -10,21 +10,24 @@ import {
     Alert,
     AppState,
     InteractionManager,
+    NativeModules,
     Platform
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {setJSExceptionHandler} from 'react-native-exception-handler';
+import StatusBarSizeIOS from 'react-native-status-bar-size';
 import semver from 'semver';
 
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {logError} from 'mattermost-redux/actions/errors';
 import {logout} from 'mattermost-redux/actions/users';
+import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {goToNotification, loadConfigAndLicense, queueNotification} from 'app/actions/views/root';
+import {goToNotification, loadConfigAndLicense, queueNotification, setStatusBarHeight} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
@@ -35,6 +38,7 @@ import configureStore from 'app/store';
 
 import Config from 'assets/config';
 
+const {StatusBarManager} = NativeModules;
 const store = configureStore(initialState);
 registerScreens(store, Provider);
 
@@ -52,10 +56,20 @@ export default class Mattermost {
 
         this.handleAppStateChange(AppState.currentState);
         Client4.setUserAgent(DeviceInfo.getUserAgent());
+
+        if (Platform.OS === 'ios') {
+            StatusBarSizeIOS.addEventListener('willChange', this.handleStatusBarHeightChange);
+            StatusBarManager.getHeight(
+                (data) => {
+                    this.handleStatusBarHeightChange(data.height);
+                }
+            );
+        }
     }
 
     errorHandler = (e, isFatal) => {
         const intl = this.getIntl();
+        closeWebSocket()(store.dispatch, store.getState);
         logError(e)(store.dispatch);
 
         if (isFatal) {
@@ -124,6 +138,10 @@ export default class Mattermost {
 
     handleResetDisplayName = (displayName) => {
         store.dispatch(setChannelDisplayName(displayName));
+    };
+
+    handleStatusBarHeightChange = (nextStatusBarHeight) => {
+        store.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     handleVersionUpgrade = async () => {

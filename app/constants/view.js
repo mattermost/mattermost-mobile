@@ -47,7 +47,9 @@ const ViewTypes = keyMirror({
 
     INCREASE_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
-    LOADING_POSTS: null
+    LOADING_POSTS: null,
+
+    STATUSBAR_HEIGHT_CHANGED: null
 });
 
 export default {

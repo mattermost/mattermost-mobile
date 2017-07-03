@@ -27,14 +27,18 @@ import Channel from './channel';
 
 function mapStateToProps(state, ownProps) {
     const {websocket} = state.requests.general;
+    const {myChannels: channelsRequest} = state.requests.channels;
+    const {statusBarHeight} = state.views.root;
 
     return {
         ...ownProps,
         ...state.views.channel,
-        currentTeam: getCurrentTeam(state),
-        currentChannel: getCurrentChannel(state),
+        currentTeam: getCurrentTeam(state) || {},
+        currentChannel: getCurrentChannel(state) || {},
         theme: getTheme(state),
-        webSocketRequest: websocket
+        webSocketRequest: websocket,
+        statusBarHeight,
+        channelsRequestStatus: channelsRequest.status
     };
 }
 

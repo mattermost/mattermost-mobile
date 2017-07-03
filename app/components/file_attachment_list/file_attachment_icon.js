@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     View,
@@ -35,7 +35,7 @@ const ICON_PATH_FROM_FILE_TYPE = {
     word: wordIcon
 };
 
-export default class FileAttachmentIcon extends Component {
+export default class FileAttachmentIcon extends PureComponent {
     static propTypes = {
         file: PropTypes.object.isRequired,
         iconHeight: PropTypes.number,
@@ -49,7 +49,7 @@ export default class FileAttachmentIcon extends Component {
         iconWidth: 60,
         wrapperHeight: 100,
         wrapperWidth: 100
-    }
+    };
 
     getFileIconPath(file) {
         const fileType = Utils.getFileType(file);

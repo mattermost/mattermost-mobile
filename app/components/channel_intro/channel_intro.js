@@ -101,18 +101,23 @@ class ChannelIntro extends PureComponent {
     buildDMContent = () => {
         const {currentChannelMembers, intl, theme} = this.props;
         const style = getStyleSheet(theme);
-        const teammate = this.getDisplayName(currentChannelMembers[0]);
 
-        return (
-            <Text style={style.message}>
-                {intl.formatMessage({
-                    id: 'mobile.intro_messages.DM',
-                    defaultMessage: 'This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.'
-                }, {
-                    teammate
-                })}
-            </Text>
-        );
+        if (currentChannelMembers.length) {
+            const teammate = this.getDisplayName(currentChannelMembers[0]);
+
+            return (
+                <Text style={style.message}>
+                    {intl.formatMessage({
+                        id: 'mobile.intro_messages.DM',
+                        defaultMessage: 'This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.'
+                    }, {
+                        teammate
+                    })}
+                </Text>
+            );
+        }
+
+        return null;
     };
 
     buildGMContent = () => {

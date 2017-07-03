@@ -64,9 +64,17 @@ export function goToNotification(notification) {
     };
 }
 
+export function setStatusBarHeight(height = 20) {
+    return {
+        type: ViewTypes.STATUSBAR_HEIGHT_CHANGED,
+        data: height
+    };
+}
+
 export default {
     loadConfigAndLicense,
     queueNotification,
     clearNotification,
-    goToNotification
+    goToNotification,
+    setStatusBarHeight
 };
