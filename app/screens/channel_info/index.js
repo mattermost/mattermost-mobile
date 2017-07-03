@@ -29,7 +29,7 @@ import ChannelInfo from './channel_info';
 
 function mapStateToProps(state, ownProps) {
     const {config, license} = state.entities.general;
-    const currentChannel = getCurrentChannel(state);
+    const currentChannel = getCurrentChannel(state) || {};
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);

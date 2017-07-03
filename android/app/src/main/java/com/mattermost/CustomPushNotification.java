@@ -120,11 +120,14 @@ public class CustomPushNotification extends PushNotification {
         notification
                 .setContentTitle(title)
                 .setContentText(message)
-                .setGroup(GROUP_KEY_MESSAGES)
                 .setGroupSummary(true)
                 .setSmallIcon(smallIconResId)
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            notification.setGroup(GROUP_KEY_MESSAGES);
+        }
 
         if (numMessages > 1) {
             notification.setNumber(numMessages);

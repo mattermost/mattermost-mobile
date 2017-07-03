@@ -44,6 +44,7 @@ export default class ImagePreview extends PureComponent {
         fileId: PropTypes.string.isRequired,
         files: PropTypes.array.isRequired,
         navigator: PropTypes.object,
+        statusBarHeight: PropTypes.number,
         theme: PropTypes.object.isRequired
     };
 
@@ -209,6 +210,17 @@ export default class ImagePreview extends PureComponent {
     render() {
         const maxImageHeight = this.state.deviceHeight - STATUSBAR_HEIGHT;
 
+        const marginStyle = {
+            ...Platform.select({
+                ios: {
+                    marginTop: this.props.statusBarHeight
+                },
+                android: {
+                    marginTop: 10
+                }
+            })
+        };
+
         return (
             <View
                 style={style.wrapper}
@@ -278,7 +290,7 @@ export default class ImagePreview extends PureComponent {
                         pointerEvents='box-none'
                     >
                         <View style={style.header}>
-                            <View style={style.headerControls}>
+                            <View style={[style.headerControls, marginStyle]}>
                                 <TouchableOpacity
                                     onPress={this.handleClose}
                                     style={style.headerIcon}
@@ -353,15 +365,7 @@ const style = StyleSheet.create({
     headerControls: {
         alignItems: 'center',
         justifyContent: 'space-around',
-        flexDirection: 'row',
-        ...Platform.select({
-            ios: {
-                marginTop: 20
-            },
-            android: {
-                marginTop: 10
-            }
-        })
+        flexDirection: 'row'
     },
     headerIcon: {
         height: 44,

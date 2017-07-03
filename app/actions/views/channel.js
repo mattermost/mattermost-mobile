@@ -194,7 +194,7 @@ export function selectInitialChannel(teamId) {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
-            const firstChannel = channelsInTeam[0].id;
+            const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
             dispatch(setChannelDisplayName(''));
             await handleSelectChannel(firstChannel.id)(dispatch, getState);
         }

@@ -17,9 +17,15 @@ function mapStateToProps(state, ownProps) {
 
     let postDraft;
     if (ownProps.rootId.length) {
-        postDraft = state.views.thread.drafts[ownProps.rootId].draft;
+        const threadDraft = state.views.thread.drafts[ownProps.rootId];
+        if (threadDraft) {
+            postDraft = threadDraft.draft;
+        }
     } else if (currentChannelId) {
-        postDraft = state.views.channel.drafts[currentChannelId].draft;
+        const channelDraft = state.views.channel.drafts[currentChannelId];
+        if (channelDraft) {
+            postDraft = channelDraft.draft;
+        }
     }
 
     const autocompleteChannels = {

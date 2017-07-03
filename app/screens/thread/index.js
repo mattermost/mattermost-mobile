@@ -21,6 +21,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const posts = getPostsForThread(state, ownProps);
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
+        const {statusBarHeight} = state.views.root;
 
         return {
             ...ownProps,
@@ -30,6 +31,7 @@ function makeMapStateToProps() {
             draft: threadDraft.draft,
             files: threadDraft.files,
             posts,
+            statusBarHeight,
             theme: getTheme(state)
         };
     };

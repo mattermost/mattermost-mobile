@@ -22,7 +22,7 @@ function mapStateToProps(state, ownProps) {
         navigator: ownProps.navigator,
         config,
         createChannelRequest,
-        currentChannel: getCurrentChannel(state),
+        currentChannel: getCurrentChannel(state) || {},
         currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
         user: state.entities.users.profiles[ownProps.userId],

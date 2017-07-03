@@ -20,8 +20,8 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        currentTeam: getCurrentTeam(state),
-        currentChannel: getCurrentChannel(state),
+        currentTeam: getCurrentTeam(state) || {},
+        currentChannel: getCurrentChannel(state) || {},
         currentDisplayName: state.views.channel.displayName,
         currentUserId,
         channels: getChannelsWithUnreadSection(state),

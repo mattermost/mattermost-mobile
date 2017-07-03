@@ -16,7 +16,7 @@ import ChannelMembers from './channel_members';
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        currentChannel: getCurrentChannel(state),
+        currentChannel: getCurrentChannel(state) || {},
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentUserId: state.entities.users.currentUserId,
         preferences: getMyPreferences(state),
