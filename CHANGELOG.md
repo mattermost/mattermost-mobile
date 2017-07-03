@@ -15,7 +15,7 @@
 - Retry mechanism for posts sent while offline 
 - See [FAQ](https://github.com/mattermost/mattermost-mobile#frequently-asked-questions) for information on how data is handled for deactivated users
 
-#### Notifications (Requires latest push proxy server) 
+#### Notifications (Requires v3.10+ [push proxy server](https://github.com/mattermost/mattermost-push-proxy)) 
 - Notifications are cleared when read on another device
 - Notification sent just before session expires to let people know login is required to continue receiving notifications
 
