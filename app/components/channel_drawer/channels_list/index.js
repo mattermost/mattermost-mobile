@@ -200,8 +200,8 @@ class ChannelsList extends Component {
                         style={styles.badge}
                         countStyle={styles.mention}
                         count={badgeCount}
-                        minHeight={5}
-                        minWidth={5}
+                        minHeight={20}
+                        minWidth={20}
                     />
                 );
             }
@@ -361,12 +361,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 10,
             borderWidth: 1,
             flexDirection: 'row',
-            height: 20,
             padding: 3,
             position: 'absolute',
             left: 5,
-            top: 0,
-            width: 20
+            top: 0
         },
         mention: {
             color: theme.mentionColor,

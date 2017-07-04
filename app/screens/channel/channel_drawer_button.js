@@ -117,8 +117,8 @@ class ChannelDrawerButton extends PureComponent {
                     style={style.badge}
                     countStyle={style.mention}
                     count={badgeCount}
-                    minHeight={5}
-                    minWidth={5}
+                    minHeight={20}
+                    minWidth={20}
                     onPress={() => preventDoubleTap(this.handlePress, this)}
                 />
             );
@@ -162,8 +162,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 10,
             borderWidth: 1,
             flexDirection: 'row',
-            height: 20,
-            left: 5,
+            left: 3,
             padding: 3,
             position: 'absolute',
             right: 0,
@@ -174,8 +173,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 ios: {
                     top: 5
                 }
-            }),
-            width: 20
+            })
         },
         mention: {
             color: theme.mentionColor,
