@@ -203,6 +203,12 @@ export default class Mattermost {
             if (!notification.localNotification) {
                 if (!state.views.root.appInitializing) {
                     // go to notification if the app is initialized
+
+                    if (!Client4.getUrl()) {
+                        // Make sure the Client has the server url set
+                        Client4.setUrl(state.entities.general.credentials.url);
+                    }
+
                     goToNotification(notification)(dispatch, getState);
                     EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
                 } else if (state.entities.general.credentials.token) {
@@ -219,10 +225,6 @@ export default class Mattermost {
     };
 
     startApp = (animationType = 'none') => {
-        if (!this.isConfigured) {
-            this.configurePushNotifications();
-        }
-
         Navigation.startSingleScreenApp({
             screen: {
                 screen: 'Root',
@@ -234,5 +236,9 @@ export default class Mattermost {
             },
             animationType
         });
+
+        if (!this.isConfigured) {
+            this.configurePushNotifications();
+        }
     };
 }
