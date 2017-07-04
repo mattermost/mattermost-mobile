@@ -22,7 +22,7 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ChannelDrawerItem from 'app/components/channel_drawer/channels_list/channel_item';
 
-class ChannelDrawerList extends Component {
+class FilteredList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
@@ -30,22 +30,18 @@ class ChannelDrawerList extends Component {
             searchProfiles: PropTypes.func.isRequired
         }).isRequired,
         channels: PropTypes.object.isRequired,
-        channelMembers: PropTypes.object,
         currentTeam: PropTypes.object.isRequired,
         currentUserId: PropTypes.string,
         currentChannel: PropTypes.object,
         groupChannels: PropTypes.array,
         intl: intlShape.isRequired,
         myPreferences: PropTypes.object,
-        myTeamMembers: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
-        onSearchEnds: PropTypes.func.isRequired,
-        onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        onShowTeams: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
-        profiles: PropTypes.object,
-        profilesInChannel: PropTypes.object,
+        profiles: PropTypes.oneOfType(
+            PropTypes.object,
+            PropTypes.array
+        ),
         statuses: PropTypes.object,
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
@@ -143,7 +139,7 @@ class ChannelDrawerList extends Component {
 
         const unreads = this.filterChannels(unreadChannels, term);
         const channels = this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
-        sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
+            sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
 
         const others = this.filterChannels(notMemberOf, term);
         const groups = this.filterChannels(groupChannels, term);
@@ -286,4 +282,4 @@ class ChannelDrawerList extends Component {
     }
 }
 
-export default injectIntl(ChannelDrawerList);
+export default injectIntl(FilteredList);

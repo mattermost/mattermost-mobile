@@ -3,39 +3,68 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {createSelector} from 'reselect';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
-import {getProfiles, searchProfiles} from 'mattermost-redux/actions/users';
+
+import {getProfiles, getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
+import {General} from 'mattermost-redux/constants';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentUserId, getProfilesInCurrentTeam, getUsers} from 'mattermost-redux/selectors/entities/users';
 
 import MoreDirectMessages from './more_dms';
 
+function sortAndRemoveCurrentUser(profiles, currentUserId) {
+    const users = {...profiles};
+    Reflect.deleteProperty(users, currentUserId);
+    return Object.values(users).sort((a, b) => {
+        const nameA = a.username;
+        const nameB = b.username;
+
+        return nameA.localeCompare(nameB);
+    });
+}
+
+const getUsersInCurrentTeamForMoreDirectMessages = createSelector(
+    getProfilesInCurrentTeam,
+    getCurrentUserId,
+    sortAndRemoveCurrentUser
+);
+
+const getUsersForMoreDirectMessages = createSelector(
+    getUsers,
+    getCurrentUserId,
+    sortAndRemoveCurrentUser
+);
+
 function mapStateToProps(state, ownProps) {
-    const {getProfiles: requestStatus, searchProfiles: searchRequest} = state.requests.users;
-    const {createChannel: createChannelRequest} = state.requests.channels;
+    const {searchProfiles: searchRequest} = state.requests.users;
 
-    function getUsers() {
-        const {profiles, currentUserId} = state.entities.users;
-        const users = {...profiles};
-        Reflect.deleteProperty(users, currentUserId);
-        return Object.values(users).sort((a, b) => {
-            const nameA = a.username;
-            const nameB = b.username;
+    const config = getConfig(state);
 
-            return nameA.localeCompare(nameB);
-        });
+    let getRequest;
+    let profiles;
+    if (config.RestrictDirectMessage === General.RESTRICT_DIRECT_MESSAGE_ANY) {
+        getRequest = state.requests.users.getProfiles;
+        profiles = getUsersForMoreDirectMessages(state);
+    } else {
+        getRequest = state.requests.users.getProfilesInTeam;
+        profiles = getUsersInCurrentTeamForMoreDirectMessages(state);
     }
 
     return {
         ...ownProps,
+        config,
         preferences: getMyPreferences(state),
-        profiles: getUsers(),
+        profiles,
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
-        createChannelRequest,
-        requestStatus,
+        currentTeamId: getCurrentTeamId(state),
+        getRequest,
         searchRequest
     };
 }
@@ -45,6 +74,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             makeDirectChannel,
             getProfiles,
+            getProfilesInTeam,
             searchProfiles,
             setChannelDisplayName
         }, dispatch)
