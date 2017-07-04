@@ -79,7 +79,7 @@ class Channel extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.currentTeam && nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
+        if (nextProps.currentTeam.id && this.props.currentTeam.id !== nextProps.currentTeam.id) {
             const teamId = nextProps.currentTeam.id;
             this.loadChannels(teamId);
         }
