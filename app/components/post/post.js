@@ -705,9 +705,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         displayName: {
             color: theme.centerChannelColor,
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: '600',
-            marginRight: 5
+            marginRight: 5,
+            marginBottom: 3
         },
         botContainer: {
             flexDirection: 'row'
@@ -725,8 +726,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         time: {
             color: theme.centerChannelColor,
-            fontSize: 12,
+            fontSize: 13,
             marginLeft: 5,
+            marginBottom: 1,
             opacity: 0.5
         },
         timeContainer: {
@@ -734,11 +736,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         commentedOn: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
+            marginBottom: 3,
             lineHeight: 21
         },
         message: {
             color: theme.centerChannelColor,
-            fontSize: 14
+            fontSize: 15
         },
         systemMessage: {
             opacity: 0.6
@@ -752,7 +755,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center'
         },
         replyText: {
-            fontSize: 14,
+            fontSize: 15,
             marginLeft: 3,
             color: theme.linkColor
         }

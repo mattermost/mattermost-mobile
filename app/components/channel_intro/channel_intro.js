@@ -330,7 +330,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         channelTitle: {
             color: theme.centerChannelColor,
-            fontSize: 17,
+            fontSize: 19,
             fontWeight: '600',
             marginBottom: 12
         },
@@ -350,6 +350,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
+            fontSize: 15,
             lineHeight: 18
         },
         namesContainer: {
