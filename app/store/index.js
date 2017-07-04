@@ -42,6 +42,11 @@ export default function configureAppStore(initialState) {
         ['login', 'root']
     );
 
+    const typingBlackListFilter = createBlacklistFilter(
+        'entities',
+        ['typing']
+    );
+
     const setTransformer = createTransform(
         (inboundState, key) => {
             if (key === 'entities') {
@@ -158,7 +163,8 @@ export default function configureAppStore(initialState) {
             debounce: 500,
             transforms: [
                 setTransformer,
-                viewsBlackListFilter
+                viewsBlackListFilter,
+                typingBlackListFilter
             ]
         }
     };
