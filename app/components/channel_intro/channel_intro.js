@@ -351,7 +351,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 15,
-            lineHeight: 18
+            lineHeight: 22
         },
         namesContainer: {
             flexDirection: 'row',
