@@ -3,7 +3,7 @@ skip_docs
 
 platform :ios do
   before_all do |lane|
-    if lane == :beta or lane == :release
+    if lane == :beta
       ensure_git_branch(
           branch: 'master'
       )
@@ -12,7 +12,7 @@ platform :ios do
   end
 
   after_all do |lane|
-    if lane == :beta or lane == :release
+    if lane == :beta
       reset_git_repo(
           force: true,
           skip_clean: true
@@ -26,7 +26,7 @@ platform :ios do
   desc 'Build Release file'
   desc 'This will also make sure the profile is up to date'
   lane :dev do
-    match(type: 'adhoc')
+    match(type: 'adhoc', app_identifier: 'com.mattermost.rnbeta')
 
     build_ios({
               release: false,
@@ -39,7 +39,7 @@ platform :ios do
   desc 'Submit a new Beta Build to Apple TestFlight'
   desc 'This will also make sure the profile is up to date'
   lane :beta do
-    match(type: 'appstore')
+    match(type: 'appstore', app_identifier: 'com.mattermost.rnbeta')
 
     build_ios({
               release: true,
@@ -83,27 +83,18 @@ platform :ios do
 
   desc 'Deploy a new version to the App Store'
   lane :release do
-    match(type: 'appstore')
+    match(type: 'appstore', app_identifier: 'com.mattermost.rn')
 
     # snapshot
 
     build_ios({
               release: true,
-              increment_build: true,
+              increment_build: false,
               ensure_git_status_clean: true,
               method: 'app-store'
           })
 
     deliver(force: true)
-
-    commit = last_git_commit
-
-    push_to_git_remote(
-        remote: 'origin',
-        local_branch: 'ios-release',
-        force: false,
-        tags: false
-    )
 
     unless ENV['GITHUB_TOKEN'].nil?
       create_pull_request(
@@ -111,7 +102,7 @@ platform :ios do
           repo: 'mattermost/mattermost-mobile',
           head: 'mattermost:ios-release',
           base: 'master',
-          title: "IOS #{commit[:message]}"
+          title: 'New IOS Release'
       )
     end
 
