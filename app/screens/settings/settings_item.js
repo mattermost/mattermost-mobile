@@ -137,7 +137,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
-            marginLeft: 16
+            marginHorizontal: 16
         }
     });
 });
