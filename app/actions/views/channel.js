@@ -258,7 +258,7 @@ export function toggleGMChannel(channelId, visible) {
 }
 
 export function closeDMChannel(channel) {
-    return async(dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState();
 
         if (channel.isFavorite) {
@@ -273,7 +273,7 @@ export function closeDMChannel(channel) {
 }
 
 export function closeGMChannel(channel) {
-    return async(dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState();
 
         if (channel.isFavorite) {
