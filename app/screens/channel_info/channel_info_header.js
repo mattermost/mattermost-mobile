@@ -16,94 +16,96 @@ import Markdown from 'app/components/markdown';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-function channelInfoHeader(props) {
-    const {createAt, creator, displayName, header, memberCount, purpose, status, theme, type} = props;
+export default class ChannelInfoHeader extends React.PureComponent {
+    static propTypes = {
+        createAt: PropTypes.number.isRequired,
+        creator: PropTypes.string,
+        memberCount: PropTypes.number,
+        displayName: PropTypes.string.isRequired,
+        header: PropTypes.string,
+        purpose: PropTypes.string,
+        status: PropTypes.string,
+        theme: PropTypes.object.isRequired,
+        type: PropTypes.string.isRequired
+    }
 
-    const style = getStyleSheet(theme);
-    const textStyles = getMarkdownTextStyles(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
+    render() {
+        const {createAt, creator, displayName, header, memberCount, purpose, status, theme, type} = this.props;
 
-    return (
-        <View style={style.container}>
-            <View style={style.channelNameContainer}>
-                <ChanneIcon
-                    isInfo={true}
-                    membersCount={memberCount - 1}
-                    size={16}
-                    status={status}
-                    theme={theme}
-                    type={type}
-                />
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={style.channelName}
-                >
-                    {displayName}
-                </Text>
+        const style = getStyleSheet(theme);
+        const textStyles = getMarkdownTextStyles(theme);
+        const blockStyles = getMarkdownBlockStyles(theme);
+
+        return (
+            <View style={style.container}>
+                <View style={style.channelNameContainer}>
+                    <ChanneIcon
+                        isInfo={true}
+                        membersCount={memberCount - 1}
+                        size={16}
+                        status={status}
+                        theme={theme}
+                        type={type}
+                    />
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={style.channelName}
+                    >
+                        {displayName}
+                    </Text>
+                </View>
+                {purpose.length > 0 &&
+                    <View style={style.section}>
+                        <FormattedText
+                            style={style.header}
+                            id='channel_info.purpose'
+                            defaultMessage='Purpose'
+                        />
+                        <Markdown
+                            baseTextStyle={style.detail}
+                            textStyles={textStyles}
+                            blockStyles={blockStyles}
+                            value={purpose}
+                        />
+                    </View>
+                }
+                {header.length > 0 &&
+                    <View style={style.section}>
+                        <FormattedText
+                            style={style.header}
+                            id='channel_info.header'
+                            defaultMessage='Header'
+                        />
+                        <Markdown
+                            baseTextStyle={style.detail}
+                            textStyles={textStyles}
+                            blockStyles={blockStyles}
+                            value={header}
+                        />
+                    </View>
+                }
+                {creator &&
+                    <Text style={style.createdBy}>
+                        <FormattedText
+                            id='mobile.routes.channelInfo.createdBy'
+                            defaultMessage='Created by {creator} on '
+                            values={{
+                                creator
+                            }}
+                        />
+                        <FormattedDate
+                            value={new Date(createAt)}
+                            year='numeric'
+                            month='long'
+                            day='2-digit'
+                        />
+                    </Text>
+                }
             </View>
-            {purpose.length > 0 &&
-                <View style={style.section}>
-                    <FormattedText
-                        style={style.header}
-                        id='channel_info.purpose'
-                        defaultMessage='Purpose'
-                    />
-                    <Markdown
-                        baseTextStyle={style.detail}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
-                        value={purpose}
-                    />
-                </View>
-            }
-            {header.length > 0 &&
-                <View style={style.section}>
-                    <FormattedText
-                        style={style.header}
-                        id='channel_info.header'
-                        defaultMessage='Header'
-                    />
-                    <Markdown
-                        baseTextStyle={style.detail}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
-                        value={header}
-                    />
-                </View>
-            }
-            {creator &&
-                <Text style={style.createdBy}>
-                    <FormattedText
-                        id='mobile.routes.channelInfo.createdBy'
-                        defaultMessage='Created by {creator} on '
-                        values={{
-                            creator
-                        }}
-                    />
-                    <FormattedDate
-                        value={new Date(createAt)}
-                        year='numeric'
-                        month='long'
-                        day='2-digit'
-                    />
-                </Text>
-            }
-        </View>
-    );
+        );
+    }
 }
-
-channelInfoHeader.propTypes = {
-    createAt: PropTypes.number.isRequired,
-    creator: PropTypes.string,
-    memberCount: PropTypes.number,
-    displayName: PropTypes.string.isRequired,
-    header: PropTypes.string,
-    purpose: PropTypes.string,
-    status: PropTypes.string,
-    theme: PropTypes.object.isRequired,
-    type: PropTypes.string.isRequired
-};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
@@ -123,7 +125,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         channelNameContainer: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingBottom: 10
+            paddingVertical: 10
         },
         createdBy: {
             flexDirection: 'row',
@@ -147,5 +149,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
-
-export default channelInfoHeader;
