@@ -123,7 +123,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         channelNameContainer: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingBottom: 10
+            paddingVertical: 10
         },
         createdBy: {
             flexDirection: 'row',
