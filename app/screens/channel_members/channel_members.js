@@ -135,16 +135,21 @@ class ChannelMembers extends PureComponent {
     };
 
     emitCanRemoveMembers = (enabled) => {
-        this.props.navigator.setButtons({
-            rightButtons: [{...this.removeButton, disabled: !enabled}]
-        });
+        if (this.props.canManageUsers) {
+            this.props.navigator.setButtons({
+                rightButtons: [{...this.removeButton, disabled: !enabled}]
+            });
+        }
     };
 
     emitRemoving = (loading) => {
         this.setState({canSelect: false, removing: loading});
-        this.props.navigator.setButtons({
-            rightButtons: [{...this.removeButton, disabled: loading}]
-        });
+
+        if (this.props.canManageUsers) {
+            this.props.navigator.setButtons({
+                rightButtons: [{...this.removeButton, disabled: loading}]
+            });
+        }
     };
 
     handleRemoveMembersPress = () => {
