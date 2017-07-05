@@ -26,9 +26,9 @@ export function createMembersSections(data) {
     return sections;
 }
 
-export function renderMemberRow(user, sectionId, rowId, preferences, theme, selectable, onPress, onSelect) {
+export function renderMemberRow(user, sectionId, rowId, teammateNameDisplay, theme, selectable, onPress, onSelect) {
     const {id, username} = user;
-    const displayName = displayUsername(user, preferences);
+    const displayName = displayUsername(user, teammateNameDisplay);
     let onRowSelect = null;
     if (selectable) {
         onRowSelect = () => onSelect(sectionId, rowId);

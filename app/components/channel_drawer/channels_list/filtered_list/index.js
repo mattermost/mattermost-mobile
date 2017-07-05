@@ -11,7 +11,7 @@ import {General} from 'mattermost-redux/constants';
 import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getProfilesInCurrentTeam, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 
 import FilteredList from './filtered_list';
 
@@ -30,7 +30,7 @@ function mapStateToProps(state, ownProps) {
         otherChannels: getOtherChannels(state),
         groupChannels: getGroupChannels(state),
         profiles,
-        myPreferences: getMyPreferences(state),
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
         statuses: getUserStatuses(state),
         ...ownProps
     };

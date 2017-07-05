@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
 import {getTheme} from 'app/selectors/preferences';
 import {getCurrentChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getProfilesInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 import {getProfilesInChannel, searchProfiles} from 'mattermost-redux/actions/users';
 
@@ -19,7 +19,7 @@ function mapStateToProps(state) {
         currentChannel: getCurrentChannel(state) || {},
         currentChannelMembers: getProfilesInCurrentChannel(state),
         currentUserId: state.entities.users.currentUserId,
-        preferences: getMyPreferences(state),
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
         requestStatus: state.requests.users.getProfilesInChannel.status,
         searchRequestStatus: state.requests.users.searchProfiles.status,
         removeMembersStatus: state.requests.channels.removeChannelMember.status,

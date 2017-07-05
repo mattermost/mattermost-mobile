@@ -35,7 +35,7 @@ class FilteredList extends Component {
         currentChannel: PropTypes.object,
         groupChannels: PropTypes.array,
         intl: intlShape.isRequired,
-        myPreferences: PropTypes.object,
+        teammateNameDisplay: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
         profiles: PropTypes.oneOfType(
@@ -178,11 +178,11 @@ class FilteredList extends Component {
     };
 
     buildFakeDms = (props) => {
-        const {currentUserId, myPreferences, profiles, statuses} = props;
+        const {currentUserId, teammateNameDisplay, profiles, statuses} = props;
         const users = Object.values(profiles).filter((p) => p.id !== currentUserId);
 
         return users.map((u) => {
-            const displayName = displayUsername(u, myPreferences);
+            const displayName = displayUsername(u, teammateNameDisplay);
 
             return {
                 id: u.id,
