@@ -196,7 +196,15 @@ class ChannelInfo extends PureComponent {
         toggleFavorite(currentChannel.id);
     };
 
-    renderLeaveOrDeleteChannelRow() {
+    renderViewOrManageMembersRow = () => {
+        const channel = this.props.currentChannel;
+        const isDirectMessage = channel.type === General.DM_CHANNEL;
+        const isGroupMessage = channel.type === General.GM_CHANNEL;
+
+        return !isDirectMessage && !isGroupMessage;
+    }
+
+    renderLeaveOrDeleteChannelRow = () => {
         const channel = this.props.currentChannel;
         const isDefaultChannel = channel.name === General.DEFAULT_CHANNEL;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
@@ -205,7 +213,7 @@ class ChannelInfo extends PureComponent {
         return !isDefaultChannel && !isDirectMessage && !isGroupMessage;
     }
 
-    renderCloseDirect() {
+    renderCloseDirect = () => {
         const channel = this.props.currentChannel;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
@@ -265,28 +273,32 @@ class ChannelInfo extends PureComponent {
                             togglable={true}
                             theme={theme}
                         />
-                        <View style={style.separator}/>
                         {
 
-                            /**
-                             <ChannelInfoRow
-                             action={() => true}
-                             defaultMessage='Notification Preferences'
-                             icon='bell-o'
-                             textId='channel_header.notificationPreferences'
-                             theme={theme}
-                             />
-                             <View style={style.separator}/>
-                             **/
+                        /**
+                         <ChannelInfoRow
+                         action={() => true}
+                         defaultMessage='Notification Preferences'
+                         icon='bell-o'
+                         textId='channel_header.notificationPreferences'
+                         theme={theme}
+                         />
+                         <View style={style.separator}/>
+                         **/
                         }
-                        <ChannelInfoRow
-                            action={() => preventDoubleTap(this.goToChannelMembers)}
-                            defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
-                            detail={currentChannelMemberCount}
-                            icon='users'
-                            textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
-                            theme={theme}
-                        />
+                        {this.renderViewOrManageMembersRow() &&
+                            <View>
+                                <View style={style.separator}/>
+                                <ChannelInfoRow
+                                    action={() => preventDoubleTap(this.goToChannelMembers)}
+                                    defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
+                                    detail={currentChannelMemberCount}
+                                    icon='users'
+                                    textId={canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers'}
+                                    theme={theme}
+                                />
+                            </View>
+                        }
                         {canManageUsers &&
                             <View>
                                 <View style={style.separator}/>
