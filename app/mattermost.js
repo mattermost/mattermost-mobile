@@ -45,7 +45,7 @@ registerScreens(store, Provider);
 export default class Mattermost {
     constructor() {
         this.isConfigured = false;
-        setJSExceptionHandler(this.errorHandler, true);
+        setJSExceptionHandler(this.errorHandler, false);
         Orientation.lockToPortrait();
         this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
