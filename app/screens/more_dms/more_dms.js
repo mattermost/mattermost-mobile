@@ -27,15 +27,17 @@ class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        preferences: PropTypes.object.isRequired,
+        config: PropTypes.object.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
+        teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
-        createChannelRequest: PropTypes.object.isRequired,
-        requestStatus: PropTypes.object.isRequired,
+        getRequest: PropTypes.object.isRequired,
         searchRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
             getProfiles: PropTypes.func.isRequired,
+            getProfilesInTeam: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired
         }).isRequired
@@ -59,9 +61,9 @@ class MoreDirectMessages extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {requestStatus} = this.props;
-        if (requestStatus.status === RequestStatus.STARTED &&
-            nextProps.requestStatus.status === RequestStatus.SUCCESS) {
+        const {getRequest} = this.props;
+        if (getRequest.status === RequestStatus.STARTED &&
+            nextProps.getRequest.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = nextProps.profiles.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
             this.setState({profiles, showNoResults: true});
@@ -76,7 +78,7 @@ class MoreDirectMessages extends PureComponent {
         // set the timeout to 400 cause is the time that the modal takes to open
         // Somehow interactionManager doesn't care
         setTimeout(() => {
-            this.props.actions.getProfiles(0);
+            this.getProfiles(0);
         }, 400);
     }
 
@@ -94,7 +96,7 @@ class MoreDirectMessages extends PureComponent {
         }
     };
 
-    searchProfiles = (text) => {
+    onSearch = (text) => {
         const term = text.toLowerCase();
 
         if (term) {
@@ -102,7 +104,7 @@ class MoreDirectMessages extends PureComponent {
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchProfiles(term);
+                this.searchProfiles(term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
@@ -118,12 +120,27 @@ class MoreDirectMessages extends PureComponent {
         });
     };
 
+    getProfiles = (page) => {
+        if (this.props.config.RestrictDirectMessage === General.RESTRICT_DIRECT_MESSAGE_ANY) {
+            return this.props.actions.getProfiles(page, General.PROFILE_CHUNK_SIZE);
+        }
+
+        return this.props.actions.getProfilesInTeam(page, General.PROFILE_CHUNK_SIZE);
+    };
+
+    searchProfiles = (term) => {
+        if (this.props.config.RestrictDirectMessage === General.RESTRICT_DIRECT_MESSAGE_ANY) {
+            return this.props.actions.searchProfiles(term);
+        }
+
+        return this.props.actions.searchProfiles(term, {team_id: this.props.currentTeamId});
+    };
+
     loadMoreProfiles = () => {
         let {page} = this.state;
-        if (this.props.requestStatus.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
+        if (this.props.getRequest.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
             page = page + 1;
-            this.props.actions.getProfiles(page, General.PROFILE_CHUNK_SIZE).
-            then((data) => {
+            this.getProfiles(page).then((data) => {
                 if (data && data.length) {
                     this.setState({
                         page
@@ -136,7 +153,7 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
-        const {actions, currentDisplayName, intl, preferences, profiles} = this.props;
+        const {actions, currentDisplayName, intl, teammateNameDisplay, profiles} = this.props;
         const user = profiles.find((p) => p.id === id);
 
         this.setState({adding: true});
@@ -144,7 +161,7 @@ class MoreDirectMessages extends PureComponent {
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
 
-        const userDisplayName = displayUsername(user, preferences);
+        const userDisplayName = displayUsername(user, teammateNameDisplay);
 
         if (user) {
             actions.setChannelDisplayName(userDisplayName);
@@ -177,10 +194,24 @@ class MoreDirectMessages extends PureComponent {
     };
 
     render() {
-        const {intl, preferences, requestStatus, searchRequest, theme} = this.props;
-        const {adding, profiles, searching, showNoResults, term} = this.state;
+        const {
+            intl,
+            teammateNameDisplay,
+            getRequest,
+            searchRequest,
+            theme
+        } = this.props;
+        const {
+            adding,
+            profiles,
+            searching,
+            showNoResults,
+            term
+        } = this.state;
+
         const {formatMessage} = intl;
-        const isLoading = (requestStatus.status === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
+        const isLoading = (
+            getRequest.status === RequestStatus.STARTED) || (getRequest.status === RequestStatus.NOT_STARTED) ||
             (searchRequest.status === RequestStatus.STARTED);
         const style = getStyleFromTheme(theme);
         const more = this.state.searching ? () => true : this.loadMoreProfiles;
@@ -215,8 +246,8 @@ class MoreDirectMessages extends PureComponent {
                             tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
                             titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.searchProfiles}
-                            onSearchButtonPress={this.searchProfiles}
+                            onChangeText={this.onSearch}
+                            onSearchButtonPress={this.onSearch}
                             onCancelButtonPress={this.cancelSearch}
                             value={term}
                         />
@@ -226,7 +257,7 @@ class MoreDirectMessages extends PureComponent {
                         theme={theme}
                         searching={searching}
                         onListEndReached={more}
-                        preferences={preferences}
+                        teammateNameDisplay={teammateNameDisplay}
                         loading={isLoading}
                         selectable={false}
                         listScrollRenderAheadDistance={50}

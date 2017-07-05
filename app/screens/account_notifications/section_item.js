@@ -110,6 +110,7 @@ sectionItem.propTypes = {
 };
 
 sectionItem.defaultProps = {
+    action: () => true,
     actionType: ActionTypes.DEFAULT
 };
 

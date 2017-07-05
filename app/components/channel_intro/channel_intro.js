@@ -101,18 +101,23 @@ class ChannelIntro extends PureComponent {
     buildDMContent = () => {
         const {currentChannelMembers, intl, theme} = this.props;
         const style = getStyleSheet(theme);
-        const teammate = this.getDisplayName(currentChannelMembers[0]);
 
-        return (
-            <Text style={style.message}>
-                {intl.formatMessage({
-                    id: 'mobile.intro_messages.DM',
-                    defaultMessage: 'This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.'
-                }, {
-                    teammate
-                })}
-            </Text>
-        );
+        if (currentChannelMembers.length) {
+            const teammate = this.getDisplayName(currentChannelMembers[0]);
+
+            return (
+                <Text style={style.message}>
+                    {intl.formatMessage({
+                        id: 'mobile.intro_messages.DM',
+                        defaultMessage: 'This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.'
+                    }, {
+                        teammate
+                    })}
+                </Text>
+            );
+        }
+
+        return null;
     };
 
     buildGMContent = () => {
@@ -325,7 +330,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         channelTitle: {
             color: theme.centerChannelColor,
-            fontSize: 17,
+            fontSize: 19,
             fontWeight: '600',
             marginBottom: 12
         },
@@ -345,7 +350,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
-            lineHeight: 18
+            fontSize: 15,
+            lineHeight: 22
         },
         namesContainer: {
             flexDirection: 'row',

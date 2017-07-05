@@ -3645,7 +3645,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/5e3133b5041e45252baa23b5a0c2e5b298198c4c"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/aa2841b7b75fd08c9819ac14a9d27d4f6baa959a"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4539,9 +4539,9 @@ react-native-mock@^0.2.7:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.88:
-  version "1.1.88"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.88.tgz#22239c8c722b13a8750a5b99debd45bded13c2f5"
+react-native-navigation@1.1.131:
+  version "1.1.131"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.131.tgz#79b0583def2310e93305048f7149ad1970666f51"
   dependencies:
     lodash "4.x.x"
 
@@ -4552,9 +4552,13 @@ react-native-notifications@enahum/react-native-notifications.git:
     core-js "^1.0.0"
     uuid "^2.0.3"
 
-react-native-orientation@yamill/react-native-orientation.git:
+react-native-orientation@enahum/react-native-orientation.git:
   version "1.17.0"
-  resolved "https://codeload.github.com/yamill/react-native-orientation/tar.gz/ef221b5720ced0d9ed0c9de14082a5eabba4db7a"
+  resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/8b8495c91d8e63598874a141279cf5409e26ad3a"
+
+react-native-status-bar-size@0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/react-native-status-bar-size/-/react-native-status-bar-size-0.3.2.tgz#e3ffd906f021220c256857a8de6b945f8ea3fabc"
 
 react-native-svg-mock@1.0.2:
   version "1.0.2"

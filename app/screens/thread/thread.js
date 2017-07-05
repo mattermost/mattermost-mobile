@@ -24,7 +24,8 @@ export default class Thread extends PureComponent {
         rootId: PropTypes.string.isRequired,
         draft: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        posts: PropTypes.array.isRequired
+        posts: PropTypes.array.isRequired,
+        statusBarHeight: PropTypes.number
     };
 
     state = {};
@@ -44,14 +45,29 @@ export default class Thread extends PureComponent {
     };
 
     render() {
-        const {channelId, draft, files, myMember, navigator, posts, rootId, theme} = this.props;
+        const {
+            channelId,
+            draft,
+            files,
+            myMember,
+            navigator,
+            posts,
+            rootId,
+            statusBarHeight,
+            theme
+        } = this.props;
         const style = getStyle(theme);
+
+        let height = 0;
+        if (statusBarHeight > 20) {
+            height = statusBarHeight - 20;
+        }
 
         return (
             <KeyboardLayout
                 behavior='padding'
                 style={style.container}
-                keyboardVerticalOffset={65}
+                keyboardVerticalOffset={65 + height}
             >
                 <StatusBar/>
                 <PostList

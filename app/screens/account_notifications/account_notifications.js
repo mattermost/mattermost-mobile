@@ -161,6 +161,10 @@ class AccountNotifications extends PureComponent {
         });
     };
 
+    focusMentionKeys = () => {
+        this.refs.mention_keys.getWrappedInstance().focus();
+    };
+
     updateMentionKeys = (text) => {
         this.setState({
             mention_keys: text
@@ -280,6 +284,7 @@ class AccountNotifications extends PureComponent {
                     labelId='user.settings.notifications.sensitiveWords'
                     labelDefaultMessage='Other non-case sensitive words, separated by commas'
                     theme={theme}
+                    action={this.focusMentionKeys}
                 >
                     <TextInputWithLocalizedPlaceholder
                         ref='mention_keys'

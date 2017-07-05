@@ -55,11 +55,12 @@ class ChannelPostList extends PureComponent {
     }
 
     componentDidMount() {
+        this.mounted = true;
         this.loadPosts(this.props.channel.id);
     }
 
     componentWillReceiveProps(nextProps) {
-        // Show the loader if the channel names change
+        // Show the loader if the channel id change
         if (this.props.currentChannelId !== nextProps.currentChannelId) {
             this.setState({
                 loaderOpacity: new Animated.Value(1)
@@ -71,17 +72,25 @@ class ChannelPostList extends PureComponent {
             this.loadPosts(nextProps.channel.id);
         }
 
-        const showLoadMore = nextProps.posts.length === this.props.posts.length && nextProps.posts.length > nextProps.postVisibility;
+        const showLoadMore = nextProps.posts.length >= nextProps.postVisibility;
         this.setState({
             showLoadMore
         });
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     channelLoaded = () => {
         Animated.timing(this.state.loaderOpacity, {
             toValue: 0,
             duration: 500
-        }).start(() => this.setState({channelLoaded: true}));
+        }).start(() => {
+            if (this.mounted) {
+                this.setState({channelLoaded: true});
+            }
+        });
     };
 
     goToThread = (post) => {

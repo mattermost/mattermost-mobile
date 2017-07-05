@@ -29,6 +29,12 @@ export default class Badge extends PureComponent {
         onPress: PropTypes.func
     };
 
+    constructor(props) {
+        super(props);
+
+        this.width = 0;
+    }
+
     componentWillMount() {
         this.panResponder = PanResponder.create({
             onStartShouldSetPanResponder: () => true,
@@ -45,6 +51,37 @@ export default class Badge extends PureComponent {
         }
     };
 
+    onLayout = (e) => {
+        let width;
+
+        if (e.nativeEvent.layout.width <= e.nativeEvent.layout.height) {
+            width = e.nativeEvent.layout.height;
+        } else {
+            width = e.nativeEvent.layout.width + this.props.extraPaddingHorizontal;
+        }
+        width = Math.max(width, this.props.minWidth);
+        if (this.width === width) {
+            return;
+        }
+        this.width = width;
+        const height = Math.max(e.nativeEvent.layout.height, this.props.minHeight);
+        const borderRadius = height / 2;
+        this.refs.badgeContainer.setNativeProps({
+            style: {
+                width,
+                height,
+                borderRadius
+            }
+        });
+        setTimeout(() => {
+            this.refs.badgeContainer.setNativeProps({
+                style: {
+                    display: 'flex'
+                }
+            });
+        }, 100);
+    };
+
     renderText = () => {
         const {count} = this.props;
         let text = count.toString();
@@ -58,6 +95,7 @@ export default class Badge extends PureComponent {
         return (
             <Text
                 style={[styles.text, this.props.countStyle, extra]}
+                onLayout={this.onLayout}
             >
                 {text}
             </Text>
@@ -71,7 +109,8 @@ export default class Badge extends PureComponent {
                 onPress={this.handlePress}
             >
                 <View
-                    style={[styles.badge, this.props.style]}
+                    ref='badgeContainer'
+                    style={[styles.badge, this.props.style, {display: 'none'}]}
                 >
                     <View style={styles.wrapper}>
                         {this.renderText()}

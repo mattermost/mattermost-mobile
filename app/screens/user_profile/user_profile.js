@@ -34,7 +34,7 @@ class UserProfile extends PureComponent {
         createChannelRequest: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        myPreferences: PropTypes.object,
+        teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired
     };
@@ -46,10 +46,10 @@ class UserProfile extends PureComponent {
     };
 
     getDisplayName = () => {
-        const {theme, myPreferences, user} = this.props;
+        const {theme, teammateNameDisplay, user} = this.props;
         const style = createStyleSheet(theme);
 
-        const displayName = displayUsername(user, myPreferences);
+        const displayName = displayUsername(user, teammateNameDisplay);
 
         if (displayName) {
             return <Text style={style.displayName}>{displayName}</Text>;
@@ -75,12 +75,12 @@ class UserProfile extends PureComponent {
     };
 
     sendMessage = async () => {
-        const {actions, currentDisplayName, intl, myPreferences, navigator, user} = this.props;
+        const {actions, currentDisplayName, intl, teammateNameDisplay, navigator, user} = this.props;
 
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
 
-        const userDisplayName = displayUsername(user, myPreferences);
+        const userDisplayName = displayUsername(user, teammateNameDisplay);
         actions.setChannelDisplayName(userDisplayName);
 
         const result = await actions.makeDirectChannel(user.id);

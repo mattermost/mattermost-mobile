@@ -17,7 +17,7 @@ export function makeStyleSheetFromTheme(getStyleFromTheme) {
 
 export function changeOpacity(oldColor, opacity) {
     let color = oldColor;
-    if (color[0] === '#') {
+    if (color.length && color[0] === '#') {
         color = color.slice(1);
     }
 

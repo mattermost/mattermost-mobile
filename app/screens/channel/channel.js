@@ -20,6 +20,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import OfflineIndicator from 'app/components/offline_indicator';
 import PostTextbox from 'app/components/post_textbox';
+import PostListRetry from 'app/components/post_list_retry';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -51,7 +52,9 @@ class Channel extends PureComponent {
         theme: PropTypes.object.isRequired,
         subscribeToHeaderEvent: PropTypes.func,
         unsubscribeFromHeaderEvent: PropTypes.func,
-        webSocketRequest: PropTypes.object
+        webSocketRequest: PropTypes.object,
+        statusBarHeight: PropTypes.number,
+        channelsRequestStatus: PropTypes.string
     };
 
     componentWillMount() {
@@ -76,7 +79,7 @@ class Channel extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.currentTeam && nextProps.currentTeam && this.props.currentTeam.id !== nextProps.currentTeam.id) {
+        if (nextProps.currentTeam.id && this.props.currentTeam.id !== nextProps.currentTeam.id) {
             const teamId = nextProps.currentTeam.id;
             this.loadChannels(teamId);
         }
@@ -163,18 +166,32 @@ class Channel extends PureComponent {
         });
     };
 
+    retryLoadChannels = () => {
+        this.loadChannels(this.props.currentTeam.id);
+    };
+
     render() {
         const {
-            currentTeam,
+            channelsRequestStatus,
             currentChannel,
+            drafts,
             intl,
             navigator,
+            statusBarHeight,
             theme
         } = this.props;
 
         const style = getStyleFromTheme(theme);
 
-        if (!currentTeam || !currentChannel) {
+        if (!currentChannel.hasOwnProperty('id')) {
+            if (channelsRequestStatus === RequestStatus.FAILURE) {
+                return (
+                    <PostListRetry
+                        retry={this.retryLoadChannels}
+                        theme={theme}
+                    />
+                );
+            }
             return (
                 <View style={style.loading}>
                     <Loading/>
@@ -182,7 +199,12 @@ class Channel extends PureComponent {
             );
         }
 
-        const channelDraft = this.props.drafts[currentChannel.id] || {};
+        const channelDraft = drafts[currentChannel.id] || {};
+
+        let height = 0;
+        if (statusBarHeight > 20) {
+            height = statusBarHeight - 20;
+        }
 
         return (
             <ChannelDrawer
@@ -194,7 +216,7 @@ class Channel extends PureComponent {
                 <KeyboardLayout
                     behavior='padding'
                     style={style.keyboardLayout}
-                    keyboardVerticalOffset={0}
+                    keyboardVerticalOffset={height}
                 >
                     <View style={style.postList}>
                         <ChannelPostList
@@ -265,7 +287,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         keyboardLayout: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1
+            flex: 1,
+            paddingBottom: 0
         }
     });
 });

@@ -18,9 +18,9 @@ import ChannelAddMembers from './channel_add_members';
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        currentChannel: getCurrentChannel(state),
+        currentChannel: getCurrentChannel(state) || {},
         membersNotInChannel: getProfilesNotInCurrentChannel(state),
-        currentTeam: getCurrentTeam(state),
+        currentTeam: getCurrentTeam(state) || {},
         preferences: getMyPreferences(state),
         loadMoreRequestStatus: state.requests.users.getProfilesNotInChannel.status,
         addChannelMemberRequestStatus: state.requests.channels.addChannelMember,

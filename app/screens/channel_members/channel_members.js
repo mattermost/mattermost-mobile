@@ -30,7 +30,7 @@ class ChannelMembers extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
-        preferences: PropTypes.object,
+        teammateNameDisplay: PropTypes.string,
         requestStatus: PropTypes.string,
         searchRequestStatus: PropTypes.string,
         removeMembersStatus: PropTypes.string,
@@ -203,16 +203,17 @@ class ChannelMembers extends PureComponent {
         let {page} = this.state;
         if (requestStatus !== RequestStatus.STARTED && next && !searching) {
             page = page + 1;
-            actions.getProfilesInChannel(currentChannel.id, page, General.PROFILE_CHUNK_SIZE).
-            then((data) => {
-                if (data && data.length) {
-                    this.setState({
-                        page
-                    });
-                } else {
-                    this.setState({next: false});
+            actions.getProfilesInChannel(currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then(
+                (data) => {
+                    if (data && data.length) {
+                        this.setState({
+                            page
+                        });
+                    } else {
+                        this.setState({next: false});
+                    }
                 }
-            });
+            );
         }
     };
 
@@ -229,9 +230,9 @@ class ChannelMembers extends PureComponent {
         actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove);
     };
 
-    renderMemberRow = (user, sectionId, rowId, preferences, theme, selectable, onPress, onSelect) => {
+    renderMemberRow = (user, sectionId, rowId, teammateNameDisplay, theme, selectable, onPress, onSelect) => {
         const {id, username} = user;
-        const displayName = displayUsername(user, preferences);
+        const displayName = displayUsername(user, teammateNameDisplay);
         let onRowSelect = null;
         if (selectable) {
             onRowSelect = () => onSelect(sectionId, rowId);
@@ -271,7 +272,7 @@ class ChannelMembers extends PureComponent {
     };
 
     render() {
-        const {canManageUsers, intl, preferences, requestStatus, searchRequestStatus, theme} = this.props;
+        const {canManageUsers, intl, teammateNameDisplay, requestStatus, searchRequestStatus, theme} = this.props;
         const {formatMessage} = intl;
         const {profiles, removing, searching, showNoResults, term} = this.state;
         const isLoading = (requestStatus === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
@@ -320,7 +321,7 @@ class ChannelMembers extends PureComponent {
                     theme={theme}
                     searching={searching}
                     onListEndReached={more}
-                    preferences={preferences}
+                    teammateNameDisplay={teammateNameDisplay}
                     listScrollRenderAheadDistance={50}
                     loading={isLoading}
                     loadingText={loadingText}

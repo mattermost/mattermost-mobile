@@ -37,8 +37,18 @@ function purge(state = false, action) {
     }
 }
 
+function statusBarHeight(state = 20, action) {
+    switch (action.type) {
+    case ViewTypes.STATUSBAR_HEIGHT_CHANGED:
+        return action.data;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     appInitializing,
     hydrationComplete,
-    purge
+    purge,
+    statusBarHeight
 });
