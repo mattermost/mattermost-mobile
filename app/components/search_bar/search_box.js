@@ -462,7 +462,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        padding: 5
+        paddingBottom: 5,
+        paddingLeft: 5,
+        paddingRight: 5,
+        paddingTop: 4
     },
     input: {
         height: containerHeight - 10,
