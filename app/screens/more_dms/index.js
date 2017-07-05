@@ -12,7 +12,7 @@ import {getTheme} from 'app/selectors/preferences';
 import {getProfiles, getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
 import {General} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesInCurrentTeam, getUsers} from 'mattermost-redux/selectors/entities/users';
 
@@ -59,7 +59,7 @@ function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         config,
-        preferences: getMyPreferences(state),
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
         profiles,
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,

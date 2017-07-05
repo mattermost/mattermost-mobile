@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, flagPost, removePost, unflagPost} from 'mattermost-redux/actions/posts';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getMyPreferences, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
@@ -22,6 +22,7 @@ function makeMapStateToProps() {
         const commentedOnUser = ownProps.commentedOnPost ? getUser(state, ownProps.commentedOnPost.user_id) : null;
         const user = getUser(state, ownProps.post.user_id);
         const myPreferences = getMyPreferences(state);
+        const teammateNameDisplay = getTeammateNameDisplaySetting(state);
         const {config, license} = state.entities.general;
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
         const {tooltipVisible} = state.views.channel;
@@ -30,9 +31,9 @@ function makeMapStateToProps() {
             ...ownProps,
             config,
             commentCount: getCommentCountForPost(state, ownProps),
-            commentedOnDisplayName: displayUsername(commentedOnUser, myPreferences),
+            commentedOnDisplayName: displayUsername(commentedOnUser, teammateNameDisplay),
             currentUserId: getCurrentUserId(state),
-            displayName: displayUsername(user, myPreferences),
+            displayName: displayUsername(user, teammateNameDisplay),
             isFlagged: isPostFlagged(ownProps.post.id, myPreferences),
             license,
             roles,

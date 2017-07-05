@@ -9,7 +9,7 @@ import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
 
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import UserProfile from './user_profile';
@@ -26,7 +26,7 @@ function mapStateToProps(state, ownProps) {
         currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
         user: state.entities.users.profiles[ownProps.userId],
-        myPreferences: getMyPreferences(state),
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
         theme: getTheme(state)
     };
 }

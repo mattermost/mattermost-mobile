@@ -8,7 +8,7 @@ import {goToNotification} from 'app/actions/views/root';
 import {getTheme} from 'app/selectors/preferences';
 
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 
 import Notification from './notification';
@@ -31,7 +31,7 @@ function mapStateToProps(state, ownProps) {
         config: state.entities.general.config,
         channel,
         user,
-        myPreferences: getMyPreferences(state),
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
         theme: getTheme(state)
     };
 }

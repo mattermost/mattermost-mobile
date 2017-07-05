@@ -29,7 +29,7 @@ class MoreDirectMessages extends PureComponent {
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        preferences: PropTypes.object.isRequired,
+        teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
         getRequest: PropTypes.object.isRequired,
@@ -153,7 +153,7 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSelectMember = async (id) => {
-        const {actions, currentDisplayName, intl, preferences, profiles} = this.props;
+        const {actions, currentDisplayName, intl, teammateNameDisplay, profiles} = this.props;
         const user = profiles.find((p) => p.id === id);
 
         this.setState({adding: true});
@@ -161,7 +161,7 @@ class MoreDirectMessages extends PureComponent {
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
 
-        const userDisplayName = displayUsername(user, preferences);
+        const userDisplayName = displayUsername(user, teammateNameDisplay);
 
         if (user) {
             actions.setChannelDisplayName(userDisplayName);
@@ -196,7 +196,7 @@ class MoreDirectMessages extends PureComponent {
     render() {
         const {
             intl,
-            preferences,
+            teammateNameDisplay,
             getRequest,
             searchRequest,
             theme
@@ -257,7 +257,7 @@ class MoreDirectMessages extends PureComponent {
                         theme={theme}
                         searching={searching}
                         onListEndReached={more}
-                        preferences={preferences}
+                        teammateNameDisplay={teammateNameDisplay}
                         loading={isLoading}
                         selectable={false}
                         listScrollRenderAheadDistance={50}

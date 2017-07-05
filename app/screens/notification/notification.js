@@ -33,7 +33,7 @@ export default class Notification extends PureComponent {
         channel: PropTypes.object,
         config: PropTypes.object,
         notification: PropTypes.object.isRequired,
-        myPreferences: PropTypes.object.isRequired,
+        teammateNameDisplay: PropTypes.string,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object
@@ -139,7 +139,7 @@ export default class Notification extends PureComponent {
     };
 
     getNotificationUserName = () => {
-        const {config, notification, myPreferences, user} = this.props;
+        const {config, notification, teammateNameDisplay, user} = this.props;
         const {data} = notification;
 
         let userName;
@@ -152,7 +152,7 @@ export default class Notification extends PureComponent {
         } else if (user) {
             userName = (
                 <Text style={style.title}>
-                    {displayUsername(user, myPreferences)}
+                    {displayUsername(user, teammateNameDisplay)}
                 </Text>
             );
         }
