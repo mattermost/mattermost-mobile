@@ -60,7 +60,7 @@ class ChannelPostList extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        // Show the loader if the channel names change
+        // Show the loader if the channel id change
         if (this.props.currentChannelId !== nextProps.currentChannelId) {
             this.setState({
                 loaderOpacity: new Animated.Value(1)
