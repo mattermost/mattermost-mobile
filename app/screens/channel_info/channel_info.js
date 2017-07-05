@@ -253,6 +253,7 @@ class ChannelInfo extends PureComponent {
                 <ScrollView
                     style={style.scrollView}
                 >
+                    {currentChannel.hasOwnProperty('id') &&
                     <ChannelInfoHeader
                         createAt={currentChannel.create_at}
                         creator={currentChannelCreatorName}
@@ -263,6 +264,7 @@ class ChannelInfo extends PureComponent {
                         theme={theme}
                         type={currentChannel.type}
                     />
+                    }
                     <View style={style.rowsContainer}>
                         <ChannelInfoRow
                             action={this.handleFavorite}

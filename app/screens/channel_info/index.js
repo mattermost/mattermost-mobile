@@ -39,6 +39,7 @@ function mapStateToProps(state, ownProps) {
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels.indexOf(currentChannel.id) > -1;
     const roles = getCurrentUserRoles(state);
+    const canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
 
     let status;
     if (currentChannel.type === General.DM_CHANNEL) {
@@ -56,7 +57,7 @@ function mapStateToProps(state, ownProps) {
         isFavorite,
         status,
         theme: getTheme(state),
-        canManageUsers: canManageChannelMembers(state)
+        canManageUsers
     };
 }
 
