@@ -135,16 +135,21 @@ class ChannelMembers extends PureComponent {
     };
 
     emitCanRemoveMembers = (enabled) => {
-        this.props.navigator.setButtons({
-            rightButtons: [{...this.removeButton, disabled: !enabled}]
-        });
+        if (this.props.canManageUsers) {
+            this.props.navigator.setButtons({
+                rightButtons: [{...this.removeButton, disabled: !enabled}]
+            });
+        }
     };
 
     emitRemoving = (loading) => {
         this.setState({canSelect: false, removing: loading});
-        this.props.navigator.setButtons({
-            rightButtons: [{...this.removeButton, disabled: loading}]
-        });
+
+        if (this.props.canManageUsers) {
+            this.props.navigator.setButtons({
+                rightButtons: [{...this.removeButton, disabled: loading}]
+            });
+        }
     };
 
     handleRemoveMembersPress = () => {
@@ -203,16 +208,17 @@ class ChannelMembers extends PureComponent {
         let {page} = this.state;
         if (requestStatus !== RequestStatus.STARTED && next && !searching) {
             page = page + 1;
-            actions.getProfilesInChannel(currentChannel.id, page, General.PROFILE_CHUNK_SIZE).
-            then((data) => {
-                if (data && data.length) {
-                    this.setState({
-                        page
-                    });
-                } else {
-                    this.setState({next: false});
+            actions.getProfilesInChannel(currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then(
+                (data) => {
+                    if (data && data.length) {
+                        this.setState({
+                            page
+                        });
+                    } else {
+                        this.setState({next: false});
+                    }
                 }
-            });
+            );
         }
     };
 
