@@ -39,7 +39,7 @@ import configureStore from 'app/store';
 import Config from 'assets/config';
 
 const {StatusBarManager} = NativeModules;
-const store = configureStore(initialState);
+export const store = configureStore(initialState);
 registerScreens(store, Provider);
 
 export default class Mattermost {

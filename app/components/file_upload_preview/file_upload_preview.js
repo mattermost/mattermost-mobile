@@ -29,10 +29,8 @@ export default class FileUploadPreview extends PureComponent {
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
-        createPostRequestStatus: PropTypes.string.isRequired,
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
-        inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired
@@ -124,12 +122,12 @@ export default class FileUploadPreview extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        height: deviceHeight,
-        left: 0,
-        bottom: 0,
         position: 'absolute',
-        width: '100%'
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        height: deviceHeight
     },
     failed: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',

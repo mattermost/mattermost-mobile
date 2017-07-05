@@ -28,6 +28,7 @@ import com.wix.reactnativenotifications.core.notification.IPushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
+import com.wix.reactnativekeyboardinput.KeyboardInputPackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +56,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new OrientationPackage(),
-            new RNNotificationsPackage(MainApplication.this)
+            new RNNotificationsPackage(MainApplication.this),
+            new KeyboardInputPackage(MainApplication.this)
     );
   }
 

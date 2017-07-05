@@ -15,6 +15,7 @@ import {
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import ImagePicker from 'react-native-image-picker';
 import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -24,6 +25,11 @@ import FileUploadPreview from 'app/components/file_upload_preview';
 import FormattedText from 'app/components/formatted_text';
 import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {
+    KeyboardAccessoryView
+} from 'react-native-keyboard-input';
+import EmojiKeyboard from 'app/components/emoji_keyboard';
 
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
@@ -60,14 +66,15 @@ class PostTextbox extends PureComponent {
         value: ''
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            contentHeight: INITIAL_HEIGHT,
-            inputWidth: null
-        };
-    }
+    state = {
+        canSend: false,
+        contentHeight: INITIAL_HEIGHT,
+        inputWidth: null,
+        customKeyboard: {
+            component: null,
+            initialProps: null
+        }
+    };
 
     componentDidMount() {
         if (Platform.OS === 'android') {
@@ -106,7 +113,7 @@ class PostTextbox extends PureComponent {
     }
 
     blur = () => {
-        this.refs.input.blur();
+        this.textInputRef.blur();
     };
 
     canSend = () => {
@@ -389,6 +396,58 @@ class PostTextbox extends PureComponent {
         }
     };
 
+    handleTextInputRef = (r) => {
+        this.textInputRef = r;
+    };
+
+    showEmojiKeyboard = () => {
+        this.showKeyboardView(EmojiKeyboard.CUSTOM_KEYBOARD_NAME, {
+            backgroundColor: this.props.theme.centerChannelBg,
+            containerBackgroundColor: changeOpacity(
+                this.props.theme.centerChannelColor, 0.05)
+        });
+    };
+
+    toolbarButtons = () => {
+        switch (this.state.customKeyboard.component) {
+        case EmojiKeyboard.CUSTOM_KEYBOARD_NAME:
+            return [
+                {
+                    iconName: 'keyboard-o',
+                    onPress: () => this.resetKeyboardView()
+                }
+            ];
+        default:
+            return [
+                {
+                    iconName: 'smile-o',
+                    onPress: () => this.showEmojiKeyboard()
+                }
+            ];
+        }
+    }
+
+    showKeyboardView = (component, initialProps) => {
+        this.setState({
+            customKeyboard: {
+                component,
+                initialProps
+            }
+        });
+    }
+
+    resetKeyboardView() {
+        this.setState({customKeyboard: {}});
+    }
+
+    onKeyboardResigned() {
+        this.resetKeyboardView();
+    }
+
+    onEmojiSelected = (keyboard, {emojiName}) => {
+        this.props.onChangeText(`${this.props.value} :${emojiName}:`);
+    }
+
     render() {
         const {channelIsLoading, config, intl, theme, value} = this.props;
 
@@ -452,11 +511,28 @@ class PostTextbox extends PureComponent {
                     onChangeText={this.props.onChangeText}
                     rootId={this.props.rootId}
                 />
+                <View>
+                    {
+                        this.toolbarButtons().map((button, index) => (
+                            <TouchableOpacity
+                                onPress={button.onPress}
+                                style={{paddingLeft: 15, paddingBottom: 10}}
+                                key={index}
+                            >
+                                <IconFontAwesome
+                                    color={'#BABABA'}
+                                    size={20}
+                                    name={button.iconName}
+                                />
+                            </TouchableOpacity>
+                        ))
+                    }
+                </View>
                 <View style={style.inputWrapper}>
                     {fileUpload}
                     <View style={inputContainerStyle}>
                         <TextInput
-                            ref='input'
+                            ref={this.handleTextInputRef}
                             value={textValue}
                             onChangeText={this.handleTextChange}
                             onSelectionChange={this.handleSelectionChange}
@@ -467,7 +543,6 @@ class PostTextbox extends PureComponent {
                             blurOnSubmit={false}
                             underlineColorAndroid='transparent'
                             style={[style.input, {height: textInputHeight}]}
-                            onSubmitEditing={this.handleSubmit}
                             onLayout={this.handleInputSizeChange}
                         />
                         {this.canSend() &&
@@ -482,6 +557,14 @@ class PostTextbox extends PureComponent {
                                 />
                             </TouchableOpacity>
                         }
+                        <KeyboardAccessoryView
+                            trackInteractive={true}
+                            kbInputRef={this.textInputRef}
+                            kbComponent={this.state.customKeyboard.component}
+                            onKeyboardResigned={() => this.onKeyboardResigned()}
+                            onItemSelected={this.onEmojiSelected}
+                            kbInitialProps={this.state.customKeyboard.initialProps}
+                        />
                     </View>
                 </View>
             </View>
