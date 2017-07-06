@@ -18,13 +18,15 @@ export function handleTeamChange(team, selectChannel = true) {
         }
 
         const state = getState();
-        const actions = [{type: TeamTypes.SELECT_TEAM, data: team.id}];
+        const actions = [
+            setChannelDisplayName(''),
+            {type: TeamTypes.SELECT_TEAM, data: team.id}
+        ];
 
         if (selectChannel) {
             const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
             actions.push({type: ChannelTypes.SELECT_CHANNEL, data: lastChannelId});
         }
-        dispatch(setChannelDisplayName(''), getState);
 
         dispatch(batchActions(actions), getState);
     };
