@@ -47,7 +47,7 @@ export function goToNotification(notification) {
         dispatch(setChannelDisplayName(''));
 
         if (teamId) {
-            handleTeamChange(teams[teamId])(dispatch, getState);
+            handleTeamChange(teams[teamId], false)(dispatch, getState);
             await loadChannelsIfNecessary(teamId)(dispatch, getState);
         } else {
             await selectFirstAvailableTeam()(dispatch, getState);
