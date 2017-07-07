@@ -194,13 +194,13 @@ class FilteredList extends Component {
 
     buildMembersForSearch = (props, term) => {
         const {channels, currentUserId, teammateNameDisplay, profiles, statuses, pastDirectMessages} = props;
-        const {favoriteChannels} = channels;
+        const {favoriteChannels, unreadChannels} = channels;
 
-        const favoriteDms = favoriteChannels.filter((c) => {
+        const favoriteAndUnreadDms = [...favoriteChannels, ...unreadChannels].filter((c) => {
             return c.type === General.DM_CHANNEL;
         });
 
-        const directAndGroupChannelMembers = [...channels.directAndGroupChannels, ...favoriteDms].filter((c) => c.type === General.DM_CHANNEL).map((c) => c.teammate_id);
+        const directAndGroupChannelMembers = [...channels.directAndGroupChannels, ...favoriteAndUnreadDms].filter((c) => c.type === General.DM_CHANNEL).map((c) => c.teammate_id);
 
         const userNotInDirectOrGroupChannels = Object.values(profiles).filter((u) => directAndGroupChannelMembers.indexOf(u.id) === -1 && pastDirectMessages.indexOf(u.id) === -1 && u.id !== currentUserId);
 

@@ -35,7 +35,7 @@ function mapStateToProps(state, ownProps) {
         profiles = getProfilesInCurrentTeam(state);
     }
 
-    const searchOrder = Config.SidebarSearchOrder ? Config.SidebarSearchOrder : DEFAULT_SEARCH_ORDER;
+    const searchOrder = Config.DrawerSearchOrder ? Config.DrawerSearchOrder : DEFAULT_SEARCH_ORDER;
 
     return {
         currentUserId,
