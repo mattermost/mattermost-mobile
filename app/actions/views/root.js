@@ -10,6 +10,7 @@ import {
 } from 'app/actions/views/channel';
 import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
+import {General} from 'mattermost-redux/constants';
 import {getClientConfig, getLicenseConfig, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
 
@@ -69,6 +70,10 @@ export function setStatusBarHeight(height = 20) {
         type: ViewTypes.STATUSBAR_HEIGHT_CHANGED,
         data: height
     };
+}
+
+export function purgeOfflineStore() {
+    return {type: General.OFFLINE_STORE_PURGE};
 }
 
 export default {
