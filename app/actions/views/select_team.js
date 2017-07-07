@@ -10,7 +10,7 @@ import {NavigationTypes} from 'app/constants';
 
 import {setChannelDisplayName} from './channel';
 
-export function handleTeamChange(team) {
+export function handleTeamChange(team, selectChannel = true) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
         if (currentTeamId === team.id) {
@@ -18,14 +18,17 @@ export function handleTeamChange(team) {
         }
 
         const state = getState();
-        const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
+        const actions = [
+            setChannelDisplayName(''),
+            {type: TeamTypes.SELECT_TEAM, data: team.id}
+        ];
 
-        dispatch(setChannelDisplayName(''), getState);
+        if (selectChannel) {
+            const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
+            actions.push({type: ChannelTypes.SELECT_CHANNEL, data: lastChannelId});
+        }
 
-        dispatch(batchActions([
-            {type: TeamTypes.SELECT_TEAM, data: team.id},
-            {type: ChannelTypes.SELECT_CHANNEL, data: lastChannelId}
-        ]), getState);
+        dispatch(batchActions(actions), getState);
     };
 }
 
