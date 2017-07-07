@@ -3,6 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {createSelector} from 'reselect';
 
 import {searchChannels} from 'mattermost-redux/actions/channels';
 import {searchProfiles} from 'mattermost-redux/actions/users';
@@ -11,9 +12,18 @@ import {General} from 'mattermost-redux/constants';
 import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getProfilesInCurrentTeam, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
-import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getDirectShowPreferences, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+
+import Config from 'assets/config';
 
 import FilteredList from './filtered_list';
+
+const DEFAULT_SEARCH_ORDER = ['unreads', 'dms', 'channels', 'members', 'nonmembers'];
+
+const pastDirectMessages = createSelector(
+    getDirectShowPreferences,
+    (directChannelsFromPreferences) => directChannelsFromPreferences.filter((d) => d.value === 'false').map((d) => d.name)
+);
 
 function mapStateToProps(state, ownProps) {
     const {currentUserId} = state.entities.users;
@@ -25,6 +35,8 @@ function mapStateToProps(state, ownProps) {
         profiles = getProfilesInCurrentTeam(state);
     }
 
+    const searchOrder = Config.SidebarSearchOrder ? Config.SidebarSearchOrder : DEFAULT_SEARCH_ORDER;
+
     return {
         currentUserId,
         otherChannels: getOtherChannels(state),
@@ -32,6 +44,8 @@ function mapStateToProps(state, ownProps) {
         profiles,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         statuses: getUserStatuses(state),
+        searchOrder,
+        pastDirectMessages: pastDirectMessages(state),
         ...ownProps
     };
 }

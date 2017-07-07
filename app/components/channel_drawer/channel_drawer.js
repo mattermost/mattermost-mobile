@@ -144,7 +144,7 @@ export default class ChannelDrawer extends PureComponent {
         this.setState({openDrawer: true});
     };
 
-    selectChannel = (id) => {
+    selectChannel = (channel) => {
         const {
             actions,
             currentChannel
@@ -154,15 +154,17 @@ export default class ChannelDrawer extends PureComponent {
             handleSelectChannel,
             markChannelAsRead,
             setChannelLoading,
+            setChannelDisplayName,
             viewChannel
         } = actions;
 
-        markChannelAsRead(id, currentChannel.id);
         setChannelLoading();
-        viewChannel(id, currentChannel.id);
+        markChannelAsRead(channel.id, currentChannel.id);
+        viewChannel(channel.id, currentChannel.id);
+        setChannelDisplayName(channel.display_name);
         this.closeChannelDrawer();
         InteractionManager.runAfterInteractions(() => {
-            handleSelectChannel(id);
+            handleSelectChannel(channel.id);
         });
     };
 
