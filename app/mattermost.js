@@ -18,16 +18,16 @@ import {setJSExceptionHandler} from 'react-native-exception-handler';
 import StatusBarSizeIOS from 'react-native-status-bar-size';
 import semver from 'semver';
 
+import {General} from 'mattermost-redux/constants';
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {logError} from 'mattermost-redux/actions/errors';
 import {logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {goToNotification, loadConfigAndLicense, queueNotification, setStatusBarHeight} from 'app/actions/views/root';
+import {goToNotification, loadConfigAndLicense, queueNotification, setStatusBarHeight, purgeOfflineStore} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
@@ -80,7 +80,7 @@ export default class Mattermost {
                     text: intl.formatMessage({id: 'mobile.error_handler.button', defaultMessage: 'Relaunch'}),
                     onPress: () => {
                         // purge the store
-                        store.dispatch({type: General.OFFLINE_STORE_PURGE});
+                        store.dispatch(purgeOfflineStore());
                     }
                 }],
                 {cancelable: false}

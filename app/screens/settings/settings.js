@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Alert,
     InteractionManager,
     Linking,
     Platform,
@@ -24,7 +25,8 @@ class Settings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearErrors: PropTypes.func.isRequired,
-            logout: PropTypes.func.isRequired
+            logout: PropTypes.func.isRequired,
+            purgeOfflineStore: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -153,6 +155,22 @@ class Settings extends PureComponent {
         Linking.openURL(config.HelpLink.toLowerCase());
     };
 
+    clearOfflineCache = () => {
+        const {actions, intl} = this.props;
+
+        Alert.alert(
+            intl.formatMessage({id: 'sidebar_right_menu.clear', defaultMessage: 'Clear Offline Store'}),
+            intl.formatMessage({id: 'sidebar_right_menu.clear_message', defaultMessage: '\nThis will clear all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
+            [{
+                text: intl.formatMessage({id: 'sidebar_right_menu.clear_button', defaultMessage: 'Clear'}),
+                onPress: () => actions.purgeOfflineStore()
+            }, {
+                text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
+                onPress: () => true
+            }]
+        );
+    }
+
     render() {
         const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
@@ -200,6 +218,15 @@ class Settings extends PureComponent {
                         iconName='warning'
                         iconType='material'
                         onPress={() => this.handlePress(this.openErrorEmail)}
+                        separator={true}
+                        theme={theme}
+                    />
+                    <SettingsItem
+                        defaultMessage='Clear Offline Store'
+                        i18nId='sidebar_right_menu.clear'
+                        iconName='storage'
+                        iconType='material'
+                        onPress={() => this.handlePress(this.clearOfflineCache)}
                         separator={true}
                         theme={theme}
                     />
