@@ -176,8 +176,16 @@ export default class Mattermost {
     };
 
     onRegisterDevice = (data) => {
-        const prefix = Platform.OS === 'ios' ? General.PUSH_NOTIFY_APPLE_REACT_NATIVE : General.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
         const {dispatch, getState} = store;
+        let prefix;
+        if (Platform.OS === 'ios') {
+            prefix = General.PUSH_NOTIFY_APPLE_REACT_NATIVE;
+            if (DeviceInfo.getBundleId().includes('rnbeta')) {
+                prefix = `${prefix}beta`;
+            }
+        } else {
+            prefix = General.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
+        }
         setDeviceToken(`${prefix}:${data.token}`)(dispatch, getState);
         this.isConfigured = true;
     };
