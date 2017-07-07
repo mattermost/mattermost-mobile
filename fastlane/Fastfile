@@ -111,13 +111,16 @@ platform :ios do
               method: 'app-store'
           })
 
-    deliver(
-        force: true,
-        skip_screenshots: true,
-        skip_metadata: true,
-        submit_for_review: false, #lets try this after the first release
-        automatic_release: false #lets try this after the first release
-    )
+    # deliver(
+    #     force: true,
+    #     skip_screenshots: true,
+    #     skip_metadata: true,
+    #     submit_for_review: false, #lets try this after the first release
+    #     automatic_release: false #lets try this after the first release
+    # )
+
+    ### We are going to publish the app to the testflight first and not deliver it directly to the app store
+    pilot(skip_waiting_for_build_processing: true)
 
     # frameit
 
@@ -330,8 +333,14 @@ platform :android do
                       ensure_git_status_clean: false
                   })
 
+    # supply(
+    #     track: "production",
+    #     apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
+    # )
+
+    # We are going to upload the build to the beta lane and not directly to production so it can be promoted later
     supply(
-        track: "production",
+        track: 'beta',
         apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
     )
 
