@@ -159,10 +159,10 @@ class Settings extends PureComponent {
         const {actions, intl} = this.props;
 
         Alert.alert(
-            intl.formatMessage({id: 'sidebar_right_menu.clear', defaultMessage: 'Clear Offline Store'}),
-            intl.formatMessage({id: 'sidebar_right_menu.clear_message', defaultMessage: '\nThis will clear all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
+            intl.formatMessage({id: 'mobile.settings.clear', defaultMessage: 'Clear Offline Store'}),
+            intl.formatMessage({id: 'mobile.settings.clear_message', defaultMessage: '\nThis will clear all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
             [{
-                text: intl.formatMessage({id: 'sidebar_right_menu.clear_button', defaultMessage: 'Clear'}),
+                text: intl.formatMessage({id: 'mobile.settings.clear_button', defaultMessage: 'Clear'}),
                 onPress: () => actions.purgeOfflineStore()
             }, {
                 text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
@@ -223,7 +223,7 @@ class Settings extends PureComponent {
                     />
                     <SettingsItem
                         defaultMessage='Clear Offline Store'
-                        i18nId='sidebar_right_menu.clear'
+                        i18nId='mobile.settings.clear'
                         iconName='storage'
                         iconType='material'
                         onPress={() => this.handlePress(this.clearOfflineCache)}
