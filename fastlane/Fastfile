@@ -327,6 +327,12 @@ platform :android do
         new_string: 'package com.mattermost.rn;'
     )
 
+    find_replace_string(
+        path_to_file: './fastlane/metadata/android/en-US/title.txt',
+        old_string: 'Mattermost Beta',
+        new_string: 'Mattermost;'
+    )
+
     build_android({
                       release: true,
                       increment_build: false,
