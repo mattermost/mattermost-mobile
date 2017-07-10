@@ -344,7 +344,7 @@ class Post extends PureComponent {
 
     renderMessage = (style, messageStyle, blockStyles, textStyles, replyBar = false) => {
         const {formatMessage} = this.props.intl;
-        const {isFlagged, post, theme} = this.props;
+        const {isFlagged, post, theme, navigator} = this.props;
         const {flagPost, unflagPost} = this.props.actions;
         const actions = [];
 
@@ -391,6 +391,7 @@ class Post extends PureComponent {
                             blockStyles={blockStyles}
                             value={post.message}
                             onLongPress={this.showOptionsContext}
+                            navigator={navigator}
                         />
                     </View>
                 </View>

@@ -3,7 +3,7 @@
 
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
@@ -24,14 +24,15 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 
-export default class Markdown extends React.PureComponent {
+export default class Markdown extends PureComponent {
     static propTypes = {
         baseTextStyle: CustomPropTypes.Style,
-        textStyles: PropTypes.object,
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
-        value: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func
+        navigator: PropTypes.object.isRequired,
+        onLongPress: PropTypes.func,
+        textStyles: PropTypes.object,
+        value: PropTypes.string.isRequired
     };
 
     static defaultProps = {
@@ -134,6 +135,7 @@ export default class Markdown extends React.PureComponent {
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
                 mentionName={mentionName}
+                navigator={this.props.navigator}
             />
         );
     }
