@@ -1,32 +1,30 @@
-# Mattermost Mobile (unreleased) 
+# Mattermost Mobile
 
 **Supported Server Versions:** 3.8+
 
-This is an unreleased project for replacing the Mattermost iOS and Android apps with new mobile apps using React Native and Redux. The project is currently in beta, with a planned release date of July 2017. 
-
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 11 languages. Learn more at https://mattermost.com.
+
+You can download our apps from the [App Store](https://about.mattermost.com/mattermost-ios-app/) or [Google Play Store](https://about.mattermost.com/mattermost-android-app/), or package them yourself. 
+
+We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
 
 # How to Contribute
 
 ### Testing
 
-The apps are currently in beta [(released on March 29, 2017)](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md#beta-release). We cut new builds regularly, so people can test it out and see what's new.
+To help with testing app updates before they're released, you can:
 
-If you would like to help with testing the apps, you can:
-
-1. (Optional) [Sign up for our team site](https://pre-release.mattermost.com/signup_user_complete/?id=f1924a8db44ff3bb41c96424cdc20676)
-  - Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new and discuss feedback with the contributors and the core team
-2. Sign up to be a beta tester
-  - [Android](https://play.google.com/apps/testing/com.mattermost.react.native)
+1. Sign up to be a beta tester
+  - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
   - [iOS](https://mattermost-fastlane.herokuapp.com/)
-3. Install the `Mattermost 2017 (Beta)` app
-  - Note: If your server version is not compatible, you can test using our team site [https://pre-release.mattermost.com/](https://pre-release.mattermost.com/)
-4. Check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what's currently supported
-5. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
+2. Install the `Mattermost Beta` app
+3. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
   - Device information
   - Repro steps
   - Observed behavior (including screenshot / video when possible)
   - Expected behavior
+4. (Optional) [Sign up for our team site](https://pre-release.mattermost.com/signup_user_complete/?id=f1924a8db44ff3bb41c96424cdc20676)
+  - Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) to see what's new and discuss feedback with other contributors and the core team
 
 ### Contribute Code 
 
@@ -36,6 +34,7 @@ If you would like to help with testing the apps, you can:
 4. Join the [Native Mobile Apps channel](https://pre-release.mattermost.com/core/channels/native-mobile-apps) on our team site to ask questions
 
 # Installing Dependencies
+
 Follow the [React Native Getting Started Guide](https://facebook.github.io/react-native/docs/getting-started.html) for detailed instructions on setting up your local machine for development.
 
 # Detailed configuration:
