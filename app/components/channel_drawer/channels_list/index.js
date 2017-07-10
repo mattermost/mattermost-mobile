@@ -62,7 +62,7 @@ class ChannelsList extends Component {
         if (channel.fake) {
             this.props.onJoinChannel(channel);
         } else {
-            this.props.onSelectChannel(channel.id);
+            this.props.onSelectChannel(channel);
         }
 
         this.refs.search_bar.cancel();

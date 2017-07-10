@@ -24,7 +24,7 @@ function makeMapStateToProps() {
         const posts = getPostsInChannel(state, channelId) || [];
 
         return {
-            channelIsLoading: (getPosts.status === RequestStatus.STARTED),
+            channelIsLoading: getPosts.status === RequestStatus.STARTED || state.views.channel.loading,
             channelIsRefreshing: refreshing,
             currentChannelId: getCurrentChannelId(state),
             posts,

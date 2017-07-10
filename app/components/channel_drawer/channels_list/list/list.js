@@ -24,9 +24,6 @@ import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_
 
 class List extends Component {
     static propTypes = {
-        actions: PropTypes.shape({
-            setChannelDisplayName: PropTypes.func.isRequired
-        }).isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
@@ -95,7 +92,6 @@ class List extends Component {
     };
 
     onSelectChannel = (channel) => {
-        this.props.actions.setChannelDisplayName(channel.display_name);
         this.props.onSelectChannel(channel);
     };
 
