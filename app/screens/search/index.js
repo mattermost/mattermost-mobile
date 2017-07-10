@@ -4,12 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
 import {getMyChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getSearchResults} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
-import {handlePostDraftChanged} from 'app/actions/views/channel';
+import {handlePostDraftChanged, loadThreadIfNecessary} from 'app/actions/views/channel';
 
 import Search from './search';
 
@@ -31,8 +32,10 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             clearSearch,
             handlePostDraftChanged,
+            loadThreadIfNecessary,
             removeSearchTerms,
-            searchPosts
+            searchPosts,
+            selectPost
         }, dispatch)
     };
 }

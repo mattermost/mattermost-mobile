@@ -12,7 +12,7 @@ import {
     selectChannel,
     leaveChannel as serviceLeaveChannel
 } from 'mattermost-redux/actions/channels';
-import {getPosts, getPostsBefore, getPostsSince} from 'mattermost-redux/actions/posts';
+import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
@@ -162,6 +162,17 @@ export function loadFilesForPostIfNecessary(postId) {
 
         if (!fileIdsForPost) {
             await getFilesForPost(postId)(dispatch, getState);
+        }
+    };
+}
+
+export function loadThreadIfNecessary(rootId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {posts} = state.entities.posts;
+
+        if (rootId && !posts[rootId]) {
+            getPostThread(rootId)(dispatch, getState);
         }
     };
 }

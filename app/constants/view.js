@@ -54,5 +54,6 @@ const ViewTypes = keyMirror({
 
 export default {
     ...ViewTypes,
-    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2
+    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2,
+    SEARCH: 'search'
 };

@@ -15,15 +15,17 @@ import {
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
+import {General} from 'mattermost-redux/constants';
+
 import Autocomplete from 'app/components/autocomplete';
 import Post from 'app/components/post';
 import SectionList from 'app/components/scrollable_section_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const SEARCH = 'search';
 const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
@@ -33,8 +35,10 @@ class Search extends Component {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired,
+            loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
-            searchPosts: PropTypes.func.isRequired
+            searchPosts: PropTypes.func.isRequired,
+            selectPost: PropTypes.func.isRequired
         }).isRequired,
         channels: PropTypes.array.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -90,6 +94,47 @@ class Search extends Component {
         navigator.dismissModal({animationType: 'slide-down'});
     };
 
+    goToThread = (post) => {
+        const {actions, channels, intl, navigator, theme} = this.props;
+        const channelId = post.channel_id;
+        const channel = channels.find((c) => c.id === channelId);
+        const rootId = (post.root_id || post.id);
+
+        actions.loadThreadIfNecessary(post.root_id);
+        actions.selectPost(rootId);
+
+        let title;
+        if (channel.type === General.DM_CHANNEL) {
+            title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
+        } else {
+            const channelName = channel.display_name;
+            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName});
+        }
+
+        const options = {
+            screen: 'Thread',
+            title,
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            },
+            passProps: {
+                channelId,
+                rootId
+            }
+        };
+
+        if (Platform.OS === 'android') {
+            navigator.showModal(options);
+        } else {
+            navigator.push(options);
+        }
+    };
+
     handleSelectionChange = (event) => {
         if (this.autocomplete) {
             this.autocomplete.handleSelectionChange(event);
@@ -98,7 +143,7 @@ class Search extends Component {
 
     handleTextChanged = (value) => {
         this.setState({value});
-        this.props.actions.handlePostDraftChanged(SEARCH, value);
+        this.props.actions.handlePostDraftChanged(ViewTypes.SEARCH, value);
     };
 
     keyRecentExtractor = (item) => {
@@ -118,7 +163,7 @@ class Search extends Component {
         this.setState({isFocused: true});
         if (posts.length) {
             this.refs.list.getWrapperRef().getListRef().scrollToOffset({
-                animated: true,
+                animated: false,
                 offset: 0
             });
         }
@@ -152,6 +197,7 @@ class Search extends Component {
                     isLastReply={false}
                     commentedOnPost={null}
                     onPress={() => true}
+                    onReply={this.goToThread}
                     isSearchResult={true}
                     navigator={this.props.navigator}
                 />
@@ -325,7 +371,6 @@ class Search extends Component {
                 <Autocomplete
                     ref={this.attachAutocomplete}
                     onChangeText={this.handleTextChanged}
-                    rootId={SEARCH}
                     isSearch={true}
                 />
                 <SectionList

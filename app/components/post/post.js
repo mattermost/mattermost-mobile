@@ -49,7 +49,8 @@ class Post extends PureComponent {
         roles: PropTypes.string,
         tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        onPress: PropTypes.func
+        onPress: PropTypes.func,
+        onReply: PropTypes.func
     };
 
     static defaultProps = {
@@ -206,6 +207,15 @@ class Post extends PureComponent {
         }
     };
 
+    handleReply = () => {
+        const {post, onReply, tooltipVisible} = this.props;
+        if (!tooltipVisible && onReply) {
+            return preventDoubleTap(onReply, null, post);
+        }
+
+        return this.handlePress();
+    };
+
     onRemovePost = (post) => {
         const {removePost} = this.props.actions;
         removePost(post);
@@ -240,7 +250,11 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        preventDoubleTap(this.goToUserProfile, this);
+        const {isSearchResult} = this.props;
+
+        if (!isSearchResult) {
+            preventDoubleTap(this.goToUserProfile, this);
+        }
     };
 
     toggleSelected = (selected) => {
@@ -276,7 +290,7 @@ class Post extends PureComponent {
                             commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
                             createAt={post.create_at}
                             isSearchResult={isSearchResult}
-                            onPress={this.handlePress}
+                            onPress={this.handleReply}
                             onViewUserProfile={this.viewUserProfile}
                             renderReplies={renderReplies}
                             theme={theme}

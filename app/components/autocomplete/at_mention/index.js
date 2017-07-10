@@ -9,6 +9,7 @@ import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getProfilesInCurrentChannel, getProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 
+import {ViewTypes} from 'app/constants';
 import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
@@ -16,7 +17,7 @@ function mapStateToProps(state, ownProps) {
 
     let postDraft;
     if (ownProps.isSearch) {
-        const searchDraft = state.views.channel.drafts[ownProps.rootId];
+        const searchDraft = state.views.channel.drafts[ViewTypes.SEARCH];
         if (searchDraft) {
             postDraft = searchDraft.draft;
         }
