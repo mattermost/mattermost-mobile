@@ -25,6 +25,7 @@ import ChannelDrawerItem from 'app/components/channel_drawer/channels_list/chann
 class FilteredList extends Component {
     static propTypes = {
         actions: PropTypes.shape({
+            getProfilesInTeam: PropTypes.func.isRequired,
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired
@@ -44,6 +45,7 @@ class FilteredList extends Component {
         ),
         searchOrder: PropTypes.array.isRequired,
         pastDirectMessages: PropTypes.array,
+        restrictDms: PropTypes.bool.isRequired,
         statuses: PropTypes.object,
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
@@ -61,6 +63,12 @@ class FilteredList extends Component {
         this.state = {
             dataSource: this.buildData(props)
         };
+    }
+
+    componentDidMount() {
+        if (this.props.restrictDms) {
+            this.props.actions.getProfilesInTeam(this.props.currentTeam.id);
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {

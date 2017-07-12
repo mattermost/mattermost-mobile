@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
 import {searchChannels} from 'mattermost-redux/actions/channels';
-import {searchProfiles} from 'mattermost-redux/actions/users';
+import {getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
 import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/preferences';
 import {General} from 'mattermost-redux/constants';
 import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
@@ -29,10 +29,11 @@ function mapStateToProps(state, ownProps) {
     const {currentUserId} = state.entities.users;
 
     let profiles;
-    if (getConfig(state).RestrictDirectMessage === General.RESTRICT_DIRECT_MESSAGE_ANY) {
-        profiles = getUsers(state);
-    } else {
+    const restrictDms = getConfig(state).RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY;
+    if (restrictDms) {
         profiles = getProfilesInCurrentTeam(state);
+    } else {
+        profiles = getUsers(state);
     }
 
     const searchOrder = Config.DrawerSearchOrder ? Config.DrawerSearchOrder : DEFAULT_SEARCH_ORDER;
@@ -46,6 +47,7 @@ function mapStateToProps(state, ownProps) {
         statuses: getUserStatuses(state),
         searchOrder,
         pastDirectMessages: pastDirectMessages(state),
+        restrictDms,
         ...ownProps
     };
 }
@@ -53,6 +55,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            getProfilesInTeam,
             makeGroupMessageVisibleIfNecessary,
             searchChannels,
             searchProfiles
