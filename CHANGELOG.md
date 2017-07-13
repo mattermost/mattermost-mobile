@@ -2,12 +2,12 @@
 
 ## v1.0 Release 
 
-- Planned Release Date: July 5, 2017 
+- Release Date: July 10, 2017 
 - Server Versions Supported: Server v3.8+ is required, Self-Signed SSL Certificates are not yet supported
 
 ### Highlights 
 
-#### Authentication
+#### Authentication (Requires v3.10+ [Mattermost server](https://github.com/mattermost/platform))
 - GitLab login 
 
 #### Offline Support
