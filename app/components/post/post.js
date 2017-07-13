@@ -16,6 +16,7 @@ import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
+import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -215,7 +216,7 @@ class Post extends PureComponent {
             theme
         } = this.props;
 
-        if (!renderReplies || !post.root_id || !commentedOnPost) {
+        if (!renderReplies || !post.root_id) {
             return null;
         }
 
@@ -262,7 +263,7 @@ class Post extends PureComponent {
                     />
                 </View>
                 <View style={style.messageContainerWithReplyBar}>
-                    {this.renderReplyBar()}
+                    {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
                         <PostHeader
                             postId={post.id}
@@ -282,7 +283,7 @@ class Post extends PureComponent {
                             onPostEdit={this.handlePostEdit}
                             onPress={this.handlePress}
                             postId={post.id}
-                            renderReplyBar={this.renderReplyBar}
+                            renderReplyBar={!!commentedOnPost ? this.renderReplyBar : emptyFunction} //eslint-disable-line
                             toggleSelected={this.toggleSelected}
                         />
                     </View>
