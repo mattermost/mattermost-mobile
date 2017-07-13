@@ -23,7 +23,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     Client.setLocale(locale);
-    Client4.setLocale(locale);
+    Client4.setAcceptLanguage(locale);
 
     return {
         ...ownProps,

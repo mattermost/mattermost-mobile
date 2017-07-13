@@ -5,34 +5,16 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    Image,
-    Platform,
     StyleSheet,
-    Text,
-    TouchableHighlight,
-    TouchableOpacity,
     View,
     ViewPropTypes
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {NavigationTypes} from 'app/constants';
-import FileAttachmentList from 'app/components/file_attachment_list';
-import FormattedText from 'app/components/formatted_text';
-import FormattedTime from 'app/components/formatted_time';
-import MattermostIcon from 'app/components/mattermost_icon';
-import Markdown from 'app/components/markdown';
-import OptionsContext from 'app/components/options_context';
-import ProfilePicture from 'app/components/profile_picture';
-import ReplyIcon from 'app/components/reply_icon';
-import SlackAttachments from 'app/components/slack_attachments';
 import {preventDoubleTap} from 'app/utils/tap';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import webhookIcon from 'assets/images/icons/webhook.jpg';
 
 import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
@@ -40,7 +22,9 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-const BOT_NAME = 'BOT';
+import PostHeader from './post_header';
+import PostMessage from './post_message';
+import PostProfilePicture from './post_profile_picture';
 
 class Post extends PureComponent {
     static propTypes = {
@@ -224,62 +208,9 @@ class Post extends PureComponent {
         }
     };
 
-    hideOptionsContext = () => {
-        if (Platform.OS === 'ios') {
-            this.refs.tooltip.hide();
-        }
-    };
-
     onRemovePost = (post) => {
         const {removePost} = this.props.actions;
         removePost(post);
-    };
-
-    showOptionsContext = () => {
-        if (Platform.OS === 'ios') {
-            return this.refs.tooltip.show();
-        }
-
-        return this.refs.bottomSheet.show();
-    };
-
-    renderCommentedOnMessage = (style) => {
-        if (!this.props.renderReplies || !this.props.commentedOnPost) {
-            return null;
-        }
-
-        const displayName = this.props.commentedOnDisplayName;
-
-        let name;
-        if (displayName) {
-            name = displayName;
-        } else {
-            name = (
-                <FormattedText
-                    id='channel_loader.someone'
-                    defaultMessage='Someone'
-                />
-            );
-        }
-
-        let apostrophe;
-        if (displayName && displayName.slice(-1) === 's') {
-            apostrophe = '\'';
-        } else {
-            apostrophe = '\'s';
-        }
-
-        return (
-            <FormattedText
-                id='post_body.commentedOn'
-                defaultMessage='Commented on {name}{apostrophe} message: '
-                values={{
-                    name,
-                    apostrophe
-                }}
-                style={style.commentedOn}
-            />
-        );
     };
 
     renderReplyBar = (style) => {
@@ -300,180 +231,6 @@ class Post extends PureComponent {
         return <View style={replyBarStyle}/>;
     };
 
-    renderFileAttachments() {
-        const {navigator, post} = this.props;
-        const fileIds = post.file_ids || [];
-
-        let attachments;
-        if (fileIds.length > 0) {
-            attachments = (
-                <FileAttachmentList
-                    hideOptionsContext={this.hideOptionsContext}
-                    onLongPress={this.showOptionsContext}
-                    onPress={this.handlePress}
-                    post={post}
-                    toggleSelected={this.toggleSelected}
-                    navigator={navigator}
-                />
-            );
-        }
-        return attachments;
-    }
-
-    renderSlackAttachments = (baseStyle, blockStyles, textStyles) => {
-        const {post, theme} = this.props;
-
-        if (post.props) {
-            const {attachments} = post.props;
-
-            if (attachments && attachments.length) {
-                return (
-                    <SlackAttachments
-                        attachments={attachments}
-                        baseTextStyle={baseStyle}
-                        blockStyles={blockStyles}
-                        textStyles={textStyles}
-                        theme={theme}
-                    />
-                );
-            }
-        }
-
-        return null;
-    };
-
-    renderMessage = (style, messageStyle, blockStyles, textStyles, replyBar = false) => {
-        const {formatMessage} = this.props.intl;
-        const {isFlagged, post, theme, navigator} = this.props;
-        const {flagPost, unflagPost} = this.props.actions;
-        const actions = [];
-
-        // we should check for the user roles and permissions
-        if (!isPostPendingOrFailed(post)) {
-            if (isFlagged) {
-                actions.push({
-                    text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                    onPress: () => unflagPost(post.id)
-                });
-            } else {
-                actions.push({
-                    text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                    onPress: () => flagPost(post.id)
-                });
-            }
-
-            if (this.state.canEdit) {
-                actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: () => this.handlePostEdit()});
-            }
-
-            if (this.state.canDelete && post.state !== Posts.POST_DELETED) {
-                actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: () => this.handlePostDelete()});
-            }
-        }
-
-        let messageContainer;
-        let message;
-        if (post.state === Posts.POST_DELETED) {
-            message = (
-                <FormattedText
-                    style={messageStyle}
-                    id='post_body.deleted'
-                    defaultMessage='(message deleted)'
-                />
-            );
-        } else if (this.props.post.message.length) {
-            message = (
-                <View style={{flexDirection: 'row'}}>
-                    <View style={[{flex: 1}, (isPostPendingOrFailed(post) && style.pendingPost)]}>
-                        <Markdown
-                            baseTextStyle={messageStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
-                            value={post.message}
-                            onLongPress={this.showOptionsContext}
-                            navigator={navigator}
-                        />
-                    </View>
-                </View>
-            );
-        }
-
-        if (Platform.OS === 'ios') {
-            messageContainer = (
-                <View style={style.messageContainerWithReplyBar}>
-                    {replyBar && this.renderReplyBar(style)}
-                    <View style={{flex: 1, flexDirection: 'row'}}>
-                        <View style={{flex: 1}}>
-                            <OptionsContext
-                                actions={actions}
-                                ref='tooltip'
-                                onPress={this.handlePress}
-                                toggleSelected={this.toggleSelected}
-                            >
-                                {message}
-                                {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
-                                {this.renderFileAttachments()}
-                            </OptionsContext>
-                        </View>
-                        {post.failed &&
-                            <TouchableOpacity
-                                onPress={this.handleFailedPostPress}
-                                style={{justifyContent: 'center', marginLeft: 12}}
-                            >
-                                <Icon
-                                    name='ios-information-circle-outline'
-                                    size={26}
-                                    color={theme.errorTextColor}
-                                />
-                            </TouchableOpacity>
-                        }
-                    </View>
-                </View>
-            );
-        } else {
-            messageContainer = (
-                <View style={style.messageContainerWithReplyBar}>
-                    {replyBar && this.renderReplyBar(style)}
-                    <TouchableHighlight
-                        onHideUnderlay={() => this.toggleSelected(false)}
-                        onLongPress={this.showOptionsContext}
-                        onPress={this.handlePress}
-                        onShowUnderlay={() => this.toggleSelected(true)}
-                        underlayColor='transparent'
-                        style={{flex: 1, flexDirection: 'row'}}
-                    >
-                        <View style={{flexDirection: 'row', flex: 1}}>
-                            <View style={{flex: 1}}>
-                                {message}
-                                <OptionsContext
-                                    ref='bottomSheet'
-                                    actions={actions}
-                                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                                />
-                                {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
-                                {this.renderFileAttachments()}
-                            </View>
-                            {post.failed &&
-                                <TouchableOpacity
-                                    onPress={this.handleFailedPostPress}
-                                    style={{justifyContent: 'center', marginLeft: 12}}
-                                >
-                                    <Icon
-                                        name='ios-information-circle-outline'
-                                        size={26}
-                                        color={theme.errorTextColor}
-                                    />
-                                </TouchableOpacity>
-                            }
-                        </View>
-                    </TouchableHighlight>
-                </View>
-            );
-        }
-
-        return messageContainer;
-    };
-
     viewUserProfile = () => {
         preventDoubleTap(this.goToUserProfile, null, this.props.user.id);
     };
@@ -486,175 +243,82 @@ class Post extends PureComponent {
     render() {
         const {
             commentCount,
+            commentedOnDisplayName,
+            commentedOnPost,
             config,
+            displayName,
+            isLastReply,
             post,
             renderReplies,
-            theme
+            theme,
+            user
         } = this.props;
         const style = getStyleSheet(theme);
-        const PROFILE_PICTURE_SIZE = 32;
+        const isPostSystemMessage = isSystemMessage(post);
+        const pendingOrFailed = isPostPendingOrFailed(post);
+        const selected = this.state && this.state.selected ? style.selected : null;
+        const showReplyBar = !!commentedOnPost; //eslint-disable-line no-implicit-coercion
 
-        let profilePicture;
-        let displayName;
-        let messageStyle;
-        if (isSystemMessage(post)) {
-            profilePicture = (
-                <View style={style.profilePicture}>
-                    <MattermostIcon
-                        color={theme.centerChannelColor}
-                        height={PROFILE_PICTURE_SIZE}
-                        width={PROFILE_PICTURE_SIZE}
+        return (
+            <View style={[style.container, this.props.style, selected]}>
+                <View style={[style.profilePictureContainer, (pendingOrFailed && style.pendingPost)]}>
+                    <PostProfilePicture
+                        enablePostIconOverride={config.EnablePostIconOverride === 'true'}
+                        fromWebHook={post.props && post.props.from_webhook === 'true'}
+                        isSystemMessage={isPostSystemMessage}
+                        onViewUserProfile={this.viewUserProfile}
+                        overrideIconUrl={post.props && post.props.override_icon_url}
+                        theme={theme}
+                        user={user}
                     />
                 </View>
-            );
-
-            displayName = (
-                <FormattedText
-                    id='post_info.system'
-                    defaultMessage='System'
-                    style={style.displayName}
-                />
-            );
-
-            messageStyle = [style.message, style.systemMessage];
-        } else if (post.props && post.props.from_webhook) {
-            if (config.EnablePostIconOverride === 'true') {
-                const icon = post.props.override_icon_url ? {uri: post.props.override_icon_url} : webhookIcon;
-                profilePicture = (
-                    <View style={style.profilePicture}>
-                        <Image
-                            source={icon}
-                            style={{
-                                height: PROFILE_PICTURE_SIZE,
-                                width: PROFILE_PICTURE_SIZE,
-                                borderRadius: PROFILE_PICTURE_SIZE / 2
-                            }}
+                <View style={style.messageContainerWithReplyBar}>
+                    {!commentedOnPost && this.renderReplyBar(style)}
+                    <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
+                        <PostHeader
+                            commentCount={commentCount}
+                            commentedOnDisplayName={commentedOnDisplayName}
+                            commentedOnPost={commentedOnPost}
+                            createAt={post.create_at}
+                            displayName={displayName}
+                            enablePostUsernameOverride={config.EnablePostUsernameOverride === 'true'}
+                            fromWebHook={post.props && post.props.from_webhook === 'true'}
+                            isPendingOrFailedPost={pendingOrFailed}
+                            isSystemMessage={isPostSystemMessage}
+                            onPress={this.handlePress}
+                            onViewUserProfile={this.viewUserProfile}
+                            overrideUsername={post.props && post.props.override_username}
+                            renderReplies={renderReplies}
+                            theme={theme}
+                        />
+                        <PostMessage
+                            attachments={post.props && post.props.attachments}
+                            canDelete={this.state.canDelete}
+                            canEdit={this.state.canEdit}
+                            fileIds={post.file_ids}
+                            hasBeenDeleted={post.state === Posts.POST_DELETED}
+                            intl={this.props.intl}
+                            isFlagged={this.props.isFlagged}
+                            isPendingOrFailedPost={pendingOrFailed}
+                            isSystemMessage={isPostSystemMessage}
+                            flagPost={() => this.props.actions.flagPost(post.id)}
+                            message={post.message}
+                            navigator={this.props.navigator}
+                            onFailedPostPress={this.handleFailedPostPress}
+                            onPostDelete={this.handlePostDelete}
+                            onPostEdit={this.handlePostEdit}
+                            onPress={this.handlePress}
+                            postId={post.id}
+                            renderReplyBar={() => this.renderReplyBar(style)}
+                            showReplyBar={showReplyBar}
+                            theme={theme}
+                            toggleSelected={this.toggleSelected}
+                            unflagPost={() => this.props.actions.unflagPost(post.id)}
                         />
                     </View>
-                );
-            } else {
-                profilePicture = (
-                    <ProfilePicture
-                        user={this.props.user}
-                        size={PROFILE_PICTURE_SIZE}
-                    />
-                );
-            }
-
-            let name = this.props.displayName;
-            if (post.props.override_username && config.EnablePostUsernameOverride === 'true') {
-                name = post.props.override_username;
-            }
-            displayName = (
-                <View style={style.botContainer}>
-                    <Text style={style.displayName}>
-                        {name}
-                    </Text>
-                    <Text style={style.bot}>
-                        {BOT_NAME}
-                    </Text>
                 </View>
-            );
-            messageStyle = style.message;
-        } else {
-            profilePicture = (
-                <TouchableOpacity onPress={this.viewUserProfile}>
-                    <ProfilePicture
-                        user={this.props.user}
-                        size={PROFILE_PICTURE_SIZE}
-                    />
-                </TouchableOpacity>
-            );
-
-            if (this.props.displayName) {
-                displayName = (
-                    <TouchableOpacity onPress={this.viewUserProfile}>
-                        <Text style={style.displayName}>
-                            {this.props.displayName}
-                        </Text>
-                    </TouchableOpacity>
-                );
-            } else {
-                displayName = (
-                    <FormattedText
-                        id='channel_loader.someone'
-                        defaultMessage='Someone'
-                        style={style.displayName}
-                    />
-                );
-            }
-
-            messageStyle = style.message;
-        }
-
-        const blockStyles = getMarkdownBlockStyles(theme);
-        const textStyles = getMarkdownTextStyles(theme);
-
-        const selected = this.state && this.state.selected ? style.selected : null;
-
-        let contents;
-        if (this.props.commentedOnPost) {
-            contents = (
-                <View style={[style.container, this.props.style, selected]}>
-                    <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
-                        {profilePicture}
-                    </View>
-                    <View style={style.rightColumn}>
-                        <View style={[style.postInfoContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
-                            {displayName}
-                            <View style={style.timeContainer}>
-                                <Text style={style.time}>
-                                    <FormattedTime value={this.props.post.create_at}/>
-                                </Text>
-                            </View>
-                        </View>
-                        <View>
-                            {this.renderCommentedOnMessage(style)}
-                        </View>
-                        {this.renderMessage(style, messageStyle, blockStyles, textStyles, true)}
-                    </View>
-                </View>
-            );
-        } else {
-            contents = (
-                <View style={[style.container, this.props.style, selected]}>
-                    <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
-                        {profilePicture}
-                    </View>
-                    <View style={style.messageContainerWithReplyBar}>
-                        {this.renderReplyBar(style)}
-                        <View style={[style.rightColumn, (this.props.isLastReply && style.rightColumnPadding)]}>
-                            <View style={[style.postInfoContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
-                                <View style={{flexDirection: 'row', flex: 1}}>
-                                    {displayName}
-                                    <View style={style.timeContainer}>
-                                        <Text style={style.time}>
-                                            <FormattedTime value={this.props.post.create_at}/>
-                                        </Text>
-                                    </View>
-                                </View>
-                                {(commentCount > 0 && renderReplies) &&
-                                    <TouchableOpacity
-                                        onPress={this.handlePress}
-                                        style={style.replyIconContainer}
-                                    >
-                                        <ReplyIcon
-                                            height={15}
-                                            width={15}
-                                            color={theme.linkColor}
-                                        />
-                                        <Text style={style.replyText}>{commentCount}</Text>
-                                    </TouchableOpacity>
-                                }
-                            </View>
-                            {this.renderMessage(style, messageStyle, blockStyles, textStyles)}
-                        </View>
-                    </View>
-                </View>
-            );
-        }
-
-        return contents;
+            </View>
+        );
     }
 
 }
@@ -675,11 +339,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         rightColumnPadding: {
             paddingBottom: 3
-        },
-        postInfoContainer: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            marginTop: 10
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
@@ -704,61 +363,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         replyBarLast: {
             paddingBottom: 10
         },
-        displayName: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            fontWeight: '600',
-            marginRight: 5,
-            marginBottom: 3
-        },
-        botContainer: {
-            flexDirection: 'row'
-        },
-        bot: {
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4
-        },
-        time: {
-            color: theme.centerChannelColor,
-            fontSize: 13,
-            marginLeft: 5,
-            marginBottom: 1,
-            opacity: 0.5
-        },
-        timeContainer: {
-            justifyContent: 'center'
-        },
-        commentedOn: {
-            color: changeOpacity(theme.centerChannelColor, 0.65),
-            marginBottom: 3,
-            lineHeight: 21
-        },
-        message: {
-            color: theme.centerChannelColor,
-            fontSize: 15
-        },
-        systemMessage: {
-            opacity: 0.6
-        },
         selected: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
-        },
-        replyIconContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        replyText: {
-            fontSize: 15,
-            marginLeft: 3,
-            color: theme.linkColor
         }
     });
 });

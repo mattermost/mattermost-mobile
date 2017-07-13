@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, flagPost, removePost, unflagPost} from 'mattermost-redux/actions/posts';
 import {getMyPreferences, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
-import {makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
+import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
@@ -21,6 +21,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const commentedOnUser = ownProps.commentedOnPost ? getUser(state, ownProps.commentedOnPost.user_id) : null;
         const user = getUser(state, ownProps.post.user_id);
+        const post = getPost(state, ownProps.post.id);
         const myPreferences = getMyPreferences(state);
         const teammateNameDisplay = getTeammateNameDisplaySetting(state);
         const {config, license} = state.entities.general;
@@ -29,6 +30,7 @@ function makeMapStateToProps() {
 
         return {
             ...ownProps,
+            post,
             config,
             commentCount: getCommentCountForPost(state, ownProps),
             commentedOnDisplayName: displayUsername(commentedOnUser, teammateNameDisplay),

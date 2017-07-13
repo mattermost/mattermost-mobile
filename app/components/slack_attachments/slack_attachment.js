@@ -21,6 +21,7 @@ export default class SlackAttachment extends PureComponent {
         attachment: PropTypes.object.isRequired,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
+        navigator: PropTypes.object.isRequired,
         textStyles: PropTypes.object,
         theme: PropTypes.object
     };
@@ -61,6 +62,7 @@ export default class SlackAttachment extends PureComponent {
             attachment,
             baseTextStyle,
             blockStyles,
+            navigator,
             textStyles
         } = this.props;
         const fields = attachment.fields;
@@ -115,6 +117,7 @@ export default class SlackAttachment extends PureComponent {
                             textStyles={textStyles}
                             blockStyles={blockStyles}
                             value={(field.value || '')}
+                            navigator={navigator}
                         />
                     </View>
                 </View>
@@ -167,6 +170,7 @@ export default class SlackAttachment extends PureComponent {
             baseTextStyle,
             blockStyles,
             textStyles,
+            navigator,
             theme
         } = this.props;
 
@@ -181,6 +185,7 @@ export default class SlackAttachment extends PureComponent {
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={attachment.pretext}
+                        navigator={navigator}
                     />
                 </View>
             );
@@ -288,6 +293,7 @@ export default class SlackAttachment extends PureComponent {
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={this.state.text}
+                        navigator={navigator}
                     />
                     {moreLess}
                 </View>
