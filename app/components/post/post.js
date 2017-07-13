@@ -283,7 +283,7 @@ class Post extends PureComponent {
                             onPostEdit={this.handlePostEdit}
                             onPress={this.handlePress}
                             postId={post.id}
-                            renderReplyBar={!!commentedOnPost ? this.renderReplyBar : emptyFunction} //eslint-disable-line
+                            renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
                             toggleSelected={this.toggleSelected}
                         />
                     </View>
