@@ -10,3 +10,7 @@ export function alertErrorWithFallback(intl, error, fallback, values) {
     }
     Alert.alert('', msg);
 }
+
+export function emptyFunction() {
+    return;
+}

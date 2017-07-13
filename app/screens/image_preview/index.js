@@ -19,7 +19,7 @@ function makeMapStateToProps() {
         return {
             ...ownProps,
             fetchCache: state.views.fetchCache,
-            files: getFilesForPost(state, ownProps.post),
+            files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
             statusBarHeight: Platform.OS === 'ios' ? state.views.root.statusBarHeight : STATUSBAR_HEIGHT
         };

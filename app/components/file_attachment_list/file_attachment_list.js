@@ -16,39 +16,41 @@ export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
         fetchCache: PropTypes.object.isRequired,
+        fileIds: PropTypes.array.isRequired,
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
+        isFailed: PropTypes.bool,
         navigator: PropTypes.object,
         onLongPress: PropTypes.func,
         onPress: PropTypes.func,
-        post: PropTypes.object.isRequired,
+        postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         toggleSelected: PropTypes.func.isRequired,
         filesForPostRequest: PropTypes.object.isRequired
     };
 
     componentDidMount() {
-        const {post} = this.props;
-        this.props.actions.loadFilesForPostIfNecessary(post);
+        const {postId} = this.props;
+        this.props.actions.loadFilesForPostIfNecessary(postId);
     }
 
     componentDidUpdate() {
-        const {files, filesForPostRequest, post} = this.props;
+        const {fileIds, files, filesForPostRequest, postId} = this.props;
 
         // Fixes an issue where files weren't loading with optimistic post
-        if (!files.length && post.file_ids.length > 0 && filesForPostRequest.status !== RequestStatus.STARTED) {
-            this.props.actions.loadFilesForPostIfNecessary(post);
+        if (!files.length && fileIds.length > 0 && filesForPostRequest.status !== RequestStatus.STARTED) {
+            this.props.actions.loadFilesForPostIfNecessary(postId);
         }
     }
 
-    goToImagePreview = (post, fileId) => {
+    goToImagePreview = (postId, fileId) => {
         this.props.navigator.showModal({
             screen: 'ImagePreview',
             title: '',
             animationType: 'none',
             passProps: {
                 fileId,
-                post
+                postId
             },
             navigatorStyle: {
                 navBarHidden: true,
@@ -67,15 +69,23 @@ export default class FileAttachmentList extends Component {
 
     handlePreviewPress = (file) => {
         this.props.hideOptionsContext();
-        preventDoubleTap(this.goToImagePreview, this, this.props.post, file.id);
+        preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
+    };
+
+    handlePressIn = () => {
+        this.props.toggleSelected(true);
+    };
+
+    handlePressOut = () => {
+        this.props.toggleSelected(false);
     };
 
     render() {
-        const {files, post} = this.props;
+        const {fileIds, files, isFailed} = this.props;
 
         let fileAttachments;
-        if (!files.length && post.file_ids.length > 0) {
-            fileAttachments = post.file_ids.map((id) => (
+        if (!files.length && fileIds.length > 0) {
+            fileAttachments = fileIds.map((id) => (
                 <FileAttachment
                     key={id}
                     addFileToFetchCache={this.props.actions.addFileToFetchCache}
@@ -89,8 +99,8 @@ export default class FileAttachmentList extends Component {
                 <TouchableOpacity
                     key={file.id}
                     onLongPress={this.props.onLongPress}
-                    onPressIn={() => this.props.toggleSelected(true)}
-                    onPressOut={() => this.props.toggleSelected(false)}
+                    onPressIn={this.handlePressIn}
+                    onPressOut={this.handlePressOut}
                 >
                     <FileAttachment
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
@@ -105,7 +115,7 @@ export default class FileAttachmentList extends Component {
         }
 
         return (
-            <View style={[{flex: 1}, (post.failed && {opacity: 0.5})]}>
+            <View style={[{flex: 1}, (isFailed && {opacity: 0.5})]}>
                 {fileAttachments}
             </View>
         );

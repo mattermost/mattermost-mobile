@@ -155,13 +155,13 @@ export function loadPostsIfNecessary(channelId) {
     };
 }
 
-export function loadFilesForPostIfNecessary(post) {
+export function loadFilesForPostIfNecessary(postId) {
     return async (dispatch, getState) => {
         const {files} = getState().entities;
-        const fileIdsForPost = files.fileIdsByPostId[post.id];
+        const fileIdsForPost = files.fileIdsByPostId[postId];
 
         if (!fileIdsForPost) {
-            await getFilesForPost(post.id)(dispatch, getState);
+            await getFilesForPost(postId)(dispatch, getState);
         }
     };
 }
