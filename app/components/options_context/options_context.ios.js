@@ -17,13 +17,21 @@ export default class OptionsContext extends PureComponent {
         actions: []
     };
 
-    hide() {
-        this.refs.toolTip.hideMenu();
-    }
+    handleHide = () => {
+        this.props.toggleSelected(false);
+    };
 
-    show() {
+    handleShow = () => {
+        this.props.toggleSelected(true);
+    };
+
+    hide = () => {
+        this.refs.toolTip.hideMenu();
+    };
+
+    show = () => {
         this.refs.toolTip.showMenu();
-    }
+    };
 
     render() {
         return (
@@ -34,8 +42,8 @@ export default class OptionsContext extends PureComponent {
                 longPress={true}
                 onPress={this.props.onPress}
                 underlayColor='transparent'
-                onShow={() => this.props.toggleSelected(true)}
-                onHide={() => this.props.toggleSelected(false)}
+                onShow={this.handleShow}
+                onHide={this.handleHide}
             >
                 {this.props.children}
             </ToolTip>

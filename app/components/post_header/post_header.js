@@ -13,6 +13,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import ReplyIcon from 'app/components/reply_icon';
+import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const BOT_NAME = 'BOT';
@@ -21,7 +22,6 @@ export default class PostHeader extends PureComponent {
     static propTypes = {
         commentCount: PropTypes.number,
         commentedOnDisplayName: PropTypes.string,
-        commentedOnPost: PropTypes.object,
         createAt: PropTypes.number.isRequired,
         displayName: PropTypes.string.isRequired,
         enablePostUsernameOverride: PropTypes.bool,
@@ -37,8 +37,8 @@ export default class PostHeader extends PureComponent {
 
     static defaultProps = {
         commentCount: 0,
-        onPress: () => true,
-        onViewUserProfile: () => true
+        onPress: emptyFunction,
+        onViewUserProfile: emptyFunction
     };
 
     getDisplayName = (style) => {
@@ -94,7 +94,7 @@ export default class PostHeader extends PureComponent {
     };
 
     renderCommentedOnMessage = (style) => {
-        if (!this.props.renderReplies || !this.props.commentedOnPost) {
+        if (!this.props.renderReplies || !this.props.commentedOnDisplayName) {
             return null;
         }
 
@@ -134,7 +134,7 @@ export default class PostHeader extends PureComponent {
 
     render() {
         const {
-            commentedOnPost,
+            commentedOnDisplayName,
             commentCount,
             createAt,
             isPendingOrFailedPost,
@@ -155,7 +155,7 @@ export default class PostHeader extends PureComponent {
                             </Text>
                         </View>
                     </View>
-                    {(!commentedOnPost && commentCount > 0 && renderReplies) &&
+                    {(!commentedOnDisplayName && commentCount > 0 && renderReplies) &&
                     <TouchableOpacity
                         onPress={onPress}
                         style={style.replyIconContainer}
@@ -169,7 +169,7 @@ export default class PostHeader extends PureComponent {
                     </TouchableOpacity>
                     }
                 </View>
-                {commentedOnPost &&
+                {commentedOnDisplayName !== '' &&
                 <View>
                     {this.renderCommentedOnMessage(style)}
                 </View>

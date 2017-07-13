@@ -11,7 +11,6 @@ export default class OptionsContext extends PureComponent {
         actions: PropTypes.array,
         cancelText: PropTypes.string,
         children: PropTypes.node.isRequired,
-        onLongPress: PropTypes.func.isRequired,
         onPress: PropTypes.func.isRequired,
         toggleSelected: PropTypes.func.isRequired
     };
@@ -39,13 +38,21 @@ export default class OptionsContext extends PureComponent {
         }
     };
 
+    handleHideUnderlay = () => {
+        this.props.toggleSelected(false);
+    };
+
+    handleShowUnderlay = () => {
+        this.props.toggleSelected(true);
+    };
+
     render() {
         return (
             <TouchableHighlight
-                onHideUnderlay={() => this.props.toggleSelected(false)}
-                onLongPress={this.props.onLongPress}
+                onHideUnderlay={this.handleHideUnderlay}
+                onLongPress={this.show}
                 onPress={this.props.onPress}
-                onShowUnderlay={() => this.props.toggleSelected(true)}
+                onShowUnderlay={this.handleShowUnderlay}
                 underlayColor='transparent'
                 style={{flex: 1, flexDirection: 'row'}}
             >

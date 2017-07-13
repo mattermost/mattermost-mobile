@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
@@ -16,21 +17,27 @@ import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
 import SlackAttachments from 'app/components/slack_attachments';
+
+import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class PostMessage extends PureComponent {
+class PostBody extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            flagPost: PropTypes.func.isRequired,
+            unflagPost: PropTypes.func.isRequired
+        }).isRequired,
         attachments: PropTypes.array,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
-        intl: PropTypes.object.isRequired,
+        intl: intlShape.isRequired,
+        isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
-        isPendingOrFailedPost: PropTypes.bool,
+        isPending: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
-        flagPost: PropTypes.func,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         onFailedPostPress: PropTypes.func,
@@ -39,28 +46,34 @@ export default class PostMessage extends PureComponent {
         onPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         renderReplyBar: PropTypes.func,
-        showReplyBar: PropTypes.bool,
         theme: PropTypes.object,
-        toggleSelected: PropTypes.func,
-        unflagPost: PropTypes.func
+        toggleSelected: PropTypes.func
     };
 
     static defaultProps = {
         fileIds: [],
-        flagPost: () => true,
-        onFailedPostPress: () => true,
-        onPostDelete: () => true,
-        onPostEdit: () => true,
-        onPress: () => true,
-        renderReplyBar: () => true,
-        toggleSelected: () => true,
-        unflagPost: () => true
+        onFailedPostPress: emptyFunction,
+        onPostDelete: emptyFunction,
+        onPostEdit: emptyFunction,
+        onPress: emptyFunction,
+        renderReplyBar: emptyFunction,
+        toggleSelected: emptyFunction
     };
 
     hideOptionsContext = () => {
         if (Platform.OS === 'ios') {
             this.refs.options.hide();
         }
+    };
+
+    flagPost = () => {
+        const {actions, postId} = this.props;
+        actions.flagPost(postId);
+    };
+
+    unflagPost = () => {
+        const {actions, postId} = this.props;
+        actions.unflagPost(postId);
     };
 
     showOptionsContext = () => {
@@ -70,7 +83,7 @@ export default class PostMessage extends PureComponent {
     renderFileAttachments() {
         const {
             fileIds,
-            isPendingOrFailedPost,
+            isFailed,
             navigator,
             onPress,
             postId,
@@ -83,7 +96,7 @@ export default class PostMessage extends PureComponent {
                 <FileAttachmentList
                     fileIds={fileIds}
                     hideOptionsContext={this.hideOptionsContext}
-                    isPendingOrFailedPost={isPendingOrFailedPost}
+                    isFailed={isFailed}
                     onLongPress={this.showOptionsContext}
                     onPress={onPress}
                     postId={postId}
@@ -119,11 +132,11 @@ export default class PostMessage extends PureComponent {
             canDelete,
             canEdit,
             hasBeenDeleted,
+            isFailed,
             isFlagged,
-            isPendingOrFailedPost,
+            isPending,
             isSystemMessage,
             intl,
-            flagPost,
             message,
             navigator,
             onFailedPostPress,
@@ -131,10 +144,8 @@ export default class PostMessage extends PureComponent {
             onPostEdit,
             onPress,
             renderReplyBar,
-            showReplyBar,
             theme,
-            toggleSelected,
-            unflagPost
+            toggleSelected
         } = this.props;
         const {formatMessage} = intl;
         const actions = [];
@@ -142,18 +153,19 @@ export default class PostMessage extends PureComponent {
         const blockStyles = getMarkdownBlockStyles(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const messageStyle = isSystemMessage ? [style.message, style.systemMessage] : style.message;
+        const isPendingOrFailedPost = isPending || isFailed;
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost) {
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                    onPress: unflagPost
+                    onPress: this.unflagPost
                 });
             } else {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                    onPress: flagPost
+                    onPress: this.flagPost
                 });
             }
 
@@ -194,13 +206,12 @@ export default class PostMessage extends PureComponent {
 
         return (
             <View style={style.messageContainerWithReplyBar}>
-                {showReplyBar && renderReplyBar()}
+                {renderReplyBar()}
                 <View style={{flex: 1, flexDirection: 'row'}}>
                     <View style={{flex: 1}}>
                         <OptionsContext
                             actions={actions}
                             ref='options'
-                            onLongPress={this.showOptionsContext}
                             onPress={onPress}
                             toggleSelected={toggleSelected}
                             cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
@@ -210,7 +221,7 @@ export default class PostMessage extends PureComponent {
                             {this.renderFileAttachments()}
                         </OptionsContext>
                     </View>
-                    {isPendingOrFailedPost &&
+                    {isFailed &&
                     <TouchableOpacity
                         onPress={onFailedPostPress}
                         style={{justifyContent: 'center', marginLeft: 12}}
@@ -246,3 +257,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
+
+export default injectIntl(PostBody);

@@ -7,6 +7,7 @@ import {Image, TouchableOpacity, View} from 'react-native';
 
 import MattermostIcon from 'app/components/mattermost_icon';
 import ProfilePicture from 'app/components/profile_picture';
+import {emptyFunction} from 'app/utils/general';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
 
 const PROFILE_PICTURE_SIZE = 32;
@@ -77,7 +78,7 @@ PostProfilePicture.propTypes = {
 };
 
 PostProfilePicture.defaultProps = {
-    onViewUserProfile: () => true
+    onViewUserProfile: emptyFunction
 };
 
 export default PostProfilePicture;

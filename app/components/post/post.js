@@ -12,6 +12,9 @@ import {
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import PostBody from 'app/components/post_body';
+import PostHeader from 'app/components/post_header';
+import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -22,40 +25,29 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import PostHeader from './post_header';
-import PostMessage from './post_message';
-import PostProfilePicture from './post_profile_picture';
-
 class Post extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            createPost: PropTypes.func.isRequired,
+            deletePost: PropTypes.func.isRequired,
+            removePost: PropTypes.func.isRequired,
+            setPostTooltipVisible: PropTypes.func.isRequired
+        }).isRequired,
         config: PropTypes.object.isRequired,
-        commentCount: PropTypes.number.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object.isRequired,
-        user: PropTypes.object,
-        displayName: PropTypes.string,
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
-        isFlagged: PropTypes.bool,
         isLastReply: PropTypes.bool,
-        commentedOnDisplayName: PropTypes.string,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         roles: PropTypes.string,
         tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        onPress: PropTypes.func,
-        actions: PropTypes.shape({
-            createPost: PropTypes.func.isRequired,
-            deletePost: PropTypes.func.isRequired,
-            flagPost: PropTypes.func.isRequired,
-            removePost: PropTypes.func.isRequired,
-            setPostTooltipVisible: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired
-        }).isRequired
+        onPress: PropTypes.func
     };
 
     constructor(props) {
@@ -81,15 +73,15 @@ class Post extends PureComponent {
         this.editDisableAction.cancel();
     }
 
-    goToUserProfile = (userId) => {
-        const {intl, navigator, theme} = this.props;
+    goToUserProfile = () => {
+        const {intl, navigator, post, theme} = this.props;
         navigator.push({
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId
+                userId: post.user_id
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -213,18 +205,28 @@ class Post extends PureComponent {
         removePost(post);
     };
 
-    renderReplyBar = (style) => {
-        if (!this.props.renderReplies || !this.props.post.root_id) {
+    renderReplyBar = () => {
+        const {
+            commentedOnPost,
+            isFirstReply,
+            isLastReply,
+            post,
+            renderReplies,
+            theme
+        } = this.props;
+
+        if (!renderReplies || !post.root_id || !commentedOnPost) {
             return null;
         }
 
+        const style = getStyleSheet(theme);
         const replyBarStyle = [style.replyBar];
 
-        if (this.props.isFirstReply || this.props.commentedOnPost) {
+        if (isFirstReply || commentedOnPost) {
             replyBarStyle.push(style.replyBarFirst);
         }
 
-        if (this.props.isLastReply) {
+        if (isLastReply) {
             replyBarStyle.push(style.replyBarLast);
         }
 
@@ -232,7 +234,7 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        preventDoubleTap(this.goToUserProfile, null, this.props.user.id);
+        preventDoubleTap(this.goToUserProfile, this);
     };
 
     toggleSelected = (selected) => {
@@ -242,78 +244,46 @@ class Post extends PureComponent {
 
     render() {
         const {
-            commentCount,
-            commentedOnDisplayName,
             commentedOnPost,
-            config,
-            displayName,
             isLastReply,
             post,
             renderReplies,
-            theme,
-            user
+            theme
         } = this.props;
         const style = getStyleSheet(theme);
-        const isPostSystemMessage = isSystemMessage(post);
-        const pendingOrFailed = isPostPendingOrFailed(post);
         const selected = this.state && this.state.selected ? style.selected : null;
-        const showReplyBar = !!commentedOnPost; //eslint-disable-line no-implicit-coercion
 
         return (
             <View style={[style.container, this.props.style, selected]}>
-                <View style={[style.profilePictureContainer, (pendingOrFailed && style.pendingPost)]}>
+                <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                     <PostProfilePicture
-                        enablePostIconOverride={config.EnablePostIconOverride === 'true'}
-                        fromWebHook={post.props && post.props.from_webhook === 'true'}
-                        isSystemMessage={isPostSystemMessage}
                         onViewUserProfile={this.viewUserProfile}
-                        overrideIconUrl={post.props && post.props.override_icon_url}
-                        theme={theme}
-                        user={user}
+                        postId={post.id}
                     />
                 </View>
                 <View style={style.messageContainerWithReplyBar}>
-                    {!commentedOnPost && this.renderReplyBar(style)}
+                    {this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
                         <PostHeader
-                            commentCount={commentCount}
-                            commentedOnDisplayName={commentedOnDisplayName}
-                            commentedOnPost={commentedOnPost}
+                            postId={post.id}
+                            commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
                             createAt={post.create_at}
-                            displayName={displayName}
-                            enablePostUsernameOverride={config.EnablePostUsernameOverride === 'true'}
-                            fromWebHook={post.props && post.props.from_webhook === 'true'}
-                            isPendingOrFailedPost={pendingOrFailed}
-                            isSystemMessage={isPostSystemMessage}
                             onPress={this.handlePress}
                             onViewUserProfile={this.viewUserProfile}
-                            overrideUsername={post.props && post.props.override_username}
                             renderReplies={renderReplies}
                             theme={theme}
                         />
-                        <PostMessage
-                            attachments={post.props && post.props.attachments}
+                        <PostBody
                             canDelete={this.state.canDelete}
                             canEdit={this.state.canEdit}
-                            fileIds={post.file_ids}
-                            hasBeenDeleted={post.state === Posts.POST_DELETED}
-                            intl={this.props.intl}
-                            isFlagged={this.props.isFlagged}
-                            isPendingOrFailedPost={pendingOrFailed}
-                            isSystemMessage={isPostSystemMessage}
-                            flagPost={() => this.props.actions.flagPost(post.id)}
-                            message={post.message}
                             navigator={this.props.navigator}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
                             onPostEdit={this.handlePostEdit}
                             onPress={this.handlePress}
                             postId={post.id}
-                            renderReplyBar={() => this.renderReplyBar(style)}
-                            showReplyBar={showReplyBar}
-                            theme={theme}
+                            renderReplyBar={this.renderReplyBar}
                             toggleSelected={this.toggleSelected}
-                            unflagPost={() => this.props.actions.unflagPost(post.id)}
                         />
                     </View>
                 </View>

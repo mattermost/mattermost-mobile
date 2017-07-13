@@ -19,7 +19,7 @@ export default class FileAttachmentList extends Component {
         fileIds: PropTypes.array.isRequired,
         files: PropTypes.array.isRequired,
         hideOptionsContext: PropTypes.func.isRequired,
-        isPendingOrFailedPost: PropTypes.bool,
+        isFailed: PropTypes.bool,
         navigator: PropTypes.object,
         onLongPress: PropTypes.func,
         onPress: PropTypes.func,
@@ -72,8 +72,16 @@ export default class FileAttachmentList extends Component {
         preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
     };
 
+    handlePressIn = () => {
+        this.props.toggleSelected(true);
+    };
+
+    handlePressOut = () => {
+        this.props.toggleSelected(false);
+    };
+
     render() {
-        const {fileIds, files, isPendingOrFailedPost} = this.props;
+        const {fileIds, files, isFailed} = this.props;
 
         let fileAttachments;
         if (!files.length && fileIds.length > 0) {
@@ -91,8 +99,8 @@ export default class FileAttachmentList extends Component {
                 <TouchableOpacity
                     key={file.id}
                     onLongPress={this.props.onLongPress}
-                    onPressIn={() => this.props.toggleSelected(true)}
-                    onPressOut={() => this.props.toggleSelected(false)}
+                    onPressIn={this.handlePressIn}
+                    onPressOut={this.handlePressOut}
                 >
                     <FileAttachment
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
@@ -107,7 +115,7 @@ export default class FileAttachmentList extends Component {
         }
 
         return (
-            <View style={[{flex: 1}, (isPendingOrFailedPost && {opacity: 0.5})]}>
+            <View style={[{flex: 1}, (isFailed && {opacity: 0.5})]}>
                 {fileAttachments}
             </View>
         );
