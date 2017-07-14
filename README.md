@@ -128,3 +128,18 @@ As a work around, you can install both the released "Mattermost" app and sign up
 
 We plan to add support for tablets in the future, but the timeline depends on how many people have a need for it. If you're looking for a tablet version, please help us out by [upvoting the feature request](https://mattermost.uservoice.com/forums/306457/suggestions/20082079)!
 
+# Troubleshooting
+
+### I keep getting a message "Cannot connect to the server. Please check your server URL and internet connection."
+
+Our second generation mobile apps only support server versions 3.8+. If your server version is too old, you might see this error message come up. 
+
+To check your server version, log on to the site on desktop and go to Main Menu > About Mattermost. 
+
+### I see a “Connecting…” bar that does not go away
+
+If your app is working properly, you should see a grey “Connecting…” bar that clears or says “Connected” after the app reconnects. 
+
+If you are seeing this message all the time, and your internet connection seems fine: 
+
+Ask your server administrator if the server uses NGINX or another webserver as a reverse proxy. If so, they should check that it is configured correctly for [supporting the websocket connection for APIv4 endpoints](https://docs.mattermost.com/install/install-ubuntu-1604.html#configuring-nginx-as-a-proxy-for-mattermost-server). 
