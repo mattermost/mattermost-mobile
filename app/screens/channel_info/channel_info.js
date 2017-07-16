@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     View
@@ -67,7 +68,11 @@ class ChannelInfo extends PureComponent {
 
     close = () => {
         EventEmitter.emit(General.DEFAULT_CHANNEL, '');
-        this.props.navigator.pop({animated: true});
+        if (Platform.OS === 'android') {
+            this.props.navigator.dismissModal({animated: true});
+        } else {
+            this.props.navigator.pop({animated: true});
+        }
     };
 
     goToChannelAddMembers = () => {
