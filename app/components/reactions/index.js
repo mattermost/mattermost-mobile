@@ -6,36 +6,38 @@ import {bindActionCreators} from 'redux';
 
 import {addReaction, getReactionsForPost, removeReaction} from 'mattermost-redux/actions/posts';
 import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {getTheme} from 'app/selectors/preferences';
 
 import Reactions from './reactions';
 
-const getReactionsForPostSelector = makeGetReactionsForPost();
+function makeMapStateToProps() {
+    const getReactionsForPostSelector = makeGetReactionsForPost();
+    return function mapStateToProps(state, ownProps) {
+        const currentUserId = getCurrentUser(state);
+        const reactionsForPost = getReactionsForPostSelector(state, ownProps.postId);
 
-function mapStateToProps(state, ownProps) {
-    const currentUserId = state.entities.users.currentUserId;
-    const reactionsForPost = getReactionsForPostSelector(state, ownProps.postId);
+        const highlightedReactions = [];
+        const reactionsByName = reactionsForPost.reduce((reactions, reaction) => {
+            if (reactions.has(reaction.emoji_name)) {
+                reactions.get(reaction.emoji_name).push(reaction);
+            } else {
+                reactions.set(reaction.emoji_name, [reaction]);
+            }
 
-    const highlightedReactions = [];
-    const reactionsByName = reactionsForPost.reduce((reactions, reaction) => {
-        if (reactions.has(reaction.emoji_name)) {
-            reactions.get(reaction.emoji_name).push(reaction);
-        } else {
-            reactions.set(reaction.emoji_name, [reaction]);
-        }
+            if (reaction.user_id === currentUserId) {
+                highlightedReactions.push(reaction.emoji_name);
+            }
 
-        if (reaction.user_id === currentUserId) {
-            highlightedReactions.push(reaction.emoji_name);
-        }
+            return reactions;
+        }, new Map());
 
-        return reactions;
-    }, new Map());
-
-    return {
-        highlightedReactions,
-        reactions: reactionsByName,
-        theme: getTheme(state)
+        return {
+            highlightedReactions,
+            reactions: reactionsByName,
+            theme: getTheme(state)
+        };
     };
 }
 
@@ -49,4 +51,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Reactions);
+export default connect(makeMapStateToProps(), mapDispatchToProps)(Reactions);
