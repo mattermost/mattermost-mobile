@@ -51,4 +51,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps(), mapDispatchToProps)(Reactions);
+export default connect(makeMapStateToProps, mapDispatchToProps)(Reactions);
