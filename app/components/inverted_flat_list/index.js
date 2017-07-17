@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, RefreshControl, ScrollView, StyleSheet, View} from 'react-native';
+import {FlatList, Platform, RefreshControl, ScrollView, StyleSheet, View} from 'react-native';
 
 import VirtualList from './virtual_list';
 
@@ -129,11 +129,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1
     },
-    vertical: {
-        transform: [{scaleY: -1}]
-    },
-    horizontal: {
-        transform: [{scaleX: -1}]
-    }
+    vertical: Platform.select({
+        android: {
+            scaleY: -1
+        },
+        ios: {
+            transform: [{scaleY: -1}]
+        }
+    }),
+    horizontal: Platform.select({
+        android: {
+            scaleX: -1
+        },
+        ios: {
+            transform: [{scaleX: -1}]
+        }
+    })
 });
 
