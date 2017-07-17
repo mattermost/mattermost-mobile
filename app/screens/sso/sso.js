@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
+    Text,
+    StyleSheet,
     View,
     WebView
 } from 'react-native';
@@ -17,6 +19,9 @@ import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+const jsCode = 'window.postMessage(document.body.innerText)';
 
 class SSO extends PureComponent {
     static propTypes = {
@@ -35,6 +40,11 @@ class SSO extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.state = {
+            error: null,
+            renderWebView: false
+        };
+
         switch (props.ssoType) {
         case ViewTypes.GITLAB:
             this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
@@ -49,7 +59,7 @@ class SSO extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-            this.setState({renderWebview: true});
+            this.setState({renderWebView: true});
         });
     }
 
@@ -85,6 +95,25 @@ class SSO extends PureComponent {
         });
     };
 
+    onMessage = (event) => {
+        try {
+            const response = JSON.parse(event.nativeEvent.data);
+            if (response) {
+                const {
+                    id,
+                    message,
+                    request_id: rId,
+                    status_code: statusCode
+                } = response;
+                if (rId && id && message && statusCode !== 200) {
+                    this.setState({error: message});
+                }
+            }
+        } catch (e) {
+            // do nothing
+        }
+    };
+
     onNavigationStateChange = (navState) => {
         const {url} = navState;
 
@@ -93,7 +122,7 @@ class SSO extends PureComponent {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
-                    this.setState({renderWebview: false});
+                    this.setState({renderWebView: false});
                     const {
                         getSession,
                         handleSuccessfulLogin,
@@ -111,18 +140,23 @@ class SSO extends PureComponent {
     };
 
     render() {
-        if (!this.state || !this.state.renderWebview) {
-            return (
-                <View style={{flex: 1}}>
-                    <StatusBar/>
-                    <Loading/>
+        const {theme} = this.props;
+        const {error, renderWebView} = this.state;
+        const style = getStyleSheet(theme);
+
+        let content;
+        if (!renderWebView) {
+            content = (
+                <Loading/>
+            );
+        } else if (error) {
+            content = (
+                <View style={style.errorContainer}>
+                    <Text style={style.errorText}>{error}</Text>
                 </View>
             );
-        }
-
-        return (
-            <View style={{flex: 1}}>
-                <StatusBar/>
+        } else {
+            content = (
                 <WebView
                     source={{uri: this.loginUrl}}
                     javaScriptEnabledAndroid={true}
@@ -132,10 +166,36 @@ class SSO extends PureComponent {
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={() => (<Loading/>)}
+                    onMessage={this.onMessage}
+                    injectedJavaScript={jsCode}
                 />
+            );
+        }
+
+        return (
+            <View style={{flex: 1}}>
+                <StatusBar/>
+                {content}
             </View>
         );
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return StyleSheet.create({
+        errorContainer: {
+            alignItems: 'center',
+            flex: 1,
+            marginTop: 100
+        },
+        errorText: {
+            color: changeOpacity(theme.centerChannelColor, 0.4),
+            fontSize: 16,
+            fontWeight: '600',
+            lineHeight: 23,
+            paddingHorizontal: 30
+        }
+    });
+});
 
 export default injectIntl(SSO);
