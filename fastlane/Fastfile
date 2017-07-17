@@ -3,7 +3,7 @@ skip_docs
 
 platform :ios do
   before_all do |lane|
-    if lane == :beta or lane == :release
+    if lane == :beta
       ensure_git_branch(
           branch: 'master'
       )
@@ -12,7 +12,7 @@ platform :ios do
   end
 
   after_all do |lane|
-    if lane == :beta or lane == :release
+    if lane == :beta
       reset_git_repo(
           force: true,
           skip_clean: true
@@ -26,7 +26,7 @@ platform :ios do
   desc 'Build Release file'
   desc 'This will also make sure the profile is up to date'
   lane :dev do
-    match(type: 'adhoc')
+    match(type: 'adhoc', app_identifier: 'com.mattermost.rnbeta')
 
     build_ios({
               release: false,
@@ -39,7 +39,7 @@ platform :ios do
   desc 'Submit a new Beta Build to Apple TestFlight'
   desc 'This will also make sure the profile is up to date'
   lane :beta do
-    match(type: 'appstore')
+    match(type: 'appstore', app_identifier: 'com.mattermost.rnbeta')
 
     build_ios({
               release: true,
@@ -83,39 +83,51 @@ platform :ios do
 
   desc 'Deploy a new version to the App Store'
   lane :release do
-    match(type: 'appstore')
+    ensure_git_branch(
+        branch: 'master'
+    )
+
+    match(type: 'appstore', app_identifier: 'com.mattermost.rn')
 
     # snapshot
 
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        app_identifier: 'com.mattermost.rn'
+    )
+    update_info_plist(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        display_name: 'Mattermost'
+    )
+
+    sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+
     build_ios({
               release: true,
-              increment_build: true,
-              ensure_git_status_clean: true,
+              increment_build: false,
+              ensure_git_status_clean: false,
               method: 'app-store'
           })
 
-    deliver(force: true)
+    # deliver(
+    #     force: true,
+    #     skip_screenshots: true,
+    #     skip_metadata: true,
+    #     submit_for_review: false, #lets try this after the first release
+    #     automatic_release: false #lets try this after the first release
+    # )
 
-    commit = last_git_commit
-
-    push_to_git_remote(
-        remote: 'origin',
-        local_branch: 'ios-release',
-        force: false,
-        tags: false
-    )
-
-    unless ENV['GITHUB_TOKEN'].nil?
-      create_pull_request(
-          api_token: ENV['GITHUB_TOKEN'],
-          repo: 'mattermost/mattermost-mobile',
-          head: 'mattermost:ios-release',
-          base: 'master',
-          title: "IOS #{commit[:message]}"
-      )
-    end
+    ### We are going to publish the app to the testflight first and not deliver it directly to the app store
+    pilot(skip_waiting_for_build_processing: true)
 
     # frameit
+
+    reset_git_repo(
+        force: true,
+        skip_clean: true
+    )
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       appstore_url = ENV['APPSTORE_URL']
@@ -198,7 +210,7 @@ end
 
 platform :android do
   before_all do |lane|
-    if lane == :alpha or lane == :release
+    if lane == :alpha
       ensure_git_branch(
           branch: 'master'
       )
@@ -207,7 +219,7 @@ platform :android do
   end
 
   after_all do |lane|
-    if lane == :alpha or lane == :release
+    if lane == :alpha
       reset_git_repo(
           force: true,
           skip_clean: true
@@ -268,35 +280,83 @@ platform :android do
 
   desc 'Deploy a new version to Google Play'
   lane :release do
+    ensure_git_branch(
+        branch: 'master'
+    )
+    android_change_package_identifier(newIdentifier: 'com.mattermost.rn', manifest: './android/app/src/main/AndroidManifest.xml')
+    android_change_string_app_name(newName: 'Mattermost', stringsFile: './android/app/src/main/res/values/strings.xml')
+    android_update_application_id(app_folder_name: 'android/app', application_id: 'com.mattermost.rn')
+
+    sh 'mv ../android/app/src/main/java/com/mattermost/rnbeta/ ../android/app/src/main/java/com/mattermost/rn/'
+    sh 'cp -R ../assets/release/icons/android/* ../android/app/src/main/res/'
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/MainApplication.java',
+        old_string: 'return BuildConfig.DEBUG;',
+        new_string: 'return false;'
+    )
+
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/MainApplication.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/CustomPushNotification.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/MainActivity.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/NotificationsLifecycleFacade.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './android/app/BUCK',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './fastlane/metadata/android/en-US/title.txt',
+        old_string: 'Mattermost Beta',
+        new_string: 'Mattermost;'
+    )
+
     build_android({
                       release: true,
-                      increment_build: true,
-                      ensure_git_status_clean: true
+                      increment_build: false,
+                      ensure_git_status_clean: false
                   })
 
+    # supply(
+    #     track: "production",
+    #     apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
+    # )
+
+    # We are going to upload the build to the beta lane and not directly to production so it can be promoted later
     supply(
-        track: "production",
+        track: 'beta',
         apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
     )
 
-    commit = last_git_commit
 
-    push_to_git_remote(
-        remote: 'origin',
-        local_branch: 'android-release',
-        force: false,
-        tags: false
+    sh 'mv ../android/app/src/main/java/com/mattermost/rn/ ../android/app/src/main/java/com/mattermost/rnbeta/'
+
+    reset_git_repo(
+        force: true,
+        skip_clean: true
     )
-
-    unless ENV['GITHUB_TOKEN'].nil?
-      create_pull_request(
-          api_token: ENV['GITHUB_TOKEN'],
-          repo: 'mattermost/mattermost-mobile',
-          head: 'mattermost:android-release',
-          base: 'master',
-          title: "Android #{commit[:message]}"
-      )
-    end
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       google_play_url = ENV['GOOGLE_PLAY_URL']
