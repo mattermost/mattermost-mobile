@@ -46,7 +46,7 @@ export default class FileAttachmentImage extends PureComponent {
     static defaultProps = {
         fadeInOnLoad: false,
         imageHeight: 100,
-        imageSize: IMAGE_SIZE.Thumbnail,
+        imageSize: IMAGE_SIZE.Preview,
         imageWidth: 100,
         loading: false,
         loadingBackgroundColor: '#fff',
@@ -114,12 +114,24 @@ export default class FileAttachmentImage extends PureComponent {
         }
     };
 
+    calculateNeededWidth = (height, width, newHeight) => {
+        const ratio = width / height;
+
+        let newWidth = newHeight * ratio;
+        if (newWidth < newHeight) {
+            newWidth = newHeight;
+        }
+
+        return newWidth;
+    }
+
     render() {
         const {
             fetchCache,
             file,
             imageHeight,
             imageWidth,
+            imageSize,
             loadingBackgroundColor,
             resizeMethod,
             resizeMode,
@@ -147,11 +159,20 @@ export default class FileAttachmentImage extends PureComponent {
         };
         const opacity = isInFetchCache ? 1 : this.state.opacity;
 
+        let height = imageHeight;
+        let width = imageWidth;
+        let imageStyle = {height, width};
+        if (imageSize === IMAGE_SIZE.Preview) {
+            height = 100;
+            width = this.calculateNeededWidth(file.height, file.width, height);
+            imageStyle = {height, width, position: 'absolute', top: 0, left: 0};
+        }
+
         return (
-            <View style={[style.fileImageWrapper, {backgroundColor: wrapperBackgroundColor, height: wrapperHeight, width: wrapperWidth}]}>
+            <View style={[style.fileImageWrapper, {backgroundColor: wrapperBackgroundColor, height: wrapperHeight, width: wrapperWidth, overflow: 'hidden'}]}>
                 <AnimatedView style={{height: imageHeight, width: imageWidth, backgroundColor: wrapperBackgroundColor, opacity}}>
                     <Image
-                        style={{height: imageHeight, width: imageWidth}}
+                        style={imageStyle}
                         source={source}
                         resizeMode={resizeMode}
                         resizeMethod={resizeMethod}
