@@ -91,8 +91,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 40
-        versionName "1.0"
+        versionCode 41
+        versionName "1.0.1"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "x86"
