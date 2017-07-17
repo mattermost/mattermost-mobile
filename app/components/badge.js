@@ -33,6 +33,7 @@ export default class Badge extends PureComponent {
         super(props);
 
         this.width = 0;
+        this.mounted = false;
     }
 
     componentWillMount() {
@@ -45,9 +46,23 @@ export default class Badge extends PureComponent {
         });
     }
 
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     handlePress = () => {
         if (this.props.onPress) {
             this.props.onPress();
+        }
+    };
+
+    setNativeProps = (props) => {
+        if (this.mounted && this.refs.badgeContainer) {
+            this.refs.badgeContainer.setNativeProps(props);
         }
     };
 
@@ -66,7 +81,7 @@ export default class Badge extends PureComponent {
         this.width = width;
         const height = Math.max(e.nativeEvent.layout.height, this.props.minHeight);
         const borderRadius = height / 2;
-        this.refs.badgeContainer.setNativeProps({
+        this.setNativeProps({
             style: {
                 width,
                 height,
@@ -74,7 +89,7 @@ export default class Badge extends PureComponent {
             }
         });
         setTimeout(() => {
-            this.refs.badgeContainer.setNativeProps({
+            this.setNativeProps({
                 style: {
                     display: 'flex'
                 }
