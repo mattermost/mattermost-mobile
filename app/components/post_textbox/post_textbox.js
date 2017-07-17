@@ -113,8 +113,11 @@ class PostTextbox extends PureComponent {
         const {files, uploadFileRequestStatus, value} = this.props;
         const valueLength = value.trim().length;
 
-        return (valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH) ||
-            (files.filter((f) => !f.failed).length > 0 && uploadFileRequestStatus !== RequestStatus.STARTED);
+        if (files.length) {
+            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && files.filter((f) => !f.failed).length > 0;
+        }
+
+        return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
     };
 
     handleAndroidKeyboard = () => {
@@ -389,6 +392,45 @@ class PostTextbox extends PureComponent {
         }
     };
 
+    renderDisabledSendButton = () => {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View style={[style.sendButton, style.disableButton]}>
+                <PaperPlane
+                    height={13}
+                    width={15}
+                    color={theme.buttonColor}
+                />
+            </View>
+        );
+    }
+
+    renderSendButton = () => {
+        const {theme, uploadFileRequestStatus} = this.props;
+        const style = getStyleSheet(theme);
+
+        if (uploadFileRequestStatus === RequestStatus.STARTED) {
+            return this.renderDisabledSendButton();
+        } else if (this.canSend()) {
+            return (
+                <TouchableOpacity
+                    onPress={this.handleSendMessage}
+                    style={style.sendButton}
+                >
+                    <PaperPlane
+                        height={13}
+                        width={15}
+                        color={theme.buttonColor}
+                    />
+                </TouchableOpacity>
+            );
+        }
+
+        return null;
+    }
+
     render() {
         const {channelIsLoading, config, intl, theme, value} = this.props;
 
@@ -470,18 +512,7 @@ class PostTextbox extends PureComponent {
                             onSubmitEditing={this.handleSubmit}
                             onLayout={this.handleInputSizeChange}
                         />
-                        {this.canSend() &&
-                            <TouchableOpacity
-                                onPress={this.handleSendMessage}
-                                style={style.sendButton}
-                            >
-                                <PaperPlane
-                                    height={13}
-                                    width={15}
-                                    color={theme.buttonColor}
-                                />
-                            </TouchableOpacity>
-                        }
+                        {this.renderSendButton()}
                     </View>
                 </View>
             </View>
@@ -499,6 +530,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 45,
             alignItems: 'center',
             justifyContent: 'center'
+        },
+        disableButton: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.3)
         },
         input: {
             color: '#000',
