@@ -23,6 +23,7 @@ function mapStateToProps(state, ownProps) {
         attachments: post.props && post.props.attachments,
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,
+        hasReactions: post.has_reactions,
         isFailed: post.failed,
         isFlagged: isPostFlagged(post.id, myPreferences),
         isPending: post.id === post.pending_post_id,

@@ -21,6 +21,7 @@ import SlackAttachments from 'app/components/slack_attachments';
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import Reactions from 'app/components/reactions';
 
 class PostBody extends PureComponent {
     static propTypes = {
@@ -33,6 +34,7 @@ class PostBody extends PureComponent {
         canEdit: PropTypes.bool,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
+        hasReactions: PropTypes.bool,
         intl: intlShape.isRequired,
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
@@ -132,6 +134,7 @@ class PostBody extends PureComponent {
             canDelete,
             canEdit,
             hasBeenDeleted,
+            hasReactions,
             isFailed,
             isFlagged,
             isPending,
@@ -143,6 +146,7 @@ class PostBody extends PureComponent {
             onPostDelete,
             onPostEdit,
             onPress,
+            postId,
             renderReplyBar,
             theme,
             toggleSelected
@@ -219,6 +223,7 @@ class PostBody extends PureComponent {
                             {messageComponent}
                             {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
                             {this.renderFileAttachments()}
+                            {hasReactions && <Reactions postId={postId}/>}
                         </OptionsContext>
                     </View>
                     {isFailed &&
