@@ -186,12 +186,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         errorContainer: {
             alignItems: 'center',
             flex: 1,
-            marginTop: 100
+            marginTop: 40
         },
         errorText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 16,
-            fontWeight: '600',
+            fontWeight: '400',
             lineHeight: 23,
             paddingHorizontal: 30
         }
