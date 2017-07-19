@@ -86,7 +86,7 @@ class FilteredList extends Component {
 
             this.searchTimeoutId = setTimeout(() => {
                 // Android has a fatal error if we send a blank term
-                if (!term.length) {
+                if (!term) {
                     return;
                 }
 
