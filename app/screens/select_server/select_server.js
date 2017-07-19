@@ -118,14 +118,15 @@ class SelectServer extends PureComponent {
 
     onClick = async () => {
         const preUrl = urlParse(this.props.serverUrl, true);
-        const url = preUrl.protocol + '//' + preUrl.host;
+        const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
         let error = null;
 
         Keyboard.dismiss();
 
         if (isValidUrl(url)) {
-            Client4.setUrl(stripTrailingSlashes(url));
-            Client.setUrl(stripTrailingSlashes(url));
+            Client4.setUrl(url);
+            Client.setUrl(url);
+            this.props.actions.handleServerUrlChanged(url);
             await this.props.actions.getPing();
         } else {
             error = {
