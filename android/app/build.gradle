@@ -88,7 +88,7 @@ android {
     buildToolsVersion "25.0.1"
 
     defaultConfig {
-        applicationId "com.mattermost.react.native"
+        applicationId "com.mattermost.rnbeta"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 40

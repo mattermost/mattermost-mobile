@@ -1,4 +1,4 @@
-package com.mattermost;
+package com.mattermost.rnbeta;
 
 import android.app.Application;
 import android.util.Log;

@@ -1,4 +1,4 @@
-package com.mattermost;
+package com.mattermost.rnbeta;
 
 import com.github.yamill.orientation.OrientationPackage;
 import com.psykar.cookiemanager.CookieManagerPackage;
