@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms';
+import {makeDirectChannel, makeGroupChannel} from 'app/actions/views/more_dms';
 import {getTheme} from 'app/selectors/preferences';
 
 import {getProfiles, getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
@@ -64,6 +64,7 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
         currentTeamId: getCurrentTeamId(state),
+        currentUserId: getCurrentUserId(state),
         getRequest,
         searchRequest
     };
@@ -73,6 +74,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             makeDirectChannel,
+            makeGroupChannel,
             getProfiles,
             getProfilesInTeam,
             searchProfiles,

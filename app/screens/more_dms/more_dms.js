@@ -14,13 +14,16 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
+import CustomList from 'app/components/custom_list';
 import Loading from 'app/components/loading';
-import MemberList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {createMembersSections, loadingText, renderMemberRow} from 'app/utils/member_list';
+import {createMembersSections, loadingText, markSelectedProfiles, renderMemberRow} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+
+const START_BUTTON = 'start-conversation';
+const CLOSE_BUTTON = 'close-dms';
 
 class MoreDirectMessages extends PureComponent {
     static propTypes = {
@@ -29,6 +32,7 @@ class MoreDirectMessages extends PureComponent {
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
@@ -36,6 +40,7 @@ class MoreDirectMessages extends PureComponent {
         searchRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
+            makeGroupChannel: PropTypes.func.isRequired,
             getProfiles: PropTypes.func.isRequired,
             getProfilesInTeam: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
@@ -51,13 +56,26 @@ class MoreDirectMessages extends PureComponent {
         this.state = {
             profiles: props.profiles.splice(0, General.PROFILE_CHUNK_SIZE),
             page: 0,
-            adding: false,
             next: true,
             searching: false,
             showNoResults: false,
-            term: ''
+            term: '',
+            canStartConversation: false,
+            loadingChannel: false,
+            canSelect: true,
+            selectedIds: {}
         };
-        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        this.updateNavigationButtons(false);
+    }
+
+    componentDidMount() {
+        // set the timeout to 400 cause is the time that the modal takes to open
+        // Somehow interactionManager doesn't care
+        setTimeout(() => {
+            this.getProfiles(0);
+        }, 400);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -74,13 +92,36 @@ class MoreDirectMessages extends PureComponent {
         }
     }
 
-    componentDidMount() {
-        // set the timeout to 400 cause is the time that the modal takes to open
-        // Somehow interactionManager doesn't care
-        setTimeout(() => {
-            this.getProfiles(0);
-        }, 400);
+    componentDidUpdate(prevProps, prevState) {
+        const startEnabled = this.isStartEnabled(this.state);
+        const wasStartEnabled = this.isStartEnabled(prevState);
+
+        if (startEnabled && !wasStartEnabled) {
+            this.updateNavigationButtons(true);
+        } else if (!startEnabled && !wasStartEnabled) {
+            this.updateNavigationButtons(false);
+        }
     }
+
+    isStartEnabled = (state) => {
+        if (state.going) {
+            return false;
+        }
+
+        const selectedCount = Object.keys(state.selectedIds).length;
+        return selectedCount >= General.MIN_USERS_IN_GM - 1 && selectedCount <= General.MAX_USERS_IN_GM - 1;
+    };
+
+    updateNavigationButtons = (startEnabled) => {
+        this.props.navigator.setButtons({
+            rightButtons: [{
+                id: START_BUTTON,
+                title: this.props.intl.formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
+                showAsAction: 'always',
+                disabled: !startEnabled
+            }]
+        });
+    };
 
     close = () => {
         this.props.navigator.dismissModal({
@@ -90,7 +131,9 @@ class MoreDirectMessages extends PureComponent {
 
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'close-dms') {
+            if (event.id === START_BUTTON) {
+                this.startConversation();
+            } else if (event.id === CLOSE_BUTTON) {
                 this.close();
             }
         }
@@ -152,45 +195,99 @@ class MoreDirectMessages extends PureComponent {
         }
     };
 
-    onSelectMember = async (id) => {
-        const {actions, currentDisplayName, intl, teammateNameDisplay, profiles} = this.props;
-        const user = profiles.find((p) => p.id === id);
+    handleRowSelect = (id) => {
+        this.setState((prevState) => {
+            const selectedIds = {...this.state.selectedIds};
 
-        this.setState({adding: true});
+            if (selectedIds[id]) {
+                Reflect.deleteProperty(selectedIds, id);
+            } else {
+                selectedIds[id] = true;
+            }
 
-        // save the current channel display name in case it fails
-        const currentChannelDisplayName = currentDisplayName;
+            return {
+                profiles: markSelectedProfiles(prevState.profiles, selectedIds),
+                selectedIds
+            };
+        });
+    }
 
-        const userDisplayName = displayUsername(user, teammateNameDisplay);
-
-        if (user) {
-            actions.setChannelDisplayName(userDisplayName);
-        } else {
-            actions.setChannelDisplayName('');
+    startConversation = async () => {
+        if (this.state.loadingChannel) {
+            return;
         }
 
-        const result = await actions.makeDirectChannel(id);
+        this.setState({
+            loadingChannel: true
+        });
+
+        // Save the current channel display name in case it fails
+        const currentChannelDisplayName = this.props.currentDisplayName;
+
+        const selectedIds = Object.keys(this.state.selectedIds);
+        let success;
+        if (selectedIds.length === 0) {
+            success = false;
+        } else if (selectedIds.length > 1) {
+            success = await this.makeGroupChannel(selectedIds);
+        } else {
+            success = await this.makeDirectChannel(selectedIds[0]);
+        }
+
+        this.setState({
+            loadingChannel: false
+        });
+
+        if (success) {
+            EventEmitter.emit('close_channel_drawer');
+            InteractionManager.runAfterInteractions(() => {
+                this.close();
+            });
+        } else {
+            this.props.actions.setChannelDisplayName(currentChannelDisplayName);
+        }
+    }
+
+    makeGroupChannel = async (ids) => {
+        const result = await this.props.actions.makeGroupChannel(ids);
 
         if (result.error) {
-            actions.setChannelDisplayName(currentChannelDisplayName);
             alertErrorWithFallback(
-                intl,
+                this.props.intl,
+                result.error,
+                {
+                    id: 'mobile.open_gm.error',
+                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again."
+                }
+            );
+        }
+
+        return !result.error;
+    }
+
+    makeDirectChannel = async (id) => {
+        const user = this.state.profiles[id];
+
+        const displayName = displayUsername(user, this.props.teammateNameDisplay);
+        this.props.actions.setChannelDisplayName(displayName);
+
+        const result = await this.props.actions.makeDirectChannel(id);
+
+        if (result.error) {
+            alertErrorWithFallback(
+                this.props.intl,
                 result.error,
                 {
                     id: 'mobile.open_dm.error',
                     defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
                 },
                 {
-                    displayName: userDisplayName
+                    displayName
                 }
             );
-            this.setState({adding: false});
-        } else {
-            EventEmitter.emit('close_channel_drawer');
-            InteractionManager.runAfterInteractions(() => {
-                this.close();
-            });
         }
+
+        return !result.error;
     };
 
     render() {
@@ -252,19 +349,19 @@ class MoreDirectMessages extends PureComponent {
                             value={term}
                         />
                     </View>
-                    <MemberList
+                    <CustomList
                         data={profiles}
                         theme={theme}
                         searching={searching}
                         onListEndReached={more}
                         teammateNameDisplay={teammateNameDisplay}
-                        loading={isLoading}
-                        selectable={false}
                         listScrollRenderAheadDistance={50}
-                        createSections={createMembersSections}
-                        renderRow={renderMemberRow}
-                        onRowPress={this.onSelectMember}
+                        loading={isLoading}
                         loadingText={loadingText}
+                        selectable={this.state.canSelect}
+                        onRowSelect={this.handleRowSelect}
+                        renderRow={renderMemberRow}
+                        createSections={createMembersSections}
                         showNoResults={showNoResults}
                     />
                 </View>

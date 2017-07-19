@@ -177,8 +177,7 @@ class ChannelAddMembers extends PureComponent {
         let {page} = this.state;
         if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
             page = page + 1;
-            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).
-            then((data) => {
+            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then((data) => {
                 if (data && data.length) {
                     this.setState({
                         page
@@ -192,7 +191,7 @@ class ChannelAddMembers extends PureComponent {
 
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'add-members') {
+            if (event.id === this.addButton.id) {
                 this.handleAddMembersPress();
             }
         }
