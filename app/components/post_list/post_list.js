@@ -29,6 +29,7 @@ export default class PostList extends PureComponent {
         currentUserId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
         isLoadingMore: PropTypes.bool,
+        isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number,
         loadMore: PropTypes.func,
         navigator: PropTypes.object,
@@ -37,6 +38,7 @@ export default class PostList extends PureComponent {
         refreshing: PropTypes.bool,
         renderReplies: PropTypes.bool,
         showLoadMore: PropTypes.bool,
+        shouldRenderReplyButton: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
 
@@ -128,15 +130,25 @@ export default class PostList extends PureComponent {
     };
 
     renderPost = (post) => {
+        const {
+            isSearchResult,
+            navigator,
+            onPostPress,
+            renderReplies,
+            shouldRenderReplyButton
+        } = this.props;
+
         return (
             <Post
                 post={post}
-                renderReplies={this.props.renderReplies}
+                renderReplies={renderReplies}
                 isFirstReply={post.isFirstReply}
                 isLastReply={post.isLastReply}
+                isSearchResult={isSearchResult}
+                shouldRenderReplyButton={shouldRenderReplyButton}
                 commentedOnPost={post.commentedOnPost}
-                onPress={this.props.onPostPress}
-                navigator={this.props.navigator}
+                onPress={onPostPress}
+                navigator={navigator}
             />
         );
     };

@@ -27,6 +27,8 @@ export default class PostHeader extends PureComponent {
         enablePostUsernameOverride: PropTypes.bool,
         fromWebHook: PropTypes.bool,
         isPendingOrFailedPost: PropTypes.bool,
+        isSearchResult: PropTypes.bool,
+        shouldRenderReplyButton: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
         onPress: PropTypes.func,
         onViewUserProfile: PropTypes.func,
@@ -138,11 +140,14 @@ export default class PostHeader extends PureComponent {
             commentCount,
             createAt,
             isPendingOrFailedPost,
+            isSearchResult,
             onPress,
             renderReplies,
+            shouldRenderReplyButton,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
+        const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
 
         return (
             <View>
@@ -155,7 +160,7 @@ export default class PostHeader extends PureComponent {
                             </Text>
                         </View>
                     </View>
-                    {(!commentedOnDisplayName && commentCount > 0 && renderReplies) &&
+                    {showReply &&
                     <TouchableOpacity
                         onPress={onPress}
                         style={style.replyIconContainer}
@@ -165,7 +170,9 @@ export default class PostHeader extends PureComponent {
                             width={15}
                             color={theme.linkColor}
                         />
+                        {!isSearchResult &&
                         <Text style={style.replyText}>{commentCount}</Text>
+                        }
                     </TouchableOpacity>
                     }
                 </View>

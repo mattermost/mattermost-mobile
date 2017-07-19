@@ -11,9 +11,11 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 class AtMention extends React.PureComponent {
     static propTypes = {
         intl: intlShape,
+        isSearchResult: PropTypes.bool,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
         navigator: PropTypes.object.isRequired,
+        onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired
@@ -40,22 +42,27 @@ class AtMention extends React.PureComponent {
     }
 
     goToUserProfile = () => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'UserProfile',
-            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            animated: true,
-            backButtonTitle: '',
-            passProps: {
-                userId: this.state.id
-            },
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
-        });
+        const {intl, isSearchResult, navigator, onPostPress, theme} = this.props;
+
+        if (!isSearchResult) {
+            navigator.push({
+                screen: 'UserProfile',
+                title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+                animated: true,
+                backButtonTitle: '',
+                passProps: {
+                    userId: this.state.id
+                },
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg
+                }
+            });
+        } else if (onPostPress) {
+            onPostPress();
+        }
     };
 
     getUserDetailsFromMentionName(props) {

@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Platform,
     StyleSheet,
+    TouchableHighlight,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -39,6 +40,7 @@ class PostBody extends PureComponent {
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
+        isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
@@ -62,8 +64,16 @@ class PostBody extends PureComponent {
         toggleSelected: emptyFunction
     };
 
+    handleHideUnderlay = () => {
+        this.props.toggleSelected(false);
+    };
+
+    handleShowUnderlay = () => {
+        this.props.toggleSelected(true);
+    };
+
     hideOptionsContext = () => {
-        if (Platform.OS === 'ios') {
+        if (Platform.OS === 'ios' && this.refs.options) {
             this.refs.options.hide();
         }
     };
@@ -79,7 +89,9 @@ class PostBody extends PureComponent {
     };
 
     showOptionsContext = () => {
-        return this.refs.options.show();
+        if (this.refs.options) {
+            this.refs.options.show();
+        }
     };
 
     renderFileAttachments() {
@@ -138,6 +150,7 @@ class PostBody extends PureComponent {
             isFailed,
             isFlagged,
             isPending,
+            isSearchResult,
             isSystemMessage,
             intl,
             message,
@@ -160,7 +173,7 @@ class PostBody extends PureComponent {
         const isPendingOrFailedPost = isPending || isFailed;
 
         // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost) {
+        if (!isPendingOrFailedPost && !isSearchResult) {
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
@@ -199,12 +212,49 @@ class PostBody extends PureComponent {
                             baseTextStyle={messageStyle}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
+                            isSearchResult={isSearchResult}
                             value={message}
                             onLongPress={this.showOptionsContext}
+                            onPostPress={onPress}
                             navigator={navigator}
                         />
                     </View>
                 </View>
+            );
+        }
+
+        let body;
+        if (isSearchResult) {
+            body = (
+                <TouchableHighlight
+                    onHideUnderlay={this.handleHideUnderlay}
+                    onLongPress={this.show}
+                    onPress={onPress}
+                    onShowUnderlay={this.handleShowUnderlay}
+                    underlayColor='transparent'
+                    style={{flex: 1, flexDirection: 'row'}}
+                >
+                    <View style={{flex: 1}}>
+                        {messageComponent}
+                        {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
+                        {this.renderFileAttachments()}
+                    </View>
+                </TouchableHighlight>
+            );
+        } else {
+            body = (
+                <OptionsContext
+                    actions={actions}
+                    ref='options'
+                    onPress={onPress}
+                    toggleSelected={toggleSelected}
+                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                >
+                    {messageComponent}
+                    {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
+                    {this.renderFileAttachments()}
+                    {hasReactions && <Reactions postId={postId}/>}
+                </OptionsContext>
             );
         }
 
@@ -213,18 +263,7 @@ class PostBody extends PureComponent {
                 {renderReplyBar()}
                 <View style={{flex: 1, flexDirection: 'row'}}>
                     <View style={{flex: 1}}>
-                        <OptionsContext
-                            actions={actions}
-                            ref='options'
-                            onPress={onPress}
-                            toggleSelected={toggleSelected}
-                            cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                        >
-                            {messageComponent}
-                            {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
-                            {this.renderFileAttachments()}
-                            {hasReactions && <Reactions postId={postId}/>}
-                        </OptionsContext>
+                        {body}
                     </View>
                     {isFailed &&
                     <TouchableOpacity

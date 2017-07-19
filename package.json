@@ -17,6 +17,7 @@
     "react": "16.0.0-alpha.6",
     "react-intl": "2.3.0",
     "react-native": "0.44.0",
+    "react-native-animatable": "1.2.2",
     "react-native-bottom-sheet": "1.0.1",
     "react-native-button": "1.8.2",
     "react-native-cookies": "3.1.0",

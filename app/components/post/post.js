@@ -36,6 +36,7 @@ class Post extends PureComponent {
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        highlight: PropTypes.bool,
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object.isRequired,
@@ -47,6 +48,7 @@ class Post extends PureComponent {
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         roles: PropTypes.string,
+        shouldRenderReplyButton: PropTypes.bool,
         tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
@@ -265,17 +267,20 @@ class Post extends PureComponent {
     render() {
         const {
             commentedOnPost,
+            highlight,
             isLastReply,
             isSearchResult,
             post,
             renderReplies,
+            shouldRenderReplyButton,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
         const selected = this.state && this.state.selected ? style.selected : null;
+        const highlighted = highlight ? style.highlight : null;
 
         return (
-            <View style={[style.container, this.props.style, selected]}>
+            <View style={[style.container, this.props.style, highlighted, selected]}>
                 <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                     <PostProfilePicture
                         onViewUserProfile={this.viewUserProfile}
@@ -290,6 +295,7 @@ class Post extends PureComponent {
                             commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
                             createAt={post.create_at}
                             isSearchResult={isSearchResult}
+                            shouldRenderReplyButton={shouldRenderReplyButton}
                             onPress={this.handleReply}
                             onViewUserProfile={this.viewUserProfile}
                             renderReplies={renderReplies}
@@ -358,6 +364,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         selected: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        highlight: {
+            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5)
         }
     });
 });

@@ -44,6 +44,7 @@ class ChannelSearchButton extends PureComponent {
             screen: 'Search',
             animated: true,
             backButtonTitle: '',
+            overrideBackPress: true,
             navigatorStyle: {
                 navBarHidden: true,
                 screenBackgroundColor: theme.centerChannelBg

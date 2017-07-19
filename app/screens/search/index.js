@@ -4,26 +4,38 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectPost} from 'mattermost-redux/actions/posts';
+import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {getPostsAfter, getPostsBefore, getPostThread, selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
-import {getMyChannels} from 'mattermost-redux/selectors/entities/channels';
+import {RequestStatus} from 'mattermost-redux/constants';
+import {getCurrentChannelId, getMyChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getSearchResults} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
-import {handlePostDraftChanged, loadThreadIfNecessary} from 'app/actions/views/channel';
+import {
+    handlePostDraftChanged,
+    handleSelectChannel,
+    loadThreadIfNecessary,
+    setChannelDisplayName,
+    setChannelLoading
+} from 'app/actions/views/channel';
 
 import Search from './search';
 
 function mapStateToProps(state, ownProps) {
     const currentTeamId = getCurrentTeamId(state);
+    const currentChannelId = getCurrentChannelId(state);
     const {recent} = state.entities.search;
+    const {searchPosts: searchRequest} = state.requests.search;
 
     return {
         ...ownProps,
         currentTeamId,
+        currentChannelId,
         posts: getSearchResults(state),
-        recent: recent[currentTeamId] || {},
-        channels: getMyChannels(state)
+        recent: recent[currentTeamId] || [],
+        channels: getMyChannels(state),
+        searching: searchRequest.status === RequestStatus.STARTED
     };
 }
 
@@ -31,11 +43,19 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
+            getPostsAfter,
+            getPostsBefore,
+            getPostThread,
             handlePostDraftChanged,
+            handleSelectChannel,
             loadThreadIfNecessary,
+            markChannelAsRead,
             removeSearchTerms,
             searchPosts,
-            selectPost
+            selectPost,
+            setChannelDisplayName,
+            setChannelLoading,
+            viewChannel
         }, dispatch)
     };
 }

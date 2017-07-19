@@ -1775,6 +1775,7 @@
   "mobile.routes.thread_dm": "Direct Message Thread",
   "mobile.routes.user_profile": "Profile",
   "mobile.routes.user_profile.send_message": "Send Message",
+  "mobile.search.jump": "JUMP",
   "mobile.select_team.choose": "Your teams:",
   "mobile.select_team.join_open": "Open teams you can join",
   "mobile.select_team.no_teams": "There are no available teams for you to join.",

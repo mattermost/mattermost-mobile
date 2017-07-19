@@ -15,12 +15,14 @@ import {
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {General} from 'mattermost-redux/constants';
+import {General, Posts} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
+import Loading from 'app/components/loading';
 import Post from 'app/components/post';
 import SectionList from 'app/components/scrollable_section_list';
 import SearchBar from 'app/components/search_bar';
+import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
 import {ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -29,11 +31,16 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
+const POSTS_PER_PAGE = Posts.POST_CHUNK_SIZE / 2;
+const SEARCHING = 'searching';
 
 class Search extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
+            getPostsAfter: PropTypes.func.isRequired,
+            getPostsBefore: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
@@ -42,22 +49,31 @@ class Search extends Component {
         }).isRequired,
         channels: PropTypes.array.isRequired,
         currentTeamId: PropTypes.string.isRequired,
+        currentChannelId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        recent: PropTypes.object,
         posts: PropTypes.array,
+        recent: PropTypes.array.isRequired,
+        searching: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        recent: {},
         posts: []
     };
 
-    state = {
-        isFocused: true,
-        value: ''
-    };
+    constructor(props) {
+        super(props);
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        this.state = {
+            channelName: '',
+            isFocused: true,
+            postId: null,
+            preview: false,
+            value: ''
+        };
+    }
 
     componentDidMount() {
         this.refs.search_bar.focus();
@@ -73,7 +89,7 @@ class Search extends Component {
 
     componentDidUpdate() {
         const {posts, recent} = this.props;
-        const recentLenght = Object.keys(recent).length;
+        const recentLenght = recent.length;
 
         if (posts.length && !this.state.isFocused) {
             this.refs.list.getWrapperRef().getListRef().scrollToOffset({
@@ -88,8 +104,7 @@ class Search extends Component {
     };
 
     cancelSearch = () => {
-        const {actions, navigator} = this.props;
-        actions.clearSearch();
+        const {navigator} = this.props;
         this.handleTextChanged('');
         navigator.dismissModal({animationType: 'slide-down'});
     };
@@ -142,8 +157,13 @@ class Search extends Component {
     };
 
     handleTextChanged = (value) => {
+        const {actions, posts} = this.props;
         this.setState({value});
-        this.props.actions.handlePostDraftChanged(ViewTypes.SEARCH, value);
+        actions.handlePostDraftChanged(ViewTypes.SEARCH, value);
+
+        if (!value && posts.length) {
+            actions.clearSearch();
+        }
     };
 
     keyRecentExtractor = (item) => {
@@ -169,12 +189,49 @@ class Search extends Component {
         }
     };
 
+    onNavigatorEvent = (event) => {
+        if (event.id === 'backPress') {
+            if (this.state.preview) {
+                this.refs.preview.getWrappedInstance().handleClose();
+            } else {
+                this.props.navigator.dismissModal();
+            }
+        }
+    };
+
+    previewPost = (post) => {
+        const {actions, channels} = this.props;
+        const focusedPostId = post.id;
+        const channelId = post.channel_id;
+
+        actions.getPostThread(focusedPostId);
+        actions.getPostsBefore(channelId, focusedPostId, 0, POSTS_PER_PAGE);
+        actions.getPostsAfter(channelId, focusedPostId, 0, POSTS_PER_PAGE);
+
+        const channel = channels.find((c) => c.id === channelId);
+        let displayName = '';
+
+        if (channel) {
+            displayName = channel.display_name;
+        }
+
+        this.setState({preview: true, postId: focusedPostId, channelName: displayName});
+    };
+
     removeSearchTerms = (item) => {
         const {actions, currentTeamId} = this.props;
         actions.removeSearchTerms(currentTeamId, item.terms);
     };
 
     renderPost = ({item}) => {
+        if (item.id === SEARCHING) {
+            return (
+                <View style={{width: '100%', height: '100%'}}>
+                    {item.component}
+                </View>
+            );
+        }
+
         const {channels, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
@@ -192,13 +249,14 @@ class Search extends Component {
                 </Text>
                 <Post
                     post={item}
-                    renderReplies={false}
+                    renderReplies={true}
                     isFirstReply={false}
                     isLastReply={false}
                     commentedOnPost={null}
-                    onPress={() => true}
+                    onPress={this.previewPost}
                     onReply={this.goToThread}
                     isSearchResult={true}
+                    shouldRenderReplyButton={true}
                     navigator={this.props.navigator}
                 />
             </View>
@@ -288,29 +346,54 @@ class Search extends Component {
         this.refs.search_bar.blur();
     };
 
+    handleClosePreview = () => {
+        this.setState({preview: false, postId: null});
+    };
+
+    handleJumpToChannel = (channelId) => {
+        if (channelId) {
+            const {actions, channels, currentChannelId} = this.props;
+            const {
+                handleSelectChannel,
+                markChannelAsRead,
+                setChannelLoading,
+                setChannelDisplayName,
+                viewChannel
+            } = actions;
+
+            const channel = channels.find((c) => c.id === channelId);
+            let displayName = '';
+
+            if (channel) {
+                displayName = channel.display_name;
+            }
+
+            this.props.navigator.dismissModal({animationType: 'none'});
+            setChannelLoading();
+            markChannelAsRead(channelId, currentChannelId);
+            viewChannel(channelId, currentChannelId);
+            setChannelDisplayName(displayName);
+            handleSelectChannel(channelId);
+        }
+    };
+
     render() {
         const {
             intl,
-            recent,
+            navigator,
             posts,
+            recent,
+            searching,
             theme
         } = this.props;
 
-        const {value} = this.state;
-        const recentKeys = Object.keys(recent);
+        const {channelName, postId, preview, value} = this.state;
         const style = getStyleFromTheme(theme);
         const sections = [];
 
-        if (recentKeys.length) {
-            const recentArray = recentKeys.map((key) => {
-                return {
-                    terms: key,
-                    isOrSearch: recent[key]
-                };
-            });
-
+        if (recent.length) {
             sections.push({
-                data: recentArray,
+                data: recent,
                 key: 'recent',
                 title: intl.formatMessage({id: 'mobile.search.recentTitle', defaultMessage: 'Recent Searches'}),
                 renderItem: this.renderRecentItem,
@@ -319,15 +402,40 @@ class Search extends Component {
             });
         }
 
-        if (posts.length) {
+        let results;
+        if (searching) {
+            results = [{
+                id: SEARCHING,
+                component: <Loading/>
+            }];
+        } else if (posts.length) {
+            results = posts;
+        }
+
+        if (results) {
             sections.push({
-                data: posts,
+                data: results,
                 key: 'results',
                 title: intl.formatMessage({id: 'search_header.results', defaultMessage: 'Search Results'}),
                 renderItem: this.renderPost,
                 keyExtractor: this.keyPostExtractor,
                 ItemSeparatorComponent: this.renderPostSeparator
             });
+        }
+
+        let previewComponent;
+        if (preview) {
+            previewComponent = (
+                <SearchPreview
+                    ref='preview'
+                    channelName={channelName}
+                    focusedPostId={postId}
+                    navigator={navigator}
+                    onClose={this.handleClosePreview}
+                    onPress={this.handleJumpToChannel}
+                    theme={theme}
+                />
+            );
         }
 
         return (
@@ -381,6 +489,7 @@ class Search extends Component {
                     keyboardShouldPersistTaps='handled'
                     stickySectionHeadersEnabled={true}
                 />
+                {previewComponent}
             </View>
         );
     }
