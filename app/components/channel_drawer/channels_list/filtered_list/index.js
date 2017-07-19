@@ -11,7 +11,7 @@ import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/prefe
 import {General} from 'mattermost-redux/constants';
 import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getProfilesInCurrentTeam, getUsers, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
 import {getDirectShowPreferences, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 
 import Config from 'assets/config';
@@ -25,15 +25,62 @@ const pastDirectMessages = createSelector(
     (directChannelsFromPreferences) => directChannelsFromPreferences.filter((d) => d.value === 'false').map((d) => d.name)
 );
 
+const getTeamProfiles = createSelector(
+    getProfilesInCurrentTeam,
+    (members) => {
+        return members.reduce((memberProfiles, member) => {
+            memberProfiles[member.id] = member;
+
+            return memberProfiles;
+        }, {});
+    }
+);
+
+function getGroupDetails(currentUserId, userIdsInChannels, profiles, groupChannels) {
+    return groupChannels.reduce((groupMemberDetails, channel) => {
+        if (!userIdsInChannels.hasOwnProperty(channel.id)) {
+            return groupMemberDetails;
+        }
+
+        const members = Array.from(userIdsInChannels[channel.id]).reduce((details, member) => {
+            if (member === currentUserId) {
+                return details;
+            }
+
+            const profile = profiles[member];
+            const username = `${details.username || ''} ${profile.username}`;
+            const email = `${details.email || ''} ${profile.email}`;
+            const nickname = `${details.nickname || ''} ${profile.nickname}`;
+
+            return {
+                username: username.trim(),
+                email: email.trim(),
+                nickname: nickname.trim()
+            };
+        }, {});
+
+        groupMemberDetails[channel.id] = members;
+
+        return groupMemberDetails;
+    }, {});
+}
+
+const getGroupChannelMemberDetails = createSelector(
+    getCurrentUserId,
+    getUserIdsInChannels,
+    getUsers,
+    getGroupChannels,
+    getGroupDetails
+);
+
 function mapStateToProps(state, ownProps) {
     const {currentUserId} = state.entities.users;
 
-    let profiles;
+    const profiles = getUsers(state);
+    let teamProfiles = {};
     const restrictDms = getConfig(state).RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY;
     if (restrictDms) {
-        profiles = getProfilesInCurrentTeam(state);
-    } else {
-        profiles = getUsers(state);
+        teamProfiles = getTeamProfiles(state);
     }
 
     const searchOrder = Config.DrawerSearchOrder ? Config.DrawerSearchOrder : DEFAULT_SEARCH_ORDER;
@@ -42,7 +89,9 @@ function mapStateToProps(state, ownProps) {
         currentUserId,
         otherChannels: getOtherChannels(state),
         groupChannels: getGroupChannels(state),
+        groupChannelMemberDetails: getGroupChannelMemberDetails(state),
         profiles,
+        teamProfiles,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         statuses: getUserStatuses(state),
         searchOrder,
