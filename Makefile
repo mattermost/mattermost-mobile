@@ -90,6 +90,8 @@ clean:
 	rm -rf node_modules
 	rm -f .yarninstall
 	rm -rf dist
+	rm -rf ios/build
+	rm -rf android/app/build
 
 post-install:
 	./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
