@@ -64,7 +64,6 @@ function mapStateToProps(state, ownProps) {
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
         currentTeamId: getCurrentTeamId(state),
-        currentUserId: getCurrentUserId(state),
         getRequest,
         searchRequest
     };

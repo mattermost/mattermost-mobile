@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 
 import Loading from 'app/components/loading';
-import MemberList from 'app/components/custom_list';
+import CustomList from 'app/components/custom_list';
+import UserListRow from 'app/components/custom_list/user_list_row';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {createMembersSections, loadingText, markSelectedProfiles, renderMemberRow} from 'app/utils/member_list';
+import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -258,7 +259,7 @@ class ChannelAddMembers extends PureComponent {
                         value={term}
                     />
                 </View>
-                <MemberList
+                <CustomList
                     data={profiles}
                     theme={theme}
                     searching={searching}
@@ -267,9 +268,8 @@ class ChannelAddMembers extends PureComponent {
                     listScrollRenderAheadDistance={50}
                     loading={isLoading}
                     loadingText={loadingText}
-                    selectable={this.state.canSelect}
-                    onRowSelect={this.handleRowSelect}
-                    renderRow={renderMemberRow}
+                    onRowSelect={this.state.canSelect ? this.handleRowSelect : null}
+                    rowComponent={UserListRow}
                     createSections={createMembersSections}
                 />
             </View>

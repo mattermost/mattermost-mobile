@@ -13,19 +13,40 @@ export default class CustomList extends PureComponent {
         data: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
         searching: PropTypes.bool,
-        onRowPress: PropTypes.func,
         onListEndReached: PropTypes.func,
         onListEndReachedThreshold: PropTypes.number,
-        teammateNameDisplay: PropTypes.string,
         loading: PropTypes.bool,
         loadingText: PropTypes.object,
         listPageSize: PropTypes.number,
         listInitialSize: PropTypes.number,
         listScrollRenderAheadDistance: PropTypes.number,
         showSections: PropTypes.bool,
-        selectable: PropTypes.bool,
+
+        onRowPress: PropTypes.func,
         onRowSelect: PropTypes.func,
-        renderRow: PropTypes.func.isRequired,
+
+        /*
+         * A component to be used to represent each row of the list. Will be passed the following props:
+         * id: The id field of the row, if set
+         * selected: The selected field of the row, if set
+         * sectionId: The list's section id for the row
+         * rowId: The list's id for the row
+         * onRowPress: The onRowPress function passed into this component
+         * onRowSelect: The onRowSelect function passed into this component
+         *
+         * Either this or the renderRow property must be provided.
+         */
+        rowComponent: PropTypes.func,
+
+        /*
+         * A function that renders a component used to represent each row of the list. Will be passed the
+         * object representing the row as well as a props object containing the properties that would be
+         * passed if the rowComponent property had been instead used.
+         *
+         * Either this or the rowComponent property must be provided.
+         */
+        renderRow: PropTypes.func,
+
         createSections: PropTypes.func,
         showNoResults: PropTypes.bool
     };
@@ -37,9 +58,7 @@ export default class CustomList extends PureComponent {
         listPageSize: 10,
         listInitialSize: 10,
         listScrollRenderAheadDistance: 200,
-        selectable: false,
         loadingText: null,
-        onRowSelect: () => true,
         createSections: () => true,
         showSections: true,
         showNoResults: true
@@ -115,16 +134,24 @@ export default class CustomList extends PureComponent {
     };
 
     renderRow = (rowData, sectionId, rowId) => {
-        return this.props.renderRow(
-            rowData,
+        const props = {
             sectionId,
             rowId,
-            this.props.teammateNameDisplay,
-            this.props.theme,
-            this.props.selectable,
-            this.props.onRowPress,
-            this.handleRowSelect
-        );
+            id: rowData.id,
+            selected: rowData.selected,
+            onPress: this.props.onRowPress
+        };
+
+        if (this.props.onRowSelect) {
+            props.onRowSelect = this.handleRowSelect;
+        }
+
+        if (this.props.rowComponent) {
+            const RowComponent = this.props.rowComponent;
+            return <RowComponent {...props}/>;
+        }
+
+        return this.props.renderRow(rowData, props);
     };
 
     renderSeparator = (sectionId, rowId) => {

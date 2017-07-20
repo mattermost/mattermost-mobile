@@ -15,11 +15,12 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 import CustomList from 'app/components/custom_list';
+import UserListRow from 'app/components/custom_list/user_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {createMembersSections, loadingText, markSelectedProfiles, renderMemberRow} from 'app/utils/member_list';
+import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 const START_BUTTON = 'start-conversation';
@@ -32,7 +33,6 @@ class MoreDirectMessages extends PureComponent {
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        currentUserId: PropTypes.string.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         profiles: PropTypes.array,
@@ -197,6 +197,9 @@ class MoreDirectMessages extends PureComponent {
 
     handleRowSelect = (id) => {
         this.setState((prevState) => {
+            if (Object.keys(prevState.selectedIds).length === General.MAX_USERS_IN_GM - 1) {
+                return prevState;
+            }
             const selectedIds = {...this.state.selectedIds};
 
             if (selectedIds[id]) {
@@ -293,7 +296,6 @@ class MoreDirectMessages extends PureComponent {
     render() {
         const {
             intl,
-            teammateNameDisplay,
             getRequest,
             searchRequest,
             theme
@@ -354,13 +356,12 @@ class MoreDirectMessages extends PureComponent {
                         theme={theme}
                         searching={searching}
                         onListEndReached={more}
-                        teammateNameDisplay={teammateNameDisplay}
                         listScrollRenderAheadDistance={50}
                         loading={isLoading}
                         loadingText={loadingText}
                         selectable={this.state.canSelect}
                         onRowSelect={this.handleRowSelect}
-                        renderRow={renderMemberRow}
+                        rowComponent={UserListRow}
                         createSections={createMembersSections}
                         showNoResults={showNoResults}
                     />
