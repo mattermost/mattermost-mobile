@@ -36,30 +36,49 @@ const getTeamProfiles = createSelector(
     }
 );
 
+// Fill an object for each group channel with concatenated strings for username, email, fullname, and nickname
 function getGroupDetails(currentUserId, userIdsInChannels, profiles, groupChannels) {
     return groupChannels.reduce((groupMemberDetails, channel) => {
         if (!userIdsInChannels.hasOwnProperty(channel.id)) {
             return groupMemberDetails;
         }
 
-        const members = Array.from(userIdsInChannels[channel.id]).reduce((details, member) => {
+        const members = Array.from(userIdsInChannels[channel.id]).reduce((memberDetails, member) => {
             if (member === currentUserId) {
-                return details;
+                return memberDetails;
             }
 
+            const details = {...memberDetails};
+
             const profile = profiles[member];
-            const username = `${details.username || ''} ${profile.username}`;
-            const email = `${details.email || ''} ${profile.email}`;
-            const nickname = `${details.nickname || ''} ${profile.nickname}`;
+            details.username.push(profile.username);
+            if (profile.email) {
+                details.email.push(profile.email);
+            }
+            if (profile.email) {
+                details.email.push(profile.email);
+            }
+            if (profile.nickname) {
+                details.nickname.push(profile.nickname);
+            }
+            if (profile.fullname) {
+                details.fullname.push(`${profile.first_name} ${profile.last_name}`);
+            }
 
-            return {
-                username: username.trim(),
-                email: email.trim(),
-                nickname: nickname.trim()
-            };
-        }, {});
+            return details;
+        }, {
+            email: [],
+            fullname: [],
+            nickname: [],
+            username: []
+        });
 
-        groupMemberDetails[channel.id] = members;
+        groupMemberDetails[channel.id] = {
+            email: members.email.join(','),
+            fullname: members.fullname.join(','),
+            nickname: members.nickname.join(','),
+            username: members.username.join(',')
+        };
 
         return groupMemberDetails;
     }, {});
