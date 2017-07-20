@@ -1,5 +1,15 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.0.1 Release 
+
+- Release Date: July 20, 2017 
+- Server Versions Supported: Server v3.8+ is required, Self-Signed SSL Certificates are not yet supported
+
+#### Bug Fixes
+- Huawei devices can now load messages
+- GitLab SSO now works if there is a trailing `/` in the server URL
+- Unsupported server versions now show a prompt clarifying that a server upgrade is necessary
+
 ## v1.0 Release 
 
 - Release Date: July 10, 2017 
