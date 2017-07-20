@@ -1,4 +1,4 @@
-fastlane_version '2.29.1'
+fastlane_version '2.47.0'
 skip_docs
 
 platform :ios do
@@ -153,9 +153,10 @@ platform :ios do
     end
 
     if options[:increment_build]
+      current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj').to_i
       increment_build_number(
           xcodeproj: './ios/Mattermost.xcodeproj',
-          build_number: latest_testflight_build_number + 1
+          build_number: current_build_number + 1
       )
       commit_version_bump(xcodeproj: './ios/Mattermost.xcodeproj')
     end
