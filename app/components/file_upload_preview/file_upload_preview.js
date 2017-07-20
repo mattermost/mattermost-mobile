@@ -35,7 +35,7 @@ export default class FileUploadPreview extends PureComponent {
         inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        uploadFileRequestStatus: PropTypes.string.isRequired
+        filesUploadingForCurrentChannel: PropTypes.bool.isRequired
     };
 
     handleRetryFileUpload = (file) => {
@@ -102,7 +102,7 @@ export default class FileUploadPreview extends PureComponent {
     }
 
     render() {
-        if (this.props.channelIsLoading || (!this.props.files.length && this.props.uploadFileRequestStatus !== RequestStatus.STARTED)) {
+        if (this.props.channelIsLoading || (!this.props.files.length && this.props.filesUploadingForCurrentChannel !== RequestStatus.STARTED)) {
             return null;
         }
 
