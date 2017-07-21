@@ -415,20 +415,20 @@ export default class Search extends Component {
                         >
                             {this.props.iconDelete}
                         </Animated.View> :
-                        <AnimatedIcon
-                            name='ios-close-circle'
-                            size={iconSize}
-                            style={[
-                                styles.iconDelete,
-                                styles.iconDeleteDefault,
-                                this.props.tintColorDelete && {color: this.props.tintColorDelete},
-                                this.props.positionRightDelete && {right: this.props.positionRightDelete},
-                                {
-                                    opacity: this.iconDeleteAnimated,
-                                    top: middleHeight - (iconSize / 2)
-                                }
-                            ]}
-                        />
+                        <View style={[styles.iconDelete, this.props.inputHeight && {height: this.props.inputHeight, width: iconSize + 5}]}>
+                            <AnimatedIcon
+                                name='ios-close-circle'
+                                size={iconSize}
+                                style={[
+                                    styles.iconDeleteDefault,
+                                    this.props.tintColorDelete && {color: this.props.tintColorDelete},
+                                    this.props.positionRightDelete && {right: this.props.positionRightDelete},
+                                    {
+                                        opacity: this.iconDeleteAnimated
+                                    }
+                                ]}
+                            />
+                        </View>
                     )}
                 </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback onPress={this.onCancel}>
@@ -462,10 +462,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingBottom: 5,
-        paddingLeft: 5,
-        paddingRight: 5,
-        paddingTop: 4
+        padding: 5
     },
     input: {
         height: containerHeight - 10,
@@ -485,6 +482,8 @@ const styles = StyleSheet.create({
         color: 'grey'
     },
     iconDelete: {
+        alignItems: 'center',
+        justifyContent: 'center',
         position: 'absolute',
         right: 70
     },
