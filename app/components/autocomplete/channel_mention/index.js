@@ -8,7 +8,6 @@ import {searchChannels} from 'mattermost-redux/actions/channels';
 import {General} from 'mattermost-redux/constants';
 import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 
-import {ViewTypes} from 'app/constants';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelMention from './channel_mention';
@@ -18,10 +17,7 @@ function mapStateToProps(state, ownProps) {
 
     let postDraft;
     if (ownProps.isSearch) {
-        const searchDraft = state.views.channel.drafts[ViewTypes.SEARCH];
-        if (searchDraft) {
-            postDraft = searchDraft.draft;
-        }
+        postDraft = state.views.search;
     } else if (ownProps.rootId.length) {
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
         if (threadDraft) {

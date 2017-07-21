@@ -42,27 +42,23 @@ class AtMention extends React.PureComponent {
     }
 
     goToUserProfile = () => {
-        const {intl, isSearchResult, navigator, onPostPress, theme} = this.props;
+        const {intl, navigator, theme} = this.props;
 
-        if (!isSearchResult) {
-            navigator.push({
-                screen: 'UserProfile',
-                title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-                animated: true,
-                backButtonTitle: '',
-                passProps: {
-                    userId: this.state.id
-                },
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
-                }
-            });
-        } else if (onPostPress) {
-            onPostPress();
-        }
+        navigator.push({
+            screen: 'UserProfile',
+            title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
+            animated: true,
+            backButtonTitle: '',
+            passProps: {
+                userId: this.state.id
+            },
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
     };
 
     getUserDetailsFromMentionName(props) {
@@ -91,7 +87,7 @@ class AtMention extends React.PureComponent {
     }
 
     render() {
-        const {mentionName, mentionStyle, textStyle} = this.props;
+        const {isSearchResult, mentionName, mentionStyle, onPostPress, textStyle} = this.props;
         const username = this.state.username;
 
         if (!username) {
@@ -103,7 +99,7 @@ class AtMention extends React.PureComponent {
         return (
             <Text
                 style={textStyle}
-                onPress={this.goToUserProfile}
+                onPress={isSearchResult ? onPostPress : this.goToUserProfile}
             >
                 <Text style={mentionStyle}>
                     {'@' + username}

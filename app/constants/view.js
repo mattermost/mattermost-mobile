@@ -14,6 +14,7 @@ const ViewTypes = keyMirror({
 
     POST_DRAFT_CHANGED: null,
     COMMENT_DRAFT_CHANGED: null,
+    SEARCH_DRAFT_CHANGED: null,
 
     NOTIFICATION_CHANGED: null,
     NOTIFICATION_IN_APP: null,
@@ -54,6 +55,5 @@ const ViewTypes = keyMirror({
 
 export default {
     ...ViewTypes,
-    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2,
-    SEARCH: 'search'
+    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2
 };

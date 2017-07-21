@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {General, Posts} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
 import Loading from 'app/components/loading';
@@ -31,7 +31,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
-const POSTS_PER_PAGE = Posts.POST_CHUNK_SIZE / 2;
+const POSTS_PER_PAGE = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 const SEARCHING = 'searching';
 
 class Search extends Component {
@@ -41,7 +41,7 @@ class Search extends Component {
             getPostsAfter: PropTypes.func.isRequired,
             getPostsBefore: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
-            handlePostDraftChanged: PropTypes.func.isRequired,
+            handleSearchDraftChanged: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPosts: PropTypes.func.isRequired,
@@ -76,7 +76,7 @@ class Search extends Component {
     }
 
     componentDidMount() {
-        this.refs.search_bar.focus();
+        this.refs.searchBar.focus();
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -159,7 +159,7 @@ class Search extends Component {
     handleTextChanged = (value) => {
         const {actions, posts} = this.props;
         this.setState({value});
-        actions.handlePostDraftChanged(ViewTypes.SEARCH, value);
+        actions.handleSearchDraftChanged(value);
 
         if (!value && posts.length) {
             actions.clearSearch();
@@ -343,10 +343,11 @@ class Search extends Component {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);
-        this.refs.search_bar.blur();
+        this.refs.searchBar.blur();
     };
 
     handleClosePreview = () => {
+        // console.warn('close preview');
         this.setState({preview: false, postId: null});
     };
 
@@ -443,7 +444,7 @@ class Search extends Component {
                 <StatusBar/>
                 <View style={style.header}>
                     <SearchBar
-                        ref='search_bar'
+                        ref='searchBar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'

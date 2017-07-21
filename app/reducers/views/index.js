@@ -10,6 +10,7 @@ import i18n from './i18n';
 import login from './login';
 import notification from './notification';
 import root from './root';
+import search from './search';
 import selectServer from './select_server';
 import team from './team';
 import thread from './thread';
@@ -22,6 +23,7 @@ export default combineReducers({
     login,
     notification,
     root,
+    search,
     selectServer,
     team,
     thread

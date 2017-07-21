@@ -13,12 +13,12 @@ import {getSearchResults} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
-    handlePostDraftChanged,
     handleSelectChannel,
     loadThreadIfNecessary,
     setChannelDisplayName,
     setChannelLoading
 } from 'app/actions/views/channel';
+import {handleSearchDraftChanged} from 'app/actions/views/search';
 
 import Search from './search';
 
@@ -46,7 +46,7 @@ function mapDispatchToProps(dispatch) {
             getPostsAfter,
             getPostsBefore,
             getPostThread,
-            handlePostDraftChanged,
+            handleSearchDraftChanged,
             handleSelectChannel,
             loadThreadIfNecessary,
             markChannelAsRead,

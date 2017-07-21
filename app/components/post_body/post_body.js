@@ -232,9 +232,8 @@ class PostBody extends PureComponent {
                     onPress={onPress}
                     onShowUnderlay={this.handleShowUnderlay}
                     underlayColor='transparent'
-                    style={{flex: 1, flexDirection: 'row'}}
                 >
-                    <View style={{flex: 1}}>
+                    <View>
                         {messageComponent}
                         {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
                         {this.renderFileAttachments()}
