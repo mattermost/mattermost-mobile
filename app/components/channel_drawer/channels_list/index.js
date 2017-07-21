@@ -52,8 +52,7 @@ class ChannelsList extends Component {
             term: ''
         };
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
-        then((source) => {
+        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
