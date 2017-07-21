@@ -44,6 +44,12 @@ registerScreens(store, Provider);
 
 export default class Mattermost {
     constructor() {
+        if (Platform.OS === 'android') {
+            // This is to remove the warnings for the scaleY property used in android.
+            // The property is necessary because some Android devices won't render the posts
+            // properly if we use transform: {scaleY: -1} in the stylesheet.
+            console.ignoredYellowBox = ['`scaleY`']; //eslint-disable-line
+        }
         this.isConfigured = false;
         setJSExceptionHandler(this.errorHandler, false);
         Orientation.lockToPortrait();

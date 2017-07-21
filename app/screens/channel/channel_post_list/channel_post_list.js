@@ -24,6 +24,7 @@ class ChannelPostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessary: PropTypes.func.isRequired,
+            loadThreadIfNecessary: PropTypes.func.isRequired,
             increasePostVisibility: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,
@@ -98,6 +99,7 @@ class ChannelPostList extends PureComponent {
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
 
+        actions.loadThreadIfNecessary(post.root_id);
         actions.selectPost(rootId);
 
         let title;

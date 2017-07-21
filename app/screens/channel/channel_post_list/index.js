@@ -9,7 +9,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
-import {loadPostsIfNecessary, increasePostVisibility} from 'app/actions/views/channel';
+import {loadPostsIfNecessary, loadThreadIfNecessary, increasePostVisibility} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelPostList from './channel_post_list';
@@ -42,6 +42,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadPostsIfNecessary,
+            loadThreadIfNecessary,
             increasePostVisibility,
             selectPost
         }, dispatch)

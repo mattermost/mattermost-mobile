@@ -210,7 +210,8 @@ const styles = StyleSheet.create({
         flex: 1,
         height: HEIGHT,
         flexDirection: 'row',
-        paddingHorizontal: 12,
+        paddingLeft: 12,
+        paddingRight: 5,
         backgroundColor: 'red'
     },
     message: {
@@ -220,13 +221,15 @@ const styles = StyleSheet.create({
         flex: 1
     },
     actionButton: {
+        alignItems: 'center',
         borderWidth: 1,
         borderColor: '#FFFFFF'
     },
     actionContainer: {
-        alignItems: 'center',
+        alignItems: 'flex-end',
         height: 24,
         justifyContent: 'center',
+        paddingRight: 10,
         width: 60
     }
 });

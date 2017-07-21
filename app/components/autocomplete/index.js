@@ -19,13 +19,27 @@ const style = StyleSheet.create({
         right: 0,
         maxHeight: 200,
         overflow: 'hidden'
+    },
+    searchContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        maxHeight: 300,
+        overflow: 'hidden',
+        zIndex: 5
     }
 });
 
 export default class Autocomplete extends Component {
     static propTypes = {
         onChangeText: PropTypes.func.isRequired,
-        rootId: PropTypes.string
+        rootId: PropTypes.string,
+        isSearch: PropTypes.bool
+    };
+
+    static defaultProps = {
+        isSearch: false
     };
 
     state = {
@@ -39,18 +53,17 @@ export default class Autocomplete extends Component {
     };
 
     render() {
+        const container = this.props.isSearch ? style.searchContainer : style.container;
         return (
             <View>
-                <View style={style.container}>
+                <View style={container}>
                     <AtMention
                         cursorPosition={this.state.cursorPosition}
-                        onChangeText={this.props.onChangeText}
-                        rootId={this.props.rootId}
+                        {...this.props}
                     />
                     <ChannelMention
                         cursorPosition={this.state.cursorPosition}
-                        onChangeText={this.props.onChangeText}
-                        rootId={this.props.rootId}
+                        {...this.props}
                     />
                 </View>
             </View>

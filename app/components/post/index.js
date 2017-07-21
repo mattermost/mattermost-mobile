@@ -26,6 +26,7 @@ function makeMapStateToProps() {
             post,
             config,
             currentUserId: getCurrentUserId(state),
+            highlight: ownProps.post.highlight,
             license,
             roles,
             theme: getTheme(state),

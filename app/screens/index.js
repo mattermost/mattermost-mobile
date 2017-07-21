@@ -24,6 +24,7 @@ import Notification from 'app/screens/notification';
 import OptionsModal from 'app/screens/options_modal';
 import Root from 'app/screens/root';
 import SSO from 'app/screens/sso';
+import Search from 'app/screens/search';
 import SelectServer from 'app/screens/select_server';
 import SelectTeam from 'app/screens/select_team';
 import Settings from 'app/screens/settings';
@@ -66,6 +67,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
     Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification, true), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
+    Navigation.registerComponent('Search', () => wrapWithContextProvider(Search), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(SelectTeam), store, Provider);
     Navigation.registerComponent('Settings', () => wrapWithContextProvider(Settings), store, Provider);

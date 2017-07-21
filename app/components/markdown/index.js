@@ -29,8 +29,10 @@ export default class Markdown extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
+        isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
+        onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
         value: PropTypes.string.isRequired
     };
@@ -134,7 +136,9 @@ export default class Markdown extends PureComponent {
             <AtMention
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
+                onPostPress={this.props.onPostPress}
                 navigator={this.props.navigator}
             />
         );

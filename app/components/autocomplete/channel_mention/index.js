@@ -16,7 +16,9 @@ function mapStateToProps(state, ownProps) {
     const {currentChannelId} = state.entities.channels;
 
     let postDraft;
-    if (ownProps.rootId.length) {
+    if (ownProps.isSearch) {
+        postDraft = state.views.search;
+    } else if (ownProps.rootId.length) {
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;

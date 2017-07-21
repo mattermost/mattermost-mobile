@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+import {sortByUsername} from 'mattermost-redux/utils/user_utils';
+
 import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -19,6 +21,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
+const FROM_REGEX = /\bfrom:\s*(\S*)$/i;
 
 export default class AtMention extends Component {
     static propTypes = {
@@ -27,7 +30,8 @@ export default class AtMention extends Component {
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
         defaultChannel: PropTypes.object.isRequired,
-        autocompleteUsersInCurrentChannel: PropTypes.object.isRequired,
+        autocompleteUsers: PropTypes.object.isRequired,
+        isSearch: PropTypes.bool,
         postDraft: PropTypes.string,
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -38,9 +42,10 @@ export default class AtMention extends Component {
     };
 
     static defaultProps = {
-        autocompleteUsersInCurrentChannel: {},
+        autocompleteUsers: {},
         defaultChannel: {},
-        postDraft: ''
+        postDraft: '',
+        isSearch: false
     };
 
     constructor(props) {
@@ -58,7 +63,9 @@ export default class AtMention extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(AT_MENTION_REGEX);
+        const {isSearch} = nextProps;
+        const regex = isSearch ? FROM_REGEX : AT_MENTION_REGEX;
+        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(regex);
 
         if (!match || this.state.mentionComplete) {
             this.setState({
@@ -69,8 +76,7 @@ export default class AtMention extends Component {
             return;
         }
 
-        const matchTerm = match[2];
-
+        const matchTerm = isSearch ? match[1] : match[2];
         if (matchTerm !== this.state.matchTerm) {
             this.setState({
                 matchTerm
@@ -81,30 +87,35 @@ export default class AtMention extends Component {
         }
 
         if (nextProps.requestStatus !== RequestStatus.STARTED) {
-            const membersInChannel = this.filter(nextProps.autocompleteUsersInCurrentChannel.inChannel, matchTerm) || [];
-            const membersOutOfChannel = this.filter(nextProps.autocompleteUsersInCurrentChannel.outChannel, matchTerm) || [];
+            const membersInChannel = this.filter(nextProps.autocompleteUsers.inChannel, matchTerm) || [];
+            const membersOutOfChannel = this.filter(nextProps.autocompleteUsers.outChannel, matchTerm) || [];
 
             let data = {};
-            if (membersInChannel.length > 0) {
-                data = Object.assign({}, data, {inChannel: membersInChannel});
-            }
-            if (this.checkSpecialMentions(matchTerm)) {
-                data = Object.assign({}, data, {specialMentions: this.getSpecialMentions()});
-            }
-            if (membersOutOfChannel.length > 0) {
-                data = Object.assign({}, data, {notInChannel: membersOutOfChannel});
+            if (isSearch) {
+                data = {members: membersInChannel.concat(membersOutOfChannel).sort(sortByUsername)};
+            } else {
+                if (membersInChannel.length > 0) {
+                    data = Object.assign({}, data, {inChannel: membersInChannel});
+                }
+                if (this.checkSpecialMentions(matchTerm) && !isSearch) {
+                    data = Object.assign({}, data, {specialMentions: this.getSpecialMentions()});
+                }
+                if (membersOutOfChannel.length > 0) {
+                    data = Object.assign({}, data, {notInChannel: membersOutOfChannel});
+                }
             }
 
             this.setState({
-                active: data.hasOwnProperty('inChannel') || data.hasOwnProperty('specialMentions') || data.hasOwnProperty('notInChannel'),
+                active: data.hasOwnProperty('inChannel') || data.hasOwnProperty('specialMentions') || data.hasOwnProperty('notInChannel') || data.hasOwnProperty('members'),
                 dataSource: this.state.dataSource.cloneWithRowsAndSections(data)
             });
         }
     }
 
     filter = (profiles, matchTerm) => {
+        const {isSearch} = this.props;
         return profiles.filter((p) => {
-            return ((p.id !== this.props.currentUserId) && (
+            return ((p.id !== this.props.currentUserId || isSearch) && (
                 p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
                 p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
         });
@@ -134,14 +145,21 @@ export default class AtMention extends Component {
     };
 
     completeMention = (mention) => {
-        const mentionPart = this.props.postDraft.substring(0, this.props.cursorPosition);
+        const {cursorPosition, isSearch, onChangeText, postDraft} = this.props;
+        const mentionPart = postDraft.substring(0, cursorPosition);
 
-        let completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
-        if (this.props.postDraft.length > this.props.cursorPosition) {
-            completedDraft += this.props.postDraft.substring(this.props.cursorPosition);
+        let completedDraft;
+        if (isSearch) {
+            completedDraft = mentionPart.replace(FROM_REGEX, `from: ${mention} `);
+        } else {
+            completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
         }
 
-        this.props.onChangeText(completedDraft);
+        if (postDraft.length > cursorPosition) {
+            completedDraft += postDraft.substring(cursorPosition);
+        }
+
+        onChangeText(completedDraft);
         this.setState({
             active: false,
             mentionComplete: true
@@ -163,6 +181,10 @@ export default class AtMention extends Component {
             specialMentions: {
                 id: 'suggestion.mention.special',
                 defaultMessage: 'Special Mentions'
+            },
+            members: {
+                id: 'mobile.suggestion.members',
+                defaultMessage: 'Members'
             }
         };
 
@@ -236,7 +258,7 @@ export default class AtMention extends Component {
     };
 
     render() {
-        const {autocompleteUsersInCurrentChannel, requestStatus} = this.props;
+        const {autocompleteUsers, requestStatus} = this.props;
         if (!this.state.active && (requestStatus !== RequestStatus.STARTED || requestStatus !== RequestStatus.SUCCESS)) {
             // If we are not in an active state return null so nothing is rendered
             // other components are not blocked.
@@ -246,14 +268,14 @@ export default class AtMention extends Component {
         const style = getStyleFromTheme(this.props.theme);
 
         if (
-            !autocompleteUsersInCurrentChannel.inChannel &&
-            !autocompleteUsersInCurrentChannel.outChannel &&
+            !autocompleteUsers.inChannel &&
+            !autocompleteUsers.outChannel &&
             requestStatus === RequestStatus.STARTED
         ) {
             return (
                 <View style={style.loading}>
                     <FormattedText
-                        id='analytics.chart.loading": "Loading...'
+                        id='analytics.chart.loading'
                         defaultMessage='Loading...'
                         style={style.sectionText}
                     />

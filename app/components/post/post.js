@@ -36,19 +36,27 @@ class Post extends PureComponent {
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        highlight: PropTypes.bool,
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object.isRequired,
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
+        isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         roles: PropTypes.string,
+        shouldRenderReplyButton: PropTypes.bool,
         tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        onPress: PropTypes.func
+        onPress: PropTypes.func,
+        onReply: PropTypes.func
+    };
+
+    static defaultProps = {
+        isSearchResult: false
     };
 
     constructor(props) {
@@ -201,6 +209,15 @@ class Post extends PureComponent {
         }
     };
 
+    handleReply = () => {
+        const {post, onReply, tooltipVisible} = this.props;
+        if (!tooltipVisible && onReply) {
+            return preventDoubleTap(onReply, null, post);
+        }
+
+        return this.handlePress();
+    };
+
     onRemovePost = (post) => {
         const {removePost} = this.props.actions;
         removePost(post);
@@ -235,7 +252,11 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        preventDoubleTap(this.goToUserProfile, this);
+        const {isSearchResult} = this.props;
+
+        if (!isSearchResult) {
+            preventDoubleTap(this.goToUserProfile, this);
+        }
     };
 
     toggleSelected = (selected) => {
@@ -246,16 +267,20 @@ class Post extends PureComponent {
     render() {
         const {
             commentedOnPost,
+            highlight,
             isLastReply,
+            isSearchResult,
             post,
             renderReplies,
+            shouldRenderReplyButton,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
         const selected = this.state && this.state.selected ? style.selected : null;
+        const highlighted = highlight ? style.highlight : null;
 
         return (
-            <View style={[style.container, this.props.style, selected]}>
+            <View style={[style.container, this.props.style, highlighted, selected]}>
                 <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
                     <PostProfilePicture
                         onViewUserProfile={this.viewUserProfile}
@@ -269,7 +294,9 @@ class Post extends PureComponent {
                             postId={post.id}
                             commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
                             createAt={post.create_at}
-                            onPress={this.handlePress}
+                            isSearchResult={isSearchResult}
+                            shouldRenderReplyButton={shouldRenderReplyButton}
+                            onPress={this.handleReply}
                             onViewUserProfile={this.viewUserProfile}
                             renderReplies={renderReplies}
                             theme={theme}
@@ -277,6 +304,7 @@ class Post extends PureComponent {
                         <PostBody
                             canDelete={this.state.canDelete}
                             canEdit={this.state.canEdit}
+                            isSearchResult={isSearchResult}
                             navigator={this.props.navigator}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
@@ -336,6 +364,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         selected: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        highlight: {
+            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5)
         }
     });
 });
