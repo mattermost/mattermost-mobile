@@ -23,6 +23,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         memberCount: PropTypes.number,
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
+        navigator: PropTypes.object.isRequired,
         purpose: PropTypes.string,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -30,7 +31,18 @@ export default class ChannelInfoHeader extends React.PureComponent {
     }
 
     render() {
-        const {createAt, creator, displayName, header, memberCount, purpose, status, theme, type} = this.props;
+        const {
+            createAt,
+            creator,
+            displayName,
+            header,
+            memberCount,
+            navigator,
+            purpose,
+            status,
+            theme,
+            type
+        } = this.props;
 
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
@@ -63,6 +75,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             defaultMessage='Purpose'
                         />
                         <Markdown
+                            navigator={navigator}
                             baseTextStyle={style.detail}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
@@ -78,6 +91,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             defaultMessage='Header'
                         />
                         <Markdown
+                            navigator={navigator}
                             baseTextStyle={style.detail}
                             textStyles={textStyles}
                             blockStyles={blockStyles}

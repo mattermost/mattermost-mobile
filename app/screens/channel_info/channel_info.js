@@ -233,6 +233,7 @@ class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             canManageUsers,
+            navigator,
             status,
             theme
         } = this.props;
@@ -264,6 +265,7 @@ class ChannelInfo extends PureComponent {
                         creator={currentChannelCreatorName}
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
+                        navigator={navigator}
                         purpose={currentChannel.purpose}
                         status={status}
                         theme={theme}
@@ -318,7 +320,7 @@ class ChannelInfo extends PureComponent {
                                 />
                             </View>
                         }
-                        {this.renderLeaveOrDeleteChannelRow() && currentChannelMemberCount > 1 &&
+                        {this.renderLeaveOrDeleteChannelRow() &&
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
