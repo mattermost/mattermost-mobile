@@ -45,6 +45,7 @@ export default class ChannelIcon extends React.PureComponent {
         let unreadGroupBox;
         let activeGroup;
         let unreadGroup;
+        let offlineColor = changeOpacity(theme.sidebarText, 0.5);
 
         if (hasUnread) {
             unreadIcon = style.iconUnread;
@@ -62,6 +63,7 @@ export default class ChannelIcon extends React.PureComponent {
             activeIcon = style.iconInfo;
             activeGroupBox = style.groupBoxInfo;
             activeGroup = style.groupInfo;
+            offlineColor = changeOpacity(theme.centerChannelColor, 0.5);
         }
 
         let icon;
@@ -110,7 +112,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <OfflineStatus
                         width={size}
                         height={size}
-                        color={changeOpacity(theme.sidebarText, 0.5)}
+                        color={offlineColor}
                     />
                 );
             }
