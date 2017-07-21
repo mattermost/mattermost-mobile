@@ -293,10 +293,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 10,
             ...Platform.select({
                 android: {
-                    height: 46
+                    height: 46,
+                    marginRight: 6
                 },
                 ios: {
-                    height: 44
+                    height: 44,
+                    marginRight: 8
                 }
             })
         },
