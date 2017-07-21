@@ -320,7 +320,7 @@ class ChannelInfo extends PureComponent {
                                 />
                             </View>
                         }
-                        {this.renderLeaveOrDeleteChannelRow() && currentChannelMemberCount > 1 &&
+                        {this.renderLeaveOrDeleteChannelRow() &&
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
