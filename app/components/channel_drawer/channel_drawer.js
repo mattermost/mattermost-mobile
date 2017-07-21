@@ -95,6 +95,10 @@ export default class ChannelDrawer extends PureComponent {
             InteractionManager.clearInteractionHandle(this.closeLeftHandle);
             this.closeLeftHandle = null;
         }
+
+        if (this.state.openDrawer) {
+            this.setState({openDrawer: false});
+        }
     };
 
     handleDrawerCloseStart = () => {
