@@ -16,89 +16,111 @@ import {General} from 'mattermost-redux/constants';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-function channelIcon(props) {
-    const {isActive, hasUnread, isInfo, membersCount, size, status, theme, type} = props;
-    const style = getStyleSheet(theme);
+export default class ChannelIcon extends React.PureComponent {
+    static propTypes = {
+        isActive: PropTypes.bool,
+        isInfo: PropTypes.bool,
+        hasUnread: PropTypes.bool,
+        membersCount: PropTypes.number,
+        size: PropTypes.number,
+        status: PropTypes.string,
+        theme: PropTypes.object.isRequired,
+        type: PropTypes.string.isRequired
+    };
 
-    let activeIcon;
-    let unreadIcon;
-    let activeGroupBox;
-    let unreadGroupBox;
-    let activeGroup;
-    let unreadGroup;
+    static defaultProps = {
+        isActive: false,
+        isInfo: false,
+        hasUnread: false,
+        size: 12
+    };
 
-    if (hasUnread) {
-        unreadIcon = style.iconUnread;
-        unreadGroupBox = style.groupBoxUnread;
-        unreadGroup = style.groupUnread;
-    }
+    render() {
+        const {isActive, hasUnread, isInfo, membersCount, size, status, theme, type} = this.props;
+        const style = getStyleSheet(theme);
 
-    if (isActive) {
-        activeIcon = style.iconActive;
-        activeGroupBox = style.groupBoxActive;
-        activeGroup = style.groupActive;
-    }
+        let activeIcon;
+        let unreadIcon;
+        let activeGroupBox;
+        let unreadGroupBox;
+        let activeGroup;
+        let unreadGroup;
+        let offlineColor = changeOpacity(theme.sidebarText, 0.5);
 
-    if (isInfo) {
-        activeIcon = style.iconInfo;
-        activeGroupBox = style.groupBoxInfo;
-        activeGroup = style.groupInfo;
-    }
+        if (hasUnread) {
+            unreadIcon = style.iconUnread;
+            unreadGroupBox = style.groupBoxUnread;
+            unreadGroup = style.groupUnread;
+        }
 
-    if (type === General.OPEN_CHANNEL) {
-        return (
-            <Icon
-                name='globe'
-                style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-            />
-        );
-    } else if (type === General.PRIVATE_CHANNEL) {
-        return (
-            <Icon
-                name='lock'
-                style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-            />
-        );
-    } else if (type === General.GM_CHANNEL) {
-        return (
-            <View style={style.groupContainer}>
+        if (isActive) {
+            activeIcon = style.iconActive;
+            activeGroupBox = style.groupBoxActive;
+            activeGroup = style.groupActive;
+        }
+
+        if (isInfo) {
+            activeIcon = style.iconInfo;
+            activeGroupBox = style.groupBoxInfo;
+            activeGroup = style.groupInfo;
+            offlineColor = changeOpacity(theme.centerChannelColor, 0.5);
+        }
+
+        let icon;
+
+        if (type === General.OPEN_CHANNEL) {
+            icon = (
+                <Icon
+                    name='globe'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                />
+            );
+        } else if (type === General.PRIVATE_CHANNEL) {
+            icon = (
+                <Icon
+                    name='lock'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                />
+            );
+        } else if (type === General.GM_CHANNEL) {
+            icon = (
                 <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
                     <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 6)}]}>
                         {membersCount}
                     </Text>
                 </View>
-            </View>
-        );
-    }
-    switch (status) {
-    case General.ONLINE:
+            );
+        } else if (type === General.DM_CHANNEL) {
+            if (status === General.ONLINE) {
+                icon = (
+                    <OnlineStatus
+                        width={size}
+                        height={size}
+                        color={theme.onlineIndicator}
+                    />
+                );
+            } else if (status === General.AWAY) {
+                icon = (
+                    <AwayStatus
+                        width={size}
+                        height={size}
+                        color={theme.awayIndicator}
+                    />
+                );
+            } else {
+                icon = (
+                    <OfflineStatus
+                        width={size}
+                        height={size}
+                        color={offlineColor}
+                    />
+                );
+            }
+        }
+
         return (
-            <View style={style.statusIcon}>
-                <OnlineStatus
-                    width={size}
-                    height={size}
-                    color={theme.onlineIndicator}
-                />
-            </View>
-        );
-    case General.AWAY:
-        return (
-            <View style={style.statusIcon}>
-                <AwayStatus
-                    width={size}
-                    height={size}
-                    color={theme.awayIndicator}
-                />
-            </View>
-        );
-    default:
-        return (
-            <View style={style.statusIcon}>
-                <OfflineStatus
-                    width={size}
-                    height={size}
-                    color={changeOpacity(theme.sidebarText, 0.5)}
-                />
+            <View style={[style.container, {width: size, height: size}]}>
+                {icon}
             </View>
         );
     }
@@ -106,9 +128,12 @@ function channelIcon(props) {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
+        container: {
+            marginRight: 12,
+            alignItems: 'center'
+        },
         icon: {
-            color: changeOpacity(theme.sidebarText, 0.4),
-            paddingRight: 12
+            color: changeOpacity(theme.sidebarText, 0.4)
         },
         iconActive: {
             color: theme.sidebarTextActiveColor
@@ -118,12 +143,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         iconInfo: {
             color: theme.centerChannelColor
-        },
-        statusIcon: {
-            paddingRight: 12
-        },
-        groupContainer: {
-            paddingRight: 12
         },
         groupBox: {
             alignSelf: 'flex-start',
@@ -157,23 +176,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     });
 });
-
-channelIcon.propTypes = {
-    isActive: PropTypes.bool,
-    isInfo: PropTypes.bool,
-    hasUnread: PropTypes.bool,
-    membersCount: PropTypes.number,
-    size: PropTypes.number,
-    status: PropTypes.string,
-    theme: PropTypes.object.isRequired,
-    type: PropTypes.string.isRequired
-};
-
-channelIcon.defaultProps = {
-    isActive: false,
-    isInfo: false,
-    hasUnread: false,
-    size: 12
-};
-
-export default channelIcon;
