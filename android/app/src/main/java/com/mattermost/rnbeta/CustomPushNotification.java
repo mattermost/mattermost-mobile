@@ -1,6 +1,7 @@
 package com.mattermost.rnbeta;
 
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.app.Notification;
 import android.app.NotificationManager;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -24,10 +26,20 @@ public class CustomPushNotification extends PushNotification {
 
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
+    public static final String NOTIFICATION_ID = "notificationId";
     private static LinkedHashMap<String,Integer> channelIdToNotificationCount = new LinkedHashMap<String,Integer>();
+    private static LinkedHashMap<String,ArrayList<Bundle>> channelIdToNotification = new LinkedHashMap<String,ArrayList<Bundle>>();
 
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
+    }
+
+    public static void clearNotification(int notificationId) {
+        if (notificationId != -1) {
+            String channelId = String.valueOf(notificationId);
+            channelIdToNotificationCount.remove(channelId);
+            channelIdToNotification.remove(channelId);
+        }
     }
 
     @Override
@@ -44,6 +56,16 @@ public class CustomPushNotification extends PushNotification {
                 count = (Integer)objCount + 1;
             }
             channelIdToNotificationCount.put(channelId, count);
+
+            Object bundleArray = channelIdToNotification.get(channelId);
+            ArrayList list = null;
+            if (bundleArray == null) {
+                list = new ArrayList();
+            } else {
+                list = (ArrayList)bundleArray;
+            }
+            list.add(data);
+            channelIdToNotification.put(channelId, list);
         }
 
         if ("clear".equals(type)) {
@@ -53,6 +75,16 @@ public class CustomPushNotification extends PushNotification {
         }
 
         notifyReceivedToJS();
+    }
+
+    @Override
+    public void onOpened() {
+        Bundle data = mNotificationProps.asBundle();
+        final String channelId = data.getString("channel_id");
+        channelIdToNotificationCount.remove(channelId);
+        channelIdToNotification.remove(channelId);
+        digestNotification();
+        clearAllNotifications();
     }
 
     @Override
@@ -118,19 +150,40 @@ public class CustomPushNotification extends PushNotification {
         }
 
         notification
-                .setContentTitle(title)
-                .setContentText(message)
                 .setGroupSummary(true)
                 .setSmallIcon(smallIconResId)
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            notification.setGroup(GROUP_KEY_MESSAGES);
+        if (numMessages == 1) {
+            notification
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setStyle(new Notification.BigTextStyle()
+                            .bigText(message));
+        } else {
+            String summaryTitle = String.format("%s (%d)", title, numMessages);
+
+            Notification.InboxStyle style = new Notification.InboxStyle();
+            ArrayList<Bundle> list = (ArrayList<Bundle>) channelIdToNotification.get(channelId);
+            for (Bundle data : list){
+                style.addLine(data.getString("message"));
+            }
+
+            style.setBigContentTitle(title);
+            notification.setStyle(style)
+                    .setContentTitle(summaryTitle);
+//                    .setNumber(numMessages);
         }
 
-        if (numMessages > 1) {
-            notification.setNumber(numMessages);
+        // Let's add a delete intent when the notification is dismissed
+        Intent delIntent = new Intent(mContext, NotificationDismissReceiver.class);
+        delIntent.putExtra(NOTIFICATION_ID, notificationId);
+        PendingIntent deleteIntent = PendingIntent.getBroadcast(mContext, 0, delIntent, 0);
+        notification.setDeleteIntent(deleteIntent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            notification.setGroup(GROUP_KEY_MESSAGES);
         }
 
         Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
@@ -158,6 +211,7 @@ public class CustomPushNotification extends PushNotification {
         }
 
         channelIdToNotificationCount.remove(channelId);
+        channelIdToNotification.remove(channelId);
         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(notificationId);
     }
