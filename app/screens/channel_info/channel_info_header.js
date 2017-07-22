@@ -28,7 +28,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired
-    }
+    };
 
     render() {
         const {
