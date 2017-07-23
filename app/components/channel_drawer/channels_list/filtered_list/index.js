@@ -55,9 +55,6 @@ function getGroupDetails(currentUserId, userIdsInChannels, profiles, groupChanne
             if (profile.email) {
                 details.email.push(profile.email);
             }
-            if (profile.email) {
-                details.email.push(profile.email);
-            }
             if (profile.nickname) {
                 details.nickname.push(profile.nickname);
             }
