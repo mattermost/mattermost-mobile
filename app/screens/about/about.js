@@ -34,6 +34,14 @@ export default class About extends PureComponent {
         Linking.openURL('http://about.mattermost.com/');
     };
 
+    handlePlatformNotice = () => {
+        Linking.openURL('https://about.mattermost.com/platform-notice-txt/');
+    };
+
+    handleMobileNotice = () => {
+        Linking.openURL('https://about.mattermost.com/mobile-notice-txt/');
+    };
+
     render() {
         const {theme, config, license} = this.props;
         const style = getStyleSheet(theme);
@@ -206,6 +214,33 @@ export default class About extends PureComponent {
                                 currentYear: new Date().getFullYear()
                             }}
                         />
+                        <View style={style.noticeContainer}>
+                            <View style={style.footerGroup}>
+                                <FormattedText
+                                    id='mobile.notice_text'
+                                    defaultMessage='Mattermost is made possible by the open source software in our {platform} and {mobile}.'
+                                    style={style.footerText}
+                                    values={{
+                                        platform: (
+                                            <FormattedText
+                                                id='mobile.notice_platform_link'
+                                                defaultMessage='platform'
+                                                style={style.noticeLink}
+                                                onPress={this.handlePlatformNotice}
+                                            />
+                                        ),
+                                        mobile: (
+                                            <FormattedText
+                                                id='mobile.notice_mobile_link'
+                                                defaultMessage='mobile apps'
+                                                style={[style.noticeLink, {marginLeft: 5}]}
+                                                onPress={this.handleMobileNotice}
+                                            />
+                                        )
+                                    }}
+                                />
+                            </View>
+                        </View>
                         <View style={style.hashContainer}>
                             <View style={style.footerGroup}>
                                 <FormattedText
@@ -305,6 +340,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             marginVertical: 20
+        },
+        noticeContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            marginTop: 10
+        },
+        noticeLink: {
+            color: theme.linkColor,
+            fontSize: 11,
+            lineHeight: 13
         },
         hashContainer: {
             flex: 1,
