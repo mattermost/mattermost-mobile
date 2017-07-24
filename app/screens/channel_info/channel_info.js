@@ -265,6 +265,7 @@ class ChannelInfo extends PureComponent {
                         creator={currentChannelCreatorName}
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
+                        memberCount={currentChannelMemberCount}
                         navigator={navigator}
                         purpose={currentChannel.purpose}
                         status={status}
