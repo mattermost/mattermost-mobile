@@ -35,14 +35,13 @@ class FilteredList extends Component {
         currentUserId: PropTypes.string,
         currentChannel: PropTypes.object,
         groupChannels: PropTypes.array,
+        groupChannelMemberDetails: PropTypes.object,
         intl: intlShape.isRequired,
         teammateNameDisplay: PropTypes.string,
         onSelectChannel: PropTypes.func.isRequired,
         otherChannels: PropTypes.array,
-        profiles: PropTypes.oneOfType(
-            PropTypes.object,
-            PropTypes.array
-        ),
+        profiles: PropTypes.object,
+        teamProfiles: PropTypes.object,
         searchOrder: PropTypes.array.isRequired,
         pastDirectMessages: PropTypes.array,
         restrictDms: PropTypes.bool.isRequired,
@@ -86,6 +85,11 @@ class FilteredList extends Component {
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
+                // Android has a fatal error if we send a blank term
+                if (!term) {
+                    return;
+                }
+
                 searchProfiles(term);
                 searchChannels(currentTeam.id, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
@@ -123,7 +127,17 @@ class FilteredList extends Component {
 
         const text = term.toLowerCase();
         return channels.filter((c) => {
-            return c.display_name.toLowerCase().includes(text);
+            const fieldsToCheck = ['display_name', 'username', 'email', 'full_name', 'nickname'];
+
+            let match = false;
+            for (const field of fieldsToCheck) {
+                if (c.hasOwnProperty(field) && c[field].toLowerCase().includes(text)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            return match;
         });
     };
 
@@ -162,7 +176,7 @@ class FilteredList extends Component {
     }
 
     buildCurrentDMSForSearch = (props, term) => {
-        const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages} = props;
+        const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages, groupChannelMemberDetails} = props;
         const {favoriteChannels} = channels;
 
         const favoriteDms = favoriteChannels.filter((c) => {
@@ -170,11 +184,13 @@ class FilteredList extends Component {
         });
 
         const directChannelUsers = [];
-        const groupChannels = [];
+        let groupChannels = [];
 
         channels.directAndGroupChannels.forEach((c) => {
             if (c.type === General.DM_CHANNEL) {
-                directChannelUsers.push(profiles[c.teammate_id]);
+                if (profiles.hasOwnProperty(c.teammate_id)) {
+                    directChannelUsers.push(profiles[c.teammate_id]);
+                }
             } else {
                 groupChannels.push(c);
             }
@@ -193,7 +209,16 @@ class FilteredList extends Component {
                 email: u.email,
                 name: displayName,
                 type: General.DM_CHANNEL,
-                fake: true
+                fake: true,
+                nickname: u.nickname,
+                fullname: `${u.first_name} ${u.last_name}`
+            };
+        });
+
+        groupChannels = groupChannels.map((channel) => {
+            return {
+                ...channel,
+                ...groupChannelMemberDetails[channel.id]
             };
         });
 
@@ -201,7 +226,7 @@ class FilteredList extends Component {
     }
 
     buildMembersForSearch = (props, term) => {
-        const {channels, currentUserId, teammateNameDisplay, profiles, statuses, pastDirectMessages} = props;
+        const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, statuses, pastDirectMessages, restrictDms} = props;
         const {favoriteChannels, unreadChannels} = channels;
 
         const favoriteAndUnreadDms = [...favoriteChannels, ...unreadChannels].filter((c) => {
@@ -210,7 +235,9 @@ class FilteredList extends Component {
 
         const directAndGroupChannelMembers = [...channels.directAndGroupChannels, ...favoriteAndUnreadDms].filter((c) => c.type === General.DM_CHANNEL).map((c) => c.teammate_id);
 
-        const userNotInDirectOrGroupChannels = Object.values(profiles).filter((u) => directAndGroupChannelMembers.indexOf(u.id) === -1 && pastDirectMessages.indexOf(u.id) === -1 && u.id !== currentUserId);
+        const profilesToUse = restrictDms ? teamProfiles : profiles;
+
+        const userNotInDirectOrGroupChannels = Object.values(profilesToUse).filter((u) => directAndGroupChannelMembers.indexOf(u.id) === -1 && pastDirectMessages.indexOf(u.id) === -1 && u.id !== currentUserId);
 
         const members = userNotInDirectOrGroupChannels.map((u) => {
             const displayName = displayUsername(u, teammateNameDisplay);
@@ -219,9 +246,13 @@ class FilteredList extends Component {
                 id: u.id,
                 status: statuses[u.id],
                 display_name: displayName,
+                username: u.username,
+                email: u.email,
                 name: displayName,
                 type: General.DM_CHANNEL,
-                fake: true
+                fake: true,
+                nickname: u.nickname,
+                fullname: `${u.first_name} ${u.last_name}`
             };
         });
 

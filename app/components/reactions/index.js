@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {addReaction, getReactionsForPost, removeReaction} from 'mattermost-redux/actions/posts';
 import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {getTheme} from 'app/selectors/preferences';
 
@@ -15,7 +15,7 @@ import Reactions from './reactions';
 function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();
     return function mapStateToProps(state, ownProps) {
-        const currentUserId = getCurrentUser(state);
+        const currentUserId = getCurrentUserId(state);
         const reactionsForPost = getReactionsForPostSelector(state, ownProps.postId);
 
         const highlightedReactions = [];
