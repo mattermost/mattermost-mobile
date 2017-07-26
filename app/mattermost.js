@@ -24,7 +24,7 @@ import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {logError} from 'mattermost-redux/actions/errors';
 import {logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
-import {Client4} from 'mattermost-redux/client';
+import {Client, Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {goToNotification, loadConfigAndLicense, queueNotification, setStatusBarHeight, purgeOfflineStore} from 'app/actions/views/root';
@@ -137,6 +137,8 @@ export default class Mattermost {
     handleReset = () => {
         const {dispatch, getState} = store;
         Client4.serverVersion = '';
+        Client.serverVersion = '';
+        Client.token = null;
         PushNotifications.cancelAllLocalNotifications();
         setServerVersion('')(dispatch, getState);
         this.startApp('fade');
