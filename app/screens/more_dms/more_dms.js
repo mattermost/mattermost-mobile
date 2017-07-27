@@ -385,7 +385,11 @@ class MoreDirectMessages extends PureComponent {
                         cancelTitle={this.props.intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={33}
-                        inputStyle={style.searchInputStyle}
+                        inputStyle={{
+                            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+                            color: theme.centerChannelColor,
+                            fontSize: 13
+                        }}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
                         tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -429,11 +433,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             marginVertical: 5
-        },
-        searchInputStyle: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            color: theme.centerChannelColor,
-            fontSize: 13
         }
     });
 });
