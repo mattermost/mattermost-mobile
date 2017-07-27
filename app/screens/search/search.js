@@ -462,6 +462,7 @@ class Search extends Component {
                             })
                         }}
                         placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
                         tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         titleCancelColor={theme.sidebarHeaderTextColor}

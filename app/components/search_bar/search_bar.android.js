@@ -27,6 +27,7 @@ export default class SearchBarAndroid extends PureComponent {
         onSearchButtonPress: PropTypes.func,
         onSelectionChange: PropTypes.func,
         backgroundColor: PropTypes.string,
+        selectionColor: PropTypes.string,
         placeholderTextColor: PropTypes.string,
         titleCancelColor: PropTypes.string,
         tintColorSearch: PropTypes.string,
@@ -132,6 +133,7 @@ export default class SearchBarAndroid extends PureComponent {
             keyboardType,
             placeholder,
             placeholderTextColor,
+            selectionColor,
             returnKeyType,
             titleCancelColor,
             tintColorDelete,
@@ -204,6 +206,7 @@ export default class SearchBarAndroid extends PureComponent {
                         onSelectionChange={this.onSelectionChange}
                         placeholder={placeholder}
                         placeholderTextColor={placeholderTextColor}
+                        selectionColor={selectionColor}
                         underlineColorAndroid='transparent'
                         style={[
                             styles.searchBarInput,
