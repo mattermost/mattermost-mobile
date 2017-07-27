@@ -23,6 +23,8 @@ import {alertErrorWithFallback} from 'app/utils/general';
 import {loadingText} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
+import SelectedUsers from './selected_users';
+
 const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
 
@@ -199,13 +201,13 @@ class MoreDirectMessages extends PureComponent {
         }
     };
 
-    handleRowPress = (id) => {
+    handleSelectUser = (id) => {
         this.setState((prevState) => {
             const wasSelected = prevState.selectedIds[id];
 
             // Prevent selecting too many users
             if (!wasSelected && Object.keys(prevState.selectedIds).length >= General.MAX_USERS_IN_GM - 1) {
-                return prevState;
+                return {};
             }
 
             const selectedIds = {...prevState.selectedIds};
@@ -222,6 +224,18 @@ class MoreDirectMessages extends PureComponent {
             };
         });
     };
+
+    handleRemoveUser = (id) => {
+        this.setState((prevState) => {
+            const selectedIds = {...prevState.selectedIds};
+            Reflect.deleteProperty(selectedIds, id);
+
+            return {
+                selectedIds,
+                selectedCount: Object.keys(selectedIds).length
+            };
+        });
+    }
 
     startConversation = async () => {
         if (this.state.loadingChannel) {
@@ -375,6 +389,14 @@ class MoreDirectMessages extends PureComponent {
                         onCancelButtonPress={this.cancelSearch}
                         value={term}
                     />
+                    <SelectedUsers
+                        selectedIds={this.state.selectedIds}
+                        warnCount={5}
+                        warnMessage={{id: 'mobile.more_dms.add_more', defaultMessage: 'You can add {remaining, number} more users'}}
+                        maxCount={7}
+                        maxMessage={{id: 'mobile.more_dms.cannot_add_more', defaultMessage: 'You cannot add more users'}}
+                        onRemove={this.handleRemoveUser}
+                    />
                 </View>
                 <CustomSectionList
                     theme={theme}
@@ -384,7 +406,7 @@ class MoreDirectMessages extends PureComponent {
                     sectionKeyExtractor={this.sectionKeyExtractor}
                     compareItems={this.compareItems}
                     extraData={this.state.selectedIds}
-                    onRowPress={this.handleRowPress}
+                    onRowPress={this.handleSelectUser}
                     loading={isLoading}
                     loadingText={loadingText}
                 />
