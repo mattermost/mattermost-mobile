@@ -126,7 +126,6 @@ class SSO extends PureComponent {
         const url = event.nativeEvent.url;
 
         if (url.includes(this.completedUrl)) {
-            // this.setState({onMessage: this.onMessage});
             CookieManager.get(this.props.serverUrl, (err, res) => {
                 const token = res.MMAUTHTOKEN;
 
