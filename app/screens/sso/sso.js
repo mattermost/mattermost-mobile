@@ -42,7 +42,8 @@ class SSO extends PureComponent {
 
         this.state = {
             error: null,
-            renderWebView: false
+            renderWebView: false,
+            onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null
         };
 
         switch (props.ssoType) {
@@ -102,10 +103,9 @@ class SSO extends PureComponent {
                 const {
                     id,
                     message,
-                    request_id: rId,
                     status_code: statusCode
                 } = response;
-                if (rId && id && message && statusCode !== 200) {
+                if (id && message && statusCode !== 200) {
                     this.setState({error: message});
                 }
             }
@@ -115,7 +115,15 @@ class SSO extends PureComponent {
     };
 
     onNavigationStateChange = (navState) => {
-        const {url} = navState;
+        const {url, navigationType} = navState;
+
+        if (url.includes(this.completedUrl) && navigationType === 'formsubmit') {
+            this.setState({onMessage: this.onMessage});
+        }
+    };
+
+    onLoadEnd = (event) => {
+        const url = event.nativeEvent.url;
 
         if (url.includes(this.completedUrl)) {
             CookieManager.get(this.props.serverUrl, (err, res) => {
@@ -166,8 +174,9 @@ class SSO extends PureComponent {
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={() => (<Loading/>)}
-                    onMessage={this.onMessage}
+                    onMessage={this.state.onMessage}
                     injectedJavaScript={jsCode}
+                    onLoadEnd={this.onLoadEnd}
                 />
             );
         }
