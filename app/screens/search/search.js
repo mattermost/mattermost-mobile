@@ -497,7 +497,7 @@ class Search extends Component {
                     renderSectionHeader={this.renderSectionHeader}
                     sections={sections}
                     keyboardShouldPersistTaps='handled'
-                    stickySectionHeadersEnabled={true}
+                    stickySectionHeadersEnabled={Platform.OS === 'ios'}
                 />
                 {previewComponent}
             </View>
