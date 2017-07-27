@@ -165,6 +165,7 @@ class ChannelsList extends Component {
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
                     tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     titleCancelColor={theme.sidebarHeaderTextColor}
+                    selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     onSearchButtonPress={this.onSearch}
                     onCancelButtonPress={this.cancelSearch}
                     onChangeText={this.onSearch}

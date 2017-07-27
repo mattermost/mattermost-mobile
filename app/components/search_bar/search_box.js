@@ -36,6 +36,7 @@ export default class Search extends Component {
         titleCancelColor: PropTypes.string,
         tintColorSearch: PropTypes.string,
         tintColorDelete: PropTypes.string,
+        selectionColor: PropTypes.string,
         inputStyle: PropTypes.oneOfType([
             PropTypes.number,
             PropTypes.object,
@@ -367,6 +368,7 @@ export default class Search extends Component {
                     onChangeText={this.onChangeText}
                     placeholder={this.placeholder}
                     placeholderTextColor={this.props.placeholderTextColor}
+                    selectionColor={this.props.selectionColor}
                     onSubmitEditing={this.onSearch}
                     onSelectionChange={this.onSelectionChange}
                     autoCorrect={false}
