@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 
 import Loading from 'app/components/loading';
-import MemberList from 'app/components/custom_list';
+import CustomList from 'app/components/custom_list';
+import UserListRow from 'app/components/custom_list/user_list_row';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import {createMembersSections, loadingText, markSelectedProfiles, renderMemberRow} from 'app/utils/member_list';
+import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -177,8 +178,7 @@ class ChannelAddMembers extends PureComponent {
         let {page} = this.state;
         if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
             page = page + 1;
-            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).
-            then((data) => {
+            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then((data) => {
                 if (data && data.length) {
                     this.setState({
                         page
@@ -192,7 +192,7 @@ class ChannelAddMembers extends PureComponent {
 
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
-            if (event.id === 'add-members') {
+            if (event.id === this.addButton.id) {
                 this.handleAddMembersPress();
             }
         }
@@ -259,7 +259,7 @@ class ChannelAddMembers extends PureComponent {
                         value={term}
                     />
                 </View>
-                <MemberList
+                <CustomList
                     data={profiles}
                     theme={theme}
                     searching={searching}
@@ -270,7 +270,7 @@ class ChannelAddMembers extends PureComponent {
                     loadingText={loadingText}
                     selectable={this.state.canSelect}
                     onRowSelect={this.handleRowSelect}
-                    renderRow={renderMemberRow}
+                    renderRow={UserListRow}
                     createSections={createMembersSections}
                 />
             </View>

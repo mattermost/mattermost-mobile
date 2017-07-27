@@ -14,7 +14,7 @@ import {
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import ChannelList from 'app/components/custom_list';
+import CustomList from 'app/components/custom_list';
 import ChannelListRow from 'app/components/custom_list/channel_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
@@ -162,8 +162,8 @@ class MoreChannels extends PureComponent {
             this.props.actions.getChannels(
                 this.props.currentTeamId,
                 page,
-                General.CHANNELS_CHUNK_SIZE).
-            then((data) => {
+                General.CHANNELS_CHUNK_SIZE
+            ).then((data) => {
                 if (data && data.length) {
                     this.setState({
                         page
@@ -173,27 +173,6 @@ class MoreChannels extends PureComponent {
                 }
             });
         }
-    };
-
-    renderChannelRow = (channel, sectionId, rowId, preferences, theme, selectable, onPress, onSelect) => {
-        const {id, display_name: displayName, purpose} = channel;
-        let onRowSelect = null;
-        if (selectable) {
-            onRowSelect = () => onSelect(sectionId, rowId);
-        }
-
-        return (
-            <ChannelListRow
-                id={id}
-                displayName={displayName}
-                purpose={purpose}
-                theme={theme}
-                onPress={onPress}
-                selectable={selectable}
-                selected={channel.selected}
-                onRowSelect={onRowSelect}
-            />
-        );
     };
 
     onNavigatorEvent = (event) => {
@@ -307,16 +286,15 @@ class MoreChannels extends PureComponent {
                             value={term}
                         />
                     </View>
-                    <ChannelList
+                    <CustomList
                         data={channels}
                         theme={theme}
                         searching={searching}
                         onListEndReached={more}
                         loading={isLoading}
-                        selectable={false}
                         listScrollRenderAheadDistance={50}
                         showSections={false}
-                        renderRow={this.renderChannelRow}
+                        renderRow={ChannelListRow}
                         onRowPress={this.onSelectChannel}
                         loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
                         showNoResults={this.state.showNoResults}

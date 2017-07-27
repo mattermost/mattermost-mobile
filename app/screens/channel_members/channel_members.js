@@ -12,15 +12,15 @@ import {
 import {injectIntl, intlShape} from 'react-intl';
 
 import Loading from 'app/components/loading';
-import MemberList from 'app/components/custom_list';
+import CustomList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
-import MemberListRow from 'app/components/custom_list/member_list_row';
+import UserListRow from 'app/components/custom_list/user_list_row';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
-import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 class ChannelMembers extends PureComponent {
     static propTypes = {
@@ -30,7 +30,6 @@ class ChannelMembers extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
-        teammateNameDisplay: PropTypes.string,
         requestStatus: PropTypes.string,
         searchRequestStatus: PropTypes.string,
         removeMembersStatus: PropTypes.string,
@@ -235,28 +234,14 @@ class ChannelMembers extends PureComponent {
         actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove);
     };
 
-    renderMemberRow = (user, sectionId, rowId, teammateNameDisplay, theme, selectable, onPress, onSelect) => {
-        const {id, username} = user;
-        const displayName = displayUsername(user, teammateNameDisplay);
-        let onRowSelect = null;
-        if (selectable) {
-            onRowSelect = () => onSelect(sectionId, rowId);
-        }
-
-        const disableSelect = user.id === this.props.currentUserId;
+    renderMemberRow = (props) => {
+        const enabled = props.id !== this.props.currentUserId;
 
         return (
-            <MemberListRow
-                id={id}
-                user={user}
-                displayName={displayName}
-                username={username}
-                theme={theme}
-                onPress={onPress}
-                selectable={selectable}
-                selected={user.selected}
-                onRowSelect={onRowSelect}
-                disableSelect={disableSelect}
+            <UserListRow
+                {...props}
+                selectable={true}
+                enabled={enabled}
             />
         );
     };
@@ -277,7 +262,7 @@ class ChannelMembers extends PureComponent {
     };
 
     render() {
-        const {canManageUsers, intl, teammateNameDisplay, requestStatus, searchRequestStatus, theme} = this.props;
+        const {canManageUsers, intl, requestStatus, searchRequestStatus, theme} = this.props;
         const {formatMessage} = intl;
         const {profiles, removing, searching, showNoResults, term} = this.state;
         const isLoading = (requestStatus === RequestStatus.STARTED) || (requestStatus.status === RequestStatus.NOT_STARTED) ||
@@ -321,17 +306,15 @@ class ChannelMembers extends PureComponent {
                         value={term}
                     />
                 </View>
-                <MemberList
+                <CustomList
                     data={profiles}
                     theme={theme}
                     searching={searching}
                     onListEndReached={more}
-                    teammateNameDisplay={teammateNameDisplay}
                     listScrollRenderAheadDistance={50}
                     loading={isLoading}
                     loadingText={loadingText}
-                    selectable={canManageUsers && this.state.canSelect}
-                    onRowSelect={this.handleRowSelect}
+                    onRowSelect={canManageUsers && this.state.canSelect ? this.handleRowSelect : null}
                     renderRow={this.renderMemberRow}
                     createSections={createMembersSections}
                     showNoResults={showNoResults}

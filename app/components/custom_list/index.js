@@ -13,16 +13,15 @@ export default class CustomList extends PureComponent {
         data: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
         searching: PropTypes.bool,
-        onRowPress: PropTypes.func,
         onListEndReached: PropTypes.func,
         onListEndReachedThreshold: PropTypes.number,
-        teammateNameDisplay: PropTypes.string,
         loading: PropTypes.bool,
         loadingText: PropTypes.object,
         listPageSize: PropTypes.number,
         listInitialSize: PropTypes.number,
         listScrollRenderAheadDistance: PropTypes.number,
         showSections: PropTypes.bool,
+        onRowPress: PropTypes.func,
         selectable: PropTypes.bool,
         onRowSelect: PropTypes.func,
         renderRow: PropTypes.func.isRequired,
@@ -37,9 +36,8 @@ export default class CustomList extends PureComponent {
         listPageSize: 10,
         listInitialSize: 10,
         listScrollRenderAheadDistance: 200,
-        selectable: false,
         loadingText: null,
-        onRowSelect: () => true,
+        selectable: false,
         createSections: () => true,
         showSections: true,
         showNoResults: true
@@ -114,17 +112,32 @@ export default class CustomList extends PureComponent {
         );
     };
 
-    renderRow = (rowData, sectionId, rowId) => {
-        return this.props.renderRow(
-            rowData,
-            sectionId,
-            rowId,
-            this.props.teammateNameDisplay,
-            this.props.theme,
-            this.props.selectable,
-            this.props.onRowPress,
-            this.handleRowSelect
-        );
+    renderRow = (item, sectionId, rowId) => {
+        const props = {
+            id: item.id,
+            item,
+            selected: item.selected,
+            selectable: this.props.selectable,
+            onPress: this.props.onRowPress
+        };
+
+        if ('disableSelect' in item) {
+            props.enabled = !item.disableSelect;
+        }
+
+        if (this.props.onRowSelect) {
+            props.onPress = this.handleRowSelect.bind(this, sectionId, rowId);
+        } else {
+            props.onPress = this.props.onRowPress;
+        }
+
+        // Allow passing in a component like UserListRow or ChannelListRow
+        if (this.props.renderRow.prototype.isReactComponent) {
+            const RowComponent = this.props.renderRow;
+            return <RowComponent {...props}/>;
+        }
+
+        return this.props.renderRow(props);
     };
 
     renderSeparator = (sectionId, rowId) => {

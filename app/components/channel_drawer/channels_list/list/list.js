@@ -47,8 +47,7 @@ class List extends Component {
             showAbove: false
         };
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).
-        then((source) => {
+        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
@@ -239,7 +238,7 @@ class List extends Component {
 
         navigator.showModal({
             screen: 'MoreDirectMessages',
-            title: intl.formatMessage({id: 'more_direct_channels.title', defaultMessage: 'Direct Messages'}),
+            title: intl.formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'}),
             animationType: 'slide-up',
             animated: true,
             backButtonTitle: '',
