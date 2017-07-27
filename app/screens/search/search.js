@@ -92,10 +92,12 @@ class Search extends Component {
         const recentLenght = recent.length;
 
         if (posts.length && !this.state.isFocused) {
-            this.refs.list.getWrapperRef().getListRef().scrollToOffset({
-                animated: true,
-                offset: SECTION_HEIGHT + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght - 1) * RECENT_SEPARATOR_HEIGHT)
-            });
+            setTimeout(() => {
+                this.refs.list.getWrapperRef().getListRef().scrollToOffset({
+                    animated: true,
+                    offset: SECTION_HEIGHT + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght - 1) * RECENT_SEPARATOR_HEIGHT)
+                });
+            }, 200);
         }
     }
 
