@@ -18,6 +18,7 @@ import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import MattermostIcon from 'app/components/mattermost_icon';
+import Config from 'assets/config';
 
 export default class About extends PureComponent {
     static propTypes = {
@@ -35,11 +36,11 @@ export default class About extends PureComponent {
     };
 
     handlePlatformNotice = () => {
-        Linking.openURL('https://about.mattermost.com/platform-notice-txt/');
+        Linking.openURL(Config.PlatformNoticeURL);
     };
 
     handleMobileNotice = () => {
-        Linking.openURL('https://about.mattermost.com/mobile-notice-txt/');
+        Linking.openURL(Config.MobileNoticeURL);
     };
 
     render() {

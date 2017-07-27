@@ -3,5 +3,7 @@
     "TestServerUrl": "http://localhost:8065",
     "DefaultTheme": "default",
     "ShowErrorsList": false,
-    "MinServerVersion": "3.10.0"
+    "MinServerVersion": "3.10.0",
+    "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
+    "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/"
 }
