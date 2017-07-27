@@ -234,13 +234,14 @@ class ChannelMembers extends PureComponent {
         actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove);
     };
 
-    renderMemberRow = (user, props) => {
-        const disableSelect = user.id === this.props.currentUserId;
+    renderMemberRow = (props) => {
+        const enabled = props.id !== this.props.currentUserId;
 
         return (
             <UserListRow
                 {...props}
-                disableSelect={disableSelect}
+                selectable={true}
+                enabled={enabled}
             />
         );
     };

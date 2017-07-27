@@ -14,13 +14,13 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
-import CustomList from 'app/components/custom_list';
+import CustomSectionList from 'app/components/custom_section_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
+import {loadingText} from 'app/utils/member_list';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 const START_BUTTON = 'start-conversation';
@@ -54,7 +54,7 @@ class MoreDirectMessages extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            profiles: props.profiles.splice(0, General.PROFILE_CHUNK_SIZE),
+            profiles: props.profiles.slice(0, General.PROFILE_CHUNK_SIZE),
             page: 0,
             next: true,
             searching: false,
@@ -63,7 +63,8 @@ class MoreDirectMessages extends PureComponent {
             canStartConversation: false,
             loadingChannel: false,
             canSelect: true,
-            selectedIds: {}
+            selectedIds: {},
+            selectedCount: 0
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -83,7 +84,7 @@ class MoreDirectMessages extends PureComponent {
         if (getRequest.status === RequestStatus.STARTED &&
             nextProps.getRequest.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const profiles = nextProps.profiles.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
+            const profiles = nextProps.profiles.slice(0, (page + 1) * General.PROFILE_CHUNK_SIZE);
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
@@ -104,12 +105,11 @@ class MoreDirectMessages extends PureComponent {
     }
 
     isStartEnabled = (state) => {
-        if (state.going) {
+        if (state.loadingChannel) {
             return false;
         }
 
-        const selectedCount = Object.keys(state.selectedIds).length;
-        return selectedCount >= General.MIN_USERS_IN_GM - 1 && selectedCount <= General.MAX_USERS_IN_GM - 1;
+        return state.selectedCount >= 1 && state.selectedCount <= General.MAX_USERS_IN_GM - 1;
     };
 
     updateNavigationButtons = (startEnabled) => {
@@ -180,6 +180,10 @@ class MoreDirectMessages extends PureComponent {
     };
 
     loadMoreProfiles = () => {
+        if (this.state.searching) {
+            return;
+        }
+
         let {page} = this.state;
         if (this.props.getRequest.status !== RequestStatus.STARTED && this.state.next && !this.state.searching) {
             page = page + 1;
@@ -195,25 +199,29 @@ class MoreDirectMessages extends PureComponent {
         }
     };
 
-    handleRowSelect = (id) => {
+    handleRowPress = (id) => {
         this.setState((prevState) => {
-            if (Object.keys(prevState.selectedIds).length === General.MAX_USERS_IN_GM - 1) {
+            const wasSelected = prevState.selectedIds[id];
+
+            // Prevent selecting too many users
+            if (!wasSelected && Object.keys(prevState.selectedIds).length >= General.MAX_USERS_IN_GM - 1) {
                 return prevState;
             }
-            const selectedIds = {...this.state.selectedIds};
 
-            if (selectedIds[id]) {
+            const selectedIds = {...prevState.selectedIds};
+
+            if (wasSelected) {
                 Reflect.deleteProperty(selectedIds, id);
             } else {
                 selectedIds[id] = true;
             }
 
             return {
-                profiles: markSelectedProfiles(prevState.profiles, selectedIds),
-                selectedIds
+                selectedIds,
+                selectedCount: Object.keys(selectedIds).length
             };
         });
-    }
+    };
 
     startConversation = async () => {
         if (this.state.loadingChannel) {
@@ -237,19 +245,19 @@ class MoreDirectMessages extends PureComponent {
             success = await this.makeDirectChannel(selectedIds[0]);
         }
 
-        this.setState({
-            loadingChannel: false
-        });
-
         if (success) {
             EventEmitter.emit('close_channel_drawer');
             InteractionManager.runAfterInteractions(() => {
                 this.close();
             });
         } else {
+            this.setState({
+                loadingChannel: false
+            });
+
             this.props.actions.setChannelDisplayName(currentChannelDisplayName);
         }
-    }
+    };
 
     makeGroupChannel = async (ids) => {
         const result = await this.props.actions.makeGroupChannel(ids);
@@ -266,7 +274,7 @@ class MoreDirectMessages extends PureComponent {
         }
 
         return !result.error;
-    }
+    };
 
     makeDirectChannel = async (id) => {
         const user = this.state.profiles[id];
@@ -293,83 +301,95 @@ class MoreDirectMessages extends PureComponent {
         return !result.error;
     };
 
+    sectionKeyExtractor = (user) => {
+        // Group items alphabetically by first letter
+        return displayUsername(user, this.props.teammateNameDisplay)[0].toUpperCase();
+    }
+
+    compareItems = (a, b) => {
+        const aName = displayUsername(a, this.props.teammateNameDisplay);
+        const bName = displayUsername(b, this.props.teammateNameDisplay);
+
+        return aName.localeCompare(bName);
+    };
+
+    renderItem = (props) => {
+        // The list will re-render when the selection changes because it's passed into the list as extraData
+        const selected = this.state.selectedIds[props.id];
+        const enabled = selected || this.state.selectedCount < General.MAX_USERS_IN_GM - 1;
+
+        return (
+            <UserListRow
+                key={props.id}
+                {...props}
+                selectable={true}
+                selected={selected}
+                enabled={enabled}
+            />
+        );
+    };
+
     render() {
         const {
-            intl,
             getRequest,
             searchRequest,
             theme
         } = this.props;
         const {
-            adding,
-            profiles,
-            searching,
+            loadingChannel,
             showNoResults,
             term
         } = this.state;
 
-        const {formatMessage} = intl;
         const isLoading = (
             getRequest.status === RequestStatus.STARTED) || (getRequest.status === RequestStatus.NOT_STARTED) ||
             (searchRequest.status === RequestStatus.STARTED);
         const style = getStyleFromTheme(theme);
-        const more = this.state.searching ? () => true : this.loadMoreProfiles;
 
-        let content;
-        if (adding) {
-            content = (
+        if (loadingChannel) {
+            return (
                 <View style={style.container}>
                     <StatusBar/>
                     <Loading/>
                 </View>
             );
-        } else {
-            content = (
-                <View style={style.container}>
-                    <StatusBar/>
-                    <View
-                        style={{marginVertical: 5}}
-                    >
-                        <SearchBar
-                            ref='search_bar'
-                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            backgroundColor='transparent'
-                            inputHeight={33}
-                            inputStyle={{
-                                backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                                color: theme.centerChannelColor,
-                                fontSize: 13
-                            }}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
-                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                            titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.onSearch}
-                            onSearchButtonPress={this.onSearch}
-                            onCancelButtonPress={this.cancelSearch}
-                            value={term}
-                        />
-                    </View>
-                    <CustomList
-                        data={profiles}
-                        theme={theme}
-                        searching={searching}
-                        onListEndReached={more}
-                        listScrollRenderAheadDistance={50}
-                        loading={isLoading}
-                        loadingText={loadingText}
-                        selectable={this.state.canSelect}
-                        onRowSelect={this.handleRowSelect}
-                        rowComponent={UserListRow}
-                        createSections={createMembersSections}
-                        showNoResults={showNoResults}
-                    />
-                </View>
-            );
         }
 
-        return content;
+        return (
+            <View style={style.container}>
+                <StatusBar/>
+                <View style={style.searchContainer}>
+                    <SearchBar
+                        ref='search_bar'
+                        placeholder={this.props.intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelTitle={this.props.intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        backgroundColor='transparent'
+                        inputHeight={33}
+                        inputStyle={style.searchInputStyle}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                        titleCancelColor={theme.centerChannelColor}
+                        onChangeText={this.onSearch}
+                        onSearchButtonPress={this.onSearch}
+                        onCancelButtonPress={this.cancelSearch}
+                        value={term}
+                    />
+                </View>
+                <CustomSectionList
+                    theme={theme}
+                    items={this.state.profiles}
+                    renderItem={this.renderItem}
+                    showNoResults={showNoResults}
+                    sectionKeyExtractor={this.sectionKeyExtractor}
+                    compareItems={this.compareItems}
+                    extraData={this.state.selectedIds}
+                    onRowPress={this.handleRowPress}
+                    loading={isLoading}
+                    loadingText={loadingText}
+                />
+            </View>
+        );
     }
 }
 
@@ -378,6 +398,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
+        },
+        searchContainer: {
+            marginVertical: 5
+        },
+        searchInputStyle: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
+            fontSize: 13
         }
     });
 });

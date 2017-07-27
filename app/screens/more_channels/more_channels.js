@@ -294,7 +294,7 @@ class MoreChannels extends PureComponent {
                         loading={isLoading}
                         listScrollRenderAheadDistance={50}
                         showSections={false}
-                        rowComponent={ChannelListRow}
+                        renderRow={ChannelListRow}
                         onRowPress={this.onSelectChannel}
                         loadingText={{id: 'mobile.loading_channels', defaultMessage: 'Loading Channels...'}}
                         showNoResults={this.state.showNoResults}

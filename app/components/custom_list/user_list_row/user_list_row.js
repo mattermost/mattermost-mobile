@@ -24,11 +24,22 @@ export default class UserListRow extends React.PureComponent {
         ...CustomListRow.propTypes
     };
 
+    onPress = () => {
+        this.props.onPress(this.props.id);
+    };
+
     render() {
         const style = getStyleFromTheme(this.props.theme);
 
         return (
-            <CustomListRow {...this.props}>
+            <CustomListRow
+                id={this.props.id}
+                theme={this.props.theme}
+                onPress={this.props.onPress ? this.onPress : null}
+                enabled={this.props.enabled}
+                selectable={this.props.selectable}
+                selected={this.props.selected}
+            >
                 <ProfilePicture
                     user={this.props.user}
                     size={32}

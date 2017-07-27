@@ -15,27 +15,16 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class CustomListRow extends React.PureComponent {
     static propTypes = {
-        sectionId: PropTypes.string.isRequired,
-        rowId: PropTypes.string.isRequired,
-        id: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
-        onRowSelect: PropTypes.func,
+        enabled: PropTypes.bool,
+        selectable: PropTypes.bool,
         selected: PropTypes.bool,
-        disableSelect: PropTypes.bool,
         children: CustomPropTypes.Children
     };
 
     static defaultProps = {
-        disableSelect: false
-    };
-
-    onPress = () => {
-        if (this.props.onPress) {
-            this.props.onPress(this.props.id);
-        } else if (this.props.onRowSelect && !this.props.disableSelect) {
-            this.props.onRowSelect(this.props.sectionId, this.props.rowId);
-        }
+        enabled: true
     };
 
     render() {
@@ -43,13 +32,13 @@ export default class CustomListRow extends React.PureComponent {
 
         return (
             <ConditionalTouchable
-                touchable={Boolean(this.props.onPress || (!this.props.disableSelect && this.props.onRowSelect))}
-                onPress={this.onPress}
+                touchable={Boolean(this.props.enabled && this.props.onPress)}
+                onPress={this.props.onPress}
             >
                 <View style={style.container}>
-                    {this.props.onRowSelect &&
+                    {this.props.selectable &&
                         <View style={style.selectorContainer}>
-                            <View style={[style.selector, (this.props.selected && style.selectorFilled), (this.props.disableSelect && style.selectorDisabled)]}>
+                            <View style={[style.selector, (this.props.selected && style.selectorFilled), (!this.props.enabled && style.selectorDisabled)]}>
                                 {this.props.selected &&
                                     <Icon
                                         name='check'

@@ -21,32 +21,10 @@ export default class CustomList extends PureComponent {
         listInitialSize: PropTypes.number,
         listScrollRenderAheadDistance: PropTypes.number,
         showSections: PropTypes.bool,
-
         onRowPress: PropTypes.func,
+        selectable: PropTypes.bool,
         onRowSelect: PropTypes.func,
-
-        /*
-         * A component to be used to represent each row of the list. Will be passed the following props:
-         * id: The id field of the row, if set
-         * selected: The selected field of the row, if set
-         * sectionId: The list's section id for the row
-         * rowId: The list's id for the row
-         * onRowPress: The onRowPress function passed into this component
-         * onRowSelect: The onRowSelect function passed into this component
-         *
-         * Either this or the renderRow property must be provided.
-         */
-        rowComponent: PropTypes.func,
-
-        /*
-         * A function that renders a component used to represent each row of the list. Will be passed the
-         * object representing the row as well as a props object containing the properties that would be
-         * passed if the rowComponent property had been instead used.
-         *
-         * Either this or the rowComponent property must be provided.
-         */
-        renderRow: PropTypes.func,
-
+        renderRow: PropTypes.func.isRequired,
         createSections: PropTypes.func,
         showNoResults: PropTypes.bool
     };
@@ -59,6 +37,7 @@ export default class CustomList extends PureComponent {
         listInitialSize: 10,
         listScrollRenderAheadDistance: 200,
         loadingText: null,
+        selectable: false,
         createSections: () => true,
         showSections: true,
         showNoResults: true
@@ -133,25 +112,32 @@ export default class CustomList extends PureComponent {
         );
     };
 
-    renderRow = (rowData, sectionId, rowId) => {
+    renderRow = (item, sectionId, rowId) => {
         const props = {
-            sectionId,
-            rowId,
-            id: rowData.id,
-            selected: rowData.selected,
+            id: item.id,
+            item,
+            selected: item.selected,
+            selectable: this.props.selectable,
             onPress: this.props.onRowPress
         };
 
-        if (this.props.onRowSelect) {
-            props.onRowSelect = this.handleRowSelect;
+        if ('disableSelect' in item) {
+            props.enabled = !item.disableSelect;
         }
 
-        if (this.props.rowComponent) {
-            const RowComponent = this.props.rowComponent;
+        if (this.props.onRowSelect) {
+            props.onPress = this.handleRowSelect.bind(this, sectionId, rowId);
+        } else {
+            props.onPress = this.props.onRowPress;
+        }
+
+        // Allow passing in a component like UserListRow or ChannelListRow
+        if (this.props.renderRow.prototype.isReactComponent) {
+            const RowComponent = this.props.renderRow;
             return <RowComponent {...props}/>;
         }
 
-        return this.props.renderRow(rowData, props);
+        return this.props.renderRow(props);
     };
 
     renderSeparator = (sectionId, rowId) => {

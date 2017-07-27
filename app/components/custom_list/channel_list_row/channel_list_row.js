@@ -21,6 +21,10 @@ export default class ChannelListRow extends React.PureComponent {
         ...CustomListRow.propTypes
     };
 
+    onPress = () => {
+        this.props.onPress(this.props.id);
+    };
+
     render() {
         const style = getStyleFromTheme(this.props.theme);
 
@@ -38,7 +42,14 @@ export default class ChannelListRow extends React.PureComponent {
         }
 
         return (
-            <CustomListRow {...this.props}>
+            <CustomListRow
+                id={this.props.id}
+                theme={this.props.theme}
+                onPress={this.props.onPress ? this.onPress : null}
+                enabled={this.props.enabled}
+                selectable={this.props.selectable}
+                selected={this.props.selected}
+            >
                 <View style={style.container}>
                     <View style={style.titleContainer}>
                         <Icon

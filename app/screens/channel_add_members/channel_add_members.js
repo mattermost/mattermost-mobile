@@ -268,8 +268,9 @@ class ChannelAddMembers extends PureComponent {
                     listScrollRenderAheadDistance={50}
                     loading={isLoading}
                     loadingText={loadingText}
-                    onRowSelect={this.state.canSelect ? this.handleRowSelect : null}
-                    rowComponent={UserListRow}
+                    selectable={this.state.canSelect}
+                    onRowSelect={this.handleRowSelect}
+                    renderRow={UserListRow}
                     createSections={createMembersSections}
                 />
             </View>
