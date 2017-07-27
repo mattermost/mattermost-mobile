@@ -125,7 +125,7 @@ export default class SearchPreview extends PureComponent {
                             <MaterialIcon
                                 name='close'
                                 size={20}
-                                color={theme.sidebarHeaderTextColor}
+                                color={theme.centerChannelColor}
                             />
                         </TouchableOpacity>
                         <View style={style.titleContainer}>
@@ -205,7 +205,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 40
         },
         title: {
-            color: theme.sidebarHeaderTextColor,
+            color: theme.centerChannelColor,
             fontSize: 17,
             fontWeight: '600'
         },
