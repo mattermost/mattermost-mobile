@@ -12,6 +12,7 @@ import {
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
 import CustomSectionList from 'app/components/custom_section_list';
@@ -34,10 +35,12 @@ class MoreDirectMessages extends PureComponent {
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        profiles: PropTypes.array,
+        allProfiles: PropTypes.object.isRequired,
+        profiles: PropTypes.array.isRequired,
         getRequest: PropTypes.object.isRequired,
         searchRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
@@ -275,6 +278,9 @@ class MoreDirectMessages extends PureComponent {
 
     makeGroupChannel = async (ids) => {
         const result = await this.props.actions.makeGroupChannel(ids);
+
+        const displayName = getGroupDisplayNameFromUserIds(ids, this.props.allProfiles, this.props.currentUserId, this.props.teammateNameDisplay);
+        this.props.actions.setChannelDisplayName(displayName);
 
         if (result.error) {
             alertErrorWithFallback(

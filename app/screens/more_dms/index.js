@@ -60,9 +60,11 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         config,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
+        allProfiles: getUsers(state),
         profiles,
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
+        currentUserId: getCurrentUserId(state),
         currentTeamId: getCurrentTeamId(state),
         getRequest,
         searchRequest
