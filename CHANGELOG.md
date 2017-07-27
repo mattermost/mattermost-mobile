@@ -1,11 +1,43 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.1 Release (In Progress)
+
+- Planned Release Date: August 2017 
+
+### Highlights 
+
+#### Search
+- Search posts and tap to preview the result
+- Click "Jump" to open the channel the search result is from 
+
+#### Emoji Reactions
+- View Emoji Reactions on a post
+
+### Improvements
+- Android: Added Big Text support for Android notifications, so they expand to show more details
+- Added a Reset Cache option
+- Improved "Jump to conversation" filter so it matches on nickname, full name, or username 
+- Tapping on an @username mention opens the user's profile
+- Disabled the send button while attachments upload
+- Adjusted margins on icons and elsewhere to make spacing more consistent
+- iOS: mattermost:// links now open the new app 
+
+### Bug Fixes
+- Fixed an issue where sometimes an unmounted badge caused app to crash on start up 
+- Group Direct Messages now show the correct member count 
+- Hamburger icon does not break after swiping to close sidebar
+- Fixed an issue with some image thumbnails showing up blurry 
+- Uploading a file and then leaving the channel no longer shows the file in a perpetual loading state
+- For private channels, the last member can no longer delete the channel if the EE server pemissions do not allow it
+- When SSO login fails, error messages are now shown 
+- Android: Leaving a channel now redirects to Town Square instead of the Town Square info page
+
 ## v1.0.1 Release 
 
 - Release Date: July 20, 2017 
 - Server Versions Supported: Server v3.8+ is required, Self-Signed SSL Certificates are not yet supported
 
-#### Bug Fixes
+### Bug Fixes
 - Huawei devices can now load messages
 - GitLab SSO now works if there is a trailing `/` in the server URL
 - Unsupported server versions now show a prompt clarifying that a server upgrade is necessary
