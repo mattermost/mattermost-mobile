@@ -223,7 +223,7 @@ class Search extends Component {
         actions.removeSearchTerms(currentTeamId, item.terms);
     };
 
-    renderPost = ({item, index}) => {
+    renderPost = ({item}) => {
         if (item.id === SEARCHING) {
             return (
                 <View style={{width: '100%', height: '100%'}}>
@@ -232,7 +232,7 @@ class Search extends Component {
             );
         }
 
-        const {channels, posts, theme} = this.props;
+        const {channels, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         const channel = channels.find((c) => c.id === item.channel_id);
@@ -240,11 +240,6 @@ class Search extends Component {
 
         if (channel) {
             displayName = channel.display_name;
-        }
-
-        let separator;
-        if (index === posts.length - 1) {
-            separator = this.renderPostSeparator();
         }
 
         return (
@@ -264,7 +259,6 @@ class Search extends Component {
                     shouldRenderReplyButton={true}
                     navigator={this.props.navigator}
                 />
-                {separator}
             </View>
         );
     };
@@ -494,7 +488,7 @@ class Search extends Component {
                     renderSectionHeader={this.renderSectionHeader}
                     sections={sections}
                     keyboardShouldPersistTaps='handled'
-                    stickySectionHeadersEnabled={true}
+                    stickySectionHeadersEnabled={Platform.OS === 'ios'}
                 />
                 {previewComponent}
             </View>
