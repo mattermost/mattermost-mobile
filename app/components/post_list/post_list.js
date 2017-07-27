@@ -22,7 +22,7 @@ const LOAD_MORE_POSTS = 'load-more-posts';
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            refreshChannel: PropTypes.func.isRequired
+            refreshChannelWithRetry: PropTypes.func.isRequired
         }).isRequired,
         channel: PropTypes.object,
         channelIsLoading: PropTypes.bool.isRequired,
@@ -79,7 +79,7 @@ export default class PostList extends PureComponent {
         const {actions, channel} = this.props;
 
         if (Object.keys(channel).length) {
-            actions.refreshChannel(channel.id);
+            actions.refreshChannelWithRetry(channel.id);
         }
     };
 

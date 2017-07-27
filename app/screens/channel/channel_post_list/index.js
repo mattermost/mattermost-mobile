@@ -8,8 +8,7 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
-
-import {loadPostsIfNecessary, loadThreadIfNecessary, increasePostVisibility} from 'app/actions/views/channel';
+import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelPostList from './channel_post_list';
@@ -19,13 +18,20 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const channelId = ownProps.channel.id;
-        const {refreshing} = state.views.channel;
-        const {getPosts} = state.requests.posts;
+        const {getPosts, getPostsRetryAttempts, getPostsSince, getPostsSinceRetryAttempts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
 
+        let getPostsStatus;
+        if (getPostsRetryAttempts > 0) {
+            getPostsStatus = getPosts.status;
+        } else if (getPostsSinceRetryAttempts > 1) {
+            getPostsStatus = getPostsSince.status;
+        }
+
         return {
-            channelIsLoading: getPosts.status === RequestStatus.STARTED || state.views.channel.loading,
-            channelIsRefreshing: refreshing,
+            channelIsLoading: state.views.channel.loading,
+            channelIsRefreshing: getPostsStatus === RequestStatus.STARTED,
+            channelRefreshingFailed: getPostsStatus === RequestStatus.FAILURE,
             currentChannelId: getCurrentChannelId(state),
             posts,
             postVisibility: state.views.channel.postVisibility[channelId],
@@ -41,10 +47,11 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            loadPostsIfNecessary,
+            loadPostsIfNecessaryWithRetry,
             loadThreadIfNecessary,
             increasePostVisibility,
-            selectPost
+            selectPost,
+            refreshChannelWithRetry
         }, dispatch)
     };
 }

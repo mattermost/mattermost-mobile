@@ -4,18 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {refreshChannel} from 'app/actions/views/channel';
+import {refreshChannelWithRetry} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import PostList from './post_list';
 
 function mapStateToProps(state, ownProps) {
-    const {loading, refreshing} = state.views.channel;
-
     return {
         ...ownProps,
-        channelIsLoading: loading,
-        refreshing,
         theme: getTheme(state)
     };
 }
@@ -23,7 +19,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            refreshChannel
+            refreshChannelWithRetry
         }, dispatch)
     };
 }

@@ -12,7 +12,7 @@ import {
     selectChannel,
     leaveChannel as serviceLeaveChannel
 } from 'mattermost-redux/actions/channels';
-import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
+import {getPosts, getPostsWithRetry, getPostsBefore, getPostsSince, getPostsSinceWithRetry, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
@@ -152,6 +152,26 @@ export function loadPostsIfNecessary(channelId) {
         const latestPostTime = getLastCreateAt(postsForChannel);
 
         return getPostsSince(channelId, latestPostTime)(dispatch, getState);
+    };
+}
+
+export function loadPostsIfNecessaryWithRetry(channelId) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const {posts, postsInChannel} = state.entities.posts;
+
+        const postsIds = postsInChannel[channelId];
+
+        // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+        if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
+            getPostsWithRetry(channelId)(dispatch, getState);
+            return;
+        }
+
+        const postsForChannel = postsIds.map((id) => posts[id]);
+        const latestPostTime = getLastCreateAt(postsForChannel);
+
+        getPostsSinceWithRetry(channelId, latestPostTime)(dispatch, getState);
     };
 }
 
@@ -330,6 +350,12 @@ export function refreshChannel(channelId) {
         dispatch(setChannelRefreshing());
         await getPosts(channelId)(dispatch, getState);
         dispatch(setChannelRefreshing(false));
+    };
+}
+
+export function refreshChannelWithRetry(channelId) {
+    return (dispatch, getState) => {
+        getPostsWithRetry(channelId)(dispatch, getState);
     };
 }
 
