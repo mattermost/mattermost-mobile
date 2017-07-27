@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Alert,
     InteractionManager,
     Linking,
     Platform,
@@ -100,6 +99,22 @@ class Settings extends PureComponent {
         });
     };
 
+    goToAdvancedSettings = () => {
+        const {intl, navigator, theme} = this.props;
+        navigator.push({
+            screen: 'AdvancedSettings',
+            title: intl.formatMessage({id: 'mobile.advanced_settings.title', defaultMessage: 'Advanced Settings'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
+    };
+
     goToSelectTeam = () => {
         const {currentUrl, intl, navigator, theme} = this.props;
 
@@ -155,22 +170,6 @@ class Settings extends PureComponent {
         Linking.openURL(config.HelpLink.toLowerCase());
     };
 
-    clearOfflineCache = () => {
-        const {actions, intl} = this.props;
-
-        Alert.alert(
-            intl.formatMessage({id: 'mobile.settings.clear', defaultMessage: 'Clear Offline Store'}),
-            intl.formatMessage({id: 'mobile.settings.clear_message', defaultMessage: '\nThis will clear all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
-            [{
-                text: intl.formatMessage({id: 'mobile.settings.clear_button', defaultMessage: 'Clear'}),
-                onPress: () => actions.purgeOfflineStore()
-            }, {
-                text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                onPress: () => true
-            }]
-        );
-    }
-
     render() {
         const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
@@ -196,7 +195,7 @@ class Settings extends PureComponent {
                         i18nId='mobile.select_team.join_open'
                         iconName='group'
                         iconType='material'
-                        onPress={() => preventDoubleTap(this.goToSelectTeam, this)}
+                        onPress={() => this.handlePress(this.goToSelectTeam)}
                         separator={true}
                         theme={theme}
                     />
@@ -222,11 +221,11 @@ class Settings extends PureComponent {
                         theme={theme}
                     />
                     <SettingsItem
-                        defaultMessage='Clear Offline Store'
-                        i18nId='mobile.settings.clear'
-                        iconName='storage'
-                        iconType='material'
-                        onPress={() => this.handlePress(this.clearOfflineCache)}
+                        defaultMessage='Advanced Settings'
+                        i18nId='mobile.advanced_settings.title'
+                        iconName='ios-construct'
+                        iconType='ion'
+                        onPress={() => this.handlePress(this.goToAdvancedSettings)}
                         separator={true}
                         theme={theme}
                     />
