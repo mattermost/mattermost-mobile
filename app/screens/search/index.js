@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getPostsAfter, getPostsBefore, getPostThread, selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
-import {RequestStatus} from 'mattermost-redux/constants';
 import {getCurrentChannelId, getMyChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getSearchResults} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -35,7 +34,7 @@ function mapStateToProps(state, ownProps) {
         posts: getSearchResults(state),
         recent: recent[currentTeamId] || [],
         channels: getMyChannels(state),
-        searching: searchRequest.status === RequestStatus.STARTED
+        searchingStatus: searchRequest.status
     };
 }
 
