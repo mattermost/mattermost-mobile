@@ -104,7 +104,6 @@ export default class Search extends Component {
         super(props);
 
         this.state = {
-            keyword: props.value || '',
             expanded: false
         };
         const {width} = Dimensions.get('window');
@@ -127,6 +126,8 @@ export default class Search extends Component {
         if (this.props.value !== nextProps.value) {
             if (nextProps.value) {
                 this.iconDeleteAnimated = new Animated.Value(1);
+            } else {
+                this.iconDeleteAnimated = new Animated.Value(0);
             }
         }
     }
@@ -202,7 +203,6 @@ export default class Search extends Component {
                 duration: 200
             }
         ).start();
-        this.setState({keyword: ''});
 
         if (this.props.onDelete) {
             this.props.onDelete();
@@ -210,7 +210,7 @@ export default class Search extends Component {
     };
 
     onCancel = async () => {
-        this.setState({keyword: '', expanded: false});
+        this.setState({expanded: false});
         await this.collapseAnimation(true);
 
         if (this.props.onCancel) {

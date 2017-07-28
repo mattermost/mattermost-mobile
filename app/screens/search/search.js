@@ -15,9 +15,10 @@ import {
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {General} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
+import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import Post from 'app/components/post';
 import SectionList from 'app/components/scrollable_section_list';
@@ -33,6 +34,7 @@ const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
 const POSTS_PER_PAGE = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 const SEARCHING = 'searching';
+const NO_RESULTS = 'no results';
 
 class Search extends Component {
     static propTypes = {
@@ -54,7 +56,7 @@ class Search extends Component {
         navigator: PropTypes.object,
         posts: PropTypes.array,
         recent: PropTypes.array.isRequired,
-        searching: PropTypes.bool,
+        searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired
     };
 
@@ -88,10 +90,11 @@ class Search extends Component {
     }
 
     componentDidUpdate() {
-        const {posts, recent} = this.props;
+        const {searchingStatus, recent} = this.props;
         const recentLenght = recent.length;
+        const shouldScroll = searchingStatus === RequestStatus.SUCCESS || searchingStatus === RequestStatus.STARTED;
 
-        if (posts.length && !this.state.isFocused) {
+        if (shouldScroll && !this.state.isFocused) {
             setTimeout(() => {
                 this.refs.list.getWrapperRef().getListRef().scrollToOffset({
                     animated: true,
@@ -159,12 +162,13 @@ class Search extends Component {
     };
 
     handleTextChanged = (value) => {
-        const {actions, posts} = this.props;
+        const {actions, searchingStatus} = this.props;
         this.setState({value});
         actions.handleSearchDraftChanged(value);
 
-        if (!value && posts.length) {
+        if (!value && searchingStatus === RequestStatus.SUCCESS) {
             actions.clearSearch();
+            this.scrollToTop();
         }
     };
 
@@ -181,14 +185,8 @@ class Search extends Component {
     };
 
     onFocus = () => {
-        const {posts} = this.props;
         this.setState({isFocused: true});
-        if (posts.length) {
-            this.refs.list.getWrapperRef().getListRef().scrollToOffset({
-                animated: false,
-                offset: 0
-            });
-        }
+        this.scrollToTop();
     };
 
     onNavigatorEvent = (event) => {
@@ -226,16 +224,16 @@ class Search extends Component {
     };
 
     renderPost = ({item, index}) => {
-        if (item.id === SEARCHING) {
+        const {channels, posts, theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        if (item.id === SEARCHING || item.id === NO_RESULTS) {
             return (
-                <View style={{width: '100%', height: '100%'}}>
+                <View style={style.customItem}>
                     {item.component}
                 </View>
             );
         }
-
-        const {channels, posts, theme} = this.props;
-        const style = getStyleFromTheme(theme);
 
         const channel = channels.find((c) => c.id === item.channel_id);
         let displayName = '';
@@ -342,6 +340,13 @@ class Search extends Component {
         );
     };
 
+    scrollToTop = () => {
+        this.refs.list.getWrapperRef().getListRef().scrollToOffset({
+            animated: false,
+            offset: 0
+        });
+    };
+
     search = (terms, isOrSearch) => {
         const {actions, currentTeamId} = this.props;
         actions.searchPosts(currentTeamId, terms, isOrSearch);
@@ -392,7 +397,7 @@ class Search extends Component {
             navigator,
             posts,
             recent,
-            searching,
+            searchingStatus,
             theme
         } = this.props;
 
@@ -412,13 +417,30 @@ class Search extends Component {
         }
 
         let results;
-        if (searching) {
+        if (searchingStatus === RequestStatus.STARTED) {
             results = [{
                 id: SEARCHING,
-                component: <Loading/>
+                component: (
+                    <View style={style.searching}>
+                        <Loading/>
+                    </View>
+                )
             }];
-        } else if (posts.length) {
-            results = posts;
+        } else if (searchingStatus === RequestStatus.SUCCESS) {
+            if (posts.length) {
+                results = posts;
+            } else if (this.state.value) {
+                results = [{
+                    id: NO_RESULTS,
+                    component: (
+                        <FormattedText
+                            id='mobile.search.no_results'
+                            defaultMessage='No Results Found'
+                            style={style.noResults}
+                        />
+                    )
+                }];
+            }
         }
 
         if (results) {
@@ -576,6 +598,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         sectionList: {
             flex: 1,
             zIndex: -1
+        },
+        customItem: {
+            alignItems: 'center',
+            flex: 1,
+            justifyContent: 'center'
+        },
+        noResults: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 20,
+            fontWeight: '400',
+            marginTop: 65,
+            textAlign: 'center',
+            textAlignVertical: 'center'
+        },
+        searching: {
+            marginTop: 25
         }
     });
 });
