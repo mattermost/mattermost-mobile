@@ -10,6 +10,7 @@ import {
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
+import EmojiSuggestion from './emoji_suggestion';
 
 const style = StyleSheet.create({
     container: {
@@ -62,6 +63,10 @@ export default class Autocomplete extends Component {
                         {...this.props}
                     />
                     <ChannelMention
+                        cursorPosition={this.state.cursorPosition}
+                        {...this.props}
+                    />
+                    <EmojiSuggestion
                         cursorPosition={this.state.cursorPosition}
                         {...this.props}
                     />
