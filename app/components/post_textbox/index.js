@@ -8,7 +8,7 @@ import {userTyping} from 'mattermost-redux/actions/websocket';
 
 import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
 import {getTheme} from 'app/selectors/preferences';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getUsersTyping} from 'mattermost-redux/selectors/entities/typing';
 
@@ -17,8 +17,8 @@ import PostTextbox from './post_textbox';
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
+        canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
-        config: getConfig(state),
         currentUserId: getCurrentUserId(state),
         typing: getUsersTyping(state),
         theme: getTheme(state),

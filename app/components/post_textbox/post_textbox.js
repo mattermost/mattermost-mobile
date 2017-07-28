@@ -38,9 +38,9 @@ class PostTextbox extends PureComponent {
             handleUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired
         }).isRequired,
+        canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool.isRequired,
-        config: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
         files: PropTypes.array,
         intl: intlShape.isRequired,
@@ -432,7 +432,13 @@ class PostTextbox extends PureComponent {
     }
 
     render() {
-        const {channelIsLoading, config, intl, theme, value} = this.props;
+        const {
+            canUploadFiles,
+            channelIsLoading,
+            intl,
+            theme,
+            value
+        } = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
@@ -448,7 +454,7 @@ class PostTextbox extends PureComponent {
 
         let fileUpload = null;
         const inputContainerStyle = [style.inputContainer];
-        if (!config.EnableFileAttachments || config.EnableFileAttachments === 'true') {
+        if (canUploadFiles) {
             fileUpload = (
                 <TouchableOpacity
                     onPress={this.showFileAttachmentOptions}
