@@ -229,7 +229,7 @@ class Search extends Component {
 
         if (item.id === SEARCHING || item.id === NO_RESULTS) {
             return (
-                <View style={[style.customItem]}>
+                <View style={style.customItem}>
                     {item.component}
                 </View>
             );
