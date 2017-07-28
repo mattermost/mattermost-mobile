@@ -18,6 +18,7 @@ import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import MattermostIcon from 'app/components/mattermost_icon';
+import Config from 'assets/config';
 
 export default class About extends PureComponent {
     static propTypes = {
@@ -32,6 +33,14 @@ export default class About extends PureComponent {
 
     handleAboutEnterprise = () => {
         Linking.openURL('http://about.mattermost.com/');
+    };
+
+    handlePlatformNotice = () => {
+        Linking.openURL(Config.PlatformNoticeURL);
+    };
+
+    handleMobileNotice = () => {
+        Linking.openURL(Config.MobileNoticeURL);
     };
 
     render() {
@@ -206,6 +215,33 @@ export default class About extends PureComponent {
                                 currentYear: new Date().getFullYear()
                             }}
                         />
+                        <View style={style.noticeContainer}>
+                            <View style={style.footerGroup}>
+                                <FormattedText
+                                    id='mobile.notice_text'
+                                    defaultMessage='Mattermost is made possible by the open source software in our {platform} and {mobile}.'
+                                    style={style.footerText}
+                                    values={{
+                                        platform: (
+                                            <FormattedText
+                                                id='mobile.notice_platform_link'
+                                                defaultMessage='platform'
+                                                style={style.noticeLink}
+                                                onPress={this.handlePlatformNotice}
+                                            />
+                                        ),
+                                        mobile: (
+                                            <FormattedText
+                                                id='mobile.notice_mobile_link'
+                                                defaultMessage='mobile apps'
+                                                style={[style.noticeLink, {marginLeft: 5}]}
+                                                onPress={this.handleMobileNotice}
+                                            />
+                                        )
+                                    }}
+                                />
+                            </View>
+                        </View>
                         <View style={style.hashContainer}>
                             <View style={style.footerGroup}>
                                 <FormattedText
@@ -305,6 +341,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             marginVertical: 20
+        },
+        noticeContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            marginTop: 10
+        },
+        noticeLink: {
+            color: theme.linkColor,
+            fontSize: 11,
+            lineHeight: 13
         },
         hashContainer: {
             flex: 1,
