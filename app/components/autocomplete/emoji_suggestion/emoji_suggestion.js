@@ -27,8 +27,7 @@ export default class EmojiSuggestion extends Component {
 
     static defaultProps = {
         defaultChannel: {},
-        postDraft: '',
-        isSearch: false
+        postDraft: ''
     };
 
     state = {

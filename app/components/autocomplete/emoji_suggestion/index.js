@@ -1,11 +1,9 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
 import {getTheme} from 'app/selectors/preferences';
@@ -30,9 +28,7 @@ function mapStateToProps(state, ownProps) {
     const emojis = getEmojisByName(state);
 
     let postDraft;
-    if (ownProps.isSearch) {
-        postDraft = state.views.search;
-    } else if (ownProps.rootId.length) {
+    if (ownProps.rootId.length) {
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;
@@ -51,12 +47,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            autocompleteUsers
-        }, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(EmojiSuggestion);
+export default connect(mapStateToProps)(EmojiSuggestion);
