@@ -80,7 +80,7 @@ class ChannelPostList extends PureComponent {
             this.loadPosts(nextChannel.id);
         }
 
-        if ((nextPosts.length && nextChannel.id === currentChannel.id) || nextChannel.total_msg_count === 0 || nextChannelRefreshingFailed) {
+        if ((nextPosts.length) || nextChannel.total_msg_count === 0 || nextChannelRefreshingFailed) {
             this.channelLoaded();
         }
 
@@ -112,7 +112,7 @@ class ChannelPostList extends PureComponent {
     };
 
     toggleRetryMessage = (show = true) => {
-        const value = show ? 40 : 0;
+        const value = show ? 38 : 0;
         Animated.timing(this.state.retryMessageHeight, {
             toValue: value,
             duration: 300
@@ -185,7 +185,7 @@ class ChannelPostList extends PureComponent {
             theme
         } = this.props;
 
-        const {channelLoaded, loaderOpacity, retryMessageHeight} = this.state;
+        const {loaderOpacity, retryMessageHeight} = this.state;
 
         let component;
         if (!posts.length && channelRefreshingFailed) {
@@ -195,7 +195,7 @@ class ChannelPostList extends PureComponent {
                     theme={theme}
                 />
             );
-        } else if ((channelIsLoading || !channelLoaded) && !channelIsRefreshing && !loadingPosts) {
+        } else if (channelIsLoading) {
             component = <ChannelLoader theme={theme}/>;
         } else {
             component = (

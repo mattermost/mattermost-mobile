@@ -20,6 +20,7 @@ function makeMapStateToProps() {
         const channelId = ownProps.channel.id;
         const {getPosts, getPostsRetryAttempts, getPostsSince, getPostsSinceRetryAttempts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
+        const networkOnline = state.offline.online;
 
         let getPostsStatus;
         if (getPostsRetryAttempts > 0) {
@@ -28,16 +29,23 @@ function makeMapStateToProps() {
             getPostsStatus = getPostsSince.status;
         }
 
+        let channelIsRefreshing = getPostsStatus === RequestStatus.STARTED;
+        let channelRefreshingFailed = getPostsStatus === RequestStatus.FAILURE;
+        if (!networkOnline) {
+            channelIsRefreshing = false;
+            channelRefreshingFailed = true;
+        }
+
         return {
             channelIsLoading: state.views.channel.loading,
-            channelIsRefreshing: getPostsStatus === RequestStatus.STARTED,
-            channelRefreshingFailed: getPostsStatus === RequestStatus.FAILURE,
+            channelIsRefreshing,
+            channelRefreshingFailed,
             currentChannelId: getCurrentChannelId(state),
             posts,
             postVisibility: state.views.channel.postVisibility[channelId],
             loadingPosts: state.views.channel.loadingPosts[channelId],
             myMember: getMyCurrentChannelMembership(state),
-            networkOnline: state.offline.online,
+            networkOnline,
             theme: getTheme(state),
             ...ownProps
         };
