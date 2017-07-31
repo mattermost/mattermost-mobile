@@ -219,7 +219,7 @@ export default class About extends PureComponent {
                             <View style={style.footerGroup}>
                                 <FormattedText
                                     id='mobile.notice_text'
-                                    defaultMessage='Mattermost is made possible by the open source software in our {platform} and {mobile}.'
+                                    defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
                                     style={style.footerText}
                                     values={{
                                         platform: (
