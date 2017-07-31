@@ -28,7 +28,7 @@ function mapStateToProps(state, ownProps) {
     const emojis = getEmojisByName(state);
 
     let postDraft;
-    if (ownProps.rootId.length) {
+    if (ownProps.rootId) {
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;

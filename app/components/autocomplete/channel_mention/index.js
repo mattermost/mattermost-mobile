@@ -18,7 +18,7 @@ function mapStateToProps(state, ownProps) {
     let postDraft;
     if (ownProps.isSearch) {
         postDraft = state.views.search;
-    } else if (ownProps.rootId.length) {
+    } else if (ownProps.rootId) {
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;
