@@ -7,6 +7,7 @@
   "license": "Apache 2.0",
   "private": true,
   "dependencies": {
+    "analytics-react-native": "1.1.0",
     "babel-polyfill": "6.23.0",
     "commonmark": "hmhealey/commonmark.js#57e6f0244a474a0e7d990f868531af5d98a57316",
     "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#11bf3a089900eda6f3e951f8b8c80663cff4d6a3",

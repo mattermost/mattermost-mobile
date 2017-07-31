@@ -41,6 +41,14 @@ platform :ios do
   lane :beta do
     match(type: 'appstore', app_identifier: 'com.mattermost.rnbeta')
 
+    if ENV['SEGMENT_API_KEY']
+      find_replace_string(
+          path_to_file: './dist/assets/config.json',
+          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
+      )
+    end
+
     build_ios({
               release: true,
               increment_build: true,
@@ -88,6 +96,14 @@ platform :ios do
     )
 
     match(type: 'appstore', app_identifier: 'com.mattermost.rn')
+
+    if ENV['SEGMENT_API_KEY']
+      find_replace_string(
+          path_to_file: './dist/assets/config.json',
+          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
+      )
+    end
 
     # snapshot
 
@@ -237,6 +253,14 @@ platform :android do
 
   desc 'Submit a new Beta Build to Google Play'
   lane :alpha do
+    if ENV['SEGMENT_API_KEY']
+      find_replace_string(
+          path_to_file: './dist/assets/config.json',
+          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
+      )
+    end
+
     build_android({
                       release: true,
                       increment_build: true,
@@ -333,6 +357,14 @@ platform :android do
         old_string: 'Mattermost Beta',
         new_string: 'Mattermost;'
     )
+
+    if ENV['SEGMENT_API_KEY']
+      find_replace_string(
+          path_to_file: './dist/assets/config.json',
+          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
+      )
+    end
 
     build_android({
                       release: true,

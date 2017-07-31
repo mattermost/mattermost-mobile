@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import 'babel-polyfill';
+import Analytics from 'analytics-react-native';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation} from 'react-native-navigation';
@@ -106,12 +107,45 @@ export default class Mattermost {
         return intl;
     };
 
+    configureAnalytics = (config) => {
+        if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && Config.SegmentApiKey) {
+            if (!global.analytics) {
+                global.analytics = new Analytics(Config.SegmentApiKey);
+                global.analytics.identify({
+                    userId: config.DiagnosticId,
+                    context: {
+                        ip: '0.0.0.0'
+                    },
+                    page: {
+                        path: '',
+                        referrer: '',
+                        search: '',
+                        title: '',
+                        url: ''
+                    },
+                    anonymousId: '00000000000000000000000000'
+                });
+            }
+        } else {
+            global.analytics = null;
+        }
+    };
+
+    configurePushNotifications = () => {
+        PushNotifications.configure({
+            onRegister: this.onRegisterDevice,
+            onNotification: this.onPushNotification,
+            popInitialNotification: true,
+            requestPermissions: true
+        });
+    };
+
     handleAppStateChange = (appState) => {
         const {dispatch, getState} = store;
         setAppState(appState === 'active')(dispatch, getState);
     };
 
-    handleConfigChanged = (serverVersion) => {
+    handleConfigChanged = async (serverVersion) => {
         const {dispatch, getState} = store;
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const intl = this.getIntl();
@@ -129,7 +163,8 @@ export default class Mattermost {
                 );
             } else {
                 setServerVersion('')(dispatch, getState);
-                loadConfigAndLicense(serverVersion)(dispatch, getState);
+                const data = await loadConfigAndLicense(serverVersion)(dispatch, getState);
+                this.configureAnalytics(data.config);
             }
         }
     };
@@ -139,6 +174,7 @@ export default class Mattermost {
         Client4.serverVersion = '';
         Client.serverVersion = '';
         Client.token = null;
+        Client4.userId = '';
         PushNotifications.cancelAllLocalNotifications();
         setServerVersion('')(dispatch, getState);
         this.startApp('fade');
@@ -172,15 +208,6 @@ export default class Mattermost {
             this.unsubscribeFromStore();
             this.startApp();
         }
-    };
-
-    configurePushNotifications = () => {
-        PushNotifications.configure({
-            onRegister: this.onRegisterDevice,
-            onNotification: this.onPushNotification,
-            popInitialNotification: true,
-            requestPermissions: true
-        });
     };
 
     onRegisterDevice = (data) => {
