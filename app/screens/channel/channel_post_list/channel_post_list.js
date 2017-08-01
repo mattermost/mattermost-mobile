@@ -8,6 +8,7 @@ import {
     Animated,
     Dimensions,
     Platform,
+    StyleSheet,
     View
 } from 'react-native';
 
@@ -237,7 +238,7 @@ class ChannelPostList extends PureComponent {
                 >
                     <ChannelLoader theme={theme}/>
                 </AnimatedView>
-                <AnimatedView style={{position: 'absolute', top: 0, height: retryMessageHeight, width: deviceWidth, backgroundColor: '#fb8000', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10}}>
+                <AnimatedView style={[style.refreshIndicator, {height: retryMessageHeight}]}>
                     <FormattedText
                         id='mobile.retry_message'
                         defaultMessage='Refreshing messages failed. Pull up to try again.'
@@ -248,5 +249,17 @@ class ChannelPostList extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    refreshIndicator: {
+        alignItems: 'center',
+        backgroundColor: '#fb8000',
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        position: 'absolute',
+        top: 0,
+        width: deviceWidth
+    }
+});
 
 export default injectIntl(ChannelPostList);
