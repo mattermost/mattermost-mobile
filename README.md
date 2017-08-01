@@ -97,7 +97,7 @@ Follow the [React Native Getting Started Guide](https://facebook.github.io/react
     $ npm install -g react-native-cli
     ```
 
-  - Add or edit file `src/config/config.secret.json` and add the url to the Mattermost server that you will use to develop:
+  - You can create a file named `assets/override/config.json` and add the url to the Mattermost server that you will use to develop:
     `{
        "DefaultServerUrl": "https://pre-release.mattermost.com"
     }`
