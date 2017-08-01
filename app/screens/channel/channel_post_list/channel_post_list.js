@@ -60,8 +60,12 @@ class ChannelPostList extends PureComponent {
     }
 
     componentDidMount() {
+        const {channel, posts, channelRefreshingFailed} = this.props;
         this.mounted = true;
         this.loadPosts(this.props.channel.id);
+        if (posts.length || channel.total_msg_count === 0 || channelRefreshingFailed) {
+            this.channelLoaded();
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -72,16 +76,16 @@ class ChannelPostList extends PureComponent {
         if (currentChannelId !== nextChannelId) {
             this.setState({
                 loaderOpacity: new Animated.Value(1)
+            }, () => {
+                if (nextPosts.length || nextChannel.total_msg_count === 0 || nextChannelRefreshingFailed) {
+                    this.channelLoaded();
+                }
             });
         }
 
         if (currentChannel.id !== nextChannel.id) {
             // Load the posts when the channel actually changes
             this.loadPosts(nextChannel.id);
-        }
-
-        if ((nextPosts.length) || nextChannel.total_msg_count === 0 || nextChannelRefreshingFailed) {
-            this.channelLoaded();
         }
 
         if (nextChannelRefreshingFailed && this.state.channelLoaded && nextPosts.length) {
@@ -115,9 +119,9 @@ class ChannelPostList extends PureComponent {
         const value = show ? 38 : 0;
         Animated.timing(this.state.retryMessageHeight, {
             toValue: value,
-            duration: 300
+            duration: 350
         }).start();
-    }
+    };
 
     goToThread = (post) => {
         const {actions, channel, intl, navigator, theme} = this.props;

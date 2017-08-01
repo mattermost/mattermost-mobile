@@ -20,7 +20,9 @@ function makeMapStateToProps() {
         const channelId = ownProps.channel.id;
         const {getPosts, getPostsRetryAttempts, getPostsSince, getPostsSinceRetryAttempts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
-        const networkOnline = state.offline.online;
+        const {websocket: websocketRequest} = state.requests.general;
+        const {connection} = state.views;
+        const networkOnline = connection && websocketRequest.status === RequestStatus.SUCCESS;
 
         let getPostsStatus;
         if (getPostsRetryAttempts > 0) {
