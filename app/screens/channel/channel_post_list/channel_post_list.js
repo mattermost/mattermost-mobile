@@ -64,9 +64,7 @@ class ChannelPostList extends PureComponent {
         const {channel, posts, channelRefreshingFailed} = this.props;
         this.mounted = true;
         this.loadPosts(this.props.channel.id);
-        if (posts.length || channel.total_msg_count === 0 || channelRefreshingFailed) {
-            this.channelLoaded();
-        }
+        this.shouldMarkChannelAsLoaded(posts.length, channel.total_msg_count === 0, channelRefreshingFailed);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -78,9 +76,7 @@ class ChannelPostList extends PureComponent {
             this.setState({
                 loaderOpacity: new Animated.Value(1)
             }, () => {
-                if (nextPosts.length || nextChannel.total_msg_count === 0 || nextChannelRefreshingFailed) {
-                    this.channelLoaded();
-                }
+                this.shouldMarkChannelAsLoaded(nextPosts.length, nextChannel.total_msg_count === 0, nextChannelRefreshingFailed);
             });
         }
 
@@ -95,6 +91,8 @@ class ChannelPostList extends PureComponent {
             this.toggleRetryMessage(false);
         }
 
+        this.shouldMarkChannelAsLoaded(nextPosts.length, nextChannel.total_msg_count === 0, nextChannelRefreshingFailed);
+
         const showLoadMore = nextProps.posts.length >= nextProps.postVisibility;
         this.setState({
             showLoadMore
@@ -104,6 +102,12 @@ class ChannelPostList extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
     }
+
+    shouldMarkChannelAsLoaded = (postsCount, channelHasMessages, channelRefreshingFailed) => {
+        if (postsCount || channelHasMessages || channelRefreshingFailed) {
+            this.channelLoaded();
+        }
+    };
 
     channelLoaded = () => {
         Animated.timing(this.state.loaderOpacity, {
