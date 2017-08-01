@@ -251,7 +251,6 @@ const state = {
         channel: {
             drafts: {},
             loading: false,
-            refreshing: false,
             tooltipVisible: false
         },
         connection: true,

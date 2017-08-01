@@ -181,15 +181,6 @@ function loading(state = false, action) {
     }
 }
 
-function refreshing(state = false, action) {
-    switch (action.type) {
-    case ViewTypes.SET_CHANNEL_REFRESHING:
-        return action.refreshing;
-    default:
-        return state;
-    }
-}
-
 function tooltipVisible(state = false, action) {
     switch (action.type) {
     case ViewTypes.POST_TOOLTIP_VISIBLE:
@@ -245,7 +236,6 @@ export default combineReducers({
     displayName,
     drafts,
     loading,
-    refreshing,
     tooltipVisible,
     postVisibility,
     loadingPosts

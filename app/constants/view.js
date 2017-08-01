@@ -36,7 +36,6 @@ const ViewTypes = keyMirror({
     ADD_FILE_TO_FETCH_CACHE: null,
 
     SET_CHANNEL_LOADER: null,
-    SET_CHANNEL_REFRESHING: null,
     SET_CHANNEL_DISPLAY_NAME: null,
 
     POST_TOOLTIP_VISIBLE: null,
