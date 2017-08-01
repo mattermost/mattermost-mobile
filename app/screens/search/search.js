@@ -383,8 +383,9 @@ class Search extends Component {
             }
 
             this.props.navigator.dismissModal({animationType: 'none'});
-            setChannelLoading();
+
             markChannelAsRead(channelId, currentChannelId);
+            setChannelLoading();
             viewChannel(channelId, currentChannelId);
             setChannelDisplayName(displayName);
             handleSelectChannel(channelId);
