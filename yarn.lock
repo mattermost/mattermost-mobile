@@ -1522,9 +1522,9 @@ commonmark-react-renderer@hmhealey/commonmark-react-renderer#11bf3a089900eda6f3e
     pascalcase "^0.1.1"
     xss-filters "^1.2.6"
 
-commonmark@hmhealey/commonmark.js#10bc18c0c8054088c0ec4737a8766c6b5794a323:
+commonmark@hmhealey/commonmark.js#57e6f0244a474a0e7d990f868531af5d98a57316:
   version "0.27.0"
-  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/10bc18c0c8054088c0ec4737a8766c6b5794a323"
+  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/57e6f0244a474a0e7d990f868531af5d98a57316"
   dependencies:
     entities "~ 1.1.1"
     mdurl "~ 1.0.1"
