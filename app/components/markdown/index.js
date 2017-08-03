@@ -79,6 +79,7 @@ export default class Markdown extends PureComponent {
 
                 emph: Renderer.forwardChildren,
                 strong: Renderer.forwardChildren,
+                del: Renderer.forwardChildren,
                 code: this.renderCodeSpan,
                 link: this.renderLink,
                 image: this.renderImage,
