@@ -128,6 +128,7 @@ class CreateChannel extends PureComponent {
     };
 
     close = (goBack = false) => {
+        EventEmitter.emit('closing-create-channel', false);
         if (goBack) {
             this.props.navigator.pop({animated: true});
         } else {

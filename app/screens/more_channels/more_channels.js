@@ -58,6 +58,7 @@ class MoreChannels extends PureComponent {
 
         this.state = {
             channels: props.channels.splice(0, General.CHANNELS_CHUNK_SIZE),
+            createScreenVisible: false,
             page: 0,
             adding: false,
             next: true,
@@ -78,6 +79,10 @@ class MoreChannels extends PureComponent {
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons(buttons);
+    }
+
+    componentWillMount() {
+        EventEmitter.on('closing-create-channel', this.handleCreateScreenVisible);
     }
 
     componentDidMount() {
@@ -101,7 +106,13 @@ class MoreChannels extends PureComponent {
             this.setState({channels, showNoResults: true});
         }
 
-        this.headerButtons(nextProps.canCreateChannels, true);
+        if (!this.state.createScreenVisible) {
+            this.headerButtons(nextProps.canCreateChannels, true);
+        }
+    }
+
+    componentWillUnmount() {
+        EventEmitter.off('closing-create-channel', this.handleCreateScreenVisible);
     }
 
     close = () => {
@@ -110,6 +121,10 @@ class MoreChannels extends PureComponent {
 
     emitCanCreateChannel = (enabled) => {
         this.headerButtons(this.props.canCreateChannels, enabled);
+    };
+
+    handleCreateScreenVisible = (createScreenVisible) => {
+        this.setState({createScreenVisible});
     };
 
     headerButtons = (canCreateChannels, enabled) => {
@@ -182,7 +197,9 @@ class MoreChannels extends PureComponent {
                 this.close();
                 break;
             case 'create-pub-channel':
-                this.onCreateChannel();
+                this.setState({
+                    createScreenVisible: true
+                }, this.onCreateChannel);
                 break;
             }
         }
