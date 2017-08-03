@@ -3,11 +3,16 @@ skip_docs
 
 platform :ios do
   before_all do |lane|
-    if lane == :beta
-      ensure_git_branch(
-          branch: 'master'
-      )
-      sh "git checkout -b ios-#{lane}"
+    if lane == :beta or lane === :release
+      current_branch = (sh 'git rev-parse --abbrev-ref HEAD').chop!
+
+      UI.user_error!("To cut a beta or a release you need to be on master or in a release branch.
+      Current branch is #{current_branch}
+      Exiting") unless current_branch == 'master' or current_branch.start_with?('release')
+
+      if lane == :beta
+        sh "git checkout -b ios-#{lane}"
+      end
     end
   end
 
@@ -211,11 +216,16 @@ end
 
 platform :android do
   before_all do |lane|
-    if lane == :alpha
-      ensure_git_branch(
-          branch: 'master'
-      )
-      sh "git checkout -b android-#{lane}"
+    if lane == :beta or lane === :release
+      current_branch = (sh 'git rev-parse --abbrev-ref HEAD').chop!
+
+      UI.user_error!("To cut a beta or a release you need to be on master or in a release branch.
+      Current branch is #{current_branch}
+      Exiting") unless current_branch == 'master' or current_branch.start_with?('release')
+
+      if lane == :beta
+        sh "git checkout -b android-#{lane}"
+      end
     end
   end
 
