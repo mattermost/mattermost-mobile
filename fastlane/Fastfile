@@ -216,14 +216,14 @@ end
 
 platform :android do
   before_all do |lane|
-    if lane == :beta or lane === :release
+    if lane == :alpha or lane === :release
       current_branch = (sh 'git rev-parse --abbrev-ref HEAD').chop!
 
       UI.user_error!("To cut a beta or a release you need to be on master or in a release branch.
       Current branch is #{current_branch}
       Exiting") unless current_branch == 'master' or current_branch.start_with?('release')
 
-      if lane == :beta
+      if lane == :alpha
         sh "git checkout -b android-#{lane}"
       end
     end
