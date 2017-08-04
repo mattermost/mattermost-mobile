@@ -1,8 +1,8 @@
 # Mattermost Mobile Apps Changelog
 
-## v1.1 Release (In Progress)
+## v1.1 Release
 
-- Planned Release Date: August 2017 
+- Release Date: August 2017 
 
 ### Highlights 
 
@@ -13,6 +13,15 @@
 #### Emoji Reactions
 - View Emoji Reactions on a post
 
+
+#### New Conversation
+- Start a new Direct Message or a Group Message from the same screen
+
+#### Don't ever miss a message
+- Auto-retry has been added so you won't ever miss a message
+- Manual retry to get messages
+
+
 ### Improvements
 - Android: Added Big Text support for Android notifications, so they expand to show more details
 - Added a Reset Cache option
@@ -20,7 +29,10 @@
 - Tapping on an @username mention opens the user's profile
 - Disabled the send button while attachments upload
 - Adjusted margins on icons and elsewhere to make spacing more consistent
-- iOS: mattermost:// links now open the new app 
+- iOS URL scheme: mattermost:// links now open the new app
+- About Mattermost now includes a link for NOTICES.txt for platform and the mobile app
+- Delete channel option now depend on the policy setting
+- UI improvements
 
 ### Bug Fixes
 - Fixed an issue where sometimes an unmounted badge caused app to crash on start up 
@@ -28,9 +40,11 @@
 - Hamburger icon does not break after swiping to close sidebar
 - Fixed an issue with some image thumbnails showing up blurry 
 - Uploading a file and then leaving the channel no longer shows the file in a perpetual loading state
-- For private channels, the last member can no longer delete the channel if the EE server pemissions do not allow it
+- For private channels, the last member can no longer delete the channel if the EE server permissions do not allow it
 - When SSO login fails, error messages are now shown 
 - Android: Leaving a channel now redirects to Town Square instead of the Town Square info page
+- Fix create new public channel screen shown twice when trying to create a channel
+- Tapping on a post now won't close the keyboard
 
 ## v1.0.1 Release 
 
