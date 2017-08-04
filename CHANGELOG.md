@@ -13,12 +13,12 @@
 #### Emoji Reactions
 - View Emoji Reactions on a post
 
-#### New Conversation
-- Start a new Direct Message or a Group Message from the same screen
+#### Group Messages
+- Start Direct and Group Messages from the same screen
 
-#### No Missed Messages
-- Auto-retry has been added so you won't ever miss a message
-- Manual retry to get messages
+#### Improved Performance on Poor Connections
+- Added auto-retry to automatically reattempt to get posts if the network connection is intermittent
+- Added manual loading option if auto-retry fails to retrieve new posts
 
 ### Improvements
 - Android: Added Big Text support for Android notifications, so they expand to show more details
