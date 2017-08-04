@@ -13,14 +13,12 @@
 #### Emoji Reactions
 - View Emoji Reactions on a post
 
-
 #### New Conversation
 - Start a new Direct Message or a Group Message from the same screen
 
-#### Don't ever miss a message
+#### No Missed Messages
 - Auto-retry has been added so you won't ever miss a message
 - Manual retry to get messages
-
 
 ### Improvements
 - Android: Added Big Text support for Android notifications, so they expand to show more details
@@ -30,21 +28,20 @@
 - Disabled the send button while attachments upload
 - Adjusted margins on icons and elsewhere to make spacing more consistent
 - iOS URL scheme: mattermost:// links now open the new app
-- About Mattermost now includes a link for NOTICES.txt for platform and the mobile app
-- Delete channel option now depend on the policy setting
-- UI improvements
+- About Mattermost page now includes a link to NOTICES.txt for platform and the mobile app
+- Various UI improvements
 
 ### Bug Fixes
 - Fixed an issue where sometimes an unmounted badge caused app to crash on start up 
 - Group Direct Messages now show the correct member count 
 - Hamburger icon does not break after swiping to close sidebar
-- Fixed an issue with some image thumbnails showing up blurry 
+- Fixed an issue with some image thumbnails appearing out of focus
 - Uploading a file and then leaving the channel no longer shows the file in a perpetual loading state
 - For private channels, the last member can no longer delete the channel if the EE server permissions do not allow it
-- When SSO login fails, error messages are now shown 
+- Error messages are now shown when SSO login fails
 - Android: Leaving a channel now redirects to Town Square instead of the Town Square info page
-- Fix create new public channel screen shown twice when trying to create a channel
-- Tapping on a post now won't close the keyboard
+- Fixed create new public channel screen shown twice when trying to create a channel
+- Tapping on a post will no longer close the keyboard
 
 ## v1.0.1 Release 
 
