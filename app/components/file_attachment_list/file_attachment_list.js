@@ -4,6 +4,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Keyboard,
     View,
     TouchableOpacity
 } from 'react-native';
@@ -69,6 +70,7 @@ export default class FileAttachmentList extends Component {
 
     handlePreviewPress = (file) => {
         this.props.hideOptionsContext();
+        Keyboard.dismiss();
         preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
     };
 

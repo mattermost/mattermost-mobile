@@ -248,6 +248,7 @@ export default class CustomSectionList extends React.PureComponent {
                 sections={this.state.sections}
                 keyExtractor={this.props.keyExtractor}
                 renderItem={this.renderItem}
+                keyboardShouldPersistTaps='handled'
             />
         );
     }
