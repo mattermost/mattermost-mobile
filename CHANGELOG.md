@@ -3,6 +3,7 @@
 ## v1.1 Release
 
 - Release Date: August 2017 
+- Server Versions Supported: Server v3.10+ is required, Self-Signed SSL Certificates are not yet supported
 
 ### Highlights 
 
