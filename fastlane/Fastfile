@@ -88,10 +88,6 @@ platform :ios do
 
   desc 'Deploy a new version to the App Store'
   lane :release do
-    ensure_git_branch(
-        branch: 'master'
-    )
-
     match(type: 'appstore', app_identifier: 'com.mattermost.rn')
 
     # snapshot
@@ -291,9 +287,6 @@ platform :android do
 
   desc 'Deploy a new version to Google Play'
   lane :release do
-    ensure_git_branch(
-        branch: 'master'
-    )
     android_change_package_identifier(newIdentifier: 'com.mattermost.rn', manifest: './android/app/src/main/AndroidManifest.xml')
     android_change_string_app_name(newName: 'Mattermost', stringsFile: './android/app/src/main/res/values/strings.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: 'com.mattermost.rn')
