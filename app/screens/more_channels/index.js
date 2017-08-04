@@ -3,6 +3,7 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
 import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
@@ -16,16 +17,23 @@ import {getTheme} from 'app/selectors/preferences';
 
 import MoreChannels from './more_channels';
 
+const joinableChannels = createSelector(
+    getChannelsInCurrentTeam,
+    getMyChannelMemberships,
+    (channels, myMembers) => {
+        return channels.filter((c) => {
+            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL);
+        });
+    }
+);
+
 function mapStateToProps(state, ownProps) {
     const {currentUserId} = state.entities.users;
     const {currentTeamId} = state.entities.teams;
     const {getChannels: requestStatus} = state.requests.channels;
     const {config, license} = state.entities.general;
     const roles = getCurrentUserRoles(state);
-    const myMembers = getMyChannelMemberships(state);
-    const channels = getChannelsInCurrentTeam(state).filter((c) => {
-        return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL);
-    });
+    const channels = joinableChannels(state);
 
     return {
         ...ownProps,

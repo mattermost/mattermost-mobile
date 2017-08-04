@@ -273,7 +273,6 @@ class List extends Component {
                 screenBackgroundColor: theme.centerChannelBg
             },
             passProps: {
-                channelType: General.PRIVATE_CHANNEL,
                 closeButton: this.closeButton
             }
         });

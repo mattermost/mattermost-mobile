@@ -1,8 +1,9 @@
 # Mattermost Mobile Apps Changelog
 
-## v1.1 Release (In Progress)
+## v1.1 Release
 
-- Planned Release Date: August 2017 
+- Release Date: August 2017 
+- Server Versions Supported: Server v3.10+ is required, Self-Signed SSL Certificates are not yet supported
 
 ### Highlights 
 
@@ -13,6 +14,13 @@
 #### Emoji Reactions
 - View Emoji Reactions on a post
 
+#### Group Messages
+- Start Direct and Group Messages from the same screen
+
+#### Improved Performance on Poor Connections
+- Added auto-retry to automatically reattempt to get posts if the network connection is intermittent
+- Added manual loading option if auto-retry fails to retrieve new posts
+
 ### Improvements
 - Android: Added Big Text support for Android notifications, so they expand to show more details
 - Added a Reset Cache option
@@ -20,17 +28,21 @@
 - Tapping on an @username mention opens the user's profile
 - Disabled the send button while attachments upload
 - Adjusted margins on icons and elsewhere to make spacing more consistent
-- iOS: mattermost:// links now open the new app 
+- iOS URL scheme: mattermost:// links now open the new app
+- About Mattermost page now includes a link to NOTICES.txt for platform and the mobile app
+- Various UI improvements
 
 ### Bug Fixes
 - Fixed an issue where sometimes an unmounted badge caused app to crash on start up 
 - Group Direct Messages now show the correct member count 
 - Hamburger icon does not break after swiping to close sidebar
-- Fixed an issue with some image thumbnails showing up blurry 
+- Fixed an issue with some image thumbnails appearing out of focus
 - Uploading a file and then leaving the channel no longer shows the file in a perpetual loading state
-- For private channels, the last member can no longer delete the channel if the EE server pemissions do not allow it
-- When SSO login fails, error messages are now shown 
+- For private channels, the last member can no longer delete the channel if the EE server permissions do not allow it
+- Error messages are now shown when SSO login fails
 - Android: Leaving a channel now redirects to Town Square instead of the Town Square info page
+- Fixed create new public channel screen shown twice when trying to create a channel
+- Tapping on a post will no longer close the keyboard
 
 ## v1.0.1 Release 
 
