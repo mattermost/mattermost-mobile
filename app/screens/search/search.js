@@ -92,7 +92,7 @@ class Search extends Component {
     componentDidUpdate() {
         const {searchingStatus, recent} = this.props;
         const recentLenght = recent.length;
-        const shouldScroll = searchingStatus === RequestStatus.SUCCESS || searchingStatus === RequestStatus.STARTED;
+        const shouldScroll = (searchingStatus === RequestStatus.SUCCESS || searchingStatus === RequestStatus.STARTED) && !this.recentRemoved;
 
         if (shouldScroll && !this.state.isFocused) {
             setTimeout(() => {
@@ -102,6 +102,8 @@ class Search extends Component {
                 });
             }, 200);
         }
+
+        this.recentRemoved = false;
     }
 
     attachAutocomplete = (c) => {
@@ -220,6 +222,7 @@ class Search extends Component {
 
     removeSearchTerms = (item) => {
         const {actions, currentTeamId} = this.props;
+        this.recentRemoved = true;
         actions.removeSearchTerms(currentTeamId, item.terms);
     };
 
