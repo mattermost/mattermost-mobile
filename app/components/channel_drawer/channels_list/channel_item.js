@@ -10,6 +10,7 @@ import {
     View
 } from 'react-native';
 
+import Badge from 'app/components/badge';
 import ChanneIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -50,11 +51,14 @@ export default class ChannelItem extends PureComponent {
 
         if (mentions && !isActive) {
             badge = (
-                <View style={style.badgeContainer}>
-                    <Text style={style.badge}>
-                        {mentions}
-                    </Text>
-                </View>
+                <Badge
+                    style={style.badge}
+                    countStyle={style.mention}
+                    count={mentions}
+                    minHeight={20}
+                    minWidth={20}
+                    onPress={this.onPress}
+                />
             );
         }
 
@@ -143,19 +147,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         textUnread: {
             color: theme.sidebarUnreadText
         },
-        badgeContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.mentionBj,
-            borderRadius: 7,
-            height: 15,
-            justifyContent: 'center',
-            marginRight: 16,
-            width: 16
-        },
         badge: {
+            backgroundColor: theme.mentionBj,
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 10,
+            borderWidth: 1,
+            padding: 3,
+            position: 'relative',
+            right: 16
+        },
+        mention: {
             color: theme.mentionColor,
-            fontSize: 10,
-            fontWeight: '600'
+            fontSize: 10
         }
     });
 });
