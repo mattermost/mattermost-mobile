@@ -14,6 +14,9 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         strong: {
             fontWeight: 'bold'
         },
+        del: {
+            textDecorationLine: 'line-through'
+        },
         link: {
             color: theme.linkColor
         },
