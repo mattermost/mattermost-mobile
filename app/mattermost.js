@@ -170,13 +170,7 @@ export default class Mattermost {
     };
 
     handleReset = () => {
-        const {dispatch, getState} = store;
-        Client4.serverVersion = '';
-        Client.serverVersion = '';
-        Client.token = null;
-        Client4.userId = '';
-        PushNotifications.cancelAllLocalNotifications();
-        setServerVersion('')(dispatch, getState);
+        this.resetBadgeAndVersion();
         this.startApp('fade');
     };
 
@@ -198,6 +192,8 @@ export default class Mattermost {
             InteractionManager.runAfterInteractions(() => {
                 logout()(dispatch, getState);
             });
+        } else {
+            this.resetBadgeAndVersion();
         }
     };
 
@@ -260,6 +256,17 @@ export default class Mattermost {
                 }
             }
         }
+    };
+
+    resetBadgeAndVersion = () => {
+        const {dispatch, getState} = store;
+        Client4.serverVersion = '';
+        Client.serverVersion = '';
+        Client.token = null;
+        Client4.userId = '';
+        PushNotifications.setApplicationIconBadgeNumber(0);
+        PushNotifications.cancelAllLocalNotifications();
+        setServerVersion('')(dispatch, getState);
     };
 
     restartApp = () => {
