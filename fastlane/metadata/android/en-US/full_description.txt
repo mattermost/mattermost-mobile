@@ -1,6 +1,6 @@
 Mattermost is secure workplace messaging from behind your firewall.
 
-This is a beta version of our second generation mobile app. To use this app, you need the URL for a v3.7+ Mattermost server.
+This is a beta version of our second generation mobile app. To use this app, you need the URL for a v3.10+ Mattermost server.
 
 We're still building out all the features, you can view a list of what's currently supported in our changelog at https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md.
 
