@@ -132,9 +132,11 @@ We plan to add support for tablets in the future, but the timeline depends on ho
 
 ### I keep getting a message "Cannot connect to the server. Please check your server URL and internet connection."
 
-Our second generation mobile apps only support server versions 3.8+. If your server version is too old, you might see this error message come up. 
+This sometimes appears when there is an issue with the SSL certitificate configuration. 
 
-To check your server version, log on to the site on desktop and go to Main Menu > About Mattermost. 
+To check that your SSL certificate is set up correctly, test the SSL certificate by visiting a site such as https://www.ssllabs.com/ssltest/index.html. If there’s an error about the missing chain or certificate path, there is likely an intermediate certificate missing that needs to be included.
+
+Please note that the apps cannot connect to servers with self-signed certificates, consider using [Let's Encrypt](https://docs.mattermost.com/install/config-ssl-http2-nginx.html) instead. 
 
 ### I see a “Connecting…” bar that does not go away
 
