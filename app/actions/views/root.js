@@ -16,8 +16,10 @@ import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels'
 
 export function loadConfigAndLicense(serverVersion) {
     return async (dispatch, getState) => {
-        const config = await getClientConfig()(dispatch, getState);
-        const license = await getLicenseConfig()(dispatch, getState);
+        const [config, license] = await Promise.all([
+            getClientConfig()(dispatch, getState),
+            getLicenseConfig()(dispatch, getState)
+        ]);
 
         if (config && license) {
             setServerVersion(serverVersion)(dispatch, getState);
