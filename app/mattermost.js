@@ -162,7 +162,7 @@ export default class Mattermost {
                     {cancelable: false}
                 );
             } else {
-                setServerVersion('')(dispatch, getState);
+                setServerVersion(serverVersion)(dispatch, getState);
                 const data = await loadConfigAndLicense(serverVersion)(dispatch, getState);
                 this.configureAnalytics(data.config);
             }
