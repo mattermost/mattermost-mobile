@@ -5,11 +5,12 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
+  Animated,
   View,
   PanResponder
 } from 'react-native';
 
-import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
+const {Image: AnimatedImage} = Animated;
 
 function calcDistance(x1, y1, x2, y2) {
     const dx = Math.abs(x1 - x2);
@@ -45,22 +46,21 @@ function calcOffsetByZoom(width, height, imageWidth, imageHeight, zoom) {
     };
 }
 
-class ZoomableImage extends Component {
+export default class ImageView extends Component {
     static propTypes = {
-        addFileToFetchCache: PropTypes.func.isRequired,
-        fetchCache: PropTypes.object.isRequired,
-        file: PropTypes.object.isRequired,
-        imageHeight: PropTypes.number.isRequired,
-        imageWidth: PropTypes.number.isRequired,
+        imageHeight: PropTypes.number,
+        imageWidth: PropTypes.number,
+        maximumZoomScale: PropTypes.number,
+        minimumZoomScale: PropTypes.number,
         onImageTap: PropTypes.func,
-        onZoom: PropTypes.func.isRequired,
+        onZoom: PropTypes.func,
+        style: PropTypes.object.isRequired,
         wrapperHeight: PropTypes.number.isRequired,
-        wrapperWidth: PropTypes.number.isRequired,
-        theme: PropTypes.object.isRequired
+        wrapperWidth: PropTypes.number.isRequired
     };
 
     static defaultProps = {
-        onImageTap: () => false
+        onZoom: () => false
     };
 
     constructor(props) {
@@ -94,33 +94,8 @@ class ZoomableImage extends Component {
 
     componentWillMount() {
         this.panResponder = PanResponder.create({
-            onStartShouldSetPanResponder: () => {
-                this.tap = Date.now();
-
-                return true;
-            },
             onStartShouldSetPanResponderCapture: (evt, gestureState) => {
                 if (gestureState.numberActiveTouches === 2 || this.state.zoom > 1) {
-                    // Store each press for double tap detection
-                    /*if (!this.lastPress) {
-                        this.lastPress = Date.now();
-                    } else if (Date.now() - this.lastPress < 400 && Date.now() - this.lastPress > 100) {
-                        this.setState({
-                            zoom: 1,
-                            top: 0,
-                            offsetTop: 0,
-                            left: 0,
-                            offsetLeft: 0
-                        });
-                        this.props.onZoom(false);
-                        this.lastPress = null;
-
-                        return false;
-                    }*/
-
-                    this.lastPress = Date.now();
-
-                    this.props.onZoom(true);
                     return true;
                 }
 
@@ -174,17 +149,18 @@ class ZoomableImage extends Component {
         }
     }
 
-    zoomIn = (zoom = 2) => {
+    setZoom = (zoom = true) => {
+        const zoomScale = zoom ? this.props.maximumZoomScale : this.props.minimumZoomScale;
         const offsetByZoom = calcOffsetByZoom(this.state.width, this.state.height,
-                        this.props.wrapperWidth, this.props.wrapperHeight, zoom);
+                        this.props.wrapperWidth, this.props.wrapperHeight, zoomScale);
 
         this.setState({
-            zoom,
+            zoom: zoomScale,
             left: offsetByZoom.left,
             top: offsetByZoom.top,
             initialX: this.state.width / 2,
             initialY: this.state.height / 2,
-            initialZoom: zoom,
+            initialZoom: zoomScale,
             initialTopWithoutZoom: this.state.top - offsetByZoom.top,
             initialLeftWithoutZoom: this.state.left - offsetByZoom.left
         });
@@ -271,15 +247,18 @@ class ZoomableImage extends Component {
 
     render() {
         const {
-            addFileToFetchCache,
-            fetchCache,
-            file,
             imageHeight,
             imageWidth,
-            theme,
-            wrapperHeight,
-            wrapperWidth
+            style,
+            ...otherProps
         } = this.props;
+
+        let height = style.height;
+        let width = style.width;
+        if (this.state.zoom > 1) {
+            height = imageHeight * this.state.zoom;
+            width = imageWidth * this.state.zoom;
+        }
 
         return (
             <View
@@ -303,23 +282,11 @@ class ZoomableImage extends Component {
                     height: this.state.height * this.state.zoom
                 }}
             >
-                <FileAttachmentImage
-                    addFileToFetchCache={addFileToFetchCache}
-                    fetchCache={fetchCache}
-                    file={file}
-                    theme={theme}
-                    imageHeight={imageHeight * this.state.zoom}
-                    imageSize='fullsize'
-                    imageWidth={imageWidth * this.state.zoom}
-                    loadingBackgroundColor='#000'
-                    resizeMode='contain'
-                    wrapperBackgroundColor='#000'
-                    wrapperHeight={wrapperHeight * this.state.zoom}
-                    wrapperWidth={wrapperWidth * this.state.zoom}
+                <AnimatedImage
+                    {...otherProps}
+                    style={{height, width}}
                 />
             </View>
         );
     }
 }
-
-export default ZoomableImage;
