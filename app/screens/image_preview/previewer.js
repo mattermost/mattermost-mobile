@@ -147,9 +147,11 @@ export default class Previewer extends Component {
     handleLoadError = () => {
         if (this.state.retry < 4) {
             setTimeout(() => {
-                this.setState({
-                    retry: (this.state.retry + 1),
-                    timestamp: Date.now()
+                this.setState((prevState) => {
+                    return {
+                        retry: (prevState.retry + 1),
+                        timestamp: Date.now()
+                    };
                 });
             }, 300);
         }
