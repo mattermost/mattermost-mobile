@@ -87,6 +87,40 @@ class LoginOptions extends PureComponent {
         return null;
     };
 
+    renderLdapOption = () => {
+        const {config, license} = this.props;
+        if (license.IsLicensed === 'true' && config.EnableLdap === 'true') {
+            let buttonText;
+            if (config.LdapLoginFieldName) {
+                buttonText = (
+                    <Text style={[GlobalStyles.signupButtonText, {color: 'white'}]}>
+                        {config.LdapLoginFieldName}
+                    </Text>
+                );
+            } else {
+                buttonText = (
+                    <FormattedText
+                        id='login.ldapUsernameLower'
+                        defaultMessage='AD/LDAP username'
+                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                    />
+                );
+            }
+
+            return (
+                <Button
+                    key='ldap'
+                    onPress={() => preventDoubleTap(this.goToLogin, this)}
+                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#2389d7'}]}
+                >
+                    {buttonText}
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     renderGitlabOption = () => {
         const {config, serverVersion} = this.props;
         const match = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
@@ -159,6 +193,7 @@ class LoginOptions extends PureComponent {
                     defaultMessage='Choose your login method'
                 />
                 {this.renderEmailOption()}
+                {this.renderLdapOption()}
                 {this.renderGitlabOption()}
                 {this.renderSamlOption()}
             </View>
