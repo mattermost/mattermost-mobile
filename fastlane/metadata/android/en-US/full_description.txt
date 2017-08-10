@@ -1,13 +1,19 @@
+Requires Mattermost Server v3.10+. Older servers will not be able to connect. 
+
+-------
+
 Mattermost is secure workplace messaging from behind your firewall.
 
-This is a beta version of our second generation mobile app. To use this app, you need the URL for a v3.7+ Mattermost server.
+- Discuss topics in private groups, one-to-one or team-wide
+- Easily share and view image files 
+- Connect in-house systems with webhooks and Slack-compatible integrations
 
-We're still building out all the features, you can view a list of what's currently supported in our changelog at https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md.
+To use this app, you need a URL for a Mattermost server. 
 
------------------
+-------
 
-Host your own server: http://www.mattermost.org/download/
+Host your own server: https://about.mattermost.com/download 
 
-Report bugs in GitHub: https://github.com/mattermost/mattermost-mobile/issues
+Terms of Service: http://about.mattermost.com/terms/ 
 
-Terms of Service: https://about.mattermost.com/terms
+Contribute to the project: https://github.com/mattermost/mattermost-mobile
