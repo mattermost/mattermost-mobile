@@ -89,10 +89,11 @@ class Search extends Component {
         );
     }
 
-    componentDidUpdate() {
-        const {searchingStatus, recent} = this.props;
+    componentDidUpdate(prevProps) {
+        const {searchingStatus: status, recent} = this.props;
+        const {searchingStatus: prevStatus} = prevProps;
         const recentLenght = recent.length;
-        const shouldScroll = searchingStatus === RequestStatus.SUCCESS || searchingStatus === RequestStatus.STARTED;
+        const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
 
         if (shouldScroll && !this.state.isFocused) {
             setTimeout(() => {
