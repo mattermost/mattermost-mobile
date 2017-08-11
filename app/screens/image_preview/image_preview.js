@@ -22,7 +22,7 @@ import Orientation from 'react-native-orientation';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 
-import ZoomableImage from './zoomable_image';
+import Previewer from './previewer';
 
 const {View: AnimatedView} = Animated;
 const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
@@ -144,20 +144,12 @@ export default class ImagePreview extends PureComponent {
     };
 
     handleImageTap = () => {
-        /*if (!this.lastPress) {
-            this.lastPress = Date.now();
-        } else if (Date.now() - this.lastPress < 400) {
-            if (this.zoomableImages.hasOwnProperty(this.state.currentFile)) {
-                this.zoomableImages[this.state.currentFile].zoomIn();
-                return;
-            }
-        } else {
-            this.lastPress = Date.now();
-
-        }*/
-
         this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
     };
+
+    handleImageDoubleTap = (x, y) => {
+        this.zoomableImages[this.state.currentFile].toggleZoom(x, y);
+    }
 
     setHeaderAndFileInfoVisible = (show) => {
         this.setState({
@@ -180,7 +172,12 @@ export default class ImagePreview extends PureComponent {
         if (event.nativeEvent.contentOffset.x % this.state.deviceWidth === 0) {
             this.setState({
                 currentFile: (event.nativeEvent.contentOffset.x / this.state.deviceWidth),
-                pagingEnabled: true
+                pagingEnabled: true,
+                shouldShrinkImages: false
+            });
+        } else if (!this.state.shouldShrinkImages && !this.state.isZooming) {
+            this.setState({
+                shouldShrinkImages: true
             });
         }
     };
@@ -223,7 +220,7 @@ export default class ImagePreview extends PureComponent {
 
         return (
             <View
-                style={style.wrapper}
+                style={[style.wrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}
                 onLayout={this.onLayout}
             >
                 <AnimatedView
@@ -246,7 +243,7 @@ export default class ImagePreview extends PureComponent {
                             let component;
                             if (file.has_preview_image) {
                                 component = (
-                                    <ZoomableImage
+                                    <Previewer
                                         ref={(c) => {
                                             this.zoomableImages[index] = c;
                                         }}
@@ -256,9 +253,11 @@ export default class ImagePreview extends PureComponent {
                                         theme={this.props.theme}
                                         imageHeight={Math.min(maxImageHeight, file.height)}
                                         imageWidth={Math.min(this.state.deviceWidth, file.width)}
+                                        shrink={this.state.shouldShrinkImages}
                                         wrapperHeight={this.state.deviceHeight}
                                         wrapperWidth={this.state.deviceWidth}
                                         onImageTap={this.handleImageTap}
+                                        onImageDoubleTap={this.handleImageDoubleTap}
                                         onZoom={this.imageIsZooming}
                                     />
                                 );
@@ -378,12 +377,11 @@ const style = StyleSheet.create({
         justifyContent: 'center'
     },
     scrollView: {
-        flex: 1
+        flex: 1,
+        backgroundColor: '#000'
     },
     scrollViewContent: {
-        backgroundColor: '#000',
-        alignItems: 'center',
-        justifyContent: 'center'
+        backgroundColor: '#000'
     },
     title: {
         flex: 1,
@@ -393,7 +391,9 @@ const style = StyleSheet.create({
         textAlign: 'center'
     },
     wrapper: {
-        flex: 1,
+        position: 'absolute',
+        top: 0,
+        left: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.8)'
     }
 });
