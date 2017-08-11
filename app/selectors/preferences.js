@@ -45,6 +45,11 @@ export const getTheme = createSelector(
 
         // At this point, the theme should be a plain object
 
+        // Fix a case where upper case theme colours are rendered as black
+        for (const key of Object.keys(theme)) {
+            theme[key] = theme[key].toLowerCase();
+        }
+
         return theme;
     }
 );
