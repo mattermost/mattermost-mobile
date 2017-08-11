@@ -57,7 +57,7 @@ class MoreChannels extends PureComponent {
         this.searchTimeoutId = 0;
 
         this.state = {
-            channels: props.channels.splice(0, General.CHANNELS_CHUNK_SIZE),
+            channels: props.channels.slice(0, General.CHANNELS_CHUNK_SIZE),
             createScreenVisible: false,
             page: 0,
             adding: false,
@@ -102,7 +102,7 @@ class MoreChannels extends PureComponent {
         } else if (requestStatus.status === RequestStatus.STARTED &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {
             const {page} = this.state;
-            const channels = nextProps.channels.splice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
+            const channels = nextProps.channels.slice(0, (page + 1) * General.CHANNELS_CHUNK_SIZE);
             this.setState({channels, showNoResults: true});
         }
 

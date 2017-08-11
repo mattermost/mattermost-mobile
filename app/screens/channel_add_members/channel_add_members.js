@@ -86,7 +86,7 @@ class ChannelAddMembers extends PureComponent {
             nextProps.loadMoreRequestStatus === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = markSelectedProfiles(
-                nextProps.membersNotInChannel.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
+                nextProps.membersNotInChannel.slice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
                 this.state.selectedMembers
             );
             this.setState({profiles, showNoResults: true});
