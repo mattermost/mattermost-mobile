@@ -86,7 +86,7 @@ class ChannelMembers extends PureComponent {
             nextProps.requestStatus === RequestStatus.SUCCESS) {
             const {page} = this.state;
             const profiles = markSelectedProfiles(
-                nextProps.currentChannelMembers.splice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
+                nextProps.currentChannelMembers.slice(0, (page + 1) * General.PROFILE_CHUNK_SIZE),
                 this.state.selectedMembers
             );
             this.setState({profiles, showNoResults: true});
