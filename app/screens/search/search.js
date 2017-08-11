@@ -89,10 +89,11 @@ class Search extends Component {
         );
     }
 
-    componentDidUpdate() {
-        const {searchingStatus, recent} = this.props;
+    componentDidUpdate(prevProps) {
+        const {searchingStatus: status, recent} = this.props;
+        const {searchingStatus: prevStatus} = prevProps;
         const recentLenght = recent.length;
-        const shouldScroll = (searchingStatus === RequestStatus.SUCCESS || searchingStatus === RequestStatus.STARTED) && !this.recentRemoved;
+        const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
 
         if (shouldScroll && !this.state.isFocused) {
             setTimeout(() => {
@@ -102,8 +103,6 @@ class Search extends Component {
                 });
             }, 200);
         }
-
-        this.recentRemoved = false;
     }
 
     attachAutocomplete = (c) => {
@@ -222,7 +221,6 @@ class Search extends Component {
 
     removeSearchTerms = (item) => {
         const {actions, currentTeamId} = this.props;
-        this.recentRemoved = true;
         actions.removeSearchTerms(currentTeamId, item.terms);
     };
 
