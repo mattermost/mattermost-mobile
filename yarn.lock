@@ -1519,9 +1519,9 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
 
-commonmark-react-renderer@hmhealey/commonmark-react-renderer#11bf3a089900eda6f3e951f8b8c80663cff4d6a3:
-  version "4.3.2"
-  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/11bf3a089900eda6f3e951f8b8c80663cff4d6a3"
+commonmark-react-renderer@hmhealey/commonmark-react-renderer#c5d00343664c89da40d5a2ffa8b083e7cc1615d7:
+  version "4.3.3"
+  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/c5d00343664c89da40d5a2ffa8b083e7cc1615d7"
   dependencies:
     in-publish "^2.0.0"
     lodash.assign "^4.2.0"
@@ -3208,6 +3208,10 @@ istanbul-reports@^1.1.0:
   dependencies:
     handlebars "^4.0.3"
 
+jail-monkey@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/jail-monkey/-/jail-monkey-0.0.8.tgz#076dfae94b4648950b825ecc2d33aac0642d97b6"
+
 jest-haste-map@19.0.0:
   version "19.0.0"
   resolved "https://registry.yarnpkg.com/jest-haste-map/-/jest-haste-map-19.0.0.tgz#adde00b62b1fe04432a104b3254fc5004514b55e"
@@ -4477,9 +4481,9 @@ react-native-cookies@3.1.0:
   dependencies:
     invariant "^2.1.0"
 
-react-native-device-info@0.10.2:
-  version "0.10.2"
-  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.10.2.tgz#350cd68ed43839022ddea0a3a423439f16fa4fba"
+react-native-device-info@0.11.0:
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.11.0.tgz#e96dd0e3f8a7d7e3022c1f441f51fa912fdc7444"
 
 react-native-drawer@2.3.0:
   version "2.3.0"
@@ -4504,6 +4508,10 @@ react-native-keyboard-aware-scroll-view@0.2.8:
 react-native-linear-gradient@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-native-linear-gradient/-/react-native-linear-gradient-2.0.0.tgz#7442c00e1fcd9fca329119dcbaf744d12bcd1b5a"
+
+react-native-local-auth@1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/react-native-local-auth/-/react-native-local-auth-1.4.1.tgz#5215fcc3421e94078da2318127d7b4d21f0bd24f"
 
 react-native-mock@0.3.1:
   version "0.3.1"
@@ -4555,6 +4563,10 @@ react-native-notifications@enahum/react-native-notifications.git:
 react-native-orientation@enahum/react-native-orientation.git:
   version "1.17.0"
   resolved "https://codeload.github.com/enahum/react-native-orientation/tar.gz/8b8495c91d8e63598874a141279cf5409e26ad3a"
+
+react-native-passcode-status@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-passcode-status/-/react-native-passcode-status-1.1.0.tgz#e5922d5f4d79bc09849438d620406e5ccd31168a"
 
 react-native-status-bar-size@0.3.2:
   version "0.3.2"

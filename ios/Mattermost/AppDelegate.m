@@ -13,6 +13,7 @@
 #import "Orientation.h"
 #import "RCCManager.h"
 #import "RNNotifications.h"
+#import "MattermostManaged.h"
 
 @implementation AppDelegate
 
@@ -25,6 +26,7 @@
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   self.window.backgroundColor = [UIColor whiteColor];
   [[RCCManager sharedInstance] initBridgeWithBundleURL:jsCodeLocation launchOptions:launchOptions];
+
 
   return YES;
 }

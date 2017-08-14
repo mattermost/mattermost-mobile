@@ -12,6 +12,7 @@ import {stripTrailingSlashes} from 'app/utils/url';
 
 export default class Root extends PureComponent {
     static propTypes = {
+        allowOtherServers: PropTypes.bool,
         credentials: PropTypes.object,
         loginRequest: PropTypes.object,
         navigator: PropTypes.object,
@@ -44,7 +45,9 @@ export default class Root extends PureComponent {
     };
 
     goToSelectServer = () => {
-        this.props.navigator.resetTo({
+        const {allowOtherServers, navigator} = this.props;
+
+        navigator.resetTo({
             screen: 'SelectServer',
             animated: false,
             navigatorStyle: {
@@ -52,6 +55,9 @@ export default class Root extends PureComponent {
                 navBarBackgroundColor: 'black',
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false
+            },
+            passProps: {
+                allowOtherServers
             }
         });
     };
