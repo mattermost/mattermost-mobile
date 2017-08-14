@@ -127,8 +127,7 @@ class Post extends PureComponent {
 
     handlePostEdit = () => {
         const {intl, navigator, post, theme} = this.props;
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
-        then((source) => {
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
             navigator.showModal({
                 screen: 'EditPost',
                 title: intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'}),
@@ -318,7 +317,6 @@ class Post extends PureComponent {
             </View>
         );
     }
-
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {

@@ -138,9 +138,9 @@ class SSO extends PureComponent {
 
                     Client4.setToken(token);
                     setStoreFromLocalData({url: this.props.serverUrl, token}).
-                    then(handleSuccessfulLogin).
-                    then(getSession).
-                    then(this.goToLoadTeam);
+                        then(handleSuccessfulLogin).
+                        then(getSession).
+                        then(this.goToLoadTeam);
                 }
             });
         }

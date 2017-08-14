@@ -112,8 +112,8 @@ export default class ProfilePicture extends PureComponent {
                                     borderRadius: (this.props.statusSize - this.props.statusBorderWidth) / 2,
                                     padding: this.props.statusBorderWidth
                                 },
-                                style[this.props.status
-                            ]]}
+                                style[this.props.status]
+                            ]}
                         >
                             {statusIcon}
                         </View>

@@ -42,8 +42,7 @@ class TeamsList extends PureComponent {
     constructor(props) {
         super(props);
 
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).
-        then((source) => {
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }

@@ -300,7 +300,6 @@ class ChannelIntro extends PureComponent {
 
         case General.PRIVATE_CHANNEL:
             return this.buildPrivateChannelContent();
-
         }
     };
 
