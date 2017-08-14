@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -122,7 +121,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.centerChannelBg,
             marginBottom: 40,
@@ -161,5 +160,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         section: {
             marginTop: 15
         }
-    });
+    };
 });

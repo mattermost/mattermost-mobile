@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     InteractionManager,
-    StyleSheet,
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
@@ -325,12 +324,12 @@ class ChannelMembers extends PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
         }
-    });
+    };
 });
 
 export default injectIntl(ChannelMembers);

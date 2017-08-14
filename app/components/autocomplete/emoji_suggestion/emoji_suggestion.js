@@ -5,7 +5,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -135,7 +134,7 @@ export default class EmojiSuggestion extends Component {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         emoji: {
             marginRight: 5
         },
@@ -160,5 +159,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
         }
-    });
+    };
 });

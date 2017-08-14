@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     TouchableOpacity,
     View,
     ViewPropTypes
@@ -58,7 +57,7 @@ export default class LoadMorePosts extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -71,5 +70,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             color: theme.linkColor
         }
-    });
+    };
 });

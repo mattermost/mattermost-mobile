@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, Platform, StyleSheet, View} from 'react-native';
+import {Image, Platform, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -125,7 +125,7 @@ export default class ProfilePicture extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         statusWrapper: {
             position: 'absolute',
             bottom: 0,
@@ -154,5 +154,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         offlineIcon: {
             borderColor: '#bababa'
         }
-    });
+    };
 });

@@ -5,7 +5,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StyleSheet,
     Text,
     TouchableHighlight,
     View
@@ -245,7 +244,7 @@ class ChannelsList extends Component {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.sidebarBg,
             flex: 1
@@ -401,7 +400,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             textAlign: 'center',
             textAlignVertical: 'center'
         }
-    });
+    };
 });
 
 export default injectIntl(ChannelsList);

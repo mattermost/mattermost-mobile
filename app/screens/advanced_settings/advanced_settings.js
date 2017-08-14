@@ -7,7 +7,6 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
     TouchableOpacity,
-    StyleSheet,
     View
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -108,7 +107,7 @@ class AdvancedSettings extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
@@ -154,7 +153,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg
         }
-    });
+    };
 });
 
 export default injectIntl(AdvancedSettings);

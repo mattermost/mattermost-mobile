@@ -7,7 +7,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
     const codeFont = Platform.OS === 'ios' ? 'Courier New' : 'monospace';
 
-    return StyleSheet.create({
+    return {
         emph: {
             fontStyle: 'italic'
         },
@@ -69,11 +69,11 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         mention: {
             color: theme.linkColor
         }
-    });
+    };
 });
 
 export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         adjacentParagraph: {
             marginTop: 6
         },
@@ -93,7 +93,7 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             padding: 5
         }
-    });
+    };
 });
 
 export default {

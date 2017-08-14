@@ -40,7 +40,7 @@ DateHeader.propTypes = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
@@ -60,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             fontWeight: '600'
         }
-    });
+    };
 });
 
 export default DateHeader;

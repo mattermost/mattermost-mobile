@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     TouchableOpacity
 } from 'react-native';
@@ -47,7 +46,7 @@ export default class Reaction extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         count: {
             color: theme.linkColor,
             marginLeft: 6
@@ -66,5 +65,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 2,
             paddingHorizontal: 6
         }
-    });
+    };
 });

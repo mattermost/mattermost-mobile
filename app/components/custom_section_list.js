@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import {
     Platform,
     SectionList,
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -255,7 +254,7 @@ export default class CustomSectionList extends React.PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         listView: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
@@ -307,5 +306,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5)
         }
-    });
+    };
 });

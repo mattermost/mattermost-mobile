@@ -4,7 +4,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    StyleSheet,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -57,7 +56,7 @@ export default class CustomListRow extends React.PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flexDirection: 'row',
             height: 65,
@@ -91,5 +90,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: '#378FD2',
             borderWidth: 0
         }
-    });
+    };
 });

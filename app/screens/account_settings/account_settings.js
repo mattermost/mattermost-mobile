@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -108,7 +107,7 @@ class AccountSettings extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
@@ -154,7 +153,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg
         }
-    });
+    };
 });
 
 export default injectIntl(AccountSettings);

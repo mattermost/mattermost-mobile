@@ -4,7 +4,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -67,7 +66,7 @@ export default class SelectedUser extends React.PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
@@ -86,5 +85,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 13
         }
-    });
+    };
 });

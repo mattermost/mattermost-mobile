@@ -8,7 +8,6 @@ import {
     Keyboard,
     InteractionManager,
     Platform,
-    StyleSheet,
     TouchableWithoutFeedback,
     View,
     findNodeHandle
@@ -343,7 +342,7 @@ class CreateChannel extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -406,7 +405,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 }
             })
         }
-    });
+    };
 });
 
 export default injectIntl(CreateChannel);

@@ -8,7 +8,6 @@ import {
     Alert,
     Platform,
     ScrollView,
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -367,7 +366,7 @@ class ChannelInfo extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -395,7 +394,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
         }
-    });
+    };
 });
 
 export default injectIntl(ChannelInfo);

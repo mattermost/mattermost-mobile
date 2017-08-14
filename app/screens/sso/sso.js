@@ -7,7 +7,6 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
     Text,
-    StyleSheet,
     View,
     WebView
 } from 'react-native';
@@ -191,7 +190,7 @@ class SSO extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         errorContainer: {
             alignItems: 'center',
             flex: 1,
@@ -204,7 +203,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 23,
             paddingHorizontal: 30
         }
-    });
+    };
 });
 
 export default injectIntl(SSO);

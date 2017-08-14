@@ -7,7 +7,6 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Platform,
     InteractionManager,
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -330,7 +329,7 @@ class MoreChannels extends PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -346,7 +345,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 }
             })
         }
-    });
+    };
 });
 
 export default injectIntl(MoreChannels);

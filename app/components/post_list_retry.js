@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -49,7 +48,7 @@ export default class PostListRetry extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         buttonContainer: {
             alignItems: 'center',
             justifyContent: 'center'
@@ -80,5 +79,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 15,
             color: theme.linkColor
         }
-    });
+    };
 });

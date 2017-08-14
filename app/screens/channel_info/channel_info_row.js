@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Switch,
     Text,
     TouchableHighlight,
@@ -89,7 +88,7 @@ channelInfoRow.defaultProps = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.centerChannelBg,
             paddingHorizontal: 15,
@@ -113,7 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         rightIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.5)
         }
-    });
+    };
 });
 
 export default channelInfoRow;

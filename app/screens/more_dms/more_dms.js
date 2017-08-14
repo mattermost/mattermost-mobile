@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -426,7 +425,7 @@ class MoreDirectMessages extends PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -434,7 +433,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         searchContainer: {
             marginVertical: 5
         }
-    });
+    };
 });
 
 export default injectIntl(MoreDirectMessages);

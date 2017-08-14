@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -66,7 +65,7 @@ export default class UserListRow extends React.PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flexDirection: 'row',
             height: 65,
@@ -113,5 +112,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: '#378FD2',
             borderWidth: 0
         }
-    });
+    };
 });

@@ -8,7 +8,6 @@ import {
     Keyboard,
     Platform,
     ScrollView,
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -573,7 +572,7 @@ class AccountNotifications extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         wrapper: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -596,7 +595,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollViewContent: {
             paddingBottom: 30
         }
-    });
+    };
 });
 
 export default injectIntl(AccountNotifications);

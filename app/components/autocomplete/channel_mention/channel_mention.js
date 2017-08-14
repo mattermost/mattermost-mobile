@@ -5,7 +5,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     ListView,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -238,7 +237,7 @@ export default class ChannelMention extends Component {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         section: {
             justifyContent: 'center',
             paddingLeft: 8,
@@ -291,5 +290,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             opacity: 0.6
         }
-    });
+    };
 });

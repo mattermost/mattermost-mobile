@@ -234,7 +234,7 @@ export default class SelectTeam extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.centerChannelBg,
             flex: 1
@@ -297,5 +297,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12
         }
-    });
+    };
 });

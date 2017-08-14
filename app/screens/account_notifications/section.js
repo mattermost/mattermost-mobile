@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -12,7 +11,7 @@ import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             marginTop: 30
         },
@@ -35,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
         }
-    });
+    };
 });
 
 function section(props) {

@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Linking,
     ScrollView,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -282,7 +281,7 @@ export default class About extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         wrapper: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -366,5 +365,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 11,
             lineHeight: 13
         }
-    });
+    };
 });

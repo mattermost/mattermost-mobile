@@ -6,7 +6,6 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
     Platform,
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -210,7 +209,7 @@ class EditPost extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
@@ -239,7 +238,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 15,
             textAlignVertical: 'top'
         }
-    });
+    };
 });
 
 export default injectIntl(EditPost);

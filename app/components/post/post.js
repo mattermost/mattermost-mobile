@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    StyleSheet,
     View,
     ViewPropTypes
 } from 'react-native';
@@ -323,7 +322,7 @@ class Post extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row'
@@ -368,7 +367,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         highlight: {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5)
         }
-    });
+    };
 });
 
 export default injectIntl(Post);

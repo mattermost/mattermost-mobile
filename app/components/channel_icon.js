@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -127,7 +126,7 @@ export default class ChannelIcon extends React.PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             marginRight: 12,
             alignItems: 'center'
@@ -174,5 +173,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         groupInfo: {
             color: theme.centerChannelColor
         }
-    });
+    };
 });

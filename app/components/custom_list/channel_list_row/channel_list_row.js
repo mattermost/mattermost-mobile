@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -68,7 +67,7 @@ export default class ChannelListRow extends React.PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         titleContainer: {
             alignItems: 'center',
             flexDirection: 'row'
@@ -91,5 +90,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5)
         }
-    });
+    };
 });
