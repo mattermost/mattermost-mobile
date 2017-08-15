@@ -14,6 +14,7 @@ import {
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_LINES = 4;
@@ -30,9 +31,9 @@ class MarkdownCodeBlock extends React.PureComponent {
 
     static defaultProps = {
         language: ''
-    }
+    };
 
-    handlePress = () => {
+    handlePress = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         const languageDisplayName = getDisplayNameForLanguage(this.props.language);
@@ -69,7 +70,7 @@ class MarkdownCodeBlock extends React.PureComponent {
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
-    }
+    });
 
     trimContent = (content) => {
         const lines = content.split('\n');
@@ -86,7 +87,7 @@ class MarkdownCodeBlock extends React.PureComponent {
             content,
             numberOfLines
         };
-    }
+    };
 
     render() {
         const style = getStyleSheet(this.props.theme);
