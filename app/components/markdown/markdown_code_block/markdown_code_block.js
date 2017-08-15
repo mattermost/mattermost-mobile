@@ -108,18 +108,11 @@ class MarkdownCodeBlock extends React.PureComponent {
 
         const {content, numberOfLines} = this.trimContent(this.props.content);
 
-        const lineNumbers = [];
-        for (let i = 0; i < Math.min(numberOfLines, MAX_LINES); i++) {
+        let lineNumbers = '1';
+        for (let i = 1; i < Math.min(numberOfLines, MAX_LINES); i++) {
             const line = (i + 1).toString();
 
-            lineNumbers.push(
-                <Text
-                    key={line}
-                    style={style.lineNumbersText}
-                >
-                    {line}
-                </Text>
-            );
+            lineNumbers += '\n' + line;
         }
 
         let plusMoreLines = null;
@@ -140,7 +133,9 @@ class MarkdownCodeBlock extends React.PureComponent {
             <TouchableOpacity onPress={this.handlePress}>
                 <View style={style.container}>
                     <View style={style.lineNumbers}>
-                        {lineNumbers}
+                        <Text style={style.lineNumbersText}>
+                            {lineNumbers}
+                        </Text>
                     </View>
                     <View style={style.rightColumn}>
                         <View style={style.code}>

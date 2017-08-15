@@ -32,18 +32,11 @@ export default class Code extends React.PureComponent {
         const style = getStyleSheet(this.props.theme);
 
         const numberOfLines = this.countLines(this.props.content);
-        const lineNumbers = [];
-        for (let i = 0; i < numberOfLines; i++) {
+        let lineNumbers = '1';
+        for (let i = 1; i < numberOfLines; i++) {
             const line = (i + 1).toString();
 
-            lineNumbers.push(
-                <Text
-                    key={line}
-                    style={style.lineNumbersText}
-                >
-                    {line}
-                </Text>
-            );
+            lineNumbers += '\n' + line;
         }
 
         let lineNumbersStyle;
@@ -59,7 +52,9 @@ export default class Code extends React.PureComponent {
                 contentContainerStyle={style.container}
             >
                 <View style={lineNumbersStyle}>
-                    {lineNumbers}
+                    <Text style={style.lineNumbersText}>
+                        {lineNumbers}
+                    </Text>
                 </View>
                 <ScrollView
                     style={style.codeContainer}
@@ -91,8 +86,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: StyleSheet.hairlineWidth,
             flexDirection: 'column',
             justifyContent: 'flex-start',
-            paddingVertical: 4,
-            paddingHorizontal: 6
+            paddingHorizontal: 6,
+            paddingVertical: 4
         },
         lineNumbersRight: {
             alignItems: 'flex-end'
