@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     TouchableHighlight,
     Text,
     View
@@ -112,7 +111,7 @@ export default class ChannelItem extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             flexDirection: 'row',
@@ -160,5 +159,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.mentionColor,
             fontSize: 10
         }
-    });
+    };
 });

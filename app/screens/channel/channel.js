@@ -8,7 +8,6 @@ import {
     Dimensions,
     NetInfo,
     Platform,
-    StyleSheet,
     View
 } from 'react-native';
 
@@ -250,7 +249,7 @@ class Channel extends PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         headerContainer: {
             flex: 1,
             position: 'absolute'
@@ -292,7 +291,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             paddingBottom: 0
         }
-    });
+    };
 });
 
 export default injectIntl(Channel);

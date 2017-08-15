@@ -8,7 +8,6 @@ import {
     InteractionManager,
     Linking,
     Platform,
-    StyleSheet,
     View
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -259,7 +258,7 @@ class Settings extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         leftComponent: {
             alignItems: 'center',
             flex: 1,
@@ -287,7 +286,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 }
             })
         }
-    });
+    };
 });
 
 export default injectIntl(Settings);

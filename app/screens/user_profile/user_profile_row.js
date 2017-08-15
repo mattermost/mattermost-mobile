@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Switch,
     Text,
     TouchableHighlight,
@@ -16,7 +15,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: changeOpacity(theme.centerChannelBg, 0.7),
             paddingHorizontal: 15,
@@ -50,7 +49,7 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         wrapper: {
             backgroundColor: '#ddd'
         }
-    });
+    };
 });
 
 function createTouchableComponent(children, action) {

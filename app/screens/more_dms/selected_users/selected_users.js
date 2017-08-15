@@ -3,7 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import SelectedUser from 'app/screens/more_dms/selected_users/selected_user';
@@ -115,7 +115,7 @@ export default class SelectedUsers extends React.PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             marginLeft: 5,
             marginBottom: 5
@@ -132,5 +132,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginTop: 10,
             marginBottom: 2
         }
-    });
+    };
 });

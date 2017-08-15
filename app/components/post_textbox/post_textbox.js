@@ -8,7 +8,6 @@ import {
     BackHandler,
     Keyboard,
     Platform,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -527,7 +526,7 @@ class PostTextbox extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         buttonContainer: {
             height: Platform.select({
                 ios: 34,
@@ -609,7 +608,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             backgroundColor: 'transparent'
         }
-    });
+    };
 });
 
 export default injectIntl(PostTextbox, {withRef: true});

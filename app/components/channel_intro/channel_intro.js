@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -301,7 +300,6 @@ class ChannelIntro extends PureComponent {
 
         case General.PRIVATE_CHANNEL:
             return this.buildPrivateChannelContent();
-
         }
     };
 
@@ -327,7 +325,7 @@ class ChannelIntro extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         channelTitle: {
             color: theme.centerChannelColor,
             fontSize: 19,
@@ -368,7 +366,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexWrap: 'wrap',
             justifyContent: 'flex-start'
         }
-    });
+    };
 });
 
 export default injectIntl(ChannelIntro);

@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {
     PanResponder,
     Platform,
-    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -144,7 +143,7 @@ class ChannelDrawerButton extends PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             width: 40
         },
@@ -180,7 +179,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.mentionColor,
             fontSize: 10
         }
-    });
+    };
 });
 
 function mapStateToProps(state) {

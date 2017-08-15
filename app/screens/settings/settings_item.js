@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -104,7 +104,7 @@ export default class SettingsItem extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.centerChannelBg,
             height: 51,
@@ -139,5 +139,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 1,
             marginHorizontal: 16
         }
-    });
+    };
 });

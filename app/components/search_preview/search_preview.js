@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Dimensions,
     Platform,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -158,7 +157,7 @@ export default class SearchPreview extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             position: 'absolute',
             backgroundColor: changeOpacity('#000', 0.3),
@@ -230,5 +229,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             textAlignVertical: 'center'
         }
-    });
+    };
 });

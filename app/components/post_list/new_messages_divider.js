@@ -36,7 +36,7 @@ NewMessagesDivider.propTypes = {
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
@@ -54,7 +54,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             color: theme.newMessageSeparator
         }
-    });
+    };
 });
 
 export default NewMessagesDivider;

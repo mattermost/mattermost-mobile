@@ -7,7 +7,6 @@ import {
     InteractionManager,
     FlatList,
     Platform,
-    StyleSheet,
     Text,
     TouchableHighlight,
     View
@@ -43,8 +42,7 @@ class TeamsList extends PureComponent {
     constructor(props) {
         super(props);
 
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).
-        then((source) => {
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
@@ -218,7 +216,7 @@ class TeamsList extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             backgroundColor: theme.sidebarBg,
             flex: 1
@@ -328,7 +326,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.mentionColor,
             fontSize: 10
         }
-    });
+    };
 });
 
 export default injectIntl(TeamsList);

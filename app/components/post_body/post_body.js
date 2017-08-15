@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StyleSheet,
     TouchableHighlight,
     TouchableOpacity,
     View
@@ -283,7 +282,7 @@ class PostBody extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         message: {
             color: theme.centerChannelColor,
             fontSize: 15
@@ -298,7 +297,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         systemMessage: {
             opacity: 0.6
         }
-    });
+    };
 });
 
 export default injectIntl(PostBody);

@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Image,
     Linking,
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -335,7 +334,7 @@ export default class SlackAttachment extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.15),
             borderWidth: 1,
@@ -407,5 +406,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             height: 50
         }
-    });
+    };
 });

@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     View
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -76,7 +75,7 @@ channelLoader.propTypes = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         avatar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderRadius: 16,
@@ -102,5 +101,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 12,
             flex: 1
         }
-    });
+    };
 });

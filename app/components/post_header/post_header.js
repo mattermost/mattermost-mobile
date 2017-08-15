@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -187,7 +186,7 @@ export default class PostHeader extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         commentedOn: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             marginBottom: 3,
@@ -242,5 +241,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 5,
             marginBottom: 3
         }
-    });
+    };
 });

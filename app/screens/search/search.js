@@ -530,7 +530,7 @@ class Search extends Component {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: Dimensions.get('window').width,
@@ -617,7 +617,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         searching: {
             marginTop: 25
         }
-    });
+    };
 });
 
 export default injectIntl(Search);

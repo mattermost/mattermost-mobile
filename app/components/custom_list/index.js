@@ -2,7 +2,7 @@
 // See License.txt for license information.
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ListView, Platform, StyleSheet, Text, View} from 'react-native';
+import {ListView, Platform, Text, View} from 'react-native';
 
 import Loading from 'app/components/loading';
 import FormattedText from 'app/components/formatted_text';
@@ -239,7 +239,7 @@ export default class CustomList extends PureComponent {
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         listView: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
@@ -285,5 +285,5 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5)
         }
-    });
+    };
 });

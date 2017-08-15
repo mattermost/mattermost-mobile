@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     ScrollView,
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -146,7 +145,7 @@ class UserProfile extends PureComponent {
 }
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1
         },
@@ -185,7 +184,7 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 15
         }
-    });
+    };
 });
 
 export default injectIntl(UserProfile);

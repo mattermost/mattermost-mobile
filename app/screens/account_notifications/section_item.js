@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     Switch,
     TouchableWithoutFeedback,
     View
@@ -21,7 +20,7 @@ const ActionTypes = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flexDirection: 'row',
             alignItems: 'center'
@@ -35,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         wrapper: {
             paddingHorizontal: 15
         }
-    });
+    };
 });
 
 function sectionItem(props) {

@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text} from 'react-native';
+import {Text} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import {getTheme} from 'app/selectors/preferences';
@@ -51,11 +51,11 @@ class ErrorText extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         errorLabel: {
             color: (theme.errorTextColor || '#DA4A4A')
         }
-    });
+    };
 });
 
 function mapStateToProps(state, ownProps) {

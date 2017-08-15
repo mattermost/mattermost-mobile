@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet} from 'react-native';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
@@ -91,10 +90,10 @@ export default class Thread extends PureComponent {
 }
 
 const getStyle = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
         }
-    });
+    };
 });

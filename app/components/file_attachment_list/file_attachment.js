@@ -6,8 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableOpacity,
-    View,
-    StyleSheet
+    View
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -100,7 +99,7 @@ export default class FileAttachment extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         downloadIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
             marginRight: 5
@@ -135,5 +134,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2)
         }
-    });
+    };
 });
