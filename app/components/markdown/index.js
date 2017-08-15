@@ -201,15 +201,15 @@ export default class Markdown extends PureComponent {
 
     renderCodeBlock = (props) => {
         // These sometimes include a trailing newline
-        const contents = props.literal.replace(/\n$/, '');
+        const content = props.literal.replace(/\n$/, '');
 
         return (
             <MarkdownCodeBlock
-                blockStyle={this.props.blockStyles.codeBlock}
-                textStyle={concatStyles(this.props.baseTextStyle, this.props.textStyles.codeBlock)}
-            >
-                {contents}
-            </MarkdownCodeBlock>
+                navigator={this.props.navigator}
+                content={content}
+                language={props.language}
+                textStyle={this.props.textStyles.codeBlock}
+            />
         );
     }
 
