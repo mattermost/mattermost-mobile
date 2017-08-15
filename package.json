@@ -39,6 +39,7 @@
     "react-native-swiper": "1.5.4",
     "react-native-tooltip": "enahum/react-native-tooltip",
     "react-native-vector-icons": "4.1.1",
+    "react-native-web-image": "0.0.4",
     "react-redux": "5.0.4",
     "redux": "3.6.0",
     "redux-batched-actions": "0.2.0",

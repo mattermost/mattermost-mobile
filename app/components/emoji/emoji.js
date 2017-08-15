@@ -3,7 +3,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Image, Text} from 'react-native';
+import {Image, Platform, Text} from 'react-native';
+import WebImage from 'react-native-web-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
@@ -49,8 +50,13 @@ export default class Emoji extends React.PureComponent {
             return <Text style={textStyle}>{literal}</Text>;
         }
 
+        let ImageComponent = WebImage;
+        if (Platform.OS === 'android') {
+            ImageComponent = Image;
+        }
+
         return (
-            <Image
+            <ImageComponent
                 style={{width: size, height: size, padding}}
                 source={{uri: imageUrl}}
             />

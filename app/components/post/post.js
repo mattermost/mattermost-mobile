@@ -28,6 +28,7 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 class Post extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addReaction: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
@@ -145,6 +146,32 @@ class Post extends PureComponent {
             });
         });
     };
+
+    handleAddReaction = () => {
+        const {intl, navigator, post, theme} = this.props;
+
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
+        then((source) => {
+            navigator.showModal({
+                screen: 'EmojiPicker',
+                title: intl.formatMessage({id: 'post_info.mobile.add_reaction', defaultMessage: 'Add Reaction'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg
+                },
+                passProps: {
+                    post,
+                    closeButton: source,
+                    onEmojiPress: (emoji) => {
+                        this.props.actions.addReaction(post.id, emoji);
+                    }
+                }
+            });
+        });
+    }
 
     handleFailedPostPress = () => {
         const options = {
@@ -304,6 +331,7 @@ class Post extends PureComponent {
                             canEdit={this.state.canEdit}
                             isSearchResult={isSearchResult}
                             navigator={this.props.navigator}
+                            onAddReaction={this.handleAddReaction}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
                             onPostEdit={this.handlePostEdit}

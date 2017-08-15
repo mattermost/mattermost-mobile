@@ -43,6 +43,7 @@ class PostBody extends PureComponent {
         isSystemMessage: PropTypes.bool,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
+        onAddReaction: PropTypes.func,
         onFailedPostPress: PropTypes.func,
         onPostDelete: PropTypes.func,
         onPostEdit: PropTypes.func,
@@ -55,6 +56,7 @@ class PostBody extends PureComponent {
 
     static defaultProps = {
         fileIds: [],
+        onAddReaction: emptyFunction,
         onFailedPostPress: emptyFunction,
         onPostDelete: emptyFunction,
         onPostEdit: emptyFunction,
@@ -192,6 +194,11 @@ class PostBody extends PureComponent {
             if (canDelete && !hasBeenDeleted) {
                 actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
             }
+
+            actions.push({
+                text: formatMessage({id: 'post_info.mobile.add_reaction', defaultMessage: 'Add Reaction'}),
+                onPress: this.props.onAddReaction
+            });
         }
 
         let messageComponent;
