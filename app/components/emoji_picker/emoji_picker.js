@@ -184,6 +184,7 @@ class EmojiPicker extends PureComponent {
                 </View>
                 <View style={styles.container}>
                     <SectionList
+                        showsVerticalScrollIndicator={false}
                         style={styles.listView}
                         sections={data}
                         renderSectionHeader={this.renderSectionHeader}
