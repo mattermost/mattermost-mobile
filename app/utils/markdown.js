@@ -5,7 +5,7 @@ import {Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
-    const codeFont = Platform.OS === 'ios' ? 'Courier New' : 'monospace';
+    const codeFont = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 
     return {
         emph: {
@@ -58,10 +58,8 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         code: {
             alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            fontFamily: codeFont,
-            paddingHorizontal: 4,
-            paddingVertical: 2
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
+            fontFamily: codeFont
         },
         codeBlock: {
             fontFamily: codeFont
@@ -78,7 +76,7 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
             marginTop: 6
         },
         codeBlock: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
             borderRadius: 4,
             paddingHorizontal: 4,
             paddingVertical: 2

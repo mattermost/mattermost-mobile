@@ -236,10 +236,13 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderListItem = ({children, ...otherProps}) => {
+    renderListItem = ({children, context, ...otherProps}) => {
+        const level = context.filter((type) => type === 'list').length;
+
         return (
             <MarkdownListItem
                 bulletStyle={this.props.baseTextStyle}
+                level={level}
                 {...otherProps}
             >
                 {children}
