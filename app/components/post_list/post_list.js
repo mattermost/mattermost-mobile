@@ -176,7 +176,6 @@ export default class PostList extends PureComponent {
                 {...refreshControl}
                 renderItem={this.renderItem}
                 theme={theme}
-                keyboardShouldPersistTaps='handled'
             />
         );
     }
