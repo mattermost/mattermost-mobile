@@ -147,6 +147,11 @@ class Post extends PureComponent {
         });
     };
 
+    handleAddReactionToPost = (emoji) => {
+        const {post} = this.props;
+        this.props.actions.addReaction(post.id, emoji);
+    }
+
     handleAddReaction = () => {
         const {intl, navigator, post, theme} = this.props;
 
@@ -154,7 +159,7 @@ class Post extends PureComponent {
         then((source) => {
             navigator.showModal({
                 screen: 'EmojiPicker',
-                title: intl.formatMessage({id: 'post_info.mobile.add_reaction', defaultMessage: 'Add Reaction'}),
+                title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                 animated: true,
                 navigatorStyle: {
                     navBarTextColor: theme.sidebarHeaderTextColor,
@@ -165,9 +170,7 @@ class Post extends PureComponent {
                 passProps: {
                     post,
                     closeButton: source,
-                    onEmojiPress: (emoji) => {
-                        this.props.actions.addReaction(post.id, emoji);
-                    }
+                    onEmojiPress: this.handleAddReactionToPost
                 }
             });
         });

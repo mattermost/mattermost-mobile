@@ -1868,6 +1868,7 @@
   "mobile.post.failed_delete": "Delete Message",
   "mobile.post.failed_retry": "Try Again",
   "mobile.post.failed_title": "Unable to send your message",
+  "mobile.post_info.add_reaction": "Add Reaction",
   "mobile.post.retry": "Refresh",
   "mobile.request.invalid_response": "Received invalid response from the server.",
   "mobile.routes.channelInfo": "Info",
