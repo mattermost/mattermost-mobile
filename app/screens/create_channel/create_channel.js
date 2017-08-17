@@ -248,7 +248,7 @@ class CreateChannel extends PureComponent {
                             {displayError}
                             <View>
                                 <FormattedText
-                                    style={[style.title, {marginTop: (error ? 10 : 0)}]}
+                                    style={[style.title, {marginTop: (error ? 20 : 0)}]}
                                     id='channel_modal.name'
                                     defaultMessage='Name'
                                 />
