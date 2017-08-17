@@ -7,13 +7,12 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
     SectionList,
-    StyleSheet,
-    Text,
     TouchableOpacity,
     View
 } from 'react-native';
 
 import Emoji from 'app/components/emoji';
+import FormattedText from 'app/components/formatted_text';
 import SearchBar from 'app/components/search_bar';
 import {emptyFunction} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -48,37 +47,51 @@ class EmojiPicker extends PureComponent {
         };
     }
 
-    changeSearchTerm = (text) => this.setState({searchTerm: text})
-
-    cancelSearch = () => this.setState({searchTerm: ''})
-
-    buildData = () => {
-        const {emojis, searchTerm} = this.state;
-
-        const nextEmojis = emojis.map((section) => {
-            const {title, data} = section;
-
-            const nextData = data.reduce((s, emoji) => {
-                if (searchTerm && emoji.includes(searchTerm.toLowerCase())) {
-                    s[0].items.push(emoji);
-                } else if (!searchTerm) {
-                    s[0].items.push(emoji);
-                }
-
-                return s;
-            }, [{
-                key: `${title}-emojis`,
-                items: []
-            }]);
-
-            return {
-                key: title,
-                title,
-                data: nextData
-            };
+    changeSearchTerm = (text) => {
+        this.setState({
+            searchTerm: text
         });
 
-        return nextEmojis.filter((emojiSection) => emojiSection.data[0].items.length);
+        clearTimeout(this.searchTermTimeout);
+        const timeout = text ? 75 : 0;
+        this.searchTermTimeout = setTimeout(() => {
+            const emojis = this.searchEmojis(text);
+            this.setState({
+                emojis
+            });
+        }, timeout);
+    };
+
+    cancelSearch = () => {
+        this.setState({
+            emojis: this.props.emojis,
+            searchTerm: ''
+        });
+    }
+
+    searchEmojis = (searchTerm) => {
+        const {emojis} = this.props;
+
+        const nextEmojis = [];
+
+        emojis.forEach((section) => {
+            const {data, ...otherProps} = section;
+            const {key, items} = data[0];
+
+            const nextData = {
+                key,
+                items: items.filter((item) => item.aliases.includes(searchTerm.toLowerCase()))
+            };
+
+            if (nextData.items.length) {
+                nextEmojis.push({
+                    ...otherProps,
+                    data: [nextData]
+                });
+            }
+        });
+
+        return nextEmojis;
     }
 
     renderSectionHeader = ({section}) => {
@@ -87,7 +100,11 @@ class EmojiPicker extends PureComponent {
 
         return (
             <View key={section.title}>
-                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <FormattedText
+                    style={styles.sectionTitle}
+                    id={section.id}
+                    defaultMessage={section.defaultMessage}
+                />
             </View>
         );
     }
@@ -111,14 +128,14 @@ class EmojiPicker extends PureComponent {
 
                     return (
                         <TouchableOpacity
-                            key={emoji}
+                            key={emoji.name}
                             style={style}
                             onPress={() => {
-                                this.props.onEmojiPress(emoji);
+                                this.props.onEmojiPress(emoji.name);
                             }}
                         >
                             <Emoji
-                                emojiName={emoji}
+                                emojiName={emoji.name}
                                 size={EMOJI_SIZE}
                             />
                         </TouchableOpacity>
@@ -153,11 +170,9 @@ class EmojiPicker extends PureComponent {
 
     render() {
         const {intl, theme} = this.props;
-        const {searchTerm} = this.state;
+        const {emojis, searchTerm} = this.state;
         const {formatMessage} = intl;
         const styles = getStyleSheetFromTheme(theme);
-
-        const data = this.buildData();
 
         return (
             <View style={styles.wrapper}>
@@ -186,7 +201,7 @@ class EmojiPicker extends PureComponent {
                     <SectionList
                         showsVerticalScrollIndicator={false}
                         style={styles.listView}
-                        sections={data}
+                        sections={emojis}
                         renderSectionHeader={this.renderSectionHeader}
                         renderItem={this.renderItem}
                         removeClippedSubviews={true}
@@ -198,7 +213,7 @@ class EmojiPicker extends PureComponent {
 }
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         columnStyle: {
             alignSelf: 'stretch',
             flexDirection: 'row',
@@ -243,7 +258,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         wrapper: {
             flex: 1
         }
-    });
+    };
 });
 
 export default injectIntl(EmojiPicker);

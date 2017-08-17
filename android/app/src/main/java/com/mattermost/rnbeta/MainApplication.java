@@ -59,7 +59,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNNotificationsPackage(this),
             new LocalAuthPackage(),
             new JailMonkeyPackage(),
-            new MattermostManagedPackage()
+            new MattermostManagedPackage(),
             new WebImagePackage()
     );
   }

@@ -158,7 +158,7 @@ class Post extends PureComponent {
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
         then((source) => {
             navigator.showModal({
-                screen: 'EmojiPicker',
+                screen: 'AddReaction',
                 title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                 animated: true,
                 navigatorStyle: {

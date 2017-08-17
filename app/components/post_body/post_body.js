@@ -196,7 +196,7 @@ class PostBody extends PureComponent {
             }
 
             actions.push({
-                text: formatMessage({id: 'post_info.mobile.add_reaction', defaultMessage: 'Add Reaction'}),
+                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                 onPress: this.props.onAddReaction
             });
         }

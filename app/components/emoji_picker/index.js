@@ -11,39 +11,94 @@ import {CategoryNames, Emojis, EmojiIndicesByCategory} from 'app/utils/emojis';
 
 import EmojiPicker from './emoji_picker';
 
+const categoryToI18n = {
+    activity: {
+        id: 'mobile.emoji_picker.activity',
+        defaultMessage: 'ACTIVITY'
+    },
+    custom: {
+        id: 'mobile.emoji_picker.custom',
+        defaultMessage: 'CUSTOM'
+    },
+    flags: {
+        id: 'mobile.emoji_picker.flags',
+        defaultMessage: 'FLAGS'
+    },
+    foods: {
+        id: 'mobile.emoji_picker.foods',
+        defaultMessage: 'FOODS'
+    },
+    nature: {
+        id: 'mobile.emoji_picker.nature',
+        defaultMessage: 'NATURE'
+    },
+    objects: {
+        id: 'mobile.emoji_picker.objects',
+        defaultMessage: 'OBJECTS'
+    },
+    people: {
+        id: 'mobile.emoji_picker.people',
+        defaultMessage: 'PEOPLE'
+    },
+    places: {
+        id: 'mobile.emoji_picker.places',
+        defaultMessage: 'PLACES'
+    },
+    symbols: {
+        id: 'mobile.emoji_picker.symbols',
+        defaultMessage: 'SYMBOLS'
+    }
+};
+
 function fillEmoji(indice) {
-    return Emojis[indice].aliases[0];
+    const emoji = Emojis[indice];
+    return {
+        name: emoji.aliases[0],
+        aliases: emoji.aliases.join(',')
+    };
 }
 
-const getEmojisByName = createSelector(
+const getEmojiName = createSelector(
     getCustomEmojisByName,
     (customEmojis) => {
         const emoticons = CategoryNames.filter((name) => name !== 'custom').map((category) => {
             const section = {
-                title: category.toUpperCase(),
-                data: EmojiIndicesByCategory.get(category).map(fillEmoji)
+                ...categoryToI18n[category],
+                key: category,
+                data: [{
+                    key: `${category}-emojis`,
+                    items: EmojiIndicesByCategory.get(category).map(fillEmoji)
+                }]
             };
 
             return section;
         });
 
-        const customEmojisSection = {
-            title: 'Custom',
-            data: []
+        const customEmojiData = {
+            key: 'custom-emojis',
+            title: 'CUSTOM',
+            items: []
         };
 
-        for (const [key] of [...customEmojis]) {
-            customEmojisSection.data.push(key);
+        for (const [key] of customEmojis) {
+            customEmojiData.items.push({
+                name: key,
+                aliases: key
+            });
         }
 
-        emoticons.push(customEmojisSection);
+        emoticons.push({
+            ...categoryToI18n.custom,
+            key: 'custom',
+            data: [customEmojiData]
+        });
 
         return emoticons;
     }
 );
 
 function mapStateToProps(state) {
-    const emojis = getEmojisByName(state);
+    const emojis = getEmojiName(state);
 
     return {
         emojis,

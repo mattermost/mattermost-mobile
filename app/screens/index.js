@@ -54,7 +54,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapWithContextProvider(About), store, Provider);
     Navigation.registerComponent('AccountSettings', () => wrapWithContextProvider(AccountSettings), store, Provider);
     Navigation.registerComponent('AccountNotifications', () => wrapWithContextProvider(AccountNotifications), store, Provider);
-    Navigation.registerComponent('EmojiPicker', () => wrapWithContextProvider(AddReaction), store, Provider);
+    Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(AddReaction), store, Provider);
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(AdvancedSettings), store, Provider);
     Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel), store, Provider);
     Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(ChannelAddMembers), store, Provider);
