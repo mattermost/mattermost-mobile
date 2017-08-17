@@ -232,7 +232,7 @@ export default class Mattermost {
 
         let authNeeded = false;
         let blurApplicationScreen = false;
-        let jailbrakeDetection = false;
+        let jailbreakProtection = false;
         let vendor = null;
         let serverUrl = null;
         let username = null;
@@ -243,7 +243,7 @@ export default class Mattermost {
                 this.mdmEnabled = true;
                 authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
                 blurApplicationScreen = config.blurApplicationScreen && config.blurApplicationScreen === 'true';
-                jailbrakeDetection = config.jailbrakeDetection && config.jailbrakeDetection === 'true';
+                jailbreakProtection = config.jailbreakProtection && config.jailbreakProtection === 'true';
                 vendor = config.vendor || 'Mattermost';
 
                 if (!state.entities.general.credentials.token) {
@@ -260,7 +260,7 @@ export default class Mattermost {
         }
 
         if (this.mdmEnabled) {
-            if (jailbrakeDetection) {
+            if (jailbreakProtection) {
                 const isTrusted = mattermostManaged.isTrustedDevice();
 
                 if (!isTrusted) {

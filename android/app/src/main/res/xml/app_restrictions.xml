@@ -10,7 +10,7 @@
             android:restrictionType="string"
             android:defaultValue="false" />
     <restriction
-            android:key="jailbrakeDetection"
+            android:key="jailbreakProtection"
             android:restrictionType="string"
             android:defaultValue="false" />
     <restriction
