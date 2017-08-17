@@ -1530,7 +1530,7 @@ commonmark-react-renderer@hmhealey/commonmark-react-renderer#c5d00343664c89da40d
     xss-filters "^1.2.6"
 
 commonmark@hmhealey/commonmark.js#9f33c90b5c82adfef30b87c7cd15aea2e2764b51:
-  version "0.27.0"
+  version "0.28.0"
   resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/9f33c90b5c82adfef30b87c7cd15aea2e2764b51"
   dependencies:
     entities "~ 1.1.1"
@@ -3656,7 +3656,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/e5297912f528b822b61c61a36735fb4d6699d08d"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/3bab6079caf711debd30eed5fc5283b6f97c1aeb"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -4509,9 +4509,9 @@ react-native-linear-gradient@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-native-linear-gradient/-/react-native-linear-gradient-2.0.0.tgz#7442c00e1fcd9fca329119dcbaf744d12bcd1b5a"
 
-react-native-local-auth@1.4.1:
+react-native-local-auth@enahum/react-native-local-auth.git:
   version "1.4.1"
-  resolved "https://registry.yarnpkg.com/react-native-local-auth/-/react-native-local-auth-1.4.1.tgz#5215fcc3421e94078da2318127d7b4d21f0bd24f"
+  resolved "https://codeload.github.com/enahum/react-native-local-auth/tar.gz/ee2e53bcfe3fd0c49c28ff48f05cc19d5b56668c"
 
 react-native-mock@0.3.1:
   version "0.3.1"

@@ -82,7 +82,7 @@ RCT_EXPORT_METHOD(quitApp)
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
   if(response) {
-    NSString *copyPasteProtection = response[@"CopyAndPasteProtection"];
+    NSString *copyPasteProtection = response[@"copyAndPasteProtection"];
     BOOL prevent = action == @selector(paste:) ||
     action == @selector(copy:) ||
     action == @selector(cut:) ||

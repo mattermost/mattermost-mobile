@@ -29,7 +29,7 @@
     "react-native-image-picker": "jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4",
     "react-native-keyboard-aware-scroll-view": "0.2.8",
     "react-native-linear-gradient": "2.0.0",
-    "react-native-local-auth": "1.4.1",
+    "react-native-local-auth": "enahum/react-native-local-auth.git",
     "react-native-navigation": "1.1.131",
     "react-native-notifications": "enahum/react-native-notifications.git",
     "react-native-orientation": "enahum/react-native-orientation.git",

@@ -18,14 +18,6 @@ export default {
     authenticate: LocalAuth.authenticate,
     blurAppScreen: BlurAppScreen.enabled,
     getConfig: MattermostManaged.getConfig,
-    hasTouchID: async () => {
-        try {
-            await LocalAuth.hasTouchID();
-            return true;
-        } catch (err) {
-            return false;
-        }
-    },
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();

@@ -72,6 +72,7 @@ export default class Mattermost {
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
         EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetDisplayName);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.restartApp);
+
         mattermostManaged.addEventListener('managedConfigDidChange', this.handleManagedConfig);
 
         this.handleAppStateChange(AppState.currentState);
@@ -157,19 +158,19 @@ export default class Mattermost {
         const {dispatch, getState} = store;
         const isActive = appState === 'active';
         setAppState(isActive)(dispatch, getState);
-
         try {
-            const config = await mattermostManaged.getConfig();
-            const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
-
-            if (authNeeded) {
-                if (!isActive && !this.inBackgroundSince) {
-                    this.inBackgroundSince = Date.now();
-                } else if (isActive && this.inBackgroundSince && (Date.now() - this.inBackgroundSince) >= AUTHENTICATION_TIMEOUT) {
-                    this.inBackgroundSince = null;
-                    const authenticated = await this.handleAuthentication(config.vendor);
-                    if (!authenticated) {
-                        mattermostManaged.quitApp();
+            if (!isActive && !this.inBackgroundSince) {
+                this.inBackgroundSince = Date.now();
+            } else if (isActive && this.inBackgroundSince && (Date.now() - this.inBackgroundSince) >= AUTHENTICATION_TIMEOUT) {
+                this.inBackgroundSince = null;
+                if (this.mdmEnabled) {
+                    const config = await mattermostManaged.getConfig();
+                    const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
+                    if (authNeeded) {
+                        const authenticated = await this.handleAuthentication(config.vendor);
+                        if (!authenticated) {
+                            mattermostManaged.quitApp();
+                        }
                     }
                 }
             }
@@ -180,6 +181,7 @@ export default class Mattermost {
 
     handleAuthentication = async (vendor) => {
         const isSecured = await mattermostManaged.isDeviceSecure();
+
         const intl = this.getIntl();
         if (isSecured) {
             try {
@@ -193,7 +195,6 @@ export default class Mattermost {
                 });
             } catch (err) {
                 mattermostManaged.quitApp();
-
                 return false;
             }
         }
@@ -229,61 +230,71 @@ export default class Mattermost {
         const {dispatch, getState} = store;
         const state = getState();
 
-        let mdmEnabled = true;
         let authNeeded = false;
         let blurApplicationScreen = false;
+        let jailbrakeDetection = false;
         let vendor = null;
         let serverUrl = null;
         let username = null;
 
         try {
             const config = await mattermostManaged.getConfig();
-            mdmEnabled = true;
-            console.log('USER DEFAULTS DATA', config); //eslint-disable-line no-console
-            authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
-            blurApplicationScreen = config.blurApplicationScreen && config.blurApplicationScreen === 'true';
-            vendor = config.vendor || 'Mattermost';
+            if (config) {
+                this.mdmEnabled = true;
+                authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
+                blurApplicationScreen = config.blurApplicationScreen && config.blurApplicationScreen === 'true';
+                jailbrakeDetection = config.jailbrakeDetection && config.jailbrakeDetection === 'true';
+                vendor = config.vendor || 'Mattermost';
 
-            if (!state.entities.general.credentials.token) {
-                serverUrl = config.serverUrl;
-                username = config.username;
+                if (!state.entities.general.credentials.token) {
+                    serverUrl = config.serverUrl;
+                    username = config.username;
 
-                if (config.allowOtherServers && config.allowOtherServers === 'false') {
-                    this.allowOtherServers = false;
+                    if (config.allowOtherServers && config.allowOtherServers === 'false') {
+                        this.allowOtherServers = false;
+                    }
                 }
             }
         } catch (error) {
-            return;
+            return true;
         }
 
-        if (mdmEnabled) {
-            const isTrusted = mattermostManaged.isTrustedDevice();
-            if (!isTrusted) {
-                const intl = this.getIntl();
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.managed.blocked_by',
-                        defaultMessage: 'Blocked by {vendor}'
-                    }, {vendor}),
-                    intl.formatMessage({
-                        id: 'mobile.managed.jailbreak',
-                        defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.'
-                    }, {vendor}),
-                    [{
-                        text: intl.formatMessage({id: 'mobile.managed.exit', defaultMessage: 'Exit'}),
-                        style: 'destructive',
-                        onPress: () => {
-                            mattermostManaged.quitApp();
-                        }
-                    }]
-                );
-                return;
+        if (this.mdmEnabled) {
+            if (jailbrakeDetection) {
+                const isTrusted = mattermostManaged.isTrustedDevice();
+
+                if (!isTrusted) {
+                    const intl = this.getIntl();
+                    Alert.alert(
+                        intl.formatMessage({
+                            id: 'mobile.managed.blocked_by',
+                            defaultMessage: 'Blocked by {vendor}'
+                        }, {vendor}),
+                        intl.formatMessage({
+                            id: 'mobile.managed.jailbreak',
+                            defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.'
+                        }, {vendor}),
+                        [{
+                            text: intl.formatMessage({id: 'mobile.managed.exit', defaultMessage: 'Exit'}),
+                            style: 'destructive',
+                            onPress: () => {
+                                mattermostManaged.quitApp();
+                            }
+                        }],
+                        {cancelable: false}
+                    );
+                    return false;
+                }
             }
 
             if (authNeeded && !serverConfig) {
+                if (Platform.OS === 'android') {
+                    //Start a fake app as we need at least one activity for android
+                    await this.startFakeApp();
+                }
                 const authenticated = await this.handleAuthentication(vendor);
                 if (!authenticated) {
-                    return;
+                    return false;
                 }
             }
 
@@ -300,7 +311,7 @@ export default class Mattermost {
             }
         }
 
-        return;
+        return true;
     };
 
     handleReset = () => {
@@ -336,8 +347,10 @@ export default class Mattermost {
         const state = store.getState();
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
-            this.handleManagedConfig().then(() => {
-                this.startApp();
+            this.handleManagedConfig().then((shouldStart) => {
+                if (shouldStart) {
+                    this.startApp();
+                }
             });
         }
     };
@@ -408,6 +421,22 @@ export default class Mattermost {
     restartApp = () => {
         Navigation.dismissModal({animationType: 'none'});
         this.startApp('fade');
+    };
+
+    startFakeApp = async () => {
+        return Navigation.startSingleScreenApp({
+            screen: {
+                screen: 'Root',
+                navigatorStyle: {
+                    navBarHidden: true,
+                    statusBarHidden: false,
+                    statusBarHideWithNavBar: false
+                }
+            },
+            passProps: {
+                justInit: true
+            }
+        });
     };
 
     startApp = (animationType = 'none') => {

@@ -14,6 +14,7 @@ export default class Root extends PureComponent {
     static propTypes = {
         allowOtherServers: PropTypes.bool,
         credentials: PropTypes.object,
+        justInit: PropTypes.bool,
         loginRequest: PropTypes.object,
         navigator: PropTypes.object,
         theme: PropTypes.object,
@@ -23,7 +24,9 @@ export default class Root extends PureComponent {
     };
 
     componentDidMount() {
-        this.loadStoreAndScene();
+        if (!this.props.justInit) {
+            this.loadStoreAndScene();
+        }
     }
 
     goToLoadTeam = () => {

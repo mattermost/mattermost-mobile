@@ -37,6 +37,7 @@ public class MainActivity extends SplashActivity {
     @Override
     public LinearLayout createSplashLayout() {
         wr_activity = new WeakReference<>(this);
+        MainApplication.instance.notificationsLifecycleFacade.LoadManagedConfig(getActivity());
         final int drawableId = getImageId();
 
         Context context = getActivity();

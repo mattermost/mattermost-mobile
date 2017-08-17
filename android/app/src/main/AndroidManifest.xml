@@ -29,7 +29,10 @@
       android:icon="@mipmap/ic_launcher"
       android:theme="@style/AppTheme"
     >
-      <meta-data android:name="com.wix.reactnativenotifications.gcmSenderId" android:value="184930218130\0"/>
+        <meta-data android:name="android.content.APP_RESTRICTIONS"
+                   android:resource="@xml/app_restrictions" />
+
+        <meta-data android:name="com.wix.reactnativenotifications.gcmSenderId" android:value="184930218130\0"/>
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

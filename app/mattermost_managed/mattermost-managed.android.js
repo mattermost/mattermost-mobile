@@ -1,25 +1,23 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
+
+import {BackHandler, NativeModules, DeviceEventEmitter} from 'react-native';
 import LocalAuth from 'react-native-local-auth';
 import JailMonkey from 'jail-monkey';
 
+const {MattermostManaged} = NativeModules;
+
 export default {
     addEventListener: (name, callback) => {
-        if (callback && typeof callback === 'function') {
-            callback(null);
-        }
+        DeviceEventEmitter.addListener(name, (config) => {
+            if (callback && typeof callback === 'function') {
+                callback(config);
+            }
+        });
     },
     authenticate: LocalAuth.authenticate,
-    blurAppScreen: () => true,
-    getConfig: () => null,
-    hasTouchID: async () => {
-        try {
-            await LocalAuth.hasTouchID();
-            return true;
-        } catch (err) {
-            return false;
-        }
-    },
+    blurAppScreen: MattermostManaged.blurAppScreen,
+    getConfig: MattermostManaged.getConfig,
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();
@@ -34,5 +32,5 @@ export default {
 
         return JailMonkey.trustFall();
     },
-    quitApp: () => true
+    quitApp: BackHandler.exitApp
 };
