@@ -1,6 +1,20 @@
 <?xml version="1.0"?>
 <resources>
-
-
     <string name="app_name">Mattermost Beta</string>
+    <string name="inAppPinCode_title">in-App Pincode</string>
+    <string name="inAppPinCode_description">Locks the app so the user needs to validate as the owner of the phone, it will prompt for fingerprint or passcode when the app first opens and when the app has been in the background for more than 5 minutes.</string>
+    <string name="blurApplicationScreen_title">Blur Application Screen</string>
+    <string name="blurApplicationScreen_description">Protects app on screen information while the app is in the background.</string>
+    <string name="jailbreakProtection_title">Jailbreak &#x2F; Root Detection</string>
+    <string name="jailbreakProtection_description">Disable app launch on Jailbroken or rooted devices</string>
+    <string name="copyAndPasteProtection_title">Copy&amp;Paste Protection</string>
+    <string name="copyAndPasteProtection_description">Disables the ability to copy or paste from any input in the app</string>
+    <string name="serverUrl_title">Mattermost Server URL</string>
+    <string name="serverUrl_description">Set the Mattermost server URL users will be using as default.</string>
+    <string name="allowOtherServers_title">Allow Other Servers</string>
+    <string name="allowOtherServers_description">Allow the user to change the above server URL.</string>
+    <string name="username_title">Default Username</string>
+    <string name="username_description">Set the username or email address to use to authenticate against the Mattermost Server.</string>
+    <string name="vendor_title">EMM Vendor or Company Name</string>
+    <string name="vendor_description">Name of the EMM vendor or company deploying the app so the users are aware the app is being protected.</string>
 </resources>
