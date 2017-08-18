@@ -243,12 +243,12 @@ class CreateChannel extends PureComponent {
                     ref={this.scrollRef}
                     style={style.container}
                 >
+                    {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
                         <View style={[style.scrollView, {height: height + (Platform.OS === 'android' ? 200 : 0)}]}>
-                            {displayError}
                             <View>
                                 <FormattedText
-                                    style={[style.title, {marginTop: (error ? 20 : 0)}]}
+                                    style={style.title}
                                     id='channel_modal.name'
                                     defaultMessage='Name'
                                 />
@@ -350,15 +350,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         scrollView: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 30
+            paddingTop: 10
         },
         errorContainer: {
-            position: 'absolute'
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
         },
         errorWrapper: {
             justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 10
+            alignItems: 'center'
         },
         inputContainer: {
             marginTop: 10,
