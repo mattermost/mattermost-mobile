@@ -1,9 +1,5 @@
 package com.mattermost.rnbeta;
 
-import com.github.yamill.orientation.OrientationPackage;
-import com.psykar.cookiemanager.CookieManagerPackage;
-import com.BV.LinearGradient.LinearGradientPackage;
-
 import com.reactnativenavigation.controllers.SplashActivity;
 
 import java.lang.ref.WeakReference;
@@ -37,24 +33,23 @@ public class MainActivity extends SplashActivity {
     @Override
     public LinearLayout createSplashLayout() {
         wr_activity = new WeakReference<>(this);
-        MainApplication.instance.notificationsLifecycleFacade.LoadManagedConfig(getActivity());
+        LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        Context context = getActivity();
         final int drawableId = getImageId();
 
-        Context context = getActivity();
+        NotificationsLifecycleFacade.getInstance().LoadManagedConfig(getActivity());
+
         imageView = new ImageView(context);
         imageView.setImageResource(drawableId);
 
-        LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         imageView.setLayoutParams(layoutParams);
-
         imageView.setScaleType(ImageView.ScaleType.CENTER);
 
         LinearLayout view = new LinearLayout(this);
-
         view.setBackgroundColor(Color.parseColor("#FFFFFF"));
         view.setGravity(Gravity.CENTER);
-
         view.addView(imageView);
+
         return view;
     }
 

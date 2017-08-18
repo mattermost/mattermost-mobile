@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
-
-  public static MainApplication instance;
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
 
   @Override
@@ -57,7 +55,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new OrientationPackage(),
-            new RNNotificationsPackage(MainApplication.this),
+            new RNNotificationsPackage(this),
             new LocalAuthPackage(),
             new JailMonkeyPackage(),
             new MattermostManagedPackage()
@@ -69,7 +67,7 @@ public class MainApplication extends NavigationApplication implements INotificat
     super.onCreate();
     instance = this;
     // Create an object of the custom facade impl
-    notificationsLifecycleFacade = new NotificationsLifecycleFacade();
+    notificationsLifecycleFacade = NotificationsLifecycleFacade.getInstance();
     // Attach it to react-native-navigation
     setActivityCallbacks(notificationsLifecycleFacade);
 

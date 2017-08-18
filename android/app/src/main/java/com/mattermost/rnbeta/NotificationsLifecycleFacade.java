@@ -8,24 +8,27 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.ArraySet;
+import android.view.WindowManager.LayoutParams;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.controllers.ActivityCallbacks;
 import com.reactnativenavigation.react.ReactGateway;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 
 import java.util.Set;
-import 	android.util.ArraySet;
 import java.util.concurrent.CopyOnWriteArraySet;
-import android.view.WindowManager.LayoutParams;
 
 
 public class NotificationsLifecycleFacade extends ActivityCallbacks implements AppLifecycleFacade {
-
     private static final String TAG = NotificationsLifecycleFacade.class.getSimpleName();
-    private Bundle managedConfig = null;
+    private static NotificationsLifecycleFacade instance;
 
+    private Bundle managedConfig = null;
     private Activity mVisibleActivity;
     private Set<AppVisibilityListener> mListeners = new CopyOnWriteArraySet<>();
 
@@ -45,14 +48,23 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
                 // Check current configuration settings, change your app's UI and
                 // functionality as necessary.
                 Log.i("ReactNative", "Managed Configuration Changed");
-                MattermostManagedModule.instance.sendConfigChanged(managedConfig);
+                sendConfigChanged(managedConfig);
             }
         }
     };
 
+    public static NotificationsLifecycleFacade getInstance() {
+        if (instance == null) {
+            instance = new NotificationsLifecycleFacade();
+        }
+
+        return instance;
+    }
+
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        if (MattermostManagedModule.instance.isBlurAppScreenEnabled()) {
+        MattermostManagedModule managedModule = MattermostManagedModule.getInstance();
+        if (managedModule != null && managedModule.isBlurAppScreenEnabled()) {
             activity.getWindow().setFlags(LayoutParams.FLAG_SECURE,
                     LayoutParams.FLAG_SECURE);
         }
@@ -74,7 +86,7 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
             if (!equalBundles(newConfig ,managedConfig)) {
                 Log.i("ReactNative", "onResumed Managed Configuration Changed");
                 managedConfig = newConfig;
-                MattermostManagedModule.instance.sendConfigChanged(managedConfig);
+                sendConfigChanged(managedConfig);
             }
         }
     }
@@ -171,6 +183,13 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
         }
 
         return null;
+    }
+
+    public void sendConfigChanged(Bundle config) {
+        Object result = Arguments.fromBundle(config);
+        getRunningReactContext().
+                getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
+                emit("managedConfigDidChange", result);
     }
 
     private boolean equalBundles(Bundle one, Bundle two) {

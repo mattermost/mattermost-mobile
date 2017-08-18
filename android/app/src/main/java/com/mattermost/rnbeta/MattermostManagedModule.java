@@ -11,18 +11,14 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class MattermostManagedModule extends ReactContextBaseJavaModule {
-    public static MattermostManagedModule instance;
+    private static MattermostManagedModule instance;
 
     private boolean shouldBlurAppScreen = false;
-    private ReactApplicationContext reactContext;
 
     private MattermostManagedModule(ReactApplicationContext reactContext) {
         super(reactContext);
-
-        this.reactContext = reactContext;
     }
 
     public static MattermostManagedModule getInstance(ReactApplicationContext reactContext) {
@@ -33,6 +29,10 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
         return instance;
     }
 
+    public static MattermostManagedModule getInstance() {
+        return instance;
+    }
+
     @Override
     public String getName() {
         return "MattermostManaged";
@@ -40,17 +40,17 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void blurAppScreen(boolean enabled) {
-        this.shouldBlurAppScreen = enabled;
+        shouldBlurAppScreen = enabled;
     }
 
     public boolean isBlurAppScreenEnabled() {
-        return this.shouldBlurAppScreen;
+        return shouldBlurAppScreen;
     }
 
     @ReactMethod
     public void getConfig(final Promise promise) {
         try {
-            Bundle config = MainApplication.instance.notificationsLifecycleFacade.getManagedConfig();
+            Bundle config = NotificationsLifecycleFacade.getInstance().getManagedConfig();
 
             if (config != null) {
                 Object result = Arguments.fromBundle(config);
@@ -61,10 +61,5 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             promise.reject("no managed configuration", e);
         }
-    }
-
-    public void sendConfigChanged(Bundle config) {
-        Object result = Arguments.fromBundle(config);
-        this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("managedConfigDidChange", result);
     }
 }
