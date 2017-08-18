@@ -32,6 +32,7 @@ import logo from 'assets/images/logo.png';
 
 class SelectServer extends PureComponent {
     static propTypes = {
+        allowOtherServers: PropTypes.bool,
         navigator: PropTypes.object,
         intl: intlShape.isRequired,
         config: PropTypes.object,
@@ -59,6 +60,13 @@ class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
+        const {allowOtherServers, pingRequest, serverUrl} = this.props;
+        if (pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
+            // If the app is managed, the server url is set and the user can't change it
+            // we automatically trigger the ping to move to the next screen
+            this.onClick();
+        }
+
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
@@ -151,7 +159,7 @@ class SelectServer extends PureComponent {
     };
 
     render() {
-        const {serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
+        const {allowOtherServers, serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
         const isLoading = pingRequest.status === RequestStatus.STARTED ||
             configRequest.status === RequestStatus.STARTED ||
             licenseRequest.status === RequestStatus.STARTED;
@@ -203,9 +211,10 @@ class SelectServer extends PureComponent {
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
                             value={serverUrl}
+                            editable={allowOtherServers}
                             onChangeText={this.props.actions.handleServerUrlChanged}
                             onSubmitEditing={this.onClick}
-                            style={GlobalStyles.inputBox}
+                            style={[GlobalStyles.inputBox, allowOtherServers ? {} : {backgroundColor: '#e3e3e3'}]}
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'

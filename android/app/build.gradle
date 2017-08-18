@@ -160,6 +160,8 @@ dependencies {
     compile project(':react-native-linear-gradient')
     compile project(':react-native-vector-icons')
     compile project(':react-native-svg')
+    compile project(':react-native-local-auth')
+    compile project(':jail-monkey')
 }
 
 // Run this once to be able to run the application with BUCK

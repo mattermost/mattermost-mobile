@@ -356,6 +356,18 @@ platform :android do
     )
 
     find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/MattermostManagedModule.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/MattermostManagedPackage.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
         path_to_file: './android/app/BUCK',
         old_string: 'package com.mattermost.rnbeta;',
         new_string: 'package com.mattermost.rn;'

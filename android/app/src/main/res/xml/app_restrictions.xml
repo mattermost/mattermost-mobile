@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<restrictions xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <restriction
+            android:key="inAppPinCode"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="blurApplicationScreen"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="jailbreakProtection"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="copyAndPasteProtection"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="serverUrl"
+            android:restrictionType="string"
+            android:defaultValue="" />
+    <restriction
+            android:key="allowOtherServers"
+            android:restrictionType="string"
+            android:defaultValue="true" />
+    <restriction
+            android:key="username"
+            android:restrictionType="string"
+            android:defaultValue="" />
+    <restriction
+            android:key="vendor"
+            android:restrictionType="string"
+            android:defaultValue="" />
+
+</restrictions>

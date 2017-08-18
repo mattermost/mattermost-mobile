@@ -1,9 +1,20 @@
 package com.mattermost.rnbeta;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.RestrictionsManager;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.util.Log;
+import android.util.ArraySet;
+import android.view.WindowManager.LayoutParams;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.controllers.ActivityCallbacks;
 import com.reactnativenavigation.react.ReactGateway;
@@ -12,16 +23,72 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+
 public class NotificationsLifecycleFacade extends ActivityCallbacks implements AppLifecycleFacade {
-
     private static final String TAG = NotificationsLifecycleFacade.class.getSimpleName();
+    private static NotificationsLifecycleFacade instance;
 
+    private Bundle managedConfig = null;
     private Activity mVisibleActivity;
     private Set<AppVisibilityListener> mListeners = new CopyOnWriteArraySet<>();
+
+    private final IntentFilter restrictionsFilter =
+            new IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED);
+
+    private final BroadcastReceiver restrictionsReceiver = new BroadcastReceiver() {
+        @Override public void onReceive(Context context, Intent intent) {
+
+            if (mVisibleActivity != null) {
+                // Get the current configuration bundle
+                RestrictionsManager myRestrictionsMgr =
+                    (RestrictionsManager) mVisibleActivity
+                            .getSystemService(Context.RESTRICTIONS_SERVICE);
+                managedConfig = myRestrictionsMgr.getApplicationRestrictions();
+
+                // Check current configuration settings, change your app's UI and
+                // functionality as necessary.
+                Log.i("ReactNative", "Managed Configuration Changed");
+                sendConfigChanged(managedConfig);
+            }
+        }
+    };
+
+    public static NotificationsLifecycleFacade getInstance() {
+        if (instance == null) {
+            instance = new NotificationsLifecycleFacade();
+        }
+
+        return instance;
+    }
+
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+        MattermostManagedModule managedModule = MattermostManagedModule.getInstance();
+        if (managedModule != null && managedModule.isBlurAppScreenEnabled()) {
+            activity.getWindow().setFlags(LayoutParams.FLAG_SECURE,
+                    LayoutParams.FLAG_SECURE);
+        }
+        if (managedConfig!= null && managedConfig.size() > 0) {
+            activity.registerReceiver(restrictionsReceiver, restrictionsFilter);
+        }
+    }
 
     @Override
     public void onActivityResumed(Activity activity) {
         switchToVisible(activity);
+
+        if (managedConfig != null && managedConfig.size() > 0) {
+            RestrictionsManager myRestrictionsMgr =
+                    (RestrictionsManager) activity
+                            .getSystemService(Context.RESTRICTIONS_SERVICE);
+
+            Bundle newConfig = myRestrictionsMgr.getApplicationRestrictions();
+            if (!equalBundles(newConfig ,managedConfig)) {
+                Log.i("ReactNative", "onResumed Managed Configuration Changed");
+                managedConfig = newConfig;
+                sendConfigChanged(managedConfig);
+            }
+        }
     }
 
     @Override
@@ -32,6 +99,13 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
     @Override
     public void onActivityStopped(Activity activity) {
         switchToInvisible(activity);
+        if (managedConfig != null && managedConfig.size() > 0) {
+            try {
+                activity.unregisterReceiver(restrictionsReceiver);
+            } catch (IllegalArgumentException e) {
+                // Just ignore this cause the receiver wasn't registered for this activity
+            }
+        }
     }
 
     @Override
@@ -87,5 +161,68 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
                 listener.onAppNotVisible();
             }
         }
+    }
+
+    public synchronized void LoadManagedConfig(Activity activity) {
+        RestrictionsManager myRestrictionsMgr =
+                (RestrictionsManager) activity
+                        .getSystemService(Context.RESTRICTIONS_SERVICE);
+
+        managedConfig = myRestrictionsMgr.getApplicationRestrictions();
+        myRestrictionsMgr = null;
+    }
+
+    public synchronized Bundle getManagedConfig() {
+        if (managedConfig!= null && managedConfig.size() > 0) {
+            return managedConfig;
+        }
+
+        if (mVisibleActivity != null) {
+            LoadManagedConfig(mVisibleActivity);
+            return managedConfig;
+        }
+
+        return null;
+    }
+
+    public void sendConfigChanged(Bundle config) {
+        Object result = Arguments.fromBundle(config);
+        getRunningReactContext().
+                getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
+                emit("managedConfigDidChange", result);
+    }
+
+    private boolean equalBundles(Bundle one, Bundle two) {
+        if (one == null || two == null)
+            return false;
+
+        if(one.size() != two.size())
+            return false;
+
+        Set<String> setOne = new ArraySet<String>();
+        setOne.addAll(one.keySet());
+        setOne.addAll(two.keySet());
+        Object valueOne;
+        Object valueTwo;
+
+        for(String key : setOne) {
+            if (!one.containsKey(key) || !two.containsKey(key))
+                return false;
+
+            valueOne = one.get(key);
+            valueTwo = two.get(key);
+            if(valueOne instanceof Bundle && valueTwo instanceof Bundle &&
+                    !equalBundles((Bundle) valueOne, (Bundle) valueTwo)) {
+                return false;
+            }
+            else if(valueOne == null) {
+                if(valueTwo != null)
+                    return false;
+            }
+            else if(!valueOne.equals(valueTwo))
+                return false;
+        }
+
+        return true;
     }
 }

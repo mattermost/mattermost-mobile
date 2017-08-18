@@ -1,12 +1,13 @@
 package com.mattermost.rnbeta;
 
 import android.app.Application;
-import android.util.Log;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.os.Bundle;
 
 import com.facebook.react.ReactApplication;
+import com.gantix.JailMonkey.JailMonkeyPackage;
+import io.tradle.react.LocalAuthPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -33,8 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
-
-  NotificationsLifecycleFacade notificationsLifecycleFacade;
+  public NotificationsLifecycleFacade notificationsLifecycleFacade;
 
   @Override
   public boolean isDebug() {
@@ -55,19 +55,21 @@ public class MainApplication extends NavigationApplication implements INotificat
             new SvgPackage(),
             new LinearGradientPackage(),
             new OrientationPackage(),
-            new RNNotificationsPackage(MainApplication.this)
+            new RNNotificationsPackage(this),
+            new LocalAuthPackage(),
+            new JailMonkeyPackage(),
+            new MattermostManagedPackage()
     );
   }
 
   @Override
   public void onCreate() {
     super.onCreate();
-
+    instance = this;
     // Create an object of the custom facade impl
-    notificationsLifecycleFacade = new NotificationsLifecycleFacade();
+    notificationsLifecycleFacade = NotificationsLifecycleFacade.getInstance();
     // Attach it to react-native-navigation
     setActivityCallbacks(notificationsLifecycleFacade);
-
 
     SoLoader.init(this, /* native exopackage */ false);
   }
