@@ -5,7 +5,6 @@
 	};
 	objectVersion = 46;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302AC1ABCB8CE00DB3ED1 /* libRCTActionSheet.a */; };
 		00C302E71ABCBA2D00DB3ED1 /* libRCTGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302BA1ABCB90400DB3ED1 /* libRCTGeolocation.a */; };
@@ -62,7 +61,7 @@
 		F006936FC2884C24A1321FC0 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 356C9186FA374641A00EB2EA /* MaterialIcons.ttf */; };
 		F083DB472349411A8E6E7AAD /* OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */; };
 		FDEF24E9D9AB47728E11033B /* libRNPasscodeStatus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17A75F5A3D0D4A4A995DCD76 /* libRNPasscodeStatus.a */; };
-		5321F42F4F7B48468C6545C2 /* libWebImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B9CAACB66A2452E91B7806A /* libWebImage.a */; };
+		1C1F002AC5DE465FAE9E0D74 /* libFastImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C0C75A424714EAC8E876A8F /* libFastImage.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -446,8 +445,8 @@
 		EE671DF7637347CD8C069819 /* libRNDeviceInfo.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNDeviceInfo.a; sourceTree = "<group>"; };
 		F1F071EE85494E269A50AE88 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
 		FBBEC29EE2D3418D9AC33BD5 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
-		6A6BFDD3198F48AA8F3EFEE1 /* WebImage.xcodeproj */ = {isa = PBXFileReference; name = "WebImage.xcodeproj"; path = "../node_modules/react-native-web-image/WebImage/WebImage.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
-		7B9CAACB66A2452E91B7806A /* libWebImage.a */ = {isa = PBXFileReference; name = "libWebImage.a"; path = "libWebImage.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		50ECB1D221E44F51B5690DF2 /* FastImage.xcodeproj */ = {isa = PBXFileReference; name = "FastImage.xcodeproj"; path = "../node_modules/react-native-fast-image/ios/FastImage.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		0C0C75A424714EAC8E876A8F /* libFastImage.a */ = {isa = PBXFileReference; name = "libFastImage.a"; path = "libFastImage.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -487,7 +486,7 @@
 				615D2E7805814A3A9B9C69EC /* libRNLocalAuth.a in Frameworks */,
 				FDEF24E9D9AB47728E11033B /* libRNPasscodeStatus.a in Frameworks */,
 				38FB8B0A3AAD4F839EF6EF0B /* libJailMonkey.a in Frameworks */,
-				5321F42F4F7B48468C6545C2 /* libWebImage.a in Frameworks */,
+				1C1F002AC5DE465FAE9E0D74 /* libFastImage.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,7 +793,7 @@
 				D0281D64B98143668D6AD42B /* RNLocalAuth.xcodeproj */,
 				EBA6063A99C141098D40C67A /* RNPasscodeStatus.xcodeproj */,
 				27A6EA89298440439DA9F98D /* JailMonkey.xcodeproj */,
-				6A6BFDD3198F48AA8F3EFEE1 /* WebImage.xcodeproj */,
+				50ECB1D221E44F51B5690DF2 /* FastImage.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -1410,8 +1409,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1429,8 +1426,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
@@ -1461,7 +1456,7 @@
 					"$(SRCROOT)/../node_modules/react-native-passcode-status/ios",
 					"$(SRCROOT)/../node_modules/jail-monkey/JailMonkey",
 					"$(SRCROOT)/../node_modules/react-native/Libraries/**",
-					"$(SRCROOT)/../node_modules/react-native-web-image/WebImage/WebImage/**",
+					"$(SRCROOT)/../node_modules/react-native-fast-image/ios/FastImage/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1500,7 +1495,7 @@
 					"$(SRCROOT)/../node_modules/react-native-passcode-status/ios",
 					"$(SRCROOT)/../node_modules/jail-monkey/JailMonkey",
 					"$(SRCROOT)/../node_modules/react-native/Libraries/**",
-					"$(SRCROOT)/../node_modules/react-native-web-image/WebImage/WebImage/**",
+					"$(SRCROOT)/../node_modules/react-native-fast-image/ios/FastImage/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

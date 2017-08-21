@@ -8,7 +8,6 @@ import android.os.Bundle;
 import com.facebook.react.ReactApplication;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
-import org.vovkasm.WebImage.WebImagePackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -59,8 +58,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNNotificationsPackage(this),
             new LocalAuthPackage(),
             new JailMonkeyPackage(),
-            new MattermostManagedPackage(),
-            new WebImagePackage()
+            new MattermostManagedPackage()
     );
   }
 

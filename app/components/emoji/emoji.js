@@ -4,7 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Image, Platform, Text} from 'react-native';
-import WebImage from 'react-native-web-image';
+import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
@@ -25,6 +25,20 @@ export default class Emoji extends React.PureComponent {
         customEmojis: new Map(),
         literal: '',
         padding: 10
+    }
+
+    state = {
+        retry: 0
+    }
+
+    onError = () => {
+        if (this.state.retry < 3) {
+            setTimeout(() => {
+                this.setState((prev) => ({
+                    retry: prev.retry + 1
+                }));
+            }, 300);
+        }
     }
 
     render() {
@@ -50,7 +64,7 @@ export default class Emoji extends React.PureComponent {
             return <Text style={textStyle}>{literal}</Text>;
         }
 
-        let ImageComponent = WebImage;
+        let ImageComponent = FastImage;
         if (Platform.OS === 'android') {
             ImageComponent = Image;
         }
@@ -59,6 +73,7 @@ export default class Emoji extends React.PureComponent {
             <ImageComponent
                 style={{width: size, height: size, padding}}
                 source={{uri: imageUrl}}
+                onError={this.onError}
             />
         );
     }

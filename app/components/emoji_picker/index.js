@@ -58,7 +58,7 @@ function fillEmoji(indice) {
     };
 }
 
-const getEmojiName = createSelector(
+const getEmojisBySection = createSelector(
     getCustomEmojisByName,
     (customEmojis) => {
         const emoticons = CategoryNames.filter((name) => name !== 'custom').map((category) => {
@@ -98,7 +98,7 @@ const getEmojiName = createSelector(
 );
 
 function mapStateToProps(state) {
-    const emojis = getEmojiName(state);
+    const emojis = getEmojisBySection(state);
 
     return {
         emojis,
