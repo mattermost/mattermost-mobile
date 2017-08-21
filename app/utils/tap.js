@@ -1,6 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+const doublePressDelay = 300;
+
 let canPress = true;
 export function preventDoubleTap(action, thisArg, ...args) {
     if (canPress) {
@@ -9,6 +11,21 @@ export function preventDoubleTap(action, thisArg, ...args) {
 
         setTimeout(() => {
             canPress = true;
-        }, 300);
+        }, doublePressDelay);
     }
+}
+
+export function wrapWithPreventDoubleTap(func) {
+    let canPressWrapped = true;
+
+    return (...args) => {
+        if (canPressWrapped) {
+            canPressWrapped = false;
+            func(...args);
+
+            setTimeout(() => {
+                canPressWrapped = true;
+            }, doublePressDelay);
+        }
+    };
 }

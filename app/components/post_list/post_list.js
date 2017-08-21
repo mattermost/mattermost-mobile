@@ -43,7 +43,8 @@ export default class PostList extends PureComponent {
     };
 
     static defaultProps = {
-        channel: {}
+        channel: {},
+        channelIsLoading: false
     };
 
     getPostsWithDates = () => {

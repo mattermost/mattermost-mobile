@@ -4,8 +4,12 @@
 import {Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+export function getCodeFont() {
+    return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
+}
+
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
-    const codeFont = Platform.OS === 'ios' ? 'Menlo' : 'monospace';
+    const codeFont = getCodeFont();
 
     return {
         emph: {
@@ -75,12 +79,6 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
         adjacentParagraph: {
             marginTop: 6
         },
-        codeBlock: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
-            borderRadius: 4,
-            paddingHorizontal: 4,
-            paddingVertical: 2
-        },
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
             height: StyleSheet.hairlineWidth,
@@ -94,7 +92,67 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default {
-    getMarkdownBlockStyles,
-    getMarkdownTextStyles
+const languages = {
+    actionscript: 'ActionScript',
+    applescript: 'AppleScript',
+    bash: 'Bash',
+    clojure: 'Clojure',
+    coffeescript: 'CoffeeScript',
+    cpp: 'C++',
+    cs: 'C#',
+    css: 'CSS',
+    d: 'D',
+    dart: 'Dart',
+    delphi: 'Delphi',
+    diff: 'Diff',
+    django: 'Django',
+    dockerfile: 'Dockerfile',
+    erlang: 'Erlang',
+    fortran: 'Fortran',
+    fsharp: 'F#',
+    gcode: 'G-code',
+    go: 'Go',
+    groovy: 'Groovy',
+    handlebars: 'Handlebars',
+    haskell: 'Haskell',
+    haxe: 'Haxe',
+    html: 'HTML',
+    java: 'Java',
+    javascript: 'JavaScript',
+    json: 'JSON',
+    julia: 'Julia',
+    kotlin: 'Kotlin',
+    latex: 'LaTeX',
+    less: 'Less',
+    lisp: 'Lisp',
+    lua: 'Lua',
+    makefile: 'Makefile',
+    markdown: 'Markdown',
+    matlab: 'Matlab',
+    objectivec: 'Objective-C',
+    ocaml: 'OCaml',
+    perl: 'Perl',
+    php: 'PHP',
+    powershell: 'PowerShell',
+    puppet: 'Puppet',
+    python: 'Python',
+    r: 'R',
+    ruby: 'Ruby',
+    rust: 'Rust',
+    scala: 'Scala',
+    scheme: 'Scheme',
+    scss: 'SCSS',
+    smalltalk: 'Smalltalk',
+    sql: 'SQL',
+    swift: 'Swift',
+    tex: 'TeX',
+    vbnet: 'VB.NET',
+    vbscript: 'VBScript',
+    verilog: 'Verilog',
+    xml: 'XML',
+    yaml: 'YAML'
 };
+
+export function getDisplayNameForLanguage(language) {
+    return languages[language.toLowerCase()] || '';
+}
