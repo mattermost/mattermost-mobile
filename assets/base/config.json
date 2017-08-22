@@ -6,5 +6,9 @@
     "MinServerVersion": "4.0.0",
     "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
-    "SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"
+    "SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX",
+
+    "SentryEnabled": false,
+    "SentryDsnIos": "",
+    "SentryDsnAndroid": ""
 }

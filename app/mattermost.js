@@ -15,7 +15,7 @@ import {
     Platform
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {setJSExceptionHandler} from 'react-native-exception-handler';
+import {setJSExceptionHandler, setNativeExceptionHandler} from 'react-native-exception-handler';
 import StatusBarSizeIOS from 'react-native-status-bar-size';
 import semver from 'semver';
 
@@ -46,6 +46,7 @@ import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
 
+import {captureException, initializeSentry} from 'app/utils/sentry';
 import Config from 'assets/config';
 
 const {StatusBarManager} = NativeModules;
@@ -64,7 +65,7 @@ export default class Mattermost {
         }
         this.isConfigured = false;
         this.allowOtherServers = true;
-        setJSExceptionHandler(this.errorHandler, false);
+
         Orientation.lockToPortrait();
         this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
@@ -86,9 +87,15 @@ export default class Mattermost {
                 }
             );
         }
+
+        initializeSentry();
+        setJSExceptionHandler(this.errorHandler, false);
+        setNativeExceptionHandler(this.nativeErrorHandler);
     }
 
     errorHandler = (e, isFatal) => {
+        captureException(e, store.getState());
+
         const intl = this.getIntl();
         closeWebSocket()(store.dispatch, store.getState);
         logError(e)(store.dispatch);
@@ -107,6 +114,10 @@ export default class Mattermost {
                 {cancelable: false}
             );
         }
+    };
+
+    nativeErrorHandler = (e) => {
+        captureException(e, store.getState());
     };
 
     getIntl = () => {
