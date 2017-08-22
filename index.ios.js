@@ -10,7 +10,7 @@ import Config from 'assets/config';
 
 if (Config.SentryEnabled && Config.SentryDsnIos) {
     console.warn('Sentry enabled');
-    Sentry.config(Config.SentryDsnAndroid).install();
+    Sentry.config(Config.SentryDsnAndroid, Config.SentryOptions).install();
 } else {
     console.warn('Sentry NOT enabled');
     Sentry.config('');

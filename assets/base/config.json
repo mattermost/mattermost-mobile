@@ -10,5 +10,12 @@
 
     "SentryEnabled": false,
     "SentryDsnIos": "",
-    "SentryDsnAndroid": ""
+    "SentryDsnAndroid": "",
+    "SentryOptions": {
+        "deactivateStacktraceMerging": true,
+        "autoBreadcrumbs": {
+            "xhr": false,
+            "console": true
+        }
+    }
 }
