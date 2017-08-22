@@ -1,6 +1,6 @@
 # Mattermost Mobile
 
-**Supported Server Versions:** 3.8+
+**Supported Server Versions:** 4.0+
 
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 11 languages. Learn more at https://mattermost.com.
 

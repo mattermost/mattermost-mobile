@@ -10,7 +10,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
 
-import {Client} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 const statusToIcon = {
     online: 'check',
@@ -54,7 +54,7 @@ export default class ProfilePicture extends PureComponent {
 
         let pictureUrl;
         if (this.props.user) {
-            pictureUrl = Client.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
+            pictureUrl = Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
         }
 
         let statusIcon;
