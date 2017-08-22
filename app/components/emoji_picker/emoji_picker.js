@@ -71,6 +71,7 @@ class EmojiPicker extends PureComponent {
 
     searchEmojis = (searchTerm) => {
         const {emojis} = this.props;
+        const searchTermLowerCase = searchTerm.toLowerCase();
 
         const nextEmojis = [];
 
@@ -80,7 +81,7 @@ class EmojiPicker extends PureComponent {
 
             const nextData = {
                 key,
-                items: items.filter((item) => item.aliases.includes(searchTerm.toLowerCase()))
+                items: items.filter((item) => item.aliases.includes(searchTermLowerCase))
             };
 
             if (nextData.items.length) {

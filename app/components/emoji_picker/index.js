@@ -54,7 +54,7 @@ function fillEmoji(indice) {
     const emoji = Emojis[indice];
     return {
         name: emoji.aliases[0],
-        aliases: emoji.aliases.join(',')
+        aliases: emoji.aliases.join('|')
     };
 }
 
