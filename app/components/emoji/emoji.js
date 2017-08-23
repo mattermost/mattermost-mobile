@@ -27,20 +27,6 @@ export default class Emoji extends React.PureComponent {
         padding: 10
     }
 
-    state = {
-        retry: 0
-    }
-
-    onError = () => {
-        if (this.state.retry < 3) {
-            setTimeout(() => {
-                this.setState((prev) => ({
-                    retry: prev.retry + 1
-                }));
-            }, 300);
-        }
-    }
-
     render() {
         const {
             customEmojis,
@@ -65,6 +51,13 @@ export default class Emoji extends React.PureComponent {
         }
 
         let ImageComponent = FastImage;
+        const source = {
+            uri: imageUrl,
+            headers: {
+                Authorization: `Bearer ${Client.getToken()}`
+            }
+        };
+
         if (Platform.OS === 'android') {
             ImageComponent = Image;
         }
@@ -72,7 +65,7 @@ export default class Emoji extends React.PureComponent {
         return (
             <ImageComponent
                 style={{width: size, height: size, padding}}
-                source={{uri: imageUrl}}
+                source={source}
                 onError={this.onError}
             />
         );

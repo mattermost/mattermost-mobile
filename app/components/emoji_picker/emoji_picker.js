@@ -69,6 +69,10 @@ class EmojiPicker extends PureComponent {
         });
     }
 
+    filterEmojiAliases = (aliases, searchTerm) => {
+        return aliases.findIndex((alias) => alias.includes(searchTerm)) !== -1;
+    }
+
     searchEmojis = (searchTerm) => {
         const {emojis} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
@@ -81,7 +85,7 @@ class EmojiPicker extends PureComponent {
 
             const nextData = {
                 key,
-                items: items.filter((item) => item.aliases.includes(searchTermLowerCase))
+                items: items.filter((item) => this.filterEmojiAliases(item.aliases, searchTermLowerCase))
             };
 
             if (nextData.items.length) {

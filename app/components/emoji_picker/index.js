@@ -54,7 +54,7 @@ function fillEmoji(indice) {
     const emoji = Emojis[indice];
     return {
         name: emoji.aliases[0],
-        aliases: emoji.aliases.join('|')
+        aliases: emoji.aliases
     };
 }
 
@@ -83,7 +83,7 @@ const getEmojisBySection = createSelector(
         for (const [key] of customEmojis) {
             customEmojiData.items.push({
                 name: key,
-                aliases: key
+                aliases: [key]
             });
         }
 
