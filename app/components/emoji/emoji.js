@@ -20,13 +20,13 @@ export default class Emoji extends React.PureComponent {
         size: PropTypes.number.isRequired,
         textStyle: CustomPropTypes.Style,
         token: PropTypes.string.isRequired
-    }
+    };
 
     static defaultProps = {
         customEmojis: new Map(),
         literal: '',
         padding: 10
-    }
+    };
 
     render() {
         const {
