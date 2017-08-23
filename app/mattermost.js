@@ -220,7 +220,7 @@ export default class Mattermost {
                 );
             } else {
                 setServerVersion(serverVersion)(dispatch, getState);
-                const data = await loadConfigAndLicense(serverVersion)(dispatch, getState);
+                const data = await loadConfigAndLicense()(dispatch, getState);
                 this.configureAnalytics(data.config);
             }
         }
@@ -418,8 +418,11 @@ export default class Mattermost {
         setServerVersion('')(dispatch, getState);
     };
 
-    restartApp = () => {
+    restartApp = async () => {
         Navigation.dismissModal({animationType: 'none'});
+
+        const {dispatch, getState} = store;
+        await loadConfigAndLicense()(dispatch, getState);
         this.startApp('fade');
     };
 

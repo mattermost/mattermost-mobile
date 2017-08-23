@@ -11,19 +11,15 @@ import {
 import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
 import {General} from 'mattermost-redux/constants';
-import {getClientConfig, getLicenseConfig, setServerVersion} from 'mattermost-redux/actions/general';
+import {getClientConfig, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
 
-export function loadConfigAndLicense(serverVersion) {
+export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
         const [config, license] = await Promise.all([
             getClientConfig()(dispatch, getState),
             getLicenseConfig()(dispatch, getState)
         ]);
-
-        if (config && license) {
-            setServerVersion(serverVersion)(dispatch, getState);
-        }
 
         return {config, license};
     };

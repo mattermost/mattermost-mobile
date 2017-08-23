@@ -4288,7 +4288,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@15.5.10, prop-types@^15.0.0, prop-types@^15.5.4, prop-types@^15.5.8, prop-types@~15.5.7:
+prop-types@15.5.10, prop-types@^15.0.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.8, prop-types@~15.5.7:
   version "15.5.10"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.5.10.tgz#2797dfc3126182e3a95e3dfbb2e893ddd7456154"
   dependencies:
@@ -4494,6 +4494,12 @@ react-native-drawer@2.3.0:
 react-native-exception-handler@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-native-exception-handler/-/react-native-exception-handler-1.1.0.tgz#320b7fc9c104e11d66173a2b0daeac97831a1a37"
+
+react-native-fast-image@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-1.0.0.tgz#a88337efa18fd34d530bab9ee05680374f3e2a2d"
+  dependencies:
+    prop-types "^15.5.10"
 
 react-native-image-picker@jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4:
   version "0.26.2"

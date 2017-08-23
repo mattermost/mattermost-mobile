@@ -3,7 +3,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Image, Text} from 'react-native';
+import {Image, Platform, Text} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
@@ -17,7 +18,8 @@ export default class Emoji extends React.PureComponent {
         literal: PropTypes.string,
         padding: PropTypes.number,
         size: PropTypes.number.isRequired,
-        textStyle: CustomPropTypes.Style
+        textStyle: CustomPropTypes.Style,
+        token: PropTypes.string.isRequired
     };
 
     static defaultProps = {
@@ -33,7 +35,8 @@ export default class Emoji extends React.PureComponent {
             literal,
             padding,
             size,
-            textStyle
+            textStyle,
+            token
         } = this.props;
 
         let imageUrl;
@@ -49,10 +52,23 @@ export default class Emoji extends React.PureComponent {
             return <Text style={textStyle}>{literal}</Text>;
         }
 
+        let ImageComponent = FastImage;
+        const source = {
+            uri: imageUrl,
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        };
+
+        if (Platform.OS === 'android') {
+            ImageComponent = Image;
+        }
+
         return (
-            <Image
+            <ImageComponent
                 style={{width: size, height: size, padding}}
-                source={{uri: imageUrl}}
+                source={source}
+                onError={this.onError}
             />
         );
     }
