@@ -14,6 +14,7 @@ import {
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
+import {emptyFunction} from 'app/utils/general';
 
 import OptionsModalList from './options_modal_list';
 
@@ -25,11 +26,16 @@ export default class OptionsModal extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
         navigator: PropTypes.object,
+        onCancelPress: PropTypes.func,
         title: PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.object
         ])
     };
+
+    static defaultProps = {
+        onCancelPress: emptyFunction
+    }
 
     state = {
         top: new Animated.Value(deviceHeight)
@@ -45,6 +51,11 @@ export default class OptionsModal extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off(NavigationTypes.NAVIGATION_CLOSE_MODAL, this.close);
+    }
+
+    handleCancel = () => {
+        this.props.onCancelPress();
+        this.close();
     }
 
     close = () => {
@@ -70,7 +81,7 @@ export default class OptionsModal extends PureComponent {
                     <AnimatedView style={{height: deviceHeight, left: 0, top: this.state.top, width: deviceWidth}}>
                         <OptionsModalList
                             items={items}
-                            onCancelPress={this.close}
+                            onCancelPress={this.handleCancel}
                             title={title}
                         />
                     </AnimatedView>

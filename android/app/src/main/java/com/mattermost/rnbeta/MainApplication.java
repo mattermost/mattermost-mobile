@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.facebook.react.ReactApplication;
+import com.RNFetchBlob.RNFetchBlobPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
 import com.facebook.react.ReactInstanceManager;
@@ -58,6 +59,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNNotificationsPackage(this),
             new LocalAuthPackage(),
             new JailMonkeyPackage(),
+            new RNFetchBlobPackage(),
             new MattermostManagedPackage()
     );
   }

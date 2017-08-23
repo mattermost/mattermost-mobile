@@ -248,7 +248,7 @@ class PostTextbox extends PureComponent {
         };
 
         ImagePicker.launchCamera(options, (response) => {
-            if (response.error) {
+            if (response.error || response.didCancel) {
                 return;
             }
 
@@ -267,7 +267,7 @@ class PostTextbox extends PureComponent {
         }
 
         ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.error) {
+            if (response.error || response.didCancel) {
                 return;
             }
 
@@ -283,7 +283,7 @@ class PostTextbox extends PureComponent {
         };
 
         ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.error) {
+            if (response.error || response.didCancel) {
                 return;
             }
 
