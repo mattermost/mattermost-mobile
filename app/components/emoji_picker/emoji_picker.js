@@ -53,7 +53,7 @@ class EmojiPicker extends PureComponent {
         });
 
         clearTimeout(this.searchTermTimeout);
-        const timeout = text ? 75 : 0;
+        const timeout = text ? 350 : 0;
         this.searchTermTimeout = setTimeout(() => {
             const emojis = this.searchEmojis(text);
             this.setState({
@@ -77,15 +77,24 @@ class EmojiPicker extends PureComponent {
         const {emojis} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
 
-        const nextEmojis = [];
+        if (!searchTerm) {
+            return emojis;
+        }
 
+        const nextEmojis = [];
         emojis.forEach((section) => {
             const {data, ...otherProps} = section;
             const {key, items} = data[0];
 
             const nextData = {
                 key,
-                items: items.filter((item) => this.filterEmojiAliases(item.aliases, searchTermLowerCase))
+                items: items.filter((item) => {
+                    if (item.aliases) {
+                        return this.filterEmojiAliases(item.aliases, searchTermLowerCase);
+                    }
+
+                    return item.name.includes(searchTermLowerCase);
+                })
             };
 
             if (nextData.items.length) {

@@ -9,7 +9,7 @@ import FastImage from 'react-native-fast-image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 
-import {Client} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 export default class Emoji extends React.PureComponent {
     static propTypes = {
@@ -18,7 +18,8 @@ export default class Emoji extends React.PureComponent {
         literal: PropTypes.string,
         padding: PropTypes.number,
         size: PropTypes.number.isRequired,
-        textStyle: CustomPropTypes.Style
+        textStyle: CustomPropTypes.Style,
+        token: PropTypes.string.isRequired
     }
 
     static defaultProps = {
@@ -34,16 +35,17 @@ export default class Emoji extends React.PureComponent {
             literal,
             padding,
             size,
-            textStyle
+            textStyle,
+            token
         } = this.props;
 
         let imageUrl;
         if (EmojiIndicesByAlias.has(emojiName)) {
             const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
-            imageUrl = Client.getSystemEmojiImageUrl(emoji.filename);
+            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
         } else if (customEmojis.has(emojiName)) {
             const emoji = customEmojis.get(emojiName);
-            imageUrl = Client.getCustomEmojiImageUrl(emoji.id);
+            imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
         }
 
         if (!imageUrl) {
@@ -54,7 +56,7 @@ export default class Emoji extends React.PureComponent {
         const source = {
             uri: imageUrl,
             headers: {
-                Authorization: `Bearer ${Client.getToken()}`
+                Authorization: `Bearer ${token}`
             }
         };
 

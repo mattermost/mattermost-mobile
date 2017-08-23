@@ -82,8 +82,7 @@ const getEmojisBySection = createSelector(
 
         for (const [key] of customEmojis) {
             customEmojiData.items.push({
-                name: key,
-                aliases: [key]
+                name: key
             });
         }
 

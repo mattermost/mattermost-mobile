@@ -9,8 +9,9 @@ import Emoji from './emoji';
 
 function mapStateToProps(state, ownProps) {
     return {
+        ...ownProps,
         customEmojis: getCustomEmojisByName(state),
-        ...ownProps
+        token: state.entities.general.credentials.token
     };
 }
 
