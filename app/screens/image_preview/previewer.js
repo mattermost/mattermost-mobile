@@ -11,7 +11,7 @@ import {
     View,
     StyleSheet
 } from 'react-native';
-import {Client} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 import imageIcon from 'assets/images/icons/image.png';
 
@@ -179,12 +179,12 @@ export default class Previewer extends Component {
     handleGetImageURL = () => {
         const {file} = this.props;
 
-        return Client.getFilePreviewUrl(file.id, this.state.timestamp);
+        return Client4.getFilePreviewUrl(file.id, this.state.timestamp);
     };
 
     attachImageView = (c) => {
         this.imageView = c;
-    }
+    };
 
     handleZoom = (zoom) => {
         this.setState({
@@ -192,14 +192,14 @@ export default class Previewer extends Component {
         });
 
         this.props.onZoom(zoom);
-    }
+    };
 
     toggleZoom = (x, y) => {
         const zoom = !this.state.isZooming;
 
         this.imageView.setZoom(zoom, x, y);
         this.handleZoom(zoom);
-    }
+    };
 
     render() {
         const {

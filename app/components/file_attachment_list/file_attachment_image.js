@@ -11,7 +11,7 @@ import {
     StyleSheet
 } from 'react-native';
 
-import {Client} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 import imageIcon from 'assets/images/icons/image.png';
 
@@ -105,12 +105,12 @@ export default class FileAttachmentImage extends PureComponent {
 
         switch (imageSize) {
         case IMAGE_SIZE.Fullsize:
-            return Client.getFileUrl(file.id, this.state.timestamp);
+            return Client4.getFileUrl(file.id, this.state.timestamp);
         case IMAGE_SIZE.Preview:
-            return Client.getFilePreviewUrl(file.id, this.state.timestamp);
+            return Client4.getFilePreviewUrl(file.id, this.state.timestamp);
         case IMAGE_SIZE.Thumbnail:
         default:
-            return Client.getFileThumbnailUrl(file.id, this.state.timestamp);
+            return Client4.getFileThumbnailUrl(file.id, this.state.timestamp);
         }
     };
 
@@ -123,7 +123,7 @@ export default class FileAttachmentImage extends PureComponent {
         }
 
         return newWidth;
-    }
+    };
 
     render() {
         const {

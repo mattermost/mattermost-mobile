@@ -8,7 +8,7 @@ import {Image, Text} from 'react-native';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 
-import {Client} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 export default class Emoji extends React.PureComponent {
     static propTypes = {
@@ -18,13 +18,13 @@ export default class Emoji extends React.PureComponent {
         padding: PropTypes.number,
         size: PropTypes.number.isRequired,
         textStyle: CustomPropTypes.Style
-    }
+    };
 
     static defaultProps = {
         customEmojis: new Map(),
         literal: '',
         padding: 10
-    }
+    };
 
     render() {
         const {
@@ -39,10 +39,10 @@ export default class Emoji extends React.PureComponent {
         let imageUrl;
         if (EmojiIndicesByAlias.has(emojiName)) {
             const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
-            imageUrl = Client.getSystemEmojiImageUrl(emoji.filename);
+            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
         } else if (customEmojis.has(emojiName)) {
             const emoji = customEmojis.get(emojiName);
-            imageUrl = Client.getCustomEmojiImageUrl(emoji.id);
+            imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
         }
 
         if (!imageUrl) {
