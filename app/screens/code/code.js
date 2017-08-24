@@ -107,6 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 4
         },
         codeText: {
+            color: changeOpacity(theme.centerChannelColor, 0.65),
             fontFamily: getCodeFont(),
             fontSize: 12,
             lineHeight: 18
