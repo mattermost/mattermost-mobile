@@ -52,8 +52,16 @@ export default class SearchPreview extends PureComponent {
     };
 
     state = {
-        showPosts: false
+        showPosts: false,
+        animationEnded: false
     };
+
+    componentWillReceiveProps(nextProps) {
+        const {animationEnded, showPosts} = this.state;
+        if (animationEnded && !showPosts && nextProps.posts.length) {
+            this.setState({showPosts: true});
+        }
+    }
 
     handleClose = () => {
         this.refs.view.zoomOut().then(() => {
@@ -74,6 +82,7 @@ export default class SearchPreview extends PureComponent {
     };
 
     showPostList = () => {
+        this.setState({animationEnded: true});
         if (!this.state.showPosts && this.props.posts.length) {
             this.setState({showPosts: true});
         }
