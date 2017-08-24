@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
+    Keyboard,
     Platform,
     StyleSheet,
     Text,
@@ -14,6 +15,7 @@ import {
     View
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 
@@ -32,6 +34,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
+const MODIFIER_LABEL_HEIGHT = 58;
 const POSTS_PER_PAGE = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
@@ -99,7 +102,7 @@ class Search extends Component {
             setTimeout(() => {
                 this.refs.list.getWrapperRef().getListRef().scrollToOffset({
                     animated: true,
-                    offset: SECTION_HEIGHT + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght - 1) * RECENT_SEPARATOR_HEIGHT)
+                    offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght + 1) * RECENT_SEPARATOR_HEIGHT)
                 });
             }, 200);
         }
@@ -121,7 +124,8 @@ class Search extends Component {
         const channel = channels.find((c) => c.id === channelId);
         const rootId = (post.root_id || post.id);
 
-        actions.loadThreadIfNecessary(post.root_id);
+        Keyboard.dismiss();
+        actions.loadThreadIfNecessary(rootId, channelId);
         actions.selectPost(rootId);
 
         let title;
@@ -149,11 +153,7 @@ class Search extends Component {
             }
         };
 
-        if (Platform.OS === 'android') {
-            navigator.showModal(options);
-        } else {
-            navigator.push(options);
-        }
+        navigator.push(options);
     };
 
     handleSelectionChange = (event) => {
@@ -171,6 +171,10 @@ class Search extends Component {
             actions.clearSearch();
             this.scrollToTop();
         }
+    };
+
+    keyModifierExtractor = (item) => {
+        return `modifier-${item.value}`;
     };
 
     keyRecentExtractor = (item) => {
@@ -205,7 +209,8 @@ class Search extends Component {
         const focusedPostId = post.id;
         const channelId = post.channel_id;
 
-        actions.getPostThread(focusedPostId);
+        Keyboard.dismiss();
+        actions.getPostThread(focusedPostId, false);
         actions.getPostsBefore(channelId, focusedPostId, 0, POSTS_PER_PAGE);
         actions.getPostsAfter(channelId, focusedPostId, 0, POSTS_PER_PAGE);
 
@@ -222,6 +227,40 @@ class Search extends Component {
     removeSearchTerms = (item) => {
         const {actions, currentTeamId} = this.props;
         actions.removeSearchTerms(currentTeamId, item.terms);
+    };
+
+    renderModifiers = ({item}) => {
+        const {theme} = this.props;
+        const style = getStyleFromTheme(theme);
+
+        return (
+            <TouchableHighlight
+                key={item.modifier}
+                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
+                onPress={() => preventDoubleTap(this.setModifierValue, this, item.value)}
+            >
+                <View style={style.modifierItemContainer}>
+                    <View style={style.modifierItemWrapper}>
+                        <View style={style.modifierItemLabelContainer}>
+                            <View style={style.modifierLabelIconContainer}>
+                                <AwesomeIcon
+                                    style={style.modifierLabelIcon}
+                                    name='plus-square-o'
+                                />
+                            </View>
+                            <Text
+                                style={style.modifierItemLabel}
+                            >
+                                {item.modifier}
+                            </Text>
+                        </View>
+                        <Text style={style.modifierItemDescription}>
+                            {item.description}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableHighlight>
+        );
     };
 
     renderPost = ({item, index}) => {
@@ -297,15 +336,19 @@ class Search extends Component {
         const {title} = section;
         const style = getStyleFromTheme(theme);
 
-        return (
-            <View style={style.sectionWrapper}>
-                <View style={style.sectionContainer}>
-                    <Text style={style.sectionLabel}>
-                        {title}
-                    </Text>
+        if (title) {
+            return (
+                <View style={style.sectionWrapper}>
+                    <View style={style.sectionContainer}>
+                        <Text style={style.sectionLabel}>
+                            {title}
+                        </Text>
+                    </View>
                 </View>
-            </View>
-        );
+            );
+        }
+
+        return <View/>;
     };
 
     renderRecentItem = ({item}) => {
@@ -351,6 +394,17 @@ class Search extends Component {
     search = (terms, isOrSearch) => {
         const {actions, currentTeamId} = this.props;
         actions.searchPosts(currentTeamId, terms, isOrSearch);
+    };
+
+    setModifierValue = (modifier) => {
+        const {value} = this.state;
+        if (!value) {
+            this.handleTextChanged(modifier);
+        } else if (value.endsWith(' ')) {
+            this.handleTextChanged(`${value}${modifier}`);
+        } else {
+            this.handleTextChanged(`${value} ${modifier}`);
+        }
     };
 
     setRecentValue = (recent) => {
@@ -405,7 +459,28 @@ class Search extends Component {
 
         const {channelName, postId, preview, value} = this.state;
         const style = getStyleFromTheme(theme);
-        const sections = [];
+        const sections = [{
+            data: [{
+                value: 'from:',
+                modifier: `from:${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
+                description: intl.formatMessage({
+                    id: 'mobile.search.from_modifier_description',
+                    defaultMessage: 'to find posts from specific users'
+                })
+            }, {
+                value: 'in:',
+                modifier: `in:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
+                description: intl.formatMessage({
+                    id: 'mobile.search.in_modifier_description',
+                    defaultMessage: 'to find posts in specific channels'
+                })
+            }],
+            key: 'modifiers',
+            title: '',
+            renderItem: this.renderModifiers,
+            keyExtractor: this.keyModifierExtractor,
+            ItemSeparatorComponent: this.renderRecentSeparator
+        }];
 
         if (recent.length) {
             sections.push({
@@ -520,7 +595,8 @@ class Search extends Component {
                     style={style.sectionList}
                     renderSectionHeader={this.renderSectionHeader}
                     sections={sections}
-                    keyboardShouldPersistTaps='handled'
+                    keyboardShouldPersistTaps='always'
+                    keyboardDismissMode='interactive'
                     stickySectionHeadersEnabled={Platform.OS === 'ios'}
                 />
                 {previewComponent}
@@ -558,6 +634,38 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 12,
             fontWeight: '600'
+        },
+        modifierItemContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            height: MODIFIER_LABEL_HEIGHT
+        },
+        modifierItemWrapper: {
+            flex: 1,
+            flexDirection: 'column',
+            paddingHorizontal: 16
+        },
+        modifierItemLabelContainer: {
+            alignItems: 'center',
+            flexDirection: 'row'
+        },
+        modifierLabelIconContainer: {
+            alignItems: 'center',
+            marginRight: 5
+        },
+        modifierLabelIcon: {
+            fontSize: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        modifierItemLabel: {
+            fontSize: 14,
+            color: theme.centerChannelColor
+        },
+        modifierItemDescription: {
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            marginTop: 5
         },
         recentItemContainer: {
             alignItems: 'center',
