@@ -11,10 +11,13 @@ import android.os.Bundle;
 import android.os.Build;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.RemoteInput;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
+import java.lang.reflect.Field;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
+import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
@@ -27,18 +30,25 @@ public class CustomPushNotification extends PushNotification {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
     public static final String NOTIFICATION_ID = "notificationId";
+    public static final String KEY_TEXT_REPLY = "CAN_REPLY";
+    public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
+
     private static LinkedHashMap<String,Integer> channelIdToNotificationCount = new LinkedHashMap<String,Integer>();
     private static LinkedHashMap<String,ArrayList<Bundle>> channelIdToNotification = new LinkedHashMap<String,ArrayList<Bundle>>();
+    private static AppLifecycleFacade lifecycleFacade;
+    private static Context context;
 
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
+        this.context = context;
     }
 
-    public static void clearNotification(int notificationId) {
+    public static void clearNotification(int notificationId, String channelId) {
         if (notificationId != -1) {
-            String channelId = String.valueOf(notificationId);
             channelIdToNotificationCount.remove(channelId);
             channelIdToNotification.remove(channelId);
+            final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancel(notificationId);
         }
     }
 
@@ -108,8 +118,8 @@ public class CustomPushNotification extends PushNotification {
             title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
         }
 
-        int notificationId = bundle.getString("channel_id").hashCode();
         String channelId = bundle.getString("channel_id");
+        int notificationId = channelId.hashCode();
         String message = bundle.getString("message");
         String subText = bundle.getString("subText");
         String numberString = bundle.getString("badge");
@@ -143,11 +153,7 @@ public class CustomPushNotification extends PushNotification {
             ApplicationBadgeHelper.instance.setApplicationIconBadgeNumber(mContext.getApplicationContext(), Integer.parseInt(numberString));
         }
 
-        int numMessages = 0;
-        Object objCount = channelIdToNotificationCount.get(channelId);
-        if (objCount != null) {
-            numMessages = (Integer)objCount;
-        }
+        int numMessages = getMessageCountInChannel(channelId);
 
         notification
                 .setGroupSummary(true)
@@ -173,17 +179,47 @@ public class CustomPushNotification extends PushNotification {
             style.setBigContentTitle(title);
             notification.setStyle(style)
                     .setContentTitle(summaryTitle);
-//                    .setNumber(numMessages);
         }
 
         // Let's add a delete intent when the notification is dismissed
-        Intent delIntent = new Intent(mContext, NotificationDismissReceiver.class);
+        Intent delIntent = new Intent(mContext, NotificationDismissService.class);
         delIntent.putExtra(NOTIFICATION_ID, notificationId);
-        PendingIntent deleteIntent = PendingIntent.getBroadcast(mContext, 0, delIntent, 0);
+        PendingIntent deleteIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, delIntent, mNotificationProps);
         notification.setDeleteIntent(deleteIntent);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             notification.setGroup(GROUP_KEY_MESSAGES);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                //Use reflection to remove all old actions
+                Field f = notification.getClass().getDeclaredField("mActions");
+                f.setAccessible(true);
+                f.set(notification, new ArrayList<>());
+            }
+            catch (NoSuchFieldException e) {}
+            catch (IllegalAccessException e) {}
+
+            Intent replyIntent = new Intent(mContext, NotificationReplyService.class);
+            replyIntent.setAction(KEY_TEXT_REPLY);
+            replyIntent.putExtra(NOTIFICATION_ID, notificationId);
+            replyIntent.putExtra("pushNotification", bundle);
+            PendingIntent replyPendingIntent = PendingIntent.getService(mContext, 103, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
+                    .setLabel("Reply")
+                    .build();
+
+            Notification.Action replyAction = new Notification.Action.Builder(
+                    R.drawable.ic_notif_action_reply, "Reply", replyPendingIntent)
+                    .addRemoteInput(remoteInput)
+                    .setAllowGeneratedReplies(true)
+                    .build();
+
+            notification
+                    .setShowWhen(true)
+                    .addAction(replyAction);
         }
 
         Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
@@ -200,6 +236,15 @@ public class CustomPushNotification extends PushNotification {
 
     private void notifyReceivedToJS() {
         mJsIOHelper.sendEventToJS(NOTIFICATION_RECEIVED_EVENT_NAME, mNotificationProps.asBundle(), mAppLifecycleFacade.getRunningReactContext());
+    }
+
+    public static Integer getMessageCountInChannel(String channelId) {
+        Object objCount = channelIdToNotificationCount.get(channelId);
+        if (objCount != null) {
+            return (Integer)objCount;
+        }
+
+        return 0;
     }
 
     private void cancelNotification(Bundle data, int notificationId) {

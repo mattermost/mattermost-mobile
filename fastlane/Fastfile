@@ -350,7 +350,13 @@ platform :android do
     )
 
     find_replace_string(
-        path_to_file: './android/app/src/main/java/com/mattermost/rn/NotificationDismissReceiver.java',
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/NotificationDismissService.java',
+        old_string: 'package com.mattermost.rnbeta;',
+        new_string: 'package com.mattermost.rn;'
+    )
+
+    find_replace_string(
+        path_to_file: './android/app/src/main/java/com/mattermost/rn/NotificationReplyService.java',
         old_string: 'package com.mattermost.rnbeta;',
         new_string: 'package com.mattermost.rn;'
     )
