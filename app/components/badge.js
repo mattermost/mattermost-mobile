@@ -91,7 +91,7 @@ export default class Badge extends PureComponent {
         setTimeout(() => {
             this.setNativeProps({
                 style: {
-                    display: 'flex'
+                    opacity: 1
                 }
             });
         }, 100);
@@ -125,7 +125,7 @@ export default class Badge extends PureComponent {
             >
                 <View
                     ref='badgeContainer'
-                    style={[styles.badge, this.props.style, {display: 'none'}]}
+                    style={[styles.badge, this.props.style, {opacity: 0}]}
                 >
                     <View style={styles.wrapper}>
                         {this.renderText()}
