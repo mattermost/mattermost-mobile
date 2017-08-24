@@ -133,7 +133,7 @@ class ChannelPostList extends PureComponent {
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
 
-        actions.loadThreadIfNecessary(post.root_id);
+        actions.loadThreadIfNecessary(post.root_id, channelId);
         actions.selectPost(rootId);
 
         let title;

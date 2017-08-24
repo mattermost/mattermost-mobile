@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
+    Keyboard,
     Platform,
     StyleSheet,
     Text,
@@ -121,7 +122,8 @@ class Search extends Component {
         const channel = channels.find((c) => c.id === channelId);
         const rootId = (post.root_id || post.id);
 
-        actions.loadThreadIfNecessary(post.root_id);
+        Keyboard.dismiss();
+        actions.loadThreadIfNecessary(rootId, channelId);
         actions.selectPost(rootId);
 
         let title;
@@ -149,11 +151,7 @@ class Search extends Component {
             }
         };
 
-        if (Platform.OS === 'android') {
-            navigator.showModal(options);
-        } else {
-            navigator.push(options);
-        }
+        navigator.push(options);
     };
 
     handleSelectionChange = (event) => {
@@ -205,7 +203,8 @@ class Search extends Component {
         const focusedPostId = post.id;
         const channelId = post.channel_id;
 
-        actions.getPostThread(focusedPostId);
+        Keyboard.dismiss();
+        actions.getPostThread(focusedPostId, false);
         actions.getPostsBefore(channelId, focusedPostId, 0, POSTS_PER_PAGE);
         actions.getPostsAfter(channelId, focusedPostId, 0, POSTS_PER_PAGE);
 
@@ -520,7 +519,8 @@ class Search extends Component {
                     style={style.sectionList}
                     renderSectionHeader={this.renderSectionHeader}
                     sections={sections}
-                    keyboardShouldPersistTaps='handled'
+                    keyboardShouldPersistTaps='always'
+                    keyboardDismissMode='interactive'
                     stickySectionHeadersEnabled={Platform.OS === 'ios'}
                 />
                 {previewComponent}
