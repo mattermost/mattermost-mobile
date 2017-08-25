@@ -46,13 +46,7 @@ platform :ios do
   lane :beta do
     match(type: 'appstore', app_identifier: 'com.mattermost.rnbeta')
 
-    if ENV['SEGMENT_API_KEY']
-      find_replace_string(
-          path_to_file: './dist/assets/config.json',
-          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
-          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
-      )
-    end
+    configure_from_env()
 
     build_ios({
               release: true,
@@ -98,13 +92,7 @@ platform :ios do
   lane :release do
     match(type: 'appstore', app_identifier: 'com.mattermost.rn')
 
-    if ENV['SEGMENT_API_KEY']
-      find_replace_string(
-          path_to_file: './dist/assets/config.json',
-          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
-          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
-      )
-    end
+    configure_from_env()
 
     # snapshot
 
@@ -177,6 +165,8 @@ platform :ios do
       )
       commit_version_bump(xcodeproj: './ios/Mattermost.xcodeproj')
     end
+
+    link_sentry()
 
     update_project_team(
         path: './ios/Mattermost.xcodeproj',
@@ -259,13 +249,7 @@ platform :android do
 
   desc 'Submit a new Beta Build to Google Play'
   lane :alpha do
-    if ENV['SEGMENT_API_KEY']
-      find_replace_string(
-          path_to_file: './dist/assets/config.json',
-          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
-          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
-      )
-    end
+    configure_from_env()
 
     build_android({
                       release: true,
@@ -324,7 +308,6 @@ platform :android do
         new_string: 'return false;'
     )
 
-
     find_replace_string(
         path_to_file: './android/app/src/main/java/com/mattermost/rn/MainApplication.java',
         old_string: 'package com.mattermost.rnbeta;',
@@ -379,13 +362,7 @@ platform :android do
         new_string: 'Mattermost;'
     )
 
-    if ENV['SEGMENT_API_KEY']
-      find_replace_string(
-          path_to_file: './dist/assets/config.json',
-          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
-          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
-      )
-    end
+    configure_from_env()
 
     build_android({
                       release: true,
@@ -442,6 +419,8 @@ platform :android do
           force: true
       )
     end
+
+    link_sentry()
 
     gradle(
         task: 'assemble',
@@ -544,5 +523,92 @@ platform :android do
         },
         success: success
     )
+  end
+end
+
+def configure_from_env()
+  if ENV['SEGMENT_API_KEY']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+        new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
+    )
+  end
+
+  if ENV['SENTRY_ENABLED']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SentryEnabled": false',
+        new_string: "\"SegmentApiKey\": #{ENV['SENTRY_ENABLED']}"
+    )
+  end
+
+  if ENV['SENTRY_ORG']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SentryOrg": ""',
+        new_string: "\"SentryOrg\": \"#{ENV['SENTRY_ORG']}\""
+    )
+  end
+
+  if ENV['SENTRY_PROJECT_IOS']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SentryProjectIos": ""',
+        new_string: "\"SentryProjectIos\": \"#{ENV['SENTRY_PROJECT_IOS']}\""
+    )
+  end
+
+  if ENV['SENTRY_PROJECT_ANDROID']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SentryProjectAndroid": ""',
+        new_string: "\"SentryProjectAndroid\": \"#{ENV['SENTRY_PROJECT_ANDROID']}\""
+    )
+  end
+
+  if ENV['SENTRY_DSN_IOS']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SentryDsnIos": ""',
+        new_string: "\"SentryDsnIos\": \"#{ENV['SENTRY_DSN_IOS']}\""
+    )
+  end
+
+  if ENV['SENTRY_DSN_ANDROID']
+    find_replace_string(
+        path_to_file: './dist/assets/config.json',
+        old_string: '"SentryDsnAndroid": ""',
+        new_string: "\"SentryDsnAndroid\": \"#{ENV['SENTRY_DSN_ANDROID']}\""
+    )
+  end
+end
+
+def link_sentry()
+  if ENV['SENTRY_ENABLED'] == 'true'
+    UI.message('Linking Sentry native components')
+
+    # `react-native link react-native-sentry` prompts the user for some input, so fill it in ahead of time
+    IO.write(
+        './android/sentry.properties',
+        'defaults.url=https://sentry.io/'\
+        "defaults.org=#{ENV['SENTRY_ORG']}"\
+        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}"\
+        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}"
+    )
+
+    IO.write(
+        './ios/sentry.properties',
+        'defaults.url=https://sentry.io/'\
+        "defaults.org=#{ENV['SENTRY_ORG']}"\
+        "defaults.project=#{ENV['SENTRY_PROJECT_IOS']}"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}"\
+        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}"
+    )
+
+    sh 'react-native link react-native-sentry'
+  else
+    UI.message('Not linking Sentry native components')
   end
 end
