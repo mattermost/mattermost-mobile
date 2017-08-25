@@ -591,20 +591,20 @@ def link_sentry()
     # `react-native link react-native-sentry` prompts the user for some input, so fill it in ahead of time
     IO.write(
         './android/sentry.properties',
-        'defaults.url=https://sentry.io/'\
-        "defaults.org=#{ENV['SENTRY_ORG']}"\
-        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}"\
-        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}"\
-        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}"
+        'defaults.url=https://sentry.io/\n'\
+        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
+        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}\n"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"\
+        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}\n"
     )
 
     IO.write(
         './ios/sentry.properties',
-        'defaults.url=https://sentry.io/'\
-        "defaults.org=#{ENV['SENTRY_ORG']}"\
-        "defaults.project=#{ENV['SENTRY_PROJECT_IOS']}"\
-        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}"\
-        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}"
+        'defaults.url=https://sentry.io/\n'\
+        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
+        "defaults.project=#{ENV['SENTRY_PROJECT_IOS']}\n"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"\
+        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}\n"
     )
 
     sh 'react-native link react-native-sentry'
