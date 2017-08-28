@@ -34,7 +34,7 @@ class PushNotification {
                 this.onReply(data, data.text, parseInt(data.badge, 10) - parseInt(data.msg_count, 10));
             } else {
                 this.deviceNotification = {
-                    data: notification,
+                    data,
                     text: data.text,
                     badge: parseInt(data.badge, 10) - parseInt(data.msg_count, 10)
                 };

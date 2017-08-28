@@ -192,15 +192,6 @@ public class CustomPushNotification extends PushNotification {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            try {
-                //Use reflection to remove all old actions
-                Field f = notification.getClass().getDeclaredField("mActions");
-                f.setAccessible(true);
-                f.set(notification, new ArrayList<>());
-            }
-            catch (NoSuchFieldException e) {}
-            catch (IllegalAccessException e) {}
-
             Intent replyIntent = new Intent(mContext, NotificationReplyService.class);
             replyIntent.setAction(KEY_TEXT_REPLY);
             replyIntent.putExtra(NOTIFICATION_ID, notificationId);

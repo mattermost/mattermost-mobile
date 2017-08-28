@@ -4467,6 +4467,10 @@ react-native-animatable@1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/react-native-animatable/-/react-native-animatable-1.2.2.tgz#a873550e6f7cb95f90baf46b9eb15b1ab56425cb"
 
+react-native-background-timer@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/react-native-background-timer/-/react-native-background-timer-1.2.0.tgz#fd951f93e5c70ec899a5fb4285e1270d0e8b9fb2"
+
 react-native-bottom-sheet@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/react-native-bottom-sheet/-/react-native-bottom-sheet-1.0.1.tgz#bce4df50cda419f61c938179508640d5d9ff7768"

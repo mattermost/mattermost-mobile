@@ -14,7 +14,6 @@ class PushNotification {
         this.onRegister = null;
         this.onNotification = null;
         this.onReply = null;
-        this.deviceNotification = null;
 
         NotificationsIOS.addEventListener('notificationReceivedForeground', (notification) => {
             const info = {
@@ -75,19 +74,12 @@ class PushNotification {
             const text = action.text;
             const badge = parseInt(action.notification._badge, 10) - 1; //eslint-disable-line no-underscore-dangle
 
-            if (this.onReply && AppState.currentState === 'background') {
-                this.onReply(data, text, badge);
-            } else {
-                this.deviceNotification = {
-                    data,
-                    text,
-                    badge
-                };
+            if (this.onReply) {
+                this.onReply(data, text, badge, completed);
             }
+        } else {
+            completed();
         }
-
-        // You must call to completed(), otherwise the action will not be triggered
-        completed();
     };
 
     configure(options) {
@@ -136,11 +128,7 @@ class PushNotification {
     }
 
     getNotification() {
-        return this.deviceNotification;
-    }
-
-    resetNotification() {
-        this.deviceNotification = null;
+        return null;
     }
 }
 

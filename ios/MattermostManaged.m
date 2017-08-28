@@ -74,6 +74,13 @@ RCT_EXPORT_METHOD(quitApp)
   exit(0);
 }
 
+RCT_EXPORT_METHOD(quitAppWithDelayInSeconds:(double)delay) {
+  dispatch_time_t quitTime = dispatch_time(DISPATCH_TIME_NOW, delay * NSEC_PER_SEC);
+  dispatch_after(quitTime, dispatch_get_main_queue(), ^{
+    exit(0);
+  });
+}
+
 @end
 
 @implementation RCTTextField (DisableCopyPaste)
