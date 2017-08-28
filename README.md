@@ -150,6 +150,6 @@ Ask your server administrator if the server uses NGINX or another webserver as a
 
 That command is an internal pipeline command for mattermost mobile to publish the mobile apps to ````Apple App Store```` and ````Google Play Store````. All ````make build-*```` commands should be avoided for this reason.
 
-To build the modified react native client use the instructions for [Running on Device](http://facebook.github.io/react-native/docs/running-on-device.html) from the [React Guide](https://facebook.github.io/react-native/docs/getting-started.html). 
+To build the modified react native client use the instructions for [Running on Device](http://facebook.github.io/react-native/docs/running-on-device.html) from the [React Native Guide](https://facebook.github.io/react-native/docs/getting-started.html). 
 
 
