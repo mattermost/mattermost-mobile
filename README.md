@@ -145,3 +145,11 @@ If your app is working properly, you should see a grey “Connecting…” bar t
 If you are seeing this message all the time, and your internet connection seems fine: 
 
 Ask your server administrator if the server uses NGINX or another webserver as a reverse proxy. If so, they should check that it is configured correctly for [supporting the websocket connection for APIv4 endpoints](https://docs.mattermost.com/install/install-ubuntu-1604.html#configuring-nginx-as-a-proxy-for-mattermost-server). 
+
+# Issues building app for own device using make build-*
+
+That command is an internal pipeline command for mattermost mobile to publish the mattermost mobile client to the Playstore. All ````make build-*```` commands should be avoided for this reason.
+
+To build the modified react native client use the instructions for [Running on Device](http://facebook.github.io/react-native/docs/running-on-device.html) from the [React Guide](https://facebook.github.io/react-native/docs/getting-started.html). 
+
+
