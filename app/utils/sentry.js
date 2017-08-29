@@ -48,6 +48,7 @@ export function captureMessage(message, state) {
 // before sending.
 function capture(captureFunc, state) {
     if (!Config.SentryEnabled) {
+        console.warn('Not capturing because Sentry is disabled');
         return;
     }
 

@@ -10,6 +10,7 @@
 #import "AppDelegate.h"
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+// Sentry Import
 #import "Orientation.h"
 #import "RCCManager.h"
 #import "RNNotifications.h"

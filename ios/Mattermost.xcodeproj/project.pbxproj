@@ -63,6 +63,8 @@
 		F083DB472349411A8E6E7AAD /* OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */; };
 		FDEF24E9D9AB47728E11033B /* libRNPasscodeStatus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17A75F5A3D0D4A4A995DCD76 /* libRNPasscodeStatus.a */; };
 		1B5204C4347D45A9A7AC3EA5 /* libReactNativeExceptionHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A22BC320BA04E18A7F2A4E6 /* libReactNativeExceptionHandler.a */; };
+		CB1B312483534997BEE7E65E /* libRNSentry.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AE23B96BF7545B9A77C0C87 /* libRNSentry.a */; };
+		DEBCF44F1F46413BB407D316 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8606EB1EB7E349EF8248933E /* libz.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -457,6 +459,9 @@
 		FBBEC29EE2D3418D9AC33BD5 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		3B1E210BF3B649BBBF427977 /* ReactNativeExceptionHandler.xcodeproj */ = {isa = PBXFileReference; name = "ReactNativeExceptionHandler.xcodeproj"; path = "../node_modules/react-native-exception-handler/ios/ReactNativeExceptionHandler.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		4A22BC320BA04E18A7F2A4E6 /* libReactNativeExceptionHandler.a */ = {isa = PBXFileReference; name = "libReactNativeExceptionHandler.a"; path = "libReactNativeExceptionHandler.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		9552041247E749308CE7B412 /* RNSentry.xcodeproj */ = {isa = PBXFileReference; name = "RNSentry.xcodeproj"; path = "../node_modules/react-native-sentry/ios/RNSentry.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		2AE23B96BF7545B9A77C0C87 /* libRNSentry.a */ = {isa = PBXFileReference; name = "libRNSentry.a"; path = "libRNSentry.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		8606EB1EB7E349EF8248933E /* libz.tbd */ = {isa = PBXFileReference; name = "libz.tbd"; path = "usr/lib/libz.tbd"; sourceTree = SDKROOT; fileEncoding = undefined; lastKnownFileType = sourcecode.text-based-dylib-definition; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -498,6 +503,8 @@
 				38FB8B0A3AAD4F839EF6EF0B /* libJailMonkey.a in Frameworks */,
 				1C1F002AC5DE465FAE9E0D74 /* libFastImage.a in Frameworks */,
 				1B5204C4347D45A9A7AC3EA5 /* libReactNativeExceptionHandler.a in Frameworks */,
+				CB1B312483534997BEE7E65E /* libRNSentry.a in Frameworks */,
+				DEBCF44F1F46413BB407D316 /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -814,6 +821,7 @@
 				27A6EA89298440439DA9F98D /* JailMonkey.xcodeproj */,
 				50ECB1D221E44F51B5690DF2 /* FastImage.xcodeproj */,
 				3B1E210BF3B649BBBF427977 /* ReactNativeExceptionHandler.xcodeproj */,
+				9552041247E749308CE7B412 /* RNSentry.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -850,6 +858,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		08742915873A4636AD1EC89C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8606EB1EB7E349EF8248933E /* libz.tbd */,
+			);
+			name = Frameworks;
+			path = Application;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -880,6 +897,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				37DA4BA41E6F55AD002B058E /* Embed Frameworks */,
+				AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */,
 			);
 			buildRules = (
 			);
@@ -1392,6 +1410,20 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/packager/react-native-xcode.sh\n\n";
 		};
+		AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Upload Debug Symbols to Sentry";
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "echo Sentry not configured. Not uploading debug symbols.";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -1489,6 +1521,7 @@
 					"$(SRCROOT)/../node_modules/react-native/Libraries/**",
 					"$(SRCROOT)/../node_modules/react-native-fast-image/ios/FastImage/**",
 					"$(SRCROOT)/../node_modules/react-native-exception-handler/ios",
+					"$(SRCROOT)/../node_modules/react-native-sentry/ios/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1529,6 +1562,7 @@
 					"$(SRCROOT)/../node_modules/react-native/Libraries/**",
 					"$(SRCROOT)/../node_modules/react-native-fast-image/ios/FastImage/**",
 					"$(SRCROOT)/../node_modules/react-native-exception-handler/ios",
+					"$(SRCROOT)/../node_modules/react-native-sentry/ios/**",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
