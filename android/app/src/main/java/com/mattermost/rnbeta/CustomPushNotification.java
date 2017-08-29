@@ -119,6 +119,7 @@ public class CustomPushNotification extends PushNotification {
         }
 
         String channelId = bundle.getString("channel_id");
+        String postId = bundle.getString("post_id");
         int notificationId = channelId.hashCode();
         String message = bundle.getString("message");
         String subText = bundle.getString("subText");
@@ -191,7 +192,7 @@ public class CustomPushNotification extends PushNotification {
             notification.setGroup(GROUP_KEY_MESSAGES);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && postId != null) {
             Intent replyIntent = new Intent(mContext, NotificationReplyService.class);
             replyIntent.setAction(KEY_TEXT_REPLY);
             replyIntent.putExtra(NOTIFICATION_ID, notificationId);
