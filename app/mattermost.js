@@ -46,7 +46,7 @@ import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
 
-import {captureException, initializeSentry} from 'app/utils/sentry';
+import {captureException, initializeSentry, LOGGER_JAVASCRIPT, LOGGER_NATIVE} from 'app/utils/sentry';
 import Config from 'assets/config';
 
 const {StatusBarManager} = NativeModules;
@@ -88,13 +88,13 @@ export default class Mattermost {
             );
         }
 
-        initializeSentry();
+        initializeSentry(store);
         setJSExceptionHandler(this.errorHandler, true);
         setNativeExceptionHandler(this.nativeErrorHandler);
     }
 
     errorHandler = (e, isFatal) => {
-        captureException(e, store.getState());
+        captureException(e, LOGGER_JAVASCRIPT);
 
         const intl = this.getIntl();
         closeWebSocket()(store.dispatch, store.getState);
@@ -117,7 +117,7 @@ export default class Mattermost {
     };
 
     nativeErrorHandler = (e) => {
-        captureException(e, store.getState());
+        captureException(e, LOGGER_NATIVE);
     };
 
     getIntl = () => {

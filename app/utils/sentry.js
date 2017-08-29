@@ -6,9 +6,19 @@ import {Sentry} from 'react-native-sentry';
 
 import Config from 'assets/config';
 
+import {ErrorTypes} from 'mattermost-redux/action_types';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-export function initializeSentry() {
+export const LOGGER_JAVASCRIPT = 'javascript';
+export const LOGGER_NATIVE = 'native';
+export const LOGGER_REDUX = 'redux';
+
+let store;
+
+export function initializeSentry(reduxStore) {
+    store = reduxStore;
+
     if (!Config.SentryEnabled) {
         console.warn('Sentry NOT enabled');
 
@@ -29,31 +39,37 @@ export function initializeSentry() {
         console.warn('Sentry is enabled, but not configured on this platform');
     }
 
-    Sentry.config(dsn).install();
+    Sentry.config(dsn, Config.SentryOptions).install();
+
+    EventEmitter.on(ErrorTypes.LOG_ERROR, logReduxError);
 }
 
-export function captureException(e, state) {
-    capture(() => {
-        Sentry.captureException(e);
-    }, state);
+function logReduxError(error) {
+    captureException(error, LOGGER_REDUX);
 }
 
-export function captureMessage(message, state) {
+export function captureException(error, logger) {
     capture(() => {
-        Sentry.captureMessage(message);
-    }, state);
+        Sentry.captureException(error, {logger});
+    });
+}
+
+export function captureMessage(message, logger) {
+    capture(() => {
+        Sentry.captureMessage(message, {logger});
+    });
 }
 
 // Wrapper function to any calls to Sentry so that we can gather any necessary extra data
 // before sending.
-function capture(captureFunc, state) {
+function capture(captureFunc) {
     if (!Config.SentryEnabled) {
         console.warn('Not capturing because Sentry is disabled');
         return;
     }
 
     try {
-        const config = getConfig(state);
+        const config = getConfig(store.getState());
 
         // Don't contact Sentry if we're connected to a server with diagnostics disabled. Note that this will
         // still log if we're not connected to any server.
