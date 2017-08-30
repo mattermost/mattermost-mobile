@@ -47,7 +47,8 @@ export default class Downloader extends PureComponent {
         if (!this.props.show && nextProps.show) {
             this.toggleDownloader();
             this.setState({
-                didCancel: false
+                didCancel: false,
+                progress: 0
             });
         } else if (!nextProps.show && this.props.show) {
             this.toggleDownloader(false);
@@ -62,11 +63,7 @@ export default class Downloader extends PureComponent {
             tension: 8,
             friction: 5
         }).start(() => {
-            if (!show) {
-                this.setState({
-                    progress: 0
-                });
-            } else if (show) {
+            if (show) {
                 this.startDownload();
             }
         });

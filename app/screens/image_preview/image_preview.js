@@ -45,6 +45,7 @@ export default class ImagePreview extends PureComponent {
         actions: PropTypes.shape({
             addFileToFetchCache: PropTypes.func.isRequired
         }),
+        canDownloadFiles: PropTypes.bool.isRequired,
         fetchCache: PropTypes.object.isRequired,
         fileId: PropTypes.string.isRequired,
         files: PropTypes.array.isRequired,
@@ -270,28 +271,31 @@ export default class ImagePreview extends PureComponent {
     }
 
     renderDownloadButton = () => {
-        const file = this.props.files[this.state.currentFile];
+        const {canDownloadFiles, files} = this.props;
+        const file = files[this.state.currentFile];
 
         let icon;
         let action = emptyFunction;
-        if (Platform.OS === 'android') {
-            action = this.showDownloadOptions;
-            icon = (
-                <Icon
-                    name='md-more'
-                    size={32}
-                    color='#fff'
-                />
-            );
-        } else if (file.has_preview_image) {
-            action = this.showDownloadOptions;
-            icon = (
-                <Icon
-                    name='ios-download-outline'
-                    size={26}
-                    color='#fff'
-                />
-            );
+        if (canDownloadFiles) {
+            if (Platform.OS === 'android') {
+                action = this.showDownloadOptions;
+                icon = (
+                    <Icon
+                        name='md-more'
+                        size={32}
+                        color='#fff'
+                    />
+                );
+            } else if (file.has_preview_image) {
+                action = this.showDownloadOptions;
+                icon = (
+                    <Icon
+                        name='ios-download-outline'
+                        size={26}
+                        color='#fff'
+                    />
+                );
+            }
         }
 
         return (
