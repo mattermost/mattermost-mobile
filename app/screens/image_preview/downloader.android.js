@@ -4,7 +4,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    PermissionsAndroid,
     StyleSheet,
+    ToastAndroid,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -15,6 +17,7 @@ import {Client4} from 'mattermost-redux/client';
 import FormattedText from 'app/components/formatted_text';
 import {emptyFunction} from 'app/utils/general';
 
+const EXTERNAL_STORAGE_PERMISSION = 'android.permission.WRITE_EXTERNAL_STORAGE';
 const HEADER_HEIGHT = 64;
 const OPTION_LIST_WIDTH = 39;
 
@@ -34,10 +37,27 @@ export default class Downloader extends PureComponent {
         show: false
     };
 
+    checkForPermissions = async () => {
+        const canWriteToStorage = await PermissionsAndroid.check(EXTERNAL_STORAGE_PERMISSION);
+        if (!canWriteToStorage) {
+            const permissionRequest = await PermissionsAndroid.request(EXTERNAL_STORAGE_PERMISSION, 'We need access to the downloads folder to save files.');
+            return permissionRequest === 'granted';
+        }
+
+        return true;
+    }
+
     handleDownload = async () => {
         const {file, onDownloadCancel, onDownloadStart, onDownloadSuccess} = this.props;
 
+        const canWriteToStorage = await this.checkForPermissions();
+        if (!canWriteToStorage) {
+            onDownloadCancel();
+            return;
+        }
+
         try {
+            ToastAndroid.show('Download started', ToastAndroid.SHORT);
             onDownloadStart();
 
             const imageUrl = Client4.getFileUrl(file.id);
@@ -59,8 +79,10 @@ export default class Downloader extends PureComponent {
 
             await task;
 
+            ToastAndroid.show('Download complete', ToastAndroid.SHORT);
             onDownloadSuccess();
         } catch (error) {
+            ToastAndroid.show('Download failed', ToastAndroid.SHORT);
             onDownloadCancel();
         }
     }
