@@ -72,6 +72,8 @@ function capture(captureFunc, store) {
         }
 
         Sentry.setUserContext(getUserContext(state));
+        Sentry.setExtraContext(getExtraContext(state));
+        Sentry.setTagsContext(getBuildTags(state));
 
         console.warn('Capturing with Sentry at ' + getDsn() + '...'); // eslint-disable-line no-console
 
@@ -87,18 +89,21 @@ function getUserContext(state) {
     const currentUser = getCurrentUser(state);
 
     if (!currentUser) {
-        return null;
+        return {};
     }
 
     return {
-        id: currentUser.id,
-        locale: currentUser.locale,
-        roles: currentUser.roles,
-        extra: getAdditionalContext(state)
+        userID: currentUser.id, // This can be changed to id after we upgrade to Sentry >= 0.14.10,
+        email: '',
+        username: '',
+        extra: {
+            locale: currentUser.locale,
+            roles: currentUser.roles
+        }
     };
 }
 
-function getAdditionalContext(state) {
+function getExtraContext(state) {
     const context = {};
 
     const currentTeam = getCurrentTeam(state);
@@ -142,4 +147,16 @@ function getAdditionalContext(state) {
     }
 
     return context;
+}
+
+function getBuildTags(state) {
+    const tags = {};
+
+    const config = getConfig(state);
+    if (config) {
+        tags.serverBuildHash = config.BuildHash;
+        tags.serverBuildNumber = config.BuildNumber;
+    }
+
+    return tags;
 }
