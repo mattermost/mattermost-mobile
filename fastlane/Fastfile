@@ -166,8 +166,6 @@ platform :ios do
       commit_version_bump(xcodeproj: './ios/Mattermost.xcodeproj')
     end
 
-    link_sentry_ios()
-
     update_project_team(
         path: './ios/Mattermost.xcodeproj',
         teamid: ENV['FASTLANE_TEAM_ID']
@@ -586,10 +584,8 @@ end
 
 def link_sentry_android()
   if ENV['SENTRY_ENABLED'] == 'true'
-    UI.message('Linking Sentry native components')
-
     File.open('../android/sentry.properties', 'w+') do |f|
-      UI.message('Writing android/sentry.properties')
+      UI.message('Creating sentry.properties from environment')
       f.write(
         'defaults.url=https://sentry.io/\n'\
         "defaults.org=#{ENV['SENTRY_ORG']}\n"\
@@ -598,84 +594,7 @@ def link_sentry_android()
         "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}\n"
       )
     end
-
-    find_replace_string(
-        path_to_file: './android/app/build.gradle',
-        old_string: '// apply from: "../../node_modules/react-native-sentry/sentry.gradle"',
-        new_string: 'apply from: "../../node_modules/react-native-sentry/sentry.gradle"'
-    )
-
-    find_replace_string(
-        path_to_file: './android/app/build.gradle',
-        old_string: "// compile project(':react-native-sentry')",
-        new_string: "compile project(':react-native-sentry')"
-    )
-
-    find_replace_string(
-        path_to_file: './android/app/src/main/java/com/mattermost/rn/MainApplication.java',
-        old_string: '// import io.sentry.RNSentryPackage;',
-        new_string: 'import io.sentry.RNSentryPackage;'
-    )
-
-    find_replace_string(
-        path_to_file: './android/app/src/main/java/com/mattermost/rn/MainApplication.java',
-        old_string: '// new RNSentryPackage(),',
-        new_string: 'new RNSentryPackage(),'
-    )
-
-    find_replace_string(
-        path_to_file: './android/settings.gradle',
-        old_string: "// include ':react-native-sentry'",
-        new_string: "include ':react-native-sentry'"
-    )
-
-    find_replace_string(
-        path_to_file: './android/settings.gradle',
-        old_string: "// project(':react-native-sentry').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sentry/android')",
-        new_string: "project(':react-native-sentry').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sentry/android')"
-    )
   else
-    UI.message('Not linking Sentry native components')
-  end
-end
-
-def link_sentry_ios()
-  if ENV['SENTRY_ENABLED'] == 'true'
-    UI.message('Linking Sentry native components')
-
-    File.open('../ios/sentry.properties', 'w+') do |f|
-      UI.message('Writing ios/sentry.properties')
-      f.write(
-        'defaults.url=https://sentry.io/\n'\
-        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
-        "defaults.project=#{ENV['SENTRY_PROJECT_IOS']}\n"\
-        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"\
-        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}\n"
-      )
-    end
-
-    find_replace_string(
-        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'shellScript = "export NODE_BINARY=node\\n../node_modules/react-native/packager/react-native-xcode.sh\\n\\n";',
-        new_string: 'shellScript = "export SENTRY_PROPERTIES=sentry.properties\\nexport NODE_BINARY=node\\n../node_modules/sentry-cli-binary/bin/sentry-cli react-native xcode ../node_modules/react-native/packager/react-native-xcode.sh\\n\\n";'
-    )
-
-    find_replace_string(
-        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'shellScript = "echo Sentry not configured. Not uploading debug symbols.";',
-        new_string: 'shellScript = "export SENTRY_PROPERTIES=sentry.properties\\n../node_modules/sentry-cli-binary/bin/sentry-cli upload-dsym";'
-    )
-
-    find_replace_string(
-        path_to_file: './ios/Mattermost/AppDelegate.m',
-        old_string: '// Sentry Import',
-        new_string: '#if __has_include(<React/RNSentry.h>)\n'\
-                    '#import <React/RNSentry.h> // This is used for versions of react >= 0.40\n'\
-                    '#else\n'\
-                    '#import "RNSentry.h" // This is used for versions of react < 0.40\n'\
-                    '#endif'
-    )
-  else
-    UI.message('Not linking Sentry native components')
+    UI.message('Not creating sentry.properties because Sentry is disabled')
   end
 end

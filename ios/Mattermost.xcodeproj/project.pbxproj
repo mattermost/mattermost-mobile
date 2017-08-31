@@ -1408,7 +1408,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/packager/react-native-xcode.sh\n\n";
+			shellScript = "./bundleReactNative.sh";
 		};
 		AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1422,7 +1422,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "echo Sentry not configured. Not uploading debug symbols.";
+			shellScript = "./uploadDebugSymbols.sh";
 		};
 /* End PBXShellScriptBuildPhase section */
 

@@ -6,7 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.facebook.react.ReactApplication;
-// import io.sentry.RNSentryPackage;
+import io.sentry.RNSentryPackage;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
@@ -61,7 +61,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LocalAuthPackage(),
             new JailMonkeyPackage(),
             new MattermostManagedPackage(),
-            // new RNSentryPackage(),
+            new RNSentryPackage(this),
             new ReactNativeExceptionHandlerPackage()
     );
   }
