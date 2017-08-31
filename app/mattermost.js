@@ -45,15 +45,17 @@ import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
+import {
+    captureException,
+    initializeSentry,
+    LOGGER_JAVASCRIPT,
+    LOGGER_NATIVE
+} from 'app/utils/sentry';
 
-import {captureException, initializeSentry, LOGGER_JAVASCRIPT, LOGGER_NATIVE} from 'app/utils/sentry';
 import Config from 'assets/config';
 
 const {StatusBarManager} = NativeModules;
-const store = configureStore(initialState);
 const AUTHENTICATION_TIMEOUT = 5 * 60 * 1000;
-
-registerScreens(store, Provider);
 
 export default class Mattermost {
     constructor() {
@@ -67,7 +69,11 @@ export default class Mattermost {
         this.allowOtherServers = true;
 
         Orientation.lockToPortrait();
-        this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
+
+        initializeSentry();
+
+        this.store = configureStore(initialState);
+        this.unsubscribeFromStore = this.store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
@@ -88,17 +94,19 @@ export default class Mattermost {
             );
         }
 
-        initializeSentry(store);
-        setJSExceptionHandler(this.errorHandler, true);
+        registerScreens(this.store, Provider);
+
+        setJSExceptionHandler(this.errorHandler, false);
         setNativeExceptionHandler(this.nativeErrorHandler);
     }
 
     errorHandler = (e, isFatal) => {
-        captureException(e, LOGGER_JAVASCRIPT);
+        console.warn('Handling Javascript error ' + JSON.stringify(e)); // eslint-disable-line no-console
+        captureException(e, LOGGER_JAVASCRIPT, this.store);
 
         const intl = this.getIntl();
-        closeWebSocket()(store.dispatch, store.getState);
-        logError(e)(store.dispatch);
+        closeWebSocket()(this.store.dispatch, this.store.getState);
+        logError(e)(this.store.dispatch);
 
         if (isFatal) {
             Alert.alert(
@@ -108,7 +116,7 @@ export default class Mattermost {
                     text: intl.formatMessage({id: 'mobile.error_handler.button', defaultMessage: 'Relaunch'}),
                     onPress: () => {
                         // purge the store
-                        store.dispatch(purgeOfflineStore());
+                        this.store.dispatch(purgeOfflineStore());
                     }
                 }],
                 {cancelable: false}
@@ -117,11 +125,12 @@ export default class Mattermost {
     };
 
     nativeErrorHandler = (e) => {
-        captureException(e, LOGGER_NATIVE);
+        console.warn('Handling native error ' + JSON.stringify(e)); // eslint-disable-line no-console
+        captureException(e, LOGGER_NATIVE, this.store);
     };
 
     getIntl = () => {
-        const state = store.getState();
+        const state = this.store.getState();
         let locale = DeviceInfo.getDeviceLocale().split('-')[0];
         if (state.views.i18n.locale) {
             locale = state.views.i18n.locale;
@@ -166,7 +175,7 @@ export default class Mattermost {
     };
 
     handleAppStateChange = async (appState) => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         const isActive = appState === 'active';
         setAppState(isActive)(dispatch, getState);
         try {
@@ -214,7 +223,7 @@ export default class Mattermost {
     };
 
     handleConfigChanged = async (serverVersion) => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const intl = this.getIntl();
 
@@ -238,7 +247,7 @@ export default class Mattermost {
     };
 
     handleManagedConfig = async (serverConfig) => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         const state = getState();
 
         let authNeeded = false;
@@ -331,15 +340,15 @@ export default class Mattermost {
     };
 
     handleResetDisplayName = (displayName) => {
-        store.dispatch(setChannelDisplayName(displayName));
+        this.store.dispatch(setChannelDisplayName(displayName));
     };
 
     handleStatusBarHeightChange = (nextStatusBarHeight) => {
-        store.dispatch(setStatusBarHeight(nextStatusBarHeight));
+        this.store.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     handleVersionUpgrade = async () => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
 
         Client4.serverVersion = '';
         PushNotifications.setApplicationIconBadgeNumber(0);
@@ -355,7 +364,7 @@ export default class Mattermost {
 
     // We need to wait for hydration to occur before load the router.
     listenForHydration = () => {
-        const state = store.getState();
+        const state = this.store.getState();
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
             this.handleManagedConfig().then((shouldStart) => {
@@ -367,7 +376,7 @@ export default class Mattermost {
     };
 
     onRegisterDevice = (data) => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         let prefix;
         if (Platform.OS === 'ios') {
             prefix = General.PUSH_NOTIFY_APPLE_REACT_NATIVE;
@@ -383,7 +392,7 @@ export default class Mattermost {
 
     onPushNotification = (deviceNotification) => {
         const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         const state = getState();
         const notification = {
             data,
@@ -419,7 +428,7 @@ export default class Mattermost {
     };
 
     resetBadgeAndVersion = () => {
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         Client4.serverVersion = '';
         Client.serverVersion = '';
         Client.token = null;
@@ -432,7 +441,7 @@ export default class Mattermost {
     restartApp = async () => {
         Navigation.dismissModal({animationType: 'none'});
 
-        const {dispatch, getState} = store;
+        const {dispatch, getState} = this.store;
         await loadConfigAndLicense()(dispatch, getState);
         this.startApp('fade');
     };
