@@ -2,12 +2,18 @@
 // See License.txt for license information.
 
 import {AppState} from 'react-native';
-import NotificationsIOS from 'react-native-notifications';
+import NotificationsIOS, {NotificationAction, NotificationCategory} from 'react-native-notifications';
+
+const CATEGORY = 'CAN_REPLY';
+const REPLY_ACTION = 'REPLY_ACTION';
+
+let replyCategory;
 
 class PushNotification {
     constructor() {
         this.onRegister = null;
         this.onNotification = null;
+        this.onReply = null;
 
         NotificationsIOS.addEventListener('notificationReceivedForeground', (notification) => {
             const info = {
@@ -32,6 +38,20 @@ class PushNotification {
             };
             this.handleNotification(info, false, true);
         });
+
+        const replyAction = new NotificationAction({
+            activationMode: 'background',
+            title: 'Reply',
+            behavior: 'textInput',
+            authenticationRequired: true,
+            identifier: REPLY_ACTION
+        }, this.handleReply);
+
+        replyCategory = new NotificationCategory({
+            identifier: CATEGORY,
+            actions: [replyAction],
+            context: 'default'
+        });
     }
 
     handleNotification = (data, foreground, userInteraction) => {
@@ -48,9 +68,24 @@ class PushNotification {
         }
     };
 
+    handleReply = (action, completed) => {
+        if (action.identifier === REPLY_ACTION) {
+            const data = action.notification.getData();
+            const text = action.text;
+            const badge = parseInt(action.notification._badge, 10) - 1; //eslint-disable-line no-underscore-dangle
+
+            if (this.onReply) {
+                this.onReply(data, text, badge, completed);
+            }
+        } else {
+            completed();
+        }
+    };
+
     configure(options) {
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
+        this.onReply = options.onReply;
 
         NotificationsIOS.addEventListener('remoteNotificationsRegistered', (deviceToken) => {
             if (this.onRegister) {
@@ -59,7 +94,7 @@ class PushNotification {
         });
 
         if (options.requestPermissions) {
-            this.requestPermissions();
+            this.requestPermissions([replyCategory]);
         }
 
         if (options.popInitialNotification) {
@@ -67,8 +102,8 @@ class PushNotification {
         }
     }
 
-    requestPermissions = () => {
-        NotificationsIOS.requestPermissions();
+    requestPermissions = (permissions) => {
+        NotificationsIOS.requestPermissions(permissions);
     };
 
     localNotificationSchedule(notification) {
@@ -90,6 +125,10 @@ class PushNotification {
 
     setApplicationIconBadgeNumber(number) {
         NotificationsIOS.setBadgesCount(number);
+    }
+
+    getNotification() {
+        return null;
     }
 }
 

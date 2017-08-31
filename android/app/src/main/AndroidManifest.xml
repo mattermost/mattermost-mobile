@@ -45,7 +45,12 @@
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
-      <receiver android:name=".NotificationDismissReceiver" />
+      <service android:name=".NotificationDismissService"
+                android:enabled="true"
+                android:exported="false" />
+      <service android:name=".NotificationReplyService"
+               android:enabled="true"
+               android:exported="false" />
     </application>
 
 </manifest>

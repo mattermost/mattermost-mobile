@@ -5,7 +5,7 @@ import 'babel-polyfill';
 import Analytics from 'analytics-react-native';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
-import {Navigation} from 'react-native-navigation';
+import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
 import {IntlProvider} from 'react-intl';
 import {
     Alert,
@@ -23,6 +23,7 @@ import {General} from 'mattermost-redux/constants';
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {logError} from 'mattermost-redux/actions/errors';
+import {createPost} from 'mattermost-redux/actions/posts';
 import {logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client, Client4} from 'mattermost-redux/client';
@@ -169,6 +170,7 @@ export default class Mattermost {
         PushNotifications.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
+            onReply: this.onPushNotificationReply,
             popInitialNotification: true,
             requestPermissions: true
         });
@@ -178,24 +180,30 @@ export default class Mattermost {
         const {dispatch, getState} = this.store;
         const isActive = appState === 'active';
         setAppState(isActive)(dispatch, getState);
-        try {
-            if (!isActive && !this.inBackgroundSince) {
-                this.inBackgroundSince = Date.now();
-            } else if (isActive && this.inBackgroundSince && (Date.now() - this.inBackgroundSince) >= AUTHENTICATION_TIMEOUT) {
-                this.inBackgroundSince = null;
-                if (this.mdmEnabled) {
-                    const config = await mattermostManaged.getConfig();
-                    const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
-                    if (authNeeded) {
-                        const authenticated = await this.handleAuthentication(config.vendor);
-                        if (!authenticated) {
-                            mattermostManaged.quitApp();
+
+        if (isActive && this.shouldRelaunchonActive) {
+            this.launchApp();
+            this.shouldRelaunchonActive = false;
+        } else {
+            try {
+                if (!isActive && !this.inBackgroundSince) {
+                    this.inBackgroundSince = Date.now();
+                } else if (isActive && this.inBackgroundSince && (Date.now() - this.inBackgroundSince) >= AUTHENTICATION_TIMEOUT) {
+                    this.inBackgroundSince = null;
+                    if (this.mdmEnabled) {
+                        const config = await mattermostManaged.getConfig();
+                        const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
+                        if (authNeeded) {
+                            const authenticated = await this.handleAuthentication(config.vendor);
+                            if (!authenticated) {
+                                mattermostManaged.quitApp();
+                            }
                         }
                     }
                 }
+            } catch (error) {
+                // do nothing
             }
-        } catch (error) {
-            // do nothing
         }
     };
 
@@ -367,11 +375,33 @@ export default class Mattermost {
         const state = this.store.getState();
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
-            this.handleManagedConfig().then((shouldStart) => {
-                if (shouldStart) {
-                    this.startApp();
-                }
-            });
+
+            const notification = PushNotifications.getNotification();
+            if (notification) {
+                // If we have a notification means that the app was started cause of a reply
+                // and the app was not sitting in the background nor opened
+                const {data, text, badge} = notification;
+                this.onPushNotificationReply(data, text, badge);
+                PushNotifications.resetNotification();
+            }
+
+            if (Platform.OS === 'android') {
+                // In case of Android we need to handle the bridge being initialized by HeadlessJS
+                Promise.resolve(Navigation.isAppLaunched()).then((appLaunched) => {
+                    if (appLaunched) {
+                        this.launchApp(); // App is launched -> show UI
+                    } else {
+                        new NativeEventsReceiver().appLaunched(this.launchApp); // App hasn't been launched yet -> show the UI only when needed.
+                    }
+                });
+            } else if (AppState.currentState === 'background') {
+                // for IOS replying from push notification starts the app in the background
+                this.shouldRelaunchonActive = true;
+                this.configurePushNotifications();
+                this.startFakeApp();
+            } else {
+                this.launchApp();
+            }
         }
     };
 
@@ -386,6 +416,7 @@ export default class Mattermost {
         } else {
             prefix = General.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
         }
+
         setDeviceToken(`${prefix}:${data.token}`)(dispatch, getState);
         this.isConfigured = true;
     };
@@ -427,6 +458,46 @@ export default class Mattermost {
         }
     };
 
+    onPushNotificationReply = (data, text, badge, completed) => {
+        const {dispatch, getState} = this.store;
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+
+        if (currentUserId) {
+            // one thing to note is that for android it will reply to the last post in the stack
+            const rootId = data.root_id || data.post_id;
+            const post = {
+                user_id: currentUserId,
+                channel_id: data.channel_id,
+                root_id: rootId,
+                parent_id: rootId,
+                message: text
+            };
+
+            if (!Client4.getUrl()) {
+                // Make sure the Client has the server url set
+                Client4.setUrl(state.entities.general.credentials.url);
+            }
+
+            if (!Client.getToken()) {
+                // Make sure the Client has the server token set
+                Client4.setToken(state.entities.general.credentials.token);
+            }
+
+            createPost(post)(dispatch, getState);
+            markChannelAsRead(data.channel_id)(dispatch, getState);
+
+            if (badge >= 0) {
+                PushNotifications.setApplicationIconBadgeNumber(badge);
+            }
+        }
+
+        if (completed) {
+            // You must call to completed(), otherwise the action will not be triggered
+            completed();
+        }
+    };
+
     resetBadgeAndVersion = () => {
         const {dispatch, getState} = this.store;
         Client4.serverVersion = '';
@@ -446,6 +517,14 @@ export default class Mattermost {
         this.startApp('fade');
     };
 
+    launchApp = () => {
+        this.handleManagedConfig().then((shouldStart) => {
+            if (shouldStart) {
+                this.startApp();
+            }
+        });
+    };
+
     startFakeApp = async () => {
         return Navigation.startSingleScreenApp({
             screen: {
@@ -463,6 +542,10 @@ export default class Mattermost {
     };
 
     startApp = (animationType = 'none') => {
+        if (!this.isConfigured) {
+            this.configurePushNotifications();
+        }
+
         Navigation.startSingleScreenApp({
             screen: {
                 screen: 'Root',
@@ -477,9 +560,5 @@ export default class Mattermost {
             },
             animationType
         });
-
-        if (!this.isConfigured) {
-            this.configurePushNotifications();
-        }
     };
 }
