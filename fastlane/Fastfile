@@ -543,7 +543,7 @@ def configure_from_env()
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryEnabled": false',
-        new_string: "\"SegmentApiKey\": #{ENV['SENTRY_ENABLED']}"
+        new_string: "\"SentryEnabled\": #{ENV['SENTRY_ENABLED']}"
     )
   end
 
