@@ -12,6 +12,7 @@ import register from 'babel-core/register';
 import chai from 'chai';
 import chaiEnzyme from 'chai-enzyme';
 import ReactNative from 'react-native-mock';
+import {Sentry} from 'react-native-sentry';
 
 const m = require('module');
 const originalLoader = m._load;
@@ -59,3 +60,6 @@ config.ignore = function(filename) {
 register(config);
 
 chai.use(chaiEnzyme());
+
+// Initialize Sentry so that it doesn't complain when the middleware tries to create breadcrumbs
+Sentry.config('');
