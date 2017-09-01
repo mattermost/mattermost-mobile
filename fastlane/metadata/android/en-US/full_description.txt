@@ -1,4 +1,4 @@
-Requires Mattermost Server v3.10+. Older servers will not be able to connect. 
+Requires Mattermost Server v4.0+. Older servers will not be able to connect. 
 
 -------
 
