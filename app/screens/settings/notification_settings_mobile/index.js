@@ -5,12 +5,14 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'app/selectors/preferences';
 
-import AccountSettings from './account_settings';
+import NotificationSettingsMobile from './notification_settings_mobile';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
     return {
+        ...ownProps,
+        config: state.entities.general.config,
         theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps)(AccountSettings);
+export default connect(mapStateToProps)(NotificationSettingsMobile);

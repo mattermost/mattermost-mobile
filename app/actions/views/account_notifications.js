@@ -11,12 +11,12 @@ export function handleUpdateUserNotifyProps(notifyProps) {
         const config = state.entities.general.config;
         const {currentUserId} = state.entities.users;
 
-        const {interval, ...otherProps} = notifyProps;
+        const {interval, user_id, ...otherProps} = notifyProps;
 
         const email = notifyProps.email;
         if (config.EnableEmailBatching === 'true' && email !== 'false') {
             const emailInterval = [{
-                user_id: notifyProps.user_id,
+                user_id,
                 category: Preferences.CATEGORY_NOTIFICATIONS,
                 name: Preferences.EMAIL_INTERVAL,
                 value: interval

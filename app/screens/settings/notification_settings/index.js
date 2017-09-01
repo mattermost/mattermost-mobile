@@ -9,14 +9,14 @@ import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notifications';
 import {getTheme} from 'app/selectors/preferences';
 
-import AccountNotifications from './account_notifications';
+import NotificationSettings from './notification_settings';
 
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
         config: state.entities.general.config,
-        myPreferences: state.entities.preferences.myPreferences,
         currentUser: getCurrentUser(state),
+        myPreferences: state.entities.preferences.myPreferences,
         updateMeRequest: state.requests.users.updateMe,
         theme: getTheme(state)
     };
@@ -30,4 +30,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AccountNotifications);
+export default connect(mapStateToProps, mapDispatchToProps)(NotificationSettings);

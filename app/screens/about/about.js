@@ -288,7 +288,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06)
         },
         scrollViewContent: {
             paddingBottom: 30
