@@ -1,6 +1,6 @@
 # Mattermost Mobile Apps Changelog
 
-## v1.1 Release
+## v1.2 Release
 
 - Release Date: September 5, 2017 
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
@@ -8,7 +8,7 @@
 ### Highlights 
 
 #### AppConfig Support for EMM solutions
-- Added [AppConfig](https://www.appconfig.org/) support, to make it easier to integrate with a variety of EMM solutions such as Blackberry UEM and MobileIron
+- Added [AppConfig](https://www.appconfig.org/) support, to make it easier to integrate with a variety of EMM solutions
 
 #### Code block viewer
 - Tap on a code block to open a viewer for easier reading 
