@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 /* eslint-disable no-unused-vars */
+
 // import {AppRegistry} from 'react-native';
 import Mattermost from 'app/mattermost';
 

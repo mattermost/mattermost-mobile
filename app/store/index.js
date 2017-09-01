@@ -13,6 +13,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
+import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import {transformSet} from './utils';
 
@@ -169,5 +170,7 @@ export default function configureAppStore(initialState) {
         }
     };
 
-    return configureStore(initialState, appReducer, offlineOptions, getAppReducer);
+    return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
+        additionalMiddleware: createSentryMiddleware()
+    });
 }

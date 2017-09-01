@@ -14,12 +14,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 class ErrorText extends PureComponent {
     static propTypes = {
         error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-        theme: PropTypes.object
-    };
-
-    static defaultProps = {
-        error: {},
-        theme: {}
+        theme: PropTypes.object.isRequired
     };
 
     render() {
