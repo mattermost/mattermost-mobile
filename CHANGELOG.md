@@ -2,8 +2,35 @@
 
 ## v1.1 Release
 
+- Release Date: September 5, 2017 
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights 
+
+#### AppConfig Support for EMM solutions
+- Added [AppConfig](https://www.appconfig.org/) support, to make it easier to integrate with a variety of EMM solutions such as Blackberry UEM and MobileIron
+
+#### Code block viewer
+- Tap on a code block to open a viewer for easier reading 
+
+### Improvements
+- Updated formatting for markdown lists and code blocks
+- Updated formatting for `in:` and `from:` search autocomplete 
+
+### Emoji Picker for Emoji Reactions
+- Added an emoji picker for selecting a reaction 
+
+### Bug Fixes
+- Fixed issue where if only LDAP and GitLab login were enabled, LDAP did not show up on the login page
+- Fixed issue with 3 digit mention count UI in channel drawer
+
+### Known Issues
+- Using `+:emoji:` to react to a message is not yet supported 
+
+## v1.1 Release
+
 - Release Date: August 2017 
-- Server Versions Supported: Server v3.10+ is required, Self-Signed SSL Certificates are not yet supported
+- Server Versions Supported: Server v3.10+ is required, Self-Signed SSL Certificates are not supported
 
 ### Highlights 
 
@@ -57,7 +84,7 @@
 ## v1.0 Release 
 
 - Release Date: July 10, 2017 
-- Server Versions Supported: Server v3.8+ is required, Self-Signed SSL Certificates are not yet supported
+- Server Versions Supported: Server v3.8+ is required, Self-Signed SSL Certificates are not supported
 
 ### Highlights 
 
