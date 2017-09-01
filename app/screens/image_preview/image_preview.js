@@ -20,8 +20,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import Orientation from 'react-native-orientation';
 
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+import {NavigationTypes} from 'app/constants';
+import {emptyFunction} from 'app/utils/general';
+
+import Downloader from './downloader';
 import Previewer from './previewer';
 
 const {View: AnimatedView} = Animated;
@@ -40,6 +45,7 @@ export default class ImagePreview extends PureComponent {
         actions: PropTypes.shape({
             addFileToFetchCache: PropTypes.func.isRequired
         }),
+        canDownloadFiles: PropTypes.bool.isRequired,
         fetchCache: PropTypes.object.isRequired,
         fileId: PropTypes.string.isRequired,
         files: PropTypes.array.isRequired,
@@ -144,6 +150,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     handleImageTap = () => {
+        this.hideDownloader(false);
         this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
     };
 
@@ -203,6 +210,103 @@ export default class ImagePreview extends PureComponent {
             });
         }
     };
+
+    showDownloadOptions = () => {
+        if (Platform.OS === 'android') {
+            if (this.state.showDownloader) {
+                this.hideDownloader();
+            } else {
+                this.showDownloader();
+            }
+        } else {
+            this.showIOSDownloadOptions();
+        }
+    }
+
+    showIOSDownloadOptions = () => {
+        this.setHeaderAndFileInfoVisible(false);
+
+        const options = {
+            title: this.props.files[this.state.currentFile].name,
+            items: [{
+                action: this.showDownloader,
+                text: {
+                    id: 'mobile.image_preview.save',
+                    defaultMessage: 'Save Image'
+                }
+            }],
+            onCancelPress: () => this.setHeaderAndFileInfoVisible(true)
+        };
+
+        this.props.navigator.showModal({
+            screen: 'OptionsModal',
+            title: '',
+            animationType: 'none',
+            passProps: {
+                ...options
+            },
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext'
+            }
+        });
+    }
+
+    showDownloader = () => {
+        EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
+
+        this.setState({
+            showDownloader: true
+        });
+    }
+
+    hideDownloader = (hideFileInfo = true) => {
+        this.setState({showDownloader: false});
+        if (hideFileInfo) {
+            this.setHeaderAndFileInfoVisible(true);
+        }
+    }
+
+    renderDownloadButton = () => {
+        const {canDownloadFiles, files} = this.props;
+        const file = files[this.state.currentFile];
+
+        let icon;
+        let action = emptyFunction;
+        if (canDownloadFiles) {
+            if (Platform.OS === 'android') {
+                action = this.showDownloadOptions;
+                icon = (
+                    <Icon
+                        name='md-more'
+                        size={32}
+                        color='#fff'
+                    />
+                );
+            } else if (file.has_preview_image) {
+                action = this.showDownloadOptions;
+                icon = (
+                    <Icon
+                        name='ios-download-outline'
+                        size={26}
+                        color='#fff'
+                    />
+                );
+            }
+        }
+
+        return (
+            <TouchableOpacity
+                onPress={action}
+                style={style.headerIcon}
+            >
+                {icon}
+            </TouchableOpacity>
+        );
+    }
 
     render() {
         const maxImageHeight = this.state.deviceHeight - STATUSBAR_HEIGHT;
@@ -303,16 +407,7 @@ export default class ImagePreview extends PureComponent {
                                 <Text style={style.title}>
                                     {`${this.state.currentFile + 1}/${this.props.files.length}`}
                                 </Text>
-                                <TouchableOpacity
-                                    onPress={() => true}
-                                    style={style.headerIcon}
-                                >
-                                    {/*<Icon
-                                        name='download'
-                                        size={15}
-                                        color='#fff'
-                                    />*/}
-                                </TouchableOpacity>
+                                {this.renderDownloadButton()}
                             </View>
                         </View>
                         <LinearGradient
@@ -328,6 +423,13 @@ export default class ImagePreview extends PureComponent {
                         </LinearGradient>
                     </AnimatedView>
                 </AnimatedView>
+                <Downloader
+                    show={this.state.showDownloader}
+                    file={this.props.files[this.state.currentFile]}
+                    onDownloadCancel={this.hideDownloader}
+                    onDownloadStart={this.hideDownloader}
+                    onDownloadSuccess={this.hideDownloader}
+                />
             </View>
         );
     }
