@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
 import {getTheme} from 'app/selectors/preferences';
+import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 
 import ImagePreview from './image_preview';
@@ -18,6 +19,7 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         return {
             ...ownProps,
+            canDownloadFiles: canDownloadFilesOnMobile(state),
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),

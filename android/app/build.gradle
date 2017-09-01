@@ -147,6 +147,7 @@ android {
 dependencies {
     compile project(':react-native-sentry')
     compile project(':react-native-exception-handler')
+    compile project(':react-native-fetch-blob')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:25.0.1"
     compile "com.facebook.react:react-native:+"  // From node_modules
