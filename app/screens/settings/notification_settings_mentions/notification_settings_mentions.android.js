@@ -80,7 +80,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                             />
                         </View>
                         <View style={style.modalFooter}>
-                            <View style={style.divider}/>
+                            <View style={style.separator}/>
                             <View style={style.modalFooterContainer}>
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}
@@ -162,7 +162,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                             </RadioButtonGroup>
                         </View>
                         <View style={style.modalFooter}>
-                            <View style={style.divider}/>
+                            <View style={style.separator}/>
                             <View style={style.modalFooterContainer}>
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}

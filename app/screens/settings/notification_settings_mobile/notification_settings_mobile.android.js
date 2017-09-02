@@ -99,7 +99,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                             }
                         </View>
                         <View style={style.modalFooter}>
-                            <View style={style.divider}/>
+                            <View style={style.separator}/>
                             <View style={style.modalFooterContainer}>
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}
@@ -185,7 +185,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                             </RadioButtonGroup>
                         </View>
                         <View style={style.modalFooter}>
-                            <View style={style.divider}/>
+                            <View style={style.separator}/>
                             <View style={style.modalFooterContainer}>
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}
