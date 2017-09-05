@@ -92,6 +92,10 @@ class PushNotification {
         }
     }
 
+    localNotification(notification) {
+        NotificationsAndroid.localNotification(notification);
+    }
+
     cancelAllLocalNotifications() {
         NotificationsAndroid.cancelAllLocalNotifications();
     }

@@ -63,7 +63,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LocalAuthPackage(),
             new JailMonkeyPackage(),
             new RNFetchBlobPackage(),
-            new MattermostManagedPackage(),
+            new MattermostPackage(this),
             new RNSentryPackage(this),
             new ReactNativeExceptionHandlerPackage(),
             new ReactNativeYouTube()

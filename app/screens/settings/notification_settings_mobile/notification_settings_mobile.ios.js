@@ -94,7 +94,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
 
         return (
             <Section
-                headerId='mobile.notification_settings_model.push_status'
+                headerId='mobile.notification_settings_mobile.push_status'
                 headerDefaultMessage='TRIGGER PUSH NOTIFICATIONS WHEN'
                 theme={theme}
             >

@@ -92,7 +92,7 @@ android {
     buildToolsVersion "25.0.1"
 
     defaultConfig {
-        applicationId "com.mattermost.rn"
+        applicationId "com.mattermost.rnbeta"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 49
@@ -152,10 +152,6 @@ android {
 }
 
 dependencies {
-    compile project(':react-native-youtube')
-    compile project(':react-native-sentry')
-    compile project(':react-native-exception-handler')
-    compile project(':react-native-fetch-blob')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:25.0.1"
     compile "com.facebook.react:react-native:+"  // From node_modules
@@ -174,6 +170,10 @@ dependencies {
     compile project(':react-native-svg')
     compile project(':react-native-local-auth')
     compile project(':jail-monkey')
+    compile project(':react-native-youtube')
+    compile project(':react-native-sentry')
+    compile project(':react-native-exception-handler')
+    compile project(':react-native-fetch-blob')
 
     // For animated GIF support
     compile 'com.facebook.fresco:animated-base-support:1.0.1'

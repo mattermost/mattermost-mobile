@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Switch,
-    TouchableWithoutFeedback,
+    TouchableOpacity,
     View
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -83,9 +83,9 @@ function sectionItem(props) {
 
     if (actionType === ActionTypes.DEFAULT || actionType === ActionTypes.SELECT || actionType === ActionTypes.ARROW) {
         return (
-            <TouchableWithoutFeedback onPress={() => action(actionValue)}>
+            <TouchableOpacity onPress={() => action(actionValue)}>
                 {component}
-            </TouchableWithoutFeedback>
+            </TouchableOpacity>
         );
     }
 
