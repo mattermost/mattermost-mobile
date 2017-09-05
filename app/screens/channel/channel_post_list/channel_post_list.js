@@ -262,7 +262,8 @@ const style = StyleSheet.create({
         paddingHorizontal: 10,
         position: 'absolute',
         top: 0,
-        width: deviceWidth
+        width: deviceWidth,
+        overflow: 'hidden'
     }
 });
 

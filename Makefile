@@ -94,9 +94,15 @@ clean:
 	rm -rf android/app/build
 
 post-install:
+	@cd ./node_modules/remotedev-server
+	@npm install socketcluster@5.0.4
+	@cd ../../
 	./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
 	@# Must remove the .babelrc for 0.42.0 to work correctly
-	rm -f node_modules/intl/.babelrc
+	# rm -f node_modules/intl/.babelrc remove
+	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
+	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
+	@cp ./ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
 	sed -i'' -e 's|"./locale-data/index.js": false|"./locale-data/index.js": "./locale-data/index.js"|g' node_modules/react-intl/package.json
