@@ -167,13 +167,14 @@ export function loadFilesForPostIfNecessary(postId) {
     };
 }
 
-export function loadThreadIfNecessary(rootId) {
+export function loadThreadIfNecessary(rootId, channelId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {posts} = state.entities.posts;
+        const {posts, postsInChannel} = state.entities.posts;
+        const channelPosts = postsInChannel[channelId];
 
-        if (rootId && !posts[rootId]) {
-            getPostThread(rootId)(dispatch, getState);
+        if (rootId && (!posts[rootId] || !channelPosts || !channelPosts[rootId])) {
+            getPostThread(rootId, false)(dispatch, getState);
         }
     };
 }

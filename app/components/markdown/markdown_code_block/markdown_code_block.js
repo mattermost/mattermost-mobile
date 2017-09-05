@@ -187,6 +187,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             overflow: 'scroll' // Doesn't actually cause a scrollbar, but stops text from wrapping
         },
         codeText: {
+            color: changeOpacity(theme.centerChannelColor, 0.65),
             fontSize: 12,
             lineHeight: 18
         },
