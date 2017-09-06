@@ -80,9 +80,9 @@ class FormattedText extends Component {
             // approach allows messages to render with React Elements while
             // keeping React's virtual diffing working properly.
             nodes = formattedMessage.
-            split(tokenDelimiter).
-            filter((part) => Boolean(part)).
-            map((part) => elements[part] || part);
+                split(tokenDelimiter).
+                filter((part) => Boolean(part)).
+                map((part) => elements[part] || part);
         } else {
             nodes = [formattedMessage];
         }

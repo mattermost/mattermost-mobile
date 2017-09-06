@@ -80,6 +80,7 @@
     "jsdom-global": "3.0.2",
     "mocha": "3.4.1",
     "mocha-react-native": "0.5.0",
+    "mockery": "2.1.0",
     "nyc": "10.3.2",
     "react-addons-test-utils": "15.5.1",
     "react-dom": "15.5.4",
