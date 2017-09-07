@@ -51,6 +51,7 @@
     "redux-thunk": "2.2.0",
     "reselect": "3.0.1",
     "semver": "5.4.1",
+    "socketcluster": "5.0.4",
     "tinycolor2": "1.4.1",
     "url-parse": "1.1.9"
   },

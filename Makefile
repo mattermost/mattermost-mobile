@@ -94,12 +94,8 @@ clean:
 	rm -rf android/app/build
 
 post-install:
-	@cd ./node_modules/remotedev-server
-	@npm install socketcluster@5.0.4
-	@cd ../../
 	./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
 	@# Must remove the .babelrc for 0.42.0 to work correctly
-	# rm -f node_modules/intl/.babelrc remove
 	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
 	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 	@cp ./ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker

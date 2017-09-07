@@ -10,7 +10,6 @@ import fs from 'fs';
 import path from 'path';
 import register from 'babel-core/register';
 import mockery from 'mockery';
-// import {Sentry} from 'react-native-sentry';
 
 mockery.enable({
     warnOnReplace: false,
@@ -23,14 +22,12 @@ mockery.registerMock('react-native-device-info', {
     getDeviceLocale() {
         return 'en';
     }
-})
+});
 mockery.registerMock('react-native-sentry', {
     Sentry: {
-        captureBreadcrumb() {
-
-        }
+        captureBreadcrumb() {}
     }
-})
+});
 
 // Ignore all node_modules except these
 const modulesToCompile = [
@@ -51,6 +48,3 @@ config.ignore = function(filename) {
 };
 
 register(config);
-
-// Initialize Sentry so that it doesn't complain when the middleware tries to create breadcrumbs
-// Sentry.config('');
