@@ -4,13 +4,11 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {TouchableOpacity, View} from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import FoundationIcon from 'react-native-vector-icons/Foundation';
 
 import FormattedText from 'app/components/formatted_text';
 
+import SettingItemIcon from './setting_item_icon';
 import getStyleSheet from './style';
 
 export default class SettingsItem extends PureComponent {
@@ -58,42 +56,14 @@ export default class SettingsItem extends PureComponent {
         }
 
         let icon;
-        if (iconName && iconType) {
-            switch (iconType) {
-            case 'fontawesome':
-                icon = (
-                    <FontAwesomeIcon
-                        name={iconName}
-                        style={[style.icon, destructor]}
-
-                    />
-                );
-                break;
-            case 'foundation':
-                icon = (
-                    <FoundationIcon
-                        name={iconName}
-                        style={[style.icon, destructor]}
-                    />
-                );
-                break;
-            case 'ion':
-                icon = (
-                    <IonIcon
-                        name={iconName}
-                        style={[style.icon, destructor]}
-                    />
-                );
-                break;
-            case 'material':
-                icon = (
-                    <MaterialIcon
-                        name={iconName}
-                        style={[style.icon, destructor]}
-                    />
-                );
-                break;
-            }
+        if (iconType && iconName) {
+            icon = (
+                <SettingItemIcon
+                    name={iconName}
+                    type={iconType}
+                    style={[style.icon, destructor]}
+                />
+            );
         }
 
         return (

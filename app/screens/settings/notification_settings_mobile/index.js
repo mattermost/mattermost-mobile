@@ -3,6 +3,8 @@
 
 import {connect} from 'react-redux';
 
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+
 import {getTheme} from 'app/selectors/preferences';
 
 import NotificationSettingsMobile from './notification_settings_mobile';
@@ -10,7 +12,7 @@ import NotificationSettingsMobile from './notification_settings_mobile';
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        config: state.entities.general.config,
+        config: getConfig(state),
         theme: getTheme(state)
     };
 }

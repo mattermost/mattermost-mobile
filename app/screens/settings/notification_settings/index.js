@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 
 import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notifications';
 import {getTheme} from 'app/selectors/preferences';
@@ -16,7 +17,7 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         config: state.entities.general.config,
         currentUser: getCurrentUser(state),
-        myPreferences: state.entities.preferences.myPreferences,
+        myPreferences: getMyPreferences(state),
         updateMeRequest: state.requests.users.updateMe,
         theme: getTheme(state)
     };
