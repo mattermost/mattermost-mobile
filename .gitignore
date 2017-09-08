@@ -69,3 +69,7 @@ ios/sentry.properties
 
 # Testing
 .nyc_output
+
+# Pods
+.podinstall
+ios/Pods/
