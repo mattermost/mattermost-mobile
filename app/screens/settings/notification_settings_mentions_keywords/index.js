@@ -5,12 +5,13 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'app/selectors/preferences';
 
-import AccountSettings from './account_settings';
+import NotificationSettingsMentionsKeywords from './notification_settings_mentions_keywords';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
     return {
+        ...ownProps,
         theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps)(AccountSettings);
+export default connect(mapStateToProps)(NotificationSettingsMentionsKeywords);

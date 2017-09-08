@@ -5,10 +5,9 @@ import React from 'react';
 import {Navigation} from 'react-native-navigation';
 
 import About from 'app/screens/about';
-import AccountSettings from 'app/screens/account_settings';
-import AccountNotifications from 'app/screens/account_notifications';
+
 import AddReaction from 'app/screens/add_reaction';
-import AdvancedSettings from 'app/screens/advanced_settings';
+import AdvancedSettings from 'app/screens/settings/advanced_settings';
 import Channel from 'app/screens/channel';
 import ChannelAddMembers from 'app/screens/channel_add_members';
 import ChannelInfo from 'app/screens/channel_info';
@@ -24,13 +23,18 @@ import Mfa from 'app/screens/mfa';
 import MoreChannels from 'app/screens/more_channels';
 import MoreDirectMessages from 'app/screens/more_dms';
 import Notification from 'app/screens/notification';
+import NotificationSettings from 'app/screens/settings/notification_settings';
+import NotificationSettingsEmail from 'app/screens/settings/notification_settings_email';
+import NotificationSettingsMentions from 'app/screens/settings/notification_settings_mentions';
+import NotificationSettingsMentionsKeywords from 'app/screens/settings/notification_settings_mentions_keywords';
+import NotificationSettingsMobile from 'app/screens/settings/notification_settings_mobile';
 import OptionsModal from 'app/screens/options_modal';
 import Root from 'app/screens/root';
 import SSO from 'app/screens/sso';
 import Search from 'app/screens/search';
 import SelectServer from 'app/screens/select_server';
 import SelectTeam from 'app/screens/select_team';
-import Settings from 'app/screens/settings';
+import Settings from 'app/screens/settings/general';
 import Thread from 'app/screens/thread';
 import UserProfile from 'app/screens/user_profile';
 
@@ -52,8 +56,6 @@ function wrapWithContextProvider(Comp, excludeEvents = false) {
 
 export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapWithContextProvider(About), store, Provider);
-    Navigation.registerComponent('AccountSettings', () => wrapWithContextProvider(AccountSettings), store, Provider);
-    Navigation.registerComponent('AccountNotifications', () => wrapWithContextProvider(AccountNotifications), store, Provider);
     Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(AddReaction), store, Provider);
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(AdvancedSettings), store, Provider);
     Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel), store, Provider);
@@ -72,6 +74,11 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
     Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification, true), store, Provider);
+    Navigation.registerComponent('NotificationSettings', () => wrapWithContextProvider(NotificationSettings), store, Provider);
+    Navigation.registerComponent('NotificationSettingsEmail', () => wrapWithContextProvider(NotificationSettingsEmail), store, Provider);
+    Navigation.registerComponent('NotificationSettingsMentions', () => wrapWithContextProvider(NotificationSettingsMentions), store, Provider);
+    Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapWithContextProvider(NotificationSettingsMentionsKeywords), store, Provider);
+    Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(NotificationSettingsMobile), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('Search', () => wrapWithContextProvider(Search), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);

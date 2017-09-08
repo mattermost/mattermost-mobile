@@ -10,33 +10,6 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            marginTop: 30
-        },
-        footer: {
-            marginHorizontal: 15,
-            marginTop: 10,
-            fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        },
-        header: {
-            marginHorizontal: 15,
-            marginBottom: 10,
-            fontSize: 13,
-            color: theme.centerChannelColor
-        },
-        items: {
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
-        }
-    };
-});
-
 function section(props) {
     const {
         children,
@@ -86,5 +59,32 @@ section.propTypes = {
     headerValues: PropTypes.object,
     theme: PropTypes.object.isRequired
 };
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            marginBottom: 30
+        },
+        header: {
+            marginHorizontal: 15,
+            marginBottom: 10,
+            fontSize: 13,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        },
+        items: {
+            backgroundColor: theme.centerChannelBg,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
+        footer: {
+            marginHorizontal: 15,
+            marginTop: 10,
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5)
+        }
+    };
+});
 
 export default section;

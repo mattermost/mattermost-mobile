@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape, injectIntl} from 'react-intl';
 import {
     InteractionManager,
     Linking,
@@ -12,12 +12,11 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
-
-import SettingsItem from './settings_item';
 
 class Settings extends PureComponent {
     static propTypes = {
@@ -82,13 +81,13 @@ class Settings extends PureComponent {
         });
     };
 
-    goToAccountSettings = () => {
+    goToNotifications = () => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
-            screen: 'AccountSettings',
-            title: intl.formatMessage({id: 'user.settings.modal.title', defaultMessage: 'Account Settings'}),
-            animated: true,
+            screen: 'NotificationSettings',
             backButtonTitle: '',
+            title: intl.formatMessage({id: 'user.settings.modal.notifications', defaultMessage: 'Notifications'}),
+            animated: true,
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
@@ -174,28 +173,30 @@ class Settings extends PureComponent {
         const style = getStyleSheet(theme);
         const showTeams = Object.keys(joinableTeams).length > 0;
         const showHelp = isValidUrl(config.HelpLink);
+        const showArrow = Platform.OS === 'ios';
 
         return (
             <View style={style.container}>
                 <StatusBar/>
                 <View style={style.wrapper}>
+                    <View style={style.divider}/>
                     <SettingsItem
-                        defaultMessage='Account Settings'
-                        i18nId='sidebar_right_menu.accountSettings'
-                        iconName='cog'
-                        iconType='fontawesome'
-                        onPress={() => this.handlePress(this.goToAccountSettings)}
-                        separator={true}
+                        defaultMessage='Notifications'
+                        i18nId='user.settings.modal.notifications'
+                        iconName='ios-notifications'
+                        iconType='ion'
+                        onPress={() => this.handlePress(this.goToNotifications)}
+                        showArrow={showArrow}
                         theme={theme}
                     />
                     {showTeams &&
                     <SettingsItem
                         defaultMessage='Open teams you can join'
                         i18nId='mobile.select_team.join_open'
-                        iconName='group'
-                        iconType='material'
+                        iconName='list'
+                        iconType='foundation'
                         onPress={() => this.handlePress(this.goToSelectTeam)}
-                        separator={true}
+                        showArrow={showArrow}
                         theme={theme}
                     />
                     }
@@ -203,54 +204,56 @@ class Settings extends PureComponent {
                     <SettingsItem
                         defaultMessage='Help'
                         i18nId='mobile.help.title'
-                        iconName='help'
-                        iconType='material'
-                        onPress={() => preventDoubleTap(this.openHelp, this)}
-                        separator={true}
+                        iconName='md-help'
+                        iconType='ion'
+                        onPress={() => this.handlePress(this.openHelp)}
+                        showArrow={showArrow}
                         theme={theme}
                     />
                     }
                     <SettingsItem
                         defaultMessage='Report a Problem'
                         i18nId='sidebar_right_menu.report'
-                        iconName='warning'
-                        iconType='material'
+                        iconName='exclamation'
+                        iconType='fontawesome'
                         onPress={() => this.handlePress(this.openErrorEmail)}
-                        separator={true}
+                        showArrow={showArrow}
                         theme={theme}
                     />
                     <SettingsItem
                         defaultMessage='Advanced Settings'
                         i18nId='mobile.advanced_settings.title'
-                        iconName='ios-construct'
+                        iconName='ios-hammer'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToAdvancedSettings)}
-                        separator={true}
+                        showArrow={showArrow}
                         theme={theme}
                     />
                     <SettingsItem
                         defaultMessage='About Mattermost'
                         i18nId='about.title'
-                        iconName='info-outline'
-                        iconType='material'
+                        iconName='ios-information-circle'
+                        iconType='ion'
                         onPress={() => this.handlePress(this.goToAbout)}
                         separator={false}
+                        showArrow={showArrow}
                         theme={theme}
                     />
                     <View style={style.divider}/>
-                </View>
-                <View style={style.footer}>
-                    <View style={style.divider}/>
-                    <SettingsItem
-                        defaultMessage='Logout'
-                        i18nId='sidebar_right_menu.logout'
-                        iconName='exit-to-app'
-                        iconType='material'
-                        isDestructor={true}
-                        onPress={() => this.handlePress(this.logout)}
-                        separator={false}
-                        theme={theme}
-                    />
+                    <View style={style.footer}>
+                        <View style={style.divider}/>
+                        <SettingsItem
+                            centered={true}
+                            defaultMessage='Logout'
+                            i18nId='sidebar_right_menu.logout'
+                            isDestructor={true}
+                            onPress={() => this.handlePress(this.logout)}
+                            separator={false}
+                            showArrow={false}
+                            theme={theme}
+                        />
+                        <View style={style.divider}/>
+                    </View>
                 </View>
             </View>
         );
@@ -259,32 +262,25 @@ class Settings extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        leftComponent: {
-            alignItems: 'center',
-            flex: 1,
-            justifyContent: 'center',
-            width: 44
-        },
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg
         },
         wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            flex: 1
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+            flex: 1,
+            ...Platform.select({
+                ios: {
+                    paddingTop: 35
+                }
+            })
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1
         },
         footer: {
-            height: 51,
-            justifyContent: 'flex-end',
-            ...Platform.select({
-                android: {
-                    marginBottom: 20
-                }
-            })
+            marginTop: 35
         }
     };
 });
