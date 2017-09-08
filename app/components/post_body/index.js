@@ -20,7 +20,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        attachments: post.props && post.props.attachments,
+        postProps: post.props || {},
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,
         hasReactions: post.has_reactions,

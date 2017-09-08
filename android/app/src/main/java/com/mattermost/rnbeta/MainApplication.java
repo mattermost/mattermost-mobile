@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.facebook.react.ReactApplication;
+import com.inprogress.reactnativeyoutube.ReactNativeYouTube;
 import io.sentry.RNSentryPackage;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
@@ -64,7 +65,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNFetchBlobPackage(),
             new MattermostManagedPackage(),
             new RNSentryPackage(this),
-            new ReactNativeExceptionHandlerPackage()
+            new ReactNativeExceptionHandlerPackage(),
+            new ReactNativeYouTube()
     );
   }
 
