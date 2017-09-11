@@ -4813,9 +4813,9 @@ react-native-device-info@0.11.0:
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.11.0.tgz#e96dd0e3f8a7d7e3022c1f441f51fa912fdc7444"
 
-react-native-drawer@2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/react-native-drawer/-/react-native-drawer-2.5.0.tgz#022cba5c0516126a9fc9cce3185cb46c644b51c4"
+react-native-drawer@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-drawer/-/react-native-drawer-2.4.0.tgz#e12aceb26bf95795b7d062838feaac94c7700c04"
   dependencies:
     prop-types "^15.5.8"
     tween-functions "^1.0.1"

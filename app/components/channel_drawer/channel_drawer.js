@@ -332,6 +332,7 @@ export default class ChannelDrawer extends PureComponent {
                 captureGestures='open'
                 type='static'
                 acceptTap={true}
+                acceptPanOnDrawer={true}
                 disabled={false}
                 content={this.renderContent()}
                 tapToClose={true}
