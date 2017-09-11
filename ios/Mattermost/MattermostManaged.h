@@ -7,9 +7,10 @@
 //
 
 #import <React/RCTEventEmitter.h>
+#import <React/RCTBridgeModule.h>
 
 
-@interface MattermostManaged : RCTEventEmitter
+@interface MattermostManaged : RCTEventEmitter <RCTBridgeModule>
 
 + (void)sendConfigChangedEvent;
 

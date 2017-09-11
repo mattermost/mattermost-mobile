@@ -15,6 +15,7 @@ export default {
             }
         });
     },
+    clearListeners: () => true,
     authenticate: LocalAuth.authenticate,
     blurAppScreen: MattermostManaged.blurAppScreen,
     getConfig: MattermostManaged.getConfig,

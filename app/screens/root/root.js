@@ -8,6 +8,7 @@ import {Client, Client4} from 'mattermost-redux/client';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Loading from 'app/components/loading';
+import mattermostManaged from 'app/mattermost_managed';
 import {stripTrailingSlashes} from 'app/utils/url';
 
 export default class Root extends PureComponent {
@@ -27,6 +28,10 @@ export default class Root extends PureComponent {
         if (!this.props.justInit) {
             this.loadStoreAndScene();
         }
+    }
+
+    componentWillUnmount() {
+        mattermostManaged.clearListeners();
     }
 
     goToLoadTeam = () => {
