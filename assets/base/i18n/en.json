@@ -1917,6 +1917,7 @@
   "mobile.post.retry": "Refresh",
   "mobile.post_info.add_reaction": "Add Reaction",
   "mobile.request.invalid_response": "Received invalid response from the server.",
+  "mobile.retry_message": "Refreshing messages failed. Pull up to try again.",
   "mobile.routes.channelInfo": "Info",
   "mobile.routes.channelInfo.createdBy": "Created by {creator} on ",
   "mobile.routes.channelInfo.delete_channel": "Delete Channel",
