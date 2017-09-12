@@ -87,19 +87,23 @@ export default class NotificationSettingsMobileBase extends PureComponent {
     };
 
     saveUserNotifyProps = () => {
-        const props = {...this.state};
-
-        Reflect.deleteProperty(props, 'defaultSound');
-        Reflect.deleteProperty(props, 'selectedUri');
-        Reflect.deleteProperty(props, 'shouldBlink');
-        Reflect.deleteProperty(props, 'shouldVibrate');
-        Reflect.deleteProperty(props, 'showMobilePushModal');
-        Reflect.deleteProperty(props, 'showMobilePushStatusModal');
-        Reflect.deleteProperty(props, 'showMobileSoundsModal');
-        Reflect.deleteProperty(props, 'sound');
+        const props = () => {
+            const {
+                channel,
+                comments,
+                desktop,
+                desktop_duration,
+                email,
+                first_name,
+                mention_keys,
+                push,
+                push_status
+            } = this.state;
+            return Object.assign({}, {channel, comments, desktop, desktop_duration, email, first_name, mention_keys, push, push_status});
+        };
 
         this.props.onBack({
-            ...props,
+            ...props(),
             user_id: this.props.currentUser.id
         });
     };
