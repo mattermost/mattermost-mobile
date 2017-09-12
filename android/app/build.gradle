@@ -66,8 +66,11 @@ import com.android.build.OutputFile
  */
 
 apply from: "../../node_modules/react-native/react.gradle"
-apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+
+if (System.getenv("MM_SENTRY_ENABLED") == "true") {
+    apply from: "../../node_modules/react-native-sentry/sentry.gradle"
+}
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -89,7 +92,7 @@ android {
     buildToolsVersion "25.0.1"
 
     defaultConfig {
-        applicationId "com.mattermost.rnbeta"
+        applicationId "com.mattermost.rn"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 49
@@ -127,6 +130,10 @@ android {
         debug {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+        unsigned.initWith(buildTypes.release)
+        unsigned {
+            signingConfig null
         }
     }
     // applicationVariants are e.g. debug, release
