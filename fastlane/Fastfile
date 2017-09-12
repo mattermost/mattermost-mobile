@@ -146,7 +146,7 @@ platform :ios do
     end
   end
 
-  desc 'Deploy a new version to the App Store'
+  desc 'Build an unsigned ipa'
   lane :unsigned do
     if ENV['SEGMENT_API_KEY']
       find_replace_string(
@@ -317,6 +317,57 @@ platform :android do
 
   desc 'Deploy a new version to Google Play'
   lane :release do
+    prepare_release()
+
+    build_android({
+                      release: true,
+                      increment_build: false,
+                      ensure_git_status_clean: false
+                  })
+
+    supply(
+        track: 'beta',
+        apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
+    )
+
+
+    sh 'mv ../android/app/src/main/java/com/mattermost/rn/ ../android/app/src/main/java/com/mattermost/rnbeta/'
+
+    reset_git_repo(
+        force: true,
+        skip_clean: true
+    )
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      google_play_url = ENV['GOOGLE_PLAY_URL']
+      send_message_for_android(
+          '#### New Android beta published for Production',
+          '',
+          "#android-beta in #{google_play_url.nil? ? 'Google Play' : "[Google Play](#{google_play_url})"} on [#{Time.new.utc.to_s}]",
+          [],
+          true
+      )
+    end
+  end
+
+  desc 'Build an unsigned apk'
+  lane :unsigned do
+    prepare_release()
+
+    gradle(
+        task: 'assemble',
+        build_type: 'Unsigned',
+        project_dir: 'android/'
+    )
+  end
+
+  error do |lane, exception|
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      send_message_for_android('', 'Unsuccessful Build', exception.message, [:lane], false)
+    end
+  end
+
+  def prepare_release
     android_change_package_identifier(newIdentifier: 'com.mattermost.rn', manifest: './android/app/src/main/AndroidManifest.xml')
     android_change_string_app_name(newName: 'Mattermost', stringsFile: './android/app/src/main/res/values/strings.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: 'com.mattermost.rn')
@@ -391,48 +442,6 @@ platform :android do
     )
 
     configure_from_env()
-
-    build_android({
-                      release: true,
-                      increment_build: false,
-                      ensure_git_status_clean: false
-                  })
-
-    # supply(
-    #     track: "production",
-    #     apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
-    # )
-
-    # We are going to upload the build to the beta lane and not directly to production so it can be promoted later
-    supply(
-        track: 'beta',
-        apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
-    )
-
-
-    sh 'mv ../android/app/src/main/java/com/mattermost/rn/ ../android/app/src/main/java/com/mattermost/rnbeta/'
-
-    reset_git_repo(
-        force: true,
-        skip_clean: true
-    )
-
-    if ENV['MATTERMOST_WEBHOOK_URL']
-      google_play_url = ENV['GOOGLE_PLAY_URL']
-      send_message_for_android(
-          '#### New Android beta published for Production',
-          '',
-          "#android-beta in #{google_play_url.nil? ? 'Google Play' : "[Google Play](#{google_play_url})"} on [#{Time.new.utc.to_s}]",
-          [],
-          true
-      )
-    end
-  end
-
-  error do |lane, exception|
-    if ENV['MATTERMOST_WEBHOOK_URL']
-      send_message_for_android('', 'Unsuccessful Build', exception.message, [:lane], false)
-    end
   end
 
   def build_android(options)

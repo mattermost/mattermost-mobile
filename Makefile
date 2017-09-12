@@ -159,6 +159,13 @@ do-unsigned-ios:
 	@mv build-ios/Mattermost-unsigned.ipa .
 	@rm -rf build-ios/
 
+do-unsigned-android:
+	@echo "Building unsigned Android app"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned
+	@mv android/app/build/outputs/apk/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
+
+unsigned-android: pre-run check-style start-packager do-unsigned-android stop-packager
+
 unsigned-ios: pre-run check-style start-packager do-unsigned-ios stop-packager
 
 alpha:
