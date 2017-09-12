@@ -15,6 +15,7 @@ export default class Emoji extends React.PureComponent {
     static propTypes = {
         customEmojis: PropTypes.object,
         emojiName: PropTypes.string.isRequired,
+        fontSize: PropTypes.number,
         literal: PropTypes.string,
         size: PropTypes.number.isRequired,
         textStyle: CustomPropTypes.Style,
@@ -26,44 +27,116 @@ export default class Emoji extends React.PureComponent {
         literal: ''
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            ...this.getImageUrl(props),
+            originalWidth: 0,
+            originalHeight: 0
+        };
+    }
+
+    componentWillMount() {
+        if (this.state.imageUrl && this.state.isCustomEmoji) {
+            this.updateImageHeight(this.state.imageUrl);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.customEmojis !== this.props.customEmojis || nextProps.emojiName !== this.props.emojiName) {
+            this.setState({
+                ...this.getImageUrl(nextProps),
+                originalWidth: 0,
+                originalHeight: 0
+            });
+        }
+    }
+
+    componentWillUpdate(nextProps, nextState) {
+        if (nextState.imageUrl !== this.state.imageUrl && nextState.imageUrl && nextState.isCustomEmoji) {
+            this.updateImageHeight(nextState.imageUrl);
+        }
+    }
+
+    getImageUrl = (props = this.props) => {
+        const emojiName = props.emojiName;
+
+        let imageUrl = '';
+        let isCustomEmoji = false;
+        if (EmojiIndicesByAlias.has(emojiName)) {
+            const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
+
+            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
+        } else if (props.customEmojis.has(emojiName)) {
+            const emoji = props.customEmojis.get(emojiName);
+
+            imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
+            isCustomEmoji = true;
+        }
+
+        return {
+            imageUrl,
+            isCustomEmoji
+        };
+    }
+
+    updateImageHeight = (imageUrl) => {
+        Image.getSize(imageUrl, (originalWidth, originalHeight) => {
+            this.setState({
+                originalWidth,
+                originalHeight
+            });
+        });
+    }
+
     render() {
         const {
-            customEmojis,
-            emojiName,
+            fontSize,
             literal,
             size,
             textStyle,
             token
         } = this.props;
 
-        let imageUrl;
-        if (EmojiIndicesByAlias.has(emojiName)) {
-            const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
-            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
-        } else if (customEmojis.has(emojiName)) {
-            const emoji = customEmojis.get(emojiName);
-            imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
-        }
-
-        if (!imageUrl) {
+        if (!this.state.imageUrl) {
             return <Text style={textStyle}>{literal}</Text>;
         }
 
-        let ImageComponent = FastImage;
+        let ImageComponent;
+        if (Platform.OS === 'android') {
+            ImageComponent = Image;
+        } else {
+            ImageComponent = FastImage;
+        }
+
         const source = {
-            uri: imageUrl,
+            uri: this.state.imageUrl,
             headers: {
                 Authorization: `Bearer ${token}`
             }
         };
 
-        if (Platform.OS === 'android') {
-            ImageComponent = Image;
+        const width = size;
+        let height = size;
+        if (this.state.originalHeight && this.state.originalWidth) {
+            height = (size * this.state.originalHeight) / this.state.originalWidth;
         }
+
+        let marginTop = 0;
+        if (fontSize) {
+            // Center the image vertically on iOS (does nothing on Android)
+            marginTop = ((height - fontSize) / 2) + 1;
+        }
+
+        // Android can't change the size of an image after its first render, so
+        // force a new image to be rendered when height changes
+        const key = Platform.OS === 'android' ? String(height) : null;
 
         return (
             <ImageComponent
-                style={{width: size, height: size}}
+                key={key}
+                style={{width, height, marginTop}}
                 source={source}
                 onError={this.onError}
             />
