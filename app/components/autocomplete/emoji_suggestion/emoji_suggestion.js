@@ -99,7 +99,7 @@ export default class EmojiSuggestion extends Component {
                 <View style={style.emoji}>
                     <Emoji
                         emojiName={item}
-                        size={10}
+                        size={20}
                     />
                 </View>
                 <Text style={style.emojiName}>{`:${item}:`}</Text>

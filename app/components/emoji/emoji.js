@@ -16,7 +16,6 @@ export default class Emoji extends React.PureComponent {
         customEmojis: PropTypes.object,
         emojiName: PropTypes.string.isRequired,
         literal: PropTypes.string,
-        padding: PropTypes.number,
         size: PropTypes.number.isRequired,
         textStyle: CustomPropTypes.Style,
         token: PropTypes.string.isRequired
@@ -24,8 +23,7 @@ export default class Emoji extends React.PureComponent {
 
     static defaultProps = {
         customEmojis: new Map(),
-        literal: '',
-        padding: 10
+        literal: ''
     };
 
     render() {
@@ -33,7 +31,6 @@ export default class Emoji extends React.PureComponent {
             customEmojis,
             emojiName,
             literal,
-            padding,
             size,
             textStyle,
             token
@@ -66,7 +63,7 @@ export default class Emoji extends React.PureComponent {
 
         return (
             <ImageComponent
-                style={{width: size, height: size, padding}}
+                style={{width: size, height: size}}
                 source={source}
                 onError={this.onError}
             />
