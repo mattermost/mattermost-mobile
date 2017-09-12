@@ -15,6 +15,7 @@ import {
 import RNFetchBlob from 'react-native-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Orientation from 'react-native-orientation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -22,7 +23,6 @@ import FormattedText from 'app/components/formatted_text';
 import {emptyFunction} from 'app/utils/general';
 
 const {View: AnimatedView} = Animated;
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 
 export default class Downloader extends PureComponent {
     static propTypes = {
@@ -38,9 +38,23 @@ export default class Downloader extends PureComponent {
         show: false
     };
 
-    state = {
-        downloaderTop: new Animated.Value(deviceHeight),
-        progress: 0
+    constructor(props) {
+        super(props);
+
+        const {height: deviceHeight} = Dimensions.get('window');
+        this.state = {
+            deviceHeight,
+            downloaderTop: new Animated.Value(deviceHeight),
+            progress: 0
+        };
+    }
+
+    componentWillMount() {
+        Orientation.addOrientationListener(this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -55,7 +69,21 @@ export default class Downloader extends PureComponent {
         }
     }
 
+    orientationDidChange = () => {
+        const {height: deviceHeight} = Dimensions.get('window');
+        const top = this.props.show ? (deviceHeight / 2) - 100 : deviceHeight;
+
+        setTimeout(() => {
+            Animated.spring(this.state.downloaderTop, {
+                toValue: top,
+                tension: 8,
+                friction: 5
+            }).start();
+        }, 200);
+    };
+
     toggleDownloader = (show = true) => {
+        const {deviceHeight} = this.state;
         const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
 
         Animated.spring(this.state.downloaderTop, {
@@ -67,7 +95,7 @@ export default class Downloader extends PureComponent {
                 this.startDownload();
             }
         });
-    }
+    };
 
     startDownload = async () => {
         try {
@@ -181,15 +209,19 @@ export default class Downloader extends PureComponent {
                 </View>
             </View>
         );
-    }
+    };
 
     render() {
         const {show} = this.props;
+        if (!show) {
+            return null;
+        }
+
         const {didCancel, progress} = this.state;
 
         const trueProgress = didCancel ? 0 : progress;
 
-        const containerHeight = show ? deviceHeight : 0;
+        const containerHeight = show ? '100%' : 0;
         return (
             <View style={[styles.container, {height: containerHeight}]}>
                 <AnimatedView style={[styles.downloader, {top: this.state.downloaderTop}]}>
@@ -241,11 +273,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         left: 0,
-        width: deviceWidth
+        width: '100%'
     },
     downloader: {
         alignItems: 'center',
-        left: (deviceWidth / 2) - 118,
+        alignSelf: 'center',
         height: 220,
         width: 236,
         borderRadius: 8,

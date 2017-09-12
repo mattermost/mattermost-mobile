@@ -30,7 +30,6 @@ import Downloader from './downloader';
 import Previewer from './previewer';
 
 const {View: AnimatedView} = Animated;
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing the drag
 const DRAG_VERTICAL_THRESHOLD_END = 100; // When do we want to navigate back
 const DRAG_HORIZONTAL_THRESHOLD = 50; // Make sure that it's not a sloppy horizontal swipe
@@ -60,6 +59,8 @@ export default class ImagePreview extends PureComponent {
         this.zoomableImages = {};
 
         const currentFile = props.files.findIndex((file) => file.id === props.fileId);
+        const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
+
         this.state = {
             currentFile,
             deviceHeight: deviceHeight - STATUSBAR_HEIGHT,
@@ -73,6 +74,7 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentWillMount() {
+        Orientation.addOrientationListener(this.orientationDidChange);
         this.mainViewPanResponder = PanResponder.create({
             onMoveShouldSetPanResponderCapture: this.mainViewMoveShouldSetPanResponderCapture,
             onPanResponderMove: Animated.event([null, {
@@ -96,11 +98,19 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentWillUnmount() {
-        Orientation.lockToPortrait();
+        Orientation.removeOrientationListener(this.orientationDidChange);
+
         if (Platform.OS === 'ios') {
             StatusBar.setHidden(false, 'fade');
         }
     }
+
+    orientationDidChange = () => {
+        setTimeout(() => {
+            const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
+            this.setState({deviceWidth, deviceHeight});
+        }, 100);
+    };
 
     close = () => {
         this.props.navigator.dismissModal({animationType: 'none'});
@@ -212,7 +222,7 @@ export default class ImagePreview extends PureComponent {
         } else {
             this.showIOSDownloadOptions();
         }
-    }
+    };
 
     showIOSDownloadOptions = () => {
         this.setHeaderAndFileInfoVisible(false);
@@ -244,7 +254,7 @@ export default class ImagePreview extends PureComponent {
                 modalPresentationStyle: 'overCurrentContext'
             }
         });
-    }
+    };
 
     showDownloader = () => {
         EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
@@ -252,14 +262,14 @@ export default class ImagePreview extends PureComponent {
         this.setState({
             showDownloader: true
         });
-    }
+    };
 
     hideDownloader = (hideFileInfo = true) => {
         this.setState({showDownloader: false});
         if (hideFileInfo) {
             this.setHeaderAndFileInfoVisible(true);
         }
-    }
+    };
 
     renderDownloadButton = () => {
         const {canDownloadFiles, files} = this.props;
@@ -297,7 +307,7 @@ export default class ImagePreview extends PureComponent {
                 {icon}
             </TouchableOpacity>
         );
-    }
+    };
 
     render() {
         const maxImageHeight = this.state.deviceHeight - STATUSBAR_HEIGHT;
@@ -332,7 +342,6 @@ export default class ImagePreview extends PureComponent {
                         bounces={false}
                         onScroll={this.handleScroll}
                         scrollEventThrottle={2}
-
                     >
                         {this.props.files.map((file, index) => {
                             let component;

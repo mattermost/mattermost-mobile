@@ -11,13 +11,12 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import Orientation from 'react-native-orientation';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
-
-const {height: deviceHeight} = Dimensions.get('window');
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
@@ -36,6 +35,23 @@ export default class FileUploadPreview extends PureComponent {
         theme: PropTypes.object.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired
     };
+
+    constructor(props) {
+        super(props);
+
+        const {height: deviceHeight} = Dimensions.get('window');
+        this.state = {
+            deviceHeight
+        };
+    }
+
+    componentWillMount() {
+        Orientation.addOrientationListener(this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Orientation.removeOrientationListener(this.orientationDidChange);
+    }
 
     handleRetryFileUpload = (file) => {
         if (!file.failed) {
@@ -98,7 +114,13 @@ export default class FileUploadPreview extends PureComponent {
                 </View>
             );
         });
-    }
+    };
+
+    orientationDidChange = () => {
+        setTimeout(() => {
+            this.setState({deviceHeight: Dimensions.get('window').height});
+        }, 100);
+    };
 
     render() {
         if (this.props.channelIsLoading || (!this.props.files.length && !this.props.filesUploadingForCurrentChannel)) {
@@ -107,7 +129,7 @@ export default class FileUploadPreview extends PureComponent {
 
         return (
             <KeyboardLayout>
-                <View style={[style.container]}>
+                <View style={[style.container, {height: this.state.deviceHeight}]}>
                     <ScrollView
                         horizontal={true}
                         style={style.scrollView}
@@ -124,7 +146,6 @@ export default class FileUploadPreview extends PureComponent {
 const style = StyleSheet.create({
     container: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        height: deviceHeight,
         left: 0,
         bottom: 0,
         position: 'absolute',

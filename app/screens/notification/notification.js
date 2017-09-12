@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import Orientation from 'react-native-orientation';
 
 import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
@@ -38,6 +39,22 @@ export default class Notification extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            deviceWidth: Dimensions.get('window').width
+        };
+    }
+
+    componentWillMount() {
+        Orientation.addOrientationListener(this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Orientation.removeOrientationListener(this.orientationDidChange);
+    }
 
     notificationTapped = () => {
         const {actions, navigator, notification, theme} = this.props;
@@ -160,6 +177,13 @@ export default class Notification extends PureComponent {
         return userName;
     };
 
+    orientationDidChange = () => {
+        setTimeout(() => {
+            const {width: deviceWidth} = Dimensions.get('window');
+            this.setState({deviceWidth});
+        }, 100);
+    };
+
     render() {
         const {message} = this.props.notification;
 
@@ -172,7 +196,7 @@ export default class Notification extends PureComponent {
             const icon = this.getNotificationIcon();
 
             return (
-                <View style={style.container}>
+                <View style={[style.container, {width: this.state.deviceWidth}]}>
                     <TouchableOpacity
                         style={{flex: 1, flexDirection: 'row'}}
                         onPress={this.notificationTapped}
@@ -208,7 +232,6 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         paddingHorizontal: 10,
-        width: Dimensions.get('window').width,
         ...Platform.select({
             android: {
                 height: 68

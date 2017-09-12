@@ -10,6 +10,8 @@ import {
     StyleSheet,
     View
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import Orientation from 'react-native-orientation';
 
 import Drawer from 'app/components/drawer';
 import {alertErrorWithFallback} from 'app/utils/general';
@@ -22,6 +24,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 const DRAWER_INITIAL_OFFSET = 40;
+const DRAWER_LANDSCAPE_OFFSET = 150;
 
 export default class ChannelDrawer extends PureComponent {
     static propTypes = {
@@ -45,15 +48,25 @@ export default class ChannelDrawer extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
-    state = {
-        openDrawer: false,
-        openDrawerOffset: DRAWER_INITIAL_OFFSET
-    };
-
     swiperIndex = 1;
+
+    constructor(props) {
+        super(props);
+
+        const orientation = Orientation.getInitialOrientation();
+        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+        if (orientation === 'LANDSCAPE' || DeviceInfo.isTablet()) {
+            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+        }
+        this.state = {
+            openDrawer: false,
+            openDrawerOffset
+        };
+    }
 
     componentWillMount() {
         this.props.actions.getTeams();
+        Orientation.addOrientationListener(this.orientationDidChange);
     }
 
     componentDidMount() {
@@ -66,6 +79,7 @@ export default class ChannelDrawer extends PureComponent {
         EventEmitter.off('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
     handleAndroidBack = () => {
@@ -93,7 +107,7 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     handleDrawerOpen = () => {
-        if (this.state.openDrawerOffset === DRAWER_INITIAL_OFFSET) {
+        if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
         }
     };
@@ -204,6 +218,14 @@ export default class ChannelDrawer extends PureComponent {
         this.selectChannel(result.data);
     };
 
+    orientationDidChange = (orientation) => {
+        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+        if (orientation === 'LANDSCAPE' || DeviceInfo.isTablet()) {
+            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+        }
+        this.setState({openDrawerOffset});
+    };
+
     onPageSelected = (index) => {
         this.swiperIndex = index;
     };
@@ -211,7 +233,12 @@ export default class ChannelDrawer extends PureComponent {
     onSearchEnds = () => {
         //hack to update the drawer when the offset changes
         this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
-        this.setState({openDrawerOffset: DRAWER_INITIAL_OFFSET});
+        const orientation = Orientation.getInitialOrientation();
+        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+        if (orientation === 'LANDSCAPE' || DeviceInfo.isTablet()) {
+            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+        }
+        this.setState({openDrawerOffset});
     };
 
     onSearchStart = () => {
@@ -242,7 +269,7 @@ export default class ChannelDrawer extends PureComponent {
             openDrawerOffset
         } = this.state;
 
-        const showTeams = openDrawerOffset === DRAWER_INITIAL_OFFSET && teamsCount > 1;
+        const showTeams = openDrawerOffset !== 0 && teamsCount > 1;
 
         const teams = (
             <View style={style.swiperContent}>

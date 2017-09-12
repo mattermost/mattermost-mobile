@@ -69,7 +69,7 @@ export default class Mattermost {
         this.isConfigured = false;
         this.allowOtherServers = true;
 
-        Orientation.lockToPortrait();
+        Orientation.unlockAllOrientations();
 
         initializeSentry();
 
@@ -557,6 +557,9 @@ export default class Mattermost {
             },
             passProps: {
                 allowOtherServers: this.allowOtherServers
+            },
+            appStyle: {
+                orientation: 'auto'
             },
             animationType
         });

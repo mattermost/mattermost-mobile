@@ -5,7 +5,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Dimensions,
     Keyboard,
     Platform,
     SectionList,
@@ -609,7 +608,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         header: {
             backgroundColor: theme.sidebarHeaderBg,
-            width: Dimensions.get('window').width,
+            width: '100%',
             ...Platform.select({
                 android: {
                     height: 46,
