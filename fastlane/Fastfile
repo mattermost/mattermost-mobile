@@ -146,6 +146,30 @@ platform :ios do
     end
   end
 
+  desc 'Deploy a new version to the App Store'
+  lane :unsigned do
+    if ENV['SEGMENT_API_KEY']
+      find_replace_string(
+          path_to_file: './dist/assets/config.json',
+          old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+          new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
+      )
+    end
+
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        app_identifier: 'com.mattermost.rn'
+    )
+    update_info_plist(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        display_name: 'Mattermost'
+    )
+
+    sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+  end
+
   error do |lane, exception|
     if ENV['MATTERMOST_WEBHOOK_URL']
       send_message_for_ios('', 'Unsuccessful Build', exception.message, [:lane], false)

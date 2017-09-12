@@ -150,6 +150,17 @@ do-build-android:
 
 build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
 
+do-unsigned-ios:
+	@echo "Building unsigned iOS app"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
+	@mkdir -p build-ios
+	@cd ios/ && xcodebuild -project Mattermost.xcodeproj/ -scheme Mattermost -sdk iphoneos -configuration Relase -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+	@cd build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/
+	@mv build-ios/Mattermost-unsigned.ipa .
+	@rm -rf build-ios/
+
+unsigned-ios: pre-run check-style start-packager do-unsigned-ios stop-packager
+
 alpha:
 	@:
 
