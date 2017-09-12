@@ -16,7 +16,8 @@ import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
-import SlackAttachments from 'app/components/slack_attachments';
+
+import PostBodyAdditionalContent from 'app/components/post_body_additional_content';
 
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
@@ -29,7 +30,6 @@ class PostBody extends PureComponent {
             flagPost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired
         }).isRequired,
-        attachments: PropTypes.array,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
         fileIds: PropTypes.array,
@@ -49,6 +49,7 @@ class PostBody extends PureComponent {
         onPostEdit: PropTypes.func,
         onPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
+        postProps: PropTypes.object,
         renderReplyBar: PropTypes.func,
         theme: PropTypes.object,
         toggleSelected: PropTypes.func
@@ -123,25 +124,6 @@ class PostBody extends PureComponent {
         return attachments;
     }
 
-    renderSlackAttachments = (baseStyle, blockStyles, textStyles) => {
-        const {attachments, navigator, theme} = this.props;
-
-        if (attachments && attachments.length) {
-            return (
-                <SlackAttachments
-                    attachments={attachments}
-                    baseTextStyle={baseStyle}
-                    blockStyles={blockStyles}
-                    navigator={navigator}
-                    textStyles={textStyles}
-                    theme={theme}
-                />
-            );
-        }
-
-        return null;
-    };
-
     render() {
         const {
             canDelete,
@@ -161,6 +143,7 @@ class PostBody extends PureComponent {
             onPostEdit,
             onPress,
             postId,
+            postProps,
             renderReplyBar,
             theme,
             toggleSelected
@@ -201,6 +184,7 @@ class PostBody extends PureComponent {
             });
         }
 
+        let body;
         let messageComponent;
         if (hasBeenDeleted) {
             messageComponent = (
@@ -210,6 +194,7 @@ class PostBody extends PureComponent {
                     defaultMessage='(message deleted)'
                 />
             );
+            body = (<View>{messageComponent}</View>);
         } else if (message.length) {
             messageComponent = (
                 <View style={{flexDirection: 'row'}}>
@@ -229,38 +214,53 @@ class PostBody extends PureComponent {
             );
         }
 
-        let body;
-        if (isSearchResult) {
-            body = (
-                <TouchableHighlight
-                    onHideUnderlay={this.handleHideUnderlay}
-                    onLongPress={this.show}
-                    onPress={onPress}
-                    onShowUnderlay={this.handleShowUnderlay}
-                    underlayColor='transparent'
-                >
-                    <View>
+        if (!hasBeenDeleted) {
+            if (isSearchResult) {
+                body = (
+                    <TouchableHighlight
+                        onHideUnderlay={this.handleHideUnderlay}
+                        onLongPress={this.show}
+                        onPress={onPress}
+                        onShowUnderlay={this.handleShowUnderlay}
+                        underlayColor='transparent'
+                    >
+                        <View>
+                            {messageComponent}
+                            <PostBodyAdditionalContent
+                                baseTextStyle={messageStyle}
+                                blockStyles={blockStyles}
+                                navigator={navigator}
+                                message={message}
+                                postProps={postProps}
+                                textStyles={textStyles}
+                            />
+                            {this.renderFileAttachments()}
+                        </View>
+                    </TouchableHighlight>
+                );
+            } else {
+                body = (
+                    <OptionsContext
+                        actions={actions}
+                        ref='options'
+                        onPress={onPress}
+                        toggleSelected={toggleSelected}
+                        cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                    >
                         {messageComponent}
-                        {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
+                        <PostBodyAdditionalContent
+                            baseTextStyle={messageStyle}
+                            blockStyles={blockStyles}
+                            message={message}
+                            navigator={navigator}
+                            postProps={postProps}
+                            textStyles={textStyles}
+                        />
                         {this.renderFileAttachments()}
-                    </View>
-                </TouchableHighlight>
-            );
-        } else {
-            body = (
-                <OptionsContext
-                    actions={actions}
-                    ref='options'
-                    onPress={onPress}
-                    toggleSelected={toggleSelected}
-                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                >
-                    {messageComponent}
-                    {this.renderSlackAttachments(messageStyle, blockStyles, textStyles)}
-                    {this.renderFileAttachments()}
-                    {hasReactions && <Reactions postId={postId}/>}
-                </OptionsContext>
-            );
+                        {hasReactions && <Reactions postId={postId}/>}
+                    </OptionsContext>
+                );
+            }
         }
 
         return (

@@ -8,6 +8,7 @@
  */
 
 #import "AppDelegate.h"
+#import <AVFoundation/AVFoundation.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #if __has_include(<React/RNSentry.h>)
@@ -31,6 +32,7 @@
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   self.window.backgroundColor = [UIColor whiteColor];
   [[RCCManager sharedInstance] initBridgeWithBundleURL:jsCodeLocation launchOptions:launchOptions];
+  [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
   return YES;
 }

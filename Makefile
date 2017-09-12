@@ -5,6 +5,7 @@
 
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
+POD := $(shell command -v pod 2> /dev/null)
 
 .yarninstall: package.json
 	@if ! [ $(shell command -v yarn 2> /dev/null) ]; then \
@@ -16,7 +17,15 @@ android_target := $(filter-out build-android,$(MAKECMDGOALS))
 
 	yarn install --pure-lockfile
 
-	touch $@
+	@touch $@
+
+.podinstall:
+ifdef POD
+	@echo Getting CocoaPods dependencies;
+	@cd ios && pod install;
+endif
+
+	@touch $@
 
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
@@ -30,7 +39,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 
 	node scripts/make-dist-assets.js
 
-pre-run: .yarninstall dist/assets
+pre-run: | .yarninstall .podinstall dist/assets
 
 run: run-ios
 
@@ -89,8 +98,10 @@ clean:
 	yarn cache clean
 	rm -rf node_modules
 	rm -f .yarninstall
+	rm -f .podinstall
 	rm -rf dist
 	rm -rf ios/build
+	rm -rf ios/Pods
 	rm -rf android/app/build
 
 post-install:

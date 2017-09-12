@@ -4363,7 +4363,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@15.5.10, prop-types@^15.0.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.8, prop-types@~15.5.7:
+prop-types@15.5.10, prop-types@^15.0.0, prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.8, prop-types@~15.5.7:
   version "15.5.10"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.5.10.tgz#2797dfc3126182e3a95e3dfbb2e893ddd7456154"
   dependencies:
@@ -4580,18 +4580,18 @@ react-native-exception-handler@2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/react-native-exception-handler/-/react-native-exception-handler-2.0.1.tgz#4ab9fc668927c2672adfffce3784316d81f130e8"
 
+react-native-fast-image@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-1.0.0.tgz#a88337efa18fd34d530bab9ee05680374f3e2a2d"
+  dependencies:
+    prop-types "^15.5.10"
+
 react-native-fetch-blob@0.10.8:
   version "0.10.8"
   resolved "https://registry.yarnpkg.com/react-native-fetch-blob/-/react-native-fetch-blob-0.10.8.tgz#4fc256abae0cb5f10e7c41f28c11b3ff330d72a9"
   dependencies:
     base-64 "0.1.0"
     glob "7.0.6"
-
-react-native-fast-image@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-1.0.0.tgz#a88337efa18fd34d530bab9ee05680374f3e2a2d"
-  dependencies:
-    prop-types "^15.5.10"
 
 react-native-image-picker@jp928/react-native-image-picker#6ee35b69f3dbd6c7c66f580fd4d9eabf398703d4:
   version "0.26.2"
@@ -4707,6 +4707,12 @@ react-native-vector-icons@4.1.1:
     lodash "^4.0.0"
     prop-types "^15.5.8"
     yargs "^6.3.0"
+
+react-native-youtube@1.0.0-beta.3:
+  version "1.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/react-native-youtube/-/react-native-youtube-1.0.0-beta.3.tgz#0dc51c943cd92868c1457880d78dd5ba72b6001a"
+  dependencies:
+    prop-types "^15.5.0"
 
 react-native@0.44.0:
   version "0.44.0"
@@ -6256,3 +6262,7 @@ yargs@~3.10.0:
     cliui "^2.1.0"
     decamelize "^1.0.0"
     window-size "0.1.0"
+
+youtube-video-id@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/youtube-video-id/-/youtube-video-id-0.0.2.tgz#1c2874b8c6d36ef140c36739336863e22f49e438"
