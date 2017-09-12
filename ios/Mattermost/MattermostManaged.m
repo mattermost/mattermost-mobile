@@ -11,9 +11,12 @@
 
 @implementation MattermostManaged
 
+BOOL hasListeners = false;
+
 RCT_EXPORT_MODULE();
 
 -(void)startObserving {
+  hasListeners = true;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
   [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
                                                     object:nil
@@ -24,6 +27,7 @@ RCT_EXPORT_MODULE();
 
 - (void)stopObserving
 {
+  hasListeners = false;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:NSUserDefaultsDidChangeNotification];
 }
@@ -49,12 +53,16 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 - (void)managedConfigDidChange:(NSNotification *)notification
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [self sendEventWithName:@"managedConfigDidChange" body:response];
+  if (hasListeners == true) {
+    [self sendEventWithName:@"managedConfigDidChange" body:response];
+  }
 }
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [self sendEventWithName:@"managedConfigDidChange" body:response];
+  if (hasListeners == true) {
+    [self sendEventWithName:@"managedConfigDidChange" body:response];
+  }
 }
 
 RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve

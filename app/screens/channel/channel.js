@@ -59,7 +59,7 @@ class Channel extends PureComponent {
 
     componentWillMount() {
         EventEmitter.on('leave_team', this.handleLeaveTeam);
-        NetInfo.isConnected.addEventListener('change', this.handleConnectionChange);
+        NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectionChange);
         NetInfo.isConnected.fetch().then(this.handleConnectionChange);
 
         if (this.props.currentTeam) {
@@ -89,7 +89,7 @@ class Channel extends PureComponent {
         const {closeWebSocket, stopPeriodicStatusUpdates} = this.props.actions;
 
         EventEmitter.off('leave_team', this.handleLeaveTeam);
-        NetInfo.isConnected.removeEventListener('change', this.handleConnectionChange);
+        NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
 
         closeWebSocket();
         stopPeriodicStatusUpdates();

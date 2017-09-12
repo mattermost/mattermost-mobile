@@ -156,24 +156,24 @@ class Post extends PureComponent {
         const {intl, navigator, post, theme} = this.props;
 
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
-        then((source) => {
-            navigator.showModal({
-                screen: 'AddReaction',
-                title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                animated: true,
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
-                },
-                passProps: {
-                    post,
-                    closeButton: source,
-                    onEmojiPress: this.handleAddReactionToPost
-                }
+            then((source) => {
+                navigator.showModal({
+                    screen: 'AddReaction',
+                    title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                    animated: true,
+                    navigatorStyle: {
+                        navBarTextColor: theme.sidebarHeaderTextColor,
+                        navBarBackgroundColor: theme.sidebarHeaderBg,
+                        navBarButtonColor: theme.sidebarHeaderTextColor,
+                        screenBackgroundColor: theme.centerChannelBg
+                    },
+                    passProps: {
+                        post,
+                        closeButton: source,
+                        onEmojiPress: this.handleAddReactionToPost
+                    }
+                });
             });
-        });
     }
 
     handleFailedPostPress = () => {
