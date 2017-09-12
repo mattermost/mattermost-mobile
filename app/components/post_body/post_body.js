@@ -292,7 +292,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         message: {
             color: theme.centerChannelColor,
-            fontSize: 15
+            fontSize: 15,
+            lineHeight: 20
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
