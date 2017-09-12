@@ -117,10 +117,15 @@ export default class Emoji extends React.PureComponent {
             }
         };
 
-        const width = size;
+        let width = size;
         let height = size;
         if (this.state.originalHeight && this.state.originalWidth) {
-            height = (size * this.state.originalHeight) / this.state.originalWidth;
+            if (this.state.originalWidth > this.state.originalHeight) {
+                height = (size * this.state.originalHeight) / this.state.originalWidth;
+            } else if (this.state.originalWidth < this.state.originalHeight) {
+                // This may cause text to reflow, but its impossible to add a horizontal margin
+                width = (size * this.state.originalWidth) / this.state.originalHeight;
+            }
         }
 
         let marginTop = 0;
@@ -130,8 +135,8 @@ export default class Emoji extends React.PureComponent {
         }
 
         // Android can't change the size of an image after its first render, so
-        // force a new image to be rendered when height changes
-        const key = Platform.OS === 'android' ? String(height) : null;
+        // force a new image to be rendered when the size changes
+        const key = Platform.OS === 'android' ? (height + '-' + width) : null;
 
         return (
             <ImageComponent
