@@ -59,7 +59,7 @@ export default class Markdown extends PureComponent {
                     heading4: 60,
                     heading5: 60,
                     heading6: 60,
-                    text: 50
+                    text: 45
                 }
             })
         },
