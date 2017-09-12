@@ -52,13 +52,13 @@ export default class Markdown extends PureComponent {
                     text: 20
                 },
                 android: {
-                    heading1: 80,
-                    heading2: 80,
-                    heading3: 80,
-                    heading4: 80,
-                    heading5: 80,
-                    heading6: 80,
-                    text: 65
+                    heading1: 60,
+                    heading2: 60,
+                    heading3: 60,
+                    heading4: 60,
+                    heading5: 60,
+                    heading6: 60,
+                    text: 50
                 }
             })
         },
