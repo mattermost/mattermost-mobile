@@ -132,6 +132,13 @@ export default class Emoji extends React.PureComponent {
         if (fontSize) {
             // Center the image vertically on iOS (does nothing on Android)
             marginTop = (height - fontSize) / 2;
+
+            // hack to get the vertical alignment looking better
+            if (fontSize === 17) {
+                marginTop -= 2;
+            } else if (fontSize === 15) {
+                marginTop += 1;
+            }
         }
 
         // Android can't change the size of an image after its first render, so
