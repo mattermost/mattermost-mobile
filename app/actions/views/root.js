@@ -4,15 +4,13 @@
 import {ViewTypes} from 'app/constants';
 import {
     handleSelectChannel,
-    loadChannelsIfNecessary,
-    loadProfilesAndTeamMembersForDMSidebar,
     setChannelDisplayName
 } from 'app/actions/views/channel';
 import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
 
 import {General} from 'mattermost-redux/constants';
 import {getClientConfig, getLicenseConfig} from 'mattermost-redux/actions/general';
-import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
+import {getChannelAndMyMember, markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
@@ -42,28 +40,30 @@ export function goToNotification(notification) {
         const state = getState();
         const {data} = notification;
         const {currentTeamId, teams} = state.entities.teams;
-        const {currentChannelId} = state.entities.channels;
+        const {channels, currentChannelId, myMembers} = state.entities.channels;
         const channelId = data.channel_id;
 
         // if the notification does not have a team id is because its from a DM or GM
-        let teamId = data.team_id || currentTeamId;
+        const teamId = data.team_id || currentTeamId;
 
         dispatch(setChannelDisplayName(''));
 
-        if (teamId) {
+        if (teamId && teamId !== currentTeamId) {
             handleTeamChange(teams[teamId], false)(dispatch, getState);
-            await loadChannelsIfNecessary(teamId)(dispatch, getState);
-        } else {
+        } else if (!teamId) {
             await selectFirstAvailableTeam()(dispatch, getState);
-            teamId = state.entities.team.currentTeamId;
         }
 
-        viewChannel(channelId)(dispatch, getState);
-        loadProfilesAndTeamMembersForDMSidebar(teamId)(dispatch, getState);
+        if (!channels[channelId] || !myMembers[channelId]) {
+            getChannelAndMyMember(channelId)(dispatch, getState);
+        }
 
         if (channelId !== currentChannelId) {
             handleSelectChannel(channelId)(dispatch, getState);
         }
+
+        viewChannel(channelId)(dispatch, getState);
+
         markChannelAsRead(channelId, currentChannelId)(dispatch, getState);
     };
 }

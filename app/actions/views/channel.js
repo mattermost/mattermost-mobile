@@ -39,7 +39,7 @@ export function loadChannelsIfNecessary(teamId) {
 export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {currentUserId} = state.entities.users;
+        const {currentUserId, profilesInChannel} = state.entities.users;
         const {channels, myMembers} = state.entities.channels;
         const {myPreferences} = state.entities.preferences;
         const {membersInTeam} = state.entities.teams;
@@ -96,7 +96,8 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         }
 
         for (const [key, pref] of gmPrefs) {
-            if (pref.value === 'true') {
+            //only load the profiles in channels if we don't already have them
+            if (pref.value === 'true' && !profilesInChannel[key]) {
                 loadProfilesForChannels.push(key);
             }
         }
