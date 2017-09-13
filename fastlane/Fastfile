@@ -199,7 +199,7 @@ platform :ios do
         clean: true,
         scheme: 'Mattermost',
         configuration: (options[:release] ? 'Release' : 'Debug'),
-        project: './ios/Mattermost.xcodeproj',
+        workspace: './ios/Mattermost.xcworkspace',
         export_method: options[:method]
     )
   end
