@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     ActivityIndicator,
     Animated,
-    Dimensions,
     Platform,
     StyleSheet,
     TouchableOpacity,
@@ -32,8 +31,9 @@ export default class OfflineIndicator extends PureComponent {
             initWebSocket: PropTypes.func.isRequired
         }).isRequired,
         appState: PropTypes.bool,
+        isConnecting: PropTypes.bool,
         isOnline: PropTypes.bool,
-        websocket: PropTypes.object
+        webSocketStatus: PropTypes.string
     };
 
     static defaultProps: {
@@ -45,7 +45,6 @@ export default class OfflineIndicator extends PureComponent {
         super(props);
 
         this.state = {
-            forced: false,
             network: null,
             top: new Animated.Value(INITIAL_TOP)
         };
@@ -54,12 +53,15 @@ export default class OfflineIndicator extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.appState || nextProps.appState) {
-            if (this.state.forced || nextProps.isOnline) {
-                if (nextProps.websocket.status === RequestStatus.STARTED || nextProps.websocket.status === RequestStatus.FAILURE) {
-                    this.connecting();
-                } else if (nextProps.websocket.status === RequestStatus.SUCCESS) {
+        const {appState, isConnecting, isOnline, webSocketStatus} = nextProps;
+        if (appState) { // The app is in the foreground
+            if (isOnline) {
+                if (this.state.network && webSocketStatus === RequestStatus.SUCCESS) {
+                    // Show the connected animation only if we had a previous network status
                     this.connected();
+                } else if ((webSocketStatus === RequestStatus.STARTED || webSocketStatus === RequestStatus.FAILURE) && isConnecting) {
+                    // Show the connecting bar if it failed to connect at least twice
+                    this.connecting();
                 }
             } else {
                 this.offline();
@@ -74,16 +76,17 @@ export default class OfflineIndicator extends PureComponent {
     };
 
     connect = () => {
-        const {closeWebSocket, initWebSocket} = this.props.actions;
-        this.setState({forced: true}, () => {
-            initWebSocket(Platform.OS);
+        const {actions, isOnline, webSocketStatus} = this.props;
+        const {closeWebSocket, initWebSocket} = actions;
+        initWebSocket(Platform.OS);
 
-            // set forced to be false after trying for 3 seconds
-            setTimeout(() => {
+        // close the WS connection after trying for 5 seconds
+        setTimeout(() => {
+            if (webSocketStatus !== RequestStatus.SUCCESS) {
                 closeWebSocket(true);
-                this.setState({forced: false, network: OFFLINE});
-            }, 3000);
-        });
+                this.setState({network: isOnline ? OFFLINE : CONNECTING});
+            }
+        }, 5000);
     };
 
     connecting = () => {
@@ -113,7 +116,7 @@ export default class OfflineIndicator extends PureComponent {
             )
         ]).start(() => {
             this.backgroundColor.setValue(0);
-            this.setState({forced: false});
+            this.setState({network: null});
         });
     };
 
@@ -184,8 +187,8 @@ export default class OfflineIndicator extends PureComponent {
         }
 
         return (
-            <Animated.View style={[styles.container, {top: this.state.top}]}>
-                <Animated.View style={[styles.wrapper, {backgroundColor: background}]}>
+            <Animated.View style={[styles.container, {top: this.state.top, backgroundColor: background}]}>
+                <Animated.View style={styles.wrapper}>
                     <FormattedText
                         defaultMessage={defaultMessage}
                         id={i18nId}
@@ -201,7 +204,7 @@ export default class OfflineIndicator extends PureComponent {
 const styles = StyleSheet.create({
     container: {
         height: HEIGHT,
-        width: Dimensions.get('window').width,
+        width: '100%',
         zIndex: 9,
         position: 'absolute'
     },
@@ -211,8 +214,7 @@ const styles = StyleSheet.create({
         height: HEIGHT,
         flexDirection: 'row',
         paddingLeft: 12,
-        paddingRight: 5,
-        backgroundColor: 'red'
+        paddingRight: 5
     },
     message: {
         color: '#FFFFFF',
