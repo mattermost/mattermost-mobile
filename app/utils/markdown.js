@@ -27,38 +27,32 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         heading1: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
+            lineHeight: 25
         },
         heading2: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
+            lineHeight: 25
         },
         heading3: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
+            lineHeight: 25
         },
         heading4: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
+            lineHeight: 25
         },
         heading5: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
+            lineHeight: 25
         },
         heading6: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 10
+            lineHeight: 25
         },
         code: {
             alignSelf: 'center',
