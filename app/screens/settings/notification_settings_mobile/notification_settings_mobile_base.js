@@ -87,8 +87,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
     };
 
     saveUserNotifyProps = () => {
-        const props = () => {
-            const {
+        const {
                 channel,
                 comments,
                 desktop,
@@ -99,11 +98,17 @@ export default class NotificationSettingsMobileBase extends PureComponent {
                 push,
                 push_status
             } = this.state;
-            return Object.assign({}, {channel, comments, desktop, desktop_duration, email, first_name, mention_keys, push, push_status});
-        };
 
         this.props.onBack({
-            ...props(),
+            channel,
+            comments,
+            desktop,
+            desktop_duration,
+            email,
+            first_name,
+            mention_keys,
+            push,
+            push_status,
             user_id: this.props.currentUser.id
         });
     };
