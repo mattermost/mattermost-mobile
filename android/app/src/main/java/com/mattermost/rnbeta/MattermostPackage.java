@@ -10,10 +10,19 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.bridge.JavaScriptModule;
 
-public class MattermostManagedPackage implements ReactPackage {
+public class MattermostPackage implements ReactPackage {
+    private final MainApplication mApplication;
+
+    public MattermostPackage(MainApplication application) {
+        mApplication = application;
+    }
+
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList(MattermostManagedModule.getInstance(reactContext));
+        return Arrays.<NativeModule>asList(
+                MattermostManagedModule.getInstance(reactContext),
+                NotificationPreferencesModule.getInstance(mApplication, reactContext)
+        );
     }
 
     @Override

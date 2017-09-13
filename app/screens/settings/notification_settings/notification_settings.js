@@ -19,6 +19,7 @@ import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils'
 import FormattedText from 'app/components/formatted_text';
 import {RadioButton, RadioButtonGroup} from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
+import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -110,21 +111,25 @@ class NotificationSettings extends PureComponent {
 
     goToNotificationSettingsMobile = () => {
         const {currentUser, intl, navigator, theme} = this.props;
-        navigator.push({
-            backButtonTitle: '',
-            screen: 'NotificationSettingsMobile',
-            title: intl.formatMessage({id: 'mobile.notification_settings.mobile_title', defaultMessage: 'Mobile Notifications'}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            },
-            passProps: {
-                currentUser,
-                onBack: this.saveNotificationProps
-            }
+
+        NotificationPreferences.getPreferences().then((notificationPreferences) => {
+            navigator.push({
+                backButtonTitle: '',
+                screen: 'NotificationSettingsMobile',
+                title: intl.formatMessage({id: 'mobile.notification_settings.mobile_title', defaultMessage: 'Mobile Notifications'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg
+                },
+                passProps: {
+                    currentUser,
+                    onBack: this.saveNotificationProps,
+                    notificationPreferences
+                }
+            });
         });
     };
 
