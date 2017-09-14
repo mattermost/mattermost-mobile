@@ -621,12 +621,12 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     };
 
     toggleBlink = () => {
-        NotificationPreferences.setShouldBlink(this.state.shouldBlink);
+        NotificationPreferences.setShouldBlink(!this.state.shouldBlink);
         this.setState({shouldBlink: !this.state.shouldBlink});
     };
 
     toggleVibrate = () => {
-        NotificationPreferences.setShouldVibrate(this.state.shouldVibrate);
+        NotificationPreferences.setShouldVibrate(!this.state.shouldVibrate);
         this.setState({shouldVibrate: !this.state.shouldVibrate});
     };
 
