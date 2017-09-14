@@ -1,11 +1,11 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import {Image} from 'react-native';
+import {Image, Text} from 'react-native';
 
-export default class MarkdownLink extends PureComponent {
+export default class MarkdownLink extends React.PureComponent {
     static propTypes = {
         src: PropTypes.string.isRequired
     };
@@ -14,19 +14,23 @@ export default class MarkdownLink extends PureComponent {
         super(props);
 
         this.state = {
-            width: 10000,
-            maxWidth: 10000,
+            width: 0,
             height: 0
         };
     }
 
     componentWillMount() {
-        Image.getSize(this.props.src, this.handleSizeReceived, this.handleSizeFailed);
+        Image.getSize(this.props.src, this.handleSizeReceived);
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.src !== nextProps.src) {
-            Image.getSize(nextProps.src, this.handleSizeReceived, this.handleSizeFailed);
+            this.setState({
+                width: 0,
+                height: 0
+            });
+
+            Image.getSize(nextProps.src, this.handleSizeReceived);
         }
     }
 
@@ -35,23 +39,16 @@ export default class MarkdownLink extends PureComponent {
             width,
             height
         });
-    };
-
-    handleSizeFailed = () => {
-        this.setState({
-            width: 0,
-            height: 0
-        });
-    }
-
-    handleLayout = (event) => {
-        this.setState({
-            maxWidth: event.nativeEvent.layout.width
-        });
     }
 
     render() {
-        let {width, maxWidth, height} = this.state; // eslint-disable-line prefer-const
+        if (!this.state.width || !this.state.height) {
+            return <Text/>;
+        }
+
+        let {width, height} = this.state;
+
+        const maxWidth = 200;
 
         if (width > maxWidth) {
             height = height * (maxWidth / width);
@@ -63,7 +60,8 @@ export default class MarkdownLink extends PureComponent {
             <Image
                 source={{uri: this.props.src}}
                 onLayout={this.handleLayout}
-                style={{width, height, flexShrink: 1, resizeMode: 'cover'}}
+                resizeMode='cover'
+                style={{width, height}}
             />
         );
     }

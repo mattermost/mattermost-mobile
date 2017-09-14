@@ -21,6 +21,7 @@ import {concatStyles} from 'app/utils/theme';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
+import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
@@ -134,6 +135,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderImage = ({children, context, src}) => {
+        return (
+            <MarkdownImage src={src}/>
+        );
+
         // TODO This will be properly implemented for PLT-5736
         return (
             <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>
