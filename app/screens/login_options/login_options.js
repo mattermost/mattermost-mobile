@@ -6,10 +6,12 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Image,
-    Text,
-    View
+    ScrollView,
+    StyleSheet,
+    Text
 } from 'react-native';
 import Button from 'react-native-button';
+import Orientation from 'react-native-orientation';
 import semver from 'semver';
 
 import {ViewTypes} from 'app/constants';
@@ -30,6 +32,14 @@ class LoginOptions extends PureComponent {
         serverVersion: PropTypes.string.isRequired,
         theme: PropTypes.object
     };
+
+    componentWillMount() {
+        Orientation.addOrientationListener(this.orientationDidChange);
+    }
+
+    componentWillUnmount() {
+        Orientation.removeOrientationListener(this.orientationDidChange);
+    }
 
     goToLogin = () => {
         const {intl, navigator, theme} = this.props;
@@ -64,6 +74,10 @@ class LoginOptions extends PureComponent {
                 ssoType
             }
         });
+    };
+
+    orientationDidChange = () => {
+        this.scroll.scrollTo({x: 0, y: 0, animated: true});
     };
 
     renderEmailOption = () => {
@@ -172,9 +186,17 @@ class LoginOptions extends PureComponent {
         return null;
     };
 
+    scrollRef = (ref) => {
+        this.scroll = ref;
+    };
+
     render() {
         return (
-            <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+            <ScrollView
+                style={style.container}
+                contentContainerStyle={style.innerContainer}
+                ref={this.scrollRef}
+            >
                 <StatusBar/>
                 <Image
                     source={logo}
@@ -196,9 +218,23 @@ class LoginOptions extends PureComponent {
                 {this.renderLdapOption()}
                 {this.renderGitlabOption()}
                 {this.renderSamlOption()}
-            </View>
+            </ScrollView>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        backgroundColor: '#FFFFFF',
+        flex: 1
+    },
+    innerContainer: {
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+        paddingVertical: 50
+    }
+});
 
 export default injectIntl(LoginOptions);
