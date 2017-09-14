@@ -9,13 +9,12 @@ POD := $(shell command -v pod 2> /dev/null)
 
 .yarninstall: package.json
 	@if ! [ $(shell command -v yarn 2> /dev/null) ]; then \
-		echo "yarn is not installed https://yarnpkg.com"; \
+		@echo "yarn is not installed https://yarnpkg.com"; \
 		exit 1; \
 	fi
 
-	@echo Getting dependencies using yarn
-
-	yarn install --pure-lockfile
+	@echo Getting Javascript dependencies
+	@yarn install --pure-lockfile
 
 	@touch $@
 
@@ -31,13 +30,14 @@ BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
 dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 
-	mkdir -p dist
+	@mkdir -p dist
 
 	@if [ -e dist/assets ] ; then \
-		rm -rf dist/assets; \
+		@rm -rf dist/assets; \
 	fi
 
-	node scripts/make-dist-assets.js
+	@echo "Generating app assets"
+	@node scripts/make-dist-assets.js
 
 pre-run: | .yarninstall .podinstall dist/assets
 
@@ -49,73 +49,72 @@ stop: stop-packager
 
 run-ios: | start
 	@if ! [ $(shell command -v xcodebuild) ]; then \
-		echo "xcode is not installed"; \
-		exit 1; \
+		@echo "xcode is not installed"; \
+		@exit 1; \
 	fi
 	@if ! [ $(shell command -v watchman) ]; then \
-		echo "watchman is not installed"; \
-		exit 1; \
+		@echo "watchman is not installed"; \
+		@exit 1; \
 	fi
 
 	@echo Running iOS app in development
-
-	npm run run-ios
-	open -a Simulator
+	@react-native run-ios --simulator="${SIMULATOR}"
 
 run-android: | start prepare-android-build
 	@if ! [ $(ANDROID_HOME) ]; then \
-		echo "ANDROID_HOME is not set"; \
-		exit 1; \
+		@echo "ANDROID_HOME is not set"; \
+		@exit 1; \
 	fi
 	@if ! [ $(shell command -v adb 2> /dev/null) ]; then \
-		echo "adb is not installed"; \
-		exit 1; \
+		@echo "adb is not installed"; \
+		@exit 1; \
 	fi
-    ifneq ($(shell adb get-state),device)
-		echo "no android device or emulator is running"
-		exit 1;
-    endif
+ifneq ($(@shell adb get-state),device)
+	@echo "no android device or emulator is running"
+	@exit 1;
+endif
 	@if ! [ $(shell command -v watchman 2> /dev/null) ]; then \
-		echo "watchman is not installed"; \
-		exit 1; \
+		@echo "watchman is not installed"; \
+		@exit 1; \
 	fi
 
 	@echo Running Android app in development
-
-	npm run run-android
+	@react-native run-android
 
 test: pre-run
-	npm test
+	@yarn test
 
 check-style: .yarninstall
 	@echo Checking for style guide compliance
-
-	npm run check
+	@node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .
 
 clean:
-	@echo Cleaning app
+	@echo Cleaning started
 
-	yarn cache clean
-	rm -rf node_modules
-	rm -f .yarninstall
-	rm -f .podinstall
-	rm -rf dist
-	rm -rf ios/build
-	rm -rf ios/Pods
-	rm -rf android/app/build
+	@yarn cache clean
+	@rm -rf node_modules
+	@rm -f .yarninstall
+	@rm -f .podinstall
+	@rm -rf dist
+	@rm -rf ios/build
+	@rm -rf ios/Pods
+	@rm -rf android/app/build
+
+	@echo Cleanup finished
 
 post-install:
-	./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
+	@./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
 	@# Must remove the .babelrc for 0.42.0 to work correctly
 	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
 	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 	@cp ./ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
+	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
-	sed -i'' -e 's|"./locale-data/index.js": false|"./locale-data/index.js": "./locale-data/index.js"|g' node_modules/react-intl/package.json
-	sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-messageformat/package.json
-	sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
-	sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
+	@sed -i'' -e 's|"./locale-data/index.js": false|"./locale-data/index.js": "./locale-data/index.js"|g' node_modules/react-intl/package.json
+	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-messageformat/package.json
+	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
+	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 
 start-packager:
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
@@ -130,11 +129,20 @@ stop-packager:
 	@echo Stopping React Native packager server
 	@if [ -e "server.PID" ] ; then \
 		kill -9 `cat server.PID` && rm server.PID; \
+		echo React Native packager server stopped; \
+	else \
+		echo No React Native packager server running; \
 	fi
 
 check-ios-target:
-ifneq ($(ios_target), $(filter $(ios_target), dev beta release))
-	@echo "Try running make build-ios TARGET\nWhere TARGET is one of dev, beta or release"
+ifeq ($(ios_target), )
+	@echo No target set to build iOS app
+	@echo "Try running make build-ios TARGET where TARGET is one of dev, beta or release"
+	@exit 1
+endif
+ifneq ($(ios_target), $(filter $(ios_target),dev beta release))
+	@echo Invalid target set to build iOS app
+	@echo "Try running make build-ios TARGET where TARGET is one of dev, beta or release"
 	@exit 1
 endif
 
@@ -146,8 +154,14 @@ do-build-ios:
 build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
 
 check-android-target:
-ifneq ($(android_target), $(filter $(android_target), dev alpha release))
-	@echo "Try running make build-android TARGET\nWhere TARGET is one of dev, beta or release"
+ifeq ($(android_target), )
+	@echo No target set to build Android app
+	@echo "Try running make build-android TARGET where TARGET is one of dev, beta or release"
+	@exit 1
+endif
+ifneq ($(android_target), $(filter $(android_target),dev alpha release))
+	@echo Invalid target set to build Android app
+	@echo "Try running make build-android TARGET where TARGET is one of dev, beta or release"
 	@exit 1
 endif
 
@@ -155,7 +169,6 @@ prepare-android-build:
 	@rm -rf ./node_modules/react-native/local-cli/templates/HelloWorld
 	@rm -rf ./node_modules/react-native-linear-gradient/Examples/
 	@rm -rf ./node_modules/react-native-orientation/demo/
-	@cd android && ./gradlew clean
 
 do-build-android:
 	@echo "Building android $(android_target) app"
