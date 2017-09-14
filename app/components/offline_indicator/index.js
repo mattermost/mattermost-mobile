@@ -13,10 +13,14 @@ function mapStateToProps(state, ownProps) {
     const {appState} = state.entities.general;
     const {connection} = state.views;
 
+    const webSocketStatus = websocket.status;
+    const isConnecting = websocket.error >= 2;
+
     return {
         appState,
+        isConnecting,
         isOnline: connection,
-        websocket,
+        webSocketStatus,
         ...ownProps
     };
 }
