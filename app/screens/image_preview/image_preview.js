@@ -109,6 +109,11 @@ export default class ImagePreview extends PureComponent {
         setTimeout(() => {
             const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
             this.setState({deviceWidth, deviceHeight});
+            if (Platform.OS === 'android') {
+                InteractionManager.runAfterInteractions(() => {
+                    this.scrollView.scrollTo({x: (this.state.currentFile) * deviceWidth, animated: false});
+                });
+            }
         }, 100);
     };
 
@@ -192,15 +197,6 @@ export default class ImagePreview extends PureComponent {
 
     attachScrollView = (c) => {
         this.scrollView = c;
-    };
-
-    onLayout = (event) => {
-        if (event.nativeEvent.layout.width !== this.state.deviceWidth) {
-            this.setState({
-                deviceHeight: event.nativeEvent.layout.height,
-                deviceWidth: event.nativeEvent.layout.width
-            });
-        }
     };
 
     imageIsZooming = (zooming) => {
@@ -324,10 +320,7 @@ export default class ImagePreview extends PureComponent {
         };
 
         return (
-            <View
-                style={[style.wrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}
-                onLayout={this.onLayout}
-            >
+            <View style={[style.wrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}>
                 <AnimatedView
                     style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
                     {...this.mainViewPanResponder.panHandlers}
