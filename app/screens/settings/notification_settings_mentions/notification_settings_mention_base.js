@@ -23,7 +23,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.goingBack = true; //use to identify if the navigator is popping this screen
-        this.setStateFromNotifyProps(notifyProps);
+        this.state = this.setStateFromNotifyProps(notifyProps);
     }
 
     onNavigatorEvent = (event) => {
@@ -56,7 +56,8 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
 
         this.keywords = newState.mention_keys;
         this.replyValue = comments;
-        this.state = {...newState};
+
+        return newState;
     };
 
     toggleFirstNameMention = () => {

@@ -88,16 +88,16 @@ export default class NotificationSettingsMobileBase extends PureComponent {
 
     saveUserNotifyProps = () => {
         const {
-                channel,
-                comments,
-                desktop,
-                desktop_duration,
-                email,
-                first_name,
-                mention_keys,
-                push,
-                push_status
-            } = this.state;
+            channel,
+            comments,
+            desktop,
+            desktop_duration,
+            email,
+            first_name,
+            mention_keys,
+            push,
+            push_status
+        } = this.state;
 
         this.props.onBack({
             channel,

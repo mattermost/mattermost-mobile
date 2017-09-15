@@ -36,7 +36,7 @@ export default class NotificationSettingsEmail extends PureComponent {
         const notifyProps = currentUser.notify_props || {};
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-        this.setStateFromNotifyProps(notifyProps);
+        this.state = this.setStateFromNotifyProps(notifyProps);
     }
 
     onNavigatorEvent = (event) => {
@@ -76,12 +76,10 @@ export default class NotificationSettingsEmail extends PureComponent {
             }
         }
 
-        const newState = {
+        return {
             ...notifyProps,
             interval
         };
-
-        this.state = {...newState};
     };
 
     saveUserNotifyProps = () => {
