@@ -25,7 +25,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
         return (
             <Section
                 headerId='mobile.notification_settings_mobile.push_activity'
-                headerDefaultMessage='SEND NOTIFICATIONS FOR'
+                headerDefaultMessage='SEND NOTIFICATIONS'
                 theme={theme}
             >
                 {pushNotificationsEnabled &&
