@@ -197,7 +197,8 @@ public class CustomPushNotification extends PushNotification {
                 style.addLine(data.getString("message"));
             }
 
-            style.setBigContentTitle(title);
+            style.setBigContentTitle(message)
+                    .setSummaryText(String.format("+%d more", (numMessages - 1)));
             notification.setStyle(style)
                     .setContentTitle(summaryTitle);
         }
