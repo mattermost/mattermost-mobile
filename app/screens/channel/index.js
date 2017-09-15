@@ -7,16 +7,15 @@ import {connect} from 'react-redux';
 import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar,
-    selectInitialChannel,
-    handlePostDraftChanged
+    selectInitialChannel
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/views/connection';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
 import {getTheme} from 'app/selectors/preferences';
 
 import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     init as initWebSocket,
@@ -32,9 +31,8 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        ...state.views.channel,
-        currentTeam: getCurrentTeam(state) || {},
-        currentChannel: getCurrentChannel(state) || {},
+        currentTeamId: getCurrentTeamId(state),
+        currentChannelId: getCurrentChannelId(state),
         theme: getTheme(state),
         webSocketRequest: websocket,
         statusBarHeight,
@@ -50,7 +48,6 @@ function mapDispatchToProps(dispatch) {
             loadProfilesAndTeamMembersForDMSidebar,
             selectFirstAvailableTeam,
             selectInitialChannel,
-            handlePostDraftChanged,
             initWebSocket,
             closeWebSocket,
             startPeriodicStatusUpdates,
