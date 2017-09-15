@@ -1,12 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Component, createElement, isValidElement} from 'react';
+import React, {createElement, isValidElement} from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-class FormattedText extends Component {
+class FormattedText extends React.PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
         id: PropTypes.string.isRequired,
@@ -80,9 +80,9 @@ class FormattedText extends Component {
             // approach allows messages to render with React Elements while
             // keeping React's virtual diffing working properly.
             nodes = formattedMessage.
-            split(tokenDelimiter).
-            filter((part) => Boolean(part)).
-            map((part) => elements[part] || part);
+                split(tokenDelimiter).
+                filter((part) => Boolean(part)).
+                map((part) => elements[part] || part);
         } else {
             nodes = [formattedMessage];
         }
