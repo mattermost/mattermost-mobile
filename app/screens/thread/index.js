@@ -39,7 +39,6 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleCommentDraftChanged,
             selectPost
         }, dispatch)
     };

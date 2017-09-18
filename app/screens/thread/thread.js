@@ -13,7 +13,6 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class Thread extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleCommentDraftChanged: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
@@ -36,10 +35,6 @@ export default class Thread extends PureComponent {
     componentWillUnmount() {
         this.props.actions.selectPost('');
     }
-
-    handleDraftChanged = (value) => {
-        this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
-    };
 
     render() {
         const {
@@ -75,7 +70,6 @@ export default class Thread extends PureComponent {
                 <PostTextbox
                     rootId={rootId}
                     channelId={channelId}
-                    onChangeText={this.handleDraftChanged}
                     navigator={navigator}
                 />
             </KeyboardLayout>

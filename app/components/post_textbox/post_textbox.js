@@ -34,6 +34,8 @@ class PostTextbox extends PureComponent {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
+            handleCommentDraftChanged: PropTypes.func.isRequired,
+            handlePostDraftChanged: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
@@ -46,7 +48,6 @@ class PostTextbox extends PureComponent {
         files: PropTypes.array,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired,
@@ -196,6 +197,20 @@ class PostTextbox extends PureComponent {
         this.props.actions.handleUploadFiles(images, this.props.rootId);
     };
 
+    changeDraft = (text) => {
+        const {
+            actions,
+            channelId,
+            rootId
+        } = this.props;
+
+        if (rootId) {
+            actions.handleCommentDraftChanged(rootId, text);
+        } else {
+            actions.handlePostDraftChanged(channelId, text);
+        }
+    }
+
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
@@ -204,13 +219,12 @@ class PostTextbox extends PureComponent {
 
     handleTextChange = (text) => {
         const {
-            onChangeText,
+            actions,
             channelId,
-            rootId,
-            actions
+            rootId
         } = this.props;
 
-        onChangeText(text);
+        this.changeDraft(text);
         actions.userTyping(channelId, rootId);
     };
 
@@ -347,7 +361,7 @@ class PostTextbox extends PureComponent {
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}
-                    onChangeText={this.props.onChangeText}
+                    onChangeText={this.changeDraft}
                     rootId={this.props.rootId}
                 />
                 <View style={style.inputWrapper}>
