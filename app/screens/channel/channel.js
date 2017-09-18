@@ -221,6 +221,7 @@ class Channel extends PureComponent {
                     </View>
                     <ChannelPostTextbox
                         ref={this.attachPostTextbox}
+                        onChangeText={this.handleDraftChanged}
                         channelId={currentChannelId}
                         navigator={navigator}
                     />

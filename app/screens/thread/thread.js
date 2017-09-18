@@ -19,9 +19,7 @@ export default class Thread extends PureComponent {
         channelId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         myMember: PropTypes.object.isRequired,
-        files: PropTypes.array,
         rootId: PropTypes.string.isRequired,
-        draft: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         posts: PropTypes.array.isRequired,
         statusBarHeight: PropTypes.number
@@ -46,8 +44,6 @@ export default class Thread extends PureComponent {
     render() {
         const {
             channelId,
-            draft,
-            files,
             myMember,
             navigator,
             posts,
@@ -78,8 +74,6 @@ export default class Thread extends PureComponent {
                 />
                 <PostTextbox
                     rootId={rootId}
-                    value={draft}
-                    files={files}
                     channelId={channelId}
                     onChangeText={this.handleDraftChanged}
                     navigator={navigator}

@@ -183,6 +183,7 @@ export default class PostList extends PureComponent {
                 theme={theme}
                 getItem={this.getItem}
                 getItemCount={this.getItemCount}
+                contentContainerStyle={{paddingTop: 5}}
             />
         );
     }

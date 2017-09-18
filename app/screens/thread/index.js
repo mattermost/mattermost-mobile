@@ -21,6 +21,7 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const posts = getPostsForThread(state, ownProps);
+        const {statusBarHeight} = state.views.root;
         const threadDraft = state.views.thread.drafts[ownProps.rootId];
 
         return {
@@ -28,8 +29,6 @@ function makeMapStateToProps() {
             channelId: ownProps.channelId,
             myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
-            draft: threadDraft.draft,
-            files: threadDraft.files,
             posts,
             statusBarHeight: getStatusBarHeight(state),
             theme: getTheme(state)

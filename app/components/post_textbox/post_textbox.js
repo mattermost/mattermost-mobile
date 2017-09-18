@@ -13,16 +13,16 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import ImagePicker from 'react-native-image-picker';
 import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
-import FormattedText from 'app/components/formatted_text';
 import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import AttachmentButton from './components/attachment_button';
+import Typing from './components/typing';
 
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
@@ -49,7 +49,6 @@ class PostTextbox extends PureComponent {
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        typing: PropTypes.array.isRequired,
         uploadFileRequestStatus: PropTypes.string.isRequired,
         value: PropTypes.string.isRequired
     };
@@ -61,14 +60,10 @@ class PostTextbox extends PureComponent {
         value: ''
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            contentHeight: INITIAL_HEIGHT,
-            inputWidth: null
-        };
-    }
+    state = {
+        contentHeight: INITIAL_HEIGHT,
+        inputWidth: null
+    };
 
     componentDidMount() {
         if (Platform.OS === 'android') {
@@ -197,6 +192,10 @@ class PostTextbox extends PureComponent {
         });
     };
 
+    handleUploadFiles = (images) => {
+        this.props.actions.handleUploadFiles(images, this.props.rootId);
+    };
+
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
@@ -254,160 +253,6 @@ class PostTextbox extends PureComponent {
 
     attachAutocomplete = (c) => {
         this.autocomplete = c;
-    };
-
-    attachFileFromCamera = () => {
-        const options = {
-            quality: 0.7,
-            noData: true,
-            storageOptions: {
-                cameraRoll: true,
-                waitUntilSaved: true
-            }
-        };
-
-        ImagePicker.launchCamera(options, (response) => {
-            if (response.error || response.didCancel) {
-                return;
-            }
-
-            this.uploadFiles([response]);
-        });
-    };
-
-    attachFileFromLibrary = () => {
-        const options = {
-            quality: 0.7,
-            noData: true
-        };
-
-        if (Platform.OS === 'ios') {
-            options.mediaType = 'mixed';
-        }
-
-        ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.error || response.didCancel) {
-                return;
-            }
-
-            this.uploadFiles([response]);
-        });
-    };
-
-    attachVideoFromLibraryAndroid = () => {
-        const options = {
-            quality: 0.7,
-            mediaType: 'video',
-            noData: true
-        };
-
-        ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.error || response.didCancel) {
-                return;
-            }
-
-            this.uploadFiles([response]);
-        });
-    }
-
-    uploadFiles = (images) => {
-        this.props.actions.handleUploadFiles(images, this.props.rootId);
-    };
-
-    handleFileAttachmentOption = (action) => {
-        this.props.navigator.dismissModal({
-            animationType: 'none'
-        });
-
-        // Have to wait to launch the library attachment action.
-        // If we call the action after dismissModal with no delay then the
-        // Wix navigator will dismiss the library attachment modal as well.
-        setTimeout(() => {
-            if (typeof action === 'function') {
-                action();
-            }
-        }, 100);
-    }
-
-    showFileAttachmentOptions = () => {
-        this.blur();
-        const options = {
-            items: [{
-                action: () => this.handleFileAttachmentOption(this.attachFileFromCamera),
-                text: {
-                    id: 'mobile.file_upload.camera',
-                    defaultMessage: 'Take Photo or Video'
-                },
-                icon: 'camera'
-            }, {
-                action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
-                text: {
-                    id: 'mobile.file_upload.library',
-                    defaultMessage: 'Photo Library'
-                },
-                icon: 'photo'
-            }]
-        };
-
-        if (Platform.OS === 'android') {
-            options.items.push({
-                action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
-                text: {
-                    id: 'mobile.file_upload.video',
-                    defaultMessage: 'Video Library'
-                },
-                icon: 'file-video-o'
-            });
-        }
-
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                items: options.items
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext'
-            }
-        });
-    };
-
-    renderTyping = () => {
-        const {typing} = this.props;
-        const numUsers = typing.length;
-
-        switch (numUsers) {
-        case 0:
-            return null;
-        case 1:
-            return (
-                <FormattedText
-                    id='msg_typing.isTyping'
-                    defaultMessage='{user} is typing...'
-                    values={{
-                        user: typing[0]
-                    }}
-                />
-            );
-        default: {
-            const last = typing.pop();
-            return (
-                <FormattedText
-                    id='msg_typing.areTyping'
-                    defaultMessage='{users} and {last} are typing...'
-                    values={{
-                        users: (typing.join(', ')),
-                        last
-                    }}
-                />
-            );
-        }
-        }
     };
 
     renderDisabledSendButton = () => {
@@ -470,21 +315,16 @@ class PostTextbox extends PureComponent {
             placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
         }
 
-        let fileUpload = null;
+        let attachmentButton = null;
         const inputContainerStyle = [style.inputContainer];
         if (canUploadFiles) {
-            fileUpload = (
-                <TouchableOpacity
-                    onPress={this.showFileAttachmentOptions}
-                    style={style.buttonContainer}
-                >
-                    <Icon
-                        size={30}
-                        style={style.attachIcon}
-                        color={changeOpacity(theme.centerChannelColor, 0.9)}
-                        name='md-add'
-                    />
-                </TouchableOpacity>
+            attachmentButton = (
+                <AttachmentButton
+                    blurTextBox={this.blur}
+                    theme={theme}
+                    navigator={this.props.navigator}
+                    uploadFiles={this.handleUploadFiles}
+                />
             );
         } else {
             inputContainerStyle.push(style.inputContainerWithoutFileUpload);
@@ -498,15 +338,7 @@ class PostTextbox extends PureComponent {
                 >
                     {textValue + ' '}
                 </Text>
-                <View>
-                    <Text
-                        style={[style.typing]}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                    >
-                        {this.renderTyping()}
-                    </Text>
-                </View>
+                <Typing/>
                 <FileUploadPreview
                     channelId={this.props.channelId}
                     files={this.props.files}
@@ -519,7 +351,7 @@ class PostTextbox extends PureComponent {
                     rootId={this.props.rootId}
                 />
                 <View style={style.inputWrapper}>
-                    {fileUpload}
+                    {attachmentButton}
                     <View style={inputContainerStyle}>
                         <TextInput
                             ref='input'
@@ -546,15 +378,6 @@ class PostTextbox extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        buttonContainer: {
-            height: Platform.select({
-                ios: 34,
-                android: 36
-            }),
-            width: 45,
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
         disableButton: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.3)
         },
@@ -594,12 +417,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
         },
-        attachIcon: {
-            marginTop: Platform.select({
-                ios: 2,
-                android: 0
-            })
-        },
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
@@ -619,13 +436,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     width: 29
                 }
             })
-        },
-        typing: {
-            paddingLeft: 10,
-            fontSize: 11,
-            marginBottom: 5,
-            color: theme.centerChannelColor,
-            backgroundColor: 'transparent'
         }
     };
 });
