@@ -76,11 +76,11 @@ public class CustomPushNotification extends PushNotification {
             Object bundleArray = channelIdToNotification.get(channelId);
             ArrayList list = null;
             if (bundleArray == null) {
-                list = new ArrayList();
+                list = new ArrayList(0);
             } else {
                 list = (ArrayList)bundleArray;
             }
-            list.add(data);
+            list.add(0, data);
             channelIdToNotification.put(channelId, list);
         }
 
@@ -193,11 +193,16 @@ public class CustomPushNotification extends PushNotification {
 
             Notification.InboxStyle style = new Notification.InboxStyle();
             ArrayList<Bundle> list = (ArrayList<Bundle>) channelIdToNotification.get(channelId);
+
             for (Bundle data : list){
-                style.addLine(data.getString("message"));
+                String msg = data.getString("message");
+                if (msg != message) {
+                    style.addLine(data.getString("message"));
+                }
             }
 
-            style.setBigContentTitle(title);
+            style.setBigContentTitle(message)
+                    .setSummaryText(String.format("+%d more", (numMessages - 1)));
             notification.setStyle(style)
                     .setContentTitle(summaryTitle);
         }
