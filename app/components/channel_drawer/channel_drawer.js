@@ -7,6 +7,7 @@ import {
     BackHandler,
     InteractionManager,
     Keyboard,
+    StyleSheet,
     View
 } from 'react-native';
 
@@ -35,21 +36,13 @@ export default class ChannelDrawer extends PureComponent {
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
-        channels: PropTypes.object,
-        currentChannel: PropTypes.object,
-        currentDisplayName: PropTypes.string,
-        channelMembers: PropTypes.object,
-        currentTeam: PropTypes.object,
+        currentChannelId: PropTypes.string.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: PropTypes.object.isRequired,
-        myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
+        teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired
-    };
-
-    static defaultProps = {
-        currentTeam: {},
-        currentChannel: {}
     };
 
     state = {
@@ -91,37 +84,26 @@ export default class ChannelDrawer extends PureComponent {
     handleDrawerClose = () => {
         this.resetDrawer();
 
-        if (this.closeLeftHandle) {
-            InteractionManager.clearInteractionHandle(this.closeLeftHandle);
-            this.closeLeftHandle = null;
-        }
-
         if (this.state.openDrawer) {
-            this.setState({openDrawer: false});
-        }
-    };
-
-    handleDrawerCloseStart = () => {
-        if (!this.closeLeftHandle) {
-            this.closeLeftHandle = InteractionManager.createInteractionHandle();
+            // The state doesn't get updated if you swipe to close
+            this.setState({
+                openDrawer: false
+            });
         }
     };
 
     handleDrawerOpen = () => {
-        this.setState({openDrawer: true});
         if (this.state.openDrawerOffset === DRAWER_INITIAL_OFFSET) {
             Keyboard.dismiss();
-        }
-
-        if (this.openLeftHandle) {
-            InteractionManager.clearInteractionHandle(this.openLeftHandle);
-            this.openLeftHandle = null;
         }
     };
 
     handleDrawerOpenStart = () => {
-        if (!this.openLeftHandle) {
-            this.openLeftHandle = InteractionManager.createInteractionHandle();
+        if (!this.state.openDrawer) {
+            // The state doesn't get updated if you swipe to open
+            this.setState({
+                openDrawer: true
+            });
         }
     };
 
@@ -145,13 +127,16 @@ export default class ChannelDrawer extends PureComponent {
 
     openChannelDrawer = () => {
         this.props.blurPostTextBox();
-        this.setState({openDrawer: true});
+
+        this.setState({
+            openDrawer: true
+        });
     };
 
     selectChannel = (channel) => {
         const {
             actions,
-            currentChannel
+            currentChannelId
         } = this.props;
 
         const {
@@ -162,72 +147,61 @@ export default class ChannelDrawer extends PureComponent {
             viewChannel
         } = actions;
 
-        markChannelAsRead(channel.id, currentChannel.id);
         setChannelLoading();
-        viewChannel(currentChannel.id);
         setChannelDisplayName(channel.display_name);
+        handleSelectChannel(channel.id);
+
         this.closeChannelDrawer();
+
         InteractionManager.runAfterInteractions(() => {
-            handleSelectChannel(channel.id);
+            markChannelAsRead(channel.id, currentChannelId);
+            viewChannel(currentChannelId);
         });
     };
 
     joinChannel = async (channel) => {
         const {
             actions,
-            currentChannel,
-            currentDisplayName,
-            currentTeam,
+            currentTeamId,
             currentUserId,
             intl
         } = this.props;
 
         const {
-            handleSelectChannel,
             joinChannel,
-            makeDirectChannel,
-            markChannelAsRead,
-            setChannelDisplayName,
-            setChannelLoading,
-            viewChannel
+            makeDirectChannel
         } = actions;
-
-        markChannelAsRead(currentChannel.id);
-        setChannelLoading();
-        viewChannel(currentChannel.id);
-        setChannelDisplayName(channel.display_name);
 
         const displayValue = {displayName: channel.display_name};
 
+        let result;
         if (channel.type === General.DM_CHANNEL) {
-            const result = await makeDirectChannel(channel.id);
+            result = await makeDirectChannel(channel.id);
+
             if (result.error) {
                 const dmFailedMessage = {
                     id: 'mobile.open_dm.error',
                     defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
                 };
-                setChannelDisplayName(currentDisplayName);
                 alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
-            } else {
-                this.closeChannelDrawer();
             }
         } else {
-            const result = await joinChannel(currentUserId, currentTeam.id, channel.id);
+            result = await joinChannel(currentUserId, currentTeamId, channel.id);
 
             if (result.error) {
                 const joinFailedMessage = {
                     id: 'mobile.join_channel.error',
                     defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
                 };
-                setChannelDisplayName(currentDisplayName);
                 alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
-            } else {
-                this.closeChannelDrawer();
-                InteractionManager.runAfterInteractions(() => {
-                    handleSelectChannel(channel.id);
-                });
             }
         }
+
+        if (result.error) {
+            return;
+        }
+
+        this.selectChannel(result.data);
     };
 
     onPageSelected = (index) => {
@@ -246,8 +220,7 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     showTeams = () => {
-        const teamsCount = Object.keys(this.props.myTeamMembers).length;
-        if (this.swiperIndex === 1 && teamsCount > 1) {
+        if (this.swiperIndex === 1 && this.props.teamsCount > 1) {
             this.refs.swiper.showTeamsPage();
         }
     };
@@ -260,39 +233,32 @@ export default class ChannelDrawer extends PureComponent {
 
     renderContent = () => {
         const {
-            currentChannel,
-            currentTeam,
-            channels,
-            channelMembers,
             navigator,
-            myTeamMembers,
+            teamsCount,
             theme
         } = this.props;
-        const {openDrawerOffset} = this.state;
-        const showTeams = openDrawerOffset === DRAWER_INITIAL_OFFSET && Object.keys(myTeamMembers).length > 1;
+
+        const {
+            openDrawerOffset
+        } = this.state;
+
+        const showTeams = openDrawerOffset === DRAWER_INITIAL_OFFSET && teamsCount > 1;
 
         const teams = (
-            <View style={{flex: 1, marginBottom: 10}}>
+            <View style={style.swiperContent}>
                 <TeamsList
                     closeChannelDrawer={this.closeChannelDrawer}
-                    myTeamMembers={myTeamMembers}
                     navigator={navigator}
                 />
             </View>
         );
 
         const channelsList = (
-            <View style={{flex: 1, marginBottom: 10}}>
+            <View style={style.swiperContent}>
                 <ChannelsList
-                    currentTeam={currentTeam}
-                    currentChannel={currentChannel}
-                    channels={channels}
-                    channelMembers={channelMembers}
-                    myTeamMembers={myTeamMembers}
-                    theme={theme}
+                    navigator={navigator}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
-                    navigator={navigator}
                     onShowTeams={this.showTeams}
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
@@ -312,7 +278,7 @@ export default class ChannelDrawer extends PureComponent {
                 {channelsList}
             </DrawerSwiper>
         );
-    };
+    }
 
     render() {
         const {children} = this.props;
@@ -324,7 +290,6 @@ export default class ChannelDrawer extends PureComponent {
                 open={openDrawer}
                 onOpenStart={this.handleDrawerOpenStart}
                 onOpen={this.handleDrawerOpen}
-                onCloseStart={this.handleDrawerCloseStart}
                 onClose={this.handleDrawerClose}
                 captureGestures='open'
                 type='static'
@@ -340,7 +305,7 @@ export default class ChannelDrawer extends PureComponent {
                 panThreshold={0.25}
                 acceptPan={true}
                 negotiatePan={true}
-                useInteractionManager={false}
+                useInteractionManager={true}
                 tweenDuration={100}
                 tweenHandler={this.handleDrawerTween}
                 elevation={-5}
@@ -361,3 +326,10 @@ export default class ChannelDrawer extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    swiperContent: {
+        flex: 1,
+        marginBottom: 10
+    }
+});

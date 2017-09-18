@@ -18,16 +18,16 @@ import ChannelDrawer from 'app/components/channel_drawer';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import OfflineIndicator from 'app/components/offline_indicator';
-import PostTextbox from 'app/components/post_textbox';
 import PostListRetry from 'app/components/post_list_retry';
 import StatusBar from 'app/components/status_bar';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
-import ChannelTitle from './channel_title';
 import ChannelPostList from './channel_post_list';
+import ChannelPostTextbox from './channel_post_textbox';
 import ChannelSearchButton from './channel_search_button';
+import ChannelTitle from './channel_title';
 
 class Channel extends PureComponent {
     static propTypes = {
@@ -37,7 +37,6 @@ class Channel extends PureComponent {
             loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
             selectFirstAvailableTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
-            handlePostDraftChanged: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
@@ -45,13 +44,9 @@ class Channel extends PureComponent {
         }).isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        appState: PropTypes.bool,
-        currentTeam: PropTypes.object,
-        currentChannel: PropTypes.object,
-        drafts: PropTypes.object.isRequired,
+        currentTeamId: PropTypes.string,
+        currentChannelId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        subscribeToHeaderEvent: PropTypes.func,
-        unsubscribeFromHeaderEvent: PropTypes.func,
         webSocketRequest: PropTypes.object,
         statusBarHeight: PropTypes.number,
         channelsRequestStatus: PropTypes.string
@@ -62,9 +57,8 @@ class Channel extends PureComponent {
         NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectionChange);
         NetInfo.isConnected.fetch().then(this.handleConnectionChange);
 
-        if (this.props.currentTeam) {
-            const teamId = this.props.currentTeam.id;
-            this.loadChannels(teamId);
+        if (this.props.currentTeamId) {
+            this.loadChannels(this.props.currentTeamId);
         }
     }
 
@@ -79,9 +73,8 @@ class Channel extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.currentTeam.id && this.props.currentTeam.id !== nextProps.currentTeam.id) {
-            const teamId = nextProps.currentTeam.id;
-            this.loadChannels(teamId);
+        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
+            this.loadChannels(nextProps.currentTeamId);
         }
     }
 
@@ -100,10 +93,10 @@ class Channel extends PureComponent {
     };
 
     blurPostTextBox = () => {
-        this.postTextbox.getWrappedInstance().getWrappedInstance().blur();
+        this.postTextbox.getWrappedInstance().blur();
     };
 
-    goToChannelInfo = () => {
+    goToChannelInfo = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         const options = {
             screen: 'ChannelInfo',
@@ -123,7 +116,7 @@ class Channel extends PureComponent {
         } else {
             navigator.push(options);
         }
-    };
+    });
 
     handleConnectionChange = (isConnected) => {
         const {actions, webSocketRequest} = this.props;
@@ -141,10 +134,6 @@ class Channel extends PureComponent {
             closeWebSocket(true);
         }
         connection(isConnected);
-    };
-
-    handleDraftChanged = (value) => {
-        this.props.actions.handlePostDraftChanged(this.props.currentChannel.id, value);
     };
 
     handleLeaveTeam = () => {
@@ -167,14 +156,13 @@ class Channel extends PureComponent {
     };
 
     retryLoadChannels = () => {
-        this.loadChannels(this.props.currentTeam.id);
+        this.loadChannels(this.props.currentTeamId);
     };
 
     render() {
         const {
             channelsRequestStatus,
-            currentChannel,
-            drafts,
+            currentChannelId,
             intl,
             navigator,
             statusBarHeight,
@@ -183,7 +171,7 @@ class Channel extends PureComponent {
 
         const style = getStyleFromTheme(theme);
 
-        if (!currentChannel.hasOwnProperty('id')) {
+        if (!currentChannelId) {
             if (channelsRequestStatus === RequestStatus.FAILURE) {
                 return (
                     <PostListRetry
@@ -198,8 +186,6 @@ class Channel extends PureComponent {
                 </View>
             );
         }
-
-        const channelDraft = drafts[currentChannel.id] || {};
 
         let height = 0;
         if (statusBarHeight > 20) {
@@ -220,16 +206,13 @@ class Channel extends PureComponent {
                 >
                     <View style={style.postList}>
                         <ChannelPostList
-                            channel={currentChannel}
+                            channelId={currentChannelId}
                             navigator={navigator}
                         />
                     </View>
-                    <PostTextbox
+                    <ChannelPostTextbox
                         ref={this.attachPostTextbox}
-                        files={channelDraft.files}
-                        value={channelDraft.draft}
-                        channelId={currentChannel.id}
-                        onChangeText={this.handleDraftChanged}
+                        channelId={currentChannelId}
                         navigator={navigator}
                     />
                 </KeyboardLayout>
@@ -237,7 +220,7 @@ class Channel extends PureComponent {
                     <View style={style.header}>
                         <ChannelDrawerButton/>
                         <ChannelTitle
-                            onPress={() => preventDoubleTap(this.goToChannelInfo, this)}
+                            onPress={this.goToChannelInfo}
                         />
                         <ChannelSearchButton navigator={navigator}/>
                     </View>

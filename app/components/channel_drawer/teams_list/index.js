@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeamId, getJoinableTeams, getMyTeams} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getJoinableTeams, getMyTeams, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
@@ -35,6 +35,7 @@ function mapStateToProps(state, ownProps) {
         currentUrl: removeProtocol(getCurrentUrl(state)),
         teams: getMyTeams(state).sort(sortTeams.bind(null, (user.locale))),
         theme: getTheme(state),
+        myTeamMembers: getTeamMemberships(state),
         ...ownProps
     };
 }

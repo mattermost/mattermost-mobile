@@ -1,12 +1,12 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
-class FormattedDate extends Component {
+class FormattedDate extends React.PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
         value: PropTypes.any.isRequired,

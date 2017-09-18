@@ -7,17 +7,18 @@ import {connect} from 'react-redux';
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelPostList from './channel_post_list';
 
 function makeMapStateToProps() {
+    const getChannel = makeGetChannel();
     const getPostsInChannel = makeGetPostsInChannel();
 
     return function mapStateToProps(state, ownProps) {
-        const channelId = ownProps.channel.id;
+        const channelId = ownProps.channelId;
         const {getPosts, getPostsRetryAttempts, getPostsSince, getPostsSinceRetryAttempts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
         const {websocket: websocketRequest} = state.requests.general;
@@ -39,10 +40,10 @@ function makeMapStateToProps() {
         }
 
         return {
+            channel: getChannel(state, {id: channelId}),
             channelIsLoading: state.views.channel.loading,
             channelIsRefreshing,
             channelRefreshingFailed,
-            currentChannelId: getCurrentChannelId(state),
             posts,
             postVisibility: state.views.channel.postVisibility[channelId],
             loadingPosts: state.views.channel.loadingPosts[channelId],

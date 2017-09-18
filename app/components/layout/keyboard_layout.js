@@ -1,11 +1,11 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {KeyboardAvoidingView, Platform, View} from 'react-native';
 
-export default class KeyboardLayout extends Component {
+export default class KeyboardLayout extends React.PureComponent {
     static propTypes = {
         behaviour: PropTypes.string,
         children: PropTypes.node,

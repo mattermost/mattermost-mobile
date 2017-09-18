@@ -52,12 +52,12 @@ class TeamsList extends PureComponent {
         if (team.id === currentTeamId) {
             closeChannelDrawer();
         } else {
-            if (currentChannelId) {
-                actions.markChannelAsRead(currentChannelId);
-            }
+            actions.handleTeamChange(team);
+
             closeChannelDrawer();
+
             InteractionManager.runAfterInteractions(() => {
-                actions.handleTeamChange(team);
+                actions.markChannelAsRead(currentChannelId);
             });
         }
     };

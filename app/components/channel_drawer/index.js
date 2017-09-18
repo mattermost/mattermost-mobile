@@ -6,8 +6,8 @@ import {connect} from 'react-redux';
 
 import {joinChannel, viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
-import {getChannelsWithUnreadSection, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeam, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
 
 import {handleSelectChannel, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
@@ -20,13 +20,10 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
-        currentTeam: getCurrentTeam(state) || {},
-        currentChannel: getCurrentChannel(state) || {},
-        currentDisplayName: state.views.channel.displayName,
+        currentTeamId: getCurrentTeamId(state),
+        currentChannelId: getCurrentChannelId(state),
         currentUserId,
-        channels: getChannelsWithUnreadSection(state),
-        channelMembers: state.entities.channels.myMembers,
-        myTeamMembers: getTeamMemberships(state),
+        teamsCount: Object.keys(getTeamMemberships(state)).length,
         theme: getTheme(state)
     };
 }
