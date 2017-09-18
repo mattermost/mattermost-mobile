@@ -267,6 +267,7 @@ export default class ChannelDrawer extends PureComponent {
 
         return (
             <Swiper
+                ref='swiper'
                 openDrawerOffset={openDrawerOffset}
                 showTeams={showTeams}
                 theme={theme}
