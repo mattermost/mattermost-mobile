@@ -51,6 +51,8 @@ export default class ChannelDrawer extends PureComponent {
         openDrawerOffset: DRAWER_INITIAL_OFFSET
     };
 
+    swiperIndex = 1;
+
     componentWillMount() {
         this.props.actions.getTeams();
     }
@@ -80,18 +82,24 @@ export default class ChannelDrawer extends PureComponent {
         this.setState({openDrawer: false});
     };
 
-    handleDrawerCloseStart = () => {
+    handleDrawerClose = () => {
+        this.resetDrawer();
+
         if (this.state.openDrawer) {
             // The state doesn't get updated if you swipe to close
             this.setState({
                 openDrawer: false
             });
         }
-    }
+    };
+
+    handleDrawerOpen = () => {
+        if (this.state.openDrawerOffset === DRAWER_INITIAL_OFFSET) {
+            Keyboard.dismiss();
+        }
+    };
 
     handleDrawerOpenStart = () => {
-        Keyboard.dismiss();
-
         if (!this.state.openDrawer) {
             // The state doesn't get updated if you swipe to open
             this.setState({
@@ -210,6 +218,10 @@ export default class ChannelDrawer extends PureComponent {
         }
     };
 
+    onPageSelected = (index) => {
+        this.swiperIndex = index;
+    };
+
     onSearchEnds = () => {
         //hack to update the drawer when the offset changes
         this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
@@ -222,8 +234,14 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     showTeams = () => {
-        if (this.props.teamsCount > 1) {
+        if (this.swiperIndex === 1 && this.props.teamsCount > 1) {
             this.refs.swiper.showTeamsPage();
+        }
+    };
+
+    resetDrawer = () => {
+        if (this.swiperIndex !== 1) {
+            this.refs.swiper.resetPage();
         }
     };
 
@@ -268,6 +286,7 @@ export default class ChannelDrawer extends PureComponent {
         return (
             <Swiper
                 ref='swiper'
+                onPageSelected={this.onPageSelected}
                 openDrawerOffset={openDrawerOffset}
                 showTeams={showTeams}
                 theme={theme}
@@ -288,7 +307,6 @@ export default class ChannelDrawer extends PureComponent {
                 open={openDrawer}
                 onOpenStart={this.handleDrawerOpenStart}
                 onOpen={this.handleDrawerOpen}
-                onCloseStart={this.handleDrawerCloseStart}
                 onClose={this.handleDrawerClose}
                 captureGestures='open'
                 type='static'
