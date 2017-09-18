@@ -37,7 +37,6 @@ export default class ChannelDrawer extends PureComponent {
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         currentChannelId: PropTypes.string.isRequired,
-        currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         intl: PropTypes.object.isRequired,
@@ -163,27 +162,15 @@ export default class ChannelDrawer extends PureComponent {
     joinChannel = async (channel) => {
         const {
             actions,
-            currentChannelId,
-            currentDisplayName,
             currentTeamId,
             currentUserId,
             intl
         } = this.props;
 
         const {
-            handleSelectChannel,
             joinChannel,
-            makeDirectChannel,
-            markChannelAsRead,
-            setChannelDisplayName,
-            setChannelLoading,
-            viewChannel
+            makeDirectChannel
         } = actions;
-
-        markChannelAsRead(currentChannelId);
-        setChannelLoading();
-        viewChannel(currentChannelId);
-        setChannelDisplayName(channel.display_name);
 
         const displayValue = {displayName: channel.display_name};
 
@@ -211,11 +198,10 @@ export default class ChannelDrawer extends PureComponent {
         }
 
         if (result.error) {
-            setChannelDisplayName(currentDisplayName);
-        } else {
-            handleSelectChannel(channel.id);
-            this.closeChannelDrawer();
+            return;
         }
+
+        this.selectChannel(result.data);
     };
 
     onPageSelected = (index) => {

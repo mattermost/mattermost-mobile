@@ -22,7 +22,6 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
-        currentDisplayName: state.views.channel.displayName,
         currentUserId,
         teamsCount: Object.keys(getTeamMemberships(state)).length,
         theme: getTheme(state)
