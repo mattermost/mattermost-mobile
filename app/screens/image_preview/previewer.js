@@ -92,7 +92,7 @@ export default class Previewer extends Component {
             this.setShrink(true);
         } else if (
             nextProps.imageHeight !== this.props.imageHeight ||
-            nextProps.imageWidth !== nextProps.imageWidth
+            nextProps.imageWidth !== this.props.imageWidth
         ) {
             this.setState({
                 imageHeight: new Animated.Value(nextProps.imageHeight),
