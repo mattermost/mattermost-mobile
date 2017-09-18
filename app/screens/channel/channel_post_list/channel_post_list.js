@@ -20,7 +20,6 @@ import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 
 const {View: AnimatedView} = Animated;
-const {width: deviceWidth} = Dimensions.get('window');
 
 class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -207,10 +206,15 @@ class ChannelPostList extends PureComponent {
             );
         }
 
+        const refreshIndicatorDimensions = {
+            width: Dimensions.get('window').width,
+            height: retryMessageHeight
+        };
+
         return (
             <View style={{flex: 1}}>
                 {component}
-                <AnimatedView style={[style.refreshIndicator, {height: retryMessageHeight}]}>
+                <AnimatedView style={[style.refreshIndicator, refreshIndicatorDimensions]}>
                     <FormattedText
                         id='mobile.retry_message'
                         defaultMessage='Refreshing messages failed. Pull up to try again.'
@@ -229,8 +233,7 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 10,
         position: 'absolute',
-        top: 0,
-        width: deviceWidth
+        top: 0
     }
 });
 
