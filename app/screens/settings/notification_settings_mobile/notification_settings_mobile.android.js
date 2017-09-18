@@ -97,7 +97,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                             <View style={style.modalTitleContainer}>
                                 <FormattedText
                                     id='mobile.notification_settings_mobile.push_activity_android'
-                                    defaultMessage='Send notifications for'
+                                    defaultMessage='Send notifications'
                                     style={style.modalTitle}
                                 />
                             </View>
@@ -391,7 +391,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 label={(
                     <FormattedText
                         id='mobile.notification_settings_mobile.push_activity_android'
-                        defaultMessage='Send notifications for'
+                        defaultMessage='Send notifications'
                     />
                 )}
                 action={this.showMobilePushModal}
