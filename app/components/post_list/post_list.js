@@ -130,6 +130,10 @@ export default class PostList extends PureComponent {
         return this.renderPost(item);
     };
 
+    getItem = (data, index) => data[index];
+
+    getItemCount = (data) => data.length;
+
     renderPost = (post) => {
         const {
             isSearchResult,
@@ -177,6 +181,8 @@ export default class PostList extends PureComponent {
                 {...refreshControl}
                 renderItem={this.renderItem}
                 theme={theme}
+                getItem={this.getItem}
+                getItemCount={this.getItemCount}
             />
         );
     }

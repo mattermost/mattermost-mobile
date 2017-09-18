@@ -70,17 +70,17 @@ class PushNotification {
 
         if (options.popInitialNotification) {
             PendingNotifications.getInitialNotification().
-            then((notification) => {
-                if (notification) {
-                    const data = notification.getData();
-                    if (data) {
-                        this.handleNotification(data, true);
+                then((notification) => {
+                    if (notification) {
+                        const data = notification.getData();
+                        if (data) {
+                            this.handleNotification(data, true);
+                        }
                     }
-                }
-            }).
-            catch((err) => {
-                console.log('Android getInitialNotifiation() failed', err); //eslint-disable-line no-console
-            });
+                }).
+                catch((err) => {
+                    console.log('Android getInitialNotifiation() failed', err); //eslint-disable-line no-console
+                });
         }
     }
 
@@ -90,6 +90,10 @@ class PushNotification {
             Reflect.deleteProperty(notification, 'date');
             NotificationsAndroid.scheduleLocalNotification(notification);
         }
+    }
+
+    localNotification(notification) {
+        NotificationsAndroid.localNotification(notification);
     }
 
     cancelAllLocalNotifications() {

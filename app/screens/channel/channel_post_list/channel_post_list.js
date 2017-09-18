@@ -233,7 +233,8 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 10,
         position: 'absolute',
-        top: 0
+        top: 0,
+        overflow: 'hidden'
     }
 });
 

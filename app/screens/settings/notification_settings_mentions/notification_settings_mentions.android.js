@@ -371,8 +371,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1
+            height: 1,
+            width: '100%'
         },
         scrollView: {
             flex: 1,

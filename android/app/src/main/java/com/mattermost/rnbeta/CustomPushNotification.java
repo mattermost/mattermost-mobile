@@ -7,6 +7,10 @@ import android.content.res.Resources;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Build;
 import android.app.Notification;
@@ -22,6 +26,8 @@ import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 import com.wix.reactnativenotifications.helpers.ApplicationBadgeHelper;
+
+import android.util.Log;
 
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
 
@@ -70,11 +76,11 @@ public class CustomPushNotification extends PushNotification {
             Object bundleArray = channelIdToNotification.get(channelId);
             ArrayList list = null;
             if (bundleArray == null) {
-                list = new ArrayList();
+                list = new ArrayList(0);
             } else {
                 list = (ArrayList)bundleArray;
             }
-            list.add(data);
+            list.add(0, data);
             channelIdToNotification.put(channelId, list);
         }
 
@@ -99,7 +105,13 @@ public class CustomPushNotification extends PushNotification {
 
     @Override
     protected void postNotification(int id, Notification notification) {
-        if (!mAppLifecycleFacade.isAppVisible()) {
+        boolean force = false;
+        Bundle bundle = notification.extras;
+        if (bundle != null) {
+            force = bundle.getBoolean("localTest");
+        }
+
+        if (!mAppLifecycleFacade.isAppVisible() || force) {
             super.postNotification(id, notification);
         }
     }
@@ -108,9 +120,10 @@ public class CustomPushNotification extends PushNotification {
     protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
         final Resources res = mContext.getResources();
         String packageName = mContext.getPackageName();
+        NotificationPreferencesModule notificationPreferences = NotificationPreferencesModule.getInstance();
 
         // First, get a builder initialized with defaults from the core class.
-        final Notification.Builder notification = super.getNotificationBuilder(intent);
+        final Notification.Builder notification = new Notification.Builder(mContext);
         Bundle bundle = mNotificationProps.asBundle();
         String title = bundle.getString("title");
         if (title == null) {
@@ -120,12 +133,17 @@ public class CustomPushNotification extends PushNotification {
 
         String channelId = bundle.getString("channel_id");
         String postId = bundle.getString("post_id");
-        int notificationId = channelId.hashCode();
+        int notificationId = channelId != null ? channelId.hashCode() : MESSAGE_NOTIFICATION_ID;
         String message = bundle.getString("message");
         String subText = bundle.getString("subText");
         String numberString = bundle.getString("badge");
         String smallIcon = bundle.getString("smallIcon");
         String largeIcon = bundle.getString("largeIcon");
+
+        Bundle b = bundle.getBundle("userInfo");
+        if (b != null) {
+            notification.addExtras(b);
+        }
 
         int smallIconResId;
         int largeIconResId;
@@ -157,10 +175,12 @@ public class CustomPushNotification extends PushNotification {
         int numMessages = getMessageCountInChannel(channelId);
 
         notification
+                .setContentIntent(intent)
                 .setGroupSummary(true)
                 .setSmallIcon(smallIconResId)
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
-                .setPriority(Notification.PRIORITY_HIGH);
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setAutoCancel(true);
 
         if (numMessages == 1) {
             notification
@@ -173,11 +193,16 @@ public class CustomPushNotification extends PushNotification {
 
             Notification.InboxStyle style = new Notification.InboxStyle();
             ArrayList<Bundle> list = (ArrayList<Bundle>) channelIdToNotification.get(channelId);
+
             for (Bundle data : list){
-                style.addLine(data.getString("message"));
+                String msg = data.getString("message");
+                if (msg != message) {
+                    style.addLine(data.getString("message"));
+                }
             }
 
-            style.setBigContentTitle(title);
+            style.setBigContentTitle(message)
+                    .setSummaryText(String.format("+%d more", (numMessages - 1)));
             notification.setStyle(style)
                     .setContentTitle(summaryTitle);
         }
@@ -223,6 +248,27 @@ public class CustomPushNotification extends PushNotification {
             notification.setSubText(subText);
         }
 
+        String soundUri = notificationPreferences.getNotificationSound();
+        if (soundUri != null) {
+            if (soundUri != "none") {
+                notification.setSound(Uri.parse(soundUri), AudioManager.STREAM_NOTIFICATION);
+            }
+        } else {
+            Uri defaultUri = RingtoneManager.getActualDefaultRingtoneUri(mContext, RingtoneManager.TYPE_NOTIFICATION);
+            notification.setSound(defaultUri, AudioManager.STREAM_NOTIFICATION);
+        }
+
+        boolean vibrate = notificationPreferences.getShouldVibrate();
+        if (vibrate) {
+            // Each element then alternates between delay, vibrate, sleep, vibrate, sleep
+            notification.setVibrate(new long[] {1000, 1000, 500, 1000, 500});
+        }
+
+        boolean blink = notificationPreferences.getShouldBlink();
+        if (blink) {
+            notification.setLights(Color.CYAN, 500, 500);
+        }
+
         return notification;
     }
 
@@ -236,7 +282,7 @@ public class CustomPushNotification extends PushNotification {
             return (Integer)objCount;
         }
 
-        return 0;
+        return 1;
     }
 
     private void cancelNotification(Bundle data, int notificationId) {

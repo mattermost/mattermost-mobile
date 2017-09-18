@@ -99,18 +99,10 @@ export default class Root extends PureComponent {
         });
     };
 
-    handleNotificationTapped = () => {
-        const {navigator, theme} = this.props;
-
-        navigator.resetTo({
-            screen: 'Channel',
-            animated: true,
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+    handleNotificationTapped = async () => {
+        const {navigator} = this.props;
+        navigator.popToRoot({
+            animated: false
         });
     };
 

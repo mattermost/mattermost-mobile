@@ -22,8 +22,8 @@ function makeMapStateToProps() {
         const {getPosts, getPostsRetryAttempts, getPostsSince, getPostsSinceRetryAttempts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
         const {websocket: websocketRequest} = state.requests.general;
-        const {connection} = state.views;
-        const networkOnline = connection && websocketRequest.status === RequestStatus.SUCCESS;
+        const {connection: networkOnline} = state.views;
+        const webSocketOnline = websocketRequest.status === RequestStatus.SUCCESS;
 
         let getPostsStatus;
         if (getPostsRetryAttempts > 0) {
@@ -33,10 +33,10 @@ function makeMapStateToProps() {
         }
 
         let channelIsRefreshing = getPostsStatus === RequestStatus.STARTED;
-        let channelRefreshingFailed = getPostsStatus === RequestStatus.FAILURE;
+        let channelRefreshingFailed = getPostsStatus === RequestStatus.FAILURE && webSocketOnline;
         if (!networkOnline) {
             channelIsRefreshing = false;
-            channelRefreshingFailed = true;
+            channelRefreshingFailed = false;
         }
 
         return {

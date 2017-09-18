@@ -54,5 +54,7 @@ const ViewTypes = keyMirror({
 
 export default {
     ...ViewTypes,
-    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2
+    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2,
+    FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
+    EMBED_PREVIEW: 'embed_preview'
 };

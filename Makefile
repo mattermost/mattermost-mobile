@@ -5,6 +5,7 @@
 
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
+POD := $(shell command -v pod 2> /dev/null)
 
 .yarninstall: package.json
 	@if ! [ $(shell command -v yarn 2> /dev/null) ]; then \
@@ -16,7 +17,15 @@ android_target := $(filter-out build-android,$(MAKECMDGOALS))
 
 	yarn install --pure-lockfile
 
-	touch $@
+	@touch $@
+
+.podinstall:
+ifdef POD
+	@echo Getting CocoaPods dependencies;
+	@cd ios && pod install;
+endif
+
+	@touch $@
 
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
@@ -30,7 +39,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 
 	node scripts/make-dist-assets.js
 
-pre-run: .yarninstall dist/assets
+pre-run: | .yarninstall .podinstall dist/assets
 
 run: run-ios
 
@@ -89,14 +98,18 @@ clean:
 	yarn cache clean
 	rm -rf node_modules
 	rm -f .yarninstall
+	rm -f .podinstall
 	rm -rf dist
 	rm -rf ios/build
+	rm -rf ios/Pods
 	rm -rf android/app/build
 
 post-install:
 	./node_modules/.bin/remotedev-debugger --hostname localhost --port 5678 --injectserver
 	@# Must remove the .babelrc for 0.42.0 to work correctly
-	rm -f node_modules/intl/.babelrc
+	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
+	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
+	@cp ./ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
 	sed -i'' -e 's|"./locale-data/index.js": false|"./locale-data/index.js": "./locale-data/index.js"|g' node_modules/react-intl/package.json
@@ -149,6 +162,24 @@ do-build-android:
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android $(android_target)
 
 build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
+
+do-unsigned-ios:
+	@echo "Building unsigned iOS app"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
+	@mkdir -p build-ios
+	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Relase -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+	@cd build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/
+	@mv build-ios/Mattermost-unsigned.ipa .
+	@rm -rf build-ios/
+
+do-unsigned-android:
+	@echo "Building unsigned Android app"
+	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned
+	@mv android/app/build/outputs/apk/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
+
+unsigned-android: pre-run check-style start-packager do-unsigned-android stop-packager
+
+unsigned-ios: pre-run check-style start-packager do-unsigned-ios stop-packager
 
 alpha:
 	@:

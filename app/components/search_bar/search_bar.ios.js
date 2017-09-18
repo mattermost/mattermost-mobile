@@ -47,7 +47,8 @@ export default class SearchBarIos extends Component {
         onChangeText: () => true,
         onFocus: () => true,
         onBlur: () => true,
-        onSelectionChange: () => true
+        onSelectionChange: () => true,
+        blurOnSubmit: true
     };
 
     cancel = () => {

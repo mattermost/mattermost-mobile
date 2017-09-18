@@ -250,11 +250,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1
         },
         extraPadding: {
-            ...Platform.select({
-                ios: {
-                    paddingBottom: 10
-                }
-            })
+            paddingBottom: 5
         },
         statusBar: {
             backgroundColor: theme.sidebarHeaderBg,

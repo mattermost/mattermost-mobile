@@ -12,7 +12,7 @@ export default class Drawer extends BaseDrawer {
     };
 
     // To fix the android onLayout issue give this a value of 100% as it does not need another one
-    getHeight = () => '100%';
+    getMainHeight = () => '100%';
 
     processTapGestures = () => {
         // Note that we explicitly don't support tap to open or double tap because I didn't copy them over

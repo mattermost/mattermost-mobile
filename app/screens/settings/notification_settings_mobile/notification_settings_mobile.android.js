@@ -6,16 +6,18 @@ import {injectIntl} from 'react-intl';
 import {
     Modal,
     ScrollView,
+    Text,
     TouchableOpacity,
     View
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import {RadioButton, RadioButtonGroup} from 'app/components/radio_button';
+import NotificationPreferences from 'app/notification_preferences';
+import PushNotifications from 'app/push_notifications';
 import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import SectionItem from 'app/screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
 
@@ -30,6 +32,11 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         this.pushStatus = this.state.push_status;
     };
 
+    cancelMobileSoundsModal = () => {
+        this.setState({showMobileSoundsModal: false});
+        this.sound = this.state.selectedUri;
+    };
+
     onMobilePushChanged = (value) => {
         this.push = value;
     };
@@ -37,6 +44,41 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     onMobilePushStatusChanged = (value) => {
         this.pushStatus = value;
     };
+
+    onMobileSoundChanged = (value) => {
+        this.sound = value;
+        if (value && value !== 'none') {
+            NotificationPreferences.play(value);
+        }
+    };
+
+    renderMobileBlinkSection(style) {
+        const {config, theme} = this.props;
+        const {shouldBlink} = this.state;
+
+        const showSection = config.SendPushNotifications === 'true' && this.state.push !== 'none';
+        if (!showSection) {
+            return null;
+        }
+
+        return (
+            <View>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings_mobile.light'
+                            defaultMessage='Light'
+                        />
+                    )}
+                    action={this.toggleBlink}
+                    actionType='toggle'
+                    selected={shouldBlink}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
+        );
+    }
 
     renderMobilePushModal(style) {
         const {config, intl} = this.props;
@@ -149,7 +191,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                         <View style={style.modalBody}>
                             <View style={style.modalTitleContainer}>
                                 <FormattedText
-                                    id='mobile.notification_settings_model.push_status_android'
+                                    id='mobile.notification_settings_mobile.push_status_android'
                                     defaultMessage='Trigger push notifications when'
                                     style={style.modalTitle}
                                 />
@@ -201,6 +243,95 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}
                                     onPress={this.saveMobilePushStatusModal}
+                                >
+                                    <FormattedText
+                                        id='mobile.notification_settings.modal_save'
+                                        defaultMessage='SAVE'
+                                        style={style.modalFooterOption}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        );
+    }
+
+    renderMobileSoundsModal(style) {
+        const {defaultSound, selectedUri} = this.state;
+        const {intl, notificationPreferences} = this.props;
+        const {defaultUri, sounds} = notificationPreferences;
+        const soundsArray = sounds.filter((s) => s.uri !== defaultUri).map((s, i) => {
+            return (
+                <RadioButton
+                    key={`sound-${i}`}
+                    label={s.name}
+                    value={s.uri}
+                    checked={s.uri === selectedUri}
+                />
+            );
+        });
+
+        return (
+            <Modal
+                animationType='slide'
+                transparent={true}
+                visible={this.state.showMobileSoundsModal}
+                onRequestClose={this.cancelMobileSoundsModal}
+            >
+                <View style={style.modalOverlay}>
+                    <View style={style.modal}>
+                        <View style={style.modalBody}>
+                            <View style={style.modalTitleContainer}>
+                                <FormattedText
+                                    id='mobile.notification_settings_mobile.sounds_title'
+                                    defaultMessage='Notification sound'
+                                    style={style.modalTitle}
+                                />
+                            </View>
+                            <ScrollView>
+                                <RadioButtonGroup
+                                    name='soundsSettings'
+                                    onSelect={this.onMobileSoundChanged}
+                                >
+                                    <RadioButton
+                                        label={intl.formatMessage({
+                                            id: 'mobile.notification_settings_mobile.default_sound',
+                                            defaultMessage: 'Default ({sound})'
+                                        }, {sound: defaultSound})}
+                                        value={defaultUri}
+                                        checked={selectedUri === null}
+                                    />
+                                    <RadioButton
+                                        label={intl.formatMessage({
+                                            id: 'mobile.notification_settings_mobile.no_sound',
+                                            defaultMessage: 'None'
+                                        })}
+                                        value='none'
+                                        checked={selectedUri === 'none'}
+                                    />
+                                    {soundsArray}
+                                </RadioButtonGroup>
+                            </ScrollView>
+                        </View>
+                        <View style={style.modalFooter}>
+                            <View style={style.separator}/>
+                            <View style={style.modalFooterContainer}>
+                                <TouchableOpacity
+                                    style={style.modalFooterOptionContainer}
+                                    onPress={this.cancelMobileSoundsModal}
+                                >
+                                    <FormattedText
+                                        id='mobile.notification_settings.modal_cancel'
+                                        defaultMessage='CANCEL'
+                                        style={style.modalFooterOption}
+                                    />
+                                </TouchableOpacity>
+                                <View style={{marginRight: 10}}/>
+                                <TouchableOpacity
+                                    style={style.modalFooterOptionContainer}
+                                    onPress={this.saveMobileSoundsModal}
                                 >
                                     <FormattedText
                                         id='mobile.notification_settings.modal_save'
@@ -306,12 +437,120 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                     )}
                     label={(
                         <FormattedText
-                            id='mobile.notification_settings_model.push_status_android'
+                            id='mobile.notification_settings_mobile.push_status_android'
                             defaultMessage='Trigger push notifications when'
                         />
                     )}
                     action={this.showMobilePushStatusModal}
                     actionType='default'
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
+        );
+    }
+
+    renderMobileSoundSection(style) {
+        const {config, theme} = this.props;
+        const {defaultSound, sound} = this.state;
+
+        const showSection = config.SendPushNotifications === 'true' && this.state.push !== 'none';
+        if (!showSection) {
+            return null;
+        }
+
+        let description;
+        if (sound === 'none') {
+            description = (
+                <FormattedText
+                    id='mobile.notification_settings_mobile.no_sound'
+                    defaultMessage='None'
+                />
+            );
+        } else if (sound) {
+            description = (
+                <Text>
+                    {sound}
+                </Text>
+            );
+        } else {
+            description = (
+                <FormattedText
+                    id='mobile.notification_settings_mobile.default_sound'
+                    defaultMessage='Default ({sound})'
+                    values={{
+                        sound: defaultSound
+                    }}
+                />
+            );
+        }
+
+        return (
+            <View>
+                <SectionItem
+                    description={description}
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings_mobile.sound'
+                            defaultMessage='Sound'
+                        />
+                    )}
+                    action={this.showMobileSoundsModal}
+                    actionType='default'
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
+        );
+    }
+
+    renderMobileTestSection(style) {
+        const {config, theme} = this.props;
+
+        const showSection = config.SendPushNotifications === 'true' && this.state.push !== 'none';
+        if (!showSection) {
+            return null;
+        }
+
+        return (
+            <View>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings_mobile.test'
+                            defaultMessage='Send me a test notification'
+                        />
+                    )}
+                    action={this.sendTestNotification}
+                    actionType='default'
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
+        );
+    }
+
+    renderMobileVibrateSection(style) {
+        const {config, theme} = this.props;
+        const {shouldVibrate} = this.state;
+
+        const showSection = config.SendPushNotifications === 'true' && this.state.push !== 'none';
+        if (!showSection) {
+            return null;
+        }
+
+        return (
+            <View>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings_mobile.vibrate'
+                            defaultMessage='Vibrate'
+                        />
+                    )}
+                    action={this.toggleVibrate}
+                    actionType='toggle'
+                    selected={shouldVibrate}
                     theme={theme}
                 />
                 <View style={style.separator}/>
@@ -329,12 +568,66 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         this.setMobilePushStatus(this.pushStatus);
     };
 
+    saveMobileSoundsModal = () => {
+        const {defaultSound} = this.state;
+        const {intl, notificationPreferences} = this.props;
+        const {defaultUri, sounds} = notificationPreferences;
+
+        let sound;
+        let selectedUri = null;
+        if (this.sound === defaultUri) {
+            sound = defaultSound;
+        } else if (this.sound === 'none') {
+            selectedUri = this.sound;
+            sound = intl.formatMessage({
+                id: 'mobile.notification_settings_mobile.no_sound',
+                defaultMessage: 'None'
+            });
+        } else {
+            selectedUri = this.sound;
+            const selected = sounds.find((s) => s.uri === selectedUri);
+            sound = selected.name;
+        }
+
+        NotificationPreferences.setNotificationSound(selectedUri);
+        this.setState({selectedUri, sound, showMobileSoundsModal: false});
+    };
+
+    sendTestNotification = () => {
+        const {intl} = this.props;
+
+        PushNotifications.localNotification({
+            message: intl.formatMessage({
+                id: 'mobile.notification_settings_mobile.test_push',
+                defaultMessage: 'This is a test push notification'
+            }),
+            userInfo: {
+                localNotification: true,
+                localTest: true
+            }
+        });
+    };
+
     showMobilePushModal = () => {
         this.setState({showMobilePushModal: true});
     };
 
     showMobilePushStatusModal = () => {
         this.setState({showMobilePushStatusModal: true});
+    };
+
+    showMobileSoundsModal = () => {
+        this.setState({showMobileSoundsModal: true});
+    };
+
+    toggleBlink = () => {
+        NotificationPreferences.setShouldBlink(!this.state.shouldBlink);
+        this.setState({shouldBlink: !this.state.shouldBlink});
+    };
+
+    toggleVibrate = () => {
+        NotificationPreferences.setShouldVibrate(!this.state.shouldVibrate);
+        this.setState({shouldVibrate: !this.state.shouldVibrate});
     };
 
     render() {
@@ -351,9 +644,14 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                     {this.renderMobilePushSection()}
                     <View style={style.separator}/>
                     {this.renderMobilePushStatusSection(style)}
+                    {this.renderMobileSoundSection(style)}
+                    {this.renderMobileVibrateSection(style)}
+                    {this.renderMobileBlinkSection(style)}
+                    {this.renderMobileTestSection(style)}
                 </ScrollView>
                 {this.renderMobilePushModal(style)}
                 {this.renderMobilePushStatusModal(style)}
+                {this.renderMobileSoundsModal(style)}
             </View>
         );
     }
@@ -372,8 +670,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flex: 1,
-            height: 1
+            height: 1,
+            width: '100%'
         },
         scrollView: {
             flex: 1,
@@ -394,6 +692,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: '95%'
         },
         modalBody: {
+            maxHeight: '80%',
             paddingHorizontal: 24
         },
         modalTitleContainer: {

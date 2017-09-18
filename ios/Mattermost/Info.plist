@@ -17,11 +17,22 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2.0</string>
+	<string>1.3.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.mattermost</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mattermost</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
-	<string>49</string>
+	<string>50</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -44,7 +55,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Take a Photo or Video and upload it to your mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Upload Photos and Videos to your Mattermost instance</string>
 	<key>UIAppFonts</key>
@@ -84,16 +95,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.mattermost.rnbeta</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>mattermost</string>
-			</array>
-		</dict>
-	</array>
 </dict>
 </plist>
