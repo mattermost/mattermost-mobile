@@ -321,7 +321,7 @@ export default class ChannelDrawer extends PureComponent {
                 panThreshold={0.25}
                 acceptPan={true}
                 negotiatePan={true}
-                useInteractionManager={false}
+                useInteractionManager={true}
                 tweenDuration={100}
                 tweenHandler={this.handleDrawerTween}
                 elevation={-5}
