@@ -81,12 +81,20 @@ export default class Previewer extends Component {
         });
     }
 
+    componentDidMount() {
+        this.mounted = true;
+    }
+
     componentWillReceiveProps(nextProps) {
         if (this.props.shrink && !nextProps.shrink) {
             this.setShrink();
         } else if (!this.props.shrink && nextProps.shrink) {
             this.setShrink(true);
         }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     setShrink = (shrink = false) => {
@@ -187,6 +195,10 @@ export default class Previewer extends Component {
     };
 
     handleZoom = (zoom) => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
             isZooming: zoom
         });

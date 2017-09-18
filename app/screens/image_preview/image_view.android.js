@@ -5,9 +5,9 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
-  Animated,
-  View,
-  PanResponder
+    Animated,
+    View,
+    PanResponder
 } from 'react-native';
 
 const {Image: AnimatedImage} = Animated;
@@ -152,7 +152,7 @@ export default class ImageView extends Component {
     setZoom = (zoom = true) => {
         const zoomScale = zoom ? this.props.maximumZoomScale : this.props.minimumZoomScale;
         const offsetByZoom = calcOffsetByZoom(this.state.width, this.state.height,
-                        this.props.wrapperWidth, this.props.wrapperHeight, zoomScale);
+            this.props.wrapperWidth, this.props.wrapperHeight, zoomScale);
 
         this.setState({
             zoom: zoomScale,
@@ -189,7 +189,7 @@ export default class ImageView extends Component {
             });
         } else {
             const offsetByZoom = calcOffsetByZoom(this.state.width, this.state.height,
-                            this.props.wrapperWidth, this.props.wrapperHeight, this.state.zoom);
+                this.props.wrapperWidth, this.props.wrapperHeight, this.state.zoom);
             this.setState({
                 isZooming: true,
                 initialDistance: distance,

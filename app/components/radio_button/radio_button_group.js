@@ -10,7 +10,6 @@ export default class RadioButtonGroup extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         name: PropTypes.string.isRequired,
-        value: PropTypes.string,
         onSelect: PropTypes.func
     };
 
@@ -19,26 +18,21 @@ export default class RadioButtonGroup extends PureComponent {
     constructor(props) {
         super(props);
 
-        if (props.value) {
-            this.state = {
-                selected: props.value
-            };
-        } else {
-            React.Children.map(this.props.children, (option) => {
-                if (option) {
-                    const {
-                        value,
-                        checked
-                    } = option.props;
+        this.selected = null;
+        React.Children.forEach(this.props.children, (option) => {
+            if (option) {
+                const {
+                    value,
+                    checked
+                } = option.props;
 
-                    if (!this.state.selected && checked) {
-                        this.state = {
-                            selected: value
-                        };
-                    }
+                if (!this.state.selected && checked) {
+                    this.selected = value;
                 }
-            });
-        }
+            }
+        });
+
+        this.state = {selected: this.selected};
     }
 
     get value() {

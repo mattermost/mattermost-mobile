@@ -9,39 +9,29 @@
 import fs from 'fs';
 import path from 'path';
 import register from 'babel-core/register';
-import chai from 'chai';
-import chaiEnzyme from 'chai-enzyme';
-import ReactNative from 'react-native-mock';
-import {Sentry} from 'react-native-sentry';
+import mockery from 'mockery';
 
-const m = require('module');
-const originalLoader = m._load;
-
-const NativeModules = ReactNative.NativeModules;
-const Platform = ReactNative.Platform;
-
-NativeModules.RNCookieManagerIOS = {};
-NativeModules.RNCookieManagerAndroid = {};
-
-Platform.__setOS('ios');
-
-// Image file ignore setup from:
-// http://valuemotive.com/2016/08/01/unit-testing-react-native-components-with-mocha-and-enzyme/
-m._load = function hookedLoader(request, parent, isMain) {
-    if (request.match(/.jpeg|.jpg|.png$/)) {
-        return {uri: request}
+mockery.enable({
+    warnOnReplace: false,
+    warnOnUnregistered: false
+});
+mockery.registerMock('react-native', {
+    NativeModules: {}
+});
+mockery.registerMock('react-native-device-info', {
+    getDeviceLocale() {
+        return 'en';
     }
-
-    return originalLoader(request, parent, isMain);
-};
+});
+mockery.registerMock('react-native-sentry', {
+    Sentry: {
+        captureBreadcrumb() {}
+    }
+});
 
 // Ignore all node_modules except these
 const modulesToCompile = [
-    'react-native',
-    'react-native-mock',
-    'react-native-svg-mock/mock',
-    'react-native-vector-icons',
-    'react-native-svg'
+    'react-native'
 ].map((moduleName) => new RegExp(`/node_modules/${moduleName}`));
 
 const rcPath = path.join(__dirname, '..', '.babelrc');
@@ -58,8 +48,3 @@ config.ignore = function(filename) {
 };
 
 register(config);
-
-chai.use(chaiEnzyme());
-
-// Initialize Sentry so that it doesn't complain when the middleware tries to create breadcrumbs
-Sentry.config('');

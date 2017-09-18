@@ -6,6 +6,8 @@
 // See License.txt for license information.
 //
 
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
 #import "RCTTextField.h"
 #import "MattermostManaged.h"
 
@@ -13,7 +15,17 @@
 
 RCT_EXPORT_MODULE();
 
--(void)startObserving {
+@synthesize bridge = _bridge;
+
+- (void)dealloc
+{
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:NSUserDefaultsDidChangeNotification];
+}
+
+- (void)setBridge:(RCTBridge *)bridge
+{
+  _bridge = bridge;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
   [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
                                                     object:nil
@@ -22,21 +34,10 @@ RCT_EXPORT_MODULE();
                                                      }];
 }
 
-- (void)stopObserving
-{
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [[NSNotificationCenter defaultCenter] removeObserver:NSUserDefaultsDidChangeNotification];
-}
-
 + (void)sendConfigChangedEvent {
   [[NSNotificationCenter defaultCenter] postNotificationName:@"managedConfigDidChange"
                                                       object:self
                                                     userInfo:nil];
-}
-
-- (NSArray<NSString *> *)supportedEvents
-{
-  return @[@"managedConfigDidChange"];
 }
 
 // The Managed app configuration dictionary pushed down from an MDM server are stored in this key.
@@ -49,12 +50,12 @@ static NSString * const feedbackKey = @"com.apple.feedback.managed";
 - (void)managedConfigDidChange:(NSNotification *)notification
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [self sendEventWithName:@"managedConfigDidChange" body:response];
+  [_bridge.eventDispatcher sendDeviceEventWithName:@"managedConfigDidChange" body:response];
 }
 
 - (void) remoteConfigChanged {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:configurationKey];
-  [self sendEventWithName:@"managedConfigDidChange" body:response];
+  [_bridge.eventDispatcher sendDeviceEventWithName:@"managedConfigDidChange" body:response];
 }
 
 RCT_EXPORT_METHOD(getConfig:(RCTPromiseResolveBlock)resolve

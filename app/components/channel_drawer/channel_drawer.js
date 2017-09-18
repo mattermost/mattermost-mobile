@@ -14,7 +14,7 @@ import Drawer from 'app/components/drawer';
 import {alertErrorWithFallback} from 'app/utils/general';
 
 import ChannelsList from './channels_list';
-import Swiper from './swiper';
+import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
 import {General} from 'mattermost-redux/constants';
@@ -271,18 +271,15 @@ export default class ChannelDrawer extends PureComponent {
         const {openDrawerOffset} = this.state;
         const showTeams = openDrawerOffset === DRAWER_INITIAL_OFFSET && Object.keys(myTeamMembers).length > 1;
 
-        let teams;
-        if (showTeams) {
-            teams = (
-                <View style={{flex: 1, marginBottom: 10}}>
-                    <TeamsList
-                        closeChannelDrawer={this.closeChannelDrawer}
-                        myTeamMembers={myTeamMembers}
-                        navigator={navigator}
-                    />
-                </View>
-            );
-        }
+        const teams = (
+            <View style={{flex: 1, marginBottom: 10}}>
+                <TeamsList
+                    closeChannelDrawer={this.closeChannelDrawer}
+                    myTeamMembers={myTeamMembers}
+                    navigator={navigator}
+                />
+            </View>
+        );
 
         const channelsList = (
             <View style={{flex: 1, marginBottom: 10}}>
@@ -304,7 +301,7 @@ export default class ChannelDrawer extends PureComponent {
         );
 
         return (
-            <Swiper
+            <DrawerSwiper
                 ref='swiper'
                 onPageSelected={this.onPageSelected}
                 openDrawerOffset={openDrawerOffset}
@@ -313,7 +310,7 @@ export default class ChannelDrawer extends PureComponent {
             >
                 {teams}
                 {channelsList}
-            </Swiper>
+            </DrawerSwiper>
         );
     };
 
@@ -332,6 +329,7 @@ export default class ChannelDrawer extends PureComponent {
                 captureGestures='open'
                 type='static'
                 acceptTap={true}
+                acceptPanOnDrawer={true}
                 disabled={false}
                 content={this.renderContent()}
                 tapToClose={true}

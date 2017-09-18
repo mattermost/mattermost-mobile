@@ -68,7 +68,7 @@ export default class ImagePreview extends PureComponent {
             footerOpacity: new Animated.Value(1),
             pagingEnabled: true,
             showFileInfo: true,
-            wrapperViewOpacity: new Animated.Value(Platform.OS === 'android' ? 0 : 1)
+            wrapperViewOpacity: new Animated.Value(0)
         };
     }
 
@@ -86,24 +86,13 @@ export default class ImagePreview extends PureComponent {
 
     componentDidMount() {
         Orientation.unlockAllOrientations();
-
-        // TODO: Use contentOffset on Android once PR is merged
-        // This is a hack until this PR gets merged: https://github.com/facebook/react-native/pull/12502
-        // On Android there is a render animation for scrollViews. In order for scrollTo to work
-        // on scrollViews we have to wait for the animation to finish. This will cause a bad flicker when we
-        // want to set the offset of the scrollView to show say the second file of a post with 3 files.
-        // Using this delayed opacity animation allows us to wait for the scrollView animation to finish,
-        // scollTo the correct offset for the chosen file, and then fade in like the component does on iOS.
-        if (Platform.OS === 'android') {
-            InteractionManager.runAfterInteractions(() => {
-                this.scrollView.scrollTo({x: (this.state.currentFile) * this.state.deviceWidth, animated: false});
-                Animated.timing(this.state.wrapperViewOpacity, {
-                    toValue: 1,
-                    duration: 200,
-                    delay: 75
-                }).start();
-            });
-        }
+        InteractionManager.runAfterInteractions(() => {
+            this.scrollView.scrollTo({x: (this.state.currentFile) * this.state.deviceWidth, animated: false});
+            Animated.timing(this.state.wrapperViewOpacity, {
+                toValue: 1,
+                duration: 100
+            }).start();
+        });
     }
 
     componentWillUnmount() {
@@ -176,9 +165,11 @@ export default class ImagePreview extends PureComponent {
     };
 
     handleScroll = (event) => {
-        if (event.nativeEvent.contentOffset.x % this.state.deviceWidth === 0) {
+        const offset = event.nativeEvent.contentOffset.x / this.state.deviceWidth;
+        const wholeNumber = Number((offset).toFixed(0));
+        if (Math.abs(offset - wholeNumber) < 0.01) {
             this.setState({
-                currentFile: (event.nativeEvent.contentOffset.x / this.state.deviceWidth),
+                currentFile: wholeNumber,
                 pagingEnabled: true,
                 shouldShrinkImages: false
             });
@@ -340,8 +331,8 @@ export default class ImagePreview extends PureComponent {
                         pagingEnabled={!this.state.isZooming}
                         bounces={false}
                         onScroll={this.handleScroll}
-                        scrollEventThrottle={1}
-                        contentOffset={{x: (this.state.currentFile) * this.state.deviceWidth}}
+                        scrollEventThrottle={2}
+
                     >
                         {this.props.files.map((file, index) => {
                             let component;

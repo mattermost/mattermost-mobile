@@ -19,7 +19,6 @@
 #import "Orientation.h"
 #import "RCCManager.h"
 #import "RNNotifications.h"
-#import "MattermostManaged.h"
 
 @implementation AppDelegate
 

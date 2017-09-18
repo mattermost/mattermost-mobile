@@ -86,7 +86,7 @@ export default class Downloader extends PureComponent {
 
             const res = await this.downloadTask;
             const path = res.path();
-            const newPath = await CameraRoll.saveToCameraRoll(path);
+            const newPath = await CameraRoll.saveToCameraRoll(path, 'photo');
 
             this.setState({
                 progress: 100

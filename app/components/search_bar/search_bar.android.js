@@ -51,7 +51,7 @@ export default class SearchBarAndroid extends PureComponent {
         backArrowSize: 24,
         deleteIconSize: 16,
         searchIconSize: 16,
-        blurOnSubmit: false,
+        blurOnSubmit: true,
         placeholder: 'Search',
         showCancelButton: true,
         placeholderTextColor: changeOpacity('#000', 0.5),

@@ -8,6 +8,7 @@ import {
     Dimensions,
     Keyboard,
     Platform,
+    SectionList,
     StyleSheet,
     Text,
     TouchableHighlight,
@@ -23,7 +24,6 @@ import Autocomplete from 'app/components/autocomplete';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import Post from 'app/components/post';
-import SectionList from 'app/components/scrollable_section_list';
 import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
@@ -100,7 +100,7 @@ class Search extends Component {
 
         if (shouldScroll && !this.state.isFocused) {
             setTimeout(() => {
-                this.refs.list.getWrapperRef().getListRef().scrollToOffset({
+                this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                     animated: true,
                     offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght + 1) * RECENT_SEPARATOR_HEIGHT)
                 });
@@ -385,7 +385,7 @@ class Search extends Component {
     };
 
     scrollToTop = () => {
-        this.refs.list.getWrapperRef().getListRef().scrollToOffset({
+        this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
             animated: false,
             offset: 0
         });

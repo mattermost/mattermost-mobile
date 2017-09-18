@@ -252,7 +252,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const isImage = isImageLink(link);
         const isOpenGraph = Boolean(openGraphData && openGraphData.description);
 
-        if ((isImage && !isOpenGraph && !linkLoadError) || isYouTube) {
+        if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
             const embed = this.generateToggleableEmbed(isImage, isYouTube);
             if (embed && (linkLoaded || isYouTube)) {
                 return embed;
