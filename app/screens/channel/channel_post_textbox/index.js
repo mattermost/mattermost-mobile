@@ -12,7 +12,7 @@ import ChannelPostTextbox from './channel_post_textbox';
 
 function mapStateToProps(state, ownProps) {
     return {
-        drafts: state.views.channel.drafts,
+        draft: state.views.channel.drafts[ownProps.channelId] || {},
         ...ownProps
     };
 }

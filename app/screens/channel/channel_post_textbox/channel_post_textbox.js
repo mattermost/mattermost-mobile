@@ -9,7 +9,7 @@ import PostTextbox from 'app/components/post_textbox';
 export default class ChannelPostTextbox extends React.PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
-        drafts: PropTypes.object.isRequired,
+        draft: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handlePostDraftChanged: PropTypes.func.isRequired
@@ -25,13 +25,11 @@ export default class ChannelPostTextbox extends React.PureComponent {
     };
 
     render() {
-        const channelDraft = this.props.drafts[this.props.channelId] || {};
-
         return (
             <PostTextbox
                 ref='postTextbox'
-                files={channelDraft.files}
-                value={channelDraft.draft}
+                files={this.props.draft.files}
+                value={this.props.draft.draft}
                 channelId={this.props.channelId}
                 onChangeText={this.handleDraftChanged}
                 navigator={this.props.navigator}
