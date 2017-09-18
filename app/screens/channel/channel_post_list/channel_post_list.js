@@ -41,8 +41,7 @@ class ChannelPostList extends PureComponent {
         navigator: PropTypes.object,
         posts: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
-        theme: PropTypes.object.isRequired,
-        networkOnline: PropTypes.bool.isRequired
+        theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
