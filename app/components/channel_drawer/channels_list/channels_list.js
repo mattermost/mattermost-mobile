@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
@@ -21,7 +21,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FilteredList from './filtered_list';
 import List from './list';
 
-class ChannelsList extends Component {
+class ChannelsList extends React.PureComponent {
     static propTypes = {
         channels: PropTypes.object.isRequired,
         channelMembers: PropTypes.object,
