@@ -7,13 +7,11 @@ import {connect} from 'react-redux';
 import {
     closeDMChannel,
     closeGMChannel,
-    leaveChannel,
-    markFavorite,
-    unmarkFavorite
+    leaveChannel
 } from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
-import {getChannelStats, deleteChannel} from 'mattermost-redux/actions/channels';
+import {favoriteChannel, getChannelStats, deleteChannel, unfavoriteChannel} from 'mattermost-redux/actions/channels';
 import {General} from 'mattermost-redux/constants';
 import {
     getCurrentChannel,
@@ -69,8 +67,8 @@ function mapDispatchToProps(dispatch) {
             deleteChannel,
             getChannelStats,
             leaveChannel,
-            markFavorite,
-            unmarkFavorite
+            favoriteChannel,
+            unfavoriteChannel
         }, dispatch)
     };
 }
