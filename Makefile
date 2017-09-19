@@ -33,7 +33,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@mkdir -p dist
 
 	@if [ -e dist/assets ] ; then \
-		@rm -rf dist/assets; \
+		rm -rf dist/assets; \
 	fi
 
 	@echo "Generating app assets"
