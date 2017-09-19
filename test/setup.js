@@ -16,6 +16,11 @@ mockery.enable({
     warnOnUnregistered: false
 });
 mockery.registerMock('react-native', {
+    Dimensions: {
+        get: () => {
+            return {width: 0, height: 0}
+        }
+    },
     NativeModules: {}
 });
 mockery.registerMock('react-native-device-info', {
