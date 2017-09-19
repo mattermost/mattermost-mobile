@@ -70,7 +70,7 @@ class Settings extends PureComponent {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'About',
-            title: intl.formatMessage({id: 'about.titles', defaultMessage: 'About Mattermost'}),
+            title: intl.formatMessage({id: 'about.title', defaultMessage: 'About Mattermost'}),
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
