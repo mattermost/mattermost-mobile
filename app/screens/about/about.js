@@ -16,7 +16,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import MattermostIcon from 'app/components/mattermost_icon';
+import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
 
 export default class About extends PureComponent {
@@ -27,11 +27,11 @@ export default class About extends PureComponent {
     };
 
     handleAboutTeam = () => {
-        Linking.openURL('http://www.mattermost.org/');
+        Linking.openURL(Config.AboutTeamURL);
     };
 
     handleAboutEnterprise = () => {
-        Linking.openURL('http://about.mattermost.com/');
+        Linking.openURL(Config.AboutEnterpriseURL);
     };
 
     handlePlatformNotice = () => {
@@ -73,7 +73,7 @@ export default class About extends PureComponent {
                     onPress={this.handleAboutTeam}
                 >
                     <Text style={style.learnLink}>
-                        {'mattermost.org'}
+                        {Config.TeamEditionLearnURL}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -108,7 +108,7 @@ export default class About extends PureComponent {
                         onPress={this.handleAboutEnterprise}
                     >
                         <Text style={style.learnLink}>
-                            {'about.mattermost.com'}
+                            {Config.EELearnURL}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -172,7 +172,7 @@ export default class About extends PureComponent {
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>
-                        <MattermostIcon
+                        <AppIcon
                             color={theme.centerChannelColor}
                             height={120}
                             width={120}
@@ -181,7 +181,7 @@ export default class About extends PureComponent {
                     <View style={style.infoContainer}>
                         <View style={style.titleContainer}>
                             <Text style={style.title}>
-                                {'Mattermost '}
+                                {`${Config.AppName} `}
                             </Text>
                             {title}
                         </View>
