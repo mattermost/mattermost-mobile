@@ -33,7 +33,7 @@ function makeMapStateToProps() {
             getPostsStatus = getPostsSince.status;
         }
 
-        let channelIsRefreshing = getPostsStatus === RequestStatus.STARTED;
+        let channelIsRefreshing = state.views.channel.refreshing;
         let channelRefreshingFailed = getPostsStatus === RequestStatus.FAILURE && webSocketOnline;
         if (!networkOnline) {
             channelIsRefreshing = false;
