@@ -83,7 +83,33 @@ function leftMergeDirs(rootA, rootB, dest, path) {
     }
 }
 
+function mergeThemeOverrides(source, override, dest) {
+    var themeA = fs.readFileSync(source);
+
+    var themeB;
+    try {
+        themeB = fs.readFileSync(override);
+    } catch (error) {
+        // override theme doesn't exist
+        return;
+    }
+
+    var objA = JSON.parse(themeA);
+    var objB = JSON.parse(themeB);
+
+    var nextObj = {};
+    Object.keys(objA).forEach((t) => {
+        nextObj[t] = Object.assign({}, objA[t], objB[t]);
+        Reflect.deleteProperty(objB, t);
+    });
+
+    var finalObj = Object.assign({}, nextObj, objB);
+
+    var out = fs.createWriteStream(dest);
+    out.write(JSON.stringify(finalObj));
+}
+
 // Assumes dist/assets exists and is empty
 leftMergeDirs('assets/base/', 'assets/override/', 'dist/assets/', '');
-
+mergeThemeOverrides('assets/base/themes.json', 'assets/override/themes.json', 'dist/assets/themes.json');
 /* eslint-enable no-console */

@@ -20,6 +20,7 @@ import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 
+import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
 
@@ -81,18 +82,31 @@ class LoginOptions extends PureComponent {
     };
 
     renderEmailOption = () => {
-        const {config} = this.props;
-        if (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') {
+        const {config, theme} = this.props;
+        const forceHideFromLocal = LocalConfig.HideEmailLogin;
+
+        if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
+            const backgroundColor = theme.EmailLoginButtonColor || theme.linkColor;
+            const additionalStyle = {
+                backgroundColor
+            };
+
+            if (theme.hasOwnProperty('EmailLoginButtonBorder')) {
+                additionalStyle.borderColor = theme.EmailLoginButtonBorder;
+            }
+
+            const textColor = theme.EmailLoginButtonText || 'white';
+
             return (
                 <Button
                     key='email'
                     onPress={() => preventDoubleTap(this.goToLogin, this)}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#2389d7'}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <FormattedText
                         id='signup.email'
                         defaultMessage='Email and Password'
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     />
                 </Button>
             );
@@ -102,12 +116,25 @@ class LoginOptions extends PureComponent {
     };
 
     renderLdapOption = () => {
-        const {config, license} = this.props;
-        if (license.IsLicensed === 'true' && config.EnableLdap === 'true') {
+        const {config, license, theme} = this.props;
+        const forceHideFromLocal = LocalConfig.HideLDAPLogin;
+
+        if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
+            const backgroundColor = theme.LDAPLoginButtonColor || theme.linkColor;
+            const additionalStyle = {
+                backgroundColor
+            };
+
+            if (theme.hasOwnProperty('LDAPLoginButtonBorder')) {
+                additionalStyle.borderColor = theme.LDAPLoginButtonBorder;
+            }
+
+            const textColor = theme.LDAPLoginButtonText || 'white';
+
             let buttonText;
             if (config.LdapLoginFieldName) {
                 buttonText = (
-                    <Text style={[GlobalStyles.signupButtonText, {color: 'white'}]}>
+                    <Text style={[GlobalStyles.signupButtonText, {color: textColor}]}>
                         {config.LdapLoginFieldName}
                     </Text>
                 );
@@ -116,7 +143,7 @@ class LoginOptions extends PureComponent {
                     <FormattedText
                         id='login.ldapUsernameLower'
                         defaultMessage='AD/LDAP username'
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     />
                 );
             }
@@ -125,7 +152,7 @@ class LoginOptions extends PureComponent {
                 <Button
                     key='ldap'
                     onPress={() => preventDoubleTap(this.goToLogin, this)}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#2389d7'}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     {buttonText}
                 </Button>
@@ -166,16 +193,30 @@ class LoginOptions extends PureComponent {
     };
 
     renderSamlOption = () => {
-        const {config, license} = this.props;
-        if (config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
+        const {config, license, theme} = this.props;
+        const forceHideFromLocal = LocalConfig.HideSAMLLogin;
+
+        if (!forceHideFromLocal && config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
+            const backgroundColor = theme.SAMLLoginButtonColor || theme.linkColor;
+
+            const additionalStyle = {
+                backgroundColor
+            };
+
+            if (theme.SAMLLoginButtonBorder) {
+                additionalStyle.borderColor = theme.SAMLLoginButtonBorder;
+            }
+
+            const textColor = theme.SAMLLoginButtonText || 'white';
+
             return (
                 <Button
                     key='saml'
                     onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.SAML)}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#34a28b'}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <Text
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     >
                         {config.SamlLoginButtonText}
                     </Text>
