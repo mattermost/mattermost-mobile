@@ -31,6 +31,8 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {
     calculateDeviceDimensions,
+    setDeviceOrientation,
+    setDeviceAsTablet,
     setStatusBarHeight
 } from 'app/actions/device';
 import {
@@ -376,7 +378,9 @@ export default class Mattermost {
     // We need to wait for hydration to occur before load the router.
     listenForHydration = () => {
         const state = this.store.getState();
-        this.orientationDidChange();
+        Orientation.getOrientation((orientation) => {
+            this.orientationDidChange(orientation);
+        });
 
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
@@ -503,8 +507,12 @@ export default class Mattermost {
         }
     };
 
-    orientationDidChange = () => {
+    orientationDidChange = (orientation) => {
         const {dispatch} = this.store;
+        dispatch(setDeviceOrientation(orientation));
+        if (DeviceInfo.isTablet()) {
+            dispatch(setDeviceAsTablet());
+        }
         setTimeout(() => {
             dispatch(calculateDeviceDimensions());
         }, 100);

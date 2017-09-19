@@ -12,3 +12,11 @@ export function getConnection(state) {
 export function getStatusBarHeight(state) {
     return state.device.statusBarHeight;
 }
+
+export function isLandscape(state) {
+    return state.device.orientation === 'LANDSCAPE';
+}
+
+export function isTablet(state) {
+    return state.device.isTablet;
+}

@@ -11,6 +11,7 @@ import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/e
 
 import {handleSelectChannel, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
+import {isLandscape, isTablet} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelDrawer from './channel_drawer.js';
@@ -23,6 +24,8 @@ function mapStateToProps(state, ownProps) {
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
         currentUserId,
+        isLandscape: isLandscape(state),
+        isTablet: isTablet(state),
         teamsCount: Object.keys(getTeamMemberships(state)).length,
         theme: getTheme(state)
     };
