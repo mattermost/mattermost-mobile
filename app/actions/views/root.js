@@ -68,13 +68,6 @@ export function goToNotification(notification) {
     };
 }
 
-export function setStatusBarHeight(height = 20) {
-    return {
-        type: ViewTypes.STATUSBAR_HEIGHT_CHANGED,
-        data: height
-    };
-}
-
 export function purgeOfflineStore() {
     return {type: General.OFFLINE_STORE_PURGE};
 }
@@ -84,5 +77,5 @@ export default {
     queueNotification,
     clearNotification,
     goToNotification,
-    setStatusBarHeight
+    purgeOfflineStore
 };

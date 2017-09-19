@@ -29,7 +29,6 @@ class ChannelSearchButton extends PureComponent {
             clearSearch: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired
         }).isRequired,
-        applicationInitializing: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object
     };
@@ -57,13 +56,8 @@ class ChannelSearchButton extends PureComponent {
 
     render() {
         const {
-            applicationInitializing,
             theme
         } = this.props;
-
-        if (applicationInitializing) {
-            return null;
-        }
 
         return (
             <TouchableOpacity
@@ -98,7 +92,6 @@ const style = StyleSheet.create({
 
 function mapStateToProps(state, ownProps) {
     return {
-        applicationInitializing: state.views.root.appInitializing,
         theme: getTheme(state),
         ...ownProps
     };

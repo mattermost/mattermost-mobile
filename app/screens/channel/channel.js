@@ -4,9 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
-import Orientation from 'react-native-orientation';
 import {
-    Dimensions,
     NetInfo,
     Platform,
     View
@@ -53,17 +51,10 @@ class Channel extends PureComponent {
         channelsRequestStatus: PropTypes.string
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {headerWidth: Dimensions.get('window').width};
-    }
-
     componentWillMount() {
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectionChange);
         NetInfo.isConnected.fetch().then(this.handleConnectionChange);
-        Orientation.addOrientationListener(this.orientationDidChange);
 
         if (this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
@@ -91,7 +82,6 @@ class Channel extends PureComponent {
 
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
-        Orientation.removeOrientationListener(this.orientationDidChange);
 
         closeWebSocket();
         stopPeriodicStatusUpdates();
@@ -164,12 +154,6 @@ class Channel extends PureComponent {
         });
     };
 
-    orientationDidChange = () => {
-        setTimeout(() => {
-            this.setState({headerWidth: Dimensions.get('window').width});
-        }, 100);
-    };
-
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
     };
@@ -214,6 +198,16 @@ class Channel extends PureComponent {
                 navigator={navigator}
             >
                 <StatusBar/>
+                <View>
+                    <OfflineIndicator/>
+                    <View style={style.header}>
+                        <ChannelDrawerButton/>
+                        <ChannelTitle
+                            onPress={this.goToChannelInfo}
+                        />
+                        <ChannelSearchButton navigator={navigator}/>
+                    </View>
+                </View>
                 <KeyboardLayout
                     behavior='padding'
                     style={style.keyboardLayout}
@@ -231,16 +225,6 @@ class Channel extends PureComponent {
                         navigator={navigator}
                     />
                 </KeyboardLayout>
-                <View style={style.headerContainer}>
-                    <View style={[style.header, {width: this.state.headerWidth}]}>
-                        <ChannelDrawerButton/>
-                        <ChannelTitle
-                            onPress={this.goToChannelInfo}
-                        />
-                        <ChannelSearchButton navigator={navigator}/>
-                    </View>
-                    <OfflineIndicator/>
-                </View>
             </ChannelDrawer>
         );
     }
@@ -248,16 +232,12 @@ class Channel extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        headerContainer: {
-            flex: 1,
-            position: 'absolute'
-        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            width: '100%',
             zIndex: 10,
-            elevation: 2,
             ...Platform.select({
                 android: {
                     height: 46
@@ -269,15 +249,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             })
         },
         postList: {
-            flex: 1,
-            ...Platform.select({
-                android: {
-                    marginTop: 46
-                },
-                ios: {
-                    marginTop: 64
-                }
-            })
+            flex: 1
         },
         loading: {
             backgroundColor: theme.centerChannelBg,
@@ -286,6 +258,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         keyboardLayout: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
+            zIndex: -1,
             paddingBottom: 0
         }
     };

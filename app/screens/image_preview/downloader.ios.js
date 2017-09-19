@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Animated,
     CameraRoll,
-    Dimensions,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -15,7 +14,6 @@ import {
 import RNFetchBlob from 'react-native-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Orientation from 'react-native-orientation';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -26,6 +24,8 @@ const {View: AnimatedView} = Animated;
 
 export default class Downloader extends PureComponent {
     static propTypes = {
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
         onDownloadCancel: PropTypes.func,
         onDownloadSuccess: PropTypes.func,
@@ -41,20 +41,10 @@ export default class Downloader extends PureComponent {
     constructor(props) {
         super(props);
 
-        const {height: deviceHeight} = Dimensions.get('window');
         this.state = {
-            deviceHeight,
-            downloaderTop: new Animated.Value(deviceHeight),
+            downloaderTop: new Animated.Value(props.deviceHeight),
             progress: 0
         };
-    }
-
-    componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
-    }
-
-    componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -66,24 +56,27 @@ export default class Downloader extends PureComponent {
             });
         } else if (!nextProps.show && this.props.show) {
             this.toggleDownloader(false);
+        } else if (this.props.deviceHeight !== nextProps.deviceHeight) {
+            this.recenterDownloader(nextProps);
         }
     }
 
-    orientationDidChange = () => {
-        const {height: deviceHeight} = Dimensions.get('window');
-        const top = this.props.show ? (deviceHeight / 2) - 100 : deviceHeight;
+    recenterDownloader = (props) => {
+        const {deviceHeight, show} = props;
+        const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
 
-        setTimeout(() => {
+        Animated.sequence([
+            Animated.delay(200),
             Animated.spring(this.state.downloaderTop, {
                 toValue: top,
                 tension: 8,
                 friction: 5
-            }).start();
-        }, 200);
+            })
+        ]).start();
     };
 
     toggleDownloader = (show = true) => {
-        const {deviceHeight} = this.state;
+        const {deviceHeight} = this.props;
         const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
 
         Animated.spring(this.state.downloaderTop, {

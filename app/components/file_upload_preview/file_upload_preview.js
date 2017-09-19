@@ -4,14 +4,12 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
-import Orientation from 'react-native-orientation';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
@@ -28,6 +26,7 @@ export default class FileUploadPreview extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         createPostRequestStatus: PropTypes.string.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         inputHeight: PropTypes.number.isRequired,
@@ -35,23 +34,6 @@ export default class FileUploadPreview extends PureComponent {
         theme: PropTypes.object.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired
     };
-
-    constructor(props) {
-        super(props);
-
-        const {height: deviceHeight} = Dimensions.get('window');
-        this.state = {
-            deviceHeight
-        };
-    }
-
-    componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
-    }
-
-    componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
-    }
 
     handleRetryFileUpload = (file) => {
         if (!file.failed) {
@@ -116,12 +98,6 @@ export default class FileUploadPreview extends PureComponent {
         });
     };
 
-    orientationDidChange = () => {
-        setTimeout(() => {
-            this.setState({deviceHeight: Dimensions.get('window').height});
-        }, 100);
-    };
-
     render() {
         if (this.props.channelIsLoading || (!this.props.files.length && !this.props.filesUploadingForCurrentChannel)) {
             return null;
@@ -129,7 +105,7 @@ export default class FileUploadPreview extends PureComponent {
 
         return (
             <KeyboardLayout>
-                <View style={[style.container, {height: this.state.deviceHeight}]}>
+                <View style={[style.container, {height: this.props.deviceHeight}]}>
                     <ScrollView
                         horizontal={true}
                         style={style.scrollView}

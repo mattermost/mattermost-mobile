@@ -5,12 +5,10 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
-    Dimensions,
     StyleSheet,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import Orientation from 'react-native-orientation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -25,6 +23,8 @@ const DURATION = 200;
 export default class OptionsModal extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         onCancelPress: PropTypes.func,
         title: PropTypes.oneOfType([
@@ -40,16 +40,9 @@ export default class OptionsModal extends PureComponent {
     constructor(props) {
         super(props);
 
-        const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
         this.state = {
-            deviceHeight,
-            deviceWidth,
-            top: new Animated.Value(deviceHeight)
+            top: new Animated.Value(props.deviceHeight)
         };
-    }
-
-    componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
     }
 
     componentDidMount() {
@@ -61,7 +54,6 @@ export default class OptionsModal extends PureComponent {
     }
 
     componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
         EventEmitter.off(NavigationTypes.NAVIGATION_CLOSE_MODAL, this.close);
     }
 
@@ -72,20 +64,13 @@ export default class OptionsModal extends PureComponent {
 
     close = () => {
         Animated.timing(this.state.top, {
-            toValue: this.state.deviceHeight,
+            toValue: this.props.deviceHeight,
             duration: DURATION
         }).start(() => {
             this.props.navigator.dismissModal({
                 animationType: 'none'
             });
         });
-    };
-
-    orientationDidChange = () => {
-        setTimeout(() => {
-            const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
-            this.setState({deviceWidth, deviceHeight});
-        }, 100);
     };
 
     render() {
@@ -97,7 +82,7 @@ export default class OptionsModal extends PureComponent {
         return (
             <TouchableWithoutFeedback onPress={this.close}>
                 <View style={style.wrapper}>
-                    <AnimatedView style={{height: this.state.deviceHeight, left: 0, top: this.state.top, width: this.state.deviceWidth}}>
+                    <AnimatedView style={{height: this.props.deviceHeight, left: 0, top: this.state.top, width: this.props.deviceWidth}}>
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}

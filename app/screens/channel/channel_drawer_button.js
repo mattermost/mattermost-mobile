@@ -25,7 +25,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 class ChannelDrawerButton extends PureComponent {
     static propTypes = {
-        applicationInitializing: PropTypes.bool.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         myTeamMembers: PropTypes.object,
         theme: PropTypes.object,
@@ -80,7 +79,6 @@ class ChannelDrawerButton extends PureComponent {
 
     render() {
         const {
-            applicationInitializing,
             currentTeamId,
             mentionCount,
             messageCount,
@@ -88,10 +86,6 @@ class ChannelDrawerButton extends PureComponent {
             theme
         } = this.props;
         const style = getStyleFromTheme(theme);
-
-        if (applicationInitializing) {
-            return null;
-        }
 
         let mentions = mentionCount;
         let messages = messageCount;
@@ -184,7 +178,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 function mapStateToProps(state) {
     return {
-        applicationInitializing: state.views.root.appInitializing,
         currentTeamId: getCurrentTeamId(state),
         myTeamMembers: getTeamMemberships(state),
         theme: getTheme(state),

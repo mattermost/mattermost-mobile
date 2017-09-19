@@ -256,7 +256,7 @@ export default class Previewer extends Component {
             <View
                 {...this.panResponder.panHandlers}
                 onResponderRelease={this.handleResponderRelease}
-                style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth}]}
+                style={[style.fileImageWrapper, {height: '100%', width: '100%'}]}
             >
                 <AnimatedView style={{height: imageHeight, width: this.state.imageWidth, backgroundColor: '#000', opacity}}>
                     <ImageView

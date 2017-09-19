@@ -30,10 +30,13 @@ import {Client, Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {
+    calculateDeviceDimensions,
+    setStatusBarHeight
+} from 'app/actions/device';
+import {
     goToNotification,
     loadConfigAndLicense,
     queueNotification,
-    setStatusBarHeight,
     purgeOfflineStore
 } from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
@@ -80,7 +83,7 @@ export default class Mattermost {
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
         EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetDisplayName);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.restartApp);
-
+        Orientation.addOrientationListener(this.orientationDidChange);
         mattermostManaged.addEventListener('managedConfigDidChange', this.handleManagedConfig);
 
         this.handleAppStateChange(AppState.currentState);
@@ -373,6 +376,8 @@ export default class Mattermost {
     // We need to wait for hydration to occur before load the router.
     listenForHydration = () => {
         const state = this.store.getState();
+        this.orientationDidChange();
+
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
 
@@ -496,6 +501,13 @@ export default class Mattermost {
             // You must call to completed(), otherwise the action will not be triggered
             completed();
         }
+    };
+
+    orientationDidChange = () => {
+        const {dispatch} = this.store;
+        setTimeout(() => {
+            dispatch(calculateDeviceDimensions());
+        }, 100);
     };
 
     resetBadgeAndVersion = () => {

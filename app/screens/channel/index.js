@@ -9,8 +9,9 @@ import {
     loadProfilesAndTeamMembersForDMSidebar,
     selectInitialChannel
 } from 'app/actions/views/channel';
-import {connection} from 'app/actions/views/connection';
+import {connection} from 'app/actions/device';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
+import {getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
@@ -27,7 +28,6 @@ import Channel from './channel';
 function mapStateToProps(state, ownProps) {
     const {websocket} = state.requests.general;
     const {myChannels: channelsRequest} = state.requests.channels;
-    const {statusBarHeight} = state.views.root;
 
     return {
         ...ownProps,
@@ -35,7 +35,7 @@ function mapStateToProps(state, ownProps) {
         currentChannelId: getCurrentChannelId(state),
         theme: getTheme(state),
         webSocketRequest: websocket,
-        statusBarHeight,
+        statusBarHeight: getStatusBarHeight(state),
         channelsRequestStatus: channelsRequest.status
     };
 }

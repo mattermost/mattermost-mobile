@@ -2,11 +2,11 @@
 // See License.txt for license information.
 
 import {UserTypes} from 'mattermost-redux/action_types';
-import {ViewTypes} from 'app/constants';
+import {DeviceTypes} from 'app/constants';
 
 export default function connection(state = true, action) {
     switch (action.type) {
-    case ViewTypes.CONNECTION_CHANGED:
+    case DeviceTypes.CONNECTION_CHANGED:
         return action.data;
 
     case UserTypes.LOGOUT_SUCCESS:

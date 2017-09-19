@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {goToNotification} from 'app/actions/views/root';
+import {getDimensions} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
@@ -15,6 +16,7 @@ import Notification from './notification';
 
 function mapStateToProps(state, ownProps) {
     const {data} = ownProps.notification;
+    const {deviceWidth} = getDimensions(state);
 
     let user;
     if (data.sender_id) {
@@ -30,6 +32,7 @@ function mapStateToProps(state, ownProps) {
         ...ownProps,
         config: state.entities.general.config,
         channel,
+        deviceWidth,
         user,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         theme: getTheme(state)

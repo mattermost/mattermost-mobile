@@ -20,8 +20,11 @@ POD := $(shell command -v pod 2> /dev/null)
 
 .podinstall:
 ifdef POD
-	@echo Getting CocoaPods dependencies;
+	@echo Getting Cocoapods dependencies;
 	@cd ios && pod install;
+else
+	@echo "Cocoapods is not installed https://cocoapods.org/"
+	@exit 1
 endif
 
 	@touch $@
@@ -33,7 +36,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@mkdir -p dist
 
 	@if [ -e dist/assets ] ; then \
-		@rm -rf dist/assets; \
+		rm -rf dist/assets; \
 	fi
 
 	@echo "Generating app assets"

@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Image,
     Platform,
     StyleSheet,
@@ -12,7 +11,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Orientation from 'react-native-orientation';
 
 import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
@@ -33,28 +31,13 @@ export default class Notification extends PureComponent {
         }).isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
+        deviceWidth: PropTypes.number.isRequired,
         notification: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object
     };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            deviceWidth: Dimensions.get('window').width
-        };
-    }
-
-    componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
-    }
-
-    componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
-    }
 
     notificationTapped = () => {
         const {actions, navigator, notification, theme} = this.props;
@@ -177,15 +160,9 @@ export default class Notification extends PureComponent {
         return userName;
     };
 
-    orientationDidChange = () => {
-        setTimeout(() => {
-            const {width: deviceWidth} = Dimensions.get('window');
-            this.setState({deviceWidth});
-        }, 100);
-    };
-
     render() {
-        const {message} = this.props.notification;
+        const {deviceWidth, notification} = this.props;
+        const {message} = notification;
 
         if (message) {
             const msg = message.split(':');
@@ -196,7 +173,7 @@ export default class Notification extends PureComponent {
             const icon = this.getNotificationIcon();
 
             return (
-                <View style={[style.container, {width: this.state.deviceWidth}]}>
+                <View style={[style.container, {width: deviceWidth}]}>
                     <TouchableOpacity
                         style={{flex: 1, flexDirection: 'row'}}
                         onPress={this.notificationTapped}

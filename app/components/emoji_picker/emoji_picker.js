@@ -4,9 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
-import Orientation from 'react-native-orientation';
 import {
-    Dimensions,
     SectionList,
     TouchableOpacity,
     View
@@ -25,6 +23,7 @@ const SECTION_MARGIN = 15;
 class EmojiPicker extends PureComponent {
     static propTypes = {
         emojis: PropTypes.array.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         intl: intlShape.isRequired,
         onEmojiPress: PropTypes.func,
         theme: PropTypes.object.isRequired
@@ -44,16 +43,16 @@ class EmojiPicker extends PureComponent {
         this.state = {
             emojis: props.emojis,
             searchTerm: '',
-            deviceWidth: Dimensions.get('window').width - (SECTION_MARGIN * 2)
+            width: props.deviceWidth - (SECTION_MARGIN * 2)
         };
     }
 
-    componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
-    }
-
-    componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.deviceWidth !== this.props.deviceWidth) {
+            this.setState({
+                width: nextProps.deviceWidth - (SECTION_MARGIN * 2)
+            });
+        }
     }
 
     changeSearchTerm = (text) => {
@@ -80,12 +79,6 @@ class EmojiPicker extends PureComponent {
 
     filterEmojiAliases = (aliases, searchTerm) => {
         return aliases.findIndex((alias) => alias.includes(searchTerm)) !== -1;
-    };
-
-    orientationDidChange = () => {
-        setTimeout(() => {
-            this.setState({deviceWidth: Dimensions.get('window').width - (SECTION_MARGIN * 2)});
-        }, 100);
     };
 
     searchEmojis = (searchTerm) => {
@@ -178,7 +171,7 @@ class EmojiPicker extends PureComponent {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
 
-        const numColumns = Number((this.state.deviceWidth / (EMOJI_SIZE + (EMOJI_GUTTER * 2))).toFixed(0));
+        const numColumns = Number((this.state.width / (EMOJI_SIZE + (EMOJI_GUTTER * 2))).toFixed(0));
 
         const slices = item.items.reduce((slice, emoji, emojiIndex) => {
             if (emojiIndex % numColumns === 0 && emojiIndex !== 0) {
@@ -229,7 +222,7 @@ class EmojiPicker extends PureComponent {
                 <View style={styles.container}>
                     <SectionList
                         showsVerticalScrollIndicator={false}
-                        style={[styles.listView, {width: this.state.deviceWidth}]}
+                        style={styles.listView}
                         sections={emojis}
                         renderSectionHeader={this.renderSectionHeader}
                         renderItem={this.renderItem}

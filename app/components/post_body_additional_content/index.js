@@ -12,6 +12,7 @@ import {getOpenGraphMetadataForUrl} from 'mattermost-redux/selectors/entities/po
 import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 
 import {ViewTypes} from 'app/constants';
+import {getDimensions} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import {extractFirstLink} from 'app/utils/url';
@@ -24,6 +25,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...ownProps,
+        ...getDimensions(state),
         config,
         link,
         openGraphData: getOpenGraphMetadataForUrl(state, link),

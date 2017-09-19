@@ -246,6 +246,9 @@ const state = {
             }
         }
     },
+    device: {
+        connection: true
+    },
     navigation: '',
     views: {
         channel: {
@@ -253,7 +256,6 @@ const state = {
             loading: false,
             tooltipVisible: false
         },
-        connection: true,
         fetchCache: {},
         i18n: {
             locale: ''
