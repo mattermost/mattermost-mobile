@@ -1,4 +1,4 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+    // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -154,11 +154,11 @@ class Settings extends PureComponent {
     };
 
     openErrorEmail = () => {
-        const recipient = 'feedback@mattermost.com';
-        const subject = 'Problem with Mattermost React Native app';
-        const body = this.errorEmailBody();
+        const {config} = this.props;
+        const recipient = config.SupportEmail;
+        const subject = `Problem with ${config.SiteName} React Native app`;
         Linking.openURL(
-            `mailto:${recipient}?subject=${subject}&body=${body}`
+            `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`
         );
         this.props.actions.clearErrors();
     };
