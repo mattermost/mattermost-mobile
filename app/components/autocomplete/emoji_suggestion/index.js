@@ -3,9 +3,11 @@
 
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
+import {bindActionCreators} from 'redux';
 
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
+import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {getTheme} from 'app/selectors/preferences';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
 
@@ -47,4 +49,12 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps)(EmojiSuggestion);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            addReactionToLatestPost
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(EmojiSuggestion);

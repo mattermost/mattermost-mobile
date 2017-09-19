@@ -27,10 +27,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
 const MAX_MESSAGE_LENGTH = 4000;
+const IS_REACTION_REGEX = /(^\+:([^\s]*):)$/i;
 
 class PostTextbox extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addReactionToLatestPost: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
@@ -137,7 +139,16 @@ class PostTextbox extends PureComponent {
             return;
         }
 
-        const hasFailedImages = this.props.files.some((f) => f.failed);
+        const {files, value} = this.props;
+
+        const isReactionMatch = value.match(IS_REACTION_REGEX);
+        if (isReactionMatch) {
+            const emoji = isReactionMatch[2];
+            this.sendReaction(emoji);
+            return;
+        }
+
+        const hasFailedImages = files.some((f) => f.failed);
         if (hasFailedImages) {
             const {intl} = this.props;
 
@@ -163,19 +174,21 @@ class PostTextbox extends PureComponent {
     };
 
     sendMessage = () => {
-        const files = this.props.files.filter((f) => !f.failed);
+        const {actions, currentUserId, channelId, files, rootId, value} = this.props;
+
+        const postFiles = files.filter((f) => !f.failed);
         const post = {
-            user_id: this.props.currentUserId,
-            channel_id: this.props.channelId,
-            root_id: this.props.rootId,
-            parent_id: this.props.rootId,
-            message: this.props.value
+            user_id: currentUserId,
+            channel_id: channelId,
+            root_id: rootId,
+            parent_id: rootId,
+            message: value
         };
 
-        this.props.actions.createPost(post, files);
+        actions.createPost(post, postFiles);
         this.handleTextChange('');
-        if (this.props.files.length) {
-            this.props.actions.handleClearFiles(this.props.channelId, this.props.rootId);
+        if (postFiles.length) {
+            actions.handleClearFiles(channelId, rootId);
         }
 
         // Shrink the input textbox since the layout events lag slightly
@@ -183,6 +196,12 @@ class PostTextbox extends PureComponent {
             contentHeight: INITIAL_HEIGHT
         });
     };
+
+    sendReaction = (emoji) => {
+        const {actions, rootId} = this.props;
+        actions.addReactionToLatestPost(emoji, rootId);
+        this.handleTextChange('');
+    }
 
     handleTextChange = (text) => {
         const {
