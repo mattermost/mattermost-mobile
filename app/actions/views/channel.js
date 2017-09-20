@@ -10,11 +10,12 @@ import {
     fetchMyChannelsAndMembers,
     getChannelStats,
     selectChannel,
-    leaveChannel as serviceLeaveChannel
+    leaveChannel as serviceLeaveChannel,
+    unfavoriteChannel
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsWithRetry, getPostsBefore, getPostsSinceWithRetry, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
-import {savePreferences, deletePreferences} from 'mattermost-redux/actions/preferences';
+import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
@@ -276,7 +277,7 @@ export function closeDMChannel(channel) {
         const state = getState();
 
         if (channel.isFavorite) {
-            unmarkFavorite(channel.id)(dispatch, getState);
+            unfavoriteChannel(channel.id)(dispatch, getState);
         }
 
         toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState);
@@ -291,40 +292,13 @@ export function closeGMChannel(channel) {
         const state = getState();
 
         if (channel.isFavorite) {
-            unmarkFavorite(channel.id)(dispatch, getState);
+            unfavoriteChannel(channel.id)(dispatch, getState);
         }
 
         toggleGMChannel(channel.id, 'false')(dispatch, getState);
         if (channel.isCurrent) {
             selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
         }
-    };
-}
-
-export function markFavorite(channelId) {
-    return async (dispatch, getState) => {
-        const {currentUserId} = getState().entities.users;
-        const fav = [{
-            user_id: currentUserId,
-            category: Preferences.CATEGORY_FAVORITE_CHANNEL,
-            name: channelId,
-            value: 'true'
-        }];
-
-        savePreferences(currentUserId, fav)(dispatch, getState);
-    };
-}
-
-export function unmarkFavorite(channelId) {
-    return async (dispatch, getState) => {
-        const {currentUserId} = getState().entities.users;
-        const fav = [{
-            user_id: currentUserId,
-            category: Preferences.CATEGORY_FAVORITE_CHANNEL,
-            name: channelId
-        }];
-
-        deletePreferences(currentUserId, fav)(dispatch, getState);
     };
 }
 

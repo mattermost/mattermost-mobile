@@ -41,8 +41,8 @@ class ChannelInfo extends PureComponent {
             deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
-            markFavorite: PropTypes.func.isRequired,
-            unmarkFavorite: PropTypes.func.isRequired
+            favoriteChannel: PropTypes.func.isRequired,
+            unfavoriteChannel: PropTypes.func.isRequired
         })
     };
 
@@ -194,8 +194,8 @@ class ChannelInfo extends PureComponent {
 
     handleFavorite = () => {
         const {isFavorite, actions, currentChannel} = this.props;
-        const {markFavorite, unmarkFavorite} = actions;
-        const toggleFavorite = isFavorite ? unmarkFavorite : markFavorite;
+        const {favoriteChannel, unfavoriteChannel} = actions;
+        const toggleFavorite = isFavorite ? unfavoriteChannel : favoriteChannel;
         this.setState({isFavorite: !isFavorite});
         toggleFavorite(currentChannel.id);
     };
@@ -206,7 +206,7 @@ class ChannelInfo extends PureComponent {
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
         return !isDirectMessage && !isGroupMessage;
-    }
+    };
 
     renderLeaveOrDeleteChannelRow = () => {
         const channel = this.props.currentChannel;
@@ -215,7 +215,7 @@ class ChannelInfo extends PureComponent {
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
         return !isDefaultChannel && !isDirectMessage && !isGroupMessage;
-    }
+    };
 
     renderCloseDirect = () => {
         const channel = this.props.currentChannel;
@@ -223,7 +223,7 @@ class ChannelInfo extends PureComponent {
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
         return isDirectMessage || isGroupMessage;
-    }
+    };
 
     render() {
         const {

@@ -3878,7 +3878,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/b09a04337301c1a3cbe8a5a7e726e305a9af4f41"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/c6115b3cfa934ed97a60a10727fa487df39a4043"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -5249,7 +5249,7 @@ redux-devtools-instrument@^1.3.3:
     symbol-observable "^1.0.2"
 
 "redux-offline@git+https://github.com/enahum/redux-offline.git":
-  version "1.1.4"
+  version "1.1.5"
   resolved "git+https://github.com/enahum/redux-offline.git#4bd85e7e3b279a2b11fb4d587808d583d2b5e7b5"
   dependencies:
     redux-persist "^4.5.0"
