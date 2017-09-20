@@ -13,15 +13,19 @@ import {
 import Emoji from 'app/components/emoji';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-const EMOJI_REGEX = /\B(:([^:\r\n\s]*))$/i;
+const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 
 export default class EmojiSuggestion extends Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            addReactionToLatestPost: PropTypes.func.isRequired
+        }).isRequired,
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
         postDraft: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        onChangeText: PropTypes.func.isRequired
+        onChangeText: PropTypes.func.isRequired,
+        rootId: PropTypes.string
     };
 
     static defaultProps = {
@@ -47,7 +51,7 @@ export default class EmojiSuggestion extends Component {
             return;
         }
 
-        const matchTerm = match[2];
+        const matchTerm = match[3];
         if (matchTerm !== this.state.matchTerm) {
             this.setState({
                 matchTerm
@@ -70,16 +74,22 @@ export default class EmojiSuggestion extends Component {
     }
 
     completeSuggestion = (emoji) => {
-        const {cursorPosition, onChangeText, postDraft} = this.props;
+        const {actions, cursorPosition, onChangeText, postDraft, rootId} = this.props;
         const emojiPart = postDraft.substring(0, cursorPosition);
 
-        let completedDraft = emojiPart.replace(EMOJI_REGEX, `:${emoji}: `);
+        if (emojiPart.startsWith('+:')) {
+            actions.addReactionToLatestPost(emoji, rootId);
+            onChangeText('');
+        } else {
+            let completedDraft = emojiPart.replace(EMOJI_REGEX, `:${emoji}: `);
 
-        if (postDraft.length > cursorPosition) {
-            completedDraft += postDraft.substring(cursorPosition);
+            if (postDraft.length > cursorPosition) {
+                completedDraft += postDraft.substring(cursorPosition);
+            }
+
+            onChangeText(completedDraft);
         }
 
-        onChangeText(completedDraft);
         this.setState({
             active: false,
             emojiComplete: true

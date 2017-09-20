@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {userTyping} from 'mattermost-redux/actions/websocket';
 
+import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
 import {getTheme} from 'app/selectors/preferences';
 import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
@@ -29,6 +30,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            addReactionToLatestPost,
             createPost,
             handleClearFiles,
             handleRemoveLastFile,
