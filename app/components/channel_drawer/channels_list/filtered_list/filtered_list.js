@@ -33,7 +33,6 @@ class FilteredList extends Component {
         currentTeam: PropTypes.object.isRequired,
         currentUserId: PropTypes.string,
         currentChannel: PropTypes.object,
-        groupChannels: PropTypes.array,
         groupChannelMemberDetails: PropTypes.object,
         intl: intlShape.isRequired,
         teammateNameDisplay: PropTypes.string,

@@ -111,7 +111,6 @@ function mapStateToProps(state, ownProps) {
         currentChannel: getCurrentChannel(state),
         currentUserId,
         otherChannels: getOtherChannels(state),
-        groupChannels: getGroupChannels(state),
         groupChannelMemberDetails: getGroupChannelMemberDetails(state),
         profiles,
         teamProfiles,
