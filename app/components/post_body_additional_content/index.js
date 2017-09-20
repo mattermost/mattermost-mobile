@@ -14,19 +14,16 @@ import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {ViewTypes} from 'app/constants';
 import {getTheme} from 'app/selectors/preferences';
 
-import {extractFirstLink} from 'app/utils/url';
 import PostBodyAdditionalContent from './post_body_additional_content';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const previewsEnabled = getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, `${ViewTypes.FEATURE_TOGGLE_PREFIX}${ViewTypes.EMBED_PREVIEW}`);
-    const link = extractFirstLink(ownProps.message);
 
     return {
         ...ownProps,
         config,
-        link,
-        openGraphData: getOpenGraphMetadataForUrl(state, link),
+        openGraphData: getOpenGraphMetadataForUrl(state, ownProps.link),
         showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true',
         theme: getTheme(state)
     };

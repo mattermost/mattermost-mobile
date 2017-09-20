@@ -91,8 +91,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return {width: maxWidth, height: maxHeight};
     };
 
-    generateStaticEmbed = (isYouTube) => {
-        if (isYouTube) {
+    generateStaticEmbed = (isYouTube, isImage) => {
+        if (isYouTube || isImage) {
             return null;
         }
 
@@ -259,7 +259,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             }
         }
 
-        return this.generateStaticEmbed(isYouTube);
+        return this.generateStaticEmbed(isYouTube, isImage);
     }
 }
 
