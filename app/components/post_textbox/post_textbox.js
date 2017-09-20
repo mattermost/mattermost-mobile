@@ -27,7 +27,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
 const MAX_MESSAGE_LENGTH = 4000;
-const IS_REACTION_REGEX = /(^\+:([^\s]*):)$/i;
+const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;
 
 class PostTextbox extends PureComponent {
     static propTypes = {
