@@ -34,7 +34,8 @@ function makeMapStateToProps() {
             isPendingOrFailedPost: isPostPendingOrFailed(post),
             isSystemMessage: isSystemMessage(post),
             overrideUsername: post.props && post.props.override_username,
-            theme: getTheme(state)
+            theme: getTheme(state),
+            username: user.username
         };
     };
 }

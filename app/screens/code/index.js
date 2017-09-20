@@ -4,6 +4,9 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {
+    handlePostDraftSelectionChanged
+} from 'app/actions/views/channel';
 
 import Code from './code';
 
@@ -13,4 +16,10 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(Code);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            handlePostDraftSelectionChanged
+        }, dispatch)
+    };
+}

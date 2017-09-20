@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {isToolTipShowing} from 'react-native-tooltip';
 
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
@@ -25,7 +26,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {isToolTipShowing} from 'react-native-tooltip';
+import Config from 'assets/config';
 
 class Post extends PureComponent {
     static propTypes = {
@@ -33,9 +34,12 @@ class Post extends PureComponent {
             addReaction: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
+            insertToPostDraft: PropTypes.func.isRequired,
+            insertToCommentDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
+        currentChannelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         highlight: PropTypes.bool,
         intl: intlShape.isRequired,
@@ -54,7 +58,8 @@ class Post extends PureComponent {
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
-        onReply: PropTypes.func
+        onReply: PropTypes.func,
+        threadId: PropTypes.string
     };
 
     static defaultProps = {
@@ -116,6 +121,15 @@ class Post extends PureComponent {
             }
         });
     };
+
+    autofillUserMention = (username) => {
+        const {currentChannelId, threadId} = this.props;
+        if (threadId) {
+            this.props.actions.insertToCommentDraft(threadId, `@${username} `);
+        } else {
+            this.props.actions.insertToPostDraft(currentChannelId, `@${username} `);
+        }
+    }
 
     handleEditDisable = () => {
         this.setState({canEdit: false});
@@ -349,7 +363,7 @@ class Post extends PureComponent {
                             shouldRenderReplyButton={shouldRenderReplyButton}
                             showFullDate={showFullDate}
                             onPress={this.handleReply}
-                            onViewUserProfile={this.viewUserProfile}
+                            onUsernamePress={Config.UsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile}
                             renderReplies={renderReplies}
                             theme={theme}
                         />

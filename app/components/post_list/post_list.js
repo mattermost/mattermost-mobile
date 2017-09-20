@@ -36,7 +36,8 @@ export default class PostList extends PureComponent {
         renderReplies: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        threadId: PropTypes.string
     };
 
     static defaultProps = {
@@ -113,7 +114,8 @@ export default class PostList extends PureComponent {
             navigator,
             onPostPress,
             renderReplies,
-            shouldRenderReplyButton
+            shouldRenderReplyButton,
+            threadId
         } = this.props;
 
         return (
@@ -127,6 +129,7 @@ export default class PostList extends PureComponent {
                 shouldRenderReplyButton={shouldRenderReplyButton}
                 onPress={onPostPress}
                 navigator={navigator}
+                threadId={threadId}
             />
         );
     };

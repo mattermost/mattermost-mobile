@@ -26,11 +26,19 @@ function drafts(state = {}, action) {
             [action.channelId]: Object.assign({}, state[action.channelId], {draft: action.postDraft})
         };
     }
+    case ViewTypes.POST_DRAFT_SELECTION_CHANGED:
+        return {
+            ...state,
+            [action.channelId]: Object.assign({}, state[action.channelId], {
+                cursorPosition: action.cursorPosition
+            })
+        };
     case ViewTypes.SET_POST_DRAFT: {
         return {
             ...state,
             [action.channelId]: {
                 draft: action.postDraft,
+                cursorPosition: 0,
                 files: action.files
             }
         };
@@ -42,6 +50,7 @@ function drafts(state = {}, action) {
                 ...state,
                 [action.data]: {
                     draft: '',
+                    cursorPosition: 0,
                     files: []
                 }
             };

@@ -5,9 +5,12 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {addReaction, createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 
+import {insertToPostDraft, setPostTooltipVisible} from 'app/actions/views/channel';
+import {insertToCommentDraft} from 'app/actions/views/thread';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Post from './post';
@@ -63,6 +66,9 @@ function mapDispatchToProps(dispatch) {
             createPost,
             deletePost,
             removePost
+            setPostTooltipVisible,
+            insertToPostDraft,
+            insertToCommentDraft
         }, dispatch)
     };
 }

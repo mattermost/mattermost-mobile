@@ -80,6 +80,7 @@ class Thread extends PureComponent {
                     currentUserId={myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}
+                    threadId={rootId}
                 />
                 <PostTextbox
                     rootId={rootId}

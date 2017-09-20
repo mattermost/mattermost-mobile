@@ -18,8 +18,16 @@ function drafts(state = {}, action) {
             ...state,
             [action.rootId]: {
                 draft: action.draft,
+                cursorPosition: 0,
                 files: action.files
             }
+        };
+    case ViewTypes.COMMENT_DRAFT_SELECTION_CHANGED:
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {
+                cursorPosition: action.cursorPosition
+            })
         };
     case PostTypes.RECEIVED_POST_SELECTED: {
         let data = {...state};
@@ -29,6 +37,7 @@ function drafts(state = {}, action) {
                 ...state,
                 [action.data]: {
                     draft: '',
+                    cursorPosition: 0,
                     files: []
                 }
             };

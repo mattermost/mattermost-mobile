@@ -283,6 +283,33 @@ export function handlePostDraftChanged(channelId, postDraft) {
     };
 }
 
+export function handlePostDraftSelectionChanged(channelId, cursorPosition) {
+    return {
+        type: ViewTypes.POST_DRAFT_SELECTION_CHANGED,
+        channelId,
+        cursorPosition
+    };
+}
+
+export function insertToPostDraft(channelId, value) {
+    return (dispatch, getState) => {
+        const {draft, cursorPosition} = getState().views.channel.drafts[channelId];
+
+        let nextDraft = `${value}`;
+        if (cursorPosition > 0) {
+            const beginning = draft.slice(0, cursorPosition);
+            const end = draft.slice(cursorPosition);
+            nextDraft = `${beginning}${value}${end}`;
+        }
+
+        dispatch({
+            type: ViewTypes.POST_DRAFT_CHANGED,
+            channelId,
+            postDraft: nextDraft
+        });
+    };
+}
+
 export function toggleDMChannel(otherUserId, visible) {
     return async (dispatch, getState) => {
         const state = getState();
