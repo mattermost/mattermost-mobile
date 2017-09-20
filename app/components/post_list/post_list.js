@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    StyleSheet,
     View
 } from 'react-native';
 import FlatList from 'app/components/inverted_flat_list';
@@ -183,8 +184,14 @@ export default class PostList extends PureComponent {
                 theme={theme}
                 getItem={this.getItem}
                 getItemCount={this.getItemCount}
-                contentContainerStyle={{paddingTop: 5}}
+                contentContainerStyle={styles.postListContent}
             />
         );
     }
 }
+
+const styles = StyleSheet.create({
+    postListContent: {
+        paddingTop: 5
+    }
+});

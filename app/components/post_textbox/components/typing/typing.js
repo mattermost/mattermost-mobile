@@ -39,7 +39,8 @@ export default class Typing extends PureComponent {
 
     renderTyping = () => {
         const {typing} = this.props;
-        const numUsers = typing.length;
+        const nextTyping = [...typing];
+        const numUsers = nextTyping.length;
 
         switch (numUsers) {
         case 0:
@@ -50,18 +51,18 @@ export default class Typing extends PureComponent {
                     id='msg_typing.isTyping'
                     defaultMessage='{user} is typing...'
                     values={{
-                        user: typing[0]
+                        user: nextTyping[0]
                     }}
                 />
             );
         default: {
-            const last = typing.pop();
+            const last = nextTyping.pop();
             return (
                 <FormattedText
                     id='msg_typing.areTyping'
                     defaultMessage='{users} and {last} are typing...'
                     values={{
-                        users: (typing.join(', ')),
+                        users: (nextTyping.join(', ')),
                         last
                     }}
                 />

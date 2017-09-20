@@ -4,7 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleCommentDraftChanged} from 'app/actions/views/thread';
 import {getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
@@ -21,8 +20,6 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const posts = getPostsForThread(state, ownProps);
-        const {statusBarHeight} = state.views.root;
-        const threadDraft = state.views.thread.drafts[ownProps.rootId];
 
         return {
             ...ownProps,
