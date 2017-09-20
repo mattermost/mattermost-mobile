@@ -51,7 +51,9 @@ class ChannelPostList extends PureComponent {
         super(props);
 
         this.state = {
-            retryMessageHeight: new Animated.Value(0)
+            retryMessageHeight: new Animated.Value(0),
+            visiblePosts: this.getVisiblePosts(props),
+            showLoadMore: false
         };
     }
 
@@ -83,10 +85,20 @@ class ChannelPostList extends PureComponent {
         this.setState({
             showLoadMore
         });
+
+        if (nextProps.posts !== this.props.posts || nextProps.postVisibility !== this.props.postVisibility) {
+            this.setState({
+                visiblePosts: this.getVisiblePosts(nextProps)
+            });
+        }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+    }
+
+    getVisiblePosts = (props) => {
+        return props.posts.slice(0, props.posts.postVisibility);
     }
 
     shouldMarkChannelAsLoaded = (postsCount, channelHasMessages, channelRefreshingFailed) => {
@@ -174,13 +186,13 @@ class ChannelPostList extends PureComponent {
             myMember,
             navigator,
             posts,
-            postVisibility,
             theme
         } = this.props;
 
         const {
             retryMessageHeight,
-            showLoadMore
+            showLoadMore,
+            visiblePosts
         } = this.state;
 
         let component;
@@ -196,7 +208,7 @@ class ChannelPostList extends PureComponent {
         } else {
             component = (
                 <PostList
-                    posts={posts.slice(0, postVisibility)}
+                    posts={visiblePosts}
                     loadMore={this.loadMorePosts}
                     isLoadingMore={loadingPosts}
                     showLoadMore={showLoadMore}
