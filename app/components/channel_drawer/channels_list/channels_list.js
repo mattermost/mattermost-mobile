@@ -5,7 +5,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    Text,
     TouchableHighlight,
     View
 } from 'react-native';
@@ -13,13 +12,13 @@ import {injectIntl, intlShape} from 'react-intl';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import Badge from 'app/components/badge';
 import SearchBar from 'app/components/search_bar';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FilteredList from './filtered_list';
 import List from './list';
+import SwitchTeams from './switch_teams';
 
 class ChannelsList extends React.PureComponent {
     static propTypes = {
@@ -28,7 +27,6 @@ class ChannelsList extends React.PureComponent {
         currentChannel: PropTypes.object,
         currentTeam: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
-        myTeamMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
@@ -66,7 +64,7 @@ class ChannelsList extends React.PureComponent {
         this.refs.search_bar.cancel();
     };
 
-    openSettingsModal = () => {
+    openSettingsModal = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -88,7 +86,7 @@ class ChannelsList extends React.PureComponent {
                 }]
             }
         });
-    };
+    });
 
     onSearch = (term) => {
         this.setState({term});
@@ -110,7 +108,6 @@ class ChannelsList extends React.PureComponent {
             currentChannel,
             currentTeam,
             intl,
-            myTeamMembers,
             onShowTeams,
             theme
         } = this.props;
@@ -120,8 +117,6 @@ class ChannelsList extends React.PureComponent {
         }
 
         const {searching, term} = this.state;
-        const teamMembers = Object.values(myTeamMembers);
-        const showMembers = teamMembers.length > 1;
         const styles = getStyleSheet(theme);
 
         let settings;
@@ -133,7 +128,7 @@ class ChannelsList extends React.PureComponent {
             settings = (
                 <TouchableHighlight
                     style={styles.settingsContainer}
-                    onPress={() => preventDoubleTap(this.openSettingsModal)}
+                    onPress={this.openSettingsModal}
                     underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
                 >
                     <AwesomeIcon
@@ -174,67 +169,18 @@ class ChannelsList extends React.PureComponent {
             </View>
         );
 
-        let badge;
-        let switcher;
-        if (showMembers && !searching) {
-            let mentionCount = 0;
-            let messageCount = 0;
-            teamMembers.forEach((m) => {
-                if (m.team_id !== currentTeam.id) {
-                    mentionCount = mentionCount + (m.mention_count || 0);
-                    messageCount = messageCount + (m.msg_count || 0);
-                }
-            });
-
-            let badgeCount = 0;
-            if (mentionCount) {
-                badgeCount = mentionCount;
-            } else if (messageCount) {
-                badgeCount = -1;
-            }
-
-            if (badgeCount) {
-                badge = (
-                    <Badge
-                        style={styles.badge}
-                        countStyle={styles.mention}
-                        count={badgeCount}
-                        minHeight={20}
-                        minWidth={20}
-                    />
-                );
-            }
-
-            switcher = (
-                <TouchableHighlight
-                    onPress={() => preventDoubleTap(onShowTeams)}
-                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
-                >
-                    <View style={styles.switcherContainer}>
-                        <AwesomeIcon
-                            name='chevron-left'
-                            size={12}
-                            color={theme.sidebarHeaderBg}
-                        />
-                        <View style={styles.switcherDivider}/>
-                        <Text style={styles.switcherTeam}>
-                            {currentTeam.display_name.substr(0, 2).toUpperCase()}
-                        </Text>
-                    </View>
-                </TouchableHighlight>
-            );
-        }
-
         return (
             <View
-                style={[styles.container, showMembers ? styles.extraPadding : {}]}
+                style={styles.container}
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
-                        {switcher}
+                        <SwitchTeams
+                            searching={searching}
+                            showTeams={onShowTeams}
+                        />
                         {title}
                         {settings}
-                        {badge}
                     </View>
                 </View>
                 {list}
@@ -248,9 +194,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.sidebarBg,
             flex: 1
-        },
-        extraPadding: {
-            paddingBottom: 5
         },
         statusBar: {
             backgroundColor: theme.sidebarHeaderBg,
@@ -303,7 +246,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 18,
             fontWeight: '300'
         },
-        titleContainer: {
+        titleContainer: { // These aren't used by this component, but they are passed down to the list component
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
@@ -329,43 +272,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 3
                 }
             })
-        },
-        switcherContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.sidebarHeaderTextColor,
-            borderRadius: 2,
-            flexDirection: 'row',
-            height: 32,
-            justifyContent: 'center',
-            marginLeft: 6,
-            marginRight: 10,
-            paddingHorizontal: 6
-        },
-        switcherDivider: {
-            backgroundColor: theme.sidebarHeaderBg,
-            height: 15,
-            marginHorizontal: 6,
-            width: 1
-        },
-        switcherTeam: {
-            color: theme.sidebarHeaderBg,
-            fontFamily: 'OpenSans',
-            fontSize: 14
-        },
-        badge: {
-            backgroundColor: theme.mentionBj,
-            borderColor: theme.sidebarHeaderBg,
-            borderRadius: 10,
-            borderWidth: 1,
-            flexDirection: 'row',
-            padding: 3,
-            position: 'absolute',
-            left: 5,
-            top: 0
-        },
-        mention: {
-            color: theme.mentionColor,
-            fontSize: 10
         },
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),

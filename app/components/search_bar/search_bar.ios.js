@@ -1,12 +1,12 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import {InteractionManager, Keyboard} from 'react-native';
 import PropTypes from 'prop-types';
 import Search from './search_box';
 
-export default class SearchBarIos extends Component {
+export default class SearchBarIos extends PureComponent {
     static propTypes = {
         onCancelButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
