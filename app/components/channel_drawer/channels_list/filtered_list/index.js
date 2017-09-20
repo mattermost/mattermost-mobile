@@ -9,10 +9,15 @@ import {searchChannels} from 'mattermost-redux/actions/channels';
 import {getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
 import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/preferences';
 import {General} from 'mattermost-redux/constants';
-import {getGroupChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {
+    getChannelsWithUnreadSection,
+    getCurrentChannel,
+    getGroupChannels,
+    getOtherChannels
+} from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
-import {getDirectShowPreferences, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Config from 'assets/config';
 
@@ -102,6 +107,8 @@ function mapStateToProps(state, ownProps) {
     const searchOrder = Config.DrawerSearchOrder ? Config.DrawerSearchOrder : DEFAULT_SEARCH_ORDER;
 
     return {
+        channels: getChannelsWithUnreadSection(state),
+        currentChannel: getCurrentChannel(state),
         currentUserId,
         otherChannels: getOtherChannels(state),
         groupChannels: getGroupChannels(state),
@@ -113,6 +120,7 @@ function mapStateToProps(state, ownProps) {
         searchOrder,
         pastDirectMessages: pastDirectMessages(state),
         restrictDms,
+        theme: getTheme(state),
         ...ownProps
     };
 }

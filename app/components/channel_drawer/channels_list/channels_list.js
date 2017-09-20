@@ -22,10 +22,6 @@ import SwitchTeams from './switch_teams';
 
 class ChannelsList extends React.PureComponent {
     static propTypes = {
-        channels: PropTypes.object.isRequired,
-        channelMembers: PropTypes.object,
-        currentChannel: PropTypes.object,
-        currentTeam: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         onJoinChannel: PropTypes.func.isRequired,
@@ -34,11 +30,6 @@ class ChannelsList extends React.PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
-    };
-
-    static defaultProps = {
-        currentTeam: {},
-        currentChannel: {}
     };
 
     constructor(props) {
@@ -105,16 +96,11 @@ class ChannelsList extends React.PureComponent {
 
     render() {
         const {
-            currentChannel,
-            currentTeam,
             intl,
+            navigator,
             onShowTeams,
             theme
         } = this.props;
-
-        if (!currentChannel) {
-            return <Text>{'Loading'}</Text>;
-        }
 
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
@@ -122,8 +108,13 @@ class ChannelsList extends React.PureComponent {
         let settings;
         let list;
         if (searching) {
-            const listProps = {...this.props, onSelectChannel: this.onSelectChannel, styles, term};
-            list = <FilteredList {...listProps}/>;
+            list = (
+                <FilteredList
+                    onSelectChannel={this.onSelectChannel}
+                    styles={styles}
+                    term={term}
+                />
+            );
         } else {
             settings = (
                 <TouchableHighlight
@@ -138,8 +129,13 @@ class ChannelsList extends React.PureComponent {
                 </TouchableHighlight>
             );
 
-            const listProps = {...this.props, onSelectChannel: this.onSelectChannel, styles};
-            list = <List {...listProps}/>;
+            list = (
+                <List
+                    navigator={navigator}
+                    onSelectChannel={this.onSelectChannel}
+                    styles={styles}
+                />
+            );
         }
 
         const title = (

@@ -5,19 +5,11 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'app/selectors/preferences';
 
-import {getChannelsWithUnreadSection, getCurrentChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeam, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
-
 import ChannelsList from './channels_list';
 
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        channels: getChannelsWithUnreadSection(state),
-        channelMembers: getMyChannelMemberships(state),
-        currentChannel: getCurrentChannel(state),
-        currentTeam: getCurrentTeam(state),
-        myTeamMembers: getTeamMemberships(state),
         theme: getTheme(state)
     };
 }
