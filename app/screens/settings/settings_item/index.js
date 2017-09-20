@@ -7,8 +7,8 @@ import {TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
+import VectorIcon from 'app/components/vector_icon.js';
 
-import SettingItemIcon from './setting_item_icon';
 import getStyleSheet from './style';
 
 export default class SettingsItem extends PureComponent {
@@ -58,7 +58,7 @@ export default class SettingsItem extends PureComponent {
         let icon;
         if (iconType && iconName) {
             icon = (
-                <SettingItemIcon
+                <VectorIcon
                     name={iconName}
                     type={iconType}
                     style={[style.icon, destructor]}

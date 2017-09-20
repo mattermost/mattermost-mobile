@@ -3,13 +3,14 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import {Text} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
 
-export default function settingsItemIcon(props) {
-    const {name, type, style} = props;
+export default function vectorIcon(props) {
+    const {name, type, style, size} = props;
 
     switch (type) {
     case 'fontawesome':
@@ -17,6 +18,7 @@ export default function settingsItemIcon(props) {
             <FontAwesomeIcon
                 name={name}
                 style={style}
+                size={size}
             />
         );
     case 'foundation':
@@ -24,6 +26,7 @@ export default function settingsItemIcon(props) {
             <FoundationIcon
                 name={name}
                 style={style}
+                size={size}
             />
         );
     case 'ion':
@@ -31,6 +34,7 @@ export default function settingsItemIcon(props) {
             <IonIcon
                 name={name}
                 style={style}
+                size={size}
             />
         );
     case 'material':
@@ -38,6 +42,7 @@ export default function settingsItemIcon(props) {
             <MaterialIcon
                 name={name}
                 style={style}
+                size={size}
             />
         );
     }
@@ -45,8 +50,13 @@ export default function settingsItemIcon(props) {
     return null;
 }
 
-settingsItemIcon.propTypes = {
+vectorIcon.propTypes = {
     name: PropTypes.string,
     type: PropTypes.string,
-    style: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
+    size: PropTypes.number,
+    style: Text.propTypes.style
+};
+
+vectorIcon.defaultProps = {
+    size: 14
 };
