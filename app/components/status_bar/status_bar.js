@@ -3,7 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StatusBar as NativeStatusBar} from 'react-native';
+import {
+    Platform,
+    StatusBar as NativeStatusBar
+} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 export default class StatusBar extends PureComponent {
@@ -15,7 +18,7 @@ export default class StatusBar extends PureComponent {
         const {theme} = this.props;
         const headerColor = tinyColor(theme.sidebarHeaderBg);
         let barStyle = 'light-content';
-        if (headerColor.isLight()) {
+        if (headerColor.isLight() && Platform.OS === 'ios') {
             barStyle = 'dark-content';
         }
 
