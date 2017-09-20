@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Platform,
     Text,
     TouchableOpacity,
@@ -90,7 +89,6 @@ export default class SearchPreview extends PureComponent {
 
     render() {
         const {channelName, currentUserId, posts, theme} = this.props;
-        const {height, width} = Dimensions.get('window');
         const style = getStyleSheet(theme);
 
         let postList;
@@ -113,7 +111,7 @@ export default class SearchPreview extends PureComponent {
 
         return (
             <View
-                style={[style.container, {width, height}]}
+                style={style.container}
             >
                 <Animatable.View
                     ref='view'
@@ -170,9 +168,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             position: 'absolute',
             backgroundColor: changeOpacity('#000', 0.3),
+            height: '100%',
             top: 0,
             left: 0,
-            zIndex: 10
+            zIndex: 10,
+            width: '100%'
         },
         wrapper: {
             flex: 1,

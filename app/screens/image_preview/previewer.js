@@ -90,6 +90,14 @@ export default class Previewer extends Component {
             this.setShrink();
         } else if (!this.props.shrink && nextProps.shrink) {
             this.setShrink(true);
+        } else if (
+            nextProps.imageHeight !== this.props.imageHeight ||
+            nextProps.imageWidth !== this.props.imageWidth
+        ) {
+            this.setState({
+                imageHeight: new Animated.Value(nextProps.imageHeight),
+                imageWidth: new Animated.Value(nextProps.imageWidth)
+            });
         }
     }
 
@@ -248,7 +256,7 @@ export default class Previewer extends Component {
             <View
                 {...this.panResponder.panHandlers}
                 onResponderRelease={this.handleResponderRelease}
-                style={[style.fileImageWrapper, {height: wrapperHeight, width: wrapperWidth}]}
+                style={[style.fileImageWrapper, {height: '100%', width: '100%'}]}
             >
                 <AnimatedView style={{height: imageHeight, width: this.state.imageWidth, backgroundColor: '#000', opacity}}>
                     <ImageView

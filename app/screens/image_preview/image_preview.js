@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
-    Dimensions,
     InteractionManager,
     PanResponder,
     Platform,
@@ -18,7 +17,6 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
-import Orientation from 'react-native-orientation';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -30,7 +28,6 @@ import Downloader from './downloader';
 import Previewer from './previewer';
 
 const {View: AnimatedView} = Animated;
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing the drag
 const DRAG_VERTICAL_THRESHOLD_END = 100; // When do we want to navigate back
 const DRAG_HORIZONTAL_THRESHOLD = 50; // Make sure that it's not a sloppy horizontal swipe
@@ -46,6 +43,8 @@ export default class ImagePreview extends PureComponent {
             addFileToFetchCache: PropTypes.func.isRequired
         }),
         canDownloadFiles: PropTypes.bool.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         fetchCache: PropTypes.object.isRequired,
         fileId: PropTypes.string.isRequired,
         files: PropTypes.array.isRequired,
@@ -60,10 +59,9 @@ export default class ImagePreview extends PureComponent {
         this.zoomableImages = {};
 
         const currentFile = props.files.findIndex((file) => file.id === props.fileId);
+
         this.state = {
             currentFile,
-            deviceHeight: deviceHeight - STATUSBAR_HEIGHT,
-            deviceWidth,
             drag: new Animated.ValueXY(),
             footerOpacity: new Animated.Value(1),
             pagingEnabled: true,
@@ -85,7 +83,6 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentDidMount() {
-        Orientation.unlockAllOrientations();
         InteractionManager.runAfterInteractions(() => {
             this.scrollView.scrollTo({x: (this.state.currentFile) * this.state.deviceWidth, animated: false});
             Animated.timing(this.state.wrapperViewOpacity, {
@@ -95,8 +92,15 @@ export default class ImagePreview extends PureComponent {
         });
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.deviceWidth !== nextProps.deviceWidth && Platform.OS === 'android') {
+            InteractionManager.runAfterInteractions(() => {
+                this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: false});
+            });
+        }
+    }
+
     componentWillUnmount() {
-        Orientation.lockToPortrait();
         if (Platform.OS === 'ios') {
             StatusBar.setHidden(false, 'fade');
         }
@@ -145,7 +149,7 @@ export default class ImagePreview extends PureComponent {
 
     handleImageDoubleTap = (x, y) => {
         this.zoomableImages[this.state.currentFile].toggleZoom(x, y);
-    }
+    };
 
     setHeaderAndFileInfoVisible = (show) => {
         this.setState({
@@ -165,7 +169,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     handleScroll = (event) => {
-        const offset = event.nativeEvent.contentOffset.x / this.state.deviceWidth;
+        const offset = event.nativeEvent.contentOffset.x / this.props.deviceWidth;
         const wholeNumber = Number((offset).toFixed(0));
         if (Math.abs(offset - wholeNumber) < 0.01) {
             this.setState({
@@ -182,15 +186,6 @@ export default class ImagePreview extends PureComponent {
 
     attachScrollView = (c) => {
         this.scrollView = c;
-    };
-
-    onLayout = (event) => {
-        if (event.nativeEvent.layout.width !== this.state.deviceWidth) {
-            this.setState({
-                deviceHeight: event.nativeEvent.layout.height,
-                deviceWidth: event.nativeEvent.layout.width
-            });
-        }
     };
 
     imageIsZooming = (zooming) => {
@@ -212,7 +207,7 @@ export default class ImagePreview extends PureComponent {
         } else {
             this.showIOSDownloadOptions();
         }
-    }
+    };
 
     showIOSDownloadOptions = () => {
         this.setHeaderAndFileInfoVisible(false);
@@ -244,7 +239,7 @@ export default class ImagePreview extends PureComponent {
                 modalPresentationStyle: 'overCurrentContext'
             }
         });
-    }
+    };
 
     showDownloader = () => {
         EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
@@ -252,14 +247,14 @@ export default class ImagePreview extends PureComponent {
         this.setState({
             showDownloader: true
         });
-    }
+    };
 
     hideDownloader = (hideFileInfo = true) => {
         this.setState({showDownloader: false});
         if (hideFileInfo) {
             this.setHeaderAndFileInfoVisible(true);
         }
-    }
+    };
 
     renderDownloadButton = () => {
         const {canDownloadFiles, files} = this.props;
@@ -297,10 +292,10 @@ export default class ImagePreview extends PureComponent {
                 {icon}
             </TouchableOpacity>
         );
-    }
+    };
 
     render() {
-        const maxImageHeight = this.state.deviceHeight - STATUSBAR_HEIGHT;
+        const maxImageHeight = this.props.deviceHeight - STATUSBAR_HEIGHT;
 
         const marginStyle = {
             ...Platform.select({
@@ -314,10 +309,7 @@ export default class ImagePreview extends PureComponent {
         };
 
         return (
-            <View
-                style={[style.wrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}
-                onLayout={this.onLayout}
-            >
+            <View style={[style.wrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth}]}>
                 <AnimatedView
                     style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
                     {...this.mainViewPanResponder.panHandlers}
@@ -332,7 +324,6 @@ export default class ImagePreview extends PureComponent {
                         bounces={false}
                         onScroll={this.handleScroll}
                         scrollEventThrottle={2}
-
                     >
                         {this.props.files.map((file, index) => {
                             let component;
@@ -347,10 +338,10 @@ export default class ImagePreview extends PureComponent {
                                         file={file}
                                         theme={this.props.theme}
                                         imageHeight={Math.min(maxImageHeight, file.height)}
-                                        imageWidth={Math.min(this.state.deviceWidth, file.width)}
+                                        imageWidth={Math.min(this.props.deviceWidth, file.width)}
                                         shrink={this.state.shouldShrinkImages}
-                                        wrapperHeight={this.state.deviceHeight}
-                                        wrapperWidth={this.state.deviceWidth}
+                                        wrapperHeight={this.props.deviceHeight}
+                                        wrapperWidth={this.props.deviceWidth}
                                         onImageTap={this.handleImageTap}
                                         onImageDoubleTap={this.handleImageDoubleTap}
                                         onZoom={this.imageIsZooming}
@@ -372,7 +363,7 @@ export default class ImagePreview extends PureComponent {
                             return (
                                 <View
                                     key={file.id}
-                                    style={[style.pageWrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth}]}
+                                    style={[style.pageWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth}]}
                                 >
                                     {component}
                                 </View>
@@ -380,7 +371,7 @@ export default class ImagePreview extends PureComponent {
                         })}
                     </ScrollView>
                     <AnimatedView
-                        style={[style.footerHeaderWrapper, {height: this.state.deviceHeight, width: this.state.deviceWidth, opacity: this.state.footerOpacity}]}
+                        style={[style.footerHeaderWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth, opacity: this.state.footerOpacity}]}
                         pointerEvents='box-none'
                     >
                         <View style={style.header}>
@@ -417,6 +408,8 @@ export default class ImagePreview extends PureComponent {
                 <Downloader
                     show={this.state.showDownloader}
                     file={this.props.files[this.state.currentFile]}
+                    deviceHeight={this.props.deviceHeight}
+                    deviceWidth={this.props.deviceWidth}
                     onDownloadCancel={this.hideDownloader}
                     onDownloadStart={this.hideDownloader}
                     onDownloadSuccess={this.hideDownloader}

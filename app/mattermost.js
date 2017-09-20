@@ -30,10 +30,15 @@ import {Client, Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {
+    calculateDeviceDimensions,
+    setDeviceOrientation,
+    setDeviceAsTablet,
+    setStatusBarHeight
+} from 'app/actions/device';
+import {
     goToNotification,
     loadConfigAndLicense,
     queueNotification,
-    setStatusBarHeight,
     purgeOfflineStore
 } from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
@@ -69,7 +74,7 @@ export default class Mattermost {
         this.isConfigured = false;
         this.allowOtherServers = true;
 
-        Orientation.lockToPortrait();
+        Orientation.unlockAllOrientations();
 
         initializeSentry();
 
@@ -80,7 +85,7 @@ export default class Mattermost {
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
         EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetDisplayName);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.restartApp);
-
+        Orientation.addOrientationListener(this.orientationDidChange);
         mattermostManaged.addEventListener('managedConfigDidChange', this.handleManagedConfig);
 
         this.handleAppStateChange(AppState.currentState);
@@ -373,6 +378,10 @@ export default class Mattermost {
     // We need to wait for hydration to occur before load the router.
     listenForHydration = () => {
         const state = this.store.getState();
+        Orientation.getOrientation((orientation) => {
+            this.orientationDidChange(orientation);
+        });
+
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
 
@@ -498,6 +507,17 @@ export default class Mattermost {
         }
     };
 
+    orientationDidChange = (orientation) => {
+        const {dispatch} = this.store;
+        dispatch(setDeviceOrientation(orientation));
+        if (DeviceInfo.isTablet()) {
+            dispatch(setDeviceAsTablet());
+        }
+        setTimeout(() => {
+            dispatch(calculateDeviceDimensions());
+        }, 100);
+    };
+
     resetBadgeAndVersion = () => {
         const {dispatch, getState} = this.store;
         Client4.serverVersion = '';
@@ -557,6 +577,9 @@ export default class Mattermost {
             },
             passProps: {
                 allowOtherServers: this.allowOtherServers
+            },
+            appStyle: {
+                orientation: 'auto'
             },
             animationType
         });

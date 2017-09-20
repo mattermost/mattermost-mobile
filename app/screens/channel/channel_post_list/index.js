@@ -9,6 +9,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
+import {getConnection} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelPostList from './channel_post_list';
@@ -22,7 +23,7 @@ function makeMapStateToProps() {
         const {getPosts, getPostsRetryAttempts, getPostsSince, getPostsSinceRetryAttempts} = state.requests.posts;
         const posts = getPostsInChannel(state, channelId) || [];
         const {websocket: websocketRequest} = state.requests.general;
-        const {connection: networkOnline} = state.views;
+        const networkOnline = getConnection(state);
         const webSocketOnline = websocketRequest.status === RequestStatus.SUCCESS;
 
         let getPostsStatus;

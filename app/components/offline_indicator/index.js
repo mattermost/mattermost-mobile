@@ -6,20 +6,20 @@ import {connect} from 'react-redux';
 
 import {close as closeWebSocket, init as initWebSocket} from 'mattermost-redux/actions/websocket';
 
+import {getConnection} from 'app/selectors/device';
+
 import OfflineIndicator from './offline_indicator';
 
 function mapStateToProps(state, ownProps) {
     const {websocket} = state.requests.general;
     const {appState} = state.entities.general;
-    const {connection} = state.views;
-
     const webSocketStatus = websocket.status;
     const isConnecting = websocket.error >= 2;
 
     return {
         appState,
         isConnecting,
-        isOnline: connection,
+        isOnline: getConnection(state),
         webSocketStatus,
         ...ownProps
     };

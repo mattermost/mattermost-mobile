@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {Platform} from 'react-native';
 
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
+import {getDimensions, getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
@@ -19,11 +20,12 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         return {
             ...ownProps,
+            ...getDimensions(state),
             canDownloadFiles: canDownloadFilesOnMobile(state),
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
-            statusBarHeight: Platform.OS === 'ios' ? state.views.root.statusBarHeight : STATUSBAR_HEIGHT
+            statusBarHeight: Platform.OS === 'ios' ? getStatusBarHeight(state) : STATUSBAR_HEIGHT
         };
     };
 }

@@ -9,14 +9,15 @@ import {
     Image,
     InteractionManager,
     Keyboard,
-    KeyboardAvoidingView,
-    Platform,
+    StyleSheet,
     Text,
     TextInput,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
 import Button from 'react-native-button';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import Orientation from 'react-native-orientation';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -57,10 +58,8 @@ class Login extends PureComponent {
         };
     }
 
-    componentDidMount() {
-        if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
+    componentWillMount() {
+        Orientation.addOrientationListener(this.orientationDidChange);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -70,9 +69,7 @@ class Login extends PureComponent {
     }
 
     componentWillUnmount() {
-        if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
+        Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
     goToLoadTeam = (expiresAt) => {
@@ -121,10 +118,6 @@ class Login extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
-    };
-
-    handleAndroidKeyboard = () => {
-        this.blur();
     };
 
     blur = () => {
@@ -286,6 +279,14 @@ class Login extends PureComponent {
         this.passwd.focus();
     };
 
+    orientationDidChange = () => {
+        this.scroll.scrollToPosition(0, 0, true);
+    };
+
+    scrollRef = (ref) => {
+        this.scroll = ref;
+    };
+
     render() {
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED;
 
@@ -313,14 +314,14 @@ class Login extends PureComponent {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={{flex: 1}}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 65 : 0}
-            >
+            <View style={{flex: 1}}>
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                    <KeyboardAwareScrollView
+                        ref={this.scrollRef}
+                        style={style.container}
+                        contentContainerStyle={style.innerContainer}
+                    >
                         <Image
                             source={logo}
                         />
@@ -347,6 +348,7 @@ class Login extends PureComponent {
                             returnKeyType='next'
                             underlineColorAndroid='transparent'
                             onSubmitEditing={this.passwordFocus}
+                            blurOnSubmit={false}
                         />
                         <TextInput
                             ref={this.passwordRef}
@@ -362,11 +364,25 @@ class Login extends PureComponent {
                             onSubmitEditing={this.preSignIn}
                         />
                         {proceed}
-                    </View>
+                    </KeyboardAwareScrollView>
                 </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+            </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        backgroundColor: '#FFFFFF',
+        flex: 1
+    },
+    innerContainer: {
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+        paddingVertical: 50
+    }
+});
 
 export default injectIntl(Login);

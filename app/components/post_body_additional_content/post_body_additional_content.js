@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Image,
     Linking,
     Platform,
@@ -12,7 +11,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import Orientation from 'react-native-orientation';
+
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import youTubeVideoId from 'youtube-video-id';
 import youtubePlayIcon from 'assets/images/icons/youtube-play-icon.png';
@@ -29,6 +28,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         config: PropTypes.object,
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         link: PropTypes.string,
         message: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
@@ -71,9 +72,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
     }
 
     calculateDimensions = (width, height) => {
-        const {width: deviceWidth} = Dimensions.get('window');
+        const {deviceHeight, deviceWidth} = this.props;
         let maxHeight = MAX_IMAGE_HEIGHT;
-        let maxWidth = deviceWidth - 68;
+        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
+        let maxWidth = deviceSize - 78;
 
         if (height <= MAX_IMAGE_HEIGHT) {
             maxHeight = height;
@@ -218,11 +220,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const {link} = this.props;
         const videoId = youTubeVideoId(link);
 
-        Orientation.unlockAllOrientations();
         if (Platform.OS === 'ios') {
-            YouTubeStandaloneIOS.playVideo(videoId).then(() => {
-                Orientation.lockToPortrait();
-            });
+            YouTubeStandaloneIOS.playVideo(videoId);
         } else {
             const {config} = this.props;
 
@@ -231,12 +230,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     apiKey: config.GoogleDeveloperKey,
                     videoId,
                     autoplay: true
-                }).then(() => {
-                    Orientation.lockToPortrait();
                 });
             } else {
                 Linking.openURL(link);
-                Orientation.lockToPortrait();
             }
         }
     };

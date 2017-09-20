@@ -3,11 +3,14 @@
 
 import {connect} from 'react-redux';
 
+import {getDimensions} from 'app/selectors/device';
+
 import OptionsModal from './options_modal';
 
 function mapStateToProps(state, ownProps) {
     return {
-        ...ownProps
+        ...ownProps,
+        ...getDimensions(state)
     };
 }
 

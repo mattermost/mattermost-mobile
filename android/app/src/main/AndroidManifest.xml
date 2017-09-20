@@ -53,6 +53,9 @@
       <service android:name=".NotificationReplyService"
                android:enabled="true"
                android:exported="false" />
+        <activity
+                android:name="com.reactnativenavigation.controllers.NavigationActivity"
+                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"/>
     </application>
 
 </manifest>

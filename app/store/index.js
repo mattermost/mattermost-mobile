@@ -160,7 +160,7 @@ export default function configureAppStore(initialState) {
             autoRehydrate: {
                 log: false
             },
-            blacklist: ['navigation', 'offline', 'requests'],
+            blacklist: ['device', 'navigation', 'offline', 'requests'],
             debounce: 500,
             transforms: [
                 setTransformer,

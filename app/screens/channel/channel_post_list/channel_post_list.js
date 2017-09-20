@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Animated,
-    Dimensions,
     Platform,
     StyleSheet,
     View
@@ -207,7 +206,6 @@ class ChannelPostList extends PureComponent {
         }
 
         const refreshIndicatorDimensions = {
-            width: Dimensions.get('window').width,
             height: retryMessageHeight
         };
 
@@ -234,7 +232,8 @@ const style = StyleSheet.create({
         paddingHorizontal: 10,
         position: 'absolute',
         top: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        width: '100%'
     }
 });
 

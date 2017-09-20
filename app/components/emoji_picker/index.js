@@ -6,6 +6,7 @@ import {createSelector} from 'reselect';
 
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
+import {getDimensions} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 import {CategoryNames, Emojis, EmojiIndicesByCategory} from 'app/utils/emojis';
 
@@ -98,9 +99,11 @@ const getEmojisBySection = createSelector(
 
 function mapStateToProps(state) {
     const emojis = getEmojisBySection(state);
+    const {deviceWidth} = getDimensions(state);
 
     return {
         emojis,
+        deviceWidth,
         theme: getTheme(state)
     };
 }

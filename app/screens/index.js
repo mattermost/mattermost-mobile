@@ -40,7 +40,7 @@ import UserProfile from 'app/screens/user_profile';
 
 import IntlWrapper from 'app/components/root';
 
-function wrapWithContextProvider(Comp, excludeEvents = false) {
+function wrapWithContextProvider(Comp, excludeEvents = true) {
     return (props) => { //eslint-disable-line react/display-name
         const {navigator} = props; //eslint-disable-line react/prop-types
         return (
@@ -58,7 +58,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapWithContextProvider(About), store, Provider);
     Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(AddReaction), store, Provider);
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(AdvancedSettings), store, Provider);
-    Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel), store, Provider);
+    Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel, false), store, Provider);
     Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(ChannelAddMembers), store, Provider);
     Navigation.registerComponent('ChannelInfo', () => wrapWithContextProvider(ChannelInfo), store, Provider);
     Navigation.registerComponent('ChannelMembers', () => wrapWithContextProvider(ChannelMembers), store, Provider);
@@ -73,7 +73,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(MoreChannels), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
-    Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification, true), store, Provider);
+    Navigation.registerComponent('Notification', () => wrapWithContextProvider(Notification), store, Provider);
     Navigation.registerComponent('NotificationSettings', () => wrapWithContextProvider(NotificationSettings), store, Provider);
     Navigation.registerComponent('NotificationSettingsEmail', () => wrapWithContextProvider(NotificationSettingsEmail), store, Provider);
     Navigation.registerComponent('NotificationSettingsMentions', () => wrapWithContextProvider(NotificationSettingsMentions), store, Provider);

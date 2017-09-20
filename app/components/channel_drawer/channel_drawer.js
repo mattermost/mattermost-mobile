@@ -22,6 +22,7 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 const DRAWER_INITIAL_OFFSET = 40;
+const DRAWER_LANDSCAPE_OFFSET = 150;
 
 export default class ChannelDrawer extends PureComponent {
     static propTypes = {
@@ -39,18 +40,28 @@ export default class ChannelDrawer extends PureComponent {
         currentChannelId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
+        isTablet: PropTypes.bool.isRequired,
         intl: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired
     };
 
-    state = {
-        openDrawer: false,
-        openDrawerOffset: DRAWER_INITIAL_OFFSET
-    };
-
     swiperIndex = 1;
+
+    constructor(props) {
+        super(props);
+
+        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+        if (props.isLandscape || props.isTablet) {
+            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+        }
+        this.state = {
+            openDrawer: false,
+            openDrawerOffset
+        };
+    }
 
     componentWillMount() {
         this.props.actions.getTeams();
@@ -60,6 +71,17 @@ export default class ChannelDrawer extends PureComponent {
         EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const {isLandscape, isTablet} = this.props;
+        if (nextProps.isLandscape !== isLandscape || nextProps.isTablet || isTablet) {
+            let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+            if (nextProps.isLandscape || nextProps.isTablet) {
+                openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+            }
+            this.setState({openDrawerOffset});
+        }
     }
 
     componentWillUnmount() {
@@ -81,6 +103,10 @@ export default class ChannelDrawer extends PureComponent {
         this.setState({openDrawer: false});
     };
 
+    drawerSwiperRef = (ref) => {
+        this.drawerSwiper = ref;
+    };
+
     handleDrawerClose = () => {
         this.resetDrawer();
 
@@ -93,7 +119,7 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     handleDrawerOpen = () => {
-        if (this.state.openDrawerOffset === DRAWER_INITIAL_OFFSET) {
+        if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
         }
     };
@@ -210,8 +236,13 @@ export default class ChannelDrawer extends PureComponent {
 
     onSearchEnds = () => {
         //hack to update the drawer when the offset changes
+        const {isLandscape, isTablet} = this.props;
         this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
-        this.setState({openDrawerOffset: DRAWER_INITIAL_OFFSET});
+        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+        if (isLandscape || isTablet) {
+            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+        }
+        this.setState({openDrawerOffset});
     };
 
     onSearchStart = () => {
@@ -221,13 +252,13 @@ export default class ChannelDrawer extends PureComponent {
 
     showTeams = () => {
         if (this.swiperIndex === 1 && this.props.teamsCount > 1) {
-            this.refs.swiper.showTeamsPage();
+            this.drawerSwiper.getWrappedInstance().showTeamsPage();
         }
     };
 
     resetDrawer = () => {
         if (this.swiperIndex !== 1) {
-            this.refs.swiper.resetPage();
+            this.drawerSwiper.getWrappedInstance().resetPage();
         }
     };
 
@@ -242,7 +273,7 @@ export default class ChannelDrawer extends PureComponent {
             openDrawerOffset
         } = this.state;
 
-        const showTeams = openDrawerOffset === DRAWER_INITIAL_OFFSET && teamsCount > 1;
+        const showTeams = openDrawerOffset !== 0 && teamsCount > 1;
 
         const teams = (
             <View style={style.swiperContent}>
@@ -268,7 +299,7 @@ export default class ChannelDrawer extends PureComponent {
 
         return (
             <DrawerSwiper
-                ref='swiper'
+                ref={this.drawerSwiperRef}
                 onPageSelected={this.onPageSelected}
                 openDrawerOffset={openDrawerOffset}
                 showTeams={showTeams}

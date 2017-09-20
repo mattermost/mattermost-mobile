@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Image,
     Platform,
     StyleSheet,
@@ -32,6 +31,7 @@ export default class Notification extends PureComponent {
         }).isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
+        deviceWidth: PropTypes.number.isRequired,
         notification: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
         navigator: PropTypes.object,
@@ -161,7 +161,8 @@ export default class Notification extends PureComponent {
     };
 
     render() {
-        const {message} = this.props.notification;
+        const {deviceWidth, notification} = this.props;
+        const {message} = notification;
 
         if (message) {
             const msg = message.split(':');
@@ -172,7 +173,7 @@ export default class Notification extends PureComponent {
             const icon = this.getNotificationIcon();
 
             return (
-                <View style={style.container}>
+                <View style={[style.container, {width: deviceWidth}]}>
                     <TouchableOpacity
                         style={{flex: 1, flexDirection: 'row'}}
                         onPress={this.notificationTapped}
@@ -208,7 +209,6 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         paddingHorizontal: 10,
-        width: Dimensions.get('window').width,
         ...Platform.select({
             android: {
                 height: 68

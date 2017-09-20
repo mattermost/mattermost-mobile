@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
-    Dimensions,
     StyleSheet,
     TouchableWithoutFeedback,
     View
@@ -19,12 +18,13 @@ import {emptyFunction} from 'app/utils/general';
 import OptionsModalList from './options_modal_list';
 
 const {View: AnimatedView} = Animated;
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 const DURATION = 200;
 
 export default class OptionsModal extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         onCancelPress: PropTypes.func,
         title: PropTypes.oneOfType([
@@ -35,11 +35,15 @@ export default class OptionsModal extends PureComponent {
 
     static defaultProps = {
         onCancelPress: emptyFunction
-    }
-
-    state = {
-        top: new Animated.Value(deviceHeight)
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            top: new Animated.Value(props.deviceHeight)
+        };
+    }
 
     componentDidMount() {
         EventEmitter.on(NavigationTypes.NAVIGATION_CLOSE_MODAL, this.close);
@@ -56,11 +60,11 @@ export default class OptionsModal extends PureComponent {
     handleCancel = () => {
         this.props.onCancelPress();
         this.close();
-    }
+    };
 
     close = () => {
         Animated.timing(this.state.top, {
-            toValue: deviceHeight,
+            toValue: this.props.deviceHeight,
             duration: DURATION
         }).start(() => {
             this.props.navigator.dismissModal({
@@ -78,7 +82,7 @@ export default class OptionsModal extends PureComponent {
         return (
             <TouchableWithoutFeedback onPress={this.close}>
                 <View style={style.wrapper}>
-                    <AnimatedView style={{height: deviceHeight, left: 0, top: this.state.top, width: deviceWidth}}>
+                    <AnimatedView style={{height: this.props.deviceHeight, left: 0, top: this.state.top, width: this.props.deviceWidth}}>
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}

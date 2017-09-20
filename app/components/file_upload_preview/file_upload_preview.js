@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Platform,
     ScrollView,
     StyleSheet,
@@ -17,8 +16,6 @@ import FileAttachmentImage from 'app/components/file_attachment_list/file_attach
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 
-const {height: deviceHeight} = Dimensions.get('window');
-
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -29,6 +26,7 @@ export default class FileUploadPreview extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         createPostRequestStatus: PropTypes.string.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
         fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
         inputHeight: PropTypes.number.isRequired,
@@ -98,7 +96,7 @@ export default class FileUploadPreview extends PureComponent {
                 </View>
             );
         });
-    }
+    };
 
     render() {
         if (this.props.channelIsLoading || (!this.props.files.length && !this.props.filesUploadingForCurrentChannel)) {
@@ -107,7 +105,7 @@ export default class FileUploadPreview extends PureComponent {
 
         return (
             <KeyboardLayout>
-                <View style={[style.container]}>
+                <View style={[style.container, {height: this.props.deviceHeight}]}>
                     <ScrollView
                         horizontal={true}
                         style={style.scrollView}
@@ -124,7 +122,6 @@ export default class FileUploadPreview extends PureComponent {
 const style = StyleSheet.create({
     container: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        height: deviceHeight,
         left: 0,
         bottom: 0,
         position: 'absolute',

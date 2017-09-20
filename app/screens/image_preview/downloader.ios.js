@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Animated,
     CameraRoll,
-    Dimensions,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -22,10 +21,11 @@ import FormattedText from 'app/components/formatted_text';
 import {emptyFunction} from 'app/utils/general';
 
 const {View: AnimatedView} = Animated;
-const {height: deviceHeight, width: deviceWidth} = Dimensions.get('window');
 
 export default class Downloader extends PureComponent {
     static propTypes = {
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         file: PropTypes.object.isRequired,
         onDownloadCancel: PropTypes.func,
         onDownloadSuccess: PropTypes.func,
@@ -38,9 +38,13 @@ export default class Downloader extends PureComponent {
         show: false
     };
 
-    state = {
-        downloaderTop: new Animated.Value(deviceHeight),
-        progress: 0
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            downloaderTop: new Animated.Value(props.deviceHeight),
+            progress: 0
+        };
     }
 
     componentWillReceiveProps(nextProps) {
@@ -52,10 +56,27 @@ export default class Downloader extends PureComponent {
             });
         } else if (!nextProps.show && this.props.show) {
             this.toggleDownloader(false);
+        } else if (this.props.deviceHeight !== nextProps.deviceHeight) {
+            this.recenterDownloader(nextProps);
         }
     }
 
+    recenterDownloader = (props) => {
+        const {deviceHeight, show} = props;
+        const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
+
+        Animated.sequence([
+            Animated.delay(200),
+            Animated.spring(this.state.downloaderTop, {
+                toValue: top,
+                tension: 8,
+                friction: 5
+            })
+        ]).start();
+    };
+
     toggleDownloader = (show = true) => {
+        const {deviceHeight} = this.props;
         const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
 
         Animated.spring(this.state.downloaderTop, {
@@ -67,7 +88,7 @@ export default class Downloader extends PureComponent {
                 this.startDownload();
             }
         });
-    }
+    };
 
     startDownload = async () => {
         try {
@@ -181,15 +202,19 @@ export default class Downloader extends PureComponent {
                 </View>
             </View>
         );
-    }
+    };
 
     render() {
         const {show} = this.props;
+        if (!show) {
+            return null;
+        }
+
         const {didCancel, progress} = this.state;
 
         const trueProgress = didCancel ? 0 : progress;
 
-        const containerHeight = show ? deviceHeight : 0;
+        const containerHeight = show ? '100%' : 0;
         return (
             <View style={[styles.container, {height: containerHeight}]}>
                 <AnimatedView style={[styles.downloader, {top: this.state.downloaderTop}]}>
@@ -241,11 +266,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         left: 0,
-        width: deviceWidth
+        width: '100%'
     },
     downloader: {
         alignItems: 'center',
-        left: (deviceWidth / 2) - 118,
+        alignSelf: 'center',
         height: 220,
         width: 236,
         borderRadius: 8,

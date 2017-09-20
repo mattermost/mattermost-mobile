@@ -1,6 +1,7 @@
 package com.mattermost.rnbeta;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.RestrictionsManager;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.ArraySet;
 import android.view.WindowManager.LayoutParams;
+import android.content.res.Configuration;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -141,6 +143,15 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
     @Override
     public synchronized void removeVisibilityListener(AppVisibilityListener listener) {
         mListeners.remove(listener);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        if (mVisibleActivity != null) {
+            Intent intent = new Intent("onConfigurationChanged");
+            intent.putExtra("newConfig", newConfig);
+            mVisibleActivity.sendBroadcast(intent);
+        }
     }
 
     private synchronized void switchToVisible(Activity activity) {

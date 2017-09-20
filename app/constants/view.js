@@ -20,8 +20,6 @@ const ViewTypes = keyMirror({
     NOTIFICATION_IN_APP: null,
     NOTIFICATION_TAPPED: null,
 
-    CONNECTION_CHANGED: null,
-
     SET_POST_DRAFT: null,
     SET_COMMENT_DRAFT: null,
 
@@ -47,9 +45,7 @@ const ViewTypes = keyMirror({
 
     INCREASE_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
-    LOADING_POSTS: null,
-
-    STATUSBAR_HEIGHT_CHANGED: null
+    LOADING_POSTS: null
 });
 
 export default {

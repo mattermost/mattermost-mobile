@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Dimensions,
     NetInfo,
     Platform,
     View
@@ -199,6 +198,16 @@ class Channel extends PureComponent {
                 navigator={navigator}
             >
                 <StatusBar/>
+                <View>
+                    <OfflineIndicator/>
+                    <View style={style.header}>
+                        <ChannelDrawerButton/>
+                        <ChannelTitle
+                            onPress={this.goToChannelInfo}
+                        />
+                        <ChannelSearchButton navigator={navigator}/>
+                    </View>
+                </View>
                 <KeyboardLayout
                     behavior='padding'
                     style={style.keyboardLayout}
@@ -216,16 +225,6 @@ class Channel extends PureComponent {
                         navigator={navigator}
                     />
                 </KeyboardLayout>
-                <View style={style.headerContainer}>
-                    <View style={style.header}>
-                        <ChannelDrawerButton/>
-                        <ChannelTitle
-                            onPress={this.goToChannelInfo}
-                        />
-                        <ChannelSearchButton navigator={navigator}/>
-                    </View>
-                    <OfflineIndicator/>
-                </View>
             </ChannelDrawer>
         );
     }
@@ -233,17 +232,12 @@ class Channel extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        headerContainer: {
-            flex: 1,
-            position: 'absolute'
-        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            width: Dimensions.get('window').width,
+            width: '100%',
             zIndex: 10,
-            elevation: 2,
             ...Platform.select({
                 android: {
                     height: 46
@@ -255,15 +249,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             })
         },
         postList: {
-            flex: 1,
-            ...Platform.select({
-                android: {
-                    marginTop: 46
-                },
-                ios: {
-                    marginTop: 64
-                }
-            })
+            flex: 1
         },
         loading: {
             backgroundColor: theme.centerChannelBg,
@@ -272,6 +258,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         keyboardLayout: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
+            zIndex: -1,
             paddingBottom: 0
         }
     };

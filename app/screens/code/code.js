@@ -4,7 +4,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    Dimensions,
     ScrollView,
     StyleSheet,
     Text,
@@ -14,10 +13,6 @@ import {
 import {getCodeFont} from 'app/utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const {
-    width: deviceWidth
-} = Dimensions.get('window');
-
 export default class Code extends React.PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
@@ -26,7 +21,7 @@ export default class Code extends React.PureComponent {
 
     countLines = (content) => {
         return content.split('\n').length;
-    }
+    };
 
     render() {
         const style = getStyleSheet(this.props.theme);
@@ -100,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         codeContainer: {
             flexGrow: 0,
             flexShrink: 1,
-            width: deviceWidth
+            width: '100%'
         },
         code: {
             paddingHorizontal: 6,

@@ -7,6 +7,7 @@ import {createSelector} from 'reselect';
 
 import {handleRemoveFile, retryFileUpload} from 'app/actions/views/file_upload';
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
+import {getDimensions} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import FileUploadPreview from './file_upload_preview';
@@ -25,10 +26,13 @@ const checkForFileUploadingInChannel = createSelector(
 );
 
 function mapStateToProps(state, ownProps) {
+    const {deviceHeight} = getDimensions(state);
+
     return {
         ...ownProps,
         channelIsLoading: state.views.channel.loading,
         createPostRequestStatus: state.requests.posts.createPost.status,
+        deviceHeight,
         fetchCache: state.views.fetchCache,
         filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, ownProps.channelId, ownProps.rootId),
         theme: getTheme(state)
