@@ -38,6 +38,7 @@ export default class Emoji extends React.PureComponent {
     }
 
     componentWillMount() {
+        this.mounted = true;
         if (this.state.imageUrl && this.state.isCustomEmoji) {
             this.updateImageHeight(this.state.imageUrl);
         }
@@ -57,6 +58,10 @@ export default class Emoji extends React.PureComponent {
         if (nextState.imageUrl !== this.state.imageUrl && nextState.imageUrl && nextState.isCustomEmoji) {
             this.updateImageHeight(nextState.imageUrl);
         }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     getImageUrl = (props = this.props) => {
@@ -83,10 +88,12 @@ export default class Emoji extends React.PureComponent {
 
     updateImageHeight = (imageUrl) => {
         Image.getSize(imageUrl, (originalWidth, originalHeight) => {
-            this.setState({
-                originalWidth,
-                originalHeight
-            });
+            if (this.mounted) {
+                this.setState({
+                    originalWidth,
+                    originalHeight
+                });
+            }
         });
     }
 

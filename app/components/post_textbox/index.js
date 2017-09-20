@@ -3,27 +3,32 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+
 import {createPost} from 'mattermost-redux/actions/posts';
 import {userTyping} from 'mattermost-redux/actions/websocket';
-
-import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
-import {getTheme} from 'app/selectors/preferences';
 import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getUsersTyping} from 'mattermost-redux/selectors/entities/typing';
+
+import {addReactionToLatestPost} from 'app/actions/views/emoji';
+import {handlePostDraftChanged} from 'app/actions/views/channel';
+import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
+import {handleCommentDraftChanged} from 'app/actions/views/thread';
+import {getTheme} from 'app/selectors/preferences';
+import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
 
 import PostTextbox from './post_textbox';
 
 function mapStateToProps(state, ownProps) {
+    const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
+
     return {
-        ...ownProps,
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         currentUserId: getCurrentUserId(state),
-        typing: getUsersTyping(state),
+        files: currentDraft.files,
         theme: getTheme(state),
-        uploadFileRequestStatus: state.requests.files.uploadFiles.status
+        uploadFileRequestStatus: state.requests.files.uploadFiles.status,
+        value: currentDraft.draft
     };
 }
 
@@ -33,6 +38,8 @@ function mapDispatchToProps(dispatch) {
             addReactionToLatestPost,
             createPost,
             handleClearFiles,
+            handleCommentDraftChanged,
+            handlePostDraftChanged,
             handleRemoveLastFile,
             handleUploadFiles,
             userTyping

@@ -13,15 +13,12 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class Thread extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleCommentDraftChanged: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         myMember: PropTypes.object.isRequired,
-        files: PropTypes.array,
         rootId: PropTypes.string.isRequired,
-        draft: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         posts: PropTypes.array.isRequired,
         statusBarHeight: PropTypes.number
@@ -39,15 +36,9 @@ export default class Thread extends PureComponent {
         this.props.actions.selectPost('');
     }
 
-    handleDraftChanged = (value) => {
-        this.props.actions.handleCommentDraftChanged(this.props.rootId, value);
-    };
-
     render() {
         const {
             channelId,
-            draft,
-            files,
             myMember,
             navigator,
             posts,
@@ -78,10 +69,7 @@ export default class Thread extends PureComponent {
                 />
                 <PostTextbox
                     rootId={rootId}
-                    value={draft}
-                    files={files}
                     channelId={channelId}
-                    onChangeText={this.handleDraftChanged}
                     navigator={navigator}
                 />
             </KeyboardLayout>

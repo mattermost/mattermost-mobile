@@ -4,7 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleCommentDraftChanged} from 'app/actions/views/thread';
 import {getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
@@ -21,15 +20,12 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const posts = getPostsForThread(state, ownProps);
-        const threadDraft = state.views.thread.drafts[ownProps.rootId];
 
         return {
             ...ownProps,
             channelId: ownProps.channelId,
             myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
-            draft: threadDraft.draft,
-            files: threadDraft.files,
             posts,
             statusBarHeight: getStatusBarHeight(state),
             theme: getTheme(state)
@@ -40,7 +36,6 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleCommentDraftChanged,
             selectPost
         }, dispatch)
     };

@@ -21,10 +21,10 @@ import PostListRetry from 'app/components/post_list_retry';
 import StatusBar from 'app/components/status_bar';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import PostTextbox from 'app/components/post_textbox';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelPostList from './channel_post_list';
-import ChannelPostTextbox from './channel_post_textbox';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
 
@@ -92,7 +92,7 @@ class Channel extends PureComponent {
     };
 
     blurPostTextBox = () => {
-        this.postTextbox.getWrappedInstance().blur();
+        this.postTextbox.getWrappedInstance().getWrappedInstance().blur();
     };
 
     goToChannelInfo = wrapWithPreventDoubleTap(() => {
@@ -219,8 +219,9 @@ class Channel extends PureComponent {
                             navigator={navigator}
                         />
                     </View>
-                    <ChannelPostTextbox
+                    <PostTextbox
                         ref={this.attachPostTextbox}
+                        onChangeText={this.handleDraftChanged}
                         channelId={currentChannelId}
                         navigator={navigator}
                     />
