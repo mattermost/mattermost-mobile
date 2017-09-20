@@ -47,7 +47,7 @@ start: | pre-run start-packager
 
 stop: stop-packager
 
-run-ios: | start
+check-device-ios:
 	@if ! [ $(shell command -v xcodebuild) ]; then \
 		@echo "xcode is not installed"; \
 		@exit 1; \
@@ -57,10 +57,11 @@ run-ios: | start
 		@exit 1; \
 	fi
 
+run-ios: | check-device-ios start
 	@echo Running iOS app in development
 	@react-native run-ios --simulator="${SIMULATOR}"
 
-run-android: | start prepare-android-build
+check-device-android:
 	@if ! [ $(ANDROID_HOME) ]; then \
 		@echo "ANDROID_HOME is not set"; \
 		@exit 1; \
@@ -69,7 +70,7 @@ run-android: | start prepare-android-build
 		@echo "adb is not installed"; \
 		@exit 1; \
 	fi
-ifneq ($(@shell adb get-state),device)
+ifneq ($(shell adb get-state),device)
 	@echo "no android device or emulator is running"
 	@exit 1;
 endif
@@ -78,8 +79,9 @@ endif
 		@exit 1; \
 	fi
 
+run-android: | check-device-android start prepare-android-build
 	@echo Running Android app in development
-	@react-native run-android
+	@react-native run-android --no-packager
 
 test: pre-run
 	@yarn test
