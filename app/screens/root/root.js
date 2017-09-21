@@ -34,7 +34,8 @@ export default class Root extends PureComponent {
         navigator.resetTo({
             screen: 'LoadTeam',
             title: '',
-            animated: false,
+            animated: true,
+            animationType: 'fade',
             backButtonTitle: '',
             navigatorStyle: {
                 statusBarHidden: false,
@@ -52,7 +53,8 @@ export default class Root extends PureComponent {
 
         navigator.resetTo({
             screen: 'SelectServer',
-            animated: false,
+            animated: true,
+            animationType: 'fade',
             navigatorStyle: {
                 navBarHidden: true,
                 navBarBackgroundColor: 'black',

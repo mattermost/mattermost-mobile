@@ -67,7 +67,8 @@ export default class LoadTeam extends PureComponent {
         actions.initialize();
         navigator.resetTo({
             screen: 'Channel',
-            animated: false,
+            animated: true,
+            animationType: 'fade',
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,

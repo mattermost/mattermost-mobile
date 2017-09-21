@@ -540,7 +540,7 @@ export default class Mattermost {
     launchApp = () => {
         this.handleManagedConfig().then((shouldStart) => {
             if (shouldStart) {
-                this.startApp();
+                this.startApp('fade');
             }
         });
     };
@@ -572,7 +572,8 @@ export default class Mattermost {
                 navigatorStyle: {
                     navBarHidden: true,
                     statusBarHidden: false,
-                    statusBarHideWithNavBar: false
+                    statusBarHideWithNavBar: false,
+                    screenBackgroundColor: 'transparent'
                 }
             },
             passProps: {
