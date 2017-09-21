@@ -48,6 +48,8 @@ export default class ChannelDrawer extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    closeLeftHandle = null;
+    openLeftHandle = null;
     swiperIndex = 1;
 
     constructor(props) {
@@ -110,6 +112,11 @@ export default class ChannelDrawer extends PureComponent {
     handleDrawerClose = () => {
         this.resetDrawer();
 
+        if (this.closeLeftHandle) {
+            InteractionManager.clearInteractionHandle(this.closeLeftHandle);
+            this.closeLeftHandle = null;
+        }
+
         if (this.state.openDrawer) {
             // The state doesn't get updated if you swipe to close
             this.setState({
@@ -118,13 +125,28 @@ export default class ChannelDrawer extends PureComponent {
         }
     };
 
+    handleDrawerCloseStart = () => {
+        if (!this.closeLeftHandle) {
+            this.closeLeftHandle = InteractionManager.createInteractionHandle();
+        }
+    }
+
     handleDrawerOpen = () => {
         if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
         }
+
+        if (this.openLeftHandle) {
+            InteractionManager.clearInteractionHandle(this.openLeftHandle);
+            this.openLeftHandle = null;
+        }
     };
 
     handleDrawerOpenStart = () => {
+        if (!this.openLeftHandle) {
+            this.openLeftHandle = InteractionManager.createInteractionHandle();
+        }
+
         if (!this.state.openDrawer) {
             // The state doesn't get updated if you swipe to open
             this.setState({
@@ -173,15 +195,15 @@ export default class ChannelDrawer extends PureComponent {
             viewChannel
         } = actions;
 
+        markChannelAsRead(channel.id, currentChannelId);
         setChannelLoading();
+        viewChannel(currentChannelId);
         setChannelDisplayName(channel.display_name);
-        handleSelectChannel(channel.id);
 
         this.closeChannelDrawer();
 
         InteractionManager.runAfterInteractions(() => {
-            markChannelAsRead(channel.id, currentChannelId);
-            viewChannel(currentChannelId);
+            handleSelectChannel(channel.id);
         });
     };
 
@@ -336,7 +358,7 @@ export default class ChannelDrawer extends PureComponent {
                 panThreshold={0.25}
                 acceptPan={true}
                 negotiatePan={true}
-                useInteractionManager={true}
+                useInteractionManager={false}
                 tweenDuration={100}
                 tweenHandler={this.handleDrawerTween}
                 elevation={-5}
