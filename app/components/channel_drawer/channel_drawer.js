@@ -206,9 +206,12 @@ export default class ChannelDrawer extends PureComponent {
         } = actions;
 
         markChannelAsRead(channel.id, currentChannelId);
-        setChannelLoading();
-        viewChannel(currentChannelId);
-        setChannelDisplayName(channel.display_name);
+
+        if (channel.id !== currentChannelId) {
+            setChannelLoading();
+            viewChannel(currentChannelId);
+            setChannelDisplayName(channel.display_name);
+        }
 
         this.closeChannelDrawer();
 
