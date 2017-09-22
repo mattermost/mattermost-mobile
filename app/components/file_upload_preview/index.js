@@ -21,6 +21,10 @@ const checkForFileUploadingInChannel = createSelector(
         return state.views.channel.drafts[channelId];
     },
     (draft) => {
+        if (!draft || !draft.files) {
+            return false;
+        }
+
         return draft.files.some((f) => f.loading);
     }
 );
