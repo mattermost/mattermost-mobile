@@ -18,7 +18,7 @@
 - Android: Added the ability to set light, vibrate, and sound settings
 - Android: Improved notification stacking so most recent notification shows first 
 - Updated the design for Notification settings to improve usability 
-- Added the ability to reply from a push notification without opening the app (on Android, requires v7.0+) 
+- Added the ability to reply from a push notification without opening the app (requires Android v7.0+, iOS 10+) 
 - Increased speed when opening app from a push notification
 
 #### Download Files 
