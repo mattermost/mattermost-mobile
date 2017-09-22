@@ -21,6 +21,7 @@ import PostBodyAdditionalContent from 'app/components/post_body_additional_conte
 
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
+import {extractFirstLink} from 'app/utils/url';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import Reactions from 'app/components/reactions';
 
@@ -65,6 +66,20 @@ class PostBody extends PureComponent {
         renderReplyBar: emptyFunction,
         toggleSelected: emptyFunction
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            link: extractFirstLink(props.message)
+        };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.message !== this.props.message) {
+            this.setState({link: extractFirstLink(nextProps.message)});
+        }
+    }
 
     handleHideUnderlay = () => {
         this.props.toggleSelected(false);
@@ -226,14 +241,17 @@ class PostBody extends PureComponent {
                     >
                         <View>
                             {messageComponent}
+                            {Boolean(this.state.link) &&
                             <PostBodyAdditionalContent
                                 baseTextStyle={messageStyle}
                                 blockStyles={blockStyles}
                                 navigator={navigator}
                                 message={message}
+                                link={this.state.link}
                                 postProps={postProps}
                                 textStyles={textStyles}
                             />
+                            }
                             {this.renderFileAttachments()}
                         </View>
                     </TouchableHighlight>
@@ -248,14 +266,17 @@ class PostBody extends PureComponent {
                         cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
                     >
                         {messageComponent}
+                        {Boolean(this.state.link) &&
                         <PostBodyAdditionalContent
                             baseTextStyle={messageStyle}
                             blockStyles={blockStyles}
-                            message={message}
                             navigator={navigator}
+                            message={message}
+                            link={this.state.link}
                             postProps={postProps}
                             textStyles={textStyles}
                         />
+                        }
                         {this.renderFileAttachments()}
                         {hasReactions && <Reactions postId={postId}/>}
                     </OptionsContext>
