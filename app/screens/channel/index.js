@@ -14,6 +14,7 @@ import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
 import {getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
+import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -46,12 +47,14 @@ function mapDispatchToProps(dispatch) {
             connection,
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
+            markChannelAsRead,
             selectFirstAvailableTeam,
             selectInitialChannel,
             initWebSocket,
             closeWebSocket,
             startPeriodicStatusUpdates,
-            stopPeriodicStatusUpdates
+            stopPeriodicStatusUpdates,
+            viewChannel
         }, dispatch)
     };
 }
