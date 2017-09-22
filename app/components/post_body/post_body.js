@@ -70,12 +70,14 @@ class PostBody extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.link = extractFirstLink(props.message);
+        this.state = {
+            link: extractFirstLink(props.message)
+        };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.message !== this.props.message) {
-            this.link = extractFirstLink(nextProps.message);
+            this.setState({link: extractFirstLink(nextProps.message)});
         }
     }
 
@@ -239,13 +241,13 @@ class PostBody extends PureComponent {
                     >
                         <View>
                             {messageComponent}
-                            {Boolean(this.link) &&
+                            {Boolean(this.state.link) &&
                             <PostBodyAdditionalContent
                                 baseTextStyle={messageStyle}
                                 blockStyles={blockStyles}
                                 navigator={navigator}
                                 message={message}
-                                link={this.link}
+                                link={this.state.link}
                                 postProps={postProps}
                                 textStyles={textStyles}
                             />
@@ -264,13 +266,13 @@ class PostBody extends PureComponent {
                         cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
                     >
                         {messageComponent}
-                        {Boolean(this.link) &&
+                        {Boolean(this.state.link) &&
                         <PostBodyAdditionalContent
                             baseTextStyle={messageStyle}
                             blockStyles={blockStyles}
                             navigator={navigator}
                             message={message}
-                            link={this.link}
+                            link={this.state.link}
                             postProps={postProps}
                             textStyles={textStyles}
                         />
