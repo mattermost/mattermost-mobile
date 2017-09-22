@@ -327,7 +327,7 @@ export default class ImagePreview extends PureComponent {
                     >
                         {this.props.files.map((file, index) => {
                             let component;
-                            if (file.has_preview_image) {
+                            if (file.has_preview_image || file.mime_type === 'image/gif') {
                                 component = (
                                     <Previewer
                                         ref={(c) => {

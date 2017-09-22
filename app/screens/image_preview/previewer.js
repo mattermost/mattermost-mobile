@@ -195,6 +195,10 @@ export default class Previewer extends Component {
     handleGetImageURL = () => {
         const {file} = this.props;
 
+        if (file.mime_type === 'image/gif') {
+            return Client4.getFileUrl(file.id, this.state.timestamp);
+        }
+
         return Client4.getFilePreviewUrl(file.id, this.state.timestamp);
     };
 
