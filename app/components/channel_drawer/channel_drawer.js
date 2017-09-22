@@ -18,7 +18,7 @@ import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
-import {General} from 'mattermost-redux/constants';
+import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 const DRAWER_INITIAL_OFFSET = 40;
@@ -70,6 +70,7 @@ export default class ChannelDrawer extends PureComponent {
     componentDidMount() {
         EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
+        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
@@ -87,6 +88,7 @@ export default class ChannelDrawer extends PureComponent {
     componentWillUnmount() {
         EventEmitter.off('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
+        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
@@ -149,6 +151,14 @@ export default class ChannelDrawer extends PureComponent {
                 opacity: ratio ? (1 - ratio) / 2 : 1
             }
         };
+    };
+
+    handleUpdateTitle = (channel) => {
+        let channelName = '';
+        if (channel.display_name) {
+            channelName = channel.display_name;
+        }
+        this.props.actions.setChannelDisplayName(channelName);
     };
 
     openChannelDrawer = () => {
