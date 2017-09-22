@@ -325,6 +325,13 @@ export function setChannelLoading(loading = true) {
     };
 }
 
+export function setChannelRefreshing(loading = true) {
+    return {
+        type: ViewTypes.SET_CHANNEL_REFRESHING,
+        loading
+    };
+}
+
 export function setPostTooltipVisible(visible = true) {
     return {
         type: ViewTypes.POST_TOOLTIP_VISIBLE,

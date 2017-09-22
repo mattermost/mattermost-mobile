@@ -2,7 +2,11 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {ChannelTypes, FileTypes, PostTypes} from 'mattermost-redux/action_types';
+import {
+    ChannelTypes,
+    FileTypes,
+    PostTypes
+} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -181,6 +185,18 @@ function loading(state = false, action) {
     }
 }
 
+function refreshing(state = false, action) {
+    switch (action.type) {
+    case PostTypes.GET_POSTS_SUCCESS:
+    case PostTypes.GET_POSTS_FAILURE:
+        return false;
+    case ViewTypes.SET_CHANNEL_REFRESHING:
+        return action.loading;
+    default:
+        return state;
+    }
+}
+
 function tooltipVisible(state = false, action) {
     switch (action.type) {
     case ViewTypes.POST_TOOLTIP_VISIBLE:
@@ -236,6 +252,7 @@ export default combineReducers({
     displayName,
     drafts,
     loading,
+    refreshing,
     tooltipVisible,
     postVisibility,
     loadingPosts

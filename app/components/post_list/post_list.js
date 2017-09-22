@@ -35,6 +35,7 @@ export default class PostList extends PureComponent {
         loadMore: PropTypes.func,
         navigator: PropTypes.object,
         onPostPress: PropTypes.func,
+        onRefresh: PropTypes.func,
         posts: PropTypes.array.isRequired,
         refreshing: PropTypes.bool,
         renderReplies: PropTypes.bool,
@@ -78,10 +79,18 @@ export default class PostList extends PureComponent {
     };
 
     onRefresh = () => {
-        const {actions, channel} = this.props;
+        const {
+            actions,
+            channel,
+            onRefresh
+        } = this.props;
 
         if (Object.keys(channel).length) {
             actions.refreshChannelWithRetry(channel.id);
+        }
+
+        if (onRefresh) {
+            onRefresh();
         }
     };
 

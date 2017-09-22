@@ -13,7 +13,6 @@ import {
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
@@ -34,7 +33,6 @@ class FilteredList extends Component {
         currentTeam: PropTypes.object.isRequired,
         currentUserId: PropTypes.string,
         currentChannel: PropTypes.object,
-        groupChannels: PropTypes.array,
         groupChannelMemberDetails: PropTypes.object,
         intl: intlShape.isRequired,
         teammateNameDisplay: PropTypes.string,
@@ -325,7 +323,7 @@ class FilteredList extends Component {
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
-                onPress={() => preventDoubleTap(action, this)}
+                onPress={action}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             >
                 <MaterialIcon

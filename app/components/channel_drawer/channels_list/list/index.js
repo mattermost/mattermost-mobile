@@ -4,7 +4,9 @@
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
+import {getChannelsWithUnreadSection, getCurrentChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
@@ -16,6 +18,10 @@ function mapStateToProps(state, ownProps) {
 
     return {
         canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        channelMembers: getMyChannelMemberships(state),
+        channels: getChannelsWithUnreadSection(state),
+        currentChannel: getCurrentChannel(state),
+        theme: getTheme(state),
         ...ownProps
     };
 }
