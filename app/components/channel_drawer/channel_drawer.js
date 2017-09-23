@@ -79,11 +79,13 @@ export default class ChannelDrawer extends PureComponent {
     componentWillReceiveProps(nextProps) {
         const {isLandscape, isTablet} = this.props;
         if (nextProps.isLandscape !== isLandscape || nextProps.isTablet || isTablet) {
-            let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-            if (nextProps.isLandscape || nextProps.isTablet) {
-                openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+            if (this.state.openDrawerOffset !== 0) {
+                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if (nextProps.isLandscape || nextProps.isTablet) {
+                    openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+                }
+                this.setState({openDrawerOffset});
             }
-            this.setState({openDrawerOffset});
         }
     }
 
@@ -344,7 +346,7 @@ export default class ChannelDrawer extends PureComponent {
                 {channelsList}
             </DrawerSwiper>
         );
-    }
+    };
 
     render() {
         const {children} = this.props;

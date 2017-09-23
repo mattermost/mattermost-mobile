@@ -5011,12 +5011,6 @@ react-native-svg@5.4.1:
     color "^0.11.1"
     lodash "^4.16.6"
 
-react-native-swiper@nixoz/react-native-swiper:
-  version "1.5.12"
-  resolved "https://codeload.github.com/nixoz/react-native-swiper/tar.gz/e6978073f082eb0aaa72fb1d85265f19b77c1c98"
-  dependencies:
-    prop-types "^15.5.10"
-
 react-native-tooltip@enahum/react-native-tooltip:
   version "5.0.0"
   resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/97d58d19636df8d8df66d6b5737154c9fab727c8"

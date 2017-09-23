@@ -3,9 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import Swiper from 'react-native-swiper';
 
 import {changeOpacity} from 'app/utils/theme';
+
+import Swiper from 'app/components/swiper';
 
 export default class DrawerSwiper extends PureComponent {
     static propTypes = {
@@ -24,64 +25,39 @@ export default class DrawerSwiper extends PureComponent {
         openDrawerOffset: 0
     };
 
-    state = {
-        index: 1
-    };
-
-    componentWillReceiveProps(nextProps) {
-        if (this.refs.swiper) {
-            if (nextProps.openDrawerOffset !== this.props.openDrawerOffset || nextProps.isLandscape !== this.props.isLandscape) {
-                this.refs.swiper.initialRender = true;
-                if (this.state.index === 1) {
-                    this.resetPage();
-                }
-            }
-        }
-    }
-
-    swiperPageSelected = (e, state, context) => {
-        this.props.onPageSelected(context.state.index);
-        this.setState({index: context.state.index});
+    swiperPageSelected = (index) => {
+        this.props.onPageSelected(index);
     };
 
     showTeamsPage = () => {
-        this.refs.swiper.scrollBy(-1, true);
+        this.refs.swiper.scrollToIndex(0, true);
     };
 
     resetPage = () => {
-        this.refs.swiper.scrollBy(1, false);
+        this.refs.swiper.scrollToIndex(1, false);
     };
 
     render() {
         const {
             children,
-            deviceHeight,
             deviceWidth,
             openDrawerOffset,
             showTeams,
             theme
         } = this.props;
 
-        const pagination = {bottom: 0};
-        if (showTeams) {
-            pagination.bottom = 0;
-        }
-
         return (
             <Swiper
                 ref='swiper'
                 horizontal={true}
                 loop={false}
-                index={this.state.index}
-                onMomentumScrollEnd={this.swiperPageSelected}
-                paginationStyle={[{position: 'absolute'}, pagination]}
+                initialPage={1}
+                onIndexChanged={this.swiperPageSelected}
+                paginationStyle={{position: 'absolute', bottom: 0}}
                 width={deviceWidth - openDrawerOffset}
-                height={deviceHeight}
                 style={{backgroundColor: theme.sidebarBg}}
                 activeDotColor={theme.sidebarText}
                 dotColor={changeOpacity(theme.sidebarText, 0.5)}
-                removeClippedSubviews={true}
-                automaticallyAdjustContentInsets={true}
                 scrollEnabled={showTeams}
                 showsPagination={showTeams}
                 keyboardShouldPersistTaps={'always'}
