@@ -301,6 +301,7 @@ class Search extends Component {
                     onReply={this.goToThread}
                     isSearchResult={true}
                     shouldRenderReplyButton={true}
+                    showFullDate={true}
                     navigator={this.props.navigator}
                 />
                 {separator}

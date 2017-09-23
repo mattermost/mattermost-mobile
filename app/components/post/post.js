@@ -49,6 +49,7 @@ class Post extends PureComponent {
         navigator: PropTypes.object,
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
+        showFullDate: PropTypes.bool,
         tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
@@ -301,6 +302,7 @@ class Post extends PureComponent {
             post,
             renderReplies,
             shouldRenderReplyButton,
+            showFullDate,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
@@ -324,6 +326,7 @@ class Post extends PureComponent {
                             createAt={post.create_at}
                             isSearchResult={isSearchResult}
                             shouldRenderReplyButton={shouldRenderReplyButton}
+                            showFullDate={showFullDate}
                             onPress={this.handleReply}
                             onViewUserProfile={this.viewUserProfile}
                             renderReplies={renderReplies}
