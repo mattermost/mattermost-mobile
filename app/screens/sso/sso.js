@@ -20,7 +20,26 @@ import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const jsCode = 'window.postMessage(document.body.innerText)';
+import LocalConfig from 'assets/config';
+
+let jsCode = 'window.postMessage(document.body.innerText);';
+
+// Used to make sure that OneLogin forms scale appropriately on both platforms.
+const oneLoginFormScalingJS = `
+    (function() {
+        document.getElementById('login-page').setAttribute('style', 'background-repeat: repeat-y;');
+        var submitButton = document.getElementById('user_submit');
+        function resetPadding() {
+            document.getElementById('body-main').setAttribute('style', 'height: auto; padding: 10px 0;');
+            submitButton.removeEventListener('click', resetPadding);
+        }
+        submitButton.addEventListener('click', resetPadding);
+    })();
+`;
+
+if (LocalConfig.EnableOneLoginScalingFix) {
+    jsCode = `${oneLoginFormScalingJS}${jsCode}`;
+}
 
 class SSO extends PureComponent {
     static propTypes = {
@@ -168,7 +187,7 @@ class SSO extends PureComponent {
                     source={{uri: this.loginUrl}}
                     javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
-                    scalesPageToFit={true}
+                    scalesPageToFit={false}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
