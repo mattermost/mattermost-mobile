@@ -27,7 +27,7 @@ export default class Swiper extends PureComponent {
     };
 
     static defaultProps = {
-        removeClippedSubviews: true, // add this to the scrollview
+        removeClippedSubviews: true,
         showsPagination: true,
         initialPage: 0,
         keyboardShouldPersistTaps: 'handled',
@@ -42,15 +42,6 @@ export default class Swiper extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        // if (this.props.width !== nextProps.width) {
-        //     if (nextProps.width > this.props.width) {
-        //         this.scrollToStart();
-        //     } else {
-        //         InteractionManager.runAfterInteractions(() => {
-        //             this.runOnLayout = true;
-        //         });
-        //     }
-        // }
         this.setState(this.initialState(nextProps));
     }
 
@@ -228,18 +219,17 @@ export default class Swiper extends PureComponent {
 
     render() {
         const {
-            children
+            children,
+            width
         } = this.props;
-
-        const pageStyle = [styles.slide, {width: this.props.width}];
 
         let pages = [];
         if (this.state.total > 1) {
             pages = React.Children.map(children, (page, i) => {
-                const visible = page ? {} : {width: 0};
+                const pageStyle = page ? {width} : {width: 0};
                 return (
                     <View
-                        style={[pageStyle, visible]}
+                        style={[styles.slide, pageStyle]}
                         key={i}
                     >
                         {page}
@@ -249,7 +239,7 @@ export default class Swiper extends PureComponent {
         } else {
             pages = (
                 <View
-                    style={pageStyle}
+                    style={[styles.slide, {width}]}
                     key={0}
                 >
                     {children}
