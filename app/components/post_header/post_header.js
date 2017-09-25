@@ -11,6 +11,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
+import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -33,6 +34,7 @@ export default class PostHeader extends PureComponent {
         onViewUserProfile: PropTypes.func,
         overrideUsername: PropTypes.string,
         renderReplies: PropTypes.bool,
+        showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
 
@@ -143,10 +145,31 @@ export default class PostHeader extends PureComponent {
             onPress,
             renderReplies,
             shouldRenderReplyButton,
+            showFullDate,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+
+        let dateComponent;
+        if (showFullDate) {
+            dateComponent = (
+                <View style={style.datetime}>
+                    <Text style={style.time}>
+                        <FormattedDate value={createAt}/>
+                    </Text>
+                    <Text style={style.time}>
+                        <FormattedTime value={createAt}/>
+                    </Text>
+                </View>
+            );
+        } else {
+            dateComponent = (
+                <Text style={style.time}>
+                    <FormattedTime value={createAt}/>
+                </Text>
+            );
+        }
 
         return (
             <View>
@@ -154,9 +177,7 @@ export default class PostHeader extends PureComponent {
                     <View style={{flexDirection: 'row', flex: 1}}>
                         {this.getDisplayName(style)}
                         <View style={style.timeContainer}>
-                            <Text style={style.time}>
-                                <FormattedTime value={createAt}/>
-                            </Text>
+                            {dateComponent}
                         </View>
                     </View>
                     {showReply &&
@@ -202,6 +223,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         timeContainer: {
             justifyContent: 'center'
+        },
+        datetime: {
+            flex: 1,
+            flexDirection: 'row'
         },
         time: {
             color: theme.centerChannelColor,
