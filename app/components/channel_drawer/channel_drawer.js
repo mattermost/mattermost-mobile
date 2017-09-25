@@ -79,11 +79,13 @@ export default class ChannelDrawer extends PureComponent {
     componentWillReceiveProps(nextProps) {
         const {isLandscape, isTablet} = this.props;
         if (nextProps.isLandscape !== isLandscape || nextProps.isTablet || isTablet) {
-            let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-            if (nextProps.isLandscape || nextProps.isTablet) {
-                openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+            if (this.state.openDrawerOffset !== 0) {
+                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if (nextProps.isLandscape || nextProps.isTablet) {
+                    openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+                }
+                this.setState({openDrawerOffset});
             }
-            this.setState({openDrawerOffset});
         }
     }
 
@@ -310,14 +312,23 @@ export default class ChannelDrawer extends PureComponent {
 
         const showTeams = openDrawerOffset !== 0 && teamsCount > 1;
 
-        const teams = (
-            <View style={style.swiperContent}>
-                <TeamsList
-                    closeChannelDrawer={this.closeChannelDrawer}
-                    navigator={navigator}
-                />
-            </View>
-        );
+        let teams;
+        if (showTeams) {
+            teams = (
+                <View style={style.swiperContent}>
+                    <TeamsList
+                        closeChannelDrawer={this.closeChannelDrawer}
+                        navigator={navigator}
+                    />
+                </View>
+            );
+
+            if (this.drawerSwiper) {
+                this.drawerSwiper.getWrappedInstance().runOnLayout();
+            }
+        } else if (this.drawerSwiper && !openDrawerOffset) {
+            this.drawerSwiper.getWrappedInstance().scrollToStart();
+        }
 
         const channelsList = (
             <View style={style.swiperContent}>
@@ -344,7 +355,7 @@ export default class ChannelDrawer extends PureComponent {
                 {channelsList}
             </DrawerSwiper>
         );
-    }
+    };
 
     render() {
         const {children} = this.props;
