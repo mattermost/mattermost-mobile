@@ -11,9 +11,7 @@ import Swiper from 'app/components/swiper';
 export default class DrawerSwiper extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         onPageSelected: PropTypes.func,
         openDrawerOffset: PropTypes.number,
         showTeams: PropTypes.bool.isRequired,
@@ -25,16 +23,24 @@ export default class DrawerSwiper extends PureComponent {
         openDrawerOffset: 0
     };
 
+    runOnLayout = (shouldRun = true) => {
+        this.refs.swiper.runOnLayout = shouldRun;
+    };
+
+    resetPage = () => {
+        this.refs.swiper.scrollToIndex(1, false);
+    };
+
+    scrollToStart = () => {
+        this.refs.swiper.scrollToStart();
+    };
+
     swiperPageSelected = (index) => {
         this.props.onPageSelected(index);
     };
 
     showTeamsPage = () => {
         this.refs.swiper.scrollToIndex(0, true);
-    };
-
-    resetPage = () => {
-        this.refs.swiper.scrollToIndex(1, false);
     };
 
     render() {

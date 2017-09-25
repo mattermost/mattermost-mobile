@@ -312,14 +312,23 @@ export default class ChannelDrawer extends PureComponent {
 
         const showTeams = openDrawerOffset !== 0 && teamsCount > 1;
 
-        const teams = (
-            <View style={style.swiperContent}>
-                <TeamsList
-                    closeChannelDrawer={this.closeChannelDrawer}
-                    navigator={navigator}
-                />
-            </View>
-        );
+        let teams;
+        if (showTeams) {
+            teams = (
+                <View style={style.swiperContent}>
+                    <TeamsList
+                        closeChannelDrawer={this.closeChannelDrawer}
+                        navigator={navigator}
+                    />
+                </View>
+            );
+
+            if (this.drawerSwiper) {
+                this.drawerSwiper.getWrappedInstance().runOnLayout();
+            }
+        } else if (this.drawerSwiper && !openDrawerOffset) {
+            this.drawerSwiper.getWrappedInstance().scrollToStart();
+        }
 
         const channelsList = (
             <View style={style.swiperContent}>

@@ -37,15 +37,21 @@ export default class Swiper extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.initialRender = true;
+        this.runOnLayout = true;
         this.state = this.initialState(props);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.width !== nextProps.width) {
-            this.reCenter(nextProps.width);
-        }
-        this.initialState(nextProps);
+        // if (this.props.width !== nextProps.width) {
+        //     if (nextProps.width > this.props.width) {
+        //         this.scrollToStart();
+        //     } else {
+        //         InteractionManager.runAfterInteractions(() => {
+        //             this.runOnLayout = true;
+        //         });
+        //     }
+        // }
+        this.setState(this.initialState(nextProps));
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -72,13 +78,13 @@ export default class Swiper extends PureComponent {
     };
 
     onLayout = () => {
-        if (this.initialRender) {
+        if (this.runOnLayout) {
             if (Platform.OS === 'ios') {
                 this.scrollView.scrollTo({x: this.internals.offset, animated: false});
             } else {
                 this.scrollView.setPageWithoutAnimation(this.state.index);
             }
-            this.initialRender = false;
+            this.runOnLayout = false;
         }
     };
 
@@ -98,10 +104,10 @@ export default class Swiper extends PureComponent {
         this.updateIndex(e.nativeEvent.contentOffset.x);
     };
 
-    reCenter = (width) => {
+    scrollToStart = () => {
         if (Platform.OS === 'ios') {
             InteractionManager.runAfterInteractions(() => {
-                this.scrollView.scrollTo({x: width * this.state.index, animated: false});
+                this.scrollView.scrollTo({x: 0, animated: false});
             });
         }
     };
@@ -230,9 +236,10 @@ export default class Swiper extends PureComponent {
         let pages = [];
         if (this.state.total > 1) {
             pages = React.Children.map(children, (page, i) => {
+                const visible = page ? {} : {width: 0};
                 return (
                     <View
-                        style={pageStyle}
+                        style={[pageStyle, visible]}
                         key={i}
                     >
                         {page}
