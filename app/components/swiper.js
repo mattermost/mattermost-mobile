@@ -14,24 +14,31 @@ import {
 
 export default class Swiper extends PureComponent {
     static propTypes = {
-        children: PropTypes.node.isRequired,
-        style: PropTypes.object,
-        showsPagination: PropTypes.bool,
-        paginationStyle: PropTypes.object,
-        initialPage: PropTypes.number,
-        width: PropTypes.number,
-        dotColor: PropTypes.string,
         activeDotColor: PropTypes.string,
+        children: PropTypes.node.isRequired,
+        dotColor: PropTypes.string,
+        initialPage: PropTypes.number,
         keyboardShouldPersistTaps: PropTypes.string,
-        onIndexChanged: PropTypes.func
+        onIndexChanged: PropTypes.func,
+        paginationStyle: PropTypes.oneOfType([
+            PropTypes.object,
+            PropTypes.number
+        ]),
+        scrollEnabled: PropTypes.bool,
+        showsPagination: PropTypes.bool,
+        style: PropTypes.oneOfType([
+            PropTypes.object,
+            PropTypes.number
+        ]),
+        width: PropTypes.number
     };
 
     static defaultProps = {
-        removeClippedSubviews: true,
-        showsPagination: true,
         initialPage: 0,
         keyboardShouldPersistTaps: 'handled',
-        onIndexChanged: () => null
+        onIndexChanged: () => null,
+        scrollEnabled: true,
+        showsPagination: true
     };
 
     constructor(props) {
@@ -41,26 +48,19 @@ export default class Swiper extends PureComponent {
         this.state = this.initialState(props);
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.setState(this.initialState(nextProps));
-    }
-
-    componentWillUpdate(nextProps, nextState) {
+    componentDidUpdate(prevProps, prevState) {
         // If the index has changed, we notify the parent via the onIndexChanged callback
-        if (this.state.index !== nextState.index) {
-            this.props.onIndexChanged(nextState.index);
+        if (this.state.index !== prevState.index) {
+            this.props.onIndexChanged(this.state.index);
         }
     }
 
     initialState = (props) => {
         const state = this.state || {index: props.initialPage};
         const index = state.index;
-        const offset = props.width * index;
 
-        this.internals = {
-            isScrolling: false,
-            offset
-        };
+        this.offset = props.width * index;
+        this.isScrolling = false;
 
         return {
             index,
@@ -71,7 +71,7 @@ export default class Swiper extends PureComponent {
     onLayout = () => {
         if (this.runOnLayout) {
             if (Platform.OS === 'ios') {
-                this.scrollView.scrollTo({x: this.internals.offset, animated: false});
+                this.scrollView.scrollTo({x: this.offset, animated: false});
             } else {
                 this.scrollView.setPageWithoutAnimation(this.state.index);
             }
@@ -80,7 +80,7 @@ export default class Swiper extends PureComponent {
     };
 
     onScrollBegin = () => {
-        this.internals.isScrolling = true;
+        this.isScrolling = true;
     };
 
     onScrollEnd = (e) => {
@@ -89,7 +89,7 @@ export default class Swiper extends PureComponent {
             e.nativeEvent.contentOffset = {x: e.nativeEvent.position * this.props.width};
         }
 
-        this.internals.isScrolling = false;
+        this.isScrolling = false;
 
         // get the index
         this.updateIndex(e.nativeEvent.contentOffset.x);
@@ -108,6 +108,11 @@ export default class Swiper extends PureComponent {
     };
 
     renderScrollView = (pages) => {
+        const {
+            keyboardShouldPersistTaps,
+            scrollEnabled
+        } = this.props;
+
         if (Platform.OS === 'ios') {
             return (
                 <ScrollView
@@ -122,6 +127,8 @@ export default class Swiper extends PureComponent {
                     onScrollBeginDrag={this.onScrollBegin}
                     onMomentumScrollEnd={this.onScrollEnd}
                     pagingEnabled={true}
+                    keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+                    scrollEnabled={scrollEnabled}
                 >
                     {pages}
                 </ScrollView>
@@ -130,10 +137,10 @@ export default class Swiper extends PureComponent {
         return (
             <ViewPagerAndroid
                 ref={this.refScrollView}
-                {...this.props}
                 initialPage={this.props.initialPage}
                 onScrollBeginDrag={this.onScrollBegin}
                 onPageSelected={this.onScrollEnd}
+                scrollEnabled={scrollEnabled}
                 key={pages.length}
                 style={[styles.wrapperAndroid, this.props.style]}
             >
@@ -183,7 +190,7 @@ export default class Swiper extends PureComponent {
     };
 
     scrollToIndex = (index, animated) => {
-        if (this.internals.isScrolling || this.state.total < 2) {
+        if (this.isScrolling || this.state.total < 2) {
             return;
         }
 
@@ -207,13 +214,13 @@ export default class Swiper extends PureComponent {
 
     updateIndex = (offset) => {
         let index = this.state.index;
-        const diff = offset - this.internals.offset;
+        const diff = offset - this.offset;
         if (!diff) {
             return;
         }
 
         index = parseInt(index + Math.round(diff / this.props.width), 10);
-        this.internals.offset = offset;
+        this.offset = offset;
         this.setState({index});
     };
 
@@ -223,29 +230,17 @@ export default class Swiper extends PureComponent {
             width
         } = this.props;
 
-        let pages = [];
-        if (this.state.total > 1) {
-            pages = React.Children.map(children, (page, i) => {
-                const pageStyle = page ? {width} : {width: 0};
-                return (
-                    <View
-                        style={[styles.slide, pageStyle]}
-                        key={i}
-                    >
-                        {page}
-                    </View>
-                );
-            });
-        } else {
-            pages = (
+        const pages = React.Children.map(children, (page, i) => {
+            const pageStyle = page ? {width} : {width: 0};
+            return (
                 <View
-                    style={[styles.slide, {width}]}
-                    key={0}
+                    style={[styles.slide, pageStyle]}
+                    key={i}
                 >
-                    {children}
+                    {page}
                 </View>
             );
-        }
+        });
 
         return (
             <View
