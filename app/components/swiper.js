@@ -45,6 +45,9 @@ export default class Swiper extends PureComponent {
         super(props);
 
         this.runOnLayout = true;
+        this.offset = props.width * props.initialPage;
+        this.isScrolling = false;
+
         this.state = this.initialState(props);
     }
 
@@ -56,11 +59,7 @@ export default class Swiper extends PureComponent {
     }
 
     initialState = (props) => {
-        const state = this.state || {index: props.initialPage};
-        const index = state.index;
-
-        this.offset = props.width * index;
-        this.isScrolling = false;
+        const index = props.initialPage;
 
         return {
             index,
