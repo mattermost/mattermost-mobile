@@ -3,20 +3,49 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {createSelector} from 'reselect';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {Posts} from 'mattermost-redux/constants/';
+
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {getConnection} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
+import LocalConfig from 'assets/config';
 
 import ChannelPostList from './channel_post_list';
 
+const getPostsInCurrentChannelWithReplyProps = makeGetPostsInChannel();
+
+let townSquareId;
+
+// create a selector for filtering out leave/join posts for only the town hall channel
+const townSquarePostSelector = createSelector(
+    (state, currentChannelId) => {
+        if (!townSquareId) {
+            const {channels} = state.entities.channels;
+            townSquareId = Object.keys(channels).find((c) => channels[c].name === 'town-square');
+        }
+
+        return townSquareId === currentChannelId;
+    },
+    (state, currentChannelId) => getPostsInCurrentChannelWithReplyProps(state, currentChannelId) || [],
+    (isTownHallChannel, posts) => {
+        if (isTownHallChannel) {
+            const PostTypes = Posts.POST_TYPES;
+            return posts.filter((p) => p.type !== PostTypes.JOIN_LEAVE && p.type !== PostTypes.JOIN_CHANNEL && p.type !== PostTypes.LEAVE_CHANNEL);
+        }
+
+        return posts;
+    }
+);
+
 function makeMapStateToProps() {
     const getChannel = makeGetChannel();
-    const getPostsInChannel = makeGetPostsInChannel();
+    const getPostsInChannel = LocalConfig.DisableTownSquareLeaveJoinMessage ? townSquarePostSelector : makeGetPostsInChannel();
 
     return function mapStateToProps(state, ownProps) {
         const channelId = ownProps.channelId;
