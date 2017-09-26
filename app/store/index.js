@@ -11,11 +11,13 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import configureStore from 'mattermost-redux/store';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import Config from 'assets/config';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
+import {messageRetention} from './middleware';
 import {transformSet} from './utils';
 
 function getAppReducer() {
@@ -193,7 +195,12 @@ export default function configureAppStore(initialState) {
         }
     };
 
+    const additionalMiddleware = [createSentryMiddleware()];
+    if (Config.EnableMessageRetention) {
+        additionalMiddleware.push(messageRetention);
+    }
+
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
-        additionalMiddleware: createSentryMiddleware()
+        additionalMiddleware
     });
 }
