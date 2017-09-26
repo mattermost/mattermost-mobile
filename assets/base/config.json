@@ -1,5 +1,7 @@
 {
     "DefaultServerUrl": "",
+    "EnableMessageRetention": false,
+    "MessageRetentionPeriod": 30,
     "TestServerUrl": "http://localhost:8065",
     "DefaultTheme": "default",
     "ShowErrorsList": false,
