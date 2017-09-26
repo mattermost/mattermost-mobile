@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="13196" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
+    <device id="watch38" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="watchOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="13051"/>
+    </dependencies>
+    <scenes>
+        <!--AuthenticationController-->
+        <scene sceneID="aou-V4-d1y">
+            <objects>
+                <controller identifier="AuthenticationController" id="AgC-eL-Hgc" customClass="AuthenticationController" customModule="MattermostWatchOS_Extension">
+                    <items>
+                        <label alignment="center" verticalAlignment="center" text="Open the Mattermost app on your phone to authenticate." textAlignment="center" numberOfLines="0" id="el5-Ja-X4a"/>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="220" y="345"/>
+        </scene>
+        <!--Channels-->
+        <scene sceneID="Qmh-22-72j">
+            <objects>
+                <controller identifier="ChannelsController" title="Channels" id="pfM-Hc-Sth" customClass="ChannelsController" customModule="MattermostWatchOS_Extension">
+                    <items>
+                        <label alignment="left" text="Public Channels" id="0Fs-rT-vOt"/>
+                        <table alignment="left" id="vAS-ZI-zx0">
+                            <items>
+                                <tableRow identifier="Channel" id="cGF-sc-6N9" userLabel="Channel" customClass="ChannelRowController" customModule="MattermostWatchOS_Extension">
+                                    <group key="rootItem" width="1" alignment="left" id="9jb-Oy-U3U">
+                                        <items>
+                                            <label alignment="left" verticalAlignment="center" text="Label" id="BFC-O7-6NV"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="label" destination="BFC-O7-6NV" id="I1e-s3-jQB"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                        <label alignment="left" text="Private Channels" id="Yqd-1D-eUi"/>
+                        <table alignment="left" id="b1m-Ev-70e">
+                            <items>
+                                <tableRow identifier="Channel" id="Oah-pl-Ull" userLabel="Channel" customClass="ChannelRowController" customModule="MattermostWatchOS_Extension">
+                                    <group key="rootItem" width="1" alignment="left" id="X7D-sq-8Hb">
+                                        <items>
+                                            <label alignment="left" verticalAlignment="center" text="Label" id="55v-hf-jIa"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="label" destination="55v-hf-jIa" id="zTm-2y-FHf"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                        <label alignment="left" text="Direct Messages" id="J7s-k5-4SW"/>
+                        <table alignment="left" id="NJl-u0-17w">
+                            <items>
+                                <tableRow identifier="Channel" id="gGb-pN-0cB" userLabel="Channel" customClass="ChannelRowController" customModule="MattermostWatchOS_Extension">
+                                    <group key="rootItem" width="1" alignment="left" id="I9n-Vq-YK7">
+                                        <items>
+                                            <label alignment="left" verticalAlignment="center" text="Label" id="eBZ-5P-OLb"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="label" destination="eBZ-5P-OLb" id="IXw-4d-taL"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                    </items>
+                    <connections>
+                        <outlet property="directMessagesTable" destination="NJl-u0-17w" id="WRW-3V-zs5"/>
+                        <outlet property="privateChannelsTable" destination="b1m-Ev-70e" id="Sdh-YO-8vD"/>
+                        <outlet property="publicChannelsTable" destination="vAS-ZI-zx0" id="AMc-29-CV1"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="722" y="345"/>
+        </scene>
+        <!--ChannelPostsController-->
+        <scene sceneID="XfO-Pq-X6J">
+            <objects>
+                <controller identifier="ChannelPostsController" id="cuv-6d-0PC" customClass="ChannelPostsController" customModule="MattermostWatchOS_Extension">
+                    <items>
+                        <table alignment="left" id="1py-lZ-cJc">
+                            <items>
+                                <tableRow identifier="ChannelPostTime" id="u3g-cV-PGE">
+                                    <group key="rootItem" width="1" height="0.0" alignment="left" id="xta-6i-Vw0">
+                                        <items>
+                                            <label alignment="center" verticalAlignment="center" text="12:40" id="msX-6S-BlX">
+                                                <fontDescription key="font" style="UICTFontTextStyleSubhead"/>
+                                            </label>
+                                        </items>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                    </group>
+                                </tableRow>
+                                <tableRow identifier="ChannelPostAuthor" id="Ds5-Fs-z9Y">
+                                    <group key="rootItem" width="1" height="0.0" alignment="left" id="WVY-Gz-Zkh">
+                                        <items>
+                                            <label alignment="left" text="Author" id="LuM-Lh-eTB">
+                                                <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
+                                                <fontDescription key="font" style="UICTFontTextStyleSubhead"/>
+                                            </label>
+                                        </items>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                    </group>
+                                </tableRow>
+                                <tableRow identifier="ChannelPostThread" id="1oT-Eh-PGN">
+                                    <group key="rootItem" width="1" height="0.0" alignment="left" id="B3A-xI-XHB">
+                                        <items>
+                                            <label alignment="left" text="&gt; What is the post body?" id="fBW-fm-h61">
+                                                <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
+                                                <fontDescription key="font" style="UICTFontTextStyleSubhead"/>
+                                            </label>
+                                        </items>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                    </group>
+                                </tableRow>
+                                <tableRow identifier="ChannelPostBody" id="F8L-1Y-DBI">
+                                    <group key="rootItem" width="1" alignment="left" id="mNU-a7-0mo">
+                                        <items>
+                                            <label alignment="left" verticalAlignment="center" text="This is the post body." numberOfLines="0" id="SXZ-Co-uBt"/>
+                                        </items>
+                                    </group>
+                                </tableRow>
+                            </items>
+                        </table>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="969" y="336"/>
+        </scene>
+        <!--Teams-->
+        <scene sceneID="Lcc-m5-OWf">
+            <objects>
+                <controller identifier="TeamsController" title="Teams" id="hhS-Zb-FiT" customClass="TeamsController" customModule="MattermostWatchOS_Extension">
+                    <items>
+                        <table alignment="left" id="o1j-TI-EKo">
+                            <items>
+                                <tableRow identifier="Team" id="87u-zZ-KcY" customClass="TeamRowController" customModule="MattermostWatchOS_Extension">
+                                    <group key="rootItem" width="1" alignment="left" id="sbe-tP-6Oz">
+                                        <items>
+                                            <label alignment="left" verticalAlignment="center" text="Label" id="OWT-NT-Tld"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="label" destination="OWT-NT-Tld" id="hqH-bP-jlS"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                    </items>
+                    <connections>
+                        <outlet property="table" destination="o1j-TI-EKo" id="oEL-W8-qQG"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="468" y="345"/>
+        </scene>
+        <!--Static Notification Interface Controller-->
+        <scene sceneID="AEw-b0-oYE">
+            <objects>
+                <notificationController id="YCC-NB-fut">
+                    <items>
+                        <label alignment="left" text="Alert Label" id="IdU-wH-bcW"/>
+                    </items>
+                    <notificationCategory key="notificationCategory" identifier="myCategory" id="JfB-70-Muf"/>
+                    <connections>
+                        <outlet property="notificationAlertLabel" destination="IdU-wH-bcW" id="JKC-fr-R95"/>
+                        <segue destination="4sK-HA-Art" kind="relationship" relationship="dynamicNotificationInterface" id="kXh-Jw-8B1"/>
+                    </connections>
+                </notificationController>
+            </objects>
+            <point key="canvasLocation" x="220" y="643"/>
+        </scene>
+        <!--Notification Controller-->
+        <scene sceneID="ZPc-GJ-vnh">
+            <objects>
+                <controller id="4sK-HA-Art" customClass="NotificationController" customModule="MattermostWatchOS" customModuleProvider="target"/>
+            </objects>
+            <point key="canvasLocation" x="468" y="643"/>
+        </scene>
+    </scenes>
+</document>

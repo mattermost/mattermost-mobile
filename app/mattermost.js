@@ -57,6 +57,7 @@ import {
     LOGGER_JAVASCRIPT,
     LOGGER_NATIVE
 } from 'app/utils/sentry';
+import watch from 'app/watch';
 
 import Config from 'assets/config';
 
@@ -79,7 +80,8 @@ export default class Mattermost {
         initializeSentry();
 
         this.store = configureStore(initialState);
-        this.unsubscribeFromStore = this.store.subscribe(this.listenForHydration);
+        this.store.subscribe(this.storeListener);
+        this.isListeningForHydration = true;
         AppState.addEventListener('change', this.handleAppStateChange);
         EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleReset);
@@ -375,15 +377,20 @@ export default class Mattermost {
         }
     };
 
-    // We need to wait for hydration to occur before load the router.
-    listenForHydration = () => {
+    storeListener = () => {
         const state = this.store.getState();
-        Orientation.getOrientation((orientation) => {
-            this.orientationDidChange(orientation);
-        });
 
-        if (state.views.root.hydrationComplete) {
-            this.unsubscribeFromStore();
+        // We need to wait for hydration to occur before load the router.
+        if (this.isListeningForHydration) {
+            Orientation.getOrientation((orientation) => {
+                this.orientationDidChange(orientation);
+            });
+
+            if (!state.views.root.hydrationComplete) {
+                return;
+            }
+
+            this.isListeningForHydration = false;
 
             const notification = PushNotifications.getNotification();
             if (notification) {
@@ -412,6 +419,8 @@ export default class Mattermost {
                 this.launchApp();
             }
         }
+
+        watch.setCredentials(state.entities.general.credentials.url || "", state.entities.general.credentials.token || "");
     };
 
     onRegisterDevice = (data) => {

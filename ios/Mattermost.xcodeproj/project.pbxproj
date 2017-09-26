@@ -64,6 +64,20 @@
 		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
 		7FEB109E1F61019C0039A015 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109C1F61019C0039A015 /* UIImage+ImageEffects.m */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
+		839B4B591F79592800606A47 /* TeamsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839B4B581F79592800606A47 /* TeamsController.swift */; };
+		83BA90181F7A3F0000891793 /* ChannelPostsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BA90171F7A3F0000891793 /* ChannelPostsController.swift */; };
+		83C7BCAD1F785D8F00493790 /* Watch.m in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCAC1F785D8F00493790 /* Watch.m */; };
+		83C7BCE71F78BC4D00493790 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCE61F78BC4D00493790 /* Client.swift */; };
+		83C7BCE91F78C93300493790 /* ChannelsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCE81F78C93300493790 /* ChannelsController.swift */; };
+		83CEE2421F784D8900DB3CC9 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83CEE2401F784D8900DB3CC9 /* Interface.storyboard */; };
+		83CEE2441F784D8900DB3CC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83CEE2431F784D8900DB3CC9 /* Assets.xcassets */; };
+		83CEE24B1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 83CEE24A1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		83CEE2501F784D8A00DB3CC9 /* AuthenticationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */; };
+		83CEE2521F784D8A00DB3CC9 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */; };
+		83CEE2541F784D8A00DB3CC9 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE2531F784D8A00DB3CC9 /* NotificationController.swift */; };
+		83CEE2561F784D8A00DB3CC9 /* ComplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */; };
+		83CEE2581F784D8A00DB3CC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83CEE2571F784D8A00DB3CC9 /* Assets.xcassets */; };
+		83CEE25D1F784D8A00DB3CC9 /* MattermostWatchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 83CEE23E1F784D8900DB3CC9 /* MattermostWatchOS.app */; };
 		895C9A56B94A45C1BAF568FE /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AC6EB561E1F64C17A69D2FAD /* Entypo.ttf */; };
 		9358B95F95184EE0A4DCE629 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */; };
 		A08D512E7ADC40CCAD055A9E /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */; };
@@ -470,6 +484,20 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
+		83CEE24C1F784D8A00DB3CC9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 83CEE2491F784D8900DB3CC9;
+			remoteInfo = "MattermostWatchOS Extension";
+		};
+		83CEE25B1F784D8A00DB3CC9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 83CEE23D1F784D8900DB3CC9;
+			remoteInfo = MattermostWatchOS;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -481,6 +509,28 @@
 			files = (
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83CEE29A1F784D8A00DB3CC9 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				83CEE24B1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83CEE29C1F784D8A00DB3CC9 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				83CEE25D1F784D8A00DB3CC9 /* MattermostWatchOS.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -559,6 +609,24 @@
 		7FEB109B1F61019C0039A015 /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+ImageEffects.h"; path = "Mattermost/UIImage+ImageEffects.h"; sourceTree = "<group>"; };
 		7FEB109C1F61019C0039A015 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "Mattermost/UIImage+ImageEffects.m"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
+		839B4B581F79592800606A47 /* TeamsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamsController.swift; sourceTree = "<group>"; };
+		83BA90171F7A3F0000891793 /* ChannelPostsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelPostsController.swift; sourceTree = "<group>"; };
+		83C7BCAC1F785D8F00493790 /* Watch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Watch.m; path = Mattermost/Watch.m; sourceTree = "<group>"; };
+		83C7BCE51F785DA500493790 /* Watch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Watch.h; path = Mattermost/Watch.h; sourceTree = "<group>"; };
+		83C7BCE61F78BC4D00493790 /* Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
+		83C7BCE81F78C93300493790 /* ChannelsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsController.swift; sourceTree = "<group>"; };
+		83CEE23E1F784D8900DB3CC9 /* MattermostWatchOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MattermostWatchOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		83CEE2411F784D8900DB3CC9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
+		83CEE2431F784D8900DB3CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		83CEE2451F784D8900DB3CC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		83CEE24A1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "MattermostWatchOS Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationController.swift; sourceTree = "<group>"; };
+		83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
+		83CEE2531F784D8A00DB3CC9 /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
+		83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationController.swift; sourceTree = "<group>"; };
+		83CEE2571F784D8A00DB3CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		83CEE2591F784D8A00DB3CC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		83CEE25A1F784D8A00DB3CC9 /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
 		8606EB1EB7E349EF8248933E /* libz.tbd */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		9552041247E749308CE7B412 /* RNSentry.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNSentry.xcodeproj; path = "../node_modules/react-native-sentry/ios/RNSentry.xcodeproj"; sourceTree = "<group>"; };
 		A2968536BEC74A4ABBB73BD9 /* RCTYouTube.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RCTYouTube.xcodeproj; path = "../node_modules/react-native-youtube/RCTYouTube.xcodeproj"; sourceTree = "<group>"; };
@@ -628,6 +696,13 @@
 				7F43D5DE1F6BF96A001FC614 /* libRCTYouTube.a in Frameworks */,
 				7F43D6061F6BF9EB001FC614 /* libPods-Mattermost.a in Frameworks */,
 				A9B746D2CFA9CEBFB8AE2B5B /* libPods-Mattermost.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83CEE2471F784D8900DB3CC9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -756,6 +831,8 @@
 				7F292AA51E8ABB1100A450A3 /* splash.png */,
 				7FEB109B1F61019C0039A015 /* UIImage+ImageEffects.h */,
 				7FEB109C1F61019C0039A015 /* UIImage+ImageEffects.m */,
+				83C7BCE51F785DA500493790 /* Watch.h */,
+				83C7BCAC1F785D8F00493790 /* Watch.m */,
 			);
 			name = Mattermost;
 			sourceTree = "<group>";
@@ -1065,6 +1142,8 @@
 				13B07FAE1A68108700A75B9A /* Mattermost */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* MattermostTests */,
+				83CEE23F1F784D8900DB3CC9 /* MattermostWatchOS */,
+				83CEE24E1F784D8A00DB3CC9 /* MattermostWatchOS Extension */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				0156F464626F49C2977D7982 /* Resources */,
 				37DF8AC51F5F0D410079BF89 /* Recovered References */,
@@ -1080,8 +1159,38 @@
 			children = (
 				13B07F961A680F5B00A75B9A /* Mattermost.app */,
 				00E356EE1AD99517003FC87E /* MattermostTests.xctest */,
+				83CEE23E1F784D8900DB3CC9 /* MattermostWatchOS.app */,
+				83CEE24A1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		83CEE23F1F784D8900DB3CC9 /* MattermostWatchOS */ = {
+			isa = PBXGroup;
+			children = (
+				83CEE2401F784D8900DB3CC9 /* Interface.storyboard */,
+				83CEE2431F784D8900DB3CC9 /* Assets.xcassets */,
+				83CEE2451F784D8900DB3CC9 /* Info.plist */,
+			);
+			path = MattermostWatchOS;
+			sourceTree = "<group>";
+		};
+		83CEE24E1F784D8A00DB3CC9 /* MattermostWatchOS Extension */ = {
+			isa = PBXGroup;
+			children = (
+				83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */,
+				83C7BCE61F78BC4D00493790 /* Client.swift */,
+				83C7BCE81F78C93300493790 /* ChannelsController.swift */,
+				83BA90171F7A3F0000891793 /* ChannelPostsController.swift */,
+				83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */,
+				83CEE2531F784D8A00DB3CC9 /* NotificationController.swift */,
+				83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */,
+				83CEE2571F784D8A00DB3CC9 /* Assets.xcassets */,
+				83CEE2591F784D8A00DB3CC9 /* Info.plist */,
+				83CEE25A1F784D8A00DB3CC9 /* PushNotificationPayload.apns */,
+				839B4B581F79592800606A47 /* TeamsController.swift */,
+			);
+			path = "MattermostWatchOS Extension";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1121,15 +1230,51 @@
 				AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */,
 				BC5024E82B42A23CE05E72ED /* [CP] Embed Pods Frameworks */,
 				509B02AF14835503C5C6029D /* [CP] Copy Pods Resources */,
+				83CEE29C1F784D8A00DB3CC9 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				83CEE25C1F784D8A00DB3CC9 /* PBXTargetDependency */,
 			);
 			name = Mattermost;
 			productName = "Hello World";
 			productReference = 13B07F961A680F5B00A75B9A /* Mattermost.app */;
 			productType = "com.apple.product-type.application";
+		};
+		83CEE23D1F784D8900DB3CC9 /* MattermostWatchOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 83CEE29B1F784D8A00DB3CC9 /* Build configuration list for PBXNativeTarget "MattermostWatchOS" */;
+			buildPhases = (
+				83CEE23C1F784D8900DB3CC9 /* Resources */,
+				83CEE29A1F784D8A00DB3CC9 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				83CEE24D1F784D8A00DB3CC9 /* PBXTargetDependency */,
+			);
+			name = MattermostWatchOS;
+			productName = MattermostWatchOS;
+			productReference = 83CEE23E1F784D8900DB3CC9 /* MattermostWatchOS.app */;
+			productType = "com.apple.product-type.application.watchapp2";
+		};
+		83CEE2491F784D8900DB3CC9 /* MattermostWatchOS Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 83CEE2991F784D8A00DB3CC9 /* Build configuration list for PBXNativeTarget "MattermostWatchOS Extension" */;
+			buildPhases = (
+				83CEE2461F784D8900DB3CC9 /* Sources */,
+				83CEE2471F784D8900DB3CC9 /* Frameworks */,
+				83CEE2481F784D8900DB3CC9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "MattermostWatchOS Extension";
+			productName = "MattermostWatchOS Extension";
+			productReference = 83CEE24A1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex */;
+			productType = "com.apple.product-type.watchkit2-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -1137,6 +1282,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0900;
 				LastUpgradeCheck = 820;
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
@@ -1152,6 +1298,15 @@
 								enabled = 1;
 							};
 						};
+					};
+					83CEE23D1F784D8900DB3CC9 = {
+						CreatedOnToolsVersion = 9.0;
+						DevelopmentTeam = UQ8HT4Q2XM;
+						ProvisioningStyle = Automatic;
+					};
+					83CEE2491F784D8900DB3CC9 = {
+						CreatedOnToolsVersion = 9.0;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -1300,6 +1455,8 @@
 			targets = (
 				13B07F861A680F5B00A75B9A /* Mattermost */,
 				00E356ED1AD99517003FC87E /* MattermostTests */,
+				83CEE23D1F784D8900DB3CC9 /* MattermostWatchOS */,
+				83CEE2491F784D8900DB3CC9 /* MattermostWatchOS Extension */,
 			);
 		};
 /* End PBXProject section */
@@ -1732,6 +1889,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		83CEE23C1F784D8900DB3CC9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83CEE2441F784D8900DB3CC9 /* Assets.xcassets in Resources */,
+				83CEE2421F784D8900DB3CC9 /* Interface.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83CEE2481F784D8900DB3CC9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83CEE2581F784D8A00DB3CC9 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -1877,8 +2051,24 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				7FEB109E1F61019C0039A015 /* UIImage+ImageEffects.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				83C7BCAD1F785D8F00493790 /* Watch.m in Sources */,
 				7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */,
 				7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83CEE2461F784D8900DB3CC9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83CEE2541F784D8A00DB3CC9 /* NotificationController.swift in Sources */,
+				83CEE2561F784D8A00DB3CC9 /* ComplicationController.swift in Sources */,
+				83CEE2521F784D8A00DB3CC9 /* ExtensionDelegate.swift in Sources */,
+				83C7BCE71F78BC4D00493790 /* Client.swift in Sources */,
+				83CEE2501F784D8A00DB3CC9 /* AuthenticationController.swift in Sources */,
+				83BA90181F7A3F0000891793 /* ChannelPostsController.swift in Sources */,
+				839B4B591F79592800606A47 /* TeamsController.swift in Sources */,
+				83C7BCE91F78C93300493790 /* ChannelsController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1890,7 +2080,28 @@
 			target = 13B07F861A680F5B00A75B9A /* Mattermost */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
 		};
+		83CEE24D1F784D8A00DB3CC9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 83CEE2491F784D8900DB3CC9 /* MattermostWatchOS Extension */;
+			targetProxy = 83CEE24C1F784D8A00DB3CC9 /* PBXContainerItemProxy */;
+		};
+		83CEE25C1F784D8A00DB3CC9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 83CEE23D1F784D8900DB3CC9 /* MattermostWatchOS */;
+			targetProxy = 83CEE25B1F784D8A00DB3CC9 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		83CEE2401F784D8900DB3CC9 /* Interface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				83CEE2411F784D8900DB3CC9 /* Base */,
+			);
+			name = Interface.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
@@ -2122,6 +2333,138 @@
 			};
 			name = Release;
 		};
+		83CEE25E1F784D8A00DB3CC9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				IBSC_MODULE = MattermostWatchOS_Extension;
+				INFOPLIST_FILE = MattermostWatchOS/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 4.0;
+			};
+			name = Debug;
+		};
+		83CEE25F1F784D8A00DB3CC9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				IBSC_MODULE = MattermostWatchOS_Extension;
+				INFOPLIST_FILE = MattermostWatchOS/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 4.0;
+			};
+			name = Release;
+		};
+		83CEE2601F784D8A00DB3CC9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "MattermostWatchOS Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 4.0;
+			};
+			name = Debug;
+		};
+		83CEE2611F784D8A00DB3CC9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "MattermostWatchOS Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 4.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2148,6 +2491,24 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83CEE2991F784D8A00DB3CC9 /* Build configuration list for PBXNativeTarget "MattermostWatchOS Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83CEE2601F784D8A00DB3CC9 /* Debug */,
+				83CEE2611F784D8A00DB3CC9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83CEE29B1F784D8A00DB3CC9 /* Build configuration list for PBXNativeTarget "MattermostWatchOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83CEE25E1F784D8A00DB3CC9 /* Debug */,
+				83CEE25F1F784D8A00DB3CC9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
