@@ -2,5 +2,7 @@
 // See License.txt for license information.
 
 export default {
-    setCredentials: (url, token) => {}
+    setCredentials: () => {
+        // not implemented for android
+    }
 };

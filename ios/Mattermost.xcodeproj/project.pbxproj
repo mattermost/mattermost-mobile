@@ -64,17 +64,18 @@
 		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
 		7FEB109E1F61019C0039A015 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109C1F61019C0039A015 /* UIImage+ImageEffects.m */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
-		839B4B591F79592800606A47 /* TeamsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839B4B581F79592800606A47 /* TeamsController.swift */; };
-		83BA90181F7A3F0000891793 /* ChannelPostsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BA90171F7A3F0000891793 /* ChannelPostsController.swift */; };
+		833CE6051F7AFD5B005BBEFC /* ThreadController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CE6041F7AFD5B005BBEFC /* ThreadController.swift */; };
+		833CE63E1F7B0EF9005BBEFC /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CE63D1F7B0EF9005BBEFC /* Models.swift */; };
+		839B4B591F79592800606A47 /* ServerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839B4B581F79592800606A47 /* ServerController.swift */; };
+		83BA90181F7A3F0000891793 /* ChannelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BA90171F7A3F0000891793 /* ChannelController.swift */; };
 		83C7BCAD1F785D8F00493790 /* Watch.m in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCAC1F785D8F00493790 /* Watch.m */; };
 		83C7BCE71F78BC4D00493790 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCE61F78BC4D00493790 /* Client.swift */; };
-		83C7BCE91F78C93300493790 /* ChannelsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCE81F78C93300493790 /* ChannelsController.swift */; };
+		83C7BCE91F78C93300493790 /* TeamController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C7BCE81F78C93300493790 /* TeamController.swift */; };
 		83CEE2421F784D8900DB3CC9 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83CEE2401F784D8900DB3CC9 /* Interface.storyboard */; };
 		83CEE2441F784D8900DB3CC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83CEE2431F784D8900DB3CC9 /* Assets.xcassets */; };
 		83CEE24B1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 83CEE24A1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		83CEE2501F784D8A00DB3CC9 /* AuthenticationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */; };
 		83CEE2521F784D8A00DB3CC9 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */; };
-		83CEE2541F784D8A00DB3CC9 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE2531F784D8A00DB3CC9 /* NotificationController.swift */; };
 		83CEE2561F784D8A00DB3CC9 /* ComplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */; };
 		83CEE2581F784D8A00DB3CC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83CEE2571F784D8A00DB3CC9 /* Assets.xcassets */; };
 		83CEE25D1F784D8A00DB3CC9 /* MattermostWatchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 83CEE23E1F784D8900DB3CC9 /* MattermostWatchOS.app */; };
@@ -609,12 +610,14 @@
 		7FEB109B1F61019C0039A015 /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+ImageEffects.h"; path = "Mattermost/UIImage+ImageEffects.h"; sourceTree = "<group>"; };
 		7FEB109C1F61019C0039A015 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "Mattermost/UIImage+ImageEffects.m"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
-		839B4B581F79592800606A47 /* TeamsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamsController.swift; sourceTree = "<group>"; };
-		83BA90171F7A3F0000891793 /* ChannelPostsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelPostsController.swift; sourceTree = "<group>"; };
+		833CE6041F7AFD5B005BBEFC /* ThreadController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadController.swift; sourceTree = "<group>"; };
+		833CE63D1F7B0EF9005BBEFC /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		839B4B581F79592800606A47 /* ServerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerController.swift; sourceTree = "<group>"; };
+		83BA90171F7A3F0000891793 /* ChannelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelController.swift; sourceTree = "<group>"; };
 		83C7BCAC1F785D8F00493790 /* Watch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Watch.m; path = Mattermost/Watch.m; sourceTree = "<group>"; };
 		83C7BCE51F785DA500493790 /* Watch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Watch.h; path = Mattermost/Watch.h; sourceTree = "<group>"; };
 		83C7BCE61F78BC4D00493790 /* Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
-		83C7BCE81F78C93300493790 /* ChannelsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsController.swift; sourceTree = "<group>"; };
+		83C7BCE81F78C93300493790 /* TeamController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamController.swift; sourceTree = "<group>"; };
 		83CEE23E1F784D8900DB3CC9 /* MattermostWatchOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MattermostWatchOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83CEE2411F784D8900DB3CC9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
 		83CEE2431F784D8900DB3CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -622,7 +625,6 @@
 		83CEE24A1F784D8A00DB3CC9 /* MattermostWatchOS Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "MattermostWatchOS Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationController.swift; sourceTree = "<group>"; };
 		83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
-		83CEE2531F784D8A00DB3CC9 /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
 		83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationController.swift; sourceTree = "<group>"; };
 		83CEE2571F784D8A00DB3CC9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83CEE2591F784D8A00DB3CC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1178,17 +1180,18 @@
 		83CEE24E1F784D8A00DB3CC9 /* MattermostWatchOS Extension */ = {
 			isa = PBXGroup;
 			children = (
-				83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */,
-				83C7BCE61F78BC4D00493790 /* Client.swift */,
-				83C7BCE81F78C93300493790 /* ChannelsController.swift */,
-				83BA90171F7A3F0000891793 /* ChannelPostsController.swift */,
-				83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */,
-				83CEE2531F784D8A00DB3CC9 /* NotificationController.swift */,
-				83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */,
 				83CEE2571F784D8A00DB3CC9 /* Assets.xcassets */,
+				83CEE24F1F784D8A00DB3CC9 /* AuthenticationController.swift */,
+				83BA90171F7A3F0000891793 /* ChannelController.swift */,
+				83C7BCE61F78BC4D00493790 /* Client.swift */,
+				83CEE2551F784D8A00DB3CC9 /* ComplicationController.swift */,
+				83CEE2511F784D8A00DB3CC9 /* ExtensionDelegate.swift */,
 				83CEE2591F784D8A00DB3CC9 /* Info.plist */,
+				833CE63D1F7B0EF9005BBEFC /* Models.swift */,
 				83CEE25A1F784D8A00DB3CC9 /* PushNotificationPayload.apns */,
-				839B4B581F79592800606A47 /* TeamsController.swift */,
+				839B4B581F79592800606A47 /* ServerController.swift */,
+				83C7BCE81F78C93300493790 /* TeamController.swift */,
+				833CE6041F7AFD5B005BBEFC /* ThreadController.swift */,
 			);
 			path = "MattermostWatchOS Extension";
 			sourceTree = "<group>";
@@ -2061,14 +2064,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				83CEE2541F784D8A00DB3CC9 /* NotificationController.swift in Sources */,
 				83CEE2561F784D8A00DB3CC9 /* ComplicationController.swift in Sources */,
 				83CEE2521F784D8A00DB3CC9 /* ExtensionDelegate.swift in Sources */,
 				83C7BCE71F78BC4D00493790 /* Client.swift in Sources */,
 				83CEE2501F784D8A00DB3CC9 /* AuthenticationController.swift in Sources */,
-				83BA90181F7A3F0000891793 /* ChannelPostsController.swift in Sources */,
-				839B4B591F79592800606A47 /* TeamsController.swift in Sources */,
-				83C7BCE91F78C93300493790 /* ChannelsController.swift in Sources */,
+				833CE6051F7AFD5B005BBEFC /* ThreadController.swift in Sources */,
+				83BA90181F7A3F0000891793 /* ChannelController.swift in Sources */,
+				839B4B591F79592800606A47 /* ServerController.swift in Sources */,
+				83C7BCE91F78C93300493790 /* TeamController.swift in Sources */,
+				833CE63E1F7B0EF9005BBEFC /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

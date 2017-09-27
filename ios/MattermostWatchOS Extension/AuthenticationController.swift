@@ -10,28 +10,25 @@ import WatchKit
 import Foundation
 
 class AuthenticationController: WKInterfaceController {
-  var credentialsWatcher: Int64?
+  var credentialWatcher: Int64?
 
   override func willActivate() {
     super.willActivate()
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
-    self.credentialsWatcher = client.watchCredentials {
-      self.checkCredentials()
-    }
+    self.credentialWatcher = client.watchCredentials(self.checkCredentials)
   }
 
   override func didDeactivate() {
-    if self.credentialsWatcher != nil {
-      let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
-      client.stopWatching(self.credentialsWatcher!)
-    }
+    let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
+    client.stopWatching(self.credentialWatcher!)
+
     super.didDeactivate()
   }
   
   func checkCredentials() {
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
     if client.hasCredentials() {
-      WKInterfaceController.reloadRootControllers(withNamesAndContexts: [(name: "TeamsController", context: 0 as AnyObject)])
+      WKInterfaceController.reloadRootControllers(withNamesAndContexts: [(name: "ServerController", context: 0 as AnyObject)])
     }
   }
 }

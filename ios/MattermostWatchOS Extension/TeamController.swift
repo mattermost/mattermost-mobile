@@ -1,5 +1,5 @@
 //
-//  ChannelsController.swift
+//  TeamController.swift
 //  Mattermost
 //
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
@@ -10,57 +10,65 @@ import Foundation
 import WatchKit
 
 class ChannelRowController: NSObject {
+  var channel: Channel?
   @IBOutlet weak var label: WKInterfaceLabel?
 }
 
-class ChannelsController: WKInterfaceController {
+struct TeamContext {
+  var teamId: String
+}
+
+class TeamController: WKInterfaceController {
   @IBOutlet weak var publicChannelsTable: WKInterfaceTable?
   @IBOutlet weak var privateChannelsTable: WKInterfaceTable?
-  @IBOutlet weak var directMessagesTable: WKInterfaceTable?
 
-  private var channelsWatcher: Int64?
-  private(set) var team: Team?
+  private var channelWatcher: Int64?
+  private var teamWatcher: Int64?
+  private(set) var context: TeamContext?
 
   override func awake(withContext context: Any?) {
     super.awake(withContext: context)
-    self.team = context as? Team
+    self.context = context as? TeamContext
   }
 
   override func willActivate() {
     super.willActivate()
     
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
-    self.channelsWatcher = client.watchChannels {
-      self.updateTables()
+    self.channelWatcher = client.watchChannels(self.update)
+    self.teamWatcher = client.watchTeams(self.update)
+    client.requestChannels(forTeam: self.context!.teamId)
+    if client.teams[self.context!.teamId] == nil {
+      client.requestTeams()
     }
-    client.requestChannels(forTeam: self.team!.id)
   }
   
   override func didDeactivate() {
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
-    if self.channelsWatcher != nil {
-      client.stopWatching(self.channelsWatcher!)
-    }
-    
+    client.stopWatching(self.channelWatcher!)
+    client.stopWatching(self.teamWatcher!)
+
     super.didDeactivate()
   }
   
-  func updateTables() {
+  func update() {
+    let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
+
+    self.setTitle(client.teams[self.context!.teamId]?.displayName ?? "")
+
     var publicChannels: [Channel] = []
     var privateChannels: [Channel] = []
-    var directMessageChannels: [Channel] = []
 
-    let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
     for channel in client.channels {
-      switch channel.value.type {
-      case "O":
-        publicChannels.append(channel.value)
-      case "P":
-        privateChannels.append(channel.value)
-      case "D", "G":
-        directMessageChannels.append(channel.value)
-      default:
-        break
+      if channel.value.teamId == self.context!.teamId {
+        switch channel.value.type {
+        case "O":
+          publicChannels.append(channel.value)
+        case "P":
+          privateChannels.append(channel.value)
+        default:
+          break
+        }
       }
     }
     
@@ -75,24 +83,22 @@ class ChannelsController: WKInterfaceController {
     self.publicChannelsTable?.setNumberOfRows(publicChannels.count, withRowType: "Channel")
     for i in 0..<publicChannels.count {
       let rowController = self.publicChannelsTable?.rowController(at: i) as! ChannelRowController
+      rowController.channel = publicChannels[i]
       rowController.label!.setText(publicChannels[i].displayName)
     }
 
     self.privateChannelsTable?.setNumberOfRows(privateChannels.count, withRowType: "Channel")
     for i in 0..<privateChannels.count {
       let rowController = self.privateChannelsTable?.rowController(at: i) as! ChannelRowController
+      rowController.channel = privateChannels[i]
       rowController.label!.setText(privateChannels[i].displayName)
-    }
-
-    self.directMessagesTable?.setNumberOfRows(directMessageChannels.count, withRowType: "Channel")
-    for i in 0..<directMessageChannels.count {
-      let rowController = self.directMessagesTable?.rowController(at: i) as! ChannelRowController
-      rowController.label!.setText(directMessageChannels[i].displayName)
     }
   }
   
   override func table(_ table: WKInterfaceTable, didSelectRowAt rowIndex: Int) {
-    NSLog("did select row")
+    let controller = table.rowController(at: rowIndex) as! ChannelRowController
+    let context = ChannelContext(teamId: controller.channel!.teamId == "" ? nil : controller.channel!.teamId, channelId: controller.channel!.id)
+    self.pushController(withName: "ChannelController", context: context)
   }
 }
 

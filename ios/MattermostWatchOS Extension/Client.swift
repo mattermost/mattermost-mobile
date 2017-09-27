@@ -8,39 +8,6 @@
 
 import Foundation
 
-struct Team {
-  var id: String
-  var displayName: String
-  
-  init?(json: [String: Any]) {
-    guard let id = json["id"] as? String,
-          let displayName = json["display_name"] as? String
-    else {
-        return nil
-    }
-    self.id = id
-    self.displayName = displayName
-  }
-}
-
-struct Channel {
-  var id: String
-  var displayName: String
-  var type: String
-
-  init?(json: [String: Any]) {
-    guard let id = json["id"] as? String,
-      let displayName = json["display_name"] as? String,
-      let type = json["type"] as? String
-    else {
-        return nil
-    }
-    self.id = id
-    self.displayName = displayName
-    self.type = type
-  }
-}
-
 class Client {
   let dispatchQueue: DispatchQueue
 
@@ -48,13 +15,17 @@ class Client {
   private(set) var token = ""
   private(set) var teams: [String: Team] = [:]
   private(set) var channels: [String: Channel] = [:]
+  private(set) var posts: [String: Post] = [:]
+  private(set) var users: [String: User] = [:]
 
   private var _generation = 0
 
   private var _nextWatcherId: Int64 = 0
-  private var _credentialsWatchers: [Int64: () -> Void] = [:]
-  private var _teamsWatchers: [Int64: () -> Void] = [:]
-  private var _channelsWatchers: [Int64: () -> Void] = [:]
+  private var _credentialWatchers: [Int64: () -> Void] = [:]
+  private var _teamWatchers: [Int64: () -> Void] = [:]
+  private var _channelWatchers: [Int64: () -> Void] = [:]
+  private var _postWatchers: [Int64: () -> Void] = [:]
+  private var _userWatchers: [Int64: () -> Void] = [:]
 
   init(dispatchQueue: DispatchQueue) {
     self.dispatchQueue = dispatchQueue
@@ -70,10 +41,14 @@ class Client {
     self.token = token
     self.channels = [:]
     self.teams = [:]
+    self.posts = [:]
+    self.users = [:]
     self._generation += 1
-    self._notifyWatchers(self._credentialsWatchers)
-    self._notifyWatchers(self._teamsWatchers)
-    self._notifyWatchers(self._channelsWatchers)
+    self._notifyWatchers(self._credentialWatchers)
+    self._notifyWatchers(self._postWatchers)
+    self._notifyWatchers(self._teamWatchers)
+    self._notifyWatchers(self._channelWatchers)
+    self._notifyWatchers(self._userWatchers)
   }
 
   func hasCredentials() -> Bool {
@@ -81,20 +56,31 @@ class Client {
   }
   
   func watchCredentials(_ handler: @escaping () -> Void) -> Int64 {
-    return self._addWatcher(with: handler, to: &self._credentialsWatchers)
+    return self._addWatcher(with: handler, to: &self._credentialWatchers)
   }
   
   func watchTeams(_ handler: @escaping () -> Void) -> Int64 {
-    return self._addWatcher(with: handler, to: &self._teamsWatchers)
+    return self._addWatcher(with: handler, to: &self._teamWatchers)
   }
   
   func watchChannels(_ handler: @escaping () -> Void) -> Int64 {
-    return self._addWatcher(with: handler, to: &self._channelsWatchers)
+    return self._addWatcher(with: handler, to: &self._channelWatchers)
   }
-  
+
+  func watchPosts(_ handler: @escaping () -> Void) -> Int64 {
+    return self._addWatcher(with: handler, to: &self._postWatchers)
+  }
+
+  func watchUsers(_ handler: @escaping () -> Void) -> Int64 {
+    return self._addWatcher(with: handler, to: &self._userWatchers)
+  }
+
   func stopWatching(_ id: Int64) {
-    self._credentialsWatchers.removeValue(forKey: id)
-    self._teamsWatchers.removeValue(forKey: id)
+    self._credentialWatchers.removeValue(forKey: id)
+    self._channelWatchers.removeValue(forKey: id)
+    self._teamWatchers.removeValue(forKey: id)
+    self._postWatchers.removeValue(forKey: id)
+    self._userWatchers.removeValue(forKey: id)
   }
   
   private func _addWatcher(with handler: @escaping () -> Void, to: inout [Int64: () -> Void]) -> Int64 {
@@ -118,40 +104,55 @@ class Client {
     return URL(string: self.url + "/api" + api)
   }
   
-  func get(_ api: String, handler: @escaping (Any) -> Void) {
+  func http(_ request: inout URLRequest, handler: @escaping (Any) -> Void) {
     if !self.hasCredentials() {
       return
     }
 
-    if let url = self.apiURL(api) {
-      var request = URLRequest(url: url)
-      request.setValue("Bearer " + self.token, forHTTPHeaderField: "Authorization")
-      let generation = self._generation
-      let task = URLSession.shared.dataTask(with: request) { data, response, error in
-        if let error = error {
-          NSLog("Error: %@", error.localizedDescription)
-          return
-        }
-        
-        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-          NSLog("Server error")
-          return
-        }
-        
-        if let json = try? JSONSerialization.jsonObject(with: data!, options: []) {
-          self.dispatchQueue.async {
-            if generation == self._generation {
-              handler(json)
-            }
+    NSLog("requesting %@", request.url!.absoluteString)
+
+    request.setValue("Bearer " + self.token, forHTTPHeaderField: "Authorization")
+    let generation = self._generation
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+      if let error = error {
+        NSLog("error: %@", error.localizedDescription)
+        return
+      }
+      
+      guard let response = response as? HTTPURLResponse, response.statusCode >= 200 && response.statusCode < 300 else {
+        NSLog("server error")
+        return
+      }
+      
+      if let json = try? JSONSerialization.jsonObject(with: data!, options: []) {
+        self.dispatchQueue.async {
+          if generation == self._generation {
+            handler(json)
           }
         }
       }
-      task.resume()
+    }
+    task.resume()
+  }
+  
+  func httpGET(_ api: String, handler: @escaping (Any) -> Void) {
+    if let url = self.apiURL(api) {
+      var request = URLRequest(url: url)
+      self.http(&request, handler:handler)
+    }
+  }
+
+  func httpPOST(_ api: String, body: Any, handler: @escaping (Any) -> Void) {
+    if let url = self.apiURL(api) {
+      var request = URLRequest(url: url)
+      request.httpMethod = "POST"
+      request.httpBody = try! JSONSerialization.data(withJSONObject: body, options: [])
+      self.http(&request, handler:handler)
     }
   }
 
   func requestTeams() {
-    self.get("/v4/users/me/teams", handler: {json in
+    self.httpGET("/v4/users/me/teams", handler: {json in
       self.teams = [:]
       if let jsonArray = json as? [[String: Any]] {
         for teamJSON in jsonArray {
@@ -160,13 +161,15 @@ class Client {
           }
         }
       }
-      self._notifyWatchers(self._teamsWatchers)
+      self._notifyWatchers(self._teamWatchers)
     })
   }
   
   func requestChannels(forTeam: String) {
-    self.get("/v4/users/me/teams/"+forTeam+"/channels", handler: {json in
-      self.channels = [:]
+    self.httpGET("/v4/users/me/teams/\(forTeam)/channels", handler: {json in
+      self.channels = self.channels.filter({ (key: String, value: Channel) -> Bool in
+        return value.teamId != "" && value.teamId != forTeam
+      })
       if let jsonArray = json as? [[String: Any]] {
         for channelJSON in jsonArray {
           if let channel = Channel(json: channelJSON) {
@@ -174,7 +177,73 @@ class Client {
           }
         }
       }
-      self._notifyWatchers(self._channelsWatchers)
+      self._notifyWatchers(self._channelWatchers)
+    })
+  }
+  
+  func requestPosts(forChannel: String) {
+    self.httpGET("/v4/channels/\(forChannel)/posts", handler: {json in
+      if let jsonDict = json as? [String: Any] {
+        if let jsonPosts = jsonDict["posts"] as? [String: Any] {
+          for jsonPostKV in jsonPosts {
+            if let jsonPost = jsonPostKV.value as? [String: Any] {
+              if let post = Post(json: jsonPost) {
+                self.posts[post.id] = post
+              }
+            }
+          }
+        }
+      }
+      self._notifyWatchers(self._postWatchers)
+    })
+  }
+
+  func requestPosts(forThread: String) {
+    self.httpGET("/v4/posts/\(forThread)/thread", handler: {json in
+      self.posts = self.posts.filter({ (key: String, value: Post) -> Bool in
+        return value.id != forThread && value.rootId != forThread
+      })
+      if let jsonDict = json as? [String: Any] {
+        if let jsonPosts = jsonDict["posts"] as? [String: Any] {
+          for jsonPostKV in jsonPosts {
+            if let jsonPost = jsonPostKV.value as? [String: Any] {
+              if let post = Post(json: jsonPost) {
+                self.posts[post.id] = post
+              }
+            }
+          }
+        }
+      }
+      self._notifyWatchers(self._postWatchers)
+    })
+  }
+  
+  func requestUsers(withIds ids: [String]) {
+    self.httpPOST("/v4/users/ids", body: ids, handler: {json in
+      if let jsonArray = json as? [[String: Any]] {
+        for jsonUser in jsonArray {
+          if let user = User(json: jsonUser) {
+            self.users[user.id] = user
+          }
+        }
+      }
+      self._notifyWatchers(self._userWatchers)
+    })
+  }
+  
+  func post(message: String, inChannel channel: String, withRoot root: String?) {
+    self.httpPOST("/v4/posts", body:[
+      "channel_id": channel,
+      "message": message,
+      "root_id": root ?? "",
+    ], handler: {json in
+      if let postJSON = json as? [String: Any] {
+        if let post = Post(json: postJSON) {
+          self.posts[post.id] = post
+        }
+      }
+      self._notifyWatchers(self._postWatchers)
+      self.requestPosts(forChannel: channel)
     })
   }
 }

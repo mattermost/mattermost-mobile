@@ -6,10 +6,11 @@
 // See License.txt for license information.
 //
 
+import UserNotifications
 import WatchConnectivity
 import WatchKit
 
-class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
+class ExtensionDelegate: NSObject, UNUserNotificationCenterDelegate, WKExtensionDelegate, WCSessionDelegate {
   var client = Client(dispatchQueue: DispatchQueue.main)
 
   func applicationDidFinishLaunching() {
@@ -24,6 +25,8 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
       defaults.set(self.client.token, forKey: "MattermostToken")
       defaults.synchronize()
     }
+    
+    UNUserNotificationCenter.current().delegate = self
   }
 
   func applicationDidBecomeActive() {
@@ -43,6 +46,34 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate, WCSessionDelegate {
         let dict = credentials as! [String : Any]
         self.client.setCredentials(url: dict["url"] as! String, token: dict["token"] as! String)
       }
+    }
+  }
+  
+  func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    completionHandler()
+    
+    if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+      let data = response.notification.request.content.userInfo
+      if let postId = data["post_id"] as? String,
+        let channelId = data["channel_id"] as? String
+      {
+        let teamId = data["team_id"] as? String
+        self.show(post: postId, forChannel: channelId, forTeam: teamId)
+      }
+    }
+  }
+  
+  func show(post: String, forChannel channel: String, forTeam team: String?) {
+    if let root = WKExtension.shared().rootInterfaceController as? ServerController {
+      root.popToRootController()
+      if team != nil {
+        let teamContext = TeamContext(teamId: team!)
+        root.pushController(withName: "TeamController", context: teamContext)
+      }
+      let channelContext = ChannelContext(teamId: team, channelId: channel)
+      root.pushController(withName: "ChannelController", context: channelContext)
+      let threadContext = ThreadContext(postId: post)
+      root.pushController(withName: "ThreadController", context: threadContext)
     }
   }
 }

@@ -108,6 +108,7 @@ platform :ios do
     )
 
     sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+    sh 'cp -R ../assets/release/icons/watchos/* ../ios/MattermostWatchOS/Assets.xcassets/AppIcon.appiconset/'
 
     build_ios({
               release: true,
@@ -168,6 +169,7 @@ platform :ios do
     )
 
     sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+    sh 'cp -R ../assets/release/icons/watchos/* ../ios/MattermostWatchOS/Assets.xcassets/AppIcon.appiconset/'
   end
 
   error do |lane, exception|
