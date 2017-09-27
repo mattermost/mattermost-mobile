@@ -34,12 +34,14 @@ class Channel extends PureComponent {
             connection: PropTypes.func.isRequired,
             loadChannelsIfNecessary: PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired,
             selectFirstAvailableTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
-            stopPeriodicStatusUpdates: PropTypes.func.isRequired
+            stopPeriodicStatusUpdates: PropTypes.func.isRequired,
+            viewChannel: PropTypes.func.isRequired
         }).isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
@@ -68,6 +70,12 @@ class Channel extends PureComponent {
             startPeriodicStatusUpdates();
         } catch (error) {
             // We don't care about the error
+        }
+
+        // Mark current channel as read when opening app while logged in
+        if (this.props.currentChannelId) {
+            this.props.actions.markChannelAsRead(this.props.currentChannelId);
+            this.props.actions.viewChannel(this.props.currentChannelId);
         }
     }
 
