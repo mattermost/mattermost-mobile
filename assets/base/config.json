@@ -17,5 +17,7 @@
             "xhr": false,
             "console": true
         }
-    }
+    },
+
+    "DisableTownSquareLeaveJoinMessage": false
 }
