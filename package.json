@@ -88,7 +88,8 @@
     "react-native-svg-mock": "1.0.2",
     "react-test-renderer": "16.0.0-alpha.12",
     "remote-redux-devtools": "0.5.12",
-    "remote-redux-devtools-on-debugger": "0.8.2"
+    "remote-redux-devtools-on-debugger": "0.8.2",
+    "underscore": "1.8.3"
   },
   "scripts": {
     "test": "NODE_ENV=test nyc --reporter=text mocha --opts test/mocha.opts",

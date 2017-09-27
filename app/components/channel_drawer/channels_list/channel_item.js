@@ -26,9 +26,9 @@ export default class ChannelItem extends PureComponent {
 
     onPress = () => {
         const {channel, onSelectChannel} = this.props;
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             preventDoubleTap(onSelectChannel, this, channel);
-        }, 100);
+        });
     };
 
     render() {

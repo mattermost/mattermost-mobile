@@ -25,8 +25,7 @@ export default class PostList extends PureComponent {
         actions: PropTypes.shape({
             refreshChannelWithRetry: PropTypes.func.isRequired
         }).isRequired,
-        channel: PropTypes.object,
-        channelIsLoading: PropTypes.bool.isRequired,
+        channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
         isLoadingMore: PropTypes.bool,
@@ -45,8 +44,7 @@ export default class PostList extends PureComponent {
     };
 
     static defaultProps = {
-        channel: {},
-        channelIsLoading: false
+        channel: {}
     };
 
     getPostsWithDates = () => {
@@ -81,12 +79,12 @@ export default class PostList extends PureComponent {
     onRefresh = () => {
         const {
             actions,
-            channel,
+            channelId,
             onRefresh
         } = this.props;
 
-        if (Object.keys(channel).length) {
-            actions.refreshChannelWithRetry(channel.id);
+        if (channelId) {
+            actions.refreshChannelWithRetry(channelId);
         }
 
         if (onRefresh) {
@@ -95,9 +93,9 @@ export default class PostList extends PureComponent {
     };
 
     renderChannelIntro = () => {
-        const {channel, channelIsLoading, navigator, refreshing, showLoadMore} = this.props;
+        const {channelId, navigator, refreshing, showLoadMore} = this.props;
 
-        if (channel.hasOwnProperty('id') && !showLoadMore && !refreshing && !channelIsLoading) {
+        if (channelId && !showLoadMore && !refreshing) {
             return (
                 <View>
                     <ChannelIntro navigator={navigator}/>
@@ -169,13 +167,13 @@ export default class PostList extends PureComponent {
     };
 
     render() {
-        const {channel, refreshing, theme} = this.props;
+        const {channelId, refreshing, theme} = this.props;
 
         const refreshControl = {
             refreshing
         };
 
-        if (Object.keys(channel).length) {
+        if (channelId) {
             refreshControl.onRefresh = this.onRefresh;
         }
 
@@ -187,7 +185,7 @@ export default class PostList extends PureComponent {
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderChannelIntro}
                 onEndReached={this.loadMorePosts}
-                onEndReachedThreshold={700}
+                onEndReachedThreshold={0}
                 {...refreshControl}
                 renderItem={this.renderItem}
                 theme={theme}
