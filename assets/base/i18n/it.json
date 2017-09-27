@@ -1461,7 +1461,7 @@
   "error.generic.title": "Errore",
   "error.local_storage.help1": "Attiva cookies",
   "error.local_storage.help2": "Disattiva navigazione privata",
-  "error.local_storage.help3": "Utilizza un browser supportato (IE 11, Chrome 43+, Firefox 38+, Safari 9, Edge)",
+  "error.local_storage.help3": "Utilizza un browser supportato (IE 11, Chrome 43+, Firefox 38+, Safari 9, Edge 40+)",
   "error.local_storage.message": "Mattermos non è riuscito a caricarsi a causa di un'impostazione sul tuo browser che impedisce di utilizzare le funzioni di archiviazione locale. Per permettere a Mattermost di caricarsi, prova le seguenti azioni:",
   "error.not_found.link_message": "Torna  a Mattermost",
   "error.not_found.message": "La pagina che cerchi di raggiungere non esiste",

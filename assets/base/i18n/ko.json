@@ -1931,7 +1931,7 @@
   "mobile.notification_settings_mobile.light": "Light",
   "mobile.notification_settings_mobile.no_sound": "None",
   "mobile.notification_settings_mobile.push_activity": "SEND NOTIFICATIONS",
-  "mobile.notification_settings_mobile.push_activity_android": "Send notifications",
+  "mobile.notification_settings_mobile.push_activity_android": "답글 알림",
   "mobile.notification_settings_mobile.push_status": "TRIGGER PUSH NOTIFICATIONS WHEN",
   "mobile.notification_settings_mobile.push_status_android": "지정한 상태일 때 모바일 푸시 알림",
   "mobile.notification_settings_mobile.sound": "Sound",
