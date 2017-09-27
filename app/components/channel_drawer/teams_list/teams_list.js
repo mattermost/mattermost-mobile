@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    InteractionManager,
     FlatList,
     Platform,
     Text,
@@ -23,12 +22,10 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleTeamChange: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired
+            handleTeamChange: PropTypes.func.isRequired
         }).isRequired,
         canCreateTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
-        currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
@@ -48,17 +45,13 @@ class TeamsList extends PureComponent {
     }
 
     selectTeam = (team) => {
-        const {actions, closeChannelDrawer, currentChannelId, currentTeamId} = this.props;
+        const {actions, closeChannelDrawer, currentTeamId} = this.props;
         if (team.id === currentTeamId) {
             closeChannelDrawer();
         } else {
             actions.handleTeamChange(team);
 
             closeChannelDrawer();
-
-            InteractionManager.runAfterInteractions(() => {
-                actions.markChannelAsRead(currentChannelId);
-            });
         }
     };
 
