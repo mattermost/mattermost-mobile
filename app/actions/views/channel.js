@@ -184,34 +184,35 @@ export function loadThreadIfNecessary(rootId, channelId) {
 export function selectInitialChannel(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        const {channels, myMembers} = state.entities.channels;
         const {currentUserId} = state.entities.users;
-        const currentChannel = channels[currentChannelId];
         const {myPreferences} = state.entities.preferences;
+        const lastChannelId = state.views.team.lastChannelForTeam[teamId] || '';
+        const lastChannel = channels[lastChannelId];
 
-        const isDMVisible = currentChannel && currentChannel.type === General.DM_CHANNEL &&
-            isDirectChannelVisible(currentUserId, myPreferences, currentChannel);
+        const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&
+            isDirectChannelVisible(currentUserId, myPreferences, lastChannel);
 
-        const isGMVisible = currentChannel && currentChannel.type === General.GM_CHANNEL &&
-            isGroupChannelVisible(myPreferences, currentChannel);
+        const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
+            isGroupChannelVisible(myPreferences, lastChannel);
 
-        if (currentChannel && myMembers[currentChannelId] &&
-            (currentChannel.team_id === teamId || isDMVisible || isGMVisible)) {
-            await handleSelectChannel(currentChannelId)(dispatch, getState);
+        if (lastChannelId && myMembers[lastChannelId] &&
+            (lastChannel.team_id === teamId || isDMVisible || isGMVisible)) {
+            handleSelectChannel(lastChannelId)(dispatch, getState);
             return;
         }
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         if (channel) {
             dispatch(setChannelDisplayName(''));
-            await handleSelectChannel(channel.id)(dispatch, getState);
+            handleSelectChannel(channel.id)(dispatch, getState);
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
             const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
             dispatch(setChannelDisplayName(''));
-            await handleSelectChannel(firstChannel.id)(dispatch, getState);
+            handleSelectChannel(firstChannel.id)(dispatch, getState);
         }
     };
 }
@@ -220,13 +221,15 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
+        selectChannel(channelId)(dispatch, getState);
+        dispatch(setChannelLoading(false));
+
         dispatch({
             type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
             teamId: currentTeamId,
             channelId
         });
         getChannelStats(channelId)(dispatch, getState);
-        selectChannel(channelId)(dispatch, getState);
     };
 }
 

@@ -74,6 +74,7 @@ export default class ChannelDrawer extends PureComponent {
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        this.mounted = true;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -94,6 +95,7 @@ export default class ChannelDrawer extends PureComponent {
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        this.mounted = false;
     }
 
     handleAndroidBack = () => {
@@ -106,7 +108,9 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     closeChannelDrawer = () => {
-        this.setState({openDrawer: false});
+        if (this.mounted) {
+            this.setState({openDrawer: false});
+        }
     };
 
     drawerSwiperRef = (ref) => {
@@ -121,7 +125,7 @@ export default class ChannelDrawer extends PureComponent {
             this.closeLeftHandle = null;
         }
 
-        if (this.state.openDrawer) {
+        if (this.state.openDrawer && this.mounted) {
             // The state doesn't get updated if you swipe to close
             this.setState({
                 openDrawer: false
@@ -133,7 +137,7 @@ export default class ChannelDrawer extends PureComponent {
         if (!this.closeLeftHandle) {
             this.closeLeftHandle = InteractionManager.createInteractionHandle();
         }
-    }
+    };
 
     handleDrawerOpen = () => {
         if (this.state.openDrawerOffset !== 0) {
@@ -151,7 +155,7 @@ export default class ChannelDrawer extends PureComponent {
             this.openLeftHandle = InteractionManager.createInteractionHandle();
         }
 
-        if (!this.state.openDrawer) {
+        if (!this.state.openDrawer && this.mounted) {
             // The state doesn't get updated if you swipe to open
             this.setState({
                 openDrawer: true
@@ -188,9 +192,11 @@ export default class ChannelDrawer extends PureComponent {
     openChannelDrawer = () => {
         this.props.blurPostTextBox();
 
-        this.setState({
-            openDrawer: true
-        });
+        if (this.mounted) {
+            this.setState({
+                openDrawer: true
+            });
+        }
     };
 
     selectChannel = (channel) => {
@@ -207,18 +213,17 @@ export default class ChannelDrawer extends PureComponent {
             viewChannel
         } = actions;
 
-        markChannelAsRead(channel.id, currentChannelId);
-
-        if (channel.id !== currentChannelId) {
-            setChannelLoading();
-            viewChannel(currentChannelId);
-            setChannelDisplayName(channel.display_name);
-        }
+        setChannelLoading();
+        setChannelDisplayName(channel.display_name);
 
         this.closeChannelDrawer();
 
         InteractionManager.runAfterInteractions(() => {
             handleSelectChannel(channel.id);
+            markChannelAsRead(channel.id, currentChannelId);
+            if (channel.id !== currentChannelId) {
+                viewChannel(currentChannelId);
+            }
         });
     };
 
@@ -368,6 +373,7 @@ export default class ChannelDrawer extends PureComponent {
                 onOpenStart={this.handleDrawerOpenStart}
                 onOpen={this.handleDrawerOpen}
                 onClose={this.handleDrawerClose}
+                onCloseStart={this.handleDrawerCloseStart}
                 captureGestures='open'
                 type='static'
                 acceptTap={true}

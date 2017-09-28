@@ -14,6 +14,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawer from 'app/components/channel_drawer';
+import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import OfflineIndicator from 'app/components/offline_indicator';
@@ -227,6 +228,7 @@ class Channel extends PureComponent {
                             navigator={navigator}
                         />
                     </View>
+                    <ChannelLoader theme={theme}/>
                     <PostTextbox
                         ref={this.attachPostTextbox}
                         onChangeText={this.handleDraftChanged}

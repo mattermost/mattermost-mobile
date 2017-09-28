@@ -13,7 +13,6 @@ import {
 
 import {General} from 'mattermost-redux/constants';
 
-import ChannelLoader from 'app/components/channel_loader';
 import FormattedText from 'app/components/formatted_text';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
@@ -29,22 +28,26 @@ class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired
         }).isRequired,
-        channel: PropTypes.object.isRequired,
-        channelIsLoading: PropTypes.bool,
+        channelDisplayName: PropTypes.string,
+        channelId: PropTypes.string.isRequired,
         channelIsRefreshing: PropTypes.bool,
         channelRefreshingFailed: PropTypes.bool,
+        channelType: PropTypes.string,
+        currentUserId: PropTypes.string,
         intl: intlShape.isRequired,
+        lastViewedAt: PropTypes.number,
         loadingPosts: PropTypes.bool,
-        myMember: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         posts: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
+        totalMessageCount: PropTypes.number,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
+        posts: [],
         loadingPosts: false,
-        postVisibility: 0
+        postVisibility: 30
     };
 
     constructor(props) {
@@ -53,44 +56,42 @@ class ChannelPostList extends PureComponent {
         this.state = {
             retryMessageHeight: new Animated.Value(0),
             visiblePosts: this.getVisiblePosts(props),
-            showLoadMore: false
+            showLoadMore: props.posts.length >= props.postVisibility
         };
     }
 
     componentDidMount() {
-        const {channel, posts, channelRefreshingFailed} = this.props;
+        const {channelId} = this.props;
         this.mounted = true;
-        this.loadPosts(this.props.channel.id);
-        this.shouldMarkChannelAsLoaded(posts.length, channel.total_msg_count === 0, channelRefreshingFailed);
+        this.loadPosts(channelId);
     }
 
     componentWillReceiveProps(nextProps) {
-        const {channel: currentChannel} = this.props;
-        const {channel: nextChannel, channelRefreshingFailed: nextChannelRefreshingFailed, posts: nextPosts} = nextProps;
+        const {channelId: currentChannelId} = this.props;
+        const {channelId: nextChannelId, channelRefreshingFailed: nextChannelRefreshingFailed, posts: nextPosts} = nextProps;
 
-        if (currentChannel.id !== nextChannel.id) {
+        if (currentChannelId !== nextChannelId) {
             // Load the posts when the channel actually changes
-            this.loadPosts(nextChannel.id);
+            this.loadPosts(nextChannelId);
         }
 
-        if (nextChannelRefreshingFailed && this.state.channelLoaded && nextPosts.length) {
+        if (nextChannelRefreshingFailed && nextPosts.length) {
             this.toggleRetryMessage();
         } else if (!nextChannelRefreshingFailed || !nextPosts.length) {
             this.toggleRetryMessage(false);
         }
 
-        this.shouldMarkChannelAsLoaded(nextPosts.length, nextChannel.total_msg_count === 0, nextChannelRefreshingFailed);
-
         const showLoadMore = nextProps.posts.length >= nextProps.postVisibility;
-        this.setState({
-            showLoadMore
-        });
+        let visiblePosts = this.state.visiblePosts;
 
         if (nextProps.posts !== this.props.posts || nextProps.postVisibility !== this.props.postVisibility) {
-            this.setState({
-                visiblePosts: this.getVisiblePosts(nextProps)
-            });
+            visiblePosts = this.getVisiblePosts(nextProps);
         }
+
+        this.setState({
+            showLoadMore,
+            visiblePosts
+        });
     }
 
     componentWillUnmount() {
@@ -98,17 +99,7 @@ class ChannelPostList extends PureComponent {
     }
 
     getVisiblePosts = (props) => {
-        return props.posts.slice(0, props.posts.postVisibility);
-    }
-
-    shouldMarkChannelAsLoaded = (postsCount, channelHasMessages, channelRefreshingFailed) => {
-        if (postsCount || channelHasMessages || channelRefreshingFailed) {
-            this.channelLoaded();
-        }
-    };
-
-    channelLoaded = () => {
-        this.setState({channelLoaded: true});
+        return props.posts.slice(0, props.postVisibility);
     };
 
     toggleRetryMessage = (show = true) => {
@@ -120,19 +111,17 @@ class ChannelPostList extends PureComponent {
     };
 
     goToThread = (post) => {
-        const {actions, channel, intl, navigator, theme} = this.props;
-        const channelId = post.channel_id;
+        const {actions, channelId, channelDisplayName, channelType, intl, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
         actions.loadThreadIfNecessary(post.root_id, channelId);
         actions.selectPost(rootId);
 
         let title;
-        if (channel.type === General.DM_CHANNEL) {
+        if (channelType === General.DM_CHANNEL) {
             title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
         } else {
-            const channelName = channel.display_name;
-            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName});
+            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: channelDisplayName});
         }
 
         const options = {
@@ -161,29 +150,28 @@ class ChannelPostList extends PureComponent {
 
     loadMorePosts = () => {
         if (this.state.showLoadMore) {
-            const {actions, channel} = this.props;
-            actions.increasePostVisibility(channel.id);
+            const {actions, channelId} = this.props;
+            actions.increasePostVisibility(channelId);
         }
     };
 
     loadPosts = (channelId) => {
-        this.setState({channelLoaded: false});
         this.props.actions.loadPostsIfNecessaryWithRetry(channelId);
     };
 
     loadPostsRetry = () => {
-        this.loadPosts(this.props.channel.id);
+        this.loadPosts(this.props.channelId);
     };
 
     render() {
         const {
             actions,
-            channel,
-            channelIsLoading,
+            channelId,
             channelIsRefreshing,
             channelRefreshingFailed,
+            currentUserId,
+            lastViewedAt,
             loadingPosts,
-            myMember,
             navigator,
             posts,
             theme
@@ -203,8 +191,6 @@ class ChannelPostList extends PureComponent {
                     theme={theme}
                 />
             );
-        } else if (channelIsLoading) {
-            component = <ChannelLoader theme={theme}/>;
         } else {
             component = (
                 <PostList
@@ -216,12 +202,11 @@ class ChannelPostList extends PureComponent {
                     onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
                     indicateNewMessages={true}
-                    currentUserId={myMember.user_id}
-                    lastViewedAt={myMember.last_viewed_at}
-                    channel={channel}
+                    currentUserId={currentUserId}
+                    lastViewedAt={lastViewedAt}
+                    channelId={channelId}
                     navigator={navigator}
                     refreshing={channelIsRefreshing}
-                    channelIsLoading={channelIsLoading}
                 />
             );
         }
