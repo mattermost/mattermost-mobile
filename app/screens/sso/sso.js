@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
+    Platform,
     Text,
     View,
     WebView
@@ -20,7 +21,7 @@ import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const jsCode = 'window.postMessage(document.body.innerText)';
+const jsCode = "setTimeout(function() { postMessage(document.body.innerText, '*')})";
 
 class SSO extends PureComponent {
     static propTypes = {
@@ -114,9 +115,15 @@ class SSO extends PureComponent {
     };
 
     onNavigationStateChange = (navState) => {
-        const {url, navigationType} = navState;
+        const {url, navigationType, loading} = navState;
+        let submitted = false;
+        if (Platform.OS === 'ios') {
+            submitted = url.includes(this.completedUrl) && navigationType === 'formsubmit';
+        } else {
+            submitted = url.includes(this.completedUrl) && loading;
+        }
 
-        if (url.includes(this.completedUrl) && navigationType === 'formsubmit') {
+        if (submitted) {
             this.setState({onMessage: this.onMessage});
         }
     };
@@ -125,7 +132,7 @@ class SSO extends PureComponent {
         const url = event.nativeEvent.url;
 
         if (url.includes(this.completedUrl)) {
-            CookieManager.get(this.props.serverUrl, (err, res) => {
+            CookieManager.get(this.props.serverUrl).then((res) => {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
@@ -146,6 +153,10 @@ class SSO extends PureComponent {
         }
     };
 
+    renderLoading = () => {
+        return <Loading/>;
+    };
+
     render() {
         const {theme} = this.props;
         const {error, renderWebView} = this.state;
@@ -153,9 +164,7 @@ class SSO extends PureComponent {
 
         let content;
         if (!renderWebView) {
-            content = (
-                <Loading/>
-            );
+            content = this.renderLoading();
         } else if (error) {
             content = (
                 <View style={style.errorContainer}>
@@ -172,7 +181,7 @@ class SSO extends PureComponent {
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
-                    renderLoading={() => (<Loading/>)}
+                    renderLoading={this.renderLoading}
                     onMessage={this.state.onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
