@@ -289,6 +289,7 @@ class CreateChannel extends PureComponent {
                                     placeholder={{id: 'channel_modal.purposeEx', defaultMessage: 'E.g.: "A channel to file bugs and improvements"'}}
                                     placeholderTextColor={changeOpacity('#000', 0.5)}
                                     multiline={true}
+                                    blurOnSubmit={false}
                                     underlineColorAndroid='transparent'
                                 />
                             </View>
@@ -322,6 +323,7 @@ class CreateChannel extends PureComponent {
                                     placeholder={{id: 'channel_modal.headerEx', defaultMessage: 'E.g.: "[Link Title](http://example.com)"'}}
                                     placeholderTextColor={changeOpacity('#000', 0.5)}
                                     multiline={true}
+                                    blurOnSubmit={false}
                                     onFocus={this.scrollToEnd}
                                     underlineColorAndroid='transparent'
                                 />
