@@ -120,23 +120,25 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const {link} = this.props;
         const {linkLoaded} = this.state;
 
-        let imageUrl;
-        if (isImageLink(link)) {
-            imageUrl = link;
-        } else if (isYoutubeLink(link)) {
-            const videoId = youTubeVideoId(link);
-            imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-        }
+        if (link) {
+            let imageUrl;
+            if (isImageLink(link)) {
+                imageUrl = link;
+            } else if (isYoutubeLink(link)) {
+                const videoId = youTubeVideoId(link);
+                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            }
 
-        if (imageUrl && !linkLoaded) {
-            Image.getSize(imageUrl, (width, height) => {
-                if (!this.mounted) {
-                    return;
-                }
+            if (imageUrl && !linkLoaded) {
+                Image.getSize(imageUrl, (width, height) => {
+                    if (!this.mounted) {
+                        return;
+                    }
 
-                const dimensions = this.calculateDimensions(width, height);
-                this.setState({...dimensions, linkLoaded: true});
-            }, () => null);
+                    const dimensions = this.calculateDimensions(width, height);
+                    this.setState({...dimensions, linkLoaded: true});
+                }, () => null);
+            }
         }
     };
 
@@ -244,14 +246,20 @@ export default class PostBodyAdditionalContent extends PureComponent {
     render() {
         const {link, openGraphData} = this.props;
         const {linkLoaded, linkLoadError} = this.state;
-        const isYouTube = isYoutubeLink(link);
-        const isImage = isImageLink(link);
-        const isOpenGraph = Boolean(openGraphData && openGraphData.description);
+        let isYouTube = false;
+        let isImage = false;
+        let isOpenGraph = false;
 
-        if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
-            const embed = this.generateToggleableEmbed(isImage, isYouTube);
-            if (embed && (linkLoaded || isYouTube)) {
-                return embed;
+        if (link) {
+            isYouTube = isYoutubeLink(link);
+            isImage = isImageLink(link);
+            isOpenGraph = Boolean(openGraphData && openGraphData.description);
+
+            if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
+                const embed = this.generateToggleableEmbed(isImage, isYouTube);
+                if (embed && (linkLoaded || isYouTube)) {
+                    return embed;
+                }
             }
         }
 
