@@ -82,7 +82,7 @@ export default class SwitchTeams extends React.PureComponent {
             badgeCount
         } = this.state;
 
-        if (searching || teamMembers.length < 2) {
+        if (searching || Object.keys(teamMembers).length < 2) {
             return null;
         }
 
