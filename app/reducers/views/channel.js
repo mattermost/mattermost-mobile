@@ -176,8 +176,6 @@ function drafts(state = {}, action) {
 
 function loading(state = false, action) {
     switch (action.type) {
-    case ChannelTypes.SELECT_CHANNEL:
-        return false;
     case ViewTypes.SET_CHANNEL_LOADER:
         return action.loading;
     default:

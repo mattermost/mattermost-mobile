@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Keyboard,
+    InteractionManager,
     Platform,
     SectionList,
     StyleSheet,
@@ -97,13 +98,13 @@ class Search extends Component {
         const recentLenght = recent.length;
         const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
 
-        if (shouldScroll && !this.state.isFocused) {
-            setTimeout(() => {
+        if (shouldScroll) {
+            requestAnimationFrame(() => {
                 this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                     animated: true,
                     offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght + 1) * RECENT_SEPARATOR_HEIGHT)
                 });
-            }, 200);
+            });
         }
     }
 
@@ -430,6 +431,8 @@ class Search extends Component {
                 viewChannel
             } = actions;
 
+            setChannelLoading();
+
             const channel = channels.find((c) => c.id === channelId);
             let displayName = '';
 
@@ -440,10 +443,11 @@ class Search extends Component {
             this.props.navigator.dismissModal({animationType: 'none'});
 
             markChannelAsRead(channelId, currentChannelId);
-            setChannelLoading();
             viewChannel(channelId, currentChannelId);
             setChannelDisplayName(displayName);
-            handleSelectChannel(channelId);
+            InteractionManager.runAfterInteractions(() => {
+                handleSelectChannel(channelId);
+            });
         }
     };
 

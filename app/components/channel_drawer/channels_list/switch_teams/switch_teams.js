@@ -16,7 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SwitchTeams extends React.PureComponent {
     static propTypes = {
-        currentTeam: PropTypes.object.isRequired,
+        currentTeam: PropTypes.object,
         searching: PropTypes.bool.isRequired,
         showTeams: PropTypes.func.isRequired,
         teamMembers: PropTypes.object.isRequired,
@@ -77,6 +77,10 @@ export default class SwitchTeams extends React.PureComponent {
             teamMembers,
             theme
         } = this.props;
+
+        if (!currentTeam) {
+            return null;
+        }
 
         const {
             badgeCount

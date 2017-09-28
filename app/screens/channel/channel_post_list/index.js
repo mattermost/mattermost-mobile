@@ -8,6 +8,7 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {getConnection} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
@@ -40,16 +41,21 @@ function makeMapStateToProps() {
             channelRefreshingFailed = false;
         }
 
+        const channel = getChannel(state, {id: channelId});
+
         return {
-            channel: getChannel(state, {id: channelId}),
-            channelIsLoading: state.views.channel.loading,
+            channelId,
             channelIsRefreshing,
             channelRefreshingFailed,
+            currentUserId: getCurrentUserId(state),
+            channelType: channel.type,
+            channelDisplayName: channel.display_name,
             posts,
             postVisibility: state.views.channel.postVisibility[channelId],
             loadingPosts: state.views.channel.loadingPosts[channelId],
-            myMember: getMyCurrentChannelMembership(state),
+            LastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
             networkOnline,
+            totalMessageCount: channel.total_msg_count,
             theme: getTheme(state),
             ...ownProps
         };
