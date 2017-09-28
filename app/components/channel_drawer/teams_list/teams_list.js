@@ -45,14 +45,14 @@ class TeamsList extends PureComponent {
     }
 
     selectTeam = (team) => {
-        const {actions, closeChannelDrawer, currentTeamId} = this.props;
-        if (team.id === currentTeamId) {
-            closeChannelDrawer();
-        } else {
-            actions.handleTeamChange(team);
+        requestAnimationFrame(() => {
+            const {actions, closeChannelDrawer, currentTeamId} = this.props;
+            if (team.id !== currentTeamId) {
+                actions.handleTeamChange(team);
+            }
 
             closeChannelDrawer();
-        }
+        });
     };
 
     goToSelectTeam = () => {
@@ -125,11 +125,7 @@ class TeamsList extends PureComponent {
             <View style={styles.teamWrapper}>
                 <TouchableHighlight
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                    onPress={() => {
-                        setTimeout(() => {
-                            preventDoubleTap(this.selectTeam, this, item);
-                        }, 100);
-                    }}
+                    onPress={() => preventDoubleTap(this.selectTeam, this, item)}
                 >
                     <View style={styles.teamContainer}>
                         <View style={styles.teamIconContainer}>

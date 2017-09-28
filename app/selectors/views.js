@@ -3,7 +3,7 @@
 
 import {createSelector} from 'reselect';
 
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 const emptyDraft = {
     draft: '',
@@ -20,9 +20,9 @@ function getThreadDrafts(state) {
 
 export const getCurrentChannelDraft = createSelector(
     getChannelDrafts,
-    getCurrentChannel,
-    (drafts, currentChannel) => {
-        return drafts[currentChannel.id] || emptyDraft;
+    getCurrentChannelId,
+    (drafts, currentChannelId) => {
+        return drafts[currentChannelId] || emptyDraft;
     }
 );
 
