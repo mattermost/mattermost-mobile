@@ -43,10 +43,6 @@ export default class PostList extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
-    static defaultProps = {
-        channel: {}
-    };
-
     getPostsWithDates = () => {
         const {posts, indicateNewMessages, currentUserId, lastViewedAt, showLoadMore} = this.props;
         const list = addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});

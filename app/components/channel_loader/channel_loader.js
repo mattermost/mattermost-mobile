@@ -1,7 +1,6 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {connect} from 'react-redux';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -10,14 +9,13 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {getTheme} from 'app/selectors/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const GRADIENT_START = 0.05;
 const GRADIENT_MIDDLE = 0.1;
 const GRADIENT_END = 0.01;
 
-class ChannelLoader extends PureComponent {
+export default class ChannelLoader extends PureComponent {
     static propTypes = {
         channelIsLoading: PropTypes.bool.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -127,14 +125,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-function mapStateToProps(state, ownProps) {
-    const {deviceWidth} = state.device.dimension;
-    return {
-        ...ownProps,
-        channelIsLoading: state.views.channel.loading,
-        deviceWidth,
-        theme: getTheme(state)
-    };
-}
-
-export default connect(mapStateToProps)(ChannelLoader);
