@@ -47,12 +47,11 @@ class TeamsList extends PureComponent {
     selectTeam = (team) => {
         requestAnimationFrame(() => {
             const {actions, closeChannelDrawer, currentTeamId} = this.props;
-            if (team.id === currentTeamId) {
-                closeChannelDrawer();
-            } else {
+            if (team.id !== currentTeamId) {
                 actions.handleTeamChange(team);
-                closeChannelDrawer();
             }
+
+            closeChannelDrawer();
         });
     };
 

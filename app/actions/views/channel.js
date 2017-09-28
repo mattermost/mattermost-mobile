@@ -196,7 +196,6 @@ export function selectInitialChannel(teamId) {
         const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
             isGroupChannelVisible(myPreferences, lastChannel);
 
-        // console.warn('selectInitialChannel', lastChannelId)
         if (lastChannelId && myMembers[lastChannelId] &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)) {
             handleSelectChannel(lastChannelId)(dispatch, getState);

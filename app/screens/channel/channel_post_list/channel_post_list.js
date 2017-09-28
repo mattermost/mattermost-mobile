@@ -150,7 +150,6 @@ class ChannelPostList extends PureComponent {
 
     loadMorePosts = () => {
         if (this.state.showLoadMore) {
-            // console.warn('loadMorePosts');
             const {actions, channelId} = this.props;
             actions.increasePostVisibility(channelId);
         }
