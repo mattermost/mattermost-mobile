@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     StyleSheet,
     View
 } from 'react-native';
@@ -34,9 +35,10 @@ export default class Autocomplete extends PureComponent {
     };
 
     render() {
-        const container = this.props.isSearch ? style.searchContainer : style.container;
+        const searchContainer = this.props.isSearch ? style.searchContainer : null;
+        const container = this.props.isSearch ? null : style.container;
         return (
-            <View>
+            <View style={searchContainer}>
                 <View style={container}>
                     <AtMention
                         cursorPosition={this.state.cursorPosition}
@@ -70,7 +72,14 @@ const style = StyleSheet.create({
         elevation: 5,
         flex: 1,
         position: 'absolute',
-        top: 0,
+        ...Platform.select({
+            android: {
+                top: 47
+            },
+            ios: {
+                top: 64
+            }
+        }),
         left: 0,
         right: 0,
         maxHeight: 250,
