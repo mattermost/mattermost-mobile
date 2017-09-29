@@ -16,7 +16,6 @@ import TeamsList from './teams_list';
 
 function mapStateToProps(state, ownProps) {
     return {
-        canCreateTeams: false,
         joinableTeams: getJoinableTeams(state),
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),

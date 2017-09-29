@@ -24,7 +24,6 @@ class TeamsList extends PureComponent {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired
         }).isRequired,
-        canCreateTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
