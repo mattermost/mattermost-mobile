@@ -54,7 +54,7 @@ export default function configureAppStore(initialState) {
             const channel = {};
 
             for (const channelKey of Object.keys(inboundState.channel)) {
-                if (channelViewBlackList[channelKey]) {
+                if (!channelViewBlackList[channelKey]) {
                     channel[channelKey] = inboundState.channel[channelKey];
                 }
             }
