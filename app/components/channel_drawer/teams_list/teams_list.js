@@ -86,15 +86,10 @@ class TeamsList extends PureComponent {
     }
 
     renderItem = ({item}) => {
-        const {currentTeamId, currentUrl, theme} = this.props;
-
         return (
             <TeamsListItem
-                currentTeamId={currentTeamId}
-                currentUrl={currentUrl}
                 selectTeam={this.selectTeam}
                 team={item}
-                theme={theme}
             />
         );
     };
