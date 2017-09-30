@@ -182,7 +182,7 @@ class Client {
   }
   
   func requestPosts(forChannel: String) {
-    self.httpGET("/v4/channels/\(forChannel)/posts", handler: {json in
+    self.httpGET("/v4/channels/\(forChannel)/posts?per_page=30", handler: {json in
       if let jsonDict = json as? [String: Any] {
         if let jsonPosts = jsonDict["posts"] as? [String: Any] {
           for jsonPostKV in jsonPosts {

@@ -10,6 +10,7 @@ import Foundation
 import WatchKit
 
 class PostAuthorRowController: NSObject {
+  var userId: String?
   @IBOutlet weak var label: WKInterfaceLabel?
 }
 
@@ -31,7 +32,7 @@ struct ChannelContext {
 class ChannelController: WKInterfaceController {
   @IBOutlet weak var table: WKInterfaceTable?
 
-  private var firstUpdate = true
+  private var firstUpdateTime: Date?
   private var postWatcher: Int64?
   private var userWatcher: Int64?
   private var channelWatcher: Int64?
@@ -45,10 +46,12 @@ class ChannelController: WKInterfaceController {
   override func willActivate() {
     super.willActivate()
     
+    self.firstUpdateTime = nil
+
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
-    self.postWatcher = client.watchPosts(self.update)
-    self.userWatcher = client.watchUsers(self.update)
-    self.channelWatcher = client.watchChannels(self.update)
+    self.postWatcher = client.watchPosts(self.updatePosts)
+    self.userWatcher = client.watchUsers(self.updateUsers)
+    self.channelWatcher = client.watchChannels(self.updateTitle)
     client.requestPosts(forChannel: self.context!.channelId)
     if client.channels[self.context!.channelId] == nil && self.context!.teamId != nil {
       client.requestChannels(forTeam: self.context!.teamId!)
@@ -64,7 +67,7 @@ class ChannelController: WKInterfaceController {
     super.didDeactivate()
   }
 
-  func update() {
+  func updateTitle() {
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
 
     let channel = client.channels[self.context!.channelId]
@@ -73,6 +76,10 @@ class ChannelController: WKInterfaceController {
     } else {
       self.setTitle(channel?.displayName ?? "")
     }
+  }
+
+  func updatePosts() {
+    let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
 
     var posts: [Post] = []
     var rowTypes: [String] = []
@@ -119,11 +126,7 @@ class ChannelController: WKInterfaceController {
     for i in 0..<rowTypes.count {
       switch self.table?.rowController(at: i) {
       case let rowController as PostAuthorRowController:
-        if let user = client.users[rowPosts[i].userId] {
-          rowController.label!.setText("@" + user.username)
-        } else {
-          rowController.label!.setText(rowPosts[i].userId)
-        }
+        rowController.userId = rowPosts[i].userId
       case let rowController as PostBodyRowController:
         rowController.post = rowPosts[i]
         rowController.accent?.setHidden(rowPosts[i].rootId == "")
@@ -136,16 +139,39 @@ class ChannelController: WKInterfaceController {
       }
     }
     
-    if self.firstUpdate && rowTypes.count > 0 {
-      self.table?.scrollToRow(at: rowTypes.count-1)
-      self.firstUpdate = false
-    }
+    self.updateUsers()
     
+    if rowTypes.count > 0 {
+      if self.firstUpdateTime == nil {
+        self.firstUpdateTime = Date()
+      }
+
+      if self.firstUpdateTime!.timeIntervalSinceNow > -1.0 {
+        self.table?.scrollToRow(at: rowTypes.count-1)
+      }
+    }
+
     if missingUsers.count > 0 {
       client.requestUsers(withIds: Array(missingUsers))
     }
   }
   
+  func updateUsers() {
+    let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
+
+    if let table = self.table {
+      for i in 0..<table.numberOfRows {
+        if let rowController = table.rowController(at: i) as? PostAuthorRowController {
+          if let user = client.users[rowController.userId!] {
+            rowController.label!.setText("@" + user.username)
+          } else {
+            rowController.label!.setText(rowController.userId)
+          }
+        }
+      }
+    }
+  }
+
   override func table(_ table: WKInterfaceTable, didSelectRowAt rowIndex: Int) {
     if let controller = table.rowController(at: rowIndex) as? PostBodyRowController {
       self.pushController(withName: "ThreadController", context: ThreadContext(postId: controller.post!.id))

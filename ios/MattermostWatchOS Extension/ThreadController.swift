@@ -16,7 +16,7 @@ struct ThreadContext {
 class ThreadController: WKInterfaceController {
   @IBOutlet weak var table: WKInterfaceTable?
   
-  private var firstUpdate = true
+  private var firstUpdateTime: Date?
   private var postWatcher: Int64?
   private var userWatcher: Int64?
   private(set) var context: ThreadContext?
@@ -29,9 +29,11 @@ class ThreadController: WKInterfaceController {
   override func willActivate() {
     super.willActivate()
     
+    self.firstUpdateTime = nil
+
     let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
-    self.postWatcher = client.watchPosts(self.update)
-    self.userWatcher = client.watchUsers(self.update)
+    self.postWatcher = client.watchPosts(self.updatePosts)
+    self.userWatcher = client.watchUsers(self.updateUsers)
     client.requestPosts(forThread: self.context!.postId)
   }
   
@@ -43,7 +45,7 @@ class ThreadController: WKInterfaceController {
     super.didDeactivate()
   }
   
-  func update() {
+  func updatePosts() {
     var posts: [Post] = []
     var rowTypes: [String] = []
     var rowPosts: [Post] = []
@@ -93,11 +95,7 @@ class ThreadController: WKInterfaceController {
     for i in 0..<rowTypes.count {
       switch self.table?.rowController(at: i) {
       case let rowController as PostAuthorRowController:
-        if let user = client.users[rowPosts[i].userId] {
-          rowController.label!.setText("@" + user.username)
-        } else {
-          rowController.label!.setText(rowPosts[i].userId)
-        }
+        rowController.userId = rowPosts[i].userId
       case let rowController as PostBodyRowController:
         rowController.label!.setText(rowPosts[i].message)
       case let rowController as PostTimeRowController:
@@ -108,13 +106,36 @@ class ThreadController: WKInterfaceController {
       }
     }
     
-    if self.firstUpdate && rowTypes.count > 0 {
-      self.table?.scrollToRow(at: rowTypes.count-1)
-      self.firstUpdate = false
+    self.updateUsers()
+
+    if rowTypes.count > 0 {
+      if self.firstUpdateTime == nil {
+        self.firstUpdateTime = Date()
+      }
+
+      if self.firstUpdateTime!.timeIntervalSinceNow > -1.0 {
+        self.table?.scrollToRow(at: rowTypes.count-1)
+      }
     }
 
     if missingUsers.count > 0 {
       client.requestUsers(withIds: Array(missingUsers))
+    }
+  }
+
+  func updateUsers() {
+    let client = (WKExtension.shared().delegate as! ExtensionDelegate).client
+
+    if let table = self.table {
+      for i in 0..<table.numberOfRows {
+        if let rowController = table.rowController(at: i) as? PostAuthorRowController {
+          if let user = client.users[rowController.userId!] {
+            rowController.label!.setText("@" + user.username)
+          } else {
+            rowController.label!.setText(rowController.userId)
+          }
+        }
+      }
     }
   }
 
