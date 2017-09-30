@@ -1,0 +1,13 @@
+{
+    "aps": {
+        "alert": {
+            "body": "This is a message that can be replied to.",
+        },
+        "category": "CAN_REPLY",
+        "thread-id": "5280"
+    },
+    
+    "team_id": "rcgiyftm7jyrxnma1osd8zswby",
+    "channel_id": "zw43c5ttrjyu9dg7jnudwuz6bw",
+    "post_id": "omwr5k5mfjgmjxeszs18wzoisa",
+}
