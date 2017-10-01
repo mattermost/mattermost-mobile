@@ -20,9 +20,7 @@ import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import LocalConfig from 'assets/config';
-
-let jsCode = 'window.postMessage(document.body.innerText);';
+const postMessageJS = 'window.postMessage(document.body.innerText);';
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -36,10 +34,6 @@ const oneLoginFormScalingJS = `
         submitButton.addEventListener('click', resetPadding);
     })();
 `;
-
-if (LocalConfig.EnableOneLoginScalingFix) {
-    jsCode = `${oneLoginFormScalingJS}${jsCode}`;
-}
 
 class SSO extends PureComponent {
     static propTypes = {
@@ -61,7 +55,8 @@ class SSO extends PureComponent {
         this.state = {
             error: null,
             renderWebView: false,
-            onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null
+            onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null,
+            jsCode: postMessageJS
         };
 
         switch (props.ssoType) {
@@ -135,8 +130,18 @@ class SSO extends PureComponent {
     onNavigationStateChange = (navState) => {
         const {url, navigationType} = navState;
 
+        const nextState = {};
+
+        if (url.includes('.onelogin.com')) {
+            nextState.jsCode = `${oneLoginFormScalingJS}${postMessageJS}`;
+        }
+
         if (url.includes(this.completedUrl) && navigationType === 'formsubmit') {
-            this.setState({onMessage: this.onMessage});
+            nextState.onMessage = this.onMessage;
+        }
+
+        if (Object.keys(nextState).length) {
+            this.setState(nextState);
         }
     };
 
@@ -167,7 +172,7 @@ class SSO extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {error, renderWebView} = this.state;
+        const {error, renderWebView, onMessage, jsCode} = this.state;
         const style = getStyleSheet(theme);
 
         let content;
@@ -192,7 +197,7 @@ class SSO extends PureComponent {
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={() => (<Loading/>)}
-                    onMessage={this.state.onMessage}
+                    onMessage={onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                 />

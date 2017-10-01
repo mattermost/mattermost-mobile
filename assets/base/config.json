@@ -17,7 +17,5 @@
             "xhr": false,
             "console": true
         }
-    },
-
-    "EnableOneLoginScalingFix": false
+    }
 }
