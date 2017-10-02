@@ -3,8 +3,9 @@
 
 import {connect} from 'react-redux';
 
+import {Preferences} from 'mattermost-redux/constants';
 import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
-import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getBool, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 import {isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
@@ -21,6 +22,7 @@ function makeMapStateToProps() {
         const commentedOnUser = getUser(state, ownProps.commentedOnUserId);
         const user = getUser(state, post.user_id);
         const teammateNameDisplay = getTeammateNameDisplaySetting(state);
+        const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
 
         return {
             ...ownProps,
@@ -30,6 +32,7 @@ function makeMapStateToProps() {
             displayName: displayUsername(user, teammateNameDisplay),
             enablePostUsernameOverride: config.EnablePostUsernameOverride === 'true',
             fromWebHook: post.props && post.props.from_webhook === 'true',
+            militaryTime,
             isPendingOrFailedPost: isPostPendingOrFailed(post),
             isSystemMessage: isSystemMessage(post),
             overrideUsername: post.props && post.props.override_username,

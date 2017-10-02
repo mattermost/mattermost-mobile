@@ -28,12 +28,13 @@ export default class PostHeader extends PureComponent {
         fromWebHook: PropTypes.bool,
         isPendingOrFailedPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
-        shouldRenderReplyButton: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        militaryTime: PropTypes.bool,
         onPress: PropTypes.func,
         onViewUserProfile: PropTypes.func,
         overrideUsername: PropTypes.string,
         renderReplies: PropTypes.bool,
+        shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
@@ -142,6 +143,7 @@ export default class PostHeader extends PureComponent {
             createAt,
             isPendingOrFailedPost,
             isSearchResult,
+            militaryTime,
             onPress,
             renderReplies,
             shouldRenderReplyButton,
@@ -159,14 +161,20 @@ export default class PostHeader extends PureComponent {
                         <FormattedDate value={createAt}/>
                     </Text>
                     <Text style={style.time}>
-                        <FormattedTime value={createAt}/>
+                        <FormattedTime
+                            hour12={!militaryTime}
+                            value={createAt}
+                        />
                     </Text>
                 </View>
             );
         } else {
             dateComponent = (
                 <Text style={style.time}>
-                    <FormattedTime value={createAt}/>
+                    <FormattedTime
+                        hour12={!militaryTime}
+                        value={createAt}
+                    />
                 </Text>
             );
         }
