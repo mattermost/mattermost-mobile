@@ -39,11 +39,11 @@ export default class OptionsContext extends PureComponent {
     };
 
     handleHideUnderlay = () => {
-        this.props.toggleSelected(false);
+        this.props.toggleSelected(false, this.props.actions.length > 0);
     };
 
     handleShowUnderlay = () => {
-        this.props.toggleSelected(true);
+        this.props.toggleSelected(true, this.props.actions.length > 0);
     };
 
     render() {

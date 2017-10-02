@@ -281,15 +281,17 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        const {isSearchResult} = this.props;
+        const {isSearchResult, tooltipVisible} = this.props;
 
-        if (!isSearchResult) {
+        if (!isSearchResult && !tooltipVisible) {
             preventDoubleTap(this.goToUserProfile, this);
         }
     };
 
-    toggleSelected = (selected) => {
-        this.props.actions.setPostTooltipVisible(selected);
+    toggleSelected = (selected, tooltip) => {
+        if (tooltip) {
+            this.props.actions.setPostTooltipVisible(selected);
+        }
         this.setState({selected});
     };
 
