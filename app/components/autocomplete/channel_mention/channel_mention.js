@@ -149,7 +149,7 @@ export default class ChannelMention extends Component {
             completedDraft += postDraft.substring(cursorPosition);
         }
 
-        onChangeText(completedDraft);
+        onChangeText(completedDraft, true);
         this.setState({
             active: false,
             mentionComplete: true,
@@ -199,8 +199,8 @@ export default class ChannelMention extends Component {
     };
 
     render() {
-        if (!this.state.active) {
-            // If we are not in an active state return null so nothing is rendered
+        if (!this.state.active || this.state.mentionComplete) {
+            // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
         }
