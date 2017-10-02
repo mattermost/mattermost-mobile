@@ -39,6 +39,7 @@ class PostBody extends PureComponent {
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
+        isPostEphemeral: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
         message: PropTypes.string,
@@ -133,6 +134,7 @@ class PostBody extends PureComponent {
             isFailed,
             isFlagged,
             isPending,
+            isPostEphemeral,
             isSearchResult,
             isSystemMessage,
             intl,
@@ -157,7 +159,7 @@ class PostBody extends PureComponent {
         const isPendingOrFailedPost = isPending || isFailed;
 
         // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost && !isSearchResult) {
+        if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
@@ -219,7 +221,6 @@ class PostBody extends PureComponent {
                 body = (
                     <TouchableHighlight
                         onHideUnderlay={this.handleHideUnderlay}
-                        onLongPress={this.show}
                         onPress={onPress}
                         onShowUnderlay={this.handleShowUnderlay}
                         underlayColor='transparent'
