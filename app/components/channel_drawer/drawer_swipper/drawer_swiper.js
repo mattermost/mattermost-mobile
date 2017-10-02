@@ -53,10 +53,12 @@ export default class DrawerSwiper extends PureComponent {
             theme
         } = this.props;
 
+        const initialPage = React.Children.count(children) - 1;
+
         return (
             <Swiper
                 ref='swiper'
-                initialPage={1}
+                initialPage={initialPage}
                 onIndexChanged={this.swiperPageSelected}
                 paginationStyle={style.pagination}
                 width={deviceWidth - openDrawerOffset}
