@@ -56,7 +56,8 @@ class SSO extends PureComponent {
             error: null,
             renderWebView: false,
             onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null,
-            jsCode: postMessageJS
+            jsCode: postMessageJS,
+            scalePagesToFit: false
         };
 
         switch (props.ssoType) {
@@ -134,6 +135,7 @@ class SSO extends PureComponent {
 
         if (url.includes('.onelogin.com')) {
             nextState.jsCode = `${oneLoginFormScalingJS}${postMessageJS}`;
+            nextState.scalePagesToFit = true;
         }
 
         if (url.includes(this.completedUrl) && navigationType === 'formsubmit') {
@@ -172,7 +174,7 @@ class SSO extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {error, renderWebView, onMessage, jsCode} = this.state;
+        const {error, renderWebView, onMessage, jsCode, scalePagesToFit} = this.state;
         const style = getStyleSheet(theme);
 
         let content;
@@ -192,7 +194,7 @@ class SSO extends PureComponent {
                     source={{uri: this.loginUrl}}
                     javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
-                    scalesPageToFit={false}
+                    scalesPageToFit={scalePagesToFit}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
