@@ -146,7 +146,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
         const {posts, postsInChannel} = state.entities.posts;
         const postsIds = postsInChannel[channelId];
 
-        const time = new Date().getTime();
+        const time = Date.now();
 
         let received;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
