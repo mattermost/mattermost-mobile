@@ -8,7 +8,7 @@ import {flagPost, unflagPost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isPostFlagged, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import {getTheme} from 'app/selectors/preferences';
 
@@ -27,6 +27,7 @@ function mapStateToProps(state, ownProps) {
         isFailed: post.failed,
         isFlagged: isPostFlagged(post.id, myPreferences),
         isPending: post.id === post.pending_post_id,
+        isPostEphemeral: isPostEphemeral(post),
         isSystemMessage: isSystemMessage(post),
         message: post.message,
         theme: getTheme(state)
