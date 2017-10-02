@@ -41,7 +41,7 @@ function makeMapStateToProps() {
             channelRefreshingFailed = false;
         }
 
-        const channel = getChannel(state, {id: channelId});
+        const channel = getChannel(state, {id: channelId}) || {};
 
         return {
             channelId,
