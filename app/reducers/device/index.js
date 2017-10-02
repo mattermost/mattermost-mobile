@@ -8,11 +8,13 @@ import dimension from './dimension';
 import isTablet from './is_tablet';
 import orientation from './orientation';
 import statusBarHeight from './status_bar';
+import websocket from './websocket';
 
 export default combineReducers({
     connection,
     dimension,
     isTablet,
     orientation,
-    statusBarHeight
+    statusBarHeight,
+    websocket
 });

@@ -13,7 +13,7 @@ import {
     leaveChannel as serviceLeaveChannel,
     unfavoriteChannel
 } from 'mattermost-redux/actions/channels';
-import {getPosts, getPostsWithRetry, getPostsBefore, getPostsSinceWithRetry, getPostThread} from 'mattermost-redux/actions/posts';
+import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
@@ -30,6 +30,8 @@ import {
 } from 'mattermost-redux/utils/channel_utils';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
+
+const MAX_POST_TRIES = 3;
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
@@ -139,23 +141,55 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 }
 
 export function loadPostsIfNecessaryWithRetry(channelId) {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState();
         const {posts, postsInChannel} = state.entities.posts;
-
         const postsIds = postsInChannel[channelId];
 
-        // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+        const time = Date.now();
+
+        let received;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
-            getPostsWithRetry(channelId)(dispatch, getState);
-            return;
+            // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+            received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        } else {
+            const {lastConnectAt} = state.device.websocket;
+            const lastGetPosts = state.views.channel.lastGetPosts[channelId];
+
+            let since;
+            if (lastGetPosts && lastGetPosts < lastConnectAt) {
+                // Since the websocket disconnected, we may have missed some posts since then
+                since = lastGetPosts;
+            } else {
+                // Trust that we've received all posts since the last time the websocket disconnected
+                // so just get any that have changed since the latest one we've received
+                const postsForChannel = postsIds.map((id) => posts[id]);
+                since = getLastCreateAt(postsForChannel);
+            }
+
+            received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
         }
 
-        const postsForChannel = postsIds.map((id) => posts[id]);
-        const latestPostTime = getLastCreateAt(postsForChannel);
-
-        getPostsSinceWithRetry(channelId, latestPostTime)(dispatch, getState);
+        if (received) {
+            dispatch({
+                type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
+                channelId,
+                time
+            });
+        }
     };
+}
+
+async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
+    for (let i = 0; i < maxTries; i++) {
+        const posts = await action(dispatch, getState);
+
+        if (posts) {
+            return posts;
+        }
+    }
+
+    return null;
 }
 
 export function loadFilesForPostIfNecessary(postId) {
@@ -307,7 +341,7 @@ export function closeGMChannel(channel) {
 
 export function refreshChannelWithRetry(channelId) {
     return (dispatch, getState) => {
-        getPostsWithRetry(channelId)(dispatch, getState);
+        return retryGetPostsAction(getPosts(channelId), dispatch, getState);
     };
 }
 

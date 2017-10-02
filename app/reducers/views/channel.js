@@ -246,6 +246,19 @@ function loadingPosts(state = {}, action) {
     }
 }
 
+function lastGetPosts(state = {}, action) {
+    switch (action.type) {
+    case ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME:
+        return {
+            ...state,
+            [action.channelId]: action.time
+        };
+
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
@@ -253,5 +266,6 @@ export default combineReducers({
     refreshing,
     tooltipVisible,
     postVisibility,
-    loadingPosts
+    loadingPosts,
+    lastGetPosts
 });
