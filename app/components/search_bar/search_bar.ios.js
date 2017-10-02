@@ -71,7 +71,7 @@ export default class SearchBarIos extends PureComponent {
     };
 
     onDelete = () => {
-        this.props.onChangeText('');
+        this.props.onChangeText('', true);
     };
 
     onFocus = () => {
