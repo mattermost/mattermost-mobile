@@ -1,20 +1,19 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    ListView,
+    SectionList,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {sortByUsername} from 'mattermost-redux/utils/user_utils';
-
+import AtMentionItem from 'app/components/autocomplete/at_mention_item';
+import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import FormattedText from 'app/components/formatted_text';
-import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -22,26 +21,27 @@ import {RequestStatus} from 'mattermost-redux/constants';
 const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
 const FROM_REGEX = /\bfrom:\s*(\S*)$/i;
 
-export default class AtMention extends Component {
+export default class AtMention extends PureComponent {
     static propTypes = {
-        currentUserId: PropTypes.string.isRequired,
-        currentChannelId: PropTypes.string.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
-        cursorPosition: PropTypes.number.isRequired,
-        defaultChannel: PropTypes.object.isRequired,
-        autocompleteUsers: PropTypes.object.isRequired,
-        isSearch: PropTypes.bool,
-        postDraft: PropTypes.string,
-        requestStatus: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired,
-        onChangeText: PropTypes.func.isRequired,
         actions: PropTypes.shape({
             autocompleteUsers: PropTypes.func.isRequired
-        })
+        }).isRequired,
+        autocompleteUsers: PropTypes.object.isRequired,
+        currentChannelId: PropTypes.string,
+        currentTeamId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
+        cursorPosition: PropTypes.number.isRequired,
+        defaultChannel: PropTypes.object,
+        hasMatch: PropTypes.bool,
+        isSearch: PropTypes.bool,
+        matchTerm: PropTypes.string,
+        onChangeText: PropTypes.func.isRequired,
+        postDraft: PropTypes.string,
+        requestStatus: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        autocompleteUsers: {},
         defaultChannel: {},
         postDraft: '',
         isSearch: false
@@ -50,74 +50,74 @@ export default class AtMention extends Component {
     constructor(props) {
         super(props);
 
-        const ds = new ListView.DataSource({
-            sectionHeaderHasChanged: (s1, s2) => s1 !== s2,
-            rowHasChanged: (r1, r2) => r1 !== r2
-        });
-        const data = {};
         this.state = {
-            active: false,
-            dataSource: ds.cloneWithRowsAndSections(data)
+            sections: []
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        const {isSearch} = nextProps;
-        const regex = isSearch ? FROM_REGEX : AT_MENTION_REGEX;
-        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(regex);
+        const {autocompleteUsers, hasMatch, isSearch, matchTerm, requestStatus} = nextProps;
 
-        if (!match || this.state.mentionComplete) {
+        if (!hasMatch || this.state.mentionComplete) {
             this.setState({
-                active: false,
-                matchTerm: null,
-                mentionComplete: false
+                mentionComplete: false,
+                sections: []
             });
             return;
         }
 
-        const matchTerm = isSearch ? match[1] : match[2];
-        if (matchTerm !== this.state.matchTerm) {
-            this.setState({
-                matchTerm
-            });
-
+        if (matchTerm !== this.props.matchTerm && requestStatus !== RequestStatus.STARTED) {
             const {currentTeamId, currentChannelId} = this.props;
             this.props.actions.autocompleteUsers(matchTerm, currentTeamId, currentChannelId);
         }
 
-        if (nextProps.requestStatus !== RequestStatus.STARTED) {
-            const membersInChannel = this.filter(nextProps.autocompleteUsers.inChannel, matchTerm) || [];
-            const membersOutOfChannel = this.filter(nextProps.autocompleteUsers.outChannel, matchTerm) || [];
-
-            let data = {};
+        if (requestStatus === RequestStatus.NOT_STARTED || requestStatus === RequestStatus.SUCCESS) {
+            const sections = [];
             if (isSearch) {
-                data = {members: membersInChannel.concat(membersOutOfChannel).sort(sortByUsername)};
+                const {teamMembers} = autocompleteUsers;
+                sections.push({
+                    id: 'mobile.suggestion.members',
+                    defaultMessage: 'Members',
+                    data: teamMembers,
+                    key: 'teamMembers'
+                });
             } else {
-                if (membersInChannel.length > 0) {
-                    data = Object.assign({}, data, {inChannel: membersInChannel});
+                const {inChannel, outChannel} = autocompleteUsers;
+                if (inChannel.length > 0) {
+                    sections.push({
+                        id: 'suggestion.mention.members',
+                        defaultMessage: 'Channel Members',
+                        data: inChannel,
+                        key: 'inChannel'
+                    });
                 }
                 if (this.checkSpecialMentions(matchTerm) && !isSearch) {
-                    data = Object.assign({}, data, {specialMentions: this.getSpecialMentions()});
+                    sections.push({
+                        id: 'suggestion.mention.special',
+                        defaultMessage: 'Special Mentions',
+                        data: this.getSpecialMentions(),
+                        key: 'special',
+                        renderItem: this.renderSpecialMentions
+                    });
                 }
-                if (membersOutOfChannel.length > 0) {
-                    data = Object.assign({}, data, {notInChannel: membersOutOfChannel});
+                if (outChannel.length > 0) {
+                    sections.push({
+                        id: 'suggestion.mention.nonmembers',
+                        defaultMessage: 'Not in Channel',
+                        data: outChannel,
+                        key: 'outChannel'
+                    });
                 }
             }
 
             this.setState({
-                active: data.hasOwnProperty('inChannel') || data.hasOwnProperty('specialMentions') || data.hasOwnProperty('notInChannel') || data.hasOwnProperty('members'),
-                dataSource: this.state.dataSource.cloneWithRowsAndSections(data)
+                sections
             });
         }
     }
 
-    filter = (profiles, matchTerm) => {
-        const {isSearch} = this.props;
-        return profiles.filter((p) => {
-            return ((p.id !== this.props.currentUserId || isSearch) && (
-                p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
-        });
+    keyExtractor = (item) => {
+        return item.id || item;
     };
 
     getSpecialMentions = () => {
@@ -159,81 +159,34 @@ export default class AtMention extends Component {
         }
 
         onChangeText(completedDraft, true);
-        this.setState({
-            active: false,
-            mentionComplete: true
-        });
+        this.setState({mentionComplete: true});
     };
 
-    renderSectionHeader = (sectionData, sectionId) => {
-        const style = getStyleFromTheme(this.props.theme);
-
-        const localization = {
-            inChannel: {
-                id: 'suggestion.mention.members',
-                defaultMessage: 'Channel Members'
-            },
-            notInChannel: {
-                id: 'suggestion.mention.nonmembers',
-                defaultMessage: 'Not in Channel'
-            },
-            specialMentions: {
-                id: 'suggestion.mention.special',
-                defaultMessage: 'Special Mentions'
-            },
-            members: {
-                id: 'mobile.suggestion.members',
-                defaultMessage: 'Members'
-            }
-        };
-
+    renderSectionHeader = ({section}) => {
         return (
-            <View style={style.sectionWrapper}>
-                <View style={style.section}>
-                    <FormattedText
-                        id={localization[sectionId].id}
-                        defaultMessage={localization[sectionId].defaultMessage}
-                        style={style.sectionText}
-                    />
-                </View>
-            </View>
+            <AutocompleteSectionHeader
+                id={section.id}
+                defaultMessage={section.defaultMessage}
+                theme={this.props.theme}
+            />
         );
     };
 
-    renderRow = (data, sectionId) => {
-        if (sectionId === 'specialMentions') {
-            return this.renderSpecialMentions(data);
-        }
-
-        const style = getStyleFromTheme(this.props.theme);
-        const hasFullName = data.first_name.length > 0 && data.last_name.length > 0;
-
+    renderItem = ({item}) => {
         return (
-            <TouchableOpacity
-                onPress={() => this.completeMention(data.username)}
-                style={style.row}
-            >
-                <View style={style.rowPicture}>
-                    <ProfilePicture
-                        user={data}
-                        theme={this.props.theme}
-                        size={20}
-                        status={null}
-                    />
-                </View>
-                <Text style={style.rowUsername}>{`@${data.username}`}</Text>
-                {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
-                {hasFullName && <Text style={style.rowFullname}>{`${data.first_name} ${data.last_name}`}</Text>}
-            </TouchableOpacity>
+            <AtMentionItem
+                onPress={this.completeMention}
+                userId={item}
+            />
         );
     };
 
-    renderSpecialMentions = (data) => {
+    renderSpecialMentions = ({item}) => {
         const style = getStyleFromTheme(this.props.theme);
 
         return (
             <TouchableOpacity
-                onPress={() => this.completeMention(data.completeHandle)}
+                onPress={this.completeMention.bind(this, item.completeHandle)}
                 style={style.row}
             >
                 <View style={style.rowPicture}>
@@ -243,13 +196,13 @@ export default class AtMention extends Component {
                     />
                 </View>
                 <Text style={style.textWrapper}>
-                    <Text style={style.rowUsername}>{`@${data.completeHandle}`}</Text>
+                    <Text style={style.rowUsername}>{`@${item.completeHandle}`}</Text>
                     <Text style={style.rowUsername}>{' - '}</Text>
                     <FormattedText
-                        id={data.id}
-                        defaultMessage={data.defaultMessage}
-                        values={data.values}
-                        style={[style.rowFullname, {flex: 1}]}
+                        id={item.id}
+                        defaultMessage={item.defaultMessage}
+                        values={item.values}
+                        style={style.rowFullname}
                     />
                 </Text>
             </TouchableOpacity>
@@ -257,42 +210,26 @@ export default class AtMention extends Component {
     };
 
     render() {
-        const {autocompleteUsers, requestStatus} = this.props;
-        if ((!this.state.active && (requestStatus !== RequestStatus.STARTED || requestStatus !== RequestStatus.SUCCESS)) || this.state.mentionComplete) {
+        const {isSearch, theme} = this.props;
+        const {mentionComplete, sections} = this.state;
+
+        if (sections.length === 0 || mentionComplete) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
         }
 
-        const style = getStyleFromTheme(this.props.theme);
-
-        if (
-            !autocompleteUsers.inChannel &&
-            !autocompleteUsers.outChannel &&
-            requestStatus === RequestStatus.STARTED
-        ) {
-            return (
-                <View style={style.loading}>
-                    <FormattedText
-                        id='analytics.chart.loading'
-                        defaultMessage='Loading...'
-                        style={style.sectionText}
-                    />
-                </View>
-            );
-        }
+        const style = getStyleFromTheme(theme);
 
         return (
-            <ListView
+            <SectionList
                 keyboardShouldPersistTaps='always'
-                style={style.listView}
-                enableEmptySections={true}
-                dataSource={this.state.dataSource}
+                keyExtractor={this.keyExtractor}
+                style={[style.listView, isSearch ? style.search : null]}
+                sections={sections}
+                renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
-                renderRow={this.renderRow}
-                renderFooter={this.renderFooter}
-                pageSize={10}
-                initialListSize={10}
+                initialNumToRender={10}
             />
         );
     }
@@ -300,37 +237,8 @@ export default class AtMention extends Component {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        section: {
-            justifyContent: 'center',
-            paddingLeft: 8,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
-        },
-        sectionText: {
-            fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            paddingVertical: 7
-        },
-        sectionWrapper: {
-            backgroundColor: theme.centerChannelBg
-        },
         listView: {
-            flex: 1,
             backgroundColor: theme.centerChannelBg
-        },
-        loading: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingVertical: 20,
-            backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 0
         },
         row: {
             paddingVertical: 8,
@@ -360,12 +268,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         rowFullname: {
             color: theme.centerChannelColor,
+            flex: 1,
             opacity: 0.6
         },
         textWrapper: {
             flex: 1,
             flexWrap: 'wrap',
             paddingRight: 8
+        },
+        search: {
+            height: 250
         }
     };
 });

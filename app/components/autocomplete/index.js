@@ -68,10 +68,14 @@ const style = StyleSheet.create({
         overflow: 'hidden'
     },
     searchContainer: {
-        backgroundColor: 'white',
         elevation: 5,
         flex: 1,
+        left: 0,
+        maxHeight: 250,
+        overflow: 'hidden',
         position: 'absolute',
+        right: 0,
+        zIndex: 5,
         ...Platform.select({
             android: {
                 top: 47
@@ -79,11 +83,6 @@ const style = StyleSheet.create({
             ios: {
                 top: 64
             }
-        }),
-        left: 0,
-        right: 0,
-        maxHeight: 250,
-        overflow: 'hidden',
-        zIndex: 5
+        })
     }
 });
