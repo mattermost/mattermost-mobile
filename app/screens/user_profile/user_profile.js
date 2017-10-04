@@ -115,7 +115,7 @@ class UserProfile extends PureComponent {
                 >
                     <View style={style.top}>
                         <ProfilePicture
-                            user={user}
+                            userId={user.id}
                             size={150}
                             statusBorderWidth={6}
                             statusSize={40}

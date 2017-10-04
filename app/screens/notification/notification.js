@@ -80,7 +80,7 @@ export default class Notification extends PureComponent {
         } else if (user) {
             icon = (
                 <ProfilePicture
-                    user={user}
+                    userId={user.id}
                     size={IMAGE_SIZE}
                 />
             );
