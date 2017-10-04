@@ -51,7 +51,7 @@ function PostProfilePicture(props) {
 
         return (
             <ProfilePicture
-                user={user}
+                userId={user.id}
                 size={PROFILE_PICTURE_SIZE}
             />
         );
@@ -60,7 +60,7 @@ function PostProfilePicture(props) {
     return (
         <TouchableOpacity onPress={onViewUserProfile}>
             <ProfilePicture
-                user={user}
+                userId={user.id}
                 size={PROFILE_PICTURE_SIZE}
             />
         </TouchableOpacity>

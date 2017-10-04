@@ -40,7 +40,7 @@ export default class UserListRow extends React.PureComponent {
                 selected={this.props.selected}
             >
                 <ProfilePicture
-                    user={this.props.user}
+                    userId={this.props.user.id}
                     size={32}
                 />
                 <View style={style.textContainer}>
