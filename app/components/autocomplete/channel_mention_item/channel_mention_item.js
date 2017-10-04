@@ -19,8 +19,9 @@ export default class ChannelMentionItem extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
-    completeMention = (username) => {
-        this.props.onPress(username);
+    completeMention = () => {
+        const {onPress, name} = this.props;
+        onPress(name);
     };
 
     render() {
@@ -36,7 +37,7 @@ export default class ChannelMentionItem extends PureComponent {
         return (
             <TouchableOpacity
                 key={channelId}
-                onPress={this.completeMention.bind(this, name)}
+                onPress={this.completeMention}
                 style={style.row}
             >
                 <Text style={style.rowDisplayName}>{displayName}</Text>

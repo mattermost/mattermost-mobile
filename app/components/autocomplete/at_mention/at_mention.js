@@ -3,41 +3,33 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    SectionList,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-
-import AtMentionItem from 'app/components/autocomplete/at_mention_item';
-import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
-import FormattedText from 'app/components/formatted_text';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {SectionList} from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
-const FROM_REGEX = /\bfrom:\s*(\S*)$/i;
+import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
+import AtMentionItem from 'app/components/autocomplete/at_mention_item';
+import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
+import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AtMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             autocompleteUsers: PropTypes.func.isRequired
         }).isRequired,
-        autocompleteUsers: PropTypes.object.isRequired,
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
-        currentUserId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
         defaultChannel: PropTypes.object,
-        hasMatch: PropTypes.bool,
+        inChannel: PropTypes.array,
         isSearch: PropTypes.bool,
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
+        outChannel: PropTypes.array,
         postDraft: PropTypes.string,
         requestStatus: PropTypes.string.isRequired,
+        teamMembers: PropTypes.array,
         theme: PropTypes.object.isRequired
     };
 
@@ -56,25 +48,31 @@ export default class AtMention extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {autocompleteUsers, hasMatch, isSearch, matchTerm, requestStatus} = nextProps;
-
-        if (!hasMatch || this.state.mentionComplete) {
+        const {inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
+        if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
+            // if the term changes but is null or the mention has been completed we render this component as null
             this.setState({
                 mentionComplete: false,
                 sections: []
             });
             return;
+        } else if (matchTerm === null) {
+            // if the terms did not change but is null then we don't need to do anything
+            return;
         }
 
         if (matchTerm !== this.props.matchTerm && requestStatus !== RequestStatus.STARTED) {
+            // if the term changed and we haven't made the request do that first
             const {currentTeamId, currentChannelId} = this.props;
-            this.props.actions.autocompleteUsers(matchTerm, currentTeamId, currentChannelId);
+            this.props.actions.autocompleteUsers(matchTerm, currentTeamId, isSearch ? currentChannelId : '');
+            return;
         }
 
-        if (requestStatus === RequestStatus.NOT_STARTED || requestStatus === RequestStatus.SUCCESS) {
+        if (requestStatus !== RequestStatus.STARTED &&
+            (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)) {
+            // if the request is complete and the term is not null we show the autocomplete
             const sections = [];
             if (isSearch) {
-                const {teamMembers} = autocompleteUsers;
                 sections.push({
                     id: 'mobile.suggestion.members',
                     defaultMessage: 'Members',
@@ -82,8 +80,7 @@ export default class AtMention extends PureComponent {
                     key: 'teamMembers'
                 });
             } else {
-                const {inChannel, outChannel} = autocompleteUsers;
-                if (inChannel.length > 0) {
+                if (inChannel.length) {
                     sections.push({
                         id: 'suggestion.mention.members',
                         defaultMessage: 'Channel Members',
@@ -91,7 +88,8 @@ export default class AtMention extends PureComponent {
                         key: 'inChannel'
                     });
                 }
-                if (this.checkSpecialMentions(matchTerm) && !isSearch) {
+
+                if (this.checkSpecialMentions(matchTerm)) {
                     sections.push({
                         id: 'suggestion.mention.special',
                         defaultMessage: 'Special Mentions',
@@ -100,7 +98,8 @@ export default class AtMention extends PureComponent {
                         renderItem: this.renderSpecialMentions
                     });
                 }
-                if (outChannel.length > 0) {
+
+                if (outChannel.length) {
                     sections.push({
                         id: 'suggestion.mention.nonmembers',
                         defaultMessage: 'Not in Channel',
@@ -149,7 +148,7 @@ export default class AtMention extends PureComponent {
 
         let completedDraft;
         if (isSearch) {
-            completedDraft = mentionPart.replace(FROM_REGEX, `from: ${mention} `);
+            completedDraft = mentionPart.replace(AT_MENTION_SEARCH_REGEX, `from: ${mention} `);
         } else {
             completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
         }
@@ -182,30 +181,15 @@ export default class AtMention extends PureComponent {
     };
 
     renderSpecialMentions = ({item}) => {
-        const style = getStyleFromTheme(this.props.theme);
-
         return (
-            <TouchableOpacity
-                onPress={this.completeMention.bind(this, item.completeHandle)}
-                style={style.row}
-            >
-                <View style={style.rowPicture}>
-                    <Icon
-                        name='users'
-                        style={style.rowIcon}
-                    />
-                </View>
-                <Text style={style.textWrapper}>
-                    <Text style={style.rowUsername}>{`@${item.completeHandle}`}</Text>
-                    <Text style={style.rowUsername}>{' - '}</Text>
-                    <FormattedText
-                        id={item.id}
-                        defaultMessage={item.defaultMessage}
-                        values={item.values}
-                        style={style.rowFullname}
-                    />
-                </Text>
-            </TouchableOpacity>
+            <SpecialMentionItem
+                completeHandle={item.completeHandle}
+                defaultMessage={item.defaultMessage}
+                id={item.id}
+                onPress={this.completeMention}
+                theme={this.props.theme}
+                values={item.values}
+            />
         );
     };
 
@@ -239,42 +223,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg
-        },
-        row: {
-            paddingVertical: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
-        },
-        rowIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 14
-        },
-        rowPicture: {
-            marginHorizontal: 8,
-            width: 20,
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        rowUsername: {
-            fontSize: 13,
-            color: theme.centerChannelColor
-        },
-        rowFullname: {
-            color: theme.centerChannelColor,
-            flex: 1,
-            opacity: 0.6
-        },
-        textWrapper: {
-            flex: 1,
-            flexWrap: 'wrap',
-            paddingRight: 8
         },
         search: {
             height: 250

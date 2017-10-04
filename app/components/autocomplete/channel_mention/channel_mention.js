@@ -5,28 +5,28 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {SectionList} from 'react-native';
 
+import {RequestStatus} from 'mattermost-redux/constants';
+
+import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {RequestStatus} from 'mattermost-redux/constants';
-
-const CHANNEL_MENTION_REGEX = /\B(~([^~\r\n]*))$/i;
-const CHANNEL_SEARCH_REGEX = /\b(?:in|channel):\s*(\S*)$/i;
 
 export default class ChannelMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             searchChannels: PropTypes.func.isRequired
         }).isRequired,
-        autocompleteChannels: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
-        hasMatch: PropTypes.bool,
         isSearch: PropTypes.bool,
         matchTerm: PropTypes.string,
+        myChannels: PropTypes.array,
+        otherChannels: PropTypes.array,
         onChangeText: PropTypes.func.isRequired,
         postDraft: PropTypes.string,
+        privateChannels: PropTypes.array,
+        publicChannels: PropTypes.array,
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -45,26 +45,33 @@ export default class ChannelMention extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {autocompleteChannels, hasMatch, isSearch, matchTerm, requestStatus} = nextProps;
+        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, requestStatus} = nextProps;
 
-        if (!hasMatch || this.state.mentionComplete) {
+        if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
+            // if the term changes but is null or the mention has been completed we render this component as null
             this.setState({
                 mentionComplete: false,
                 sections: []
             });
             return;
+        } else if (matchTerm === null) {
+            // if the terms did not change but is null then we don't need to do anything
+            return;
         }
 
         if (matchTerm !== this.props.matchTerm && requestStatus !== RequestStatus.STARTED) {
+            // if the term changed and we haven't made the request do that first
             const {currentTeamId} = this.props;
             this.props.actions.searchChannels(currentTeamId, matchTerm);
             return;
         }
 
-        if (requestStatus === RequestStatus.NOT_STARTED || requestStatus === RequestStatus.SUCCESS) {
+        if (requestStatus !== RequestStatus.STARTED &&
+            (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
+                privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels)) {
+            // if the request is complete and the term is not null we show the autocomplete
             const sections = [];
             if (isSearch) {
-                const {publicChannels, privateChannels} = autocompleteChannels;
                 if (publicChannels.length) {
                     sections.push({
                         id: 'suggestion.search.public',
@@ -83,8 +90,7 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
             } else {
-                const {myChannels, otherChannels} = autocompleteChannels;
-                if (myChannels.length > 0) {
+                if (myChannels.length) {
                     sections.push({
                         id: 'suggestion.mention.channels',
                         defaultMessage: 'My Channels',
@@ -93,7 +99,7 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (otherChannels.length > 0) {
+                if (otherChannels.length) {
                     sections.push({
                         id: 'suggestion.mention.morechannels',
                         defaultMessage: 'Other Channels',
@@ -116,7 +122,7 @@ export default class ChannelMention extends PureComponent {
         let completedDraft;
         if (isSearch) {
             const channelOrIn = mentionPart.includes('in:') ? 'in:' : 'channel:';
-            completedDraft = mentionPart.replace(CHANNEL_SEARCH_REGEX, `${channelOrIn} ${mention} `);
+            completedDraft = mentionPart.replace(CHANNEL_MENTION_SEARCH_REGEX, `${channelOrIn} ${mention} `);
         } else {
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }

@@ -6,53 +6,85 @@ import {createSelector} from 'reselect';
 import {General} from 'mattermost-redux/constants';
 import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {
-    getCurrentUser, getProfilesInCurrentChannel,
+    getCurrentUser, getCurrentUserId, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam
 } from 'mattermost-redux/selectors/entities/users';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {sortByUsername} from 'mattermost-redux/utils/user_utils';
 
-import {getCurrentUserLocale} from 'app/selectors/i18n';
+import * as Autocomplete from 'app/constants/autocomplete';
+import {getCurrentLocale} from 'app/selectors/i18n';
+
+export const getMatchTermForAtMention = (() => {
+    let lastMatchTerm = null;
+    let lastValue;
+    let lastIsSearch;
+    return (value, isSearch) => {
+        if (value !== lastValue || isSearch !== lastIsSearch) {
+            const regex = isSearch ? Autocomplete.AT_MENTION_SEARCH_REGEX : Autocomplete.AT_MENTION_REGEX;
+            const match = value.match(regex);
+            lastValue = value;
+            lastIsSearch = isSearch;
+            if (match) {
+                lastMatchTerm = isSearch ? match[1] : match[2];
+            } else {
+                lastMatchTerm = null;
+            }
+        }
+        return lastMatchTerm;
+    };
+})();
+
+export const getMatchTermForChannelMention = (() => {
+    let lastMatchTerm = null;
+    let lastValue;
+    let lastIsSearch;
+    return (value, isSearch) => {
+        if (value !== lastValue || isSearch !== lastIsSearch) {
+            const regex = isSearch ? Autocomplete.CHANNEL_MENTION_SEARCH_REGEX : Autocomplete.CHANNEL_MENTION_REGEX;
+            const match = value.match(regex);
+            lastValue = value;
+            lastIsSearch = isSearch;
+            if (match) {
+                lastMatchTerm = isSearch ? match[1] : match[2];
+            } else {
+                lastMatchTerm = null;
+            }
+        }
+        return lastMatchTerm;
+    };
+})();
 
 export const filterMembersInChannel = createSelector(
     getProfilesInCurrentChannel,
-    (state, opts) => opts,
-    (profilesInChannel, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    getCurrentUserId,
+    (state, matchTerm) => matchTerm,
+    (profilesInChannel, currentUserId, matchTerm) => {
         let profiles;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
             profiles = profilesInChannel.filter((p) => {
-                return ((p.id !== opts.currentUserId) && (
+                return ((p.id !== currentUserId) && (
                     p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
             });
         } else {
-            profiles = profilesInChannel.filter((p) => p.id !== opts.currentUserId);
+            profiles = profilesInChannel.filter((p) => p.id !== currentUserId);
         }
 
-        profiles.sort(sortByUsername).forEach((p) => {
-            array.push(p.id);
-        });
-
-        return array;
+        // already sorted
+        return profiles.map((p) => p.id);
     }
 );
 
 export const filterMembersNotInChannel = createSelector(
     getProfilesNotInCurrentChannel,
-    (state, opts) => opts,
-    (profilesNotInChannel, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    getCurrentUserId,
+    (state, matchTerm) => matchTerm,
+    (profilesNotInChannel, currentUserId, matchTerm) => {
         let profiles;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
             profiles = profilesNotInChannel.filter((p) => {
-                return ((p.id !== opts.currentUserId) && (
+                return ((p.id !== currentUserId) && (
                     p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
             });
@@ -60,50 +92,35 @@ export const filterMembersNotInChannel = createSelector(
             profiles = profilesNotInChannel;
         }
 
-        profiles.sort(sortByUsername).forEach((p) => {
-            array.push(p.id);
-        });
-
-        return array;
+        return profiles.map((p) => p.id);
     }
 );
 
 export const filterMembersInCurrentTeam = createSelector(
     getProfilesInCurrentTeam,
     getCurrentUser,
-    (state, opts) => opts,
-    (profilesInTeam, currentUser, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    (state, matchTerm) => matchTerm,
+    (profilesInTeam, currentUser, matchTerm) => {
+        // FIXME: We need to include the currentUser here as is not in profilesInTeam on the redux store
         let profiles;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
-            profiles = profilesInTeam.concat(currentUser).filter((p) => {
+            profiles = [...profilesInTeam, currentUser].filter((p) => {
                 return (p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm));
             });
         } else {
-            profiles = profilesInTeam.concat(currentUser);
+            profiles = [...profilesInTeam, currentUser];
         }
 
-        profiles.sort(sortByUsername).forEach((p) => {
-            array.push(p.id);
-        });
-
-        return array;
+        return profiles.sort(sortByUsername).map((p) => p.id);
     }
 );
 
 export const filterMyChannels = createSelector(
     getMyChannels,
     (state, opts) => opts,
-    (myChannels, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    (myChannels, matchTerm) => {
         let channels;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
                 return (c.type === General.OPEN_CHANNEL || c.type === General.PRIVATE_CHANNEL) &&
@@ -115,24 +132,15 @@ export const filterMyChannels = createSelector(
             });
         }
 
-        // this channels are already sorted by the selector
-        channels.forEach((c) => {
-            array.push(c.id);
-        });
-
-        return array;
+        return channels.map((c) => c.id);
     }
 );
 
 export const filterOtherChannels = createSelector(
     getOtherChannels,
-    (state, opts) => opts,
-    (otherChannels, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    (state, matchTerm) => matchTerm,
+    (otherChannels, matchTerm) => {
         let channels;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
             channels = otherChannels.filter((c) => {
                 return (c.name.startsWith(matchTerm) || c.display_name.startsWith(matchTerm));
@@ -141,26 +149,17 @@ export const filterOtherChannels = createSelector(
             channels = otherChannels;
         }
 
-        // this channels are already sorted by the selector
-        channels.forEach((c) => {
-            array.push(c.id);
-        });
-
-        return array;
+        return channels.map((c) => c.id);
     }
 );
 
 export const filterPublicChannels = createSelector(
     getMyChannels,
     getOtherChannels,
-    getCurrentUserLocale,
-    (state, opts) => opts,
-    (myChannels, otherChannels, locale, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    getCurrentLocale,
+    (state, matchTerm) => matchTerm,
+    (myChannels, otherChannels, locale, matchTerm) => {
         let channels;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
                 return c.type === General.OPEN_CHANNEL &&
@@ -174,23 +173,15 @@ export const filterPublicChannels = createSelector(
             }).concat(otherChannels);
         }
 
-        channels.sort(sortChannelsByDisplayName.bind(null, locale)).forEach((c) => {
-            array.push(c.id);
-        });
-
-        return array;
+        return channels.sort(sortChannelsByDisplayName.bind(null, locale)).map((c) => c.id);
     }
 );
 
 export const filterPrivateChannels = createSelector(
     getMyChannels,
-    (state, opts) => opts,
-    (myChannels, opts) => {
-        const {array} = opts;
-        array.splice(0, array.length);
-
+    (state, matchTerm) => matchTerm,
+    (myChannels, matchTerm) => {
         let channels;
-        const matchTerm = opts.matchTerm;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
                 return c.type === General.PRIVATE_CHANNEL &&
@@ -202,11 +193,6 @@ export const filterPrivateChannels = createSelector(
             });
         }
 
-        // this channels are already sorted by the selector
-        channels.forEach((c) => {
-            array.push(c.id);
-        });
-
-        return array;
+        return channels.map((c) => c.id);
     }
 );

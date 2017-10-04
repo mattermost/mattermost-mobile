@@ -6,36 +6,22 @@ import {connect} from 'react-redux';
 
 import {searchChannels} from 'mattermost-redux/actions/channels';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     filterMyChannels,
     filterOtherChannels,
     filterPublicChannels,
-    filterPrivateChannels
+    filterPrivateChannels,
+    getMatchTermForChannelMention
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelMention from './channel_mention';
 
-const CHANNEL_MENTION_REGEX = /\B(~([^~\r\n]*))$/i;
-const CHANNEL_SEARCH_REGEX = /\b(?:in|channel):\s*(\S*)$/i;
-
-const myChannels = [];
-const otherChannels = [];
-const publicChannels = [];
-const privateChannels = [];
-
-const autocompleteChannels = {
-    myChannels,
-    otherChannels,
-    publicChannels,
-    privateChannels
-};
-
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch, rootId} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
-    const regex = isSearch ? CHANNEL_SEARCH_REGEX : CHANNEL_MENTION_REGEX;
 
     let postDraft;
     if (isSearch) {
@@ -52,30 +38,28 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
-    const match = postDraft.substring(0, cursorPosition).match(regex);
-    let matchTerm = null;
-    if (match) {
-        matchTerm = isSearch ? match[1] : match[2];
-    }
+    const value = postDraft.substring(0, cursorPosition);
+    const matchTerm = getMatchTermForChannelMention(value, isSearch);
 
-    const opts = {
-        matchTerm,
-        isSearch
-    };
-
+    let myChannels;
+    let otherChannels;
+    let publicChannels;
+    let privateChannels;
     if (isSearch) {
-        filterPublicChannels(state, {...opts, array: publicChannels});
-        filterPrivateChannels(state, {...opts, array: privateChannels});
+        publicChannels = filterPublicChannels(state, matchTerm);
+        privateChannels = filterPrivateChannels(state, matchTerm);
     } else {
-        filterMyChannels(state, {...opts, array: myChannels});
-        filterOtherChannels(state, {...opts, array: otherChannels});
+        myChannels = filterMyChannels(state, matchTerm);
+        otherChannels = filterOtherChannels(state, matchTerm);
     }
 
     return {
         ...ownProps,
-        autocompleteChannels,
-        currentTeamId: state.entities.teams.currentTeamId,
-        hasMatch: match !== null,
+        myChannels,
+        otherChannels,
+        publicChannels,
+        privateChannels,
+        currentTeamId: getCurrentTeamId(state),
         matchTerm,
         postDraft,
         requestStatus: state.requests.channels.getChannels.status,

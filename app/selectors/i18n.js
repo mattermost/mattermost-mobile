@@ -11,7 +11,7 @@ import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 export const getCurrentUserLocale = createSelector(
     getCurrentUser,
     (currentUser) => {
-        return currentUser ? currentUser.locale : 'en';
+        return currentUser ? currentUser.locale : '';
     }
 );
 

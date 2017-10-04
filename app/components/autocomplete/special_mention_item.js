@@ -8,54 +8,58 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-import ProfilePicture from 'app/components/profile_picture';
+import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-export default class AtMentionItem extends PureComponent {
+export default class SpecialMentionItem extends PureComponent {
     static propTypes = {
-        firstName: PropTypes.string,
-        lastName: PropTypes.string,
+        completeHandle: PropTypes.string.isRequired,
+        defaultMessage: PropTypes.string.isRequired,
+        id: PropTypes.string.isRequired,
         onPress: PropTypes.func.isRequired,
-        userId: PropTypes.string.isRequired,
-        username: PropTypes.string,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        values: PropTypes.object
     };
 
     completeMention = () => {
-        const {onPress, username} = this.props;
-        onPress(username);
+        const {onPress, completeHandle} = this.props;
+        onPress(completeHandle);
     };
 
     render() {
         const {
-            firstName,
-            lastName,
-            userId,
-            username,
-            theme
+            defaultMessage,
+            id,
+            completeHandle,
+            theme,
+            values
         } = this.props;
 
         const style = getStyleFromTheme(theme);
-        const hasFullName = firstName.length > 0 && lastName.length > 0;
 
         return (
             <TouchableOpacity
-                key={userId}
                 onPress={this.completeMention}
                 style={style.row}
             >
                 <View style={style.rowPicture}>
-                    <ProfilePicture
-                        userId={userId}
-                        theme={theme}
-                        size={20}
-                        status={null}
+                    <Icon
+                        name='users'
+                        style={style.rowIcon}
                     />
                 </View>
-                <Text style={style.rowUsername}>{`@${username}`}</Text>
-                {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
-                {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
+                <Text style={style.textWrapper}>
+                    <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
+                    <Text style={style.rowUsername}>{' - '}</Text>
+                    <FormattedText
+                        id={id}
+                        defaultMessage={defaultMessage}
+                        values={values}
+                        style={style.rowFullname}
+                    />
+                </Text>
             </TouchableOpacity>
         );
     }
@@ -80,13 +84,23 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center'
         },
+        rowIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.7),
+            fontSize: 14
+        },
         rowUsername: {
             fontSize: 13,
             color: theme.centerChannelColor
         },
         rowFullname: {
             color: theme.centerChannelColor,
+            flex: 1,
             opacity: 0.6
+        },
+        textWrapper: {
+            flex: 1,
+            flexWrap: 'wrap',
+            paddingRight: 8
         }
     };
 });

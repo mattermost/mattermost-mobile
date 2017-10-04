@@ -6,35 +6,21 @@ import {connect} from 'react-redux';
 
 import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     filterMembersInChannel,
     filterMembersNotInChannel,
-    filterMembersInCurrentTeam
+    filterMembersInCurrentTeam,
+    getMatchTermForAtMention
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'app/selectors/preferences';
 
 import AtMention from './at_mention';
 
-const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
-const FROM_REGEX = /\bfrom:\s*(\S*)$/i;
-
-const inChannel = [];
-const outChannel = [];
-const teamMembers = [];
-
-const autocompleteProfiles = {
-    inChannel,
-    outChannel,
-    teamMembers
-};
-
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch, rootId} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
-    const currentUserId = getCurrentUserId(state);
-    const regex = isSearch ? FROM_REGEX : AT_MENTION_REGEX;
 
     let postDraft;
     if (isSearch) {
@@ -51,34 +37,28 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
-    const match = postDraft.substring(0, cursorPosition).match(regex);
-    let matchTerm = null;
-    if (match) {
-        matchTerm = isSearch ? match[1] : match[2];
-    }
+    const value = postDraft.substring(0, cursorPosition);
+    const matchTerm = getMatchTermForAtMention(value, isSearch);
 
-    const opts = {
-        matchTerm,
-        currentUserId,
-        isSearch
-    };
-
+    let teamMembers;
+    let inChannel;
+    let outChannel;
     if (isSearch) {
-        filterMembersInCurrentTeam(state, {...opts, array: teamMembers});
+        teamMembers = filterMembersInCurrentTeam(state, matchTerm);
     } else {
-        filterMembersInChannel(state, {...opts, array: inChannel});
-        filterMembersNotInChannel(state, {...opts, array: outChannel});
+        inChannel = filterMembersInChannel(state, matchTerm);
+        outChannel = filterMembersNotInChannel(state, matchTerm);
     }
 
     return {
-        currentUserId,
-        currentChannelId: isSearch ? '' : currentChannelId,
-        currentTeamId: state.entities.teams.currentTeamId,
+        currentChannelId,
+        currentTeamId: getCurrentTeamId(state),
         defaultChannel: getDefaultChannel(state),
-        hasMatch: match !== null,
-        matchTerm,
         postDraft,
-        autocompleteUsers: autocompleteProfiles,
+        matchTerm,
+        teamMembers,
+        inChannel,
+        outChannel,
         requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state),
         ...ownProps
