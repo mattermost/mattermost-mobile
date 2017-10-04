@@ -120,7 +120,7 @@ public class CustomPushNotification extends PushNotification {
     protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
         final Resources res = mContext.getResources();
         String packageName = mContext.getPackageName();
-        NotificationPreferencesModule notificationPreferences = NotificationPreferencesModule.getInstance();
+        NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(mContext);
 
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
