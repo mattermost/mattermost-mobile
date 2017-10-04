@@ -6,19 +6,21 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'app/selectors/preferences';
 import {getStatusesByIdsBatchedDebounced} from 'mattermost-redux/actions/users';
-import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {getStatusForUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 
 import ProfilePicture from './profile_picture';
 
 function mapStateToProps(state, ownProps) {
     let status = ownProps.status;
-    if (!status && ownProps.user) {
-        status = ownProps.user.status || getStatusForUserId(state, ownProps.user.id);
+    const user = getUser(state, ownProps.userId);
+    if (!status && ownProps.userId) {
+        status = getStatusForUserId(state, ownProps.userId);
     }
 
     return {
         theme: ownProps.theme || getTheme(state),
         status,
+        user,
         ...ownProps
     };
 }
