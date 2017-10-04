@@ -59,7 +59,7 @@ export default class ChannelMention extends PureComponent {
             return;
         }
 
-        if (matchTerm !== this.props.matchTerm && requestStatus !== RequestStatus.STARTED) {
+        if (matchTerm !== this.props.matchTerm) {
             // if the term changed and we haven't made the request do that first
             const {currentTeamId} = this.props;
             this.props.actions.searchChannels(currentTeamId, matchTerm);
