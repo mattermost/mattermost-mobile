@@ -53,7 +53,7 @@ function makeMapStateToProps() {
             posts,
             postVisibility: state.views.channel.postVisibility[channelId],
             loadingPosts: state.views.channel.loadingPosts[channelId],
-            LastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
+            lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
             networkOnline,
             totalMessageCount: channel.total_msg_count,
             theme: getTheme(state),
