@@ -32,7 +32,6 @@ class UserProfile extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
-        createChannelRequest: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string,
@@ -116,10 +115,12 @@ class UserProfile extends PureComponent {
         };
     };
 
-    render() {
-        const {config, theme, user} = this.props;
-        const style = createStyleSheet(theme);
-        const profileLinks = Config.ProfileLinks || [];
+    renderAdditionalOptions = () => {
+        if (!Config.ExperimentalProfileLinks) {
+            return null;
+        }
+
+        const profileLinks = Config.ExperimentalProfileLinks;
 
         const additionalOptions = profileLinks.map((l) => {
             var action;
@@ -135,10 +136,17 @@ class UserProfile extends PureComponent {
                     textId={l.textId}
                     icon={l.icon}
                     iconType={l.iconType}
-                    theme={theme}
+                    theme={this.props.theme}
                 />
             );
         });
+
+        return additionalOptions;
+    }
+
+    render() {
+        const {config, theme, user} = this.props;
+        const style = createStyleSheet(theme);
 
         return (
             <View style={style.container}>
@@ -172,7 +180,7 @@ class UserProfile extends PureComponent {
                         theme={theme}
                     />
                     }
-                    {additionalOptions}
+                    {this.renderAdditionalOptions()}
                 </ScrollView>
             </View>
         );
