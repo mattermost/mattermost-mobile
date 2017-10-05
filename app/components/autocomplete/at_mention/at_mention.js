@@ -64,7 +64,8 @@ export default class AtMention extends PureComponent {
         if (matchTerm !== this.props.matchTerm) {
             // if the term changed and we haven't made the request do that first
             const {currentTeamId, currentChannelId} = this.props;
-            this.props.actions.autocompleteUsers(matchTerm, currentTeamId, isSearch ? currentChannelId : '');
+            const channelId = isSearch ? '' : currentChannelId;
+            this.props.actions.autocompleteUsers(matchTerm, currentTeamId, channelId);
             return;
         }
 
