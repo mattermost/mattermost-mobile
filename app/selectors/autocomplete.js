@@ -60,6 +60,10 @@ export const filterMembersInChannel = createSelector(
     getCurrentUserId,
     (state, matchTerm) => matchTerm,
     (profilesInChannel, currentUserId, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         let profiles;
         if (matchTerm) {
             profiles = profilesInChannel.filter((p) => {
@@ -81,6 +85,10 @@ export const filterMembersNotInChannel = createSelector(
     getCurrentUserId,
     (state, matchTerm) => matchTerm,
     (profilesNotInChannel, currentUserId, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         let profiles;
         if (matchTerm) {
             profiles = profilesNotInChannel.filter((p) => {
@@ -101,6 +109,10 @@ export const filterMembersInCurrentTeam = createSelector(
     getCurrentUser,
     (state, matchTerm) => matchTerm,
     (profilesInTeam, currentUser, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         // FIXME: We need to include the currentUser here as is not in profilesInTeam on the redux store
         let profiles;
         if (matchTerm) {
@@ -120,6 +132,10 @@ export const filterMyChannels = createSelector(
     getMyChannels,
     (state, opts) => opts,
     (myChannels, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         let channels;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
@@ -140,6 +156,10 @@ export const filterOtherChannels = createSelector(
     getOtherChannels,
     (state, matchTerm) => matchTerm,
     (otherChannels, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         let channels;
         if (matchTerm) {
             channels = otherChannels.filter((c) => {
@@ -159,6 +179,10 @@ export const filterPublicChannels = createSelector(
     getCurrentLocale,
     (state, matchTerm) => matchTerm,
     (myChannels, otherChannels, locale, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         let channels;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
@@ -181,6 +205,10 @@ export const filterPrivateChannels = createSelector(
     getMyChannels,
     (state, matchTerm) => matchTerm,
     (myChannels, matchTerm) => {
+        if (matchTerm === null) {
+            return null;
+        }
+
         let channels;
         if (matchTerm) {
             channels = myChannels.filter((c) => {
