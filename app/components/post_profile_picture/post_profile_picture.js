@@ -20,7 +20,7 @@ function PostProfilePicture(props) {
         onViewUserProfile,
         overrideIconUrl,
         theme,
-        user
+        userId
     } = props;
     if (isSystemMessage) {
         return (
@@ -51,7 +51,7 @@ function PostProfilePicture(props) {
 
         return (
             <ProfilePicture
-                userId={user.id}
+                userId={userId}
                 size={PROFILE_PICTURE_SIZE}
             />
         );
@@ -60,7 +60,7 @@ function PostProfilePicture(props) {
     return (
         <TouchableOpacity onPress={onViewUserProfile}>
             <ProfilePicture
-                userId={user.id}
+                userId={userId}
                 size={PROFILE_PICTURE_SIZE}
             />
         </TouchableOpacity>
@@ -74,7 +74,7 @@ PostProfilePicture.propTypes = {
     overrideIconUrl: PropTypes.string,
     onViewUserProfile: PropTypes.func,
     theme: PropTypes.object,
-    user: PropTypes.object
+    userId: PropTypes.string
 };
 
 PostProfilePicture.defaultProps = {
