@@ -344,6 +344,8 @@ class Post extends PureComponent {
         const selected = this.state && this.state.selected ? style.selected : null;
         const highlighted = highlight ? style.highlight : null;
 
+        const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
+
         return (
             <View style={[style.container, this.props.style, highlighted, selected]}>
                 <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
@@ -363,7 +365,7 @@ class Post extends PureComponent {
                             shouldRenderReplyButton={shouldRenderReplyButton}
                             showFullDate={showFullDate}
                             onPress={this.handleReply}
-                            onUsernamePress={Config.UsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile}
+                            onUsernamePress={onUsernamePress}
                             renderReplies={renderReplies}
                             theme={theme}
                         />
