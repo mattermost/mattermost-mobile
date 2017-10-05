@@ -86,16 +86,16 @@ class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideEmailLogin;
 
         if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
-            const backgroundColor = theme.EmailLoginButtonColor || theme.linkColor;
+            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
             const additionalStyle = {
                 backgroundColor
             };
 
-            if (theme.hasOwnProperty('EmailLoginButtonBorder')) {
-                additionalStyle.borderColor = theme.EmailLoginButtonBorder;
+            if (config.hasOwnProperty('EmailLoginButtonBorderColor')) {
+                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
             }
 
-            const textColor = theme.EmailLoginButtonText || 'white';
+            const textColor = config.EmailLoginButtonTextColor || 'white';
 
             return (
                 <Button
@@ -120,16 +120,16 @@ class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideLDAPLogin;
 
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
-            const backgroundColor = theme.LDAPLoginButtonColor || theme.linkColor;
+            const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
             const additionalStyle = {
                 backgroundColor
             };
 
-            if (theme.hasOwnProperty('LDAPLoginButtonBorder')) {
-                additionalStyle.borderColor = theme.LDAPLoginButtonBorder;
+            if (config.hasOwnProperty('LDAPLoginButtonBorderColor')) {
+                additionalStyle.borderColor = config.LDAPLoginButtonBorderColor;
             }
 
-            const textColor = theme.LDAPLoginButtonText || 'white';
+            const textColor = config.LDAPLoginButtonTextColor || 'white';
 
             let buttonText;
             if (config.LdapLoginFieldName) {
@@ -197,17 +197,17 @@ class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideSAMLLogin;
 
         if (!forceHideFromLocal && config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
-            const backgroundColor = theme.SAMLLoginButtonColor || theme.linkColor;
+            const backgroundColor = config.SamlLoginButtonColor || '#34a28b';
 
             const additionalStyle = {
                 backgroundColor
             };
 
-            if (theme.SAMLLoginButtonBorder) {
-                additionalStyle.borderColor = theme.SAMLLoginButtonBorder;
+            if (config.SAMLLoginButtonBorderColor) {
+                additionalStyle.borderColor = config.SamlLoginButtonBorderColor;
             }
 
-            const textColor = theme.SAMLLoginButtonText || 'white';
+            const textColor = config.SamlLoginButtonTextColor || 'white';
 
             return (
                 <Button
