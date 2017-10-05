@@ -23,7 +23,7 @@ function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch, rootId} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
 
-    let postDraft;
+    let postDraft = '';
     if (isSearch) {
         postDraft = state.views.search;
     } else if (rootId) {
