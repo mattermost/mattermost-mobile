@@ -58,7 +58,8 @@ class Post extends PureComponent {
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
-        onReply: PropTypes.func
+        onReply: PropTypes.func,
+        isFlagged: PropTypes.bool
     };
 
     static defaultProps = {
@@ -347,7 +348,8 @@ class Post extends PureComponent {
             shouldRenderReplyButton,
             showFullDate,
             theme,
-            managedConfig
+            managedConfig,
+            isFlagged
         } = this.props;
 
         if (!post) {
@@ -382,6 +384,7 @@ class Post extends PureComponent {
                             onUsernamePress={onUsernamePress}
                             renderReplies={renderReplies}
                             theme={theme}
+                            isFlagged={isFlagged}
                         />
                         <PostBody
                             canDelete={this.state.canDelete}
@@ -398,6 +401,7 @@ class Post extends PureComponent {
                             renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
                             toggleSelected={this.toggleSelected}
                             managedConfig={managedConfig}
+                            isFlagged={isFlagged}
                         />
                     </View>
                 </View>

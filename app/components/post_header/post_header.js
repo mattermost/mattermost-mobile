@@ -13,6 +13,7 @@ import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
 import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
+import FlagIcon from 'app/components/flag_icon';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -37,7 +38,8 @@ export default class PostHeader extends PureComponent {
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        username: PropTypes.string.isRequired
+        username: PropTypes.string.isRequired,
+        isFlagged: PropTypes.bool
     };
 
     static defaultProps = {
@@ -152,7 +154,8 @@ export default class PostHeader extends PureComponent {
             renderReplies,
             shouldRenderReplyButton,
             showFullDate,
-            theme
+            theme,
+            isFlagged
         } = this.props;
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
@@ -191,6 +194,15 @@ export default class PostHeader extends PureComponent {
                         <View style={style.timeContainer}>
                             {dateComponent}
                         </View>
+                        {isFlagged &&
+                            <View style={style.flagContainer}>
+                                <FlagIcon
+                                    height={11}
+                                    width={11}
+                                    color={theme.linkColor}
+                                />
+                            </View>
+                        }
                     </View>
                     {showReply &&
                     <TouchableOpacity
@@ -277,6 +289,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             marginRight: 5,
             marginBottom: 3
+        },
+        flagContainer: {
+            marginLeft: 10,
+            alignSelf: 'center'
         }
     };
 });
