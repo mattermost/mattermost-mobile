@@ -1,14 +1,13 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     ActivityIndicator,
     Animated,
     Platform,
     StyleSheet,
-    TouchableOpacity,
     View
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
@@ -24,20 +23,14 @@ const OFFLINE = 'offline';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
 
-export default class OfflineIndicator extends PureComponent {
+export default class OfflineIndicator extends Component {
     static propTypes = {
-        actions: PropTypes.shape({
-            closeWebSocket: PropTypes.func.isRequired,
-            initWebSocket: PropTypes.func.isRequired
-        }).isRequired,
-        appState: PropTypes.bool,
         isConnecting: PropTypes.bool,
         isOnline: PropTypes.bool,
         webSocketStatus: PropTypes.string
     };
 
     static defaultProps: {
-        appState: true,
         isOnline: true
     };
 
@@ -53,40 +46,43 @@ export default class OfflineIndicator extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {appState, isConnecting, isOnline, webSocketStatus} = nextProps;
-        if (appState) { // The app is in the foreground
-            if (isOnline) {
-                if (this.state.network && webSocketStatus === RequestStatus.SUCCESS) {
-                    // Show the connected animation only if we had a previous network status
-                    this.connected();
-                } else if ((webSocketStatus === RequestStatus.STARTED || webSocketStatus === RequestStatus.FAILURE) && isConnecting) {
-                    // Show the connecting bar if it failed to connect at least twice
-                    this.connecting();
-                }
-            } else {
-                this.offline();
+        const {isConnecting, isOnline, webSocketStatus} = nextProps;
+        if (isOnline) {
+            if (this.state.network && this.props.webSocketStatus === RequestStatus.STARTED && webSocketStatus === RequestStatus.SUCCESS) {
+                // Show the connected animation only if we had a previous network status
+                this.connected();
+            } else if (this.props.webSocketStatus === RequestStatus.STARTED && webSocketStatus === RequestStatus.FAILURE && isConnecting) {
+                // Show the connecting bar if it failed to connect at least twice
+                this.connecting();
             }
+        } else {
+            this.offline();
         }
+    }
+
+    shouldComponentUpdate(nextProps) {
+        if (nextProps.isOnline !== this.props.isOnline) {
+            return true;
+        }
+
+        // When the websocket connects
+        if (this.props.webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.SUCCESS) {
+            return true;
+        }
+
+        // When the websocket fails to connect
+        if (this.props.webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.FAILURE &&
+            nextProps.isConnecting && nextProps.isConnecting !== this.props.isConnecting) {
+            return true;
+        }
+
+        return false;
     }
 
     offline = () => {
         this.setState({network: OFFLINE}, () => {
             this.show();
         });
-    };
-
-    connect = () => {
-        const {actions, isOnline, webSocketStatus} = this.props;
-        const {closeWebSocket, initWebSocket} = actions;
-        initWebSocket(Platform.OS);
-
-        // close the WS connection after trying for 5 seconds
-        setTimeout(() => {
-            if (webSocketStatus !== RequestStatus.SUCCESS) {
-                closeWebSocket(true);
-                this.setState({network: isOnline ? OFFLINE : CONNECTING});
-            }
-        }, 5000);
     };
 
     connecting = () => {
@@ -111,7 +107,7 @@ export default class OfflineIndicator extends PureComponent {
                 this.state.top, {
                     toValue: INITIAL_TOP,
                     duration: 300,
-                    delay: 1000
+                    delay: 500
                 }
             )
         ]).start(() => {
@@ -146,18 +142,6 @@ export default class OfflineIndicator extends PureComponent {
         case OFFLINE:
             i18nId = 'mobile.offlineIndicator.offline';
             defaultMessage = 'No internet connection';
-            action = (
-                <TouchableOpacity
-                    onPress={this.connect}
-                    style={[styles.actionContainer, styles.actionButton]}
-                >
-                    <IonIcon
-                        color='#FFFFFF'
-                        name='ios-refresh'
-                        size={20}
-                    />
-                </TouchableOpacity>
-            );
             break;
         case CONNECTING:
             i18nId = 'mobile.offlineIndicator.connecting';
