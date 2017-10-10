@@ -60,7 +60,6 @@ export default class ChannelDrawer extends PureComponent {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
         this.state = {
-            openDrawer: false,
             openDrawerOffset
         };
     }
@@ -74,7 +73,6 @@ export default class ChannelDrawer extends PureComponent {
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-        this.mounted = true;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -95,12 +93,11 @@ export default class ChannelDrawer extends PureComponent {
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-        this.mounted = false;
     }
 
     handleAndroidBack = () => {
-        if (this.state.openDrawer) {
-            this.setState({openDrawer: false});
+        if (this.refs.drawer && this.refs.drawer.isOpened()) {
+            this.refs.drawer.close();
             return true;
         }
 
@@ -108,8 +105,8 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     closeChannelDrawer = () => {
-        if (this.mounted) {
-            this.setState({openDrawer: false});
+        if (this.refs.drawer && this.refs.drawer.isOpened()) {
+            this.refs.drawer.close();
         }
     };
 
@@ -123,13 +120,6 @@ export default class ChannelDrawer extends PureComponent {
         if (this.closeLeftHandle) {
             InteractionManager.clearInteractionHandle(this.closeLeftHandle);
             this.closeLeftHandle = null;
-        }
-
-        if (this.state.openDrawer && this.mounted) {
-            // The state doesn't get updated if you swipe to close
-            this.setState({
-                openDrawer: false
-            });
         }
     };
 
@@ -153,13 +143,6 @@ export default class ChannelDrawer extends PureComponent {
     handleDrawerOpenStart = () => {
         if (!this.openLeftHandle) {
             this.openLeftHandle = InteractionManager.createInteractionHandle();
-        }
-
-        if (!this.state.openDrawer && this.mounted) {
-            // The state doesn't get updated if you swipe to open
-            this.setState({
-                openDrawer: true
-            });
         }
     };
 
@@ -192,10 +175,8 @@ export default class ChannelDrawer extends PureComponent {
     openChannelDrawer = () => {
         this.props.blurPostTextBox();
 
-        if (this.mounted) {
-            this.setState({
-                openDrawer: true
-            });
+        if (this.refs.drawer && !this.refs.drawer.isOpened()) {
+            this.refs.drawer.open();
         }
     };
 
@@ -282,7 +263,11 @@ export default class ChannelDrawer extends PureComponent {
     onSearchEnds = () => {
         //hack to update the drawer when the offset changes
         const {isLandscape, isTablet} = this.props;
-        this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+
+        if (this.refs.drawer) {
+            this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+        }
+
         let openDrawerOffset = DRAWER_INITIAL_OFFSET;
         if (isLandscape || isTablet) {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
@@ -291,7 +276,10 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     onSearchStart = () => {
-        this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+        if (this.refs.drawer) {
+            this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+        }
+
         this.setState({openDrawerOffset: 0});
     };
 
@@ -375,12 +363,11 @@ export default class ChannelDrawer extends PureComponent {
 
     render() {
         const {children} = this.props;
-        const {openDrawer, openDrawerOffset} = this.state;
+        const {openDrawerOffset} = this.state;
 
         return (
             <Drawer
                 ref='drawer'
-                open={openDrawer}
                 onOpenStart={this.handleDrawerOpenStart}
                 onOpen={this.handleDrawerOpen}
                 onClose={this.handleDrawerClose}
