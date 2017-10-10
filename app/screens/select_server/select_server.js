@@ -15,7 +15,6 @@ import {
     View
 } from 'react-native';
 import Button from 'react-native-button';
-import semver from 'semver';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import {Client, Client4} from 'mattermost-redux/client';
@@ -43,7 +42,6 @@ class SelectServer extends PureComponent {
         pingRequest: PropTypes.object.isRequired,
         configRequest: PropTypes.object.isRequired,
         licenseRequest: PropTypes.object.isRequired,
-        serverVersion: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
@@ -85,10 +83,9 @@ class SelectServer extends PureComponent {
     }
 
     handleLoginOptions = () => {
-        const {config, intl, license, serverVersion, theme} = this.props;
-        const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
+        const {config, intl, license, theme} = this.props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
-        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0');
+        const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
 
         let options = 0;
         if (samlEnabled || gitlabEnabled) {
