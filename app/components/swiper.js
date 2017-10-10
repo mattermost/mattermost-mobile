@@ -118,6 +118,7 @@ export default class Swiper extends PureComponent {
             return (
                 <ScrollView
                     ref={this.refScrollView}
+                    bounces={false}
                     horizontal={true}
                     removeClippedSubviews={true}
                     automaticallyAdjustContentInsets={true}
