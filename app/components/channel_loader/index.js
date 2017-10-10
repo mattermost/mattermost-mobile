@@ -6,10 +6,9 @@ import {getTheme} from 'app/selectors/preferences';
 
 import ChannelLoader from './channel_loader';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {deviceWidth} = state.device.dimension;
     return {
-        ...ownProps,
         channelIsLoading: state.views.channel.loading,
         deviceWidth,
         theme: getTheme(state)
