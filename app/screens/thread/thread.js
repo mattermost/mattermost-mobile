@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -10,7 +10,7 @@ import PostTextbox from 'app/components/post_textbox';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class Thread extends PureComponent {
+export default class Thread extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired
@@ -25,6 +25,18 @@ export default class Thread extends PureComponent {
     };
 
     state = {};
+
+    shouldComponentUpdate(nextProps) {
+        const nextPostsIds = nextProps.posts.map((p) => p.id);
+        const prevPostsIds = this.props.posts.map((p) => p.id);
+        for (let i = 0; i < nextPostsIds.length; i++) {
+            if (nextPostsIds[i] !== prevPostsIds[i]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     componentWillReceiveProps(nextProps) {
         if (!this.state.lastViewedAt) {
