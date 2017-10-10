@@ -47,7 +47,7 @@ class ChannelPostList extends PureComponent {
     static defaultProps = {
         posts: [],
         loadingPosts: false,
-        postVisibility: 30
+        postVisibility: 15
     };
 
     constructor(props) {
