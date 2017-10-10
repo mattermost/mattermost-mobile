@@ -4,7 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
@@ -22,12 +21,10 @@ function makeMapStateToProps() {
         const posts = getPostsForThread(state, ownProps);
 
         return {
-            ...ownProps,
             channelId: ownProps.channelId,
             myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
             posts,
-            statusBarHeight: getStatusBarHeight(state),
             theme: getTheme(state)
         };
     };

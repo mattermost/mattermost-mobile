@@ -50,7 +50,6 @@ class Channel extends PureComponent {
         currentChannelId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         webSocketRequest: PropTypes.object,
-        statusBarHeight: PropTypes.number,
         channelsRequestStatus: PropTypes.string
     };
 
@@ -173,7 +172,6 @@ class Channel extends PureComponent {
             currentChannelId,
             intl,
             navigator,
-            statusBarHeight,
             theme
         } = this.props;
 
@@ -193,11 +191,6 @@ class Channel extends PureComponent {
                     <Loading/>
                 </View>
             );
-        }
-
-        let height = 0;
-        if (statusBarHeight > 20) {
-            height = statusBarHeight - 20;
         }
 
         return (
@@ -220,7 +213,7 @@ class Channel extends PureComponent {
                 <KeyboardLayout
                     behavior='padding'
                     style={style.keyboardLayout}
-                    keyboardVerticalOffset={height}
+                    watchStatusBar={true}
                 >
                     <View style={style.postList}>
                         <ChannelPostList
