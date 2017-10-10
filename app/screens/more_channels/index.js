@@ -13,7 +13,7 @@ import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import MoreChannels from './more_channels';
 

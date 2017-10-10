@@ -8,7 +8,7 @@ import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeamId, getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getMySortedTeams} from 'app/selectors/teams';
 import {removeProtocol} from 'app/utils/url';
 

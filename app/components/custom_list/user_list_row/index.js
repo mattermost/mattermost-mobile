@@ -3,9 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from 'app/selectors/preferences';
-
-import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 
 import UserListRow from './user_list_row';

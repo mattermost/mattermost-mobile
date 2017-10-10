@@ -4,9 +4,7 @@
 import {connect} from 'react-redux';
 
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-
-import {getTheme} from 'app/selectors/preferences';
+import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import NotificationSettingsEmail from './notification_settings_email';
 

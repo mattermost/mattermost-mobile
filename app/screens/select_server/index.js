@@ -8,7 +8,7 @@ import {getPing, resetPing} from 'mattermost-redux/actions/general';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import SelectServer from './select_server';
 

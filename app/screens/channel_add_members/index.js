@@ -5,9 +5,8 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
-import {getTheme} from 'app/selectors/preferences';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 import {getProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 import {getTeamStats} from 'mattermost-redux/actions/teams';

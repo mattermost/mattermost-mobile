@@ -8,7 +8,7 @@ import {addReaction, createPost, deletePost, removePost} from 'mattermost-redux/
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Post from './post';
 

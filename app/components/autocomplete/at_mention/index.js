@@ -14,7 +14,7 @@ import {
     filterMembersInCurrentTeam,
     getMatchTermForAtMention
 } from 'app/selectors/autocomplete';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import AtMention from './at_mention';
 

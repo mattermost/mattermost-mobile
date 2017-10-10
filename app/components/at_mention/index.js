@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {getUsersByUsername} from 'mattermost-redux/selectors/entities/users';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import AtMention from './at_mention';
 

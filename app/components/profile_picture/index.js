@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getStatusesByIdsBatchedDebounced} from 'mattermost-redux/actions/users';
 import {getStatusForUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 

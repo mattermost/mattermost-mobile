@@ -9,11 +9,10 @@ import {connect} from 'react-redux';
 import {Preferences} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getOpenGraphMetadataForUrl} from 'mattermost-redux/selectors/entities/posts';
-import {getBool} from 'mattermost-redux/selectors/entities/preferences';
+import {getBool, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {ViewTypes} from 'app/constants';
 import {getDimensions} from 'app/selectors/device';
-import {getTheme} from 'app/selectors/preferences';
 import {extractFirstLink} from 'app/utils/url';
 
 import PostBodyAdditionalContent from './post_body_additional_content';

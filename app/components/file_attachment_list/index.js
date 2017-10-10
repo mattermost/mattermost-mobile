@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import FileAttachmentList from './file_attachment_list';
 

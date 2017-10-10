@@ -12,7 +12,7 @@ import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/e
 import {handleSelectChannel, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {isLandscape, isTablet} from 'app/selectors/device';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ChannelDrawer from './channel_drawer.js';
 

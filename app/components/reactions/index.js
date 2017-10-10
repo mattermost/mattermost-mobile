@@ -8,7 +8,7 @@ import {addReaction, getReactionsForPost, removeReaction} from 'mattermost-redux
 import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Reactions from './reactions';
 
