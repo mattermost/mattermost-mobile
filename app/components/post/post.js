@@ -25,21 +25,22 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
+import {isToolTipShowing} from 'react-native-tooltip';
+
 class Post extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReaction: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
-            removePost: PropTypes.func.isRequired,
-            setPostTooltipVisible: PropTypes.func.isRequired
+            removePost: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
         highlight: PropTypes.bool,
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
-        post: PropTypes.object.isRequired,
+        post: PropTypes.object,
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
@@ -50,7 +51,6 @@ class Post extends PureComponent {
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
-        tooltipVisible: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         onReply: PropTypes.func
@@ -73,10 +73,12 @@ class Post extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {config, license, currentUserId, roles, post} = nextProps;
-        this.setState({
-            canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-            canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
-        });
+        if (post) {
+            this.setState({
+                canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+            });
+        }
     }
 
     componentWillUnmount() {
@@ -228,8 +230,8 @@ class Post extends PureComponent {
     };
 
     handlePress = () => {
-        const {post, onPress, tooltipVisible} = this.props;
-        if (!tooltipVisible) {
+        const {post, onPress} = this.props;
+        if (!isToolTipShowing) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
                 preventDoubleTap(onPress, null, post);
             } else if (isPostEphemeral(post)) {
@@ -239,8 +241,8 @@ class Post extends PureComponent {
     };
 
     handleReply = () => {
-        const {post, onReply, tooltipVisible} = this.props;
-        if (!tooltipVisible && onReply) {
+        const {post, onReply} = this.props;
+        if (!isToolTipShowing && onReply) {
             return preventDoubleTap(onReply, null, post);
         }
 
@@ -281,18 +283,17 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = () => {
-        const {isSearchResult, tooltipVisible} = this.props;
+        const {isSearchResult} = this.props;
 
-        if (!isSearchResult && !tooltipVisible) {
+        if (!isSearchResult && !isToolTipShowing) {
             preventDoubleTap(this.goToUserProfile, this);
         }
     };
 
-    toggleSelected = (selected, tooltip) => {
-        if (tooltip) {
-            this.props.actions.setPostTooltipVisible(selected);
+    toggleSelected = (selected) => {
+        if (!isToolTipShowing) {
+            this.setState({selected});
         }
-        this.setState({selected});
     };
 
     render() {
@@ -307,6 +308,11 @@ class Post extends PureComponent {
             showFullDate,
             theme
         } = this.props;
+
+        if (!post) {
+            return null;
+        }
+
         const style = getStyleSheet(theme);
         const selected = this.state && this.state.selected ? style.selected : null;
         const highlighted = highlight ? style.highlight : null;

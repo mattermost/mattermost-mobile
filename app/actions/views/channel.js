@@ -378,13 +378,6 @@ export function setChannelRefreshing(loading = true) {
     };
 }
 
-export function setPostTooltipVisible(visible = true) {
-    return {
-        type: ViewTypes.POST_TOOLTIP_VISIBLE,
-        visible
-    };
-}
-
 export function setChannelRetryFailed(failed = true) {
     return {
         type: ViewTypes.SET_CHANNEL_RETRY_FAILED,

@@ -191,15 +191,6 @@ function refreshing(state = false, action) {
     }
 }
 
-function tooltipVisible(state = false, action) {
-    switch (action.type) {
-    case ViewTypes.POST_TOOLTIP_VISIBLE:
-        return action.visible;
-    default:
-        return state;
-    }
-}
-
 function retryFailed(state = false, action) {
     switch (action.type) {
     case ViewTypes.SET_CHANNEL_RETRY_FAILED:
@@ -261,7 +252,6 @@ export default combineReducers({
     drafts,
     loading,
     refreshing,
-    tooltipVisible,
     postVisibility,
     loadingPosts,
     lastGetPosts,
