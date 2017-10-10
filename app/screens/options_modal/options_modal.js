@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
@@ -20,7 +20,7 @@ import OptionsModalList from './options_modal_list';
 const {View: AnimatedView} = Animated;
 const DURATION = 200;
 
-export default class OptionsModal extends PureComponent {
+export default class OptionsModal extends Component {
     static propTypes = {
         items: PropTypes.array.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -43,6 +43,10 @@ export default class OptionsModal extends PureComponent {
         this.state = {
             top: new Animated.Value(props.deviceHeight)
         };
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return nextProps.deviceWidth !== this.props.deviceWidth;
     }
 
     componentDidMount() {
