@@ -220,10 +220,13 @@ export default class ChannelDrawer extends PureComponent {
 
         InteractionManager.runAfterInteractions(() => {
             handleSelectChannel(channel.id);
-            markChannelAsRead(channel.id, currentChannelId);
-            if (channel.id !== currentChannelId) {
-                viewChannel(currentChannelId);
-            }
+            requestAnimationFrame(() => {
+                // mark the channel as viewed after all the frame has flushed
+                markChannelAsRead(channel.id, currentChannelId);
+                if (channel.id !== currentChannelId) {
+                    viewChannel(currentChannelId);
+                }
+            });
         });
     };
 

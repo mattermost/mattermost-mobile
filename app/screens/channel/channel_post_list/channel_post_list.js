@@ -61,19 +61,11 @@ class ChannelPostList extends PureComponent {
     }
 
     componentDidMount() {
-        const {channelId} = this.props;
         this.mounted = true;
-        this.loadPosts(channelId);
     }
 
     componentWillReceiveProps(nextProps) {
-        const {channelId: currentChannelId} = this.props;
-        const {channelId: nextChannelId, channelRefreshingFailed: nextChannelRefreshingFailed, posts: nextPosts} = nextProps;
-
-        if (currentChannelId !== nextChannelId) {
-            // Load the posts when the channel actually changes
-            this.loadPosts(nextChannelId);
-        }
+        const {channelRefreshingFailed: nextChannelRefreshingFailed, posts: nextPosts} = nextProps;
 
         if (nextChannelRefreshingFailed && nextPosts.length) {
             this.toggleRetryMessage();
@@ -155,12 +147,9 @@ class ChannelPostList extends PureComponent {
         }
     };
 
-    loadPosts = (channelId) => {
-        this.props.actions.loadPostsIfNecessaryWithRetry(channelId);
-    };
-
     loadPostsRetry = () => {
-        this.loadPosts(this.props.channelId);
+        const {actions, channelId} = this.props;
+        actions.loadPostsIfNecessaryWithRetry(channelId);
     };
 
     render() {

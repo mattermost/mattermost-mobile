@@ -8,7 +8,6 @@ import {ViewTypes} from 'app/constants';
 import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
-    getChannelStats,
     selectChannel,
     leaveChannel as serviceLeaveChannel,
     unfavoriteChannel
@@ -257,18 +256,20 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
+        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
         selectChannel(channelId)(dispatch, getState);
-        dispatch(setChannelLoading(false));
-        dispatch({
-            type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
-            data: channelId
-        });
-        dispatch({
-            type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-            teamId: currentTeamId,
-            channelId
-        });
-        getChannelStats(channelId)(dispatch, getState);
+        dispatch(batchActions([
+            {
+                type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
+                data: channelId
+            },
+            setChannelLoading(false),
+            {
+                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+                teamId: currentTeamId,
+                channelId
+            }
+        ]), 'BATCH_CHANNEL_LOADED');
     };
 }
 
