@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import {
     TouchableOpacity,
@@ -13,7 +14,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';
 
-export default class LoadMorePosts extends PureComponent {
+class LoadMorePosts extends PureComponent {
     static propTypes = {
         loading: PropTypes.bool.isRequired,
         loadMore: PropTypes.func,
@@ -72,3 +73,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
+
+function mapStateToProps(state, ownProps) {
+    return {
+        loading: state.views.channel.loadingPosts[ownProps.channelId] || false
+    };
+}
+
+export default connect(mapStateToProps)(LoadMorePosts);

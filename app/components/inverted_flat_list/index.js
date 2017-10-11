@@ -3,7 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, Platform, RefreshControl, ScrollView, StyleSheet, View} from 'react-native';
+import {FlatList, Platform, ScrollView, StyleSheet, View} from 'react-native';
+
+import RefreshList from 'app/components/refresh_list';
 
 import VirtualList from './virtual_list';
 
@@ -64,7 +66,7 @@ export default class InvertibleFlatList extends PureComponent {
                 <ScrollView
                     {...props}
                     refreshControl={
-                        <RefreshControl
+                        <RefreshList
                             refreshing={props.refreshing}
                             onRefresh={props.onRefresh}
                             tintColor={theme.centerChannelColor}
