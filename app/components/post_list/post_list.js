@@ -28,7 +28,6 @@ export default class PostList extends PureComponent {
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
-        isLoadingMore: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number,
         loadMore: PropTypes.func,
@@ -36,17 +35,26 @@ export default class PostList extends PureComponent {
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         posts: PropTypes.array.isRequired,
-        refreshing: PropTypes.bool,
         renderReplies: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
 
+    static defaultProps = {
+        loadMore: () => true
+    };
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.channelId !== this.props.channelId && this.refs.list) {
+            // When switching channels make sure we start from the bottom
+            this.refs.list.scrollToOffset({y: 0, animated: false});
+        }
+    }
+
     getPostsWithDates = () => {
         const {posts, indicateNewMessages, currentUserId, lastViewedAt, showLoadMore} = this.props;
         const list = addDatesToPostList(posts, {indicateNewMessages, currentUserId, lastViewedAt});
-
         if (showLoadMore) {
             return [...list, LOAD_MORE_POSTS];
         }
@@ -58,18 +66,8 @@ export default class PostList extends PureComponent {
         if (item instanceof Date) {
             return item.getTime();
         }
-        if (item === General.START_OF_NEW_MESSAGES || item === LOAD_MORE_POSTS) {
-            return item;
-        }
 
-        return item.id;
-    };
-
-    loadMorePosts = () => {
-        const {loadMore, isLoadingMore} = this.props;
-        if (typeof loadMore === 'function' && !isLoadingMore) {
-            loadMore();
-        }
+        return item.id || item;
     };
 
     onRefresh = () => {
@@ -89,9 +87,10 @@ export default class PostList extends PureComponent {
     };
 
     renderChannelIntro = () => {
-        const {channelId, navigator, refreshing, showLoadMore} = this.props;
+        const {channelId, navigator, showLoadMore} = this.props;
 
-        if (channelId && !showLoadMore && !refreshing) {
+        // FIXME: Only show the channel intro when we are at the very start of the channel
+        if (channelId && !showLoadMore) {
             return (
                 <View>
                     <ChannelIntro navigator={navigator}/>
@@ -124,10 +123,7 @@ export default class PostList extends PureComponent {
         }
         if (item === LOAD_MORE_POSTS && this.props.showLoadMore) {
             return (
-                <LoadMorePosts
-                    loading={this.props.isLoadingMore}
-                    theme={this.props.theme}
-                />
+                <LoadMorePosts theme={this.props.theme}/>
             );
         }
 
@@ -149,7 +145,8 @@ export default class PostList extends PureComponent {
 
         return (
             <Post
-                post={post}
+                highlight={post.highlight}
+                postId={post.id}
                 renderReplies={renderReplies}
                 isFirstReply={post.isFirstReply}
                 isLastReply={post.isLastReply}
@@ -163,24 +160,26 @@ export default class PostList extends PureComponent {
     };
 
     render() {
-        const {channelId, refreshing, theme} = this.props;
+        const {channelId, loadMore, theme} = this.props;
 
         const refreshControl = {
-            refreshing
+            refreshing: false
         };
 
         if (channelId) {
             refreshControl.onRefresh = this.onRefresh;
         }
 
+        const data = this.getPostsWithDates();
         return (
             <FlatList
-                data={this.getPostsWithDates()}
-                initialNumToRender={20}
+                ref='list'
+                data={data}
+                initialNumToRender={15}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderChannelIntro}
-                onEndReached={this.loadMorePosts}
+                onEndReached={loadMore}
                 onEndReachedThreshold={0}
                 {...refreshControl}
                 renderItem={this.renderItem}

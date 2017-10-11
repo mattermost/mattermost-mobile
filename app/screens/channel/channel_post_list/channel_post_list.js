@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Animated,
     Platform,
     StyleSheet,
     View
@@ -13,11 +12,9 @@ import {
 
 import {General} from 'mattermost-redux/constants';
 
-import FormattedText from 'app/components/formatted_text';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
-
-const {View: AnimatedView} = Animated;
+import RetryBarIndicator from 'app/components/retry_bar_indicator';
 
 class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -30,13 +27,11 @@ class ChannelPostList extends PureComponent {
         }).isRequired,
         channelDisplayName: PropTypes.string,
         channelId: PropTypes.string.isRequired,
-        channelIsRefreshing: PropTypes.bool,
         channelRefreshingFailed: PropTypes.bool,
         channelType: PropTypes.string,
         currentUserId: PropTypes.string,
         intl: intlShape.isRequired,
         lastViewedAt: PropTypes.number,
-        loadingPosts: PropTypes.bool,
         navigator: PropTypes.object,
         posts: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
@@ -45,8 +40,6 @@ class ChannelPostList extends PureComponent {
     };
 
     static defaultProps = {
-        posts: [],
-        loadingPosts: false,
         postVisibility: 15
     };
 
@@ -54,29 +47,18 @@ class ChannelPostList extends PureComponent {
         super(props);
 
         this.state = {
-            retryMessageHeight: new Animated.Value(0),
             visiblePosts: this.getVisiblePosts(props),
             showLoadMore: props.posts.length >= props.postVisibility
         };
     }
 
-    componentDidMount() {
-        this.mounted = true;
-    }
-
     componentWillReceiveProps(nextProps) {
-        const {channelRefreshingFailed: nextChannelRefreshingFailed, posts: nextPosts} = nextProps;
+        const {posts: nextPosts} = nextProps;
 
-        if (nextChannelRefreshingFailed && nextPosts.length) {
-            this.toggleRetryMessage();
-        } else if (!nextChannelRefreshingFailed || !nextPosts.length) {
-            this.toggleRetryMessage(false);
-        }
-
-        const showLoadMore = nextProps.posts.length >= nextProps.postVisibility;
+        const showLoadMore = nextPosts.length >= nextProps.postVisibility;
         let visiblePosts = this.state.visiblePosts;
 
-        if (nextProps.posts !== this.props.posts || nextProps.postVisibility !== this.props.postVisibility) {
+        if (nextPosts !== this.props.posts || nextProps.postVisibility !== this.props.postVisibility) {
             visiblePosts = this.getVisiblePosts(nextProps);
         }
 
@@ -86,20 +68,8 @@ class ChannelPostList extends PureComponent {
         });
     }
 
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
     getVisiblePosts = (props) => {
         return props.posts.slice(0, props.postVisibility);
-    };
-
-    toggleRetryMessage = (show = true) => {
-        const value = show ? 38 : 0;
-        Animated.timing(this.state.retryMessageHeight, {
-            toValue: value,
-            duration: 350
-        }).start();
     };
 
     goToThread = (post) => {
@@ -156,18 +126,15 @@ class ChannelPostList extends PureComponent {
         const {
             actions,
             channelId,
-            channelIsRefreshing,
             channelRefreshingFailed,
             currentUserId,
             lastViewedAt,
-            loadingPosts,
             navigator,
             posts,
             theme
         } = this.props;
 
         const {
-            retryMessageHeight,
             showLoadMore,
             visiblePosts
         } = this.state;
@@ -185,7 +152,6 @@ class ChannelPostList extends PureComponent {
                 <PostList
                     posts={visiblePosts}
                     loadMore={this.loadMorePosts}
-                    isLoadingMore={loadingPosts}
                     showLoadMore={showLoadMore}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
@@ -195,25 +161,14 @@ class ChannelPostList extends PureComponent {
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
                     navigator={navigator}
-                    refreshing={channelIsRefreshing}
                 />
             );
         }
 
-        const refreshIndicatorDimensions = {
-            height: retryMessageHeight
-        };
-
         return (
             <View style={style.container}>
                 {component}
-                <AnimatedView style={[style.refreshIndicator, refreshIndicatorDimensions]}>
-                    <FormattedText
-                        id='mobile.retry_message'
-                        defaultMessage='Refreshing messages failed. Pull up to try again.'
-                        style={{color: 'white', flex: 1, fontSize: 12}}
-                    />
-                </AnimatedView>
+                <RetryBarIndicator/>
             </View>
         );
     }
@@ -222,16 +177,6 @@ class ChannelPostList extends PureComponent {
 const style = StyleSheet.create({
     container: {
         flex: 1
-    },
-    refreshIndicator: {
-        alignItems: 'center',
-        backgroundColor: '#fb8000',
-        flexDirection: 'row',
-        paddingHorizontal: 10,
-        position: 'absolute',
-        top: 0,
-        overflow: 'hidden',
-        width: '100%'
     }
 });
 

@@ -190,11 +190,20 @@ class PostBody extends PureComponent {
         let messageComponent;
         if (hasBeenDeleted) {
             messageComponent = (
-                <FormattedText
-                    style={messageStyle}
-                    id='post_body.deleted'
-                    defaultMessage='(message deleted)'
-                />
+                <TouchableHighlight
+                    onHideUnderlay={this.handleHideUnderlay}
+                    onPress={onPress}
+                    onShowUnderlay={this.handleShowUnderlay}
+                    underlayColor='transparent'
+                >
+                    <View style={{flexDirection: 'row'}}>
+                        <FormattedText
+                            style={messageStyle}
+                            id='post_body.deleted'
+                            defaultMessage='(message deleted)'
+                        />
+                    </View>
+                </TouchableHighlight>
             );
             body = (<View>{messageComponent}</View>);
         } else if (message.length) {

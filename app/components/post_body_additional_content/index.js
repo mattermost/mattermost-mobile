@@ -41,7 +41,6 @@ function makeMapStateToProps() {
         const link = getFirstLink(ownProps.message);
 
         return {
-            ...ownProps,
             ...getDimensions(state),
             config,
             link,

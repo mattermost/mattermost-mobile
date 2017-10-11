@@ -12,23 +12,20 @@ import {getTheme} from 'app/selectors/preferences';
 
 import Post from './post';
 
-function makeMapStateToProps() {
-    return function mapStateToProps(state, ownProps) {
-        const post = getPost(state, ownProps.post.id);
+function mapStateToProps(state, ownProps) {
+    const post = getPost(state, ownProps.postId);
 
-        const {config, license} = state.entities.general;
-        const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const {config, license} = state.entities.general;
+    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
 
-        return {
-            ...ownProps,
-            post,
-            config,
-            currentUserId: getCurrentUserId(state),
-            highlight: ownProps.post.highlight,
-            license,
-            roles,
-            theme: getTheme(state)
-        };
+    return {
+        post,
+        config,
+        currentUserId: getCurrentUserId(state),
+        highlight: ownProps.highlight,
+        license,
+        roles,
+        theme: getTheme(state)
     };
 }
 
@@ -43,4 +40,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(Post);
+export default connect(mapStateToProps, mapDispatchToProps)(Post);
