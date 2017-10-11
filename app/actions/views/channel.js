@@ -8,7 +8,6 @@ import {ViewTypes} from 'app/constants';
 import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
-    getChannelStats,
     selectChannel,
     leaveChannel as serviceLeaveChannel,
     unfavoriteChannel
@@ -185,10 +184,12 @@ async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_PO
         const posts = await action(dispatch, getState);
 
         if (posts) {
+            dispatch(setChannelRetryFailed(false));
             return posts;
         }
     }
 
+    dispatch(setChannelRetryFailed(true));
     return null;
 }
 
@@ -255,15 +256,20 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
+        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
         selectChannel(channelId)(dispatch, getState);
-        dispatch(setChannelLoading(false));
-
-        dispatch({
-            type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-            teamId: currentTeamId,
-            channelId
-        });
-        getChannelStats(channelId)(dispatch, getState);
+        dispatch(batchActions([
+            {
+                type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
+                data: channelId
+            },
+            setChannelLoading(false),
+            {
+                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+                teamId: currentTeamId,
+                channelId
+            }
+        ]), 'BATCH_CHANNEL_LOADED');
     };
 }
 
@@ -340,8 +346,11 @@ export function closeGMChannel(channel) {
 }
 
 export function refreshChannelWithRetry(channelId) {
-    return (dispatch, getState) => {
-        return retryGetPostsAction(getPosts(channelId), dispatch, getState);
+    return async (dispatch, getState) => {
+        dispatch(setChannelRefreshing(true));
+        const posts = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        dispatch(setChannelRefreshing(false));
+        return posts;
     };
 }
 
@@ -369,10 +378,10 @@ export function setChannelRefreshing(loading = true) {
     };
 }
 
-export function setPostTooltipVisible(visible = true) {
+export function setChannelRetryFailed(failed = true) {
     return {
-        type: ViewTypes.POST_TOOLTIP_VISIBLE,
-        visible
+        type: ViewTypes.SET_CHANNEL_RETRY_FAILED,
+        failed
     };
 }
 

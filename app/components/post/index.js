@@ -8,7 +8,6 @@ import {addReaction, createPost, deletePost, removePost} from 'mattermost-redux/
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 
-import {setPostTooltipVisible} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import Post from './post';
@@ -19,7 +18,6 @@ function makeMapStateToProps() {
 
         const {config, license} = state.entities.general;
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
-        const {tooltipVisible} = state.views.channel;
 
         return {
             ...ownProps,
@@ -29,8 +27,7 @@ function makeMapStateToProps() {
             highlight: ownProps.post.highlight,
             license,
             roles,
-            theme: getTheme(state),
-            tooltipVisible
+            theme: getTheme(state)
         };
     };
 }
@@ -41,8 +38,7 @@ function mapDispatchToProps(dispatch) {
             addReaction,
             createPost,
             deletePost,
-            removePost,
-            setPostTooltipVisible
+            removePost
         }, dispatch)
     };
 }

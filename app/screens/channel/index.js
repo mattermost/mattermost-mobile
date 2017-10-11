@@ -11,7 +11,6 @@ import {
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
-import {getStatusBarHeight} from 'app/selectors/device';
 import {getTheme} from 'app/selectors/preferences';
 
 import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
@@ -36,7 +35,6 @@ function mapStateToProps(state, ownProps) {
         currentChannelId: getCurrentChannelId(state),
         theme: getTheme(state),
         webSocketRequest: websocket,
-        statusBarHeight: getStatusBarHeight(state),
         channelsRequestStatus: channelsRequest.status
     };
 }

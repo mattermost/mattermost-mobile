@@ -48,7 +48,7 @@ export default function configureAppStore(initialState) {
         ['typing']
     );
 
-    const channelViewBlackList = {loading: true, refreshing: true, tooltipVisible: true, loadingPosts: true};
+    const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, postVisibility: true, retryFailed: true};
     const channelViewBlackListFilter = createTransform(
         (inboundState) => {
             const channel = {};

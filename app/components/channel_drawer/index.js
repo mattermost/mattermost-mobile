@@ -16,11 +16,10 @@ import {getTheme} from 'app/selectors/preferences';
 
 import ChannelDrawer from './channel_drawer.js';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
 
     return {
-        ...ownProps,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
         currentUserId,

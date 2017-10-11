@@ -5012,8 +5012,8 @@ react-native-svg@5.4.1:
     lodash "^4.16.6"
 
 react-native-tooltip@enahum/react-native-tooltip:
-  version "5.0.0"
-  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/97d58d19636df8d8df66d6b5737154c9fab727c8"
+  version "5.1.1"
+  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/eb47f93a728813b58c01f23ec84f0b8b1bd70bd0"
 
 react-native-vector-icons@4.3.0:
   version "4.3.0"
