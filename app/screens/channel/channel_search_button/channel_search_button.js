@@ -6,8 +6,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
 import {
     StyleSheet,
     TouchableOpacity,
@@ -15,15 +13,11 @@ import {
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-import {clearSearch} from 'mattermost-redux/actions/search';
-
-import {handlePostDraftChanged} from 'app/actions/views/channel';
-import {getTheme} from 'app/selectors/preferences';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 
 const SEARCH = 'search';
 
-class ChannelSearchButton extends PureComponent {
+export default class ChannelSearchButton extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
@@ -33,7 +27,7 @@ class ChannelSearchButton extends PureComponent {
         theme: PropTypes.object
     };
 
-    handlePress = async () => {
+    handlePress = wrapWithPreventDoubleTap(async () => {
         const {actions, navigator, theme} = this.props;
 
         await actions.clearSearch();
@@ -52,7 +46,7 @@ class ChannelSearchButton extends PureComponent {
                 theme
             }
         });
-    };
+    });
 
     render() {
         const {
@@ -61,7 +55,7 @@ class ChannelSearchButton extends PureComponent {
 
         return (
             <TouchableOpacity
-                onPress={() => preventDoubleTap(this.handlePress, this)}
+                onPress={this.handlePress}
                 style={style.container}
             >
                 <View style={style.wrapper}>
@@ -89,21 +83,3 @@ const style = StyleSheet.create({
         zIndex: 30
     }
 });
-
-function mapStateToProps(state, ownProps) {
-    return {
-        theme: getTheme(state),
-        ...ownProps
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            clearSearch,
-            handlePostDraftChanged
-        }, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelSearchButton);

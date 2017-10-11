@@ -10,7 +10,6 @@ import {
     View
 } from 'react-native';
 
-import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawer from 'app/components/channel_drawer';
@@ -49,8 +48,7 @@ class Channel extends PureComponent {
         currentTeamId: PropTypes.string,
         currentChannelId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        webSocketRequest: PropTypes.object,
-        channelsRequestStatus: PropTypes.string
+        channelsRequestFailed: PropTypes.bool
     };
 
     componentWillMount() {
@@ -64,14 +62,6 @@ class Channel extends PureComponent {
     }
 
     componentDidMount() {
-        const {startPeriodicStatusUpdates} = this.props.actions;
-
-        try {
-            startPeriodicStatusUpdates();
-        } catch (error) {
-            // We don't care about the error
-        }
-
         // Mark current channel as read when opening app while logged in
         if (this.props.currentChannelId) {
             this.props.actions.markChannelAsRead(this.props.currentChannelId);
@@ -126,19 +116,21 @@ class Channel extends PureComponent {
     });
 
     handleConnectionChange = (isConnected) => {
-        const {actions, webSocketRequest} = this.props;
-        const {closeWebSocket, connection, initWebSocket} = actions;
+        const {actions} = this.props;
+        const {
+            closeWebSocket,
+            connection,
+            initWebSocket,
+            startPeriodicStatusUpdates,
+            stopPeriodicStatusUpdates
+        } = actions;
 
         if (isConnected) {
-            if (!webSocketRequest || webSocketRequest.status === RequestStatus.NOT_STARTED) {
-                try {
-                    initWebSocket(Platform.OS);
-                } catch (error) {
-                    // We don't care if it fails
-                }
-            }
+            initWebSocket(Platform.OS);
+            startPeriodicStatusUpdates();
         } else {
             closeWebSocket(true);
+            stopPeriodicStatusUpdates();
         }
         connection(isConnected);
     };
@@ -168,7 +160,7 @@ class Channel extends PureComponent {
 
     render() {
         const {
-            channelsRequestStatus,
+            channelsRequestFailed,
             currentChannelId,
             intl,
             navigator,
@@ -178,7 +170,7 @@ class Channel extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         if (!currentChannelId) {
-            if (channelsRequestStatus === RequestStatus.FAILURE) {
+            if (channelsRequestFailed) {
                 return (
                     <PostListRetry
                         retry={this.retryLoadChannels}
@@ -204,10 +196,11 @@ class Channel extends PureComponent {
                     <OfflineIndicator/>
                     <View style={style.header}>
                         <ChannelDrawerButton/>
-                        <ChannelTitle
-                            onPress={this.goToChannelInfo}
+                        <ChannelTitle onPress={this.goToChannelInfo}/>
+                        <ChannelSearchButton
+                            navigator={navigator}
+                            theme={theme}
                         />
-                        <ChannelSearchButton navigator={navigator}/>
                     </View>
                 </View>
                 <KeyboardLayout
@@ -220,8 +213,6 @@ class Channel extends PureComponent {
                     <ChannelLoader theme={theme}/>
                     <PostTextbox
                         ref={this.attachPostTextbox}
-                        onChangeText={this.handleDraftChanged}
-                        channelId={currentChannelId}
                         navigator={navigator}
                     />
                 </KeyboardLayout>
