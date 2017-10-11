@@ -11,6 +11,7 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import FormattedTime from 'app/components/formatted_time';
+import FormattedDate from 'app/components/formatted_date';
 import ReplyIcon from 'app/components/reply_icon';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -27,12 +28,14 @@ export default class PostHeader extends PureComponent {
         fromWebHook: PropTypes.bool,
         isPendingOrFailedPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
-        shouldRenderReplyButton: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        militaryTime: PropTypes.bool,
         onPress: PropTypes.func,
         onViewUserProfile: PropTypes.func,
         overrideUsername: PropTypes.string,
         renderReplies: PropTypes.bool,
+        shouldRenderReplyButton: PropTypes.bool,
+        showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
 
@@ -140,13 +143,41 @@ export default class PostHeader extends PureComponent {
             createAt,
             isPendingOrFailedPost,
             isSearchResult,
+            militaryTime,
             onPress,
             renderReplies,
             shouldRenderReplyButton,
+            showFullDate,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
+
+        let dateComponent;
+        if (showFullDate) {
+            dateComponent = (
+                <View style={style.datetime}>
+                    <Text style={style.time}>
+                        <FormattedDate value={createAt}/>
+                    </Text>
+                    <Text style={style.time}>
+                        <FormattedTime
+                            hour12={!militaryTime}
+                            value={createAt}
+                        />
+                    </Text>
+                </View>
+            );
+        } else {
+            dateComponent = (
+                <Text style={style.time}>
+                    <FormattedTime
+                        hour12={!militaryTime}
+                        value={createAt}
+                    />
+                </Text>
+            );
+        }
 
         return (
             <View>
@@ -154,9 +185,7 @@ export default class PostHeader extends PureComponent {
                     <View style={{flexDirection: 'row', flex: 1}}>
                         {this.getDisplayName(style)}
                         <View style={style.timeContainer}>
-                            <Text style={style.time}>
-                                <FormattedTime value={createAt}/>
-                            </Text>
+                            {dateComponent}
                         </View>
                     </View>
                     {showReply &&
@@ -202,6 +231,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         timeContainer: {
             justifyContent: 'center'
+        },
+        datetime: {
+            flex: 1,
+            flexDirection: 'row'
         },
         time: {
             color: theme.centerChannelColor,

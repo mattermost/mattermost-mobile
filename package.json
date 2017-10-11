@@ -10,7 +10,7 @@
     "analytics-react-native": "1.1.0",
     "babel-polyfill": "6.23.0",
     "commonmark": "hmhealey/commonmark.js#25dc6a4c456db579631797e29847752cb5e7d8d7",
-    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#c5d00343664c89da40d5a2ffa8b083e7cc1615d7",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#6e259b66ae87d31d2f908effcd05776b9ea3446f",
     "deep-equal": "1.0.1",
     "intl": "1.2.5",
     "jail-monkey": "0.0.9",
@@ -40,7 +40,6 @@
     "react-native-sentry": "0.15.1",
     "react-native-status-bar-size": "0.3.2",
     "react-native-svg": "5.4.1",
-    "react-native-swiper": "nixoz/react-native-swiper",
     "react-native-tooltip": "enahum/react-native-tooltip",
     "react-native-vector-icons": "4.3.0",
     "react-native-youtube": "1.0.0-beta.3",
@@ -89,7 +88,8 @@
     "react-native-svg-mock": "1.0.2",
     "react-test-renderer": "16.0.0-alpha.12",
     "remote-redux-devtools": "0.5.12",
-    "remote-redux-devtools-on-debugger": "0.8.2"
+    "remote-redux-devtools-on-debugger": "0.8.2",
+    "underscore": "1.8.3"
   },
   "scripts": {
     "test": "NODE_ENV=test nyc --reporter=text mocha --opts test/mocha.opts",

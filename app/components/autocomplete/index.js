@@ -1,9 +1,10 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     StyleSheet,
     View
 } from 'react-native';
@@ -12,27 +13,7 @@ import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
 
-const style = StyleSheet.create({
-    container: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        maxHeight: 200,
-        overflow: 'hidden'
-    },
-    searchContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        maxHeight: 300,
-        overflow: 'hidden',
-        zIndex: 5
-    }
-});
-
-export default class Autocomplete extends Component {
+export default class Autocomplete extends PureComponent {
     static propTypes = {
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
@@ -54,9 +35,10 @@ export default class Autocomplete extends Component {
     };
 
     render() {
-        const container = this.props.isSearch ? style.searchContainer : style.container;
+        const searchContainer = this.props.isSearch ? style.searchContainer : null;
+        const container = this.props.isSearch ? null : style.container;
         return (
-            <View>
+            <View style={searchContainer}>
                 <View style={container}>
                     <AtMention
                         cursorPosition={this.state.cursorPosition}
@@ -75,3 +57,32 @@ export default class Autocomplete extends Component {
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        maxHeight: 200,
+        overflow: 'hidden'
+    },
+    searchContainer: {
+        elevation: 5,
+        flex: 1,
+        left: 0,
+        maxHeight: 250,
+        overflow: 'hidden',
+        position: 'absolute',
+        right: 0,
+        zIndex: 5,
+        ...Platform.select({
+            android: {
+                top: 47
+            },
+            ios: {
+                top: 64
+            }
+        })
+    }
+});

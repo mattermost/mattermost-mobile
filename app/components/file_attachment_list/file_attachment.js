@@ -64,7 +64,7 @@ export default class FileAttachment extends PureComponent {
         const style = getStyleSheet(theme);
 
         let fileAttachmentComponent;
-        if (file.has_preview_image || file.loading) {
+        if (file.has_preview_image || file.loading || file.mime_type === 'image/gif') {
             fileAttachmentComponent = (
                 <FileAttachmentImage
                     addFileToFetchCache={this.props.addFileToFetchCache}

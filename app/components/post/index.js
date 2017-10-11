@@ -8,30 +8,24 @@ import {addReaction, createPost, deletePost, removePost} from 'mattermost-redux/
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 
-import {setPostTooltipVisible} from 'app/actions/views/channel';
 import {getTheme} from 'app/selectors/preferences';
 
 import Post from './post';
 
-function makeMapStateToProps() {
-    return function mapStateToProps(state, ownProps) {
-        const post = getPost(state, ownProps.post.id);
+function mapStateToProps(state, ownProps) {
+    const post = getPost(state, ownProps.postId);
 
-        const {config, license} = state.entities.general;
-        const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
-        const {tooltipVisible} = state.views.channel;
+    const {config, license} = state.entities.general;
+    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
 
-        return {
-            ...ownProps,
-            post,
-            config,
-            currentUserId: getCurrentUserId(state),
-            highlight: ownProps.post.highlight,
-            license,
-            roles,
-            theme: getTheme(state),
-            tooltipVisible
-        };
+    return {
+        post,
+        config,
+        currentUserId: getCurrentUserId(state),
+        highlight: ownProps.highlight,
+        license,
+        roles,
+        theme: getTheme(state)
     };
 }
 
@@ -41,10 +35,9 @@ function mapDispatchToProps(dispatch) {
             addReaction,
             createPost,
             deletePost,
-            removePost,
-            setPostTooltipVisible
+            removePost
         }, dispatch)
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(Post);
+export default connect(mapStateToProps, mapDispatchToProps)(Post);

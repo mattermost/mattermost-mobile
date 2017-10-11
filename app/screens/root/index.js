@@ -10,11 +10,9 @@ import {getTheme} from 'app/selectors/preferences';
 
 import Root from './root';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         credentials: state.entities.general.credentials,
-        loginRequest: state.requests.users.login,
         theme: getTheme(state)
     };
 }

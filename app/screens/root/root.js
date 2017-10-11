@@ -1,27 +1,32 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import {Client, Client4} from 'mattermost-redux/client';
-import {RequestStatus} from 'mattermost-redux/constants';
 
 import Loading from 'app/components/loading';
 import {stripTrailingSlashes} from 'app/utils/url';
 
-export default class Root extends PureComponent {
+export default class Root extends Component {
     static propTypes = {
         allowOtherServers: PropTypes.bool,
         credentials: PropTypes.object,
         justInit: PropTypes.bool,
-        loginRequest: PropTypes.object,
         navigator: PropTypes.object,
         theme: PropTypes.object,
         actions: PropTypes.shape({
             loadMe: PropTypes.func
         }).isRequired
     };
+
+    shouldComponentUpdate(nextProps) {
+        if (nextProps.credentials !== this.props.credentials) {
+            return true;
+        }
+        return false;
+    }
 
     componentDidMount() {
         if (!this.props.justInit) {
@@ -66,21 +71,15 @@ export default class Root extends PureComponent {
     };
 
     loadStoreAndScene = () => {
-        const {actions, credentials, loginRequest} = this.props;
+        const {actions, credentials} = this.props;
         const {loadMe} = actions;
         if (credentials.token && credentials.url) {
-            // Will probably need to make this optimistic since we
-            // assume that the stored token is good.
-            if (loginRequest.status === RequestStatus.NOT_STARTED) {
-                Client.setToken(credentials.token);
-                Client4.setToken(credentials.token);
-                Client4.setUrl(stripTrailingSlashes(credentials.url));
-                Client.setUrl(stripTrailingSlashes(credentials.url));
+            Client.setToken(credentials.token);
+            Client4.setToken(credentials.token);
+            Client4.setUrl(stripTrailingSlashes(credentials.url));
+            Client.setUrl(stripTrailingSlashes(credentials.url));
 
-                loadMe().then(this.goToLoadTeam).catch(this.goToLoadTeam);
-            } else {
-                this.goToLoadTeam();
-            }
+            loadMe().then(this.goToLoadTeam).catch(this.goToLoadTeam);
         } else {
             this.goToSelectServer();
         }

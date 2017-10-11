@@ -8,12 +8,11 @@ import {ViewTypes} from 'app/constants';
 import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
-    getChannelStats,
     selectChannel,
     leaveChannel as serviceLeaveChannel,
     unfavoriteChannel
 } from 'mattermost-redux/actions/channels';
-import {getPosts, getPostsWithRetry, getPostsBefore, getPostsSinceWithRetry, getPostThread} from 'mattermost-redux/actions/posts';
+import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
@@ -30,6 +29,8 @@ import {
 } from 'mattermost-redux/utils/channel_utils';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
+
+const MAX_POST_TRIES = 3;
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
@@ -139,23 +140,57 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
 }
 
 export function loadPostsIfNecessaryWithRetry(channelId) {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState();
         const {posts, postsInChannel} = state.entities.posts;
-
         const postsIds = postsInChannel[channelId];
 
-        // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+        const time = Date.now();
+
+        let received;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
-            getPostsWithRetry(channelId)(dispatch, getState);
-            return;
+            // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+            received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        } else {
+            const {lastConnectAt} = state.device.websocket;
+            const lastGetPosts = state.views.channel.lastGetPosts[channelId];
+
+            let since;
+            if (lastGetPosts && lastGetPosts < lastConnectAt) {
+                // Since the websocket disconnected, we may have missed some posts since then
+                since = lastGetPosts;
+            } else {
+                // Trust that we've received all posts since the last time the websocket disconnected
+                // so just get any that have changed since the latest one we've received
+                const postsForChannel = postsIds.map((id) => posts[id]);
+                since = getLastCreateAt(postsForChannel);
+            }
+
+            received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
         }
 
-        const postsForChannel = postsIds.map((id) => posts[id]);
-        const latestPostTime = getLastCreateAt(postsForChannel);
-
-        getPostsSinceWithRetry(channelId, latestPostTime)(dispatch, getState);
+        if (received) {
+            dispatch({
+                type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
+                channelId,
+                time
+            });
+        }
     };
+}
+
+async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
+    for (let i = 0; i < maxTries; i++) {
+        const posts = await action(dispatch, getState);
+
+        if (posts) {
+            dispatch(setChannelRetryFailed(false));
+            return posts;
+        }
+    }
+
+    dispatch(setChannelRetryFailed(true));
+    return null;
 }
 
 export function loadFilesForPostIfNecessary(postId) {
@@ -184,34 +219,35 @@ export function loadThreadIfNecessary(rootId, channelId) {
 export function selectInitialChannel(teamId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        const {channels, myMembers} = state.entities.channels;
         const {currentUserId} = state.entities.users;
-        const currentChannel = channels[currentChannelId];
         const {myPreferences} = state.entities.preferences;
+        const lastChannelId = state.views.team.lastChannelForTeam[teamId] || '';
+        const lastChannel = channels[lastChannelId];
 
-        const isDMVisible = currentChannel && currentChannel.type === General.DM_CHANNEL &&
-            isDirectChannelVisible(currentUserId, myPreferences, currentChannel);
+        const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&
+            isDirectChannelVisible(currentUserId, myPreferences, lastChannel);
 
-        const isGMVisible = currentChannel && currentChannel.type === General.GM_CHANNEL &&
-            isGroupChannelVisible(myPreferences, currentChannel);
+        const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
+            isGroupChannelVisible(myPreferences, lastChannel);
 
-        if (currentChannel && myMembers[currentChannelId] &&
-            (currentChannel.team_id === teamId || isDMVisible || isGMVisible)) {
-            await handleSelectChannel(currentChannelId)(dispatch, getState);
+        if (lastChannelId && myMembers[lastChannelId] &&
+            (lastChannel.team_id === teamId || isDMVisible || isGMVisible)) {
+            handleSelectChannel(lastChannelId)(dispatch, getState);
             return;
         }
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         if (channel) {
             dispatch(setChannelDisplayName(''));
-            await handleSelectChannel(channel.id)(dispatch, getState);
+            handleSelectChannel(channel.id)(dispatch, getState);
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
             const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
             dispatch(setChannelDisplayName(''));
-            await handleSelectChannel(firstChannel.id)(dispatch, getState);
+            handleSelectChannel(firstChannel.id)(dispatch, getState);
         }
     };
 }
@@ -220,13 +256,20 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const {currentTeamId} = getState().entities.teams;
 
-        dispatch({
-            type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-            teamId: currentTeamId,
-            channelId
-        });
-        getChannelStats(channelId)(dispatch, getState);
+        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
         selectChannel(channelId)(dispatch, getState);
+        dispatch(batchActions([
+            {
+                type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
+                data: channelId
+            },
+            setChannelLoading(false),
+            {
+                type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
+                teamId: currentTeamId,
+                channelId
+            }
+        ]), 'BATCH_CHANNEL_LOADED');
     };
 }
 
@@ -303,8 +346,11 @@ export function closeGMChannel(channel) {
 }
 
 export function refreshChannelWithRetry(channelId) {
-    return (dispatch, getState) => {
-        getPostsWithRetry(channelId)(dispatch, getState);
+    return async (dispatch, getState) => {
+        dispatch(setChannelRefreshing(true));
+        const posts = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        dispatch(setChannelRefreshing(false));
+        return posts;
     };
 }
 
@@ -325,10 +371,17 @@ export function setChannelLoading(loading = true) {
     };
 }
 
-export function setPostTooltipVisible(visible = true) {
+export function setChannelRefreshing(loading = true) {
     return {
-        type: ViewTypes.POST_TOOLTIP_VISIBLE,
-        visible
+        type: ViewTypes.SET_CHANNEL_REFRESHING,
+        loading
+    };
+}
+
+export function setChannelRetryFailed(failed = true) {
+    return {
+        type: ViewTypes.SET_CHANNEL_RETRY_FAILED,
+        failed
     };
 }
 

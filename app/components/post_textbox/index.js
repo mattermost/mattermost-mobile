@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {createPost} from 'mattermost-redux/actions/posts';
 import {userTyping} from 'mattermost-redux/actions/websocket';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
@@ -22,6 +23,7 @@ function mapStateToProps(state, ownProps) {
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
 
     return {
+        channelId: getCurrentChannelId(state),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         currentUserId: getCurrentUserId(state),

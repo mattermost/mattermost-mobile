@@ -93,12 +93,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return {width: maxWidth, height: maxHeight};
     };
 
-    generateStaticEmbed = (isYouTube) => {
-        if (isYouTube) {
+    generateStaticEmbed = (isYouTube, isImage) => {
+        if (isYouTube || isImage) {
             return null;
         }
 
-        const {link, openGraphData, showLinkPreviews} = this.props;
+        const {link, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getSlackAttachment();
         if (attachments) {
             return attachments;
@@ -109,6 +109,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 <PostAttachmentOpenGraph
                     link={link}
                     openGraphData={openGraphData}
+                    theme={theme}
                 />
             );
         }
@@ -120,23 +121,25 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const {link} = this.props;
         const {linkLoaded} = this.state;
 
-        let imageUrl;
-        if (isImageLink(link)) {
-            imageUrl = link;
-        } else if (isYoutubeLink(link)) {
-            const videoId = youTubeVideoId(link);
-            imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-        }
+        if (link) {
+            let imageUrl;
+            if (isImageLink(link)) {
+                imageUrl = link;
+            } else if (isYoutubeLink(link)) {
+                const videoId = youTubeVideoId(link);
+                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            }
 
-        if (imageUrl && !linkLoaded) {
-            Image.getSize(imageUrl, (width, height) => {
-                if (!this.mounted) {
-                    return;
-                }
+            if (imageUrl && !linkLoaded) {
+                Image.getSize(imageUrl, (width, height) => {
+                    if (!this.mounted) {
+                        return;
+                    }
 
-                const dimensions = this.calculateDimensions(width, height);
-                this.setState({...dimensions, linkLoaded: true});
-            }, () => null);
+                    const dimensions = this.calculateDimensions(width, height);
+                    this.setState({...dimensions, linkLoaded: true});
+                }, () => null);
+            }
         }
     };
 
@@ -242,8 +245,14 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     render() {
-        const {link, openGraphData} = this.props;
+        const {link, openGraphData, postProps} = this.props;
         const {linkLoaded, linkLoadError} = this.state;
+        const {attachments} = postProps;
+
+        if (!link && !attachments) {
+            return null;
+        }
+
         const isYouTube = isYoutubeLink(link);
         const isImage = isImageLink(link);
         const isOpenGraph = Boolean(openGraphData && openGraphData.description);
@@ -255,7 +264,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             }
         }
 
-        return this.generateStaticEmbed(isYouTube);
+        return this.generateStaticEmbed(isYouTube, isImage);
     }
 }
 

@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    Animated,
     Platform,
     StyleSheet,
     View
@@ -13,12 +12,9 @@ import {
 
 import {General} from 'mattermost-redux/constants';
 
-import ChannelLoader from 'app/components/channel_loader';
-import FormattedText from 'app/components/formatted_text';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
-
-const {View: AnimatedView} = Animated;
+import RetryBarIndicator from 'app/components/retry_bar_indicator';
 
 class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -29,98 +25,65 @@ class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired
         }).isRequired,
-        channel: PropTypes.object.isRequired,
-        channelIsLoading: PropTypes.bool,
-        channelIsRefreshing: PropTypes.bool,
+        channelDisplayName: PropTypes.string,
+        channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
+        channelType: PropTypes.string,
+        currentUserId: PropTypes.string,
         intl: intlShape.isRequired,
-        loadingPosts: PropTypes.bool,
-        myMember: PropTypes.object.isRequired,
+        lastViewedAt: PropTypes.number,
         navigator: PropTypes.object,
         posts: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
+        totalMessageCount: PropTypes.number,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        loadingPosts: false,
-        postVisibility: 0
+        postVisibility: 15
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            retryMessageHeight: new Animated.Value(0)
+            visiblePosts: this.getVisiblePosts(props),
+            showLoadMore: props.posts.length >= props.postVisibility
         };
     }
 
-    componentDidMount() {
-        const {channel, posts, channelRefreshingFailed} = this.props;
-        this.mounted = true;
-        this.loadPosts(this.props.channel.id);
-        this.shouldMarkChannelAsLoaded(posts.length, channel.total_msg_count === 0, channelRefreshingFailed);
-    }
-
     componentWillReceiveProps(nextProps) {
-        const {channel: currentChannel} = this.props;
-        const {channel: nextChannel, channelRefreshingFailed: nextChannelRefreshingFailed, posts: nextPosts} = nextProps;
+        const {posts: nextPosts} = nextProps;
 
-        if (currentChannel.id !== nextChannel.id) {
-            // Load the posts when the channel actually changes
-            this.loadPosts(nextChannel.id);
+        const showLoadMore = nextPosts.length >= nextProps.postVisibility;
+        let visiblePosts = this.state.visiblePosts;
+
+        if (nextPosts !== this.props.posts || nextProps.postVisibility !== this.props.postVisibility) {
+            visiblePosts = this.getVisiblePosts(nextProps);
         }
 
-        if (nextChannelRefreshingFailed && this.state.channelLoaded && nextPosts.length) {
-            this.toggleRetryMessage();
-        } else if (!nextChannelRefreshingFailed || !nextPosts.length) {
-            this.toggleRetryMessage(false);
-        }
-
-        this.shouldMarkChannelAsLoaded(nextPosts.length, nextChannel.total_msg_count === 0, nextChannelRefreshingFailed);
-
-        const showLoadMore = nextProps.posts.length >= nextProps.postVisibility;
         this.setState({
-            showLoadMore
+            showLoadMore,
+            visiblePosts
         });
     }
 
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    shouldMarkChannelAsLoaded = (postsCount, channelHasMessages, channelRefreshingFailed) => {
-        if (postsCount || channelHasMessages || channelRefreshingFailed) {
-            this.channelLoaded();
-        }
-    };
-
-    channelLoaded = () => {
-        this.setState({channelLoaded: true});
-    };
-
-    toggleRetryMessage = (show = true) => {
-        const value = show ? 38 : 0;
-        Animated.timing(this.state.retryMessageHeight, {
-            toValue: value,
-            duration: 350
-        }).start();
+    getVisiblePosts = (props) => {
+        return props.posts.slice(0, props.postVisibility);
     };
 
     goToThread = (post) => {
-        const {actions, channel, intl, navigator, theme} = this.props;
-        const channelId = post.channel_id;
+        const {actions, channelId, channelDisplayName, channelType, intl, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
         actions.loadThreadIfNecessary(post.root_id, channelId);
         actions.selectPost(rootId);
 
         let title;
-        if (channel.type === General.DM_CHANNEL) {
+        if (channelType === General.DM_CHANNEL) {
             title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
         } else {
-            const channelName = channel.display_name;
-            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName});
+            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: channelDisplayName});
         }
 
         const options = {
@@ -149,91 +112,71 @@ class ChannelPostList extends PureComponent {
 
     loadMorePosts = () => {
         if (this.state.showLoadMore) {
-            const {actions, channel} = this.props;
-            actions.increasePostVisibility(channel.id);
+            const {actions, channelId} = this.props;
+            actions.increasePostVisibility(channelId);
         }
     };
 
-    loadPosts = (channelId) => {
-        this.setState({channelLoaded: false});
-        this.props.actions.loadPostsIfNecessaryWithRetry(channelId);
+    loadPostsRetry = () => {
+        const {actions, channelId} = this.props;
+        actions.loadPostsIfNecessaryWithRetry(channelId);
     };
 
     render() {
         const {
-            channel,
-            channelIsLoading,
-            channelIsRefreshing,
+            actions,
+            channelId,
             channelRefreshingFailed,
-            loadingPosts,
-            myMember,
+            currentUserId,
+            lastViewedAt,
             navigator,
             posts,
-            postVisibility,
             theme
         } = this.props;
 
-        const {retryMessageHeight} = this.state;
+        const {
+            showLoadMore,
+            visiblePosts
+        } = this.state;
 
         let component;
         if (!posts.length && channelRefreshingFailed) {
             component = (
                 <PostListRetry
-                    retry={() => this.loadPosts(channel.id)}
+                    retry={this.loadPostsRetry}
                     theme={theme}
                 />
             );
-        } else if (channelIsLoading) {
-            component = <ChannelLoader theme={theme}/>;
         } else {
             component = (
                 <PostList
-                    posts={posts.slice(0, postVisibility)}
+                    posts={visiblePosts}
                     loadMore={this.loadMorePosts}
-                    isLoadingMore={loadingPosts}
-                    showLoadMore={this.state.showLoadMore}
+                    showLoadMore={showLoadMore}
                     onPostPress={this.goToThread}
+                    onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
                     indicateNewMessages={true}
-                    currentUserId={myMember.user_id}
-                    lastViewedAt={myMember.last_viewed_at}
-                    channel={channel}
+                    currentUserId={currentUserId}
+                    lastViewedAt={lastViewedAt}
+                    channelId={channelId}
                     navigator={navigator}
-                    refreshing={channelIsRefreshing}
-                    channelIsLoading={channelIsLoading}
                 />
             );
         }
 
-        const refreshIndicatorDimensions = {
-            height: retryMessageHeight
-        };
-
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 {component}
-                <AnimatedView style={[style.refreshIndicator, refreshIndicatorDimensions]}>
-                    <FormattedText
-                        id='mobile.retry_message'
-                        defaultMessage='Refreshing messages failed. Pull up to try again.'
-                        style={{color: 'white', flex: 1, fontSize: 12}}
-                    />
-                </AnimatedView>
+                <RetryBarIndicator/>
             </View>
         );
     }
 }
 
 const style = StyleSheet.create({
-    refreshIndicator: {
-        alignItems: 'center',
-        backgroundColor: '#fb8000',
-        flexDirection: 'row',
-        paddingHorizontal: 10,
-        position: 'absolute',
-        top: 0,
-        overflow: 'hidden',
-        width: '100%'
+    container: {
+        flex: 1
     }
 });
 

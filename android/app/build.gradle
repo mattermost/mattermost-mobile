@@ -93,9 +93,9 @@ android {
 
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 23
-        versionCode 50
+        versionCode 57
         versionName "1.3.0"
         multiDexEnabled true
         ndk {

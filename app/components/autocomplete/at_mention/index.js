@@ -4,21 +4,29 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'app/selectors/preferences';
 import {autocompleteUsers} from 'mattermost-redux/actions/users';
-import {getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getProfilesInCurrentChannel, getProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentChannelId, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+
+import {
+    filterMembersInChannel,
+    filterMembersNotInChannel,
+    filterMembersInCurrentTeam,
+    getMatchTermForAtMention
+} from 'app/selectors/autocomplete';
+import {getTheme} from 'app/selectors/preferences';
 
 import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
-    const {currentChannelId} = state.entities.channels;
+    const {cursorPosition, isSearch, rootId} = ownProps;
+    const currentChannelId = getCurrentChannelId(state);
 
-    let postDraft;
-    if (ownProps.isSearch) {
+    let postDraft = '';
+    if (isSearch) {
         postDraft = state.views.search;
     } else if (ownProps.rootId) {
-        const threadDraft = state.views.thread.drafts[ownProps.rootId];
+        const threadDraft = state.views.thread.drafts[rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;
         }
@@ -29,16 +37,28 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
+    const value = postDraft.substring(0, cursorPosition);
+    const matchTerm = getMatchTermForAtMention(value, isSearch);
+
+    let teamMembers;
+    let inChannel;
+    let outChannel;
+    if (isSearch) {
+        teamMembers = filterMembersInCurrentTeam(state, matchTerm);
+    } else {
+        inChannel = filterMembersInChannel(state, matchTerm);
+        outChannel = filterMembersNotInChannel(state, matchTerm);
+    }
+
     return {
-        currentUserId: state.entities.users.currentUserId,
         currentChannelId,
-        currentTeamId: state.entities.teams.currentTeamId,
+        currentTeamId: getCurrentTeamId(state),
         defaultChannel: getDefaultChannel(state),
         postDraft,
-        autocompleteUsers: {
-            inChannel: getProfilesInCurrentChannel(state),
-            outChannel: getProfilesNotInCurrentChannel(state)
-        },
+        matchTerm,
+        teamMembers,
+        inChannel,
+        outChannel,
         requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state),
         ...ownProps

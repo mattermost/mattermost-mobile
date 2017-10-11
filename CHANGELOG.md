@@ -1,5 +1,39 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.3 Release 
+
+- Release Date: October 5, 2017
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights 
+
+#### Tablet Support (Beta) 
+- Added support for landscape view, so the app may be used on tablets
+- Note: Tablet support is in beta, and further improvements are planned for a later date
+
+#### Link Previews 
+- Added support for image, GIF, and youtube link previews
+
+#### Notifications
+- Android: Added the ability to set light, vibrate, and sound settings
+- Android: Improved notification stacking so most recent notification shows first 
+- Updated the design for Notification settings to improve usability 
+- Added the ability to reply from a push notification without opening the app (requires Android v7.0+, iOS 10+) 
+- Increased speed when opening app from a push notification
+
+#### Download Files 
+- Added the ability to download all files on Android and images on iOS
+
+### Improvements
+- Using `+` shortcut for emoji reactions is now supported 
+- Improved emoji formatting (alignment and rendering of non-square aspect ratios)
+- Added support for error tracking with Sentry
+- Only show the "Connecting..." bar after two connection attempts 
+
+### Bug Fixes
+- Fixed link rendering not working in certain cases
+- Fixed theme color issue with status bar on Android
+
 ## v1.2 Release
 
 - Release Date: September 5, 2017 

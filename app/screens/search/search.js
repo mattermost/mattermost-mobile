@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Keyboard,
+    InteractionManager,
     Platform,
     SectionList,
     StyleSheet,
@@ -97,13 +98,13 @@ class Search extends Component {
         const recentLenght = recent.length;
         const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
 
-        if (shouldScroll && !this.state.isFocused) {
-            setTimeout(() => {
+        if (shouldScroll) {
+            requestAnimationFrame(() => {
                 this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                     animated: true,
                     offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght + 1) * RECENT_SEPARATOR_HEIGHT)
                 });
-            }, 200);
+            });
         }
     }
 
@@ -113,7 +114,7 @@ class Search extends Component {
 
     cancelSearch = () => {
         const {navigator} = this.props;
-        this.handleTextChanged('');
+        this.handleTextChanged('', true);
         navigator.dismissModal({animationType: 'slide-down'});
     };
 
@@ -161,7 +162,7 @@ class Search extends Component {
         }
     };
 
-    handleTextChanged = (value) => {
+    handleTextChanged = (value, selectionChanged) => {
         const {actions, searchingStatus} = this.props;
         this.setState({value});
         actions.handleSearchDraftChanged(value);
@@ -169,6 +170,18 @@ class Search extends Component {
         if (!value && searchingStatus === RequestStatus.SUCCESS) {
             actions.clearSearch();
             this.scrollToTop();
+        }
+
+        // FIXME: Workaround for iOS when setting the value directly
+        // in the inputText, bug in RN 0.48
+        if (Platform.OS === 'ios' && selectionChanged) {
+            this.handleSelectionChange({
+                nativeEvent: {
+                    selection: {
+                        end: value.length
+                    }
+                }
+            });
         }
     };
 
@@ -301,6 +314,7 @@ class Search extends Component {
                     onReply={this.goToThread}
                     isSearchResult={true}
                     shouldRenderReplyButton={true}
+                    showFullDate={true}
                     navigator={this.props.navigator}
                 />
                 {separator}
@@ -392,18 +406,35 @@ class Search extends Component {
 
     search = (terms, isOrSearch) => {
         const {actions, currentTeamId} = this.props;
-        actions.searchPosts(currentTeamId, terms, isOrSearch);
+        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
+
+        this.handleTextChanged(`${terms} `);
+
+        // Trigger onSelectionChanged Manually when submitting
+        this.handleSelectionChange({
+            nativeEvent: {
+                selection: {
+                    end: terms.length + 1
+                }
+            }
+        });
     };
 
     setModifierValue = (modifier) => {
         const {value} = this.state;
+        let newValue = '';
+
         if (!value) {
-            this.handleTextChanged(modifier);
+            newValue = modifier;
         } else if (value.endsWith(' ')) {
-            this.handleTextChanged(`${value}${modifier}`);
+            newValue = `${value}${modifier}`;
         } else {
-            this.handleTextChanged(`${value} ${modifier}`);
+            newValue = `${value} ${modifier}`;
         }
+
+        this.handleTextChanged(newValue, true);
+
+        this.refs.searchBar.focus();
     };
 
     setRecentValue = (recent) => {
@@ -429,6 +460,8 @@ class Search extends Component {
                 viewChannel
             } = actions;
 
+            setChannelLoading();
+
             const channel = channels.find((c) => c.id === channelId);
             let displayName = '';
 
@@ -439,10 +472,11 @@ class Search extends Component {
             this.props.navigator.dismissModal({animationType: 'none'});
 
             markChannelAsRead(channelId, currentChannelId);
-            setChannelLoading();
             viewChannel(channelId, currentChannelId);
             setChannelDisplayName(displayName);
-            handleSelectChannel(channelId);
+            InteractionManager.runAfterInteractions(() => {
+                handleSelectChannel(channelId);
+            });
         }
     };
 
@@ -584,11 +618,6 @@ class Search extends Component {
                         backArrowSize={28}
                     />
                 </View>
-                <Autocomplete
-                    ref={this.attachAutocomplete}
-                    onChangeText={this.handleTextChanged}
-                    isSearch={true}
-                />
                 <SectionList
                     ref='list'
                     style={style.sectionList}
@@ -597,6 +626,11 @@ class Search extends Component {
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
                     stickySectionHeadersEnabled={Platform.OS === 'ios'}
+                />
+                <Autocomplete
+                    ref={this.attachAutocomplete}
+                    onChangeText={this.handleTextChanged}
+                    isSearch={true}
                 />
                 {previewComponent}
             </View>

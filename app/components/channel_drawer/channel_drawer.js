@@ -18,7 +18,7 @@ import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
-import {General} from 'mattermost-redux/constants';
+import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 const DRAWER_INITIAL_OFFSET = 40;
@@ -48,6 +48,8 @@ export default class ChannelDrawer extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    closeLeftHandle = null;
+    openLeftHandle = null;
     swiperIndex = 1;
 
     constructor(props) {
@@ -58,7 +60,6 @@ export default class ChannelDrawer extends PureComponent {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
         this.state = {
-            openDrawer: false,
             openDrawerOffset
         };
     }
@@ -70,29 +71,33 @@ export default class ChannelDrawer extends PureComponent {
     componentDidMount() {
         EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
+        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
     componentWillReceiveProps(nextProps) {
         const {isLandscape, isTablet} = this.props;
         if (nextProps.isLandscape !== isLandscape || nextProps.isTablet || isTablet) {
-            let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-            if (nextProps.isLandscape || nextProps.isTablet) {
-                openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+            if (this.state.openDrawerOffset !== 0) {
+                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
+                if (nextProps.isLandscape || nextProps.isTablet) {
+                    openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
+                }
+                this.setState({openDrawerOffset});
             }
-            this.setState({openDrawerOffset});
         }
     }
 
     componentWillUnmount() {
         EventEmitter.off('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
+        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
     handleAndroidBack = () => {
-        if (this.state.openDrawer) {
-            this.setState({openDrawer: false});
+        if (this.refs.drawer && this.refs.drawer.isOpened()) {
+            this.refs.drawer.close();
             return true;
         }
 
@@ -100,7 +105,9 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     closeChannelDrawer = () => {
-        this.setState({openDrawer: false});
+        if (this.refs.drawer && this.refs.drawer.isOpened()) {
+            this.refs.drawer.close();
+        }
     };
 
     drawerSwiperRef = (ref) => {
@@ -110,11 +117,15 @@ export default class ChannelDrawer extends PureComponent {
     handleDrawerClose = () => {
         this.resetDrawer();
 
-        if (this.state.openDrawer) {
-            // The state doesn't get updated if you swipe to close
-            this.setState({
-                openDrawer: false
-            });
+        if (this.closeLeftHandle) {
+            InteractionManager.clearInteractionHandle(this.closeLeftHandle);
+            this.closeLeftHandle = null;
+        }
+    };
+
+    handleDrawerCloseStart = () => {
+        if (!this.closeLeftHandle) {
+            this.closeLeftHandle = InteractionManager.createInteractionHandle();
         }
     };
 
@@ -122,14 +133,16 @@ export default class ChannelDrawer extends PureComponent {
         if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
         }
+
+        if (this.openLeftHandle) {
+            InteractionManager.clearInteractionHandle(this.openLeftHandle);
+            this.openLeftHandle = null;
+        }
     };
 
     handleDrawerOpenStart = () => {
-        if (!this.state.openDrawer) {
-            // The state doesn't get updated if you swipe to open
-            this.setState({
-                openDrawer: true
-            });
+        if (!this.openLeftHandle) {
+            this.openLeftHandle = InteractionManager.createInteractionHandle();
         }
     };
 
@@ -151,12 +164,20 @@ export default class ChannelDrawer extends PureComponent {
         };
     };
 
+    handleUpdateTitle = (channel) => {
+        let channelName = '';
+        if (channel.display_name) {
+            channelName = channel.display_name;
+        }
+        this.props.actions.setChannelDisplayName(channelName);
+    };
+
     openChannelDrawer = () => {
         this.props.blurPostTextBox();
 
-        this.setState({
-            openDrawer: true
-        });
+        if (this.refs.drawer && !this.refs.drawer.isOpened()) {
+            this.refs.drawer.open();
+        }
     };
 
     selectChannel = (channel) => {
@@ -175,13 +196,18 @@ export default class ChannelDrawer extends PureComponent {
 
         setChannelLoading();
         setChannelDisplayName(channel.display_name);
-        handleSelectChannel(channel.id);
 
         this.closeChannelDrawer();
 
         InteractionManager.runAfterInteractions(() => {
-            markChannelAsRead(channel.id, currentChannelId);
-            viewChannel(currentChannelId);
+            handleSelectChannel(channel.id);
+            requestAnimationFrame(() => {
+                // mark the channel as viewed after all the frame has flushed
+                markChannelAsRead(channel.id, currentChannelId);
+                if (channel.id !== currentChannelId) {
+                    viewChannel(currentChannelId);
+                }
+            });
         });
     };
 
@@ -237,7 +263,11 @@ export default class ChannelDrawer extends PureComponent {
     onSearchEnds = () => {
         //hack to update the drawer when the offset changes
         const {isLandscape, isTablet} = this.props;
-        this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+
+        if (this.refs.drawer) {
+            this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+        }
+
         let openDrawerOffset = DRAWER_INITIAL_OFFSET;
         if (isLandscape || isTablet) {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
@@ -246,7 +276,10 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     onSearchStart = () => {
-        this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+        if (this.refs.drawer) {
+            this.refs.drawer._syncAfterUpdate = true; //eslint-disable-line no-underscore-dangle
+        }
+
         this.setState({openDrawerOffset: 0});
     };
 
@@ -273,19 +306,37 @@ export default class ChannelDrawer extends PureComponent {
             openDrawerOffset
         } = this.state;
 
-        const showTeams = openDrawerOffset !== 0 && teamsCount > 1;
+        const multipleTeams = teamsCount > 1;
+        const showTeams = openDrawerOffset !== 0 && multipleTeams;
+        if (this.drawerSwiper) {
+            if (multipleTeams) {
+                this.drawerSwiper.getWrappedInstance().runOnLayout();
+            } else if (!openDrawerOffset) {
+                this.drawerSwiper.getWrappedInstance().scrollToStart();
+            }
+        }
 
-        const teams = (
-            <View style={style.swiperContent}>
-                <TeamsList
-                    closeChannelDrawer={this.closeChannelDrawer}
-                    navigator={navigator}
-                />
-            </View>
-        );
+        const lists = [];
+        if (multipleTeams) {
+            const teamsList = (
+                <View
+                    key='teamsList'
+                    style={style.swiperContent}
+                >
+                    <TeamsList
+                        closeChannelDrawer={this.closeChannelDrawer}
+                        navigator={navigator}
+                    />
+                </View>
+            );
+            lists.push(teamsList);
+        }
 
-        const channelsList = (
-            <View style={style.swiperContent}>
+        lists.push(
+            <View
+                key='channelsList'
+                style={style.swiperContent}
+            >
                 <ChannelsList
                     navigator={navigator}
                     onSelectChannel={this.selectChannel}
@@ -305,23 +356,22 @@ export default class ChannelDrawer extends PureComponent {
                 showTeams={showTeams}
                 theme={theme}
             >
-                {teams}
-                {channelsList}
+                {lists}
             </DrawerSwiper>
         );
-    }
+    };
 
     render() {
         const {children} = this.props;
-        const {openDrawer, openDrawerOffset} = this.state;
+        const {openDrawerOffset} = this.state;
 
         return (
             <Drawer
                 ref='drawer'
-                open={openDrawer}
                 onOpenStart={this.handleDrawerOpenStart}
                 onOpen={this.handleDrawerOpen}
                 onClose={this.handleDrawerClose}
+                onCloseStart={this.handleDrawerCloseStart}
                 captureGestures='open'
                 type='static'
                 acceptTap={true}
@@ -336,7 +386,7 @@ export default class ChannelDrawer extends PureComponent {
                 panThreshold={0.25}
                 acceptPan={true}
                 negotiatePan={true}
-                useInteractionManager={true}
+                useInteractionManager={false}
                 tweenDuration={100}
                 tweenHandler={this.handleDrawerTween}
                 elevation={-5}

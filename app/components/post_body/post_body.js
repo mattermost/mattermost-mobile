@@ -39,6 +39,7 @@ class PostBody extends PureComponent {
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
+        isPostEphemeral: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
         message: PropTypes.string,
@@ -133,6 +134,7 @@ class PostBody extends PureComponent {
             isFailed,
             isFlagged,
             isPending,
+            isPostEphemeral,
             isSearchResult,
             isSystemMessage,
             intl,
@@ -157,7 +159,7 @@ class PostBody extends PureComponent {
         const isPendingOrFailedPost = isPending || isFailed;
 
         // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost && !isSearchResult) {
+        if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
@@ -188,11 +190,20 @@ class PostBody extends PureComponent {
         let messageComponent;
         if (hasBeenDeleted) {
             messageComponent = (
-                <FormattedText
-                    style={messageStyle}
-                    id='post_body.deleted'
-                    defaultMessage='(message deleted)'
-                />
+                <TouchableHighlight
+                    onHideUnderlay={this.handleHideUnderlay}
+                    onPress={onPress}
+                    onShowUnderlay={this.handleShowUnderlay}
+                    underlayColor='transparent'
+                >
+                    <View style={{flexDirection: 'row'}}>
+                        <FormattedText
+                            style={messageStyle}
+                            id='post_body.deleted'
+                            defaultMessage='(message deleted)'
+                        />
+                    </View>
+                </TouchableHighlight>
             );
             body = (<View>{messageComponent}</View>);
         } else if (message.length) {
@@ -219,7 +230,6 @@ class PostBody extends PureComponent {
                 body = (
                     <TouchableHighlight
                         onHideUnderlay={this.handleHideUnderlay}
-                        onLongPress={this.show}
                         onPress={onPress}
                         onShowUnderlay={this.handleShowUnderlay}
                         underlayColor='transparent'
@@ -251,8 +261,8 @@ class PostBody extends PureComponent {
                         <PostBodyAdditionalContent
                             baseTextStyle={messageStyle}
                             blockStyles={blockStyles}
-                            message={message}
                             navigator={navigator}
+                            message={message}
                             postProps={postProps}
                             textStyles={textStyles}
                         />

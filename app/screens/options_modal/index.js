@@ -7,9 +7,8 @@ import {getDimensions} from 'app/selectors/device';
 
 import OptionsModal from './options_modal';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         ...getDimensions(state)
     };
 }

@@ -208,6 +208,7 @@ export default class SearchBarAndroid extends PureComponent {
                         placeholderTextColor={placeholderTextColor}
                         selectionColor={selectionColor}
                         underlineColorAndroid='transparent'
+                        disableFullscreenUI={true}
                         style={[
                             styles.searchBarInput,
                             inputNoBackground,

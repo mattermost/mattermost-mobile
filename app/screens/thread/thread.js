@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -10,7 +10,7 @@ import PostTextbox from 'app/components/post_textbox';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class Thread extends PureComponent {
+export default class Thread extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired
@@ -20,11 +20,25 @@ export default class Thread extends PureComponent {
         myMember: PropTypes.object.isRequired,
         rootId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        posts: PropTypes.array.isRequired,
-        statusBarHeight: PropTypes.number
+        posts: PropTypes.array.isRequired
     };
 
     state = {};
+
+    shouldComponentUpdate(nextProps) {
+        if (nextProps.posts.length !== this.props.posts.length) {
+            return true;
+        }
+
+        const length = nextProps.posts.length;
+        for (let i = 0; i < length; i++) {
+            if (nextProps.posts[i].id !== this.props.posts[i].id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     componentWillReceiveProps(nextProps) {
         if (!this.state.lastViewedAt) {
@@ -43,21 +57,15 @@ export default class Thread extends PureComponent {
             navigator,
             posts,
             rootId,
-            statusBarHeight,
             theme
         } = this.props;
         const style = getStyle(theme);
-
-        let height = 0;
-        if (statusBarHeight > 20) {
-            height = statusBarHeight - 20;
-        }
 
         return (
             <KeyboardLayout
                 behavior='padding'
                 style={style.container}
-                keyboardVerticalOffset={65 + height}
+                keyboardVerticalOffset={65}
             >
                 <StatusBar/>
                 <PostList

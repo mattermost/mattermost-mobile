@@ -5,21 +5,29 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {searchChannels} from 'mattermost-redux/actions/channels';
-import {General} from 'mattermost-redux/constants';
-import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
+import {
+    filterMyChannels,
+    filterOtherChannels,
+    filterPublicChannels,
+    filterPrivateChannels,
+    getMatchTermForChannelMention
+} from 'app/selectors/autocomplete';
 import {getTheme} from 'app/selectors/preferences';
 
 import ChannelMention from './channel_mention';
 
 function mapStateToProps(state, ownProps) {
-    const {currentChannelId} = state.entities.channels;
+    const {cursorPosition, isSearch, rootId} = ownProps;
+    const currentChannelId = getCurrentChannelId(state);
 
-    let postDraft;
-    if (ownProps.isSearch) {
+    let postDraft = '';
+    if (isSearch) {
         postDraft = state.views.search;
-    } else if (ownProps.rootId) {
-        const threadDraft = state.views.thread.drafts[ownProps.rootId];
+    } else if (rootId) {
+        const threadDraft = state.views.thread.drafts[rootId];
         if (threadDraft) {
             postDraft = threadDraft.draft;
         }
@@ -30,17 +38,30 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
-    const autocompleteChannels = {
-        myChannels: getMyChannels(state).filter((c) => c.type !== General.DM_CHANNEL && c.type !== General.GM_CHANNEL),
-        otherChannels: getOtherChannels(state)
-    };
+    const value = postDraft.substring(0, cursorPosition);
+    const matchTerm = getMatchTermForChannelMention(value, isSearch);
+
+    let myChannels;
+    let otherChannels;
+    let publicChannels;
+    let privateChannels;
+    if (isSearch) {
+        publicChannels = filterPublicChannels(state, matchTerm);
+        privateChannels = filterPrivateChannels(state, matchTerm);
+    } else {
+        myChannels = filterMyChannels(state, matchTerm);
+        otherChannels = filterOtherChannels(state, matchTerm);
+    }
 
     return {
         ...ownProps,
-        currentChannelId,
-        currentTeamId: state.entities.teams.currentTeamId,
+        myChannels,
+        otherChannels,
+        publicChannels,
+        privateChannels,
+        currentTeamId: getCurrentTeamId(state),
+        matchTerm,
         postDraft,
-        autocompleteChannels,
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state)
     };

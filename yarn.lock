@@ -1623,9 +1623,9 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
 
-commonmark-react-renderer@hmhealey/commonmark-react-renderer#c5d00343664c89da40d5a2ffa8b083e7cc1615d7:
+commonmark-react-renderer@hmhealey/commonmark-react-renderer#6e259b66ae87d31d2f908effcd05776b9ea3446f:
   version "4.3.3"
-  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/c5d00343664c89da40d5a2ffa8b083e7cc1615d7"
+  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/6e259b66ae87d31d2f908effcd05776b9ea3446f"
   dependencies:
     in-publish "^2.0.0"
     lodash.assign "^4.2.0"
@@ -3878,7 +3878,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/c6115b3cfa934ed97a60a10727fa487df39a4043"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/6932c3fd4064434c5b30cff9898d724cdc687648"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -5011,15 +5011,9 @@ react-native-svg@5.4.1:
     color "^0.11.1"
     lodash "^4.16.6"
 
-react-native-swiper@nixoz/react-native-swiper:
-  version "1.5.12"
-  resolved "https://codeload.github.com/nixoz/react-native-swiper/tar.gz/e6978073f082eb0aaa72fb1d85265f19b77c1c98"
-  dependencies:
-    prop-types "^15.5.10"
-
 react-native-tooltip@enahum/react-native-tooltip:
-  version "5.0.0"
-  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/97d58d19636df8d8df66d6b5737154c9fab727c8"
+  version "5.1.1"
+  resolved "https://codeload.github.com/enahum/react-native-tooltip/tar.gz/eb47f93a728813b58c01f23ec84f0b8b1bd70bd0"
 
 react-native-vector-icons@4.3.0:
   version "4.3.0"
@@ -6416,6 +6410,10 @@ ultron@1.0.x:
 ultron@~1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.1.0.tgz#b07a2e6a541a815fc6a34ccd4533baec307ca864"
+
+underscore@1.8.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.8.3.tgz#4f3fb53b106e6097fcf9cb4109f2a5e9bdfa5022"
 
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"

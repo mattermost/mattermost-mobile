@@ -2,7 +2,6 @@ package com.mattermost.rnbeta;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -22,18 +21,13 @@ import com.facebook.react.bridge.WritableMap;
 public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     private static NotificationPreferencesModule instance;
     private final MainApplication mApplication;
-    private SharedPreferences mSharedPreferences;
-
-    private final String SHARED_NAME = "NotificationPreferences";
-    private final String SOUND_PREF = "NotificationSound";
-    private final String VIBRATE_PREF = "NotificationVibrate";
-    private final String BLINK_PREF = "NotificationLights";
+    private NotificationPreferences mNotificationPreference;
 
     private NotificationPreferencesModule(MainApplication application, ReactApplicationContext reactContext) {
         super(reactContext);
         mApplication = application;
         Context context = mApplication.getApplicationContext();
-        mSharedPreferences = context.getSharedPreferences(SHARED_NAME, Context.MODE_PRIVATE);
+        mNotificationPreference = NotificationPreferences.getInstance(context);
     }
 
     public static NotificationPreferencesModule getInstance(MainApplication application, ReactApplicationContext reactContext) {
@@ -76,9 +70,9 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
 
             Uri defaultUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_NOTIFICATION);
             result.putString("defaultUri", Uri.decode(defaultUri.toString()));
-            result.putString("selectedUri", getNotificationSound());
-            result.putBoolean("shouldVibrate", getShouldVibrate());
-            result.putBoolean("shouldBlink", getShouldBlink());
+            result.putString("selectedUri", mNotificationPreference.getNotificationSound());
+            result.putBoolean("shouldVibrate", mNotificationPreference.getShouldVibrate());
+            result.putBoolean("shouldBlink", mNotificationPreference.getShouldBlink());
             result.putArray("sounds", sounds);
 
             promise.resolve(result);
@@ -97,34 +91,16 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setNotificationSound(String soundUri) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putString(SOUND_PREF, soundUri);
-        editor.commit();
+        mNotificationPreference.setNotificationSound(soundUri);
     }
 
     @ReactMethod
     public void setShouldVibrate(boolean vibrate) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putBoolean(VIBRATE_PREF, vibrate);
-        editor.commit();
+        mNotificationPreference.setShouldVibrate(vibrate);
     }
 
     @ReactMethod
-    public void setShouldBlink(boolean vibrate) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putBoolean(BLINK_PREF, vibrate);
-        editor.commit();
-    }
-
-    public String getNotificationSound() {
-        return mSharedPreferences.getString(SOUND_PREF, null);
-    }
-
-    public boolean getShouldVibrate() {
-        return mSharedPreferences.getBoolean(VIBRATE_PREF, true);
-    }
-
-    public boolean getShouldBlink() {
-        return mSharedPreferences.getBoolean(BLINK_PREF, false);
+    public void setShouldBlink(boolean blink) {
+        mNotificationPreference.setShouldBlink(blink);
     }
 }

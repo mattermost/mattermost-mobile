@@ -71,7 +71,7 @@ class ChannelIntro extends PureComponent {
                 style={style.profile}
             >
                 <ProfilePicture
-                    user={member}
+                    userId={member.id}
                     size={64}
                     statusBorderWidth={2}
                     statusSize={25}

@@ -14,7 +14,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
 import {General} from 'mattermost-redux/constants';
@@ -151,7 +151,7 @@ class List extends Component {
         );
     };
 
-    createPrivateChannel = () => {
+    createPrivateChannel = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -171,7 +171,7 @@ class List extends Component {
                 closeButton: this.closeButton
             }
         });
-    };
+    });
 
     buildChannels = (props) => {
         const {canCreatePrivateChannels, styles} = props;
@@ -233,7 +233,15 @@ class List extends Component {
         return data;
     };
 
-    showDirectMessagesModal = () => {
+    scrollToTop = () => {
+        this.refs.list.scrollToOffset({
+            x: 0,
+            y: 0,
+            animated: true
+        });
+    }
+
+    showDirectMessagesModal = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -255,9 +263,9 @@ class List extends Component {
                 }]
             }
         });
-    };
+    });
 
-    showMoreChannelsModal = () => {
+    showMoreChannelsModal = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -276,14 +284,14 @@ class List extends Component {
                 closeButton: this.closeButton
             }
         });
-    };
+    });
 
     renderSectionAction = (styles, action) => {
         const {theme} = this.props;
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
-                onPress={() => preventDoubleTap(action, this)}
+                onPress={action}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             >
                 <MaterialIcon
@@ -340,7 +348,7 @@ class List extends Component {
             above = (
                 <UnreadIndicator
                     style={[styles.above, {width: (this.width - 40)}]}
-                    onPress={() => this.refs.list.scrollToOffset({x: 0, y: 0, animated: true})}
+                    onPress={this.scrollToTop}
                     text={(
                         <FormattedText
                             style={styles.indicatorText}

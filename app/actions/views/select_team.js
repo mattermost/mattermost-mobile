@@ -3,8 +3,10 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
 import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 import {NavigationTypes} from 'app/constants';
 
@@ -12,20 +14,24 @@ import {setChannelDisplayName} from './channel';
 
 export function handleTeamChange(team, selectChannel = true) {
     return async (dispatch, getState) => {
-        const {currentTeamId} = getState().entities.teams;
+        const state = getState();
+        const {currentTeamId} = state.entities.teams;
         if (currentTeamId === team.id) {
             return;
         }
 
-        const state = getState();
         const actions = [
             setChannelDisplayName(''),
             {type: TeamTypes.SELECT_TEAM, data: team.id}
         ];
 
         if (selectChannel) {
+            actions.push({type: ChannelTypes.SELECT_CHANNEL, data: ''});
+
             const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
-            actions.push({type: ChannelTypes.SELECT_CHANNEL, data: lastChannelId});
+            const currentChannelId = getCurrentChannelId(state);
+            viewChannel(lastChannelId, currentChannelId)(dispatch, getState);
+            markChannelAsRead(lastChannelId, currentChannelId)(dispatch, getState);
         }
 
         dispatch(batchActions(actions), getState);

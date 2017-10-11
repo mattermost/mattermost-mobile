@@ -29,4 +29,8 @@ export default class Drawer extends BaseDrawer {
 
         return false;
     };
+
+    isOpened = () => {
+        return this._open; // eslint-disable-line no-underscore-dangle
+    }
 }

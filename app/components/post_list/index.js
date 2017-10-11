@@ -9,9 +9,8 @@ import {getTheme} from 'app/selectors/preferences';
 
 import PostList from './post_list';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         theme: getTheme(state)
     };
 }

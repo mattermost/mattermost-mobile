@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
+    Platform,
     Text,
     View,
     WebView
@@ -20,7 +21,7 @@ import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const postMessageJS = 'window.postMessage(document.body.innerText);';
+const postMessageJS = "setTimeout(function() { postMessage(document.body.innerText, '*')});";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -129,7 +130,13 @@ class SSO extends PureComponent {
     };
 
     onNavigationStateChange = (navState) => {
-        const {url, navigationType} = navState;
+        const {url, navigationType, loading} = navState;
+        let submitted = false;
+        if (Platform.OS === 'ios') {
+            submitted = url.includes(this.completedUrl) && navigationType === 'formsubmit';
+        } else {
+            submitted = url.includes(this.completedUrl) && loading;
+        }
 
         const nextState = {};
 
@@ -138,7 +145,7 @@ class SSO extends PureComponent {
             nextState.scalePagesToFit = true;
         }
 
-        if (url.includes(this.completedUrl) && navigationType === 'formsubmit') {
+        if (submitted) {
             nextState.onMessage = this.onMessage;
         }
 
@@ -151,7 +158,7 @@ class SSO extends PureComponent {
         const url = event.nativeEvent.url;
 
         if (url.includes(this.completedUrl)) {
-            CookieManager.get(this.props.serverUrl, (err, res) => {
+            CookieManager.get(this.props.serverUrl).then((res) => {
                 const token = res.MMAUTHTOKEN;
 
                 if (token) {
@@ -172,6 +179,10 @@ class SSO extends PureComponent {
         }
     };
 
+    renderLoading = () => {
+        return <Loading/>;
+    };
+
     render() {
         const {theme} = this.props;
         const {error, renderWebView, onMessage, jsCode, scalePagesToFit} = this.state;
@@ -179,9 +190,7 @@ class SSO extends PureComponent {
 
         let content;
         if (!renderWebView) {
-            content = (
-                <Loading/>
-            );
+            content = this.renderLoading();
         } else if (error) {
             content = (
                 <View style={style.errorContainer}>
@@ -198,7 +207,7 @@ class SSO extends PureComponent {
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
-                    renderLoading={() => (<Loading/>)}
+                    renderLoading={this.renderLoading}
                     onMessage={onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}

@@ -2,7 +2,10 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {ChannelTypes, FileTypes, PostTypes} from 'mattermost-redux/action_types';
+import {
+    ChannelTypes,
+    FileTypes
+} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -172,8 +175,6 @@ function drafts(state = {}, action) {
 
 function loading(state = false, action) {
     switch (action.type) {
-    case ChannelTypes.SELECT_CHANNEL:
-        return false;
     case ViewTypes.SET_CHANNEL_LOADER:
         return action.loading;
     default:
@@ -181,10 +182,19 @@ function loading(state = false, action) {
     }
 }
 
-function tooltipVisible(state = false, action) {
+function refreshing(state = false, action) {
     switch (action.type) {
-    case ViewTypes.POST_TOOLTIP_VISIBLE:
-        return action.visible;
+    case ViewTypes.SET_CHANNEL_REFRESHING:
+        return action.loading;
+    default:
+        return state;
+    }
+}
+
+function retryFailed(state = false, action) {
+    switch (action.type) {
+    case ViewTypes.SET_CHANNEL_RETRY_FAILED:
+        return action.failed;
     default:
         return state;
     }
@@ -192,7 +202,7 @@ function tooltipVisible(state = false, action) {
 
 function postVisibility(state = {}, action) {
     switch (action.type) {
-    case ChannelTypes.SELECT_CHANNEL: {
+    case ViewTypes.SET_INITIAL_POST_VISIBILITY: {
         const nextState = {...state};
         nextState[action.data] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
         return nextState;
@@ -206,14 +216,6 @@ function postVisibility(state = {}, action) {
         const nextState = {...state};
         nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
         return nextState;
-    }
-    case PostTypes.RECEIVED_POST: {
-        if (action.data && state[action.data.channel_id]) {
-            const nextState = {...state};
-            nextState[action.data.channel_id] += 1;
-            return nextState;
-        }
-        return state;
     }
     default:
         return state;
@@ -232,11 +234,26 @@ function loadingPosts(state = {}, action) {
     }
 }
 
+function lastGetPosts(state = {}, action) {
+    switch (action.type) {
+    case ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME:
+        return {
+            ...state,
+            [action.channelId]: action.time
+        };
+
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
     loading,
-    tooltipVisible,
+    refreshing,
     postVisibility,
-    loadingPosts
+    loadingPosts,
+    lastGetPosts,
+    retryFailed
 });

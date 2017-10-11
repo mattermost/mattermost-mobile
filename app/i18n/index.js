@@ -32,7 +32,7 @@ import ru from 'assets/i18n/ru.json';
 import zhCN from 'assets/i18n/zh-CN.json';
 import zhTW from 'assets/i18n/zh-TW.json';
 
-const DEFAULT_LOCALE = 'en';
+export const DEFAULT_LOCALE = 'en';
 
 const TRANSLATIONS = {
     de,

@@ -48,6 +48,26 @@ export default function configureAppStore(initialState) {
         ['typing']
     );
 
+    const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, postVisibility: true, retryFailed: true};
+    const channelViewBlackListFilter = createTransform(
+        (inboundState) => {
+            const channel = {};
+
+            for (const channelKey of Object.keys(inboundState.channel)) {
+                if (!channelViewBlackList[channelKey]) {
+                    channel[channelKey] = inboundState.channel[channelKey];
+                }
+            }
+
+            return {
+                ...inboundState,
+                channel
+            };
+        },
+        null,
+        {whitelist: ['views']} // Only run this filter the views state (or any other entry that ends up being named views)
+    );
+
     const setTransformer = createTransform(
         (inboundState, key) => {
             if (key === 'entities') {
@@ -165,7 +185,8 @@ export default function configureAppStore(initialState) {
             transforms: [
                 setTransformer,
                 viewsBlackListFilter,
-                typingBlackListFilter
+                typingBlackListFilter,
+                channelViewBlackListFilter
             ]
         }
     };

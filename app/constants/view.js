@@ -1,7 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Posts} from 'mattermost-redux/constants';
 import keyMirror from 'mattermost-redux/utils/key_mirror';
 
 const ViewTypes = keyMirror({
@@ -34,23 +33,26 @@ const ViewTypes = keyMirror({
     ADD_FILE_TO_FETCH_CACHE: null,
 
     SET_CHANNEL_LOADER: null,
+    SET_CHANNEL_REFRESHING: null,
+    SET_CHANNEL_RETRY_FAILED: null,
     SET_CHANNEL_DISPLAY_NAME: null,
-
-    POST_TOOLTIP_VISIBLE: null,
 
     SET_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
     SAML: null,
 
+    SET_INITIAL_POST_VISIBILITY: null,
     INCREASE_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
-    LOADING_POSTS: null
+    LOADING_POSTS: null,
+
+    RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null
 });
 
 export default {
     ...ViewTypes,
-    POST_VISIBILITY_CHUNK_SIZE: Posts.POST_CHUNK_SIZE / 2,
+    POST_VISIBILITY_CHUNK_SIZE: 15,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview'
 };

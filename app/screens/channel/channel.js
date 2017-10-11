@@ -10,10 +10,10 @@ import {
     View
 } from 'react-native';
 
-import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawer from 'app/components/channel_drawer';
+import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import OfflineIndicator from 'app/components/offline_indicator';
@@ -34,21 +34,21 @@ class Channel extends PureComponent {
             connection: PropTypes.func.isRequired,
             loadChannelsIfNecessary: PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired,
             selectFirstAvailableTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
-            stopPeriodicStatusUpdates: PropTypes.func.isRequired
+            stopPeriodicStatusUpdates: PropTypes.func.isRequired,
+            viewChannel: PropTypes.func.isRequired
         }).isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         currentTeamId: PropTypes.string,
         currentChannelId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        webSocketRequest: PropTypes.object,
-        statusBarHeight: PropTypes.number,
-        channelsRequestStatus: PropTypes.string
+        channelsRequestFailed: PropTypes.bool
     };
 
     componentWillMount() {
@@ -62,12 +62,10 @@ class Channel extends PureComponent {
     }
 
     componentDidMount() {
-        const {startPeriodicStatusUpdates} = this.props.actions;
-
-        try {
-            startPeriodicStatusUpdates();
-        } catch (error) {
-            // We don't care about the error
+        // Mark current channel as read when opening app while logged in
+        if (this.props.currentChannelId) {
+            this.props.actions.markChannelAsRead(this.props.currentChannelId);
+            this.props.actions.viewChannel(this.props.currentChannelId);
         }
     }
 
@@ -118,19 +116,21 @@ class Channel extends PureComponent {
     });
 
     handleConnectionChange = (isConnected) => {
-        const {actions, webSocketRequest} = this.props;
-        const {closeWebSocket, connection, initWebSocket} = actions;
+        const {actions} = this.props;
+        const {
+            closeWebSocket,
+            connection,
+            initWebSocket,
+            startPeriodicStatusUpdates,
+            stopPeriodicStatusUpdates
+        } = actions;
 
         if (isConnected) {
-            if (!webSocketRequest || webSocketRequest.status === RequestStatus.NOT_STARTED) {
-                try {
-                    initWebSocket(Platform.OS);
-                } catch (error) {
-                    // We don't care if it fails
-                }
-            }
+            initWebSocket(Platform.OS);
+            startPeriodicStatusUpdates();
         } else {
             closeWebSocket(true);
+            stopPeriodicStatusUpdates();
         }
         connection(isConnected);
     };
@@ -160,18 +160,17 @@ class Channel extends PureComponent {
 
     render() {
         const {
-            channelsRequestStatus,
+            channelsRequestFailed,
             currentChannelId,
             intl,
             navigator,
-            statusBarHeight,
             theme
         } = this.props;
 
         const style = getStyleFromTheme(theme);
 
         if (!currentChannelId) {
-            if (channelsRequestStatus === RequestStatus.FAILURE) {
+            if (channelsRequestFailed) {
                 return (
                     <PostListRetry
                         retry={this.retryLoadChannels}
@@ -186,11 +185,6 @@ class Channel extends PureComponent {
             );
         }
 
-        let height = 0;
-        if (statusBarHeight > 20) {
-            height = statusBarHeight - 20;
-        }
-
         return (
             <ChannelDrawer
                 blurPostTextBox={this.blurPostTextBox}
@@ -202,27 +196,23 @@ class Channel extends PureComponent {
                     <OfflineIndicator/>
                     <View style={style.header}>
                         <ChannelDrawerButton/>
-                        <ChannelTitle
-                            onPress={this.goToChannelInfo}
+                        <ChannelTitle onPress={this.goToChannelInfo}/>
+                        <ChannelSearchButton
+                            navigator={navigator}
+                            theme={theme}
                         />
-                        <ChannelSearchButton navigator={navigator}/>
                     </View>
                 </View>
                 <KeyboardLayout
                     behavior='padding'
                     style={style.keyboardLayout}
-                    keyboardVerticalOffset={height}
                 >
                     <View style={style.postList}>
-                        <ChannelPostList
-                            channelId={currentChannelId}
-                            navigator={navigator}
-                        />
+                        <ChannelPostList navigator={navigator}/>
                     </View>
+                    <ChannelLoader theme={theme}/>
                     <PostTextbox
                         ref={this.attachPostTextbox}
-                        onChangeText={this.handleDraftChanged}
-                        channelId={currentChannelId}
                         navigator={navigator}
                     />
                 </KeyboardLayout>
