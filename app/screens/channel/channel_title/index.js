@@ -19,24 +19,4 @@ function mapStateToProps(state) {
     };
 }
 
-function areStatesEqual(next, prev) {
-    const nextChannelId = next.entities.channels.currentChannelId;
-    const prevChannelId = prev.entities.channels.currentChannelId;
-    const prevDisplayName = prev.views.channel.displayName;
-    const nextDisplayName = next.views.channel.displayName;
-
-    // When the names have changed
-    if (nextDisplayName !== prevDisplayName) {
-        return false;
-    }
-
-    // When we have a display name no need to re-render
-    if (nextDisplayName) {
-        return true;
-    }
-
-    // When we don't have the display name but already switched channels
-    return prevChannelId === nextChannelId;
-}
-
-export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(ChannelTitle);
+export default connect(mapStateToProps)(ChannelTitle);

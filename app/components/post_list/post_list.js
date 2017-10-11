@@ -45,8 +45,8 @@ export default class PostList extends PureComponent {
         loadMore: () => true
     };
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.channelId !== this.props.channelId && this.refs.list) {
+    componentDidUpdate(prevProps) {
+        if (prevProps.channelId !== this.props.channelId && this.refs.list) {
             // When switching channels make sure we start from the bottom
             this.refs.list.scrollToOffset({y: 0, animated: false});
         }
@@ -68,11 +68,6 @@ export default class PostList extends PureComponent {
         }
 
         return item.id || item;
-    };
-
-    loadMorePosts = () => {
-        const {loadMore} = this.props;
-        loadMore();
     };
 
     onRefresh = () => {
@@ -165,7 +160,7 @@ export default class PostList extends PureComponent {
     };
 
     render() {
-        const {channelId, theme} = this.props;
+        const {channelId, loadMore, theme} = this.props;
 
         const refreshControl = {
             refreshing: false
@@ -184,7 +179,7 @@ export default class PostList extends PureComponent {
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderChannelIntro}
-                onEndReached={this.loadMorePosts}
+                onEndReached={loadMore}
                 onEndReachedThreshold={0}
                 {...refreshControl}
                 renderItem={this.renderItem}
