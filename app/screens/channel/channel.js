@@ -215,10 +215,7 @@ class Channel extends PureComponent {
                     style={style.keyboardLayout}
                 >
                     <View style={style.postList}>
-                        <ChannelPostList
-                            channelId={currentChannelId}
-                            navigator={navigator}
-                        />
+                        <ChannelPostList navigator={navigator}/>
                     </View>
                     <ChannelLoader theme={theme}/>
                     <PostTextbox
