@@ -28,12 +28,13 @@ function mapStateToProps(state) {
     }
 
     const creator = currentChannel.creator_id === currentUser.id ? currentUser : state.entities.users.profiles[currentChannel.creator_id];
+    const postsInChannel = state.entities.posts.postsInChannel[currentChannel.id] || [];
 
     return {
         creator,
         currentChannel,
         currentChannelMembers,
-        isLoadingPosts: getPostsRequestStatus === RequestStatus.STARTED,
+        isLoadingPosts: !postsInChannel.length && getPostsRequestStatus === RequestStatus.STARTED,
         theme: getTheme(state)
     };
 }
