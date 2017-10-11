@@ -27,10 +27,13 @@ export default class Thread extends Component {
     state = {};
 
     shouldComponentUpdate(nextProps) {
-        const nextPostsIds = nextProps.posts.map((p) => p.id);
-        const prevPostsIds = this.props.posts.map((p) => p.id);
-        for (let i = 0; i < nextPostsIds.length; i++) {
-            if (nextPostsIds[i] !== prevPostsIds[i]) {
+        if (nextProps.posts.length !== this.props.posts.length) {
+            return true;
+        }
+
+        const length = nextProps.posts.length;
+        for (let i = 0; i < length; i++) {
+            if (nextProps.posts[i].id !== this.props.posts[i].id) {
                 return true;
             }
         }

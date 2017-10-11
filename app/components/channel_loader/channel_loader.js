@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
@@ -15,19 +15,12 @@ const GRADIENT_START = 0.05;
 const GRADIENT_MIDDLE = 0.1;
 const GRADIENT_END = 0.01;
 
-export default class ChannelLoader extends Component {
+export default class ChannelLoader extends PureComponent {
     static propTypes = {
         channelIsLoading: PropTypes.bool.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired
     };
-
-    shouldComponentUpdate(nextProps) {
-        return (
-            nextProps.channelIsLoading !== this.props.channelIsLoading ||
-            nextProps.deviceWidth !== this.props.deviceWidth
-        );
-    }
 
     buildSections(key, style, top) {
         return (

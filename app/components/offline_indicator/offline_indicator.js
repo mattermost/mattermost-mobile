@@ -46,12 +46,12 @@ export default class OfflineIndicator extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {isConnecting, isOnline, webSocketStatus} = nextProps;
-        if (isOnline) {
-            if (this.state.network && this.props.webSocketStatus === RequestStatus.STARTED && webSocketStatus === RequestStatus.SUCCESS) {
+        const {webSocketStatus} = this.props;
+        if (nextProps.isOnline) {
+            if (this.state.network && webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
                 this.connected();
-            } else if (this.props.webSocketStatus === RequestStatus.STARTED && webSocketStatus === RequestStatus.FAILURE && isConnecting) {
+            } else if (webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.FAILURE && nextProps.isConnecting) {
                 // Show the connecting bar if it failed to connect at least twice
                 this.connecting();
             }
@@ -60,23 +60,8 @@ export default class OfflineIndicator extends Component {
         }
     }
 
-    shouldComponentUpdate(nextProps) {
-        if (nextProps.isOnline !== this.props.isOnline) {
-            return true;
-        }
-
-        // When the websocket connects
-        if (this.props.webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.SUCCESS) {
-            return true;
-        }
-
-        // When the websocket fails to connect
-        if (this.props.webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.FAILURE &&
-            nextProps.isConnecting && nextProps.isConnecting !== this.props.isConnecting) {
-            return true;
-        }
-
-        return false;
+    shouldComponentUpdate(nextProps, nextState) {
+        return nextState.network !== this.state.network && nextState.network;
     }
 
     offline = () => {
