@@ -98,7 +98,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             return null;
         }
 
-        const {link, openGraphData, showLinkPreviews} = this.props;
+        const {link, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getSlackAttachment();
         if (attachments) {
             return attachments;
@@ -109,6 +109,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 <PostAttachmentOpenGraph
                     link={link}
                     openGraphData={openGraphData}
+                    theme={theme}
                 />
             );
         }
@@ -244,22 +245,22 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     render() {
-        const {link, openGraphData} = this.props;
+        const {link, openGraphData, postProps} = this.props;
         const {linkLoaded, linkLoadError} = this.state;
-        let isYouTube = false;
-        let isImage = false;
-        let isOpenGraph = false;
+        const {attachments} = postProps;
 
-        if (link) {
-            isYouTube = isYoutubeLink(link);
-            isImage = isImageLink(link);
-            isOpenGraph = Boolean(openGraphData && openGraphData.description);
+        if (!link && !attachments) {
+            return null;
+        }
 
-            if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
-                const embed = this.generateToggleableEmbed(isImage, isYouTube);
-                if (embed && (linkLoaded || isYouTube)) {
-                    return embed;
-                }
+        const isYouTube = isYoutubeLink(link);
+        const isImage = isImageLink(link);
+        const isOpenGraph = Boolean(openGraphData && openGraphData.description);
+
+        if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
+            const embed = this.generateToggleableEmbed(isImage, isYouTube);
+            if (embed && (linkLoaded || isYouTube)) {
+                return embed;
             }
         }
 

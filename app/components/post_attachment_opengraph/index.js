@@ -6,16 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {getOpenGraphMetadata} from 'mattermost-redux/actions/posts';
 
-import {getTheme} from 'app/selectors/preferences';
-
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
-
-function mapStateToProps(state, ownProps) {
-    return {
-        ...ownProps,
-        theme: getTheme(state)
-    };
-}
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -25,4 +16,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PostAttachmentOpenGraph);
+export default connect(null, mapDispatchToProps)(PostAttachmentOpenGraph);
