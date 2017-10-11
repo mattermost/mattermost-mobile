@@ -1,37 +1,22 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-
-import {close as closeWebSocket, init as initWebSocket} from 'mattermost-redux/actions/websocket';
 
 import {getConnection} from 'app/selectors/device';
 
 import OfflineIndicator from './offline_indicator';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {websocket} = state.requests.general;
-    const {appState} = state.entities.general;
     const webSocketStatus = websocket.status;
-    const isConnecting = websocket.error >= 2;
+    const isConnecting = websocket.error > 1;
 
     return {
-        appState,
         isConnecting,
         isOnline: getConnection(state),
-        webSocketStatus,
-        ...ownProps
+        webSocketStatus
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            closeWebSocket,
-            initWebSocket
-        }, dispatch)
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(OfflineIndicator);
+export default connect(mapStateToProps)(OfflineIndicator);
