@@ -61,8 +61,7 @@ class MarkdownCodeBlock extends React.PureComponent {
             animated: true,
             backButtonTitle: '',
             passProps: {
-                content: this.props.content,
-                theme: this.props.theme
+                content: this.props.content
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,

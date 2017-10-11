@@ -213,7 +213,6 @@ class Channel extends PureComponent {
                 <KeyboardLayout
                     behavior='padding'
                     style={style.keyboardLayout}
-                    watchStatusBar={true}
                 >
                     <View style={style.postList}>
                         <ChannelPostList

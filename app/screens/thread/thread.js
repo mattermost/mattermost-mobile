@@ -51,7 +51,6 @@ export default class Thread extends PureComponent {
                 behavior='padding'
                 style={style.container}
                 keyboardVerticalOffset={65}
-                watchStatusBar={true}
             >
                 <StatusBar/>
                 <PostList
