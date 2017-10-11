@@ -12,6 +12,7 @@ import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
 import {injectIntl, intlShape} from 'react-intl';
 
+import Loading from 'app/components/loading';
 import ProfilePicture from 'app/components/profile_picture';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -22,6 +23,7 @@ class ChannelIntro extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentChannelMembers: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
+        isLoadingPosts: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -304,9 +306,16 @@ class ChannelIntro extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
-
+        const {isLoadingPosts, theme} = this.props;
         const style = getStyleSheet(theme);
+
+        if (isLoadingPosts) {
+            return (
+                <View style={style.container}>
+                    <Loading/>
+                </View>
+            );
+        }
 
         return (
             <View style={style.container}>
