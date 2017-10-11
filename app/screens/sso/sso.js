@@ -21,7 +21,20 @@ import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const jsCode = "setTimeout(function() { postMessage(document.body.innerText, '*')})";
+const postMessageJS = "setTimeout(function() { postMessage(document.body.innerText, '*')});";
+
+// Used to make sure that OneLogin forms scale appropriately on both platforms.
+const oneLoginFormScalingJS = `
+    (function() {
+        document.getElementById('login-page').setAttribute('style', 'background-repeat: repeat-y;');
+        var submitButton = document.getElementById('user_submit');
+        function resetPadding() {
+            document.getElementById('body-main').setAttribute('style', 'height: auto; padding: 10px 0;');
+            submitButton.removeEventListener('click', resetPadding);
+        }
+        submitButton.addEventListener('click', resetPadding);
+    })();
+`;
 
 class SSO extends PureComponent {
     static propTypes = {
@@ -43,7 +56,9 @@ class SSO extends PureComponent {
         this.state = {
             error: null,
             renderWebView: false,
-            onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null
+            onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null,
+            jsCode: postMessageJS,
+            scalePagesToFit: false
         };
 
         switch (props.ssoType) {
@@ -123,8 +138,19 @@ class SSO extends PureComponent {
             submitted = url.includes(this.completedUrl) && loading;
         }
 
+        const nextState = {};
+
+        if (url.includes('.onelogin.com')) {
+            nextState.jsCode = `${oneLoginFormScalingJS}${postMessageJS}`;
+            nextState.scalePagesToFit = true;
+        }
+
         if (submitted) {
-            this.setState({onMessage: this.onMessage});
+            nextState.onMessage = this.onMessage;
+        }
+
+        if (Object.keys(nextState).length) {
+            this.setState(nextState);
         }
     };
 
@@ -159,7 +185,7 @@ class SSO extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {error, renderWebView} = this.state;
+        const {error, renderWebView, onMessage, jsCode, scalePagesToFit} = this.state;
         const style = getStyleSheet(theme);
 
         let content;
@@ -177,12 +203,12 @@ class SSO extends PureComponent {
                     source={{uri: this.loginUrl}}
                     javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
-                    scalesPageToFit={true}
+                    scalesPageToFit={scalePagesToFit}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     renderLoading={this.renderLoading}
-                    onMessage={this.state.onMessage}
+                    onMessage={onMessage}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                 />
