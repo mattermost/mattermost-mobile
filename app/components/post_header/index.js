@@ -5,12 +5,10 @@ import {connect} from 'react-redux';
 
 import {Preferences} from 'mattermost-redux/constants';
 import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
-import {getBool, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getBool, getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 import {isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
-
-import {getTheme} from 'app/selectors/preferences';
 
 import PostHeader from './post_header';
 

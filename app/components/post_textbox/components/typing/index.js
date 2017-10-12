@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {getUsersTyping} from 'mattermost-redux/selectors/entities/typing';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Typing from './typing';
 

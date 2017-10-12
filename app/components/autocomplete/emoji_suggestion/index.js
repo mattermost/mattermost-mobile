@@ -8,7 +8,7 @@ import {bindActionCreators} from 'redux';
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
 
 import EmojiSuggestion from './emoji_suggestion';

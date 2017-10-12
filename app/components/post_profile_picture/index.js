@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import PostProfilePicture from './post_profile_picture';
 

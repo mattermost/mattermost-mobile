@@ -14,7 +14,7 @@ import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {handlePostDraftChanged} from 'app/actions/views/channel';
 import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged} from 'app/actions/views/thread';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
 
 import PostTextbox from './post_textbox';

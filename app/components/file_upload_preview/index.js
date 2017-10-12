@@ -8,7 +8,7 @@ import {createSelector} from 'reselect';
 import {handleRemoveFile, retryFileUpload} from 'app/actions/views/file_upload';
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
 import {getDimensions} from 'app/selectors/device';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import FileUploadPreview from './file_upload_preview';
 

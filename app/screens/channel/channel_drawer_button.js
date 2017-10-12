@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
 import PushNotifications from 'app/push_notifications';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 

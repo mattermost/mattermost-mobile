@@ -9,7 +9,7 @@ import {
     closeGMChannel,
     leaveChannel
 } from 'app/actions/views/channel';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {favoriteChannel, getChannelStats, deleteChannel, unfavoriteChannel} from 'mattermost-redux/actions/channels';
 import {General} from 'mattermost-redux/constants';

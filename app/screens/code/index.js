@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Code from './code';
 

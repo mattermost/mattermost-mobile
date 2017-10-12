@@ -6,7 +6,7 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUser, getProfilesInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ChannelIntro from './channel_intro';
 

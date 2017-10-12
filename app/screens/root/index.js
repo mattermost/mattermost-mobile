@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {loadMe} from 'mattermost-redux/actions/users';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Root from './root';
 

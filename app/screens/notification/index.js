@@ -6,10 +6,9 @@ import {connect} from 'react-redux';
 
 import {goToNotification} from 'app/actions/views/root';
 import {getDimensions} from 'app/selectors/device';
-import {getTheme} from 'app/selectors/preferences';
 
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getUser} from 'mattermost-redux/selectors/entities/users';
 
 import Notification from './notification';

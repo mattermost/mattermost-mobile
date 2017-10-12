@@ -10,7 +10,7 @@ import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentChannelId, getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ChannelPostList from './channel_post_list';
 

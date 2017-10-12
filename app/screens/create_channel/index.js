@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {handleCreateChannel} from 'app/actions/views/create_channel';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import CreateChannel from './create_channel';
 

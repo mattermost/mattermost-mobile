@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {makeGetPostsForThread} from 'mattermost-redux/selectors/entities/posts';

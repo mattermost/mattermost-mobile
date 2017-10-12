@@ -7,7 +7,7 @@ import {Platform} from 'react-native';
 
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
 import {getDimensions, getStatusBarHeight} from 'app/selectors/device';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
 

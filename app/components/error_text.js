@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {GlobalStyles} from 'app/styles';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 

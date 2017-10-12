@@ -7,7 +7,7 @@ import {createSelector} from 'reselect';
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
 import {getDimensions} from 'app/selectors/device';
-import {getTheme} from 'app/selectors/preferences';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {CategoryNames, Emojis, EmojiIndicesByCategory} from 'app/utils/emojis';
 
 import EmojiPicker from './emoji_picker';
