@@ -18,6 +18,7 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {
     getChannelByName,
     getDirectChannelName,
@@ -291,9 +292,11 @@ export function handlePostDraftSelectionChanged(channelId, cursorPosition) {
     };
 }
 
-export function insertToPostDraft(channelId, value) {
+export function insertToPostDraft(value) {
     return (dispatch, getState) => {
-        const {draft, cursorPosition} = getState().views.channel.drafts[channelId];
+        const state = getState();
+        const channelId = getCurrentChannelId(state)
+        const {draft, cursorPosition} = state.views.channel.drafts[channelId];
 
         let nextDraft = `${value}`;
         if (cursorPosition > 0) {

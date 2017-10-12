@@ -39,7 +39,6 @@ class Post extends PureComponent {
             removePost: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
-        currentChannelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         highlight: PropTypes.bool,
         intl: intlShape.isRequired,
@@ -127,7 +126,7 @@ class Post extends PureComponent {
         if (threadId) {
             this.props.actions.insertToCommentDraft(threadId, `@${username} `);
         } else {
-            this.props.actions.insertToPostDraft(currentChannelId, `@${username} `);
+            this.props.actions.insertToPostDraft(`@${username} `);
         }
     }
 

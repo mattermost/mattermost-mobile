@@ -65,7 +65,7 @@ function mapDispatchToProps(dispatch) {
             addReaction,
             createPost,
             deletePost,
-            removePost
+            removePost,
             setPostTooltipVisible,
             insertToPostDraft,
             insertToCommentDraft
