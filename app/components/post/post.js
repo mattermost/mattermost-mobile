@@ -65,15 +65,22 @@ class Post extends PureComponent {
 
         const {config, license, currentUserId, roles, post} = props;
         this.editDisableAction = new DelayedAction(this.handleEditDisable);
-        this.state = {
-            canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-            canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
-        };
+        if (post) {
+            this.state = {
+                canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+            };
+        } else {
+            this.state = {
+                canEdit: false,
+                canDelete: false
+            };
+        }
     }
 
     componentWillReceiveProps(nextProps) {
         const {config, license, currentUserId, roles, post} = nextProps;
-        if (post) {
+        if (nextProps.post !== this.props.post) {
             this.setState({
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
                 canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
