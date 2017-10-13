@@ -34,8 +34,7 @@ class Post extends PureComponent {
             addReaction: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
-            insertToPostDraft: PropTypes.func.isRequired,
-            insertToCommentDraft: PropTypes.func.isRequired,
+            insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -57,8 +56,7 @@ class Post extends PureComponent {
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
-        onReply: PropTypes.func,
-        threadId: PropTypes.string
+        onReply: PropTypes.func
     };
 
     static defaultProps = {
@@ -122,12 +120,9 @@ class Post extends PureComponent {
     };
 
     autofillUserMention = (username) => {
-        const {currentChannelId, threadId} = this.props;
-        if (threadId) {
-            this.props.actions.insertToCommentDraft(threadId, `@${username} `);
-        } else {
-            this.props.actions.insertToPostDraft(`@${username} `);
-        }
+        // create a general action that checks for currentThreadId in the state and decides
+        // whether to insert to root or thread
+        this.props.actions.insertToDraft(`@${username} `);
     }
 
     handleEditDisable = () => {

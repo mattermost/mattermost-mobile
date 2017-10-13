@@ -6,6 +6,15 @@ import {FileTypes, PostTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
+function currentThreadId(state = '', action) {
+    switch (action.type) {
+    case PostTypes.RECEIVED_POST_SELECTED:
+        return action.data;
+    default:
+        return state;
+    }
+}
+
 function drafts(state = {}, action) {
     switch (action.type) {
     case ViewTypes.COMMENT_DRAFT_CHANGED:
@@ -170,5 +179,6 @@ function drafts(state = {}, action) {
 }
 
 export default combineReducers({
+    currentThreadId,
     drafts
 });

@@ -274,12 +274,12 @@ export function handleSelectChannel(channelId) {
     };
 }
 
-export function handlePostDraftChanged(channelId, postDraft) {
+export function handlePostDraftChanged(channelId, draft) {
     return async (dispatch, getState) => {
         dispatch({
             type: ViewTypes.POST_DRAFT_CHANGED,
             channelId,
-            postDraft
+            draft
         }, getState);
     };
 }
@@ -292,11 +292,30 @@ export function handlePostDraftSelectionChanged(channelId, cursorPosition) {
     };
 }
 
-export function insertToPostDraft(value) {
+export function insertToDraft(value) {
     return (dispatch, getState) => {
         const state = getState();
-        const channelId = getCurrentChannelId(state)
-        const {draft, cursorPosition} = state.views.channel.drafts[channelId];
+        const channelId = getCurrentChannelId(state);
+        const threadId = state.views.thread.currentThreadId;
+
+        let draft;
+        let cursorPosition;
+        let action;
+        if (threadId) {
+            draft = state.views.thread.drafts[threadId].draft;
+            cursorPosition = state.views.thread.drafts[threadId].cursorPosition;
+            action = {
+                type: ViewTypes.COMMENT_DRAFT_CHANGED,
+                rootId: threadId
+            };
+        } else {
+            draft = state.views.channel.drafts[channelId].draft;
+            cursorPosition = state.views.channel.drafts[channelId].cursorPosition;
+            action = {
+                type: ViewTypes.POST_DRAFT_CHANGED,
+                channelId
+            };
+        }
 
         let nextDraft = `${value}`;
         if (cursorPosition > 0) {
@@ -306,9 +325,8 @@ export function insertToPostDraft(value) {
         }
 
         dispatch({
-            type: ViewTypes.POST_DRAFT_CHANGED,
-            channelId,
-            postDraft: nextDraft
+            ...action,
+            draft: nextDraft
         });
     };
 }

@@ -23,7 +23,7 @@ function drafts(state = {}, action) {
     case ViewTypes.POST_DRAFT_CHANGED: {
         return {
             ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {draft: action.postDraft})
+            [action.channelId]: Object.assign({}, state[action.channelId], {draft: action.draft})
         };
     }
     case ViewTypes.POST_DRAFT_SELECTION_CHANGED:
@@ -37,7 +37,7 @@ function drafts(state = {}, action) {
         return {
             ...state,
             [action.channelId]: {
-                draft: action.postDraft,
+                draft: action.draft,
                 cursorPosition: 0,
                 files: action.files
             }
