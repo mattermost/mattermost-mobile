@@ -118,6 +118,10 @@ export default class Badge extends PureComponent {
     };
 
     render() {
+        if (!this.props.count) {
+            return null;
+        }
+
         return (
             <TouchableWithoutFeedback
                 {...this.panResponder.panHandlers}

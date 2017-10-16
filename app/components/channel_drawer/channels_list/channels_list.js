@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FilteredList from './filtered_list';
 import List from './list';
-import SwitchTeams from './switch_teams';
+import SwitchTeamsButton from './switch_teams_button';
 
 class ChannelsList extends React.PureComponent {
     static propTypes = {
@@ -45,14 +45,16 @@ class ChannelsList extends React.PureComponent {
         });
     }
 
-    onSelectChannel = (channel) => {
+    onSelectChannel = (channel, currentChannelId) => {
         if (channel.fake) {
-            this.props.onJoinChannel(channel);
+            this.props.onJoinChannel(channel, currentChannelId);
         } else {
-            this.props.onSelectChannel(channel);
+            this.props.onSelectChannel(channel, currentChannelId);
         }
 
-        this.refs.search_bar.cancel();
+        if (this.refs.search_bar) {
+            this.refs.search_bar.cancel();
+        }
     };
 
     openSettingsModal = wrapWithPreventDoubleTap(() => {
@@ -171,9 +173,9 @@ class ChannelsList extends React.PureComponent {
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
-                        <SwitchTeams
+                        <SwitchTeamsButton
                             searching={searching}
-                            showTeams={onShowTeams}
+                            onShowTeams={onShowTeams}
                         />
                         {title}
                         {settings}
@@ -288,15 +290,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         above: {
             backgroundColor: theme.mentionBj,
             top: 9
-        },
-        indicatorText: {
-            backgroundColor: 'transparent',
-            color: theme.mentionColor,
-            fontSize: 14,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
-            textAlign: 'center',
-            textAlignVertical: 'center'
         }
     };
 });

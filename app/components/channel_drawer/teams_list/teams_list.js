@@ -24,13 +24,13 @@ class TeamsList extends PureComponent {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired
         }).isRequired,
+        canJoinOtherTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
-        joinableTeams: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
-        teams: PropTypes.array.isRequired,
+        teamIds: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired
     };
 
@@ -42,11 +42,11 @@ class TeamsList extends PureComponent {
         });
     }
 
-    selectTeam = (team) => {
+    selectTeam = (teamId) => {
         requestAnimationFrame(() => {
             const {actions, closeChannelDrawer, currentTeamId} = this.props;
-            if (team.id !== currentTeamId) {
-                actions.handleTeamChange(team);
+            if (teamId !== currentTeamId) {
+                actions.handleTeamChange(teamId);
             }
 
             closeChannelDrawer();
@@ -81,25 +81,25 @@ class TeamsList extends PureComponent {
         });
     });
 
-    keyExtractor = (team) => {
-        return team.id;
-    }
+    keyExtractor = (item) => {
+        return item;
+    };
 
     renderItem = ({item}) => {
         return (
             <TeamsListItem
                 selectTeam={this.selectTeam}
-                team={item}
+                teamId={item}
             />
         );
     };
 
     render() {
-        const {joinableTeams, teams, theme} = this.props;
+        const {canJoinOtherTeams, teamIds, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         let moreAction;
-        if (Object.keys(joinableTeams).length) {
+        if (canJoinOtherTeams) {
             moreAction = (
                 <TouchableHighlight
                     style={styles.moreActionContainer}
@@ -128,7 +128,7 @@ class TeamsList extends PureComponent {
                     </View>
                 </View>
                 <FlatList
-                    data={teams}
+                    data={teamIds}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
                     viewabilityConfig={{

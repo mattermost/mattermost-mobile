@@ -1,4 +1,4 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -10,45 +10,44 @@ import {
 } from 'react-native';
 
 import Badge from 'app/components/badge';
-import ChanneIcon from 'app/components/channel_icon';
-import {preventDoubleTap} from 'app/utils/tap';
+import ChannelIcon from 'app/components/channel_icon';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class ChannelItem extends PureComponent {
+export default class ChannelUnreadItem extends PureComponent {
     static propTypes = {
-        channel: PropTypes.object.isRequired,
-        onSelectChannel: PropTypes.func.isRequired,
-        isActive: PropTypes.bool.isRequired,
+        channelId: PropTypes.string.isRequired,
+        currentChannelId: PropTypes.string.isRequired,
+        displayName: PropTypes.string.isRequired,
         hasUnread: PropTypes.bool.isRequired,
         mentions: PropTypes.number.isRequired,
+        onSelectChannel: PropTypes.func.isRequired,
+        status: PropTypes.string,
+        type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
 
-    onPress = () => {
-        const {channel, onSelectChannel} = this.props;
+    onPress = wrapWithPreventDoubleTap(() => {
+        const {channelId, currentChannelId, displayName, onSelectChannel} = this.props;
         requestAnimationFrame(() => {
-            preventDoubleTap(onSelectChannel, this, channel);
+            onSelectChannel({id: channelId, display_name: displayName}, currentChannelId);
         });
-    };
+    });
 
     render() {
         const {
-            channel,
-            theme,
+            displayName,
             mentions,
             hasUnread,
-            isActive
+            status,
+            theme,
+            type
         } = this.props;
 
         const style = getStyleSheet(theme);
-        let activeItem;
-        let activeText;
-        let unreadText;
 
-        let activeBorder;
         let badge;
-
-        if (mentions && !isActive) {
+        if (mentions) {
             badge = (
                 <Badge
                     style={style.badge}
@@ -61,28 +60,15 @@ export default class ChannelItem extends PureComponent {
             );
         }
 
-        if (hasUnread) {
-            unreadText = style.textUnread;
-        }
-
-        if (isActive) {
-            activeItem = style.itemActive;
-            activeText = style.textActive;
-
-            activeBorder = (
-                <View style={style.borderActive}/>
-            );
-        }
-
         const icon = (
-            <ChanneIcon
-                isActive={isActive}
+            <ChannelIcon
+                isActive={false}
                 hasUnread={hasUnread}
-                membersCount={channel.display_name.split(',').length}
+                membersCount={displayName.split(',').length}
                 size={16}
-                status={channel.status}
+                status={status}
                 theme={theme}
-                type={channel.type}
+                type={type}
             />
         );
 
@@ -92,15 +78,14 @@ export default class ChannelItem extends PureComponent {
                 onPress={this.onPress}
             >
                 <View style={style.container}>
-                    {activeBorder}
-                    <View style={[style.item, activeItem]}>
+                    <View style={style.item}>
                         {icon}
                         <Text
-                            style={[style.text, unreadText, activeText]}
+                            style={style.text}
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
-                            {channel.display_name}
+                            {displayName}
                         </Text>
                         {badge}
                     </View>
@@ -117,10 +102,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 44
         },
-        borderActive: {
-            backgroundColor: theme.sidebarTextActiveBorder,
-            width: 5
-        },
         item: {
             alignItems: 'center',
             height: 44,
@@ -128,23 +109,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             paddingLeft: 16
         },
-        itemActive: {
-            backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
-            paddingLeft: 11
-        },
         text: {
-            color: changeOpacity(theme.sidebarText, 0.4),
+            color: theme.sidebarUnreadText,
             flex: 1,
             fontSize: 14,
             fontWeight: '600',
             lineHeight: 16,
             paddingRight: 40
-        },
-        textActive: {
-            color: theme.sidebarTextActiveColor
-        },
-        textUnread: {
-            color: theme.sidebarUnreadText
         },
         badge: {
             backgroundColor: theme.mentionBj,

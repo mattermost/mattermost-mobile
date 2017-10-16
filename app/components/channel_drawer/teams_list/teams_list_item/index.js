@@ -5,20 +5,28 @@ import {connect} from 'react-redux';
 
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getTeam, makeGetBadgeCountForTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {removeProtocol} from 'app/utils/url';
 
 import TeamsListItem from './teams_list_item.js';
 
 function mapStateToProps(state, ownProps) {
+    const team = getTeam(state, ownProps.teamId);
+    const getMentionCount = makeGetBadgeCountForTeamId();
+
     return {
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
-        teamMember: getTeamMemberships(state)[ownProps.team.id],
-        theme: getTheme(state),
-        ...ownProps
+        displayName: team.display_name,
+        mentionCount: getMentionCount(state, ownProps.teamId),
+        name: team.name,
+        theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps)(TeamsListItem);
+function areStatesEqual(next, prev) {
+    return prev.entities.teams === next.entities.teams;
+}
+
+export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(TeamsListItem);

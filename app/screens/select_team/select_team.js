@@ -134,7 +134,7 @@ export default class SelectTeam extends PureComponent {
             return;
         }
 
-        handleTeamChange(team);
+        handleTeamChange(team.id);
 
         if (userWithoutTeams) {
             this.goToChannelView();

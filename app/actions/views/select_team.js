@@ -12,23 +12,23 @@ import {NavigationTypes} from 'app/constants';
 
 import {setChannelDisplayName} from './channel';
 
-export function handleTeamChange(team, selectChannel = true) {
+export function handleTeamChange(teamId, selectChannel = true) {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentTeamId} = state.entities.teams;
-        if (currentTeamId === team.id) {
+        if (currentTeamId === teamId) {
             return;
         }
 
         const actions = [
             setChannelDisplayName(''),
-            {type: TeamTypes.SELECT_TEAM, data: team.id}
+            {type: TeamTypes.SELECT_TEAM, data: teamId}
         ];
 
         if (selectChannel) {
             actions.push({type: ChannelTypes.SELECT_CHANNEL, data: ''});
 
-            const lastChannelId = state.views.team.lastChannelForTeam[team.id] || '';
+            const lastChannelId = state.views.team.lastChannelForTeam[teamId] || '';
             const currentChannelId = getCurrentChannelId(state);
             viewChannel(lastChannelId, currentChannelId)(dispatch, getState);
             markChannelAsRead(lastChannelId, currentChannelId)(dispatch, getState);
@@ -45,7 +45,7 @@ export function selectFirstAvailableTeam() {
         const firstTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
 
         if (firstTeam) {
-            handleTeamChange(firstTeam)(dispatch, getState);
+            handleTeamChange(firstTeam.id)(dispatch, getState);
         } else {
             EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
         }

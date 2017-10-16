@@ -4,7 +4,13 @@
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
-import {getChannelsWithUnreadSection, getCurrentChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {
+    getSortedUnreadChannelIds,
+    getSortedFavoriteChannelIds,
+    getSortedPublicChannelIds,
+    getSortedPrivateChannelIds,
+    getSortedDirectChannelIds
+} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
@@ -12,18 +18,33 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import List from './list';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {config, license} = state.entities.general;
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const unreadChannelIds = getSortedUnreadChannelIds(state);
+    const favoriteChannelIds = getSortedFavoriteChannelIds(state);
+    const publicChannelIds = getSortedPublicChannelIds(state);
+    const privateChannelIds = getSortedPrivateChannelIds(state);
+    const directChannelIds = getSortedDirectChannelIds(state);
 
     return {
         canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
-        channelMembers: getMyChannelMemberships(state),
-        channels: getChannelsWithUnreadSection(state),
-        currentChannel: getCurrentChannel(state),
-        theme: getTheme(state),
-        ...ownProps
+        unreadChannelIds,
+        favoriteChannelIds,
+        publicChannelIds,
+        privateChannelIds,
+        directChannelIds,
+        theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps, null)(List);
+function areStatesEqual(next, prev) {
+    const equalRoles = getCurrentUserRoles(prev) === getCurrentUserRoles(next);
+    const equalChannels = next.entities.channels.channels === prev.entities.channels.channels;
+    const equalConfig = next.entities.general.config === prev.entities.general.config;
+    const equalUsers = next.entities.users.profiles === prev.entities.users.profiles;
+
+    return equalChannels && equalConfig && equalRoles && equalUsers;
+}
+
+export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(List);

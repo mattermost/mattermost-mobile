@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
@@ -24,7 +24,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
-export default class ChannelDrawer extends PureComponent {
+export default class ChannelDrawer extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
@@ -37,7 +37,6 @@ export default class ChannelDrawer extends PureComponent {
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
-        currentChannelId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -76,16 +75,29 @@ export default class ChannelDrawer extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {isLandscape, isTablet} = this.props;
-        if (nextProps.isLandscape !== isLandscape || nextProps.isTablet || isTablet) {
+        const {isLandscape} = this.props;
+        if (nextProps.isLandscape !== isLandscape) {
             if (this.state.openDrawerOffset !== 0) {
                 let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-                if (nextProps.isLandscape || nextProps.isTablet) {
+                if (nextProps.isLandscape || this.props.isTablet) {
                     openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
                 }
                 this.setState({openDrawerOffset});
             }
         }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        const {currentTeamId, isLandscape, teamsCount} = this.props;
+        const {openDrawerOffset} = this.state;
+
+        if (nextState.openDrawerOffset !== openDrawerOffset) {
+            return true;
+        }
+
+        return nextProps.currentTeamId !== currentTeamId ||
+            nextProps.isLandscape !== isLandscape ||
+            nextProps.teamsCount !== teamsCount;
     }
 
     componentWillUnmount() {
@@ -180,10 +192,9 @@ export default class ChannelDrawer extends PureComponent {
         }
     };
 
-    selectChannel = (channel) => {
+    selectChannel = (channel, currentChannelId) => {
         const {
-            actions,
-            currentChannelId
+            actions
         } = this.props;
 
         const {
@@ -211,7 +222,7 @@ export default class ChannelDrawer extends PureComponent {
         });
     };
 
-    joinChannel = async (channel) => {
+    joinChannel = async (channel, currentChannelId) => {
         const {
             actions,
             currentTeamId,
@@ -253,7 +264,7 @@ export default class ChannelDrawer extends PureComponent {
             return;
         }
 
-        this.selectChannel(result.data);
+        this.selectChannel(result.data, currentChannelId);
     };
 
     onPageSelected = (index) => {
@@ -284,13 +295,13 @@ export default class ChannelDrawer extends PureComponent {
     };
 
     showTeams = () => {
-        if (this.swiperIndex === 1 && this.props.teamsCount > 1) {
+        if (this.drawerSwiper && this.swiperIndex === 1 && this.props.teamsCount > 1) {
             this.drawerSwiper.getWrappedInstance().showTeamsPage();
         }
     };
 
     resetDrawer = () => {
-        if (this.swiperIndex !== 1) {
+        if (this.drawerSwiper && this.swiperIndex !== 1) {
             this.drawerSwiper.getWrappedInstance().resetPage();
         }
     };
@@ -344,6 +355,7 @@ export default class ChannelDrawer extends PureComponent {
                     onShowTeams={this.showTeams}
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
+                    theme={theme}
                 />
             </View>
         );
@@ -354,7 +366,6 @@ export default class ChannelDrawer extends PureComponent {
                 onPageSelected={this.onPageSelected}
                 openDrawerOffset={openDrawerOffset}
                 showTeams={showTeams}
-                theme={theme}
             >
                 {lists}
             </DrawerSwiper>
