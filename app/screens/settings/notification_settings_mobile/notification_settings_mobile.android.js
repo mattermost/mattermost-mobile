@@ -586,7 +586,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         } else {
             selectedUri = this.sound;
             const selected = sounds.find((s) => s.uri === selectedUri);
-            sound = selected.name;
+            sound = selected ? selected.name : 'none';
         }
 
         NotificationPreferences.setNotificationSound(selectedUri);
