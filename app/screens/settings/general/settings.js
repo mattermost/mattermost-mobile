@@ -154,11 +154,11 @@ class Settings extends PureComponent {
     };
 
     openErrorEmail = () => {
-        const recipient = 'feedback@mattermost.com';
-        const subject = 'Problem with Mattermost React Native app';
-        const body = this.errorEmailBody();
+        const {config} = this.props;
+        const recipient = config.SupportEmail;
+        const subject = `Problem with ${config.SiteName} React Native app`;
         Linking.openURL(
-            `mailto:${recipient}?subject=${subject}&body=${body}`
+            `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`
         );
         this.props.actions.clearErrors();
     };
