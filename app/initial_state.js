@@ -253,8 +253,7 @@ const state = {
     views: {
         channel: {
             drafts: {},
-            loading: false,
-            tooltipVisible: false
+            loading: false
         },
         fetchCache: {},
         i18n: {
