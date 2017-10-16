@@ -1975,6 +1975,8 @@
   "mobile.notification_settings_mobile.test": "Send me a test notification",
   "mobile.notification_settings_mobile.test_push": "This is a test push notification",
   "mobile.notification_settings_mobile.vibrate": "Vibrate",
+  "mobile.notification_settings.modal_cancel": "CANCEL",
+  "mobile.notification_settings.modal_save": "SAVE",
   "mobile.offlineIndicator.connected": "Connected",
   "mobile.offlineIndicator.connecting": "Connecting...",
   "mobile.offlineIndicator.offline": "No internet connection",

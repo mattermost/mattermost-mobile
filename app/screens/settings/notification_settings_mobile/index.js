@@ -9,9 +9,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import NotificationSettingsMobile from './notification_settings_mobile';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         config: getConfig(state),
         theme: getTheme(state)
     };
