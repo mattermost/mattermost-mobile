@@ -35,8 +35,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-function areStatesEqual(next, prev) {
-    return prev.entities.teams === next.entities.teams;
-}
-
-export default connect(mapStateToProps, mapDispatchToProps, null, {pure: true, areStatesEqual})(TeamsList);
+export default connect(mapStateToProps, mapDispatchToProps)(TeamsList);

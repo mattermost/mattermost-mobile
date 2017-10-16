@@ -25,9 +25,9 @@ export default class DrawerSwiper extends Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        const {deviceWidth, showTeams} = this.props;
+        const {deviceWidth, showTeams, theme} = this.props;
         return nextProps.deviceWidth !== deviceWidth ||
-            nextProps.showTeams !== showTeams;
+            nextProps.showTeams !== showTeams || nextProps.theme !== theme;
     }
 
     runOnLayout = (shouldRun = true) => {

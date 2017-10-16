@@ -14,11 +14,9 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
-import ChannelUnreadItem from 'app/components/channel_drawer/channels_list/channel_unread_item';
-import UnreadIndicator, {SET_WITDH, SHOULD_SHOW_EVENT} from 'app/components/channel_drawer/channels_list/unread_indicator';
+import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
@@ -40,13 +38,25 @@ class List extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.state = {
+            sections: this.buildSections(props),
+            showIndicator: false,
+            width: 0
+        };
+
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.unreadChannelIds !== this.props.unreadChannelIds && this.refs.list) {
+    componentWillReceiveProps(nextProps) {
+        if (nextProps !== this.props) {
+            this.setState({sections: this.buildSections(nextProps)});
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.sections !== this.state.sections && this.refs.list) {
             this.refs.list.recordInteraction();
             this.updateUnreadIndicators({
                 viewableItems: Array.from(this.refs.list._wrapperListRef._listRef._viewabilityHelper._viewableItems.values()) //eslint-disable-line
@@ -54,7 +64,7 @@ class List extends PureComponent {
         }
     }
 
-    buildSections = () => {
+    buildSections = (props) => {
         const {
             canCreatePrivateChannels,
             directChannelIds,
@@ -62,7 +72,7 @@ class List extends PureComponent {
             publicChannelIds,
             privateChannelIds,
             unreadChannelIds
-        } = this.props;
+        } = props;
         const sections = [];
 
         if (unreadChannelIds.length) {
@@ -183,6 +193,8 @@ class List extends PureComponent {
         });
     });
 
+    keyExtractor = (item) => item.id || item;
+
     onSelectChannel = (channel, currentChannelId) => {
         const {onSelectChannel} = this.props;
         onSelectChannel(channel, currentChannelId);
@@ -190,7 +202,7 @@ class List extends PureComponent {
 
     onLayout = (event) => {
         const {width} = event.nativeEvent.layout;
-        EventEmitter.emit(SET_WITDH, width - 40);
+        this.setState({width: width - 40});
     };
 
     renderSectionAction = (styles, action) => {
@@ -227,8 +239,9 @@ class List extends PureComponent {
 
     renderUnreadItem = ({item}) => {
         return (
-            <ChannelUnreadItem
+            <ChannelItem
                 channelId={item}
+                isUnread={true}
                 onSelectChannel={this.onSelectChannel}
             />
         );
@@ -268,8 +281,8 @@ class List extends PureComponent {
         }
     };
 
-    emitUnreadIndicatorChange = debounce((show) => {
-        EventEmitter.emit(SHOULD_SHOW_EVENT, show);
+    emitUnreadIndicatorChange = debounce((showIndicator) => {
+        this.setState({showIndicator});
     }, 100);
 
     updateUnreadIndicators = ({viewableItems}) => {
@@ -289,7 +302,7 @@ class List extends PureComponent {
 
     render() {
         const {styles, theme} = this.props;
-        const sections = this.buildSections();
+        const {sections, width, showIndicator} = this.state;
 
         return (
             <View
@@ -301,7 +314,7 @@ class List extends PureComponent {
                     sections={sections}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
-                    keyExtractor={(item) => item.id || item}
+                    keyExtractor={this.keyExtractor}
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
@@ -312,7 +325,8 @@ class List extends PureComponent {
                     }}
                 />
                 <UnreadIndicator
-                    style={styles.above}
+                    show={showIndicator}
+                    style={[styles.above, {width}]}
                     onPress={this.scrollToTop}
                     theme={theme}
                 />

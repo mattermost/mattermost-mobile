@@ -25,8 +25,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-function areStatesEqual(next, prev) {
-    return prev.entities.teams === next.entities.teams;
-}
-
-export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(TeamsListItem);
+export default connect(mapStateToProps)(TeamsListItem);

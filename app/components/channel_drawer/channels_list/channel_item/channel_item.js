@@ -9,6 +9,7 @@ import {
     View
 } from 'react-native';
 
+import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -18,6 +19,8 @@ export default class ChannelItem extends PureComponent {
         channelId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
+        isUnread: PropTypes.bool,
+        mentions: PropTypes.number.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         status: PropTypes.string,
         type: PropTypes.string.isRequired,
@@ -36,6 +39,8 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             displayName,
+            isUnread,
+            mentions,
             status,
             theme,
             type
@@ -44,23 +49,40 @@ export default class ChannelItem extends PureComponent {
         const style = getStyleSheet(theme);
         const isActive = channelId === currentChannelId;
 
-        let activeItem;
-        let activeText;
-        let activeBorder;
+        let extraItemStyle;
+        let extraTextStyle;
+        let extraBorder;
 
         if (isActive) {
-            activeItem = style.itemActive;
-            activeText = style.textActive;
+            extraItemStyle = style.itemActive;
+            extraTextStyle = style.textActive;
 
-            activeBorder = (
+            extraBorder = (
                 <View style={style.borderActive}/>
+            );
+        } else if (isUnread) {
+            extraTextStyle = style.textUnread;
+        }
+
+        let badge;
+        if (mentions) {
+            badge = (
+                <Badge
+                    style={style.badge}
+                    countStyle={style.mention}
+                    count={mentions}
+                    minHeight={20}
+                    minWidth={20}
+                    onPress={this.onPress}
+                />
             );
         }
 
         const icon = (
             <ChannelIcon
                 isActive={isActive}
-                hasUnread={false}
+                channelId={channelId}
+                isUnread={isUnread}
                 membersCount={displayName.split(',').length}
                 size={16}
                 status={status}
@@ -75,16 +97,17 @@ export default class ChannelItem extends PureComponent {
                 onPress={this.onPress}
             >
                 <View style={style.container}>
-                    {activeBorder}
-                    <View style={[style.item, activeItem]}>
+                    {extraBorder}
+                    <View style={[style.item, extraItemStyle]}>
                         {icon}
                         <Text
-                            style={[style.text, activeText]}
+                            style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
                             {displayName}
                         </Text>
+                        {badge}
                     </View>
                 </View>
             </TouchableHighlight>
@@ -124,6 +147,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         textActive: {
             color: theme.sidebarTextActiveColor
+        },
+        textUnread: {
+            color: theme.sidebarUnreadText
+        },
+        badge: {
+            backgroundColor: theme.mentionBj,
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 10,
+            borderWidth: 1,
+            padding: 3,
+            position: 'relative',
+            right: 16
+        },
+        mention: {
+            color: theme.mentionColor,
+            fontSize: 10
         }
     };
 });

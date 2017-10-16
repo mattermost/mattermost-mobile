@@ -19,7 +19,7 @@ export default class ChannelIcon extends React.PureComponent {
     static propTypes = {
         isActive: PropTypes.bool,
         isInfo: PropTypes.bool,
-        hasUnread: PropTypes.bool,
+        isUnread: PropTypes.bool,
         membersCount: PropTypes.number,
         size: PropTypes.number,
         status: PropTypes.string,
@@ -30,12 +30,12 @@ export default class ChannelIcon extends React.PureComponent {
     static defaultProps = {
         isActive: false,
         isInfo: false,
-        hasUnread: false,
+        isUnread: false,
         size: 12
     };
 
     render() {
-        const {isActive, hasUnread, isInfo, membersCount, size, status, theme, type} = this.props;
+        const {isActive, isUnread, isInfo, membersCount, size, status, theme, type} = this.props;
         const style = getStyleSheet(theme);
 
         let activeIcon;
@@ -46,7 +46,7 @@ export default class ChannelIcon extends React.PureComponent {
         let unreadGroup;
         let offlineColor = changeOpacity(theme.sidebarText, 0.5);
 
-        if (hasUnread) {
+        if (isUnread) {
             unreadIcon = style.iconUnread;
             unreadGroupBox = style.groupBoxUnread;
             unreadGroup = style.groupUnread;
