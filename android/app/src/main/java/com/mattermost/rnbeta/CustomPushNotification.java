@@ -17,7 +17,9 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.RemoteInput;
 import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.ArrayList;
+import java.util.List;
 import java.lang.reflect.Field;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
@@ -40,7 +42,7 @@ public class CustomPushNotification extends PushNotification {
     public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
 
     private static LinkedHashMap<String,Integer> channelIdToNotificationCount = new LinkedHashMap<String,Integer>();
-    private static LinkedHashMap<String,ArrayList<Bundle>> channelIdToNotification = new LinkedHashMap<String,ArrayList<Bundle>>();
+    private static LinkedHashMap<String,List<Bundle>> channelIdToNotification = new LinkedHashMap<String,List<Bundle>>();
     private static AppLifecycleFacade lifecycleFacade;
     private static Context context;
 
@@ -74,14 +76,16 @@ public class CustomPushNotification extends PushNotification {
             channelIdToNotificationCount.put(channelId, count);
 
             Object bundleArray = channelIdToNotification.get(channelId);
-            ArrayList list = null;
+            List list = null;
             if (bundleArray == null) {
-                list = new ArrayList(0);
+                list = Collections.synchronizedList(new ArrayList(0));
             } else {
-                list = (ArrayList)bundleArray;
+                list = Collections.synchronizedList((List)bundleArray);
             }
-            list.add(0, data);
-            channelIdToNotification.put(channelId, list);
+            synchronized (list) {
+                list.add(0, data);
+                channelIdToNotification.put(channelId, list);
+            }
         }
 
         if ("clear".equals(type)) {
@@ -192,7 +196,7 @@ public class CustomPushNotification extends PushNotification {
             String summaryTitle = String.format("%s (%d)", title, numMessages);
 
             Notification.InboxStyle style = new Notification.InboxStyle();
-            ArrayList<Bundle> list = (ArrayList<Bundle>) channelIdToNotification.get(channelId);
+            List<Bundle> list = new ArrayList<Bundle>(channelIdToNotification.get(channelId));
 
             for (Bundle data : list){
                 String msg = data.getString("message");
