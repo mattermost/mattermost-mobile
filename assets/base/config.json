@@ -1,4 +1,5 @@
 {
+    "AppName": "Mattermost",
     "DefaultServerUrl": "",
     "TestServerUrl": "http://localhost:8065",
     "DefaultTheme": "default",
@@ -23,6 +24,8 @@
             "console": true
         }
     },
+
+    "AutoSelectServerUrl": false,
 
     "EnableMobileClientUpgrade": false,
     "EnableMobileClientUpgradeUserSetting": false,

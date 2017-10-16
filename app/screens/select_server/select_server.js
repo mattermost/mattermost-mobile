@@ -20,6 +20,7 @@ import urlParse from 'url-parse';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {Client, Client4} from 'mattermost-redux/client';
 
+import Config from 'assets/config';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -64,9 +65,9 @@ class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
-        const {allowOtherServers, pingRequest, serverUrl} = this.props;
-        if (pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
-            // If the app is managed, the server url is set and the user can't change it
+        const {allowOtherServers, pingRequest, serverUrl, forceSelect} = this.props;
+        if (!forceSelect && pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
+            // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
             // we automatically trigger the ping to move to the next screen
             this.onClick();
         }
@@ -147,6 +148,8 @@ class SelectServer extends PureComponent {
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
+                navBarHidden: Config.AutoSelectServerUrl,
+                disabledBackGesture: Config.AutoSelectServerUrl,
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor
@@ -195,7 +198,7 @@ class SelectServer extends PureComponent {
     };
 
     render() {
-        const {allowOtherServers, serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
+        const {allowOtherServers, serverUrl, pingRequest, configRequest, licenseRequest, forceSelect} = this.props;
         const isLoading = pingRequest.status === RequestStatus.STARTED ||
             configRequest.status === RequestStatus.STARTED ||
             licenseRequest.status === RequestStatus.STARTED;
@@ -244,20 +247,22 @@ class SelectServer extends PureComponent {
                                 defaultMessage='Enter Server URL'
                             />
                         </View>
-                        <TextInputWithLocalizedPlaceholder
-                            ref={this.inputRef}
-                            value={serverUrl}
-                            editable={allowOtherServers}
-                            onChangeText={this.props.actions.handleServerUrlChanged}
-                            onSubmitEditing={this.onClick}
-                            style={[GlobalStyles.inputBox, allowOtherServers ? {} : {backgroundColor: '#e3e3e3'}]}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
-                            placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                        />
+                        {(forceSelect || !Config.AutoSelectServerUrl) &&
+                            <TextInputWithLocalizedPlaceholder
+                                ref={this.inputRef}
+                                value={serverUrl}
+                                editable={forceSelect || allowOtherServers}
+                                onChangeText={this.props.actions.handleServerUrlChanged}
+                                onSubmitEditing={this.onClick}
+                                style={[GlobalStyles.inputBox, (forceSelect || allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
+                                autoCapitalize='none'
+                                autoCorrect={false}
+                                keyboardType='url'
+                                placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
+                                returnKeyType='go'
+                                underlineColorAndroid='transparent'
+                            />
+                        }
                         {proceed}
                         <ErrorText error={this.state.error || error}/>
                     </View>

@@ -11,15 +11,15 @@ import {stripTrailingSlashes} from 'app/utils/url';
 
 export default class Root extends Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            loadMe: PropTypes.func.isRequired
+        }).isRequired,
         allowOtherServers: PropTypes.bool,
         currentUser: PropTypes.object,
         credentials: PropTypes.object,
         justInit: PropTypes.bool,
         navigator: PropTypes.object,
-        theme: PropTypes.object,
-        actions: PropTypes.shape({
-            loadMe: PropTypes.func
-        }).isRequired
+        theme: PropTypes.object
     };
 
     shouldComponentUpdate(nextProps) {

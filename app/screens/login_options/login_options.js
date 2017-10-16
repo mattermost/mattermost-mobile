@@ -8,18 +8,21 @@ import {
     Image,
     ScrollView,
     StyleSheet,
-    Text
+    Text,
+    View
 } from 'react-native';
 import Button from 'react-native-button';
 import Orientation from 'react-native-orientation';
 import semver from 'semver';
 
 import {ViewTypes} from 'app/constants';
+import AutoSelectUrlEasterEgg from 'app/components/auto_select_url_easter_egg';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 
+import Config from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
 
@@ -192,33 +195,36 @@ class LoginOptions extends PureComponent {
 
     render() {
         return (
-            <ScrollView
-                style={style.container}
-                contentContainerStyle={style.innerContainer}
-                ref={this.scrollRef}
-            >
-                <StatusBar/>
-                <Image
-                    source={logo}
-                />
-                <Text style={GlobalStyles.header}>
-                    {this.props.config.SiteName}
-                </Text>
-                <FormattedText
-                    style={GlobalStyles.subheader}
-                    id='web.root.signup_info'
-                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                />
-                <FormattedText
-                    style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
-                    id='mobile.login_options.choose_title'
-                    defaultMessage='Choose your login method'
-                />
-                {this.renderEmailOption()}
-                {this.renderLdapOption()}
-                {this.renderGitlabOption()}
-                {this.renderSamlOption()}
-            </ScrollView>
+            <View style={style.container}>
+                <ScrollView
+                    style={style.container}
+                    contentContainerStyle={style.innerContainer}
+                    ref={this.scrollRef}
+                >
+                    <StatusBar/>
+                    <Image
+                        source={logo}
+                    />
+                    <Text style={GlobalStyles.header}>
+                        {this.props.config.SiteName}
+                    </Text>
+                    <FormattedText
+                        style={GlobalStyles.subheader}
+                        id='web.root.signup_info'
+                        defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                    />
+                    <FormattedText
+                        style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
+                        id='mobile.login_options.choose_title'
+                        defaultMessage='Choose your login method'
+                    />
+                    {this.renderEmailOption()}
+                    {this.renderLdapOption()}
+                    {this.renderGitlabOption()}
+                    {this.renderSamlOption()}
+                </ScrollView>
+                {Config.AutoSelectServerUrl && <AutoSelectUrlEasterEgg navigator={this.props.navigator}/>}
+            </View>
         );
     }
 }

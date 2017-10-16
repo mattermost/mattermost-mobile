@@ -19,12 +19,14 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Orientation from 'react-native-orientation';
 
+import AutoSelectUrlEasterEgg from 'app/components/auto_select_url_easter_egg';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 
+import Config from 'assets/config';
 import logo from 'assets/images/logo.png';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -366,6 +368,7 @@ class Login extends PureComponent {
                         {proceed}
                     </KeyboardAwareScrollView>
                 </TouchableWithoutFeedback>
+                {Config.AutoSelectServerUrl && <AutoSelectUrlEasterEgg navigator={this.props.navigator}/>}
             </View>
         );
     }
