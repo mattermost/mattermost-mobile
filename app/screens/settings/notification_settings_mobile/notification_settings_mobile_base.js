@@ -46,14 +46,14 @@ export default class NotificationSettingsMobileBase extends PureComponent {
             } = props.notificationPreferences;
 
             const defSound = sounds.find((s) => s.uri === defaultUri);
-            const defaultSound = defSound.name;
+            const defaultSound = defSound ? defSound.name : 'none';
 
             let sound;
             if (selectedUri && selectedUri === 'none') {
                 sound = 'none';
             } else if (selectedUri) {
                 const selected = sounds.find((s) => s.uri === selectedUri);
-                sound = selected.name;
+                sound = selected ? selected.name : 'none';
             }
 
             return {
