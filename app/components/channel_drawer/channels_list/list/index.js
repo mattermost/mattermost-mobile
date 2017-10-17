@@ -40,7 +40,7 @@ function mapStateToProps(state) {
 
 function areStatesEqual(next, prev) {
     const equalRoles = getCurrentUserRoles(prev) === getCurrentUserRoles(next);
-    const equalChannels = next.entities.channels.channels === prev.entities.channels.channels;
+    const equalChannels = next.entities.channels === prev.entities.channels;
     const equalConfig = next.entities.general.config === prev.entities.general.config;
     const equalUsers = next.entities.users.profiles === prev.entities.users.profiles;
 
