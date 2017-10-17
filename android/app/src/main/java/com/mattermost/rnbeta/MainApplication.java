@@ -56,6 +56,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNDeviceInfo(),
             new CookieManagerPackage(),
             new VectorIconsPackage(),
+            new SvgPackage(),
             new LinearGradientPackage(),
             new OrientationPackage(),
             new RNNotificationsPackage(this),
