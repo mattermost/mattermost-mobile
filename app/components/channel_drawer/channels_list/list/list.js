@@ -50,7 +50,19 @@ class List extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps !== this.props) {
+        const {
+            canCreatePrivateChannels,
+            directChannelIds,
+            favoriteChannelIds,
+            publicChannelIds,
+            privateChannelIds,
+            unreadChannelIds
+        } = this.props;
+
+        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            nextProps.directChannelIds !== directChannelIds || nextProps.favoriteChannelIds !== favoriteChannelIds ||
+            nextProps.publicChannelIds !== publicChannelIds || nextProps.privateChannelIds !== privateChannelIds ||
+            nextProps.unreadChannelIds !== unreadChannelIds) {
             this.setState({sections: this.buildSections(nextProps)});
         }
     }

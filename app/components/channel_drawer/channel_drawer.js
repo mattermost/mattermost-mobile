@@ -205,7 +205,7 @@ export default class ChannelDrawer extends Component {
             viewChannel
         } = actions;
 
-        setChannelLoading();
+        setChannelLoading(channel.id !== currentChannelId);
         setChannelDisplayName(channel.display_name);
 
         this.closeChannelDrawer();
