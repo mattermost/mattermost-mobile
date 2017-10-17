@@ -450,7 +450,7 @@ platform :android do
     find_replace_string(
         path_to_file: './fastlane/metadata/android/en-US/title.txt',
         old_string: 'Mattermost Beta',
-        new_string: 'Mattermost;'
+        new_string: 'Mattermost'
     )
 
     configure_from_env()
