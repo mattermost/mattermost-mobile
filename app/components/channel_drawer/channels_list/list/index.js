@@ -12,7 +12,7 @@ import {
     getSortedDirectChannelIds
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme, getFavoritesPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
@@ -43,8 +43,9 @@ function areStatesEqual(next, prev) {
     const equalChannels = next.entities.channels === prev.entities.channels;
     const equalConfig = next.entities.general.config === prev.entities.general.config;
     const equalUsers = next.entities.users.profiles === prev.entities.users.profiles;
+    const equalFav = getFavoritesPreferences(next) === getFavoritesPreferences(prev);
 
-    return equalChannels && equalConfig && equalRoles && equalUsers;
+    return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
 }
 
 export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(List);

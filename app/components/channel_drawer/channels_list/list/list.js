@@ -285,7 +285,7 @@ class List extends PureComponent {
 
     scrollToTop = () => {
         if (this.refs.list) {
-            this.refs.list.scrollToOffset({
+            this.refs.list._wrapperListRef._listRef.scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
                 animated: true
