@@ -5,7 +5,6 @@ import {Keyboard, Dimensions} from 'react-native';
 import PropTypes from 'prop-types';
 import BaseDrawer from 'react-native-drawer';
 
-/* eslint-disable */
 // Extends react-native-drawer to allow better control over the open/closed state from the parent
 export default class Drawer extends BaseDrawer {
     static propTypes = {
@@ -14,11 +13,6 @@ export default class Drawer extends BaseDrawer {
         bottomPanOffset: PropTypes.number,
         topPanOffset: PropTypes.number
     };
-
-    // static defaultProps = {
-    //     bottomPanOffset: 0,
-    //     topPanOffset: 0
-    // };
 
     constructor(props) {
         super(props);
@@ -36,7 +30,6 @@ export default class Drawer extends BaseDrawer {
         this.keyboardDidHideListener.remove();
     }
 
-    // To fix the android onLayout issue give this a value of 100% as it does not need another one
     getMainHeight = () => '100%';
 
     keyboardDidShow = (e) => {
@@ -48,17 +41,17 @@ export default class Drawer extends BaseDrawer {
     };
 
     isOpened = () => {
-        return this._open;
+        return this._open; //eslint-disable-line no-underscore-dangle
     };
 
     processTapGestures = () => {
         // Note that we explicitly don't support tap to open or double tap because I didn't copy them over
 
-        if (this._activeTween) {
+        if (this._activeTween) { //eslint-disable-line no-underscore-dangle
             return false;
         }
 
-        if (this.props.tapToClose && this._open) {
+        if (this.props.tapToClose && this._open) { //eslint-disable-line no-underscore-dangle
             this.props.onRequestClose();
 
             return true;
@@ -73,12 +66,11 @@ export default class Drawer extends BaseDrawer {
         }
 
         // Disable if parent or child drawer exist and are open
-        // @TODO make cleaner, generalize to work with 3+ drawers, prop to disable/configure
-        if (this.context.drawer && this.context.drawer._open) {
+        if (this.context.drawer && this.context.drawer._open) { //eslint-disable-line no-underscore-dangle
             return false;
         }
 
-        if (this._childDrawer && this._childDrawer._open) {
+        if (this._childDrawer && this._childDrawer._open) { //eslint-disable-line no-underscore-dangle
             return false;
         }
 
@@ -89,15 +81,16 @@ export default class Drawer extends BaseDrawer {
             (this.props.bottomPanOffset && e.nativeEvent.pageY > (height - (bottomPanOffset + this.keyboardHeight)))) {
             return false;
         }
-        let pos0 = this.isLeftOrRightSide() ? e.nativeEvent.pageX : e.nativeEvent.pageY;
-        let deltaOpen = this.isLeftOrTopSide() ? this.getDeviceLength() - pos0 : pos0;
-        let deltaClose = this.isLeftOrTopSide() ? pos0 : this.getDeviceLength() - pos0;
 
-        if (this._open && deltaOpen > this.getOpenMask()) {
+        const pos0 = this.isLeftOrRightSide() ? e.nativeEvent.pageX : e.nativeEvent.pageY;
+        const deltaOpen = this.isLeftOrTopSide() ? this.getDeviceLength() - pos0 : pos0;
+        const deltaClose = this.isLeftOrTopSide() ? pos0 : this.getDeviceLength() - pos0;
+
+        if (this._open && deltaOpen > this.getOpenMask()) { //eslint-disable-line no-underscore-dangle
             return false;
         }
 
-        if (!this._open && deltaClose > this.getClosedMask()) {
+        if (!this._open && deltaClose > this.getClosedMask()) { //eslint-disable-line no-underscore-dangle
             return false;
         }
 
