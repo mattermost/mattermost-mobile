@@ -58,7 +58,7 @@ export default class LoadTeam extends PureComponent {
 
     onSelectTeam(team) {
         const {handleTeamChange} = this.props.actions;
-        handleTeamChange(team).then(this.goToChannelView);
+        handleTeamChange(team.id).then(this.goToChannelView);
     }
 
     goToChannelView = () => {

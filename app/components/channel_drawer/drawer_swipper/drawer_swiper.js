@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet} from 'react-native';
 
@@ -9,7 +9,7 @@ import {changeOpacity} from 'app/utils/theme';
 
 import Swiper from 'app/components/swiper';
 
-export default class DrawerSwiper extends PureComponent {
+export default class DrawerSwiper extends Component {
     static propTypes = {
         children: PropTypes.node.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -24,16 +24,28 @@ export default class DrawerSwiper extends PureComponent {
         openDrawerOffset: 0
     };
 
+    shouldComponentUpdate(nextProps) {
+        const {deviceWidth, showTeams, theme} = this.props;
+        return nextProps.deviceWidth !== deviceWidth ||
+            nextProps.showTeams !== showTeams || nextProps.theme !== theme;
+    }
+
     runOnLayout = (shouldRun = true) => {
-        this.refs.swiper.runOnLayout = shouldRun;
+        if (this.refs.swiper) {
+            this.refs.swiper.runOnLayout = shouldRun;
+        }
     };
 
     resetPage = () => {
-        this.refs.swiper.scrollToIndex(1, false);
+        if (this.refs.swiper) {
+            this.refs.swiper.scrollToIndex(1, false);
+        }
     };
 
     scrollToStart = () => {
-        this.refs.swiper.scrollToStart();
+        if (this.refs.swiper) {
+            this.refs.swiper.scrollToStart();
+        }
     };
 
     swiperPageSelected = (index) => {
@@ -41,7 +53,9 @@ export default class DrawerSwiper extends PureComponent {
     };
 
     showTeamsPage = () => {
-        this.refs.swiper.scrollToIndex(0, true);
+        if (this.refs.swiper) {
+            this.refs.swiper.scrollToIndex(0, true);
+        }
     };
 
     render() {

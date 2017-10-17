@@ -3,15 +3,16 @@
 
 import {connect} from 'react-redux';
 
-import {getDimensions, isLandscape} from 'app/selectors/device';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import {getDimensions} from 'app/selectors/device';
 
 import DraweSwiper from './drawer_swiper';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         ...getDimensions(state),
-        isLandscape: isLandscape(state)
+        theme: getTheme(state)
     };
 }
 

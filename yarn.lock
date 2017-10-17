@@ -3878,7 +3878,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/9042b154c85f65b4e91b30bf2bc612048e3d194b"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/1f64d99a0df42cf6513c12be6af965065eb1374f"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -3892,6 +3892,7 @@ mattermost-redux@mattermost/mattermost-redux#master:
     redux-thunk "2.2.0"
     reselect "3.0.1"
     serialize-error "2.1.0"
+    shallow-equals "1.0.0"
 
 md5-hex@^1.2.0:
   version "1.3.0"
@@ -5004,9 +5005,9 @@ react-native-svg-mock@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-native-svg-mock/-/react-native-svg-mock-1.0.2.tgz#2dc35fb97ca1e0ea393ece6d23782ba4f58e178f"
 
-react-native-svg@5.4.1:
-  version "5.4.1"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-5.4.1.tgz#c46191c786adbe9d5007342b4279efd153db8839"
+react-native-svg@react-native-community/react-native-svg#be8797be5239085d5d09eec90a926ae8da7a8583:
+  version "6.0.0-rc1"
+  resolved "https://codeload.github.com/react-native-community/react-native-svg/tar.gz/be8797be5239085d5d09eec90a926ae8da7a8583"
   dependencies:
     color "^0.11.1"
     lodash "^4.16.6"
@@ -5818,6 +5819,10 @@ setimmediate@^1.0.5:
 setprototypeof@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.0.3.tgz#66567e37043eeb4f04d91bd658c0cbefb55b8e04"
+
+shallow-equals@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/shallow-equals/-/shallow-equals-1.0.0.tgz#24b74bf1c634c11ed4c7182a6df6fb300dce4390"
 
 shebang-command@^1.2.0:
   version "1.2.0"

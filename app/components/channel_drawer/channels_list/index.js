@@ -7,9 +7,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ChannelsList from './channels_list';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         theme: getTheme(state)
     };
 }

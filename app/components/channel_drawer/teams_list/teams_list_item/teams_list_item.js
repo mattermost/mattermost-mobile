@@ -18,29 +18,32 @@ export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
+        displayName: PropTypes.string.isRequired,
+        mentionCount: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
         selectTeam: PropTypes.func.isRequired,
-        team: PropTypes.object.isRequired,
-        teamMember: PropTypes.object.isRequired,
+        teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
 
     selectTeam = wrapWithPreventDoubleTap(() => {
-        this.props.selectTeam(this.props.team);
+        this.props.selectTeam(this.props.teamId);
     });
 
     render() {
         const {
             currentTeamId,
             currentUrl,
-            team,
-            teamMember,
+            displayName,
+            mentionCount,
+            name,
+            teamId,
             theme
         } = this.props;
         const styles = getStyleSheet(theme);
 
         let current;
-        let badge;
-        if (team.id === currentTeamId) {
+        if (teamId === currentTeamId) {
             current = (
                 <View style={styles.checkmarkContainer}>
                     <IonIcon
@@ -51,24 +54,15 @@ export default class TeamsListItem extends React.PureComponent {
             );
         }
 
-        let badgeCount = 0;
-        if (teamMember.mention_count) {
-            badgeCount = teamMember.mention_count;
-        } else if (teamMember.msg_count) {
-            badgeCount = -1;
-        }
-
-        if (badgeCount) {
-            badge = (
-                <Badge
-                    style={styles.badge}
-                    countStyle={styles.mention}
-                    count={badgeCount}
-                    minHeight={20}
-                    minWidth={20}
-                />
-            );
-        }
+        const badge = (
+            <Badge
+                style={styles.badge}
+                countStyle={styles.mention}
+                count={mentionCount}
+                minHeight={20}
+                minWidth={20}
+            />
+        );
 
         return (
             <View style={styles.teamWrapper}>
@@ -79,7 +73,7 @@ export default class TeamsListItem extends React.PureComponent {
                     <View style={styles.teamContainer}>
                         <View style={styles.teamIconContainer}>
                             <Text style={styles.teamIcon}>
-                                {team.display_name.substr(0, 2).toUpperCase()}
+                                {displayName.substr(0, 2).toUpperCase()}
                             </Text>
                         </View>
                         <View style={styles.teamNameContainer}>
@@ -88,14 +82,14 @@ export default class TeamsListItem extends React.PureComponent {
                                 ellipsizeMode='tail'
                                 style={styles.teamName}
                             >
-                                {team.display_name}
+                                {displayName}
                             </Text>
                             <Text
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
                                 style={styles.teamUrl}
                             >
-                                {`${currentUrl}/${team.name}`}
+                                {`${currentUrl}/${name}`}
                             </Text>
                         </View>
                         {current}

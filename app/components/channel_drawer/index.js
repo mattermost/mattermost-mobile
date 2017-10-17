@@ -6,8 +6,7 @@ import {connect} from 'react-redux';
 
 import {joinChannel, viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId, getTeamMemberships} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/entities/teams';
 
 import {handleSelectChannel, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
@@ -21,11 +20,10 @@ function mapStateToProps(state) {
 
     return {
         currentTeamId: getCurrentTeamId(state),
-        currentChannelId: getCurrentChannelId(state),
         currentUserId,
         isLandscape: isLandscape(state),
         isTablet: isTablet(state),
-        teamsCount: Object.keys(getTeamMemberships(state)).length,
+        teamsCount: getMyTeamsCount(state),
         theme: getTheme(state)
     };
 }

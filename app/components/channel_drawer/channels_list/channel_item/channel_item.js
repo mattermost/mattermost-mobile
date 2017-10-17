@@ -10,45 +10,62 @@ import {
 } from 'react-native';
 
 import Badge from 'app/components/badge';
-import ChanneIcon from 'app/components/channel_icon';
-import {preventDoubleTap} from 'app/utils/tap';
+import ChannelIcon from 'app/components/channel_icon';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
-        channel: PropTypes.object.isRequired,
-        onSelectChannel: PropTypes.func.isRequired,
-        isActive: PropTypes.bool.isRequired,
-        hasUnread: PropTypes.bool.isRequired,
+        channelId: PropTypes.string.isRequired,
+        currentChannelId: PropTypes.string.isRequired,
+        displayName: PropTypes.string.isRequired,
+        isUnread: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
+        onSelectChannel: PropTypes.func.isRequired,
+        status: PropTypes.string,
+        type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
 
-    onPress = () => {
-        const {channel, onSelectChannel} = this.props;
+    onPress = wrapWithPreventDoubleTap(() => {
+        const {channelId, currentChannelId, displayName, onSelectChannel} = this.props;
         requestAnimationFrame(() => {
-            preventDoubleTap(onSelectChannel, this, channel);
+            onSelectChannel({id: channelId, display_name: displayName}, currentChannelId);
         });
-    };
+    });
 
     render() {
         const {
-            channel,
-            theme,
+            channelId,
+            currentChannelId,
+            displayName,
+            isUnread,
             mentions,
-            hasUnread,
-            isActive
+            status,
+            theme,
+            type
         } = this.props;
 
         const style = getStyleSheet(theme);
-        let activeItem;
-        let activeText;
-        let unreadText;
+        const isActive = channelId === currentChannelId;
 
-        let activeBorder;
+        let extraItemStyle;
+        let extraTextStyle;
+        let extraBorder;
+
+        if (isActive) {
+            extraItemStyle = style.itemActive;
+            extraTextStyle = style.textActive;
+
+            extraBorder = (
+                <View style={style.borderActive}/>
+            );
+        } else if (isUnread) {
+            extraTextStyle = style.textUnread;
+        }
+
         let badge;
-
-        if (mentions && !isActive) {
+        if (mentions) {
             badge = (
                 <Badge
                     style={style.badge}
@@ -61,28 +78,16 @@ export default class ChannelItem extends PureComponent {
             );
         }
 
-        if (hasUnread) {
-            unreadText = style.textUnread;
-        }
-
-        if (isActive) {
-            activeItem = style.itemActive;
-            activeText = style.textActive;
-
-            activeBorder = (
-                <View style={style.borderActive}/>
-            );
-        }
-
         const icon = (
-            <ChanneIcon
+            <ChannelIcon
                 isActive={isActive}
-                hasUnread={hasUnread}
-                membersCount={channel.display_name.split(',').length}
+                channelId={channelId}
+                isUnread={isUnread}
+                membersCount={displayName.split(',').length}
                 size={16}
-                status={channel.status}
+                status={status}
                 theme={theme}
-                type={channel.type}
+                type={type}
             />
         );
 
@@ -92,15 +97,15 @@ export default class ChannelItem extends PureComponent {
                 onPress={this.onPress}
             >
                 <View style={style.container}>
-                    {activeBorder}
-                    <View style={[style.item, activeItem]}>
+                    {extraBorder}
+                    <View style={[style.item, extraItemStyle]}>
                         {icon}
                         <Text
-                            style={[style.text, unreadText, activeText]}
+                            style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
-                            {channel.display_name}
+                            {displayName}
                         </Text>
                         {badge}
                     </View>

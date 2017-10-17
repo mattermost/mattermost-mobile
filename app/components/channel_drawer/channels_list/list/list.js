@@ -1,11 +1,10 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import deepEqual from 'deep-equal';
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    FlatList,
+    SectionList,
     Text,
     TouchableHighlight,
     View
@@ -13,38 +12,36 @@ import {
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import FormattedText from 'app/components/formatted_text';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
-import {changeOpacity} from 'app/utils/theme';
-
 import {General} from 'mattermost-redux/constants';
+import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
 import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {changeOpacity} from 'app/utils/theme';
 
-class List extends Component {
+class List extends PureComponent {
     static propTypes = {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
-        channels: PropTypes.object.isRequired,
-        channelMembers: PropTypes.object,
-        currentChannel: PropTypes.object,
+        directChannelIds: PropTypes.array.isRequired,
+        favoriteChannelIds: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
+        publicChannelIds: PropTypes.array.isRequired,
+        privateChannelIds: PropTypes.array.isRequired,
         styles: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
-    };
-
-    static defaultProps = {
-        currentChannel: {}
+        theme: PropTypes.object.isRequired,
+        unreadChannelIds: PropTypes.array.isRequired
     };
 
     constructor(props) {
         super(props);
-        this.firstUnreadChannel = null;
+
         this.state = {
-            dataSource: this.buildData(props),
-            showAbove: false
+            sections: this.buildSections(props),
+            showIndicator: false,
+            width: 0
         };
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
@@ -52,106 +49,96 @@ class List extends Component {
         });
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
-    }
-
     componentWillReceiveProps(nextProps) {
-        this.setState({
-            dataSource: this.buildData(nextProps)
-        }, () => {
-            if (this.refs.list) {
-                this.refs.list.recordInteraction();
-                this.updateUnreadIndicators({
-                    viewableItems: Array.from(this.refs.list._listRef._viewabilityHelper._viewableItems.values()) //eslint-disable-line
-                });
-            }
-        });
+        const {
+            canCreatePrivateChannels,
+            directChannelIds,
+            favoriteChannelIds,
+            publicChannelIds,
+            privateChannelIds,
+            unreadChannelIds
+        } = this.props;
+
+        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            nextProps.directChannelIds !== directChannelIds || nextProps.favoriteChannelIds !== favoriteChannelIds ||
+            nextProps.publicChannelIds !== publicChannelIds || nextProps.privateChannelIds !== privateChannelIds ||
+            nextProps.unreadChannelIds !== unreadChannelIds) {
+            this.setState({sections: this.buildSections(nextProps)});
+        }
     }
 
-    updateUnreadIndicators = ({viewableItems}) => {
-        let showAbove = false;
-        const visibleIndexes = viewableItems.map((v) => v.index);
-
-        if (visibleIndexes.length) {
-            const {dataSource} = this.state;
-            const firstVisible = parseInt(visibleIndexes[0], 10);
-
-            if (this.firstUnreadChannel) {
-                const index = dataSource.findIndex((item) => {
-                    return item.display_name === this.firstUnreadChannel;
-                });
-                showAbove = index < firstVisible;
-            }
-
-            this.setState({
-                showAbove
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.sections !== this.state.sections && this.refs.list) {
+            this.refs.list.recordInteraction();
+            this.updateUnreadIndicators({
+                viewableItems: Array.from(this.refs.list._wrapperListRef._listRef._viewabilityHelper._viewableItems.values()) //eslint-disable-line
             });
         }
-    };
+    }
 
-    onSelectChannel = (channel) => {
-        this.props.onSelectChannel(channel);
-    };
+    buildSections = (props) => {
+        const {
+            canCreatePrivateChannels,
+            directChannelIds,
+            favoriteChannelIds,
+            publicChannelIds,
+            privateChannelIds,
+            unreadChannelIds
+        } = props;
+        const sections = [];
 
-    onLayout = (event) => {
-        const {width} = event.nativeEvent.layout;
-        this.width = width;
-    };
-
-    getUnreadMessages = (channel) => {
-        const member = this.props.channelMembers[channel.id];
-        let mentions = 0;
-        let unreadCount = 0;
-        if (member && channel) {
-            mentions = member.mention_count;
-            unreadCount = channel.total_msg_count - member.msg_count;
-
-            if (member.notify_props && member.notify_props.mark_unread === General.MENTION) {
-                unreadCount = 0;
-            }
+        if (unreadChannelIds.length) {
+            sections.push({
+                id: 'mobile.channel_list.unreads',
+                defaultMessage: 'UNREADS',
+                data: unreadChannelIds,
+                renderItem: this.renderUnreadItem,
+                topSeparator: false,
+                bottomSeparator: true
+            });
         }
 
-        return {
-            mentions,
-            unreadCount
-        };
-    };
+        if (favoriteChannelIds.length) {
+            sections.push({
+                id: 'sidebar.favorite',
+                defaultMessage: 'FAVORITES',
+                data: favoriteChannelIds,
+                topSeparator: unreadChannelIds.length > 0,
+                bottomSeparator: true
+            });
+        }
 
-    findUnreadChannels = (data) => {
-        data.forEach((c) => {
-            if (c.id) {
-                const {mentions, unreadCount} = this.getUnreadMessages(c);
-                const unread = (mentions + unreadCount) > 0;
-
-                if (unread && c.id !== this.props.currentChannel.id) {
-                    if (!this.firstUnreadChannel) {
-                        this.firstUnreadChannel = c.display_name;
-                    }
-                }
-            }
+        sections.push({
+            action: this.goToMoreChannels,
+            id: 'sidebar.channels',
+            defaultMessage: 'PUBLIC CHANNELS',
+            data: publicChannelIds,
+            topSeparator: favoriteChannelIds.length > 0 || unreadChannelIds.length > 0,
+            bottomSeparator: publicChannelIds.length > 0
         });
+
+        sections.push({
+            action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
+            id: 'sidebar.pg',
+            defaultMessage: 'PRIVATE CHANNELS',
+            data: privateChannelIds,
+            topSeparator: true,
+            bottomSeparator: privateChannelIds.length > 0
+        });
+
+        sections.push({
+            action: this.goToDirectMessages,
+            id: 'sidebar.direct',
+            defaultMessage: 'DIRECT MESSAGES',
+            data: directChannelIds,
+            topSeparator: true,
+            bottomSeparator: false
+        });
+
+        return sections;
     };
 
-    createChannelElement = (channel) => {
-        const {mentions, unreadCount} = this.getUnreadMessages(channel);
-        const msgCount = mentions + unreadCount;
-        const unread = msgCount > 0;
-
-        return (
-            <ChannelItem
-                ref={channel.id}
-                channel={channel}
-                hasUnread={unread}
-                mentions={mentions}
-                onSelectChannel={this.onSelectChannel}
-                isActive={channel.isCurrent}
-                theme={this.props.theme}
-            />
-        );
-    };
-
-    createPrivateChannel = wrapWithPreventDoubleTap(() => {
+    goToCreatePrivateChannel = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -173,75 +160,7 @@ class List extends Component {
         });
     });
 
-    buildChannels = (props) => {
-        const {canCreatePrivateChannels, styles} = props;
-        const {
-            unreadChannels,
-            favoriteChannels,
-            publicChannels,
-            privateChannels,
-            directAndGroupChannels
-        } = props.channels;
-
-        const data = [];
-
-        if (unreadChannels.length) {
-            data.push(
-                this.renderTitle(styles, 'mobile.channel_list.unreads', 'UNREADS', null, false, true),
-                ...unreadChannels
-            );
-        }
-
-        if (favoriteChannels.length) {
-            data.push(
-                this.renderTitle(styles, 'sidebar.favorite', 'FAVORITES', null, unreadChannels.length > 0, true),
-                ...favoriteChannels
-            );
-        }
-
-        data.push(
-            this.renderTitle(styles, 'sidebar.channels', 'CHANNELS', this.showMoreChannelsModal, favoriteChannels.length > 0, publicChannels.length > 0),
-            ...publicChannels
-        );
-
-        let createPrivateChannel;
-        if (canCreatePrivateChannels) {
-            createPrivateChannel = this.createPrivateChannel;
-        }
-        data.push(
-            this.renderTitle(styles, 'sidebar.pg', 'PRIVATE CHANNELS', createPrivateChannel, true, privateChannels.length > 0),
-            ...privateChannels
-        );
-
-        data.push(
-            this.renderTitle(styles, 'sidebar.direct', 'DIRECT MESSAGES', this.showDirectMessagesModal, true, directAndGroupChannels.length > 0),
-            ...directAndGroupChannels
-        );
-
-        return data;
-    };
-
-    buildData = (props) => {
-        if (!props.currentChannel) {
-            return null;
-        }
-
-        const data = this.buildChannels(props);
-        this.firstUnreadChannel = null;
-        this.findUnreadChannels(data);
-
-        return data;
-    };
-
-    scrollToTop = () => {
-        this.refs.list.scrollToOffset({
-            x: 0,
-            y: 0,
-            animated: true
-        });
-    }
-
-    showDirectMessagesModal = wrapWithPreventDoubleTap(() => {
+    goToDirectMessages = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -265,7 +184,7 @@ class List extends Component {
         });
     });
 
-    showMoreChannelsModal = wrapWithPreventDoubleTap(() => {
+    goToMoreChannels = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -286,6 +205,18 @@ class List extends Component {
         });
     });
 
+    keyExtractor = (item) => item.id || item;
+
+    onSelectChannel = (channel, currentChannelId) => {
+        const {onSelectChannel} = this.props;
+        onSelectChannel(channel, currentChannelId);
+    };
+
+    onLayout = (event) => {
+        const {width} = event.nativeEvent.layout;
+        this.setState({width: width - 40});
+    };
+
     renderSectionAction = (styles, action) => {
         const {theme} = this.props;
         return (
@@ -302,83 +233,115 @@ class List extends Component {
         );
     };
 
-    renderDivider = (styles, marginLeft) => {
+    renderSectionSeparator = () => {
+        const {styles} = this.props;
         return (
-            <View
-                style={[styles.divider, {marginLeft}]}
-            />
+            <View style={[styles.divider]}/>
         );
     };
 
     renderItem = ({item}) => {
-        if (!item.isTitle) {
-            return this.createChannelElement(item);
-        }
-        return item.title;
+        return (
+            <ChannelItem
+                channelId={item}
+                onSelectChannel={this.onSelectChannel}
+            />
+        );
     };
 
-    renderTitle = (styles, id, defaultMessage, action, topDivider, bottomDivider) => {
-        const {formatMessage} = this.props.intl;
+    renderUnreadItem = ({item}) => {
+        return (
+            <ChannelItem
+                channelId={item}
+                isUnread={true}
+                onSelectChannel={this.onSelectChannel}
+            />
+        );
+    };
 
-        return {
+    renderSectionHeader = ({section}) => {
+        const {intl, styles} = this.props;
+        const {
+            action,
+            bottomSeparator,
+            defaultMessage,
             id,
-            isTitle: true,
-            title: (
-                <View>
-                    {topDivider && this.renderDivider(styles, 0)}
-                    <View style={styles.titleContainer}>
-                        <Text style={styles.title}>
-                            {formatMessage({id, defaultMessage}).toUpperCase()}
-                        </Text>
-                        {action && this.renderSectionAction(styles, action)}
-                    </View>
-                    {bottomDivider && this.renderDivider(styles, 0)}
+            topSeparator
+        } = section;
+
+        return (
+            <View>
+                {topSeparator && this.renderSectionSeparator()}
+                <View style={styles.titleContainer}>
+                    <Text style={styles.title}>
+                        {intl.formatMessage({id, defaultMessage}).toUpperCase()}
+                    </Text>
+                    {action && this.renderSectionAction(styles, action)}
                 </View>
-            )
-        };
+                {bottomSeparator && this.renderSectionSeparator()}
+            </View>
+        );
+    };
+
+    scrollToTop = () => {
+        if (this.refs.list) {
+            this.refs.list.scrollToOffset({
+                x: 0,
+                y: 0,
+                animated: true
+            });
+        }
+    };
+
+    emitUnreadIndicatorChange = debounce((showIndicator) => {
+        this.setState({showIndicator});
+    }, 100);
+
+    updateUnreadIndicators = ({viewableItems}) => {
+        const {unreadChannelIds} = this.props;
+        const firstUnread = unreadChannelIds[0];
+        if (firstUnread) {
+            const isVisible = viewableItems.find((v) => v.item === firstUnread);
+
+            if (isVisible) {
+                return this.emitUnreadIndicatorChange(false);
+            }
+            return this.emitUnreadIndicatorChange(true);
+        }
+
+        return this.emitUnreadIndicatorChange(false);
     };
 
     render() {
-        const {styles} = this.props;
-
-        const {dataSource, showAbove} = this.state;
-
-        let above;
-        if (showAbove) {
-            above = (
-                <UnreadIndicator
-                    style={[styles.above, {width: (this.width - 40)}]}
-                    onPress={this.scrollToTop}
-                    text={(
-                        <FormattedText
-                            style={styles.indicatorText}
-                            id='sidebar.unreadAbove'
-                            defaultMessage='Unread post(s) above'
-                        />
-                    )}
-                />
-            );
-        }
+        const {styles, theme} = this.props;
+        const {sections, width, showIndicator} = this.state;
 
         return (
             <View
                 style={styles.container}
                 onLayout={this.onLayout}
             >
-                <FlatList
+                <SectionList
                     ref='list'
-                    data={dataSource}
+                    sections={sections}
                     renderItem={this.renderItem}
-                    keyExtractor={(item) => item.id}
+                    renderSectionHeader={this.renderSectionHeader}
+                    keyExtractor={this.keyExtractor}
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
+                    stickySectionHeadersEnabled={false}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 3,
                         waitForInteraction: false
                     }}
                 />
-                {above}
+                <UnreadIndicator
+                    show={showIndicator}
+                    style={[styles.above, {width}]}
+                    onPress={this.scrollToTop}
+                    theme={theme}
+                />
             </View>
         );
     }

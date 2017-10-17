@@ -14,96 +14,50 @@ import Badge from 'app/components/badge';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class SwitchTeams extends React.PureComponent {
+export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
-        currentTeam: PropTypes.object,
+        currentTeamId: PropTypes.string,
+        displayName: PropTypes.string,
         searching: PropTypes.bool.isRequired,
-        showTeams: PropTypes.func.isRequired,
-        teamMembers: PropTypes.object.isRequired,
+        onShowTeams: PropTypes.func.isRequired,
+        mentionCount: PropTypes.number.isRequired,
+        teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            badgeCount: this.getBadgeCount(props)
-        };
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.currentTeam !== this.props.currentTeam || nextProps.teamMembers !== this.props.teamMembers) {
-            this.setState({
-                badgeCount: this.getBadgeCount(nextProps)
-            });
-        }
-    }
-
-    getBadgeCount = (props) => {
-        const {
-            currentTeam,
-            teamMembers
-        } = props;
-
-        let mentionCount = 0;
-        let messageCount = 0;
-        Object.values(teamMembers).forEach((m) => {
-            if (m.team_id !== currentTeam.id) {
-                mentionCount = mentionCount + (m.mention_count || 0);
-                messageCount = messageCount + (m.msg_count || 0);
-            }
-        });
-
-        let badgeCount;
-        if (mentionCount) {
-            badgeCount = mentionCount;
-        } else if (messageCount) {
-            badgeCount = -1;
-        } else {
-            badgeCount = 0;
-        }
-
-        return badgeCount;
-    };
-
     showTeams = wrapWithPreventDoubleTap(() => {
-        this.props.showTeams();
+        this.props.onShowTeams();
     });
 
     render() {
         const {
-            currentTeam,
+            currentTeamId,
+            displayName,
+            mentionCount,
             searching,
-            teamMembers,
+            teamsCount,
             theme
         } = this.props;
 
-        if (!currentTeam) {
+        if (!currentTeamId) {
             return null;
         }
 
-        const {
-            badgeCount
-        } = this.state;
-
-        if (searching || Object.keys(teamMembers).length < 2) {
+        if (searching || teamsCount < 2) {
             return null;
         }
 
         const styles = getStyleSheet(theme);
 
-        let badge;
-        if (badgeCount) {
-            badge = (
-                <Badge
-                    style={styles.badge}
-                    countStyle={styles.mention}
-                    count={badgeCount}
-                    minHeight={20}
-                    minWidth={20}
-                />
-            );
-        }
+        const badge = (
+            <Badge
+                style={styles.badge}
+                countStyle={styles.mention}
+                count={mentionCount}
+                minHeight={20}
+                minWidth={20}
+            />
+        );
 
         return (
             <View>
@@ -119,7 +73,7 @@ export default class SwitchTeams extends React.PureComponent {
                         />
                         <View style={styles.switcherDivider}/>
                         <Text style={styles.switcherTeam}>
-                            {currentTeam.display_name.substr(0, 2).toUpperCase()}
+                            {displayName.substr(0, 2).toUpperCase()}
                         </Text>
                     </View>
                 </TouchableHighlight>
