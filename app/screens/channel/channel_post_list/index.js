@@ -3,10 +3,9 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
-import {makeGetPostsInChannel} from 'mattermost-redux/selectors/entities/posts';
+import {getPostIdsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentChannelId, getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
@@ -16,17 +15,6 @@ import ChannelPostList from './channel_post_list';
 
 function makeMapStateToProps() {
     const getChannel = makeGetChannel();
-
-    const getPostIdsInChannel = createSelector(
-        makeGetPostsInChannel(),
-        (posts) => {
-            if (!posts) {
-                return [];
-            }
-
-            return posts.map((post) => post.id);
-        }
-    );
 
     return function mapStateToProps(state) {
         const channelId = getCurrentChannelId(state);
@@ -39,7 +27,7 @@ function makeMapStateToProps() {
             currentUserId: getCurrentUserId(state),
             channelType: channel.type,
             channelDisplayName: channel.display_name,
-            postIds: getPostIdsInChannel(state, channelId),
+            postIds: getPostIdsInCurrentChannel(state),
             postVisibility: state.views.channel.postVisibility[channelId],
             lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
             totalMessageCount: channel.total_msg_count,

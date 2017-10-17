@@ -18,7 +18,6 @@ function mapStateToProps(state, ownProps) {
     const {config, license} = state.entities.general;
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
 
-    // TODO could probably be memoized somehow, but is that worth it?
     let isFirstReply = true;
     let isLastReply = true;
     let commentedOnPost = null;
@@ -26,7 +25,7 @@ function mapStateToProps(state, ownProps) {
         if (ownProps.previousPostId) {
             const previousPost = getPost(state, ownProps.previousPostId);
 
-            if (previousPost.id === post.root_id || previousPost.root_id === post.root_id) {
+            if (previousPost && (previousPost.id === post.root_id || previousPost.root_id === post.root_id)) {
                 // Previous post is root post or previous post is in same thread
                 isFirstReply = false;
             } else {
