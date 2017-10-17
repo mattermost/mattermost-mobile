@@ -16,6 +16,7 @@ import android.os.Build;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.RemoteInput;
+import android.provider.Settings.System;
 import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -258,7 +259,7 @@ public class CustomPushNotification extends PushNotification {
                 notification.setSound(Uri.parse(soundUri), AudioManager.STREAM_NOTIFICATION);
             }
         } else {
-            Uri defaultUri = RingtoneManager.getActualDefaultRingtoneUri(mContext, RingtoneManager.TYPE_NOTIFICATION);
+            Uri defaultUri = System.DEFAULT_NOTIFICATION_URI;
             notification.setSound(defaultUri, AudioManager.STREAM_NOTIFICATION);
         }
 
