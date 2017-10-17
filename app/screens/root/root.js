@@ -39,7 +39,8 @@ export default class Root extends Component {
         navigator.resetTo({
             screen: 'LoadTeam',
             title: '',
-            animated: false,
+            animated: true,
+            animationType: 'fade',
             backButtonTitle: '',
             navigatorStyle: {
                 statusBarHidden: false,
@@ -57,7 +58,8 @@ export default class Root extends Component {
 
         navigator.resetTo({
             screen: 'SelectServer',
-            animated: false,
+            animated: true,
+            animationType: 'fade',
             navigatorStyle: {
                 navBarHidden: true,
                 navBarBackgroundColor: 'black',
