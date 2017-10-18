@@ -15,6 +15,7 @@ import {
     View
 } from 'react-native';
 import Button from 'react-native-button';
+import urlParse from 'url-parse';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 import {Client, Client4} from 'mattermost-redux/client';
@@ -24,29 +25,34 @@ import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
+import {UpgradeTypes} from 'app/constants/view';
+import checkUpgradeType from 'app/utils/client_upgrade';
 
-import urlParse from 'url-parse';
-
+import LocalConfig from 'assets/config';
 import logo from 'assets/images/logo.png';
 
 class SelectServer extends PureComponent {
     static propTypes = {
-        allowOtherServers: PropTypes.bool,
-        navigator: PropTypes.object,
-        intl: intlShape.isRequired,
-        config: PropTypes.object,
-        license: PropTypes.object,
-        theme: PropTypes.object,
-        transition: PropTypes.bool.isRequired,
-        serverUrl: PropTypes.string.isRequired,
-        pingRequest: PropTypes.object.isRequired,
-        configRequest: PropTypes.object.isRequired,
-        licenseRequest: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
+            handleServerUrlChanged: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
-            handleServerUrlChanged: PropTypes.func.isRequired
-        }).isRequired
+            setLastUpgradeCheck: PropTypes.func.isRequired
+        }).isRequired,
+        allowOtherServers: PropTypes.bool,
+        config: PropTypes.object,
+        configRequest: PropTypes.object.isRequired,
+        currentVersion: PropTypes.string,
+        intl: intlShape.isRequired,
+        latestVersion: PropTypes.string,
+        license: PropTypes.object,
+        licenseRequest: PropTypes.object.isRequired,
+        minVersion: PropTypes.string,
+        navigator: PropTypes.object,
+        pingRequest: PropTypes.object.isRequired,
+        serverUrl: PropTypes.string.isRequired,
+        theme: PropTypes.object,
+        transition: PropTypes.bool.isRequired
     };
 
     constructor(props) {
@@ -72,7 +78,18 @@ class SelectServer extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (!this.props.transition && nextProps.transition) {
-            this.handleLoginOptions();
+            if (LocalConfig.EnableMobileClientUpgrade) {
+                this.props.actions.setLastUpgradeCheck();
+                const {currentVersion, minVersion, latestVersion} = nextProps;
+                const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
+                if (upgradeType === UpgradeTypes.NO_UPGRADE) {
+                    this.handleLoginOptions();
+                } else {
+                    this.handleShowClientUpgrade(upgradeType);
+                }
+            } else {
+                this.handleLoginOptions();
+            }
         }
     }
 
@@ -80,6 +97,28 @@ class SelectServer extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+    }
+
+    handleShowClientUpgrade = (upgradeType) => {
+        const {intl, theme} = this.props;
+
+        this.props.navigator.push({
+            screen: 'ClientUpgrade',
+            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: false,
+                statusBarHidden: true,
+                statusBarHideWithNavBar: true,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor
+            },
+            passProps: {
+                closeAction: this.handleLoginOptions,
+                upgradeType
+            }
+        });
     }
 
     handleLoginOptions = () => {

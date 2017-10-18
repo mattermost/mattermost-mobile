@@ -12,6 +12,7 @@ import {
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import ClientUpgradeListener from 'app/components/client_upgrade_listener';
 import ChannelDrawer from 'app/components/channel_drawer';
 import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -22,6 +23,8 @@ import StatusBar from 'app/components/status_bar';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
+
+import LocalConfig from 'assets/config';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelPostList from './channel_post_list';
@@ -43,12 +46,12 @@ class Channel extends PureComponent {
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
             viewChannel: PropTypes.func.isRequired
         }).isRequired,
+        currentChannelId: PropTypes.string,
+        channelsRequestFailed: PropTypes.bool,
+        currentTeamId: PropTypes.string,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        currentTeamId: PropTypes.string,
-        currentChannelId: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        channelsRequestFailed: PropTypes.bool
+        theme: PropTypes.object.isRequired
     };
 
     componentWillMount() {
@@ -215,7 +218,9 @@ class Channel extends PureComponent {
                         ref={this.attachPostTextbox}
                         navigator={navigator}
                     />
+                    <ChannelLoader theme={theme}/>
                 </KeyboardLayout>
+                {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
             </ChannelDrawer>
         );
     }

@@ -17,5 +17,11 @@
             "xhr": false,
             "console": true
         }
-    }
+    },
+
+    "EnableMobileClientUpgrade": false,
+    "EnableMobileClientUpgradeUserSetting": false,
+    "EnableForceMobileClientUpgrade": false,
+    "MobileClientUpgradeAndroidApkLink": "",
+    "MobileClientUpgradeIosIpaLink": ""
 }

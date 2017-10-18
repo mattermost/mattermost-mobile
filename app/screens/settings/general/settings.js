@@ -18,6 +18,8 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
 
+import LocalConfig from 'assets/config';
+
 class Settings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -134,6 +136,26 @@ class Settings extends PureComponent {
         });
     };
 
+    goToClientUpgrade = () => {
+        const {intl, theme} = this.props;
+
+        this.props.navigator.push({
+            screen: 'ClientUpgrade',
+            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
+            navigatorStyle: {
+                navBarHidden: false,
+                statusBarHidden: true,
+                statusBarHideWithNavBar: true,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor
+            },
+            passProps: {
+                userCheckedForUpgrade: true
+            }
+        });
+    }
+
     handlePress = (action) => {
         preventDoubleTap(action, this);
     };
@@ -229,6 +251,17 @@ class Settings extends PureComponent {
                         showArrow={showArrow}
                         theme={theme}
                     />
+                    {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
+                        <SettingsItem
+                            defaultMessage='Check for Upgrade'
+                            i18nId='mobile.settings.modal.check_for_upgrade'
+                            iconName='update'
+                            iconType='material'
+                            onPress={() => this.handlePress(this.goToClientUpgrade)}
+                            showArrow={showArrow}
+                            theme={theme}
+                        />
+                    }
                     <SettingsItem
                         defaultMessage='About Mattermost'
                         i18nId='about.title'
