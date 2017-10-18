@@ -305,11 +305,8 @@ class Search extends Component {
                     {displayName}
                 </Text>
                 <Post
-                    post={item}
+                    postId={item.id}
                     renderReplies={true}
-                    isFirstReply={false}
-                    isLastReply={false}
-                    commentedOnPost={null}
                     onPress={this.previewPost}
                     onReply={this.goToThread}
                     isSearchResult={true}

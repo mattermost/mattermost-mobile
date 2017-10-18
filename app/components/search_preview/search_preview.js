@@ -39,15 +39,16 @@ export default class SearchPreview extends PureComponent {
         channelId: PropTypes.string,
         channelName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
+        focusedPostId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         onClose: PropTypes.func,
         onPress: PropTypes.func,
-        posts: PropTypes.array,
+        postIds: PropTypes.array,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        posts: []
+        postIds: []
     };
 
     state = {
@@ -57,7 +58,7 @@ export default class SearchPreview extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {animationEnded, showPosts} = this.state;
-        if (animationEnded && !showPosts && nextProps.posts.length) {
+        if (animationEnded && !showPosts && nextProps.postIds.length) {
             this.setState({showPosts: true});
         }
     }
@@ -82,24 +83,31 @@ export default class SearchPreview extends PureComponent {
 
     showPostList = () => {
         this.setState({animationEnded: true});
-        if (!this.state.showPosts && this.props.posts.length) {
+        if (!this.state.showPosts && this.props.postIds.length) {
             this.setState({showPosts: true});
         }
     };
 
     render() {
-        const {channelName, currentUserId, posts, theme} = this.props;
+        const {
+            channelName,
+            currentUserId,
+            focusedPostId,
+            postIds,
+            theme
+        } = this.props;
         const style = getStyleSheet(theme);
 
         let postList;
         if (this.state.showPosts) {
             postList = (
                 <PostList
+                    highlightPostId={focusedPostId}
                     indicateNewMessages={false}
                     isSearchResult={true}
                     shouldRenderReplyButton={false}
                     renderReplies={false}
-                    posts={posts}
+                    postIds={postIds}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     navigator={navigator}

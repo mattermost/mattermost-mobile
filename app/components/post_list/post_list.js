@@ -26,6 +26,7 @@ export default class PostList extends PureComponent {
         }).isRequired,
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
+        highlightPostId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
@@ -111,6 +112,7 @@ export default class PostList extends PureComponent {
 
     renderPost = (postId, previousPostId, nextPostId) => {
         const {
+            highlightPostId,
             isSearchResult,
             navigator,
             onPostPress,
@@ -123,6 +125,7 @@ export default class PostList extends PureComponent {
                 postId={postId}
                 previousPostId={previousPostId}
                 nextPostId={nextPostId}
+                highlight={highlightPostId && highlightPostId === postId}
                 renderReplies={renderReplies}
                 isSearchResult={isSearchResult}
                 shouldRenderReplyButton={shouldRenderReplyButton}
@@ -150,6 +153,7 @@ export default class PostList extends PureComponent {
     render() {
         const {
             channelId,
+            highlightPostId,
             loadMore,
             postIds,
             theme
@@ -167,6 +171,7 @@ export default class PostList extends PureComponent {
             <FlatList
                 ref='list'
                 data={postIds}
+                extraData={highlightPostId}
                 initialNumToRender={15}
                 inverted={true}
                 keyExtractor={this.keyExtractor}

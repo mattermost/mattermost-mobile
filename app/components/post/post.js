@@ -41,6 +41,7 @@ class Post extends PureComponent {
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object,
+        postId: PropTypes.string.isRequired, // Used by container // eslint-disable-line no-unused-prop-types
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
