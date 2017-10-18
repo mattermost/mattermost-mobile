@@ -8,9 +8,10 @@
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
     "SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX",
 
-    "HideEmailLogin": false,
-    "HideLDAPLogin": false,
-    "HideSAMLLogin": false,
+    "HideEmailLoginExperimental": false,
+    "HideGitLabLoginExperimental": false,
+    "HideLDAPLoginExperimental": false,
+    "HideSAMLLoginExperimental": false,
 
     "SentryEnabled": false,
     "SentryDsnIos": "",

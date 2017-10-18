@@ -82,8 +82,8 @@ class LoginOptions extends PureComponent {
     };
 
     renderEmailOption = () => {
-        const {config, theme} = this.props;
-        const forceHideFromLocal = LocalConfig.HideEmailLogin;
+        const {config} = this.props;
+        const forceHideFromLocal = LocalConfig.HideEmailLoginExperimental;
 
         if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
             const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
@@ -116,8 +116,8 @@ class LoginOptions extends PureComponent {
     };
 
     renderLdapOption = () => {
-        const {config, license, theme} = this.props;
-        const forceHideFromLocal = LocalConfig.HideLDAPLogin;
+        const {config, license} = this.props;
+        const forceHideFromLocal = LocalConfig.HideLDAPLoginExperimental;
 
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
             const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
@@ -164,10 +164,13 @@ class LoginOptions extends PureComponent {
 
     renderGitlabOption = () => {
         const {config, serverVersion} = this.props;
+
+        const forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
+
         const match = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
         if (match) {
             const version = match[0];
-            if (config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0')) {
+            if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0')) {
                 return (
                     <Button
                         key='gitlab'
@@ -193,8 +196,8 @@ class LoginOptions extends PureComponent {
     };
 
     renderSamlOption = () => {
-        const {config, license, theme} = this.props;
-        const forceHideFromLocal = LocalConfig.HideSAMLLogin;
+        const {config, license} = this.props;
+        const forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
 
         if (!forceHideFromLocal && config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
             const backgroundColor = config.SamlLoginButtonColor || '#34a28b';
