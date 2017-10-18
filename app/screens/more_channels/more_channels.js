@@ -290,10 +290,11 @@ class MoreChannels extends PureComponent {
                             inputStyle={{
                                 backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
                                 color: theme.centerChannelColor,
-                                fontSize: 13
+                                fontSize: 15,
+                                lineHeight: 66
                             }}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
                             titleCancelColor={theme.centerChannelColor}
                             onChangeText={this.searchProfiles}

@@ -15,10 +15,12 @@ import {
     StyleSheet,
     View
 } from 'react-native';
+import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-const AnimatedIcon = Animated.createAnimatedComponent(IonIcon);
+const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
+const AnimatedEvilcon = Animated.createAnimatedComponent(EvilIcon);
 const containerHeight = 40;
 const middleHeight = 20;
 
@@ -328,11 +330,6 @@ export default class Search extends Component {
     };
 
     render() {
-        let iconSize = 16;
-        if (this.props.inputStyle && this.props.inputStyle.fontSize) {
-            iconSize = this.props.inputStyle.fontSize + 2;
-        }
-
         return (
             <Animated.View
                 ref='searchContainer'
@@ -391,16 +388,16 @@ export default class Search extends Component {
                         >
                             {this.props.iconSearch}
                         </Animated.View> :
-                        <AnimatedIcon
-                            name='ios-search-outline'
-                            size={iconSize}
+                        <AnimatedEvilcon
+                            name='search'
+                            size={26}
                             style={[
                                 styles.iconSearch,
                                 styles.iconSearchDefault,
                                 this.props.tintColorSearch && {color: this.props.tintColorSearch},
                                 {
                                     left: this.iconSearchAnimated,
-                                    top: middleHeight - (iconSize / 2)
+                                    top: middleHeight - 11
                                 }
                             ]}
                         />
@@ -417,10 +414,10 @@ export default class Search extends Component {
                         >
                             {this.props.iconDelete}
                         </Animated.View> :
-                        <View style={[styles.iconDelete, this.props.inputHeight && {height: this.props.inputHeight, width: iconSize + 5}]}>
-                            <AnimatedIcon
+                        <View style={[styles.iconDelete, this.props.inputHeight && {height: this.props.inputHeight}]}>
+                            <AnimatedIonIcon
                                 name='ios-close-circle'
-                                size={iconSize}
+                                size={20}
                                 style={[
                                     styles.iconDeleteDefault,
                                     this.props.tintColorDelete && {color: this.props.tintColorDelete},
@@ -470,11 +467,11 @@ const styles = StyleSheet.create({
         height: containerHeight - 10,
         paddingTop: 5,
         paddingBottom: 5,
-        paddingRight: 20,
+        paddingRight: 30,
         borderColor: '#444',
         backgroundColor: '#f7f7f7',
         borderRadius: 5,
-        fontSize: 13
+        fontSize: 15
     },
     iconSearch: {
         flex: 1,
@@ -487,7 +484,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
-        right: 70
+        right: 75
     },
     iconDeleteDefault: {
         color: 'grey'
