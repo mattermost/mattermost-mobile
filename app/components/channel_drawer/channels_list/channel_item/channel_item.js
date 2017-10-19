@@ -19,6 +19,7 @@ export default class ChannelItem extends PureComponent {
         channelId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
+        fake: PropTypes.bool,
         isUnread: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
@@ -28,9 +29,9 @@ export default class ChannelItem extends PureComponent {
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
-        const {channelId, currentChannelId, displayName, onSelectChannel} = this.props;
+        const {channelId, currentChannelId, displayName, fake, onSelectChannel, type} = this.props;
         requestAnimationFrame(() => {
-            onSelectChannel({id: channelId, display_name: displayName}, currentChannelId);
+            onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
         });
     });
 
