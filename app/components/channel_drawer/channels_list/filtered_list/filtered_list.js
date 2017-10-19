@@ -95,25 +95,25 @@ class FilteredList extends Component {
     }
 
     onSelectChannel = (channel) => {
-        const {makeGroupMessageVisibleIfNecessary} = this.props.actions;
+        const {actions, currentChannel} = this.props;
+        const {makeGroupMessageVisibleIfNecessary} = actions;
 
         if (channel.type === General.GM_CHANNEL) {
             makeGroupMessageVisibleIfNecessary(channel.id);
         }
 
-        this.props.onSelectChannel(channel);
+        this.props.onSelectChannel(channel, currentChannel.id);
     };
 
     createChannelElement = (channel) => {
         return (
             <ChannelDrawerItem
                 ref={channel.id}
+                channelId={channel.id}
                 channel={channel}
-                hasUnread={false}
+                isUnread={false}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
-                isActive={channel.isCurrent || false}
-                theme={this.props.theme}
             />
         );
     };

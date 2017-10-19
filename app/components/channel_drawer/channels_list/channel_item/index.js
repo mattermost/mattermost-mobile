@@ -12,7 +12,7 @@ function makeMapStateToProps() {
     const getChannel = makeGetChannel();
 
     return (state, ownProps) => {
-        const channel = getChannel(state, {id: ownProps.channelId});
+        const channel = ownProps.channel || getChannel(state, {id: ownProps.channelId});
         let member;
         if (ownProps.isUnread) {
             member = getMyChannelMember(state, ownProps.channelId);
@@ -21,6 +21,7 @@ function makeMapStateToProps() {
         return {
             currentChannelId: getCurrentChannelId(state),
             displayName: channel.display_name,
+            fake: channel.fake,
             mentions: member ? member.mention_count : 0,
             status: channel.status,
             theme: getTheme(state),
