@@ -2,13 +2,14 @@
 // See License.txt for license information.
 
 import {Posts, Preferences} from 'mattermost-redux/constants';
-import {getAllPosts} from 'mattermost-redux/selectors/entities/posts';
+import {makeGetPostsForIds} from 'mattermost-redux/selectors/entities/posts';
 import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {createIdsSelector} from 'mattermost-redux/utils/helpers';
 import {shouldFilterPost} from 'mattermost-redux/utils/post_utils';
 
-import {START_OF_NEW_MESSAGES} from 'app/components/post_list/post_list';
+export const DATE_LINE = 'date-';
+export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
 
 function shouldFilterJoinLeave(state) {
     return getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE);
@@ -18,13 +19,14 @@ function shouldFilterJoinLeave(state) {
 // timestamp of when the channel was last read, returns a memoized array of postIds interspersed with
 // day indicators and an optional new message indicator.
 export function makePreparePostIdsForPostList() {
+    const getMyPosts = makeGetPostsForIds();
+
     return createIdsSelector(
-        (state, props) => props.postIds,
+        (state, props) => getMyPosts(state, props.postIds),
         (state, props) => props.lastViewedAt,
-        getAllPosts,
         getCurrentUserId,
         shouldFilterJoinLeave,
-        (postIds, lastViewedAt, allPosts, currentUserId, filterJoinLeave) => {
+        (posts, lastViewedAt, currentUserId, filterJoinLeave) => {
             const out = [];
 
             let lastDate = null;
@@ -33,9 +35,7 @@ export function makePreparePostIdsForPostList() {
             const filterOptions = {filterJoinLeave};
 
             // Remember that we're iterating through the posts from newest to oldest
-            for (const postId of postIds) {
-                const post = allPosts[postId];
-
+            for (const post of posts) {
                 if (post.state === Posts.POST_DELETED && post.user_id === currentUserId) {
                     continue;
                 }
@@ -59,17 +59,17 @@ export function makePreparePostIdsForPostList() {
                 const postDate = new Date(post.create_at);
 
                 if (lastDate && lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(lastDate);
+                    out.push(DATE_LINE + lastDate.toDateString());
                 }
 
                 lastDate = postDate;
 
-                out.push(postId);
+                out.push(post.id);
             }
 
             // Push on the date header for the oldest post
             if (lastDate) {
-                out.push(lastDate);
+                out.push(DATE_LINE + lastDate.toDateString());
             }
 
             return out;

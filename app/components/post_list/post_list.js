@@ -7,17 +7,15 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import FlatList from 'app/components/inverted_flat_list';
-
-import {General} from 'mattermost-redux/constants';
 
 import ChannelIntro from 'app/components/channel_intro';
+import FlatList from 'app/components/inverted_flat_list';
 import Post from 'app/components/post';
+import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
+
 import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
-
-export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
 
 export default class PostList extends PureComponent {
     static propTypes = {
@@ -57,10 +55,7 @@ export default class PostList extends PureComponent {
     getItemCount = (data) => data.length;
 
     keyExtractor = (item) => {
-        if (item instanceof Date) {
-            return item.getTime();
-        }
-
+        // All keys are strings (either post IDs or special keys)
         return item;
     };
 
@@ -81,14 +76,15 @@ export default class PostList extends PureComponent {
     };
 
     renderItem = ({item, index}) => {
-        if (item instanceof Date) {
-            return this.renderDateHeader(item);
-        } else if (item === General.START_OF_NEW_MESSAGES) {
+        if (item === START_OF_NEW_MESSAGES) {
             return (
                 <NewMessagesDivider
                     theme={this.props.theme}
                 />
             );
+        } else if (item.indexOf(DATE_LINE) === 0) {
+            const date = item.substring(DATE_LINE.length);
+            return this.renderDateHeader(new Date(date));
         }
 
         const postId = item;
