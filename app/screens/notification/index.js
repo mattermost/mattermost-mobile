@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {goToNotification} from 'app/actions/views/root';
+import {loadFromPushNotification} from 'app/actions/views/root';
 import {getDimensions} from 'app/selectors/device';
 
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
@@ -28,7 +28,6 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        ...ownProps,
         config: state.entities.general.config,
         channel,
         deviceWidth,
@@ -41,7 +40,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            goToNotification
+            loadFromPushNotification
         }, dispatch)
     };
 }

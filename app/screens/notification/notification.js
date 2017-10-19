@@ -27,7 +27,7 @@ const IMAGE_SIZE = 33;
 export default class Notification extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            goToNotification: PropTypes.func.isRequired
+            loadFromPushNotification: PropTypes.func.isRequired
         }).isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
@@ -44,7 +44,7 @@ export default class Notification extends PureComponent {
 
         navigator.dismissInAppNotification();
         if (!notification.localNotification) {
-            actions.goToNotification(notification);
+            actions.loadFromPushNotification(notification);
             navigator.resetTo({
                 screen: 'Channel',
                 animated: false,

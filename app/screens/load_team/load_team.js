@@ -11,30 +11,18 @@ import {NavigationTypes} from 'app/constants';
 export default class LoadTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            clearNotification: PropTypes.func.isRequired,
             getTeams: PropTypes.func.isRequired,
-            goToNotification: PropTypes.func.isRequired,
-            handleTeamChange: PropTypes.func.isRequired,
-            initialize: PropTypes.func.isRequired
+            handleTeamChange: PropTypes.func.isRequired
         }).isRequired,
         currentTeam: PropTypes.object,
         myMembers: PropTypes.object.isRequired,
         navigator: PropTypes.object,
-        notification: PropTypes.object,
         teams: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
 
     componentDidMount() {
-        const {notification, currentTeam, myMembers, teams} = this.props;
-        const {clearNotification, goToNotification} = this.props.actions;
-
-        if (notification) {
-            clearNotification();
-            goToNotification(notification);
-            return this.goToChannelView();
-        }
-
+        const {currentTeam, myMembers, teams} = this.props;
         if (currentTeam && myMembers[currentTeam.id]) {
             return this.onSelectTeam(currentTeam);
         }
@@ -62,9 +50,8 @@ export default class LoadTeam extends PureComponent {
     }
 
     goToChannelView = () => {
-        const {actions, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
 
-        actions.initialize();
         navigator.resetTo({
             screen: 'Channel',
             animated: true,
