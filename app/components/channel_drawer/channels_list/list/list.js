@@ -132,7 +132,7 @@ class List extends PureComponent {
             defaultMessage: 'DIRECT MESSAGES',
             data: directChannelIds,
             topSeparator: true,
-            bottomSeparator: false
+            bottomSeparator: directChannelIds.length > 0
         });
 
         return sections;
