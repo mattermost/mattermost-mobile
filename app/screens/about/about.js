@@ -126,13 +126,13 @@ export default class About extends PureComponent {
                 licensee = (
                     <View style={style.licenseContainer}>
                         <FormattedText
-                            id='about.licensed'
-                            defaultMessage='Licensed to:'
+                            id='mobile.about.licensed'
+                            defaultMessage='Licensed to: {company}'
                             style={style.info}
+                            values={{
+                                company: license.Company
+                            }}
                         />
-                        <Text style={style.info}>
-                            {'\u00a0' + license.Company}
-                        </Text>
                     </View>
                 );
             }
@@ -206,6 +206,14 @@ export default class About extends PureComponent {
                         />
                         {licensee}
                         {learnMore}
+                        <FormattedText
+                            id='mobile.about.powered_by'
+                            defaultMessage='{site} is powered by Mattermost'
+                            style={style.footerText}
+                            values={{
+                                site: this.props.config.SiteName
+                            }}
+                        />
                         <FormattedText
                             id='mobile.about.copyright'
                             defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
@@ -339,12 +347,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         licenseContainer: {
             flex: 1,
             flexDirection: 'row',
-            marginVertical: 20
+            marginTop: 20
         },
         noticeContainer: {
             flex: 1,
-            flexDirection: 'column',
-            marginTop: 10
+            flexDirection: 'column'
         },
         noticeLink: {
             color: theme.linkColor,
@@ -353,8 +360,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         hashContainer: {
             flex: 1,
-            flexDirection: 'column',
-            marginVertical: 15
+            flexDirection: 'column'
         },
         footerGroup: {
             flex: 1,
@@ -363,7 +369,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footerText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 11,
-            lineHeight: 13
+            lineHeight: 13,
+            marginBottom: 10
         }
     };
 });

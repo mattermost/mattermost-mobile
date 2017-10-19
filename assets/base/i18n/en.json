@@ -1861,6 +1861,7 @@
   "mobile.about.appVersion": "App Version: {version} (Build {number})",
   "mobile.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved",
   "mobile.about.database": "Database: {type}",
+  "mobile.about.licensed": "Licensed to: {company}",
   "mobile.about.serverVersion": "Server Version: {version} (Build {number})",
   "mobile.about.serverVersionNoBuild": "Server Version: {version}",
   "mobile.account.notifications.email.footer": "When offline or away for more than five minutes",
