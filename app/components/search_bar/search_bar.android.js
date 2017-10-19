@@ -49,8 +49,8 @@ export default class SearchBarAndroid extends PureComponent {
 
     static defaultProps = {
         backArrowSize: 24,
-        deleteIconSize: 16,
-        searchIconSize: 16,
+        deleteIconSize: 20,
+        searchIconSize: 24,
         blurOnSubmit: true,
         placeholder: 'Search',
         showCancelButton: true,
@@ -97,6 +97,10 @@ export default class SearchBarAndroid extends PureComponent {
                 this.props.onCancelButtonPress();
             });
         });
+    };
+
+    onClearPress = () => {
+        this.onChangeText('');
     };
 
     onChangeText = (value) => {
@@ -170,7 +174,7 @@ export default class SearchBarAndroid extends PureComponent {
                         {
                             backgroundColor: inputColor,
                             height: inputHeight,
-                            paddingLeft: isFocused ? 0 : inputHeight * 0.25
+                            paddingLeft: 7
                         }
                     ]}
                 >
@@ -212,13 +216,14 @@ export default class SearchBarAndroid extends PureComponent {
                         style={[
                             styles.searchBarInput,
                             inputNoBackground,
-                            {height: this.props.inputHeight}
+                            {height: this.props.inputHeight},
+                            isFocused ? {} : styles.searchBarBlurredInput
                         ]}
                     />
                     {isFocused && value ?
-                        <TouchableWithoutFeedback onPress={() => this.onChangeText('')}>
+                        <TouchableWithoutFeedback onPress={this.onClearPress}>
                             <Icon
-                                style={[{paddingRight: (inputHeight * 0.2)}]}
+                                style={[{paddingRight: 7}]}
                                 name='close'
                                 size={deleteIconSize}
                                 color={tintColorDelete || placeholderTextColor}
@@ -236,8 +241,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'grey',
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        alignItems: 'center',
-        padding: 5
+        alignItems: 'center'
     },
     searchBar: {
         flex: 1,
@@ -248,7 +252,10 @@ const styles = StyleSheet.create({
         flex: 1,
         fontWeight: 'normal',
         textAlignVertical: 'center',
-        padding: 0,
+        fontSize: 15,
         includeFontPadding: false
+    },
+    searchBarBlurredInput: {
+        padding: 0
     }
 });

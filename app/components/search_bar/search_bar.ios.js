@@ -101,10 +101,10 @@ export default class SearchBarIos extends PureComponent {
             <Search
                 {...this.props}
                 ref='search'
-                placeholderCollapsedMargin={25}
-                placeholderExpandedMargin={25}
-                searchIconCollapsedMargin={15}
-                searchIconExpandedMargin={15}
+                placeholderCollapsedMargin={33}
+                placeholderExpandedMargin={33}
+                searchIconCollapsedMargin={10}
+                searchIconExpandedMargin={10}
                 shadowVisible={false}
                 onCancel={this.onCancel}
                 onChangeText={this.onChangeText}

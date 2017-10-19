@@ -592,18 +592,12 @@ class Search extends Component {
                         inputStyle={{
                             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
                             color: theme.sidebarHeaderTextColor,
-                            ...Platform.select({
-                                android: {
-                                    fontSize: 15
-                                },
-                                ios: {
-                                    fontSize: 13
-                                }
-                            })
+                            fontSize: 15,
+                            lineHeight: 66
                         }}
                         placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
+                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         titleCancelColor={theme.sidebarHeaderTextColor}
                         onChangeText={this.handleTextChanged}
