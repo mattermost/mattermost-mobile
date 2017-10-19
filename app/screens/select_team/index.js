@@ -12,23 +12,23 @@ import {joinTeam} from 'mattermost-redux/actions/teams';
 import {logout} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+
+import {getCurrentLocale} from 'app/selectors/i18n';
 
 import SelectTeam from './select_team.js';
 
-function mapStateToProps(state, ownProps) {
-    const user = getCurrentUser(state);
+function mapStateToProps(state) {
+    const locale = getCurrentLocale(state);
 
     function sortTeams(a, b) {
-        return a.display_name.localeCompare(b.display_name, user.locale, {numeric: true});
+        return a.display_name.localeCompare(b.display_name, locale, {numeric: true});
     }
 
     return {
         teamsRequest: state.requests.teams.getMyTeams,
         teams: Object.values(getJoinableTeams(state)).sort(sortTeams),
         currentChannelId: getCurrentChannelId(state),
-        joinTeamRequest: state.requests.teams.joinTeam,
-        ...ownProps
+        joinTeamRequest: state.requests.teams.joinTeam
     };
 }
 
