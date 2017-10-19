@@ -6,17 +6,16 @@ import {connect} from 'react-redux';
 
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeamId, getJoinableTeamIds, getMySortedTeamIds} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentLocale} from 'app/selectors/i18n';
 import {removeProtocol} from 'app/utils/url';
 
 import TeamsList from './teams_list';
 
 function mapStateToProps(state) {
-    const currentUser = getCurrentUser(state);
-    const locale = currentUser ? currentUser.locale : 'en';
+    const locale = getCurrentLocale(state);
 
     return {
         canJoinOtherTeams: getJoinableTeamIds(state).length > 0,
