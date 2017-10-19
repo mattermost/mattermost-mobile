@@ -1874,7 +1874,7 @@
   "mobile.advanced_settings.reset_message": "\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n",
   "mobile.advanced_settings.reset_title": "Reset Cache",
   "mobile.advanced_settings.title": "Advanced Settings",
-  "mobile.channel_drawer.search": "Jump to a conversation",
+  "mobile.channel_drawer.search": "Jump to...",
   "mobile.channel_info.alertMessageDeleteChannel": "Are you sure you want to delete the {term} {name}?",
   "mobile.channel_info.alertMessageLeaveChannel": "Are you sure you want to leave the {term} {name}?",
   "mobile.channel_info.alertNo": "No",

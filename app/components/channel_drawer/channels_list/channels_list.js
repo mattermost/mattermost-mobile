@@ -144,17 +144,18 @@ class ChannelsList extends React.PureComponent {
             <View style={styles.searchContainer}>
                 <SearchBar
                     ref='search_bar'
-                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to a conversation'})}
+                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
                     inputHeight={33}
                     inputStyle={{
                         backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
                         color: theme.sidebarHeaderTextColor,
-                        fontSize: 13
+                        fontSize: 15,
+                        lineHeight: 66
                     }}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                    tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.8)}
+                    tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     titleCancelColor={theme.sidebarHeaderTextColor}
                     selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -173,10 +174,12 @@ class ChannelsList extends React.PureComponent {
             >
                 <View style={styles.statusBar}>
                     <View style={styles.headerContainer}>
-                        <SwitchTeamsButton
-                            searching={searching}
-                            onShowTeams={onShowTeams}
-                        />
+                        <View style={styles.switchContainer}>
+                            <SwitchTeamsButton
+                                searching={searching}
+                                onShowTeams={onShowTeams}
+                            />
+                        </View>
                         {title}
                         {settings}
                     </View>
@@ -223,6 +226,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             fontWeight: 'normal',
             paddingLeft: 16
+        },
+        switchContainer: {
+            position: 'relative',
+            top: -1
         },
         settingsContainer: {
             alignItems: 'center',

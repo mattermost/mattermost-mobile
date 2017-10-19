@@ -390,14 +390,14 @@ export default class Search extends Component {
                         </Animated.View> :
                         <AnimatedEvilcon
                             name='search'
-                            size={26}
+                            size={24}
                             style={[
                                 styles.iconSearch,
                                 styles.iconSearchDefault,
                                 this.props.tintColorSearch && {color: this.props.tintColorSearch},
                                 {
                                     left: this.iconSearchAnimated,
-                                    top: middleHeight - 11
+                                    top: middleHeight - 10
                                 }
                             ]}
                         />
@@ -417,7 +417,7 @@ export default class Search extends Component {
                         <View style={[styles.iconDelete, this.props.inputHeight && {height: this.props.inputHeight}]}>
                             <AnimatedIonIcon
                                 name='ios-close-circle'
-                                size={20}
+                                size={17}
                                 style={[
                                     styles.iconDeleteDefault,
                                     this.props.tintColorDelete && {color: this.props.tintColorDelete},
@@ -465,9 +465,9 @@ const styles = StyleSheet.create({
     },
     input: {
         height: containerHeight - 10,
-        paddingTop: 5,
+        paddingTop: 7,
         paddingBottom: 5,
-        paddingRight: 30,
+        paddingRight: 32,
         borderColor: '#444',
         backgroundColor: '#f7f7f7',
         borderRadius: 5,
@@ -481,10 +481,13 @@ const styles = StyleSheet.create({
         color: 'grey'
     },
     iconDelete: {
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         position: 'absolute',
-        right: 75
+        paddingLeft: 1,
+        paddingTop: 3,
+        right: 65,
+        width: 25
     },
     iconDeleteDefault: {
         color: 'grey'

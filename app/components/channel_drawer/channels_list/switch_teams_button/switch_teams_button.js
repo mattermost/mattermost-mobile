@@ -93,7 +93,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 32,
             justifyContent: 'center',
             marginLeft: 6,
-            marginRight: 10,
+            marginRight: 5,
             paddingHorizontal: 6
         },
         switcherDivider: {
