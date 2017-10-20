@@ -11,8 +11,9 @@ import {shouldFilterPost} from 'mattermost-redux/utils/post_utils';
 export const DATE_LINE = 'date-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
 
-function shouldFilterJoinLeave(state) {
-    return getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE);
+function shouldShowJoinLeaveMessages(state) {
+    // This setting is true or not set if join/leave messages are to be displayed
+    return getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true);
 }
 
 // Returns a selector that, given the state and an object containing an array of postIds and an optional
@@ -25,14 +26,14 @@ export function makePreparePostIdsForPostList() {
         (state, props) => getMyPosts(state, props.postIds),
         (state, props) => props.lastViewedAt,
         getCurrentUserId,
-        shouldFilterJoinLeave,
-        (posts, lastViewedAt, currentUserId, filterJoinLeave) => {
+        shouldShowJoinLeaveMessages,
+        (posts, lastViewedAt, currentUserId, showJoinLeave) => {
             const out = [];
 
             let lastDate = null;
             let addedNewMessagesIndicator = false;
 
-            const filterOptions = {filterJoinLeave};
+            const filterOptions = {showJoinLeave};
 
             // Remember that we're iterating through the posts from newest to oldest
             for (const post of posts) {
