@@ -33,7 +33,7 @@ class ChannelPostList extends PureComponent {
         intl: intlShape.isRequired,
         lastViewedAt: PropTypes.number,
         navigator: PropTypes.object,
-        posts: PropTypes.array.isRequired,
+        postIds: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
         totalMessageCount: PropTypes.number,
         theme: PropTypes.object.isRequired
@@ -47,29 +47,29 @@ class ChannelPostList extends PureComponent {
         super(props);
 
         this.state = {
-            visiblePosts: this.getVisiblePosts(props),
-            showLoadMore: props.posts.length >= props.postVisibility
+            visiblePostIds: this.getVisiblePostIds(props),
+            showLoadMore: props.postIds.length >= props.postVisibility
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        const {posts: nextPosts} = nextProps;
+        const {postIds: nextPostIds} = nextProps;
 
-        const showLoadMore = nextPosts.length >= nextProps.postVisibility;
-        let visiblePosts = this.state.visiblePosts;
+        const showLoadMore = nextPostIds.length >= nextProps.postVisibility;
+        let visiblePostIds = this.state.visiblePostIds;
 
-        if (nextPosts !== this.props.posts || nextProps.postVisibility !== this.props.postVisibility) {
-            visiblePosts = this.getVisiblePosts(nextProps);
+        if (nextPostIds !== this.props.postIds || nextProps.postVisibility !== this.props.postVisibility) {
+            visiblePostIds = this.getVisiblePostIds(nextProps);
         }
 
         this.setState({
             showLoadMore,
-            visiblePosts
+            visiblePostIds
         });
     }
 
-    getVisiblePosts = (props) => {
-        return props.posts.slice(0, props.postVisibility);
+    getVisiblePostIds = (props) => {
+        return props.postIds.slice(0, props.postVisibility);
     };
 
     goToThread = (post) => {
@@ -130,17 +130,17 @@ class ChannelPostList extends PureComponent {
             currentUserId,
             lastViewedAt,
             navigator,
-            posts,
+            postIds,
             theme
         } = this.props;
 
         const {
             showLoadMore,
-            visiblePosts
+            visiblePostIds
         } = this.state;
 
         let component;
-        if (!posts.length && channelRefreshingFailed) {
+        if (!postIds.length && channelRefreshingFailed) {
             component = (
                 <PostListRetry
                     retry={this.loadPostsRetry}
@@ -150,7 +150,7 @@ class ChannelPostList extends PureComponent {
         } else {
             component = (
                 <PostList
-                    posts={visiblePosts}
+                    postIds={visiblePostIds}
                     loadMore={this.loadMorePosts}
                     showLoadMore={showLoadMore}
                     onPostPress={this.goToThread}

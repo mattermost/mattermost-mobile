@@ -20,25 +20,10 @@ export default class Thread extends Component {
         myMember: PropTypes.object.isRequired,
         rootId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        posts: PropTypes.array.isRequired
+        postIds: PropTypes.array.isRequired
     };
 
     state = {};
-
-    shouldComponentUpdate(nextProps) {
-        if (nextProps.posts.length !== this.props.posts.length) {
-            return true;
-        }
-
-        const length = nextProps.posts.length;
-        for (let i = 0; i < length; i++) {
-            if (nextProps.posts[i].id !== this.props.posts[i].id) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     componentWillReceiveProps(nextProps) {
         if (!this.state.lastViewedAt) {
@@ -55,7 +40,7 @@ export default class Thread extends Component {
             channelId,
             myMember,
             navigator,
-            posts,
+            postIds,
             rootId,
             theme
         } = this.props;
@@ -70,7 +55,7 @@ export default class Thread extends Component {
                 <StatusBar/>
                 <PostList
                     indicateNewMessages={true}
-                    posts={posts}
+                    postIds={postIds}
                     currentUserId={myMember.user_id}
                     lastViewedAt={this.state.lastViewedAt}
                     navigator={navigator}

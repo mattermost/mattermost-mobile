@@ -5,13 +5,20 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {refreshChannelWithRetry} from 'app/actions/views/channel';
+import {makePreparePostIdsForPostList} from 'app/selectors/post_list';
+
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import PostList from './post_list';
 
-function mapStateToProps(state) {
-    return {
-        theme: getTheme(state)
+function makeMapStateToProps() {
+    const preparePostIds = makePreparePostIdsForPostList();
+
+    return (state, ownProps) => {
+        return {
+            postIds: preparePostIds(state, ownProps),
+            theme: getTheme(state)
+        };
     };
 }
 
@@ -23,4 +30,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PostList);
+export default connect(makeMapStateToProps, mapDispatchToProps)(PostList);

@@ -2,16 +2,16 @@
 // See License.txt for license information.
 
 import {addReaction} from 'mattermost-redux/actions/posts';
-import {getPostsInCurrentChannel, makeGetPostsForThread} from 'mattermost-redux/selectors/entities/posts';
+import {getPostIdsInCurrentChannel, makeGetPostIdsForThread} from 'mattermost-redux/selectors/entities/posts';
 
-const getPostsForThread = makeGetPostsForThread();
+const getPostIdsForThread = makeGetPostIdsForThread();
 
 export function addReactionToLatestPost(emoji, rootId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const posts = rootId ? getPostsForThread(state, {rootId}) : getPostsInCurrentChannel(state);
-        const lastPost = posts[0];
+        const postIds = rootId ? getPostIdsForThread(state, rootId) : getPostIdsInCurrentChannel(state);
+        const lastPostId = postIds[0];
 
-        dispatch(addReaction(lastPost.id, emoji));
+        dispatch(addReaction(lastPostId, emoji));
     };
 }

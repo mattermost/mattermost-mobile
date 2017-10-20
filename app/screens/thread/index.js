@@ -7,24 +7,20 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
-import {makeGetPostsForThread} from 'mattermost-redux/selectors/entities/posts';
+import {makeGetPostIdsForThread} from 'mattermost-redux/selectors/entities/posts';
 import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 import Thread from './thread';
 
 function makeMapStateToProps() {
-    // Create a getPostsForThread selector for each instance of Thread so that each Thread
-    // is memoized correctly based on its own props
-    const getPostsForThread = makeGetPostsForThread();
+    const getPostIdsForThread = makeGetPostIdsForThread();
 
     return function mapStateToProps(state, ownProps) {
-        const posts = getPostsForThread(state, ownProps);
-
         return {
             channelId: ownProps.channelId,
             myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
-            posts,
+            postIds: getPostIdsForThread(state, ownProps.rootId),
             theme: getTheme(state)
         };
     };

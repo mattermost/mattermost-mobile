@@ -3,31 +3,22 @@
 
 import {connect} from 'react-redux';
 
-import {getPost, makeGetPostsAroundPost} from 'mattermost-redux/selectors/entities/posts';
+import {getPost, makeGetPostIdsAroundPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import SearchPreview from './search_preview';
 
 function makeMapStateToProps() {
-    const getPostsAroundPost = makeGetPostsAroundPost();
+    const getPostIdsAroundPost = makeGetPostIdsAroundPost();
 
     return function mapStateToProps(state, ownProps) {
         const post = getPost(state, ownProps.focusedPostId);
-        const postsAroundPost = getPostsAroundPost(state, post.id, post.channel_id);
-        const focusedPostIndex = postsAroundPost ? postsAroundPost.findIndex((p) => p.id === ownProps.focusedPostId) : -1;
-        let posts = [];
-
-        if (focusedPostIndex !== -1) {
-            const desiredPostIndexBefore = focusedPostIndex - 5;
-            const minPostIndex = desiredPostIndexBefore < 0 ? 0 : desiredPostIndexBefore;
-            posts = [...postsAroundPost].splice(minPostIndex, 10);
-        }
+        const postIds = getPostIdsAroundPost(state, post.id, post.channel_id, {postsBeforeCount: 5, postsAfterCount: 5});
 
         return {
-            ...ownProps,
             channelId: post.channel_id,
             currentUserId: getCurrentUserId(state),
-            posts
+            postIds
         };
     };
 }

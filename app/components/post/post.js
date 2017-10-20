@@ -41,6 +41,7 @@ class Post extends PureComponent {
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object,
+        postId: PropTypes.string.isRequired, // Used by container // eslint-disable-line no-unused-prop-types
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
@@ -65,15 +66,27 @@ class Post extends PureComponent {
 
         const {config, license, currentUserId, roles, post} = props;
         this.editDisableAction = new DelayedAction(this.handleEditDisable);
-        this.state = {
-            canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-            canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
-        };
+        if (post) {
+            this.state = {
+                canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+            };
+        } else {
+            this.state = {
+                canEdit: false,
+                canDelete: false
+            };
+        }
     }
 
     componentWillReceiveProps(nextProps) {
-        const {config, license, currentUserId, roles, post} = nextProps;
-        if (post) {
+        if (nextProps.config !== this.props.config ||
+            nextProps.license !== this.props.license ||
+            nextProps.currentUserId !== this.props.currentUserId ||
+            nextProps.post !== this.props.post ||
+            nextProps.roles !== this.props.roles) {
+            const {config, license, currentUserId, roles, post} = nextProps;
+
             this.setState({
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
                 canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
