@@ -155,7 +155,7 @@ endif
 
 do-build-ios:
 	@echo "Building ios $(ios_target) app"
-	@cd fastlane && NODE_ENV=production bundle exec fastlane ios $(ios_target)
+	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios $(ios_target)
 
 
 build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
@@ -179,7 +179,7 @@ prepare-android-build:
 
 do-build-android:
 	@echo "Building android $(android_target) app"
-	@cd fastlane && NODE_ENV=production bundle exec fastlane android $(android_target)
+	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android $(android_target)
 
 build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
 
