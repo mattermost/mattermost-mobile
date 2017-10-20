@@ -1,8 +1,10 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+
+import {General} from 'mattermost-redux/constants';
 
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
@@ -10,12 +12,15 @@ import PostTextbox from 'app/components/post_textbox';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class Thread extends Component {
+export default class Thread extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
+        channelType: PropTypes.string.isRequired,
+        displayName: PropTypes.string.isRequired,
+        intl: PropTypes.object,
         navigator: PropTypes.object,
         myMember: PropTypes.object.isRequired,
         rootId: PropTypes.string.isRequired,
@@ -24,6 +29,21 @@ export default class Thread extends Component {
     };
 
     state = {};
+
+    componentWillMount() {
+        const {channelType, displayName, intl} = this.props;
+        let title;
+
+        if (channelType === General.DM_CHANNEL) {
+            title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
+        } else {
+            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
+        }
+
+        this.props.navigator.setTitle({
+            title
+        });
+    }
 
     componentWillReceiveProps(nextProps) {
         if (!this.state.lastViewedAt) {

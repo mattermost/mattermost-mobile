@@ -36,6 +36,11 @@ Animatable.initializeRegistryWithDefinitions({
 
 export default class SearchPreview extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            getPostsAfter: PropTypes.func.isRequired,
+            getPostsBefore: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired
+        }).isRequired,
         channelId: PropTypes.string,
         channelName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
@@ -52,40 +57,53 @@ export default class SearchPreview extends PureComponent {
     };
 
     state = {
-        showPosts: false,
-        animationEnded: false
+        show: false
     };
 
-    componentWillReceiveProps(nextProps) {
-        const {animationEnded, showPosts} = this.state;
-        if (animationEnded && !showPosts && nextProps.postIds.length) {
-            this.setState({showPosts: true});
+    componentWillMount() {
+        const {postIds} = this.props;
+        if (postIds && postIds.length >= 10) {
+            this.setState({show: true});
+        } else {
+            this.loadPosts();
         }
     }
 
     handleClose = () => {
-        this.refs.view.zoomOut().then(() => {
-            if (this.props.onClose) {
-                this.props.onClose();
-            }
-        });
-        return true;
+        if (this.refs.view) {
+            this.refs.view.zoomOut().then(() => {
+                if (this.props.onClose) {
+                    this.props.onClose();
+                }
+            });
+            return true;
+        }
+
+        return false;
     };
 
     handlePress = () => {
-        const {channelId, onPress} = this.props;
-        this.refs.view.growOut().then(() => {
-            if (onPress) {
-                onPress(channelId);
-            }
-        });
+        const {channelId, channelName, onPress} = this.props;
+
+        if (this.refs.view) {
+            this.refs.view.growOut().then(() => {
+                if (onPress) {
+                    onPress(channelId, channelName);
+                }
+            });
+        }
     };
 
-    showPostList = () => {
-        this.setState({animationEnded: true});
-        if (!this.state.showPosts && this.props.postIds.length) {
-            this.setState({showPosts: true});
-        }
+    loadPosts = async () => {
+        const {actions, channelId, focusedPostId} = this.props;
+
+        await Promise.all([
+            actions.getPostThread(focusedPostId, false),
+            actions.getPostsBefore(channelId, focusedPostId, 0, 5),
+            actions.getPostsAfter(channelId, focusedPostId, 0, 5)
+        ]);
+
+        this.setState({show: true});
     };
 
     render() {
@@ -93,13 +111,14 @@ export default class SearchPreview extends PureComponent {
             channelName,
             currentUserId,
             focusedPostId,
+            navigator,
             postIds,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
 
         let postList;
-        if (this.state.showPosts) {
+        if (this.state.show) {
             postList = (
                 <PostList
                     highlightPostId={focusedPostId}
@@ -124,10 +143,10 @@ export default class SearchPreview extends PureComponent {
                 <Animatable.View
                     ref='view'
                     animation='zoomIn'
-                    duration={500}
+                    duration={350}
                     delay={0}
                     style={style.wrapper}
-                    onAnimationEnd={this.showPostList}
+                    useNativeDriver={true}
                 >
                     <View
                         style={style.header}
@@ -184,16 +203,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             flex: 1,
+            marginBottom: 10,
             marginHorizontal: 10,
             opacity: 0,
             ...Platform.select({
                 android: {
-                    marginTop: 10,
-                    marginBottom: 35
+                    marginTop: 10
                 },
                 ios: {
-                    marginTop: 20,
-                    marginBottom: 10
+                    marginTop: 20
                 }
             })
         },

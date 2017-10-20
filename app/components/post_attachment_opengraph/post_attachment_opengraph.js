@@ -40,15 +40,28 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         };
     }
 
+    componentDidMount() {
+        this.mounted = true;
+        this.getBestImageUrl(this.props.openGraphData);
+    }
+
     componentWillMount() {
         this.fetchData(this.props.link, this.props.openGraphData);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.link !== this.props.link) {
+        if (nextProps.link !== this.props.link && this.mounted) {
             this.setState({imageLoaded: false});
             this.fetchData(nextProps.link, nextProps.openGraphData);
         }
+
+        if (this.props.openGraphData !== nextProps.openGraphData) {
+            this.getBestImageUrl(nextProps.openGraphData);
+        }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     calculateLargeImageDimensions = (width, height) => {
@@ -100,8 +113,8 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     }
 
     getBestImageUrl(data) {
-        if (!data.images) {
-            return null;
+        if (!data || !data.images) {
+            return;
         }
 
         const bestDimensions = {
@@ -109,7 +122,11 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             height: MAX_IMAGE_HEIGHT
         };
         const bestImage = getNearestPoint(bestDimensions, data.images, 'width', 'height');
-        return bestImage.secure_url || bestImage.url;
+        const imageUrl = bestImage.secure_url || bestImage.url;
+
+        if (imageUrl) {
+            this.getImageSize(imageUrl);
+        }
     }
 
     getImageSize = (imageUrl) => {
@@ -126,11 +143,14 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                 } else {
                     dimensions = this.calculateSmallImageDimensions(width, height);
                 }
-                this.setState({
-                    ...dimensions,
-                    hasLargeImage: isLarge,
-                    imageLoaded: true
-                });
+                if (this.mounted) {
+                    this.setState({
+                        ...dimensions,
+                        hasLargeImage: isLarge,
+                        imageLoaded: true,
+                        imageUrl
+                    });
+                }
             }, () => null);
         }
     };
@@ -141,18 +161,14 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     render() {
         const {openGraphData, theme} = this.props;
-        const {hasLargeImage, height, imageLoaded, offset, width} = this.state;
+        const {hasLargeImage, height, imageLoaded, imageUrl, offset, width} = this.state;
 
         if (!openGraphData || !openGraphData.description) {
             return null;
         }
 
         const style = getStyleSheet(theme);
-        const imageUrl = this.getBestImageUrl(openGraphData);
         const isThumbnail = !hasLargeImage && imageLoaded;
-        if (imageUrl) {
-            this.getImageSize(imageUrl);
-        }
 
         return (
             <View style={style.container}>

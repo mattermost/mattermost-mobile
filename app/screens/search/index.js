@@ -5,10 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
-import {getPostsAfter, getPostsBefore, getPostThread, selectPost} from 'mattermost-redux/actions/posts';
+import {selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
-import {getCurrentChannelId, getMyChannels} from 'mattermost-redux/selectors/entities/channels';
-import {getSearchResults} from 'mattermost-redux/selectors/entities/posts';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
@@ -21,19 +20,17 @@ import {handleSearchDraftChanged} from 'app/actions/views/search';
 
 import Search from './search';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const currentTeamId = getCurrentTeamId(state);
     const currentChannelId = getCurrentChannelId(state);
     const {recent} = state.entities.search;
     const {searchPosts: searchRequest} = state.requests.search;
 
     return {
-        ...ownProps,
         currentTeamId,
         currentChannelId,
-        posts: getSearchResults(state),
-        recent: recent[currentTeamId] || [],
-        channels: getMyChannels(state),
+        postIds: state.entities.search.results,
+        recent: recent[currentTeamId],
         searchingStatus: searchRequest.status
     };
 }
@@ -42,9 +39,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
-            getPostsAfter,
-            getPostsBefore,
-            getPostThread,
             handleSearchDraftChanged,
             handleSelectChannel,
             loadThreadIfNecessary,
