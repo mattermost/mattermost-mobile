@@ -80,8 +80,13 @@ class Post extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {config, license, currentUserId, roles, post} = nextProps;
-        if (nextProps.post !== this.props.post) {
+        if (nextProps.config !== this.props.config ||
+            nextProps.license !== this.props.license ||
+            nextProps.currentUserId !== this.props.currentUserId ||
+            nextProps.post !== this.props.post ||
+            nextProps.roles !== this.props.roles) {
+            const {config, license, currentUserId, roles, post} = nextProps;
+
             this.setState({
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
                 canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
