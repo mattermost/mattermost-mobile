@@ -65,8 +65,8 @@ class SelectServer extends PureComponent {
     }
 
     componentDidMount() {
-        const {allowOtherServers, pingRequest, serverUrl, forceSelect} = this.props;
-        if (!forceSelect && pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
+        const {allowOtherServers, pingRequest, serverUrl} = this.props;
+        if (pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
             // we automatically trigger the ping to move to the next screen
             this.onClick();
@@ -198,7 +198,7 @@ class SelectServer extends PureComponent {
     };
 
     render() {
-        const {allowOtherServers, serverUrl, pingRequest, configRequest, licenseRequest, forceSelect} = this.props;
+        const {allowOtherServers, serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
         const isLoading = pingRequest.status === RequestStatus.STARTED ||
             configRequest.status === RequestStatus.STARTED ||
             licenseRequest.status === RequestStatus.STARTED;
@@ -247,14 +247,14 @@ class SelectServer extends PureComponent {
                                 defaultMessage='Enter Server URL'
                             />
                         </View>
-                        {(forceSelect || !Config.AutoSelectServerUrl) &&
+                        {!Config.AutoSelectServerUrl &&
                             <TextInputWithLocalizedPlaceholder
                                 ref={this.inputRef}
                                 value={serverUrl}
-                                editable={forceSelect || allowOtherServers}
+                                editable={allowOtherServers}
                                 onChangeText={this.props.actions.handleServerUrlChanged}
                                 onSubmitEditing={this.onClick}
-                                style={[GlobalStyles.inputBox, (forceSelect || allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
+                                style={[GlobalStyles.inputBox, (allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
                                 autoCapitalize='none'
                                 autoCorrect={false}
                                 keyboardType='url'

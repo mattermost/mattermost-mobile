@@ -16,13 +16,11 @@ import Orientation from 'react-native-orientation';
 import semver from 'semver';
 
 import {ViewTypes} from 'app/constants';
-import AutoSelectUrlEasterEgg from 'app/components/auto_select_url_easter_egg';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 
-import Config from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
 
@@ -223,7 +221,6 @@ class LoginOptions extends PureComponent {
                     {this.renderGitlabOption()}
                     {this.renderSamlOption()}
                 </ScrollView>
-                {Config.AutoSelectServerUrl && <AutoSelectUrlEasterEgg navigator={this.props.navigator}/>}
             </View>
         );
     }
