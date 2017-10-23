@@ -125,7 +125,7 @@ class ClientUpgrade extends PureComponent {
                 />
                 <FormattedText
                     id='mobile.client_upgrade.must_upgrade_subtitle'
-                    defaultMessage={'A client upgrade is required before continuing to use the app.'}
+                    defaultMessage='Please update the app to continue.'
                     style={styles.messageSubtitle}
                 />
             </View>
@@ -160,7 +160,7 @@ class ClientUpgrade extends PureComponent {
             <View style={styles.messageContent}>
                 <FormattedText
                     id='mobile.client_upgrade.no_upgrade_title'
-                    defaultMessage='Good news!'
+                    defaultMessage='Your App Is Up to Date'
                     style={styles.messageTitle}
                 />
                 <FormattedText
