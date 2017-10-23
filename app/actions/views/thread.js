@@ -20,22 +20,3 @@ export function handleCommentDraftSelectionChanged(rootId, cursorPosition) {
         cursorPosition
     };
 }
-
-export function insertToCommentDraft(rootId, value) {
-    return (dispatch, getState) => {
-        const {draft, cursorPosition} = getState().views.thread.drafts[rootId];
-
-        let nextDraft = `${value}`;
-        if (cursorPosition > 0) {
-            const beginning = draft.slice(0, cursorPosition);
-            const end = draft.slice(cursorPosition);
-            nextDraft = `${beginning}${value}${end}`;
-        }
-
-        dispatch({
-            type: ViewTypes.COMMENT_DRAFT_CHANGED,
-            rootId,
-            draft: nextDraft
-        });
-    };
-}

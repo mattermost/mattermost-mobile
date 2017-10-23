@@ -301,16 +301,18 @@ export function insertToDraft(value) {
         let draft;
         let cursorPosition;
         let action;
-        if (threadId) {
-            draft = state.views.thread.drafts[threadId].draft;
-            cursorPosition = state.views.thread.drafts[threadId].cursorPosition;
+        if (state.views.thread.drafts[threadId]) {
+            const threadDraft = state.views.thread.drafts[threadId];
+            draft = threadDraft.draft;
+            cursorPosition = threadDraft.cursorPosition;
             action = {
                 type: ViewTypes.COMMENT_DRAFT_CHANGED,
                 rootId: threadId
             };
-        } else {
-            draft = state.views.channel.drafts[channelId].draft;
-            cursorPosition = state.views.channel.drafts[channelId].cursorPosition;
+        } else if (state.views.channel.drafts[channelId]) {
+            const channelDraft = state.views.channel.drafts[channelId];
+            draft = channelDraft.draft;
+            cursorPosition = channelDraft.cursorPosition;
             action = {
                 type: ViewTypes.POST_DRAFT_CHANGED,
                 channelId
@@ -324,10 +326,12 @@ export function insertToDraft(value) {
             nextDraft = `${beginning}${value}${end}`;
         }
 
-        dispatch({
-            ...action,
-            draft: nextDraft
-        });
+        if (action && nextDraft !== draft) {
+            dispatch({
+                ...action,
+                draft: nextDraft
+            });
+        }
     };
 }
 

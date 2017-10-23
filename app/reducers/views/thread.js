@@ -19,7 +19,7 @@ function handleCommentDraftChanged(state, action) {
     if (!action.rootId) {
         return state;
     }
-    
+
     return {
         ...state,
         [action.rootId]: Object.assign({}, state[action.rootId], {draft: action.draft})
