@@ -181,7 +181,7 @@ export default class About extends PureComponent {
                     <View style={style.infoContainer}>
                         <View style={style.titleContainer}>
                             <Text style={style.title}>
-                                {`${Config.AppName} `}
+                                {`${config.SiteName} `}
                             </Text>
                             {title}
                         </View>
@@ -206,14 +206,16 @@ export default class About extends PureComponent {
                         />
                         {licensee}
                         {learnMore}
-                        <FormattedText
-                            id='mobile.about.powered_by'
-                            defaultMessage='{site} is powered by Mattermost'
-                            style={style.footerText}
-                            values={{
-                                site: this.props.config.SiteName
-                            }}
-                        />
+                        {!DeviceInfo.getBundleId().includes('mattermost') &&
+                            <FormattedText
+                                id='mobile.about.powered_by'
+                                defaultMessage='{site} is powered by Mattermost'
+                                style={style.footerText}
+                                values={{
+                                    site: this.props.config.SiteName
+                                }}
+                            />
+                        }
                         <FormattedText
                             id='mobile.about.copyright'
                             defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
