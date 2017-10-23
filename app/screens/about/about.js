@@ -19,6 +19,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
 
+const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
+
 export default class About extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
@@ -206,7 +208,7 @@ export default class About extends PureComponent {
                         />
                         {licensee}
                         {learnMore}
-                        {!DeviceInfo.getBundleId().includes('mattermost') &&
+                        {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
                             <FormattedText
                                 id='mobile.about.powered_by'
                                 defaultMessage='{site} is powered by Mattermost'
