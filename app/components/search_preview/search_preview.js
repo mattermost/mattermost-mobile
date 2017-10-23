@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
@@ -15,6 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
+import PostListRetry from 'app/components/post_list_retry';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 Animatable.initializeRegistryWithDefinitions({
@@ -34,7 +35,7 @@ Animatable.initializeRegistryWithDefinitions({
     }
 });
 
-export default class SearchPreview extends PureComponent {
+export default class SearchPreview extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getPostsAfter: PropTypes.func.isRequired,
@@ -57,16 +58,27 @@ export default class SearchPreview extends PureComponent {
     };
 
     state = {
-        show: false
+        show: false,
+        error: false
     };
 
-    componentWillMount() {
-        const {postIds} = this.props;
+    constructor(props) {
+        super(props);
+
+        const {postIds} = props;
         if (postIds && postIds.length >= 10) {
-            this.setState({show: true});
-        } else {
+            this.state.show = true;
+        }
+    }
+
+    componentDidMount() {
+        if (!this.state.show) {
             this.loadPosts();
         }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return this.state.show !== nextState.show;
     }
 
     handleClose = () => {
@@ -76,10 +88,7 @@ export default class SearchPreview extends PureComponent {
                     this.props.onClose();
                 }
             });
-            return true;
         }
-
-        return false;
     };
 
     handlePress = () => {
@@ -97,13 +106,19 @@ export default class SearchPreview extends PureComponent {
     loadPosts = async () => {
         const {actions, channelId, focusedPostId} = this.props;
 
-        await Promise.all([
+        const result = await Promise.all([
             actions.getPostThread(focusedPostId, false),
             actions.getPostsBefore(channelId, focusedPostId, 0, 5),
             actions.getPostsAfter(channelId, focusedPostId, 0, 5)
         ]);
 
-        this.setState({show: true});
+        const error = result.some((res) => Boolean(res.error));
+        this.setState({show: true, error});
+    };
+
+    retry = () => {
+        this.setState({show: false, error: false});
+        this.loadPosts();
     };
 
     render() {
@@ -118,7 +133,14 @@ export default class SearchPreview extends PureComponent {
         const style = getStyleSheet(theme);
 
         let postList;
-        if (this.state.show) {
+        if (this.state.error) {
+            postList = (
+                <PostListRetry
+                    retry={this.retry}
+                    theme={theme}
+                />
+            );
+        } else if (this.state.show) {
             postList = (
                 <PostList
                     highlightPostId={focusedPostId}

@@ -12,7 +12,7 @@ export function handleCreateChannel(displayName, purpose, header, type) {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
         const teamId = getCurrentTeamId(state);
-        let channel = {
+        const channel = {
             team_id: teamId,
             name: cleanUpUrlable(displayName),
             display_name: displayName,
@@ -21,10 +21,10 @@ export function handleCreateChannel(displayName, purpose, header, type) {
             type
         };
 
-        channel = await createChannel(channel, currentUserId)(dispatch, getState);
-        if (channel && channel.id) {
+        const {data} = await createChannel(channel, currentUserId)(dispatch, getState);
+        if (data && data.id) {
             dispatch(setChannelDisplayName(displayName));
-            handleSelectChannel(channel.id)(dispatch, getState);
+            handleSelectChannel(data.id)(dispatch, getState);
         }
     };
 }

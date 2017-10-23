@@ -181,11 +181,11 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
 async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
     for (let i = 0; i < maxTries; i++) {
-        const posts = await action(dispatch, getState);
+        const {data} = await action(dispatch, getState);
 
-        if (posts) {
+        if (data) {
             dispatch(setChannelRetryFailed(false));
-            return posts;
+            return data;
         }
     }
 
@@ -413,13 +413,14 @@ export function increasePostVisibility(channelId, focusedPostId) {
 
         const page = Math.floor(currentPostVisibility / ViewTypes.POST_VISIBILITY_CHUNK_SIZE);
 
-        let posts;
+        let result;
         if (focusedPostId) {
-            posts = await getPostsBefore(channelId, focusedPostId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
+            result = await getPostsBefore(channelId, focusedPostId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
         } else {
-            posts = await getPosts(channelId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
+            result = await getPosts(channelId, page, ViewTypes.POST_VISIBILITY_CHUNK_SIZE)(dispatch, getState);
         }
 
+        const posts = result.data;
         if (posts) {
             // make sure to increment the posts visibility
             // only if we got results

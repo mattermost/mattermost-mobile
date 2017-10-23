@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
@@ -23,6 +23,7 @@ import Autocomplete from 'app/components/autocomplete';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import Post from 'app/components/post';
+import PostListRetry from 'app/components/post_list_retry';
 import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
@@ -38,7 +39,7 @@ const MODIFIER_LABEL_HEIGHT = 58;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
 
-class Search extends Component {
+class Search extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
@@ -80,14 +81,6 @@ class Search extends Component {
         if (this.refs.searchBar) {
             this.refs.searchBar.focus();
         }
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return (
-            this.props.recent !== nextProps.recent ||
-            this.props.postIds !== nextProps.postIds ||
-            this.state !== nextState
-        );
     }
 
     componentDidUpdate(prevProps) {
@@ -257,7 +250,7 @@ class Search extends Component {
         const {postIds, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
-        if (item.id === SEARCHING || item.id === NO_RESULTS) {
+        if (item.id) {
             return (
                 <View style={style.customItem}>
                     {item.component}
@@ -363,6 +356,10 @@ class Search extends Component {
         );
     };
 
+    retry = () => {
+        this.search(this.state.value.trim());
+    };
+
     scrollToTop = () => {
         if (this.refs.list) {
             this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
@@ -374,9 +371,8 @@ class Search extends Component {
 
     search = (terms, isOrSearch) => {
         const {actions, currentTeamId} = this.props;
-        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
 
-        this.handleTextChanged(`${terms} `);
+        this.handleTextChanged(`${terms.trim()} `);
 
         // Trigger onSelectionChanged Manually when submitting
         this.handleSelectionChange({
@@ -386,6 +382,8 @@ class Search extends Component {
                 }
             }
         });
+
+        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
     };
 
     setModifierValue = (modifier) => {
@@ -497,7 +495,8 @@ class Search extends Component {
         }
 
         let results;
-        if (searchingStatus === RequestStatus.STARTED) {
+        switch (searchingStatus) {
+        case RequestStatus.STARTED:
             results = [{
                 id: SEARCHING,
                 component: (
@@ -506,7 +505,8 @@ class Search extends Component {
                     </View>
                 )
             }];
-        } else if (searchingStatus === RequestStatus.SUCCESS) {
+            break;
+        case RequestStatus.SUCCESS:
             if (postIds.length) {
                 results = postIds;
             } else if (this.state.value) {
@@ -521,6 +521,20 @@ class Search extends Component {
                     )
                 }];
             }
+            break;
+        case RequestStatus.FAILURE:
+            results = [{
+                id: RequestStatus.FAILURE,
+                component: (
+                    <View style={style.searching}>
+                        <PostListRetry
+                            retry={this.retry}
+                            theme={theme}
+                        />
+                    </View>
+                )
+            }];
+            break;
         }
 
         if (results) {
@@ -712,7 +726,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             textAlignVertical: 'center'
         },
         searching: {
-            marginTop: 25
+            marginTop: 65
         }
     };
 });
