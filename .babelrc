@@ -1,5 +1,10 @@
 {
   "presets": [ "react-native" ],
+  "env": {
+    "production": {
+      "plugins": ["transform-remove-console"]
+    }
+  },
   "plugins": [
     ["module-resolver", {
       "root": ["./src", "."],
