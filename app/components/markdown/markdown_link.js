@@ -1,9 +1,10 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Linking, Text} from 'react-native';
+import urlParse from 'url-parse';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
@@ -20,13 +21,7 @@ export default class MarkdownLink extends PureComponent {
 
     handlePress = () => {
         // Android doesn't like the protocol being upper case
-        let url = this.props.href;
-
-        const index = url.indexOf(':');
-        if (index !== -1) {
-            const protocol = url.substring(0, index);
-            url = protocol.toLowerCase() + url.substring(index);
-        }
+        const url = this.props.href;
 
         Linking.canOpenURL(url).then((supported) => {
             if (supported) {
@@ -35,13 +30,49 @@ export default class MarkdownLink extends PureComponent {
         });
     };
 
+    parseLinkLiteral = (literal) => {
+        let nextLiteral = literal;
+
+        const WWW_REGEX = /\b^(?:www.)/i;
+        if (nextLiteral.match(WWW_REGEX)) {
+            nextLiteral = literal.replace(WWW_REGEX, 'www.');
+        }
+
+        const parsed = urlParse(nextLiteral, {});
+
+        return parsed.href;
+    }
+
+    parseChildren = () => {
+        return Children.map(this.props.children, (child) => {
+            if (!child.props.literal || typeof child.props.literal !== 'string' || (child.props.context && child.props.context.length && !child.props.context.includes('link'))) {
+                return child;
+            }
+
+            const {props, ...otherChildProps} = child;
+            const {literal, ...otherProps} = props;
+
+            const nextProps = {
+                literal: this.parseLinkLiteral(literal),
+                ...otherProps
+            };
+
+            return {
+                props: nextProps,
+                ...otherChildProps
+            };
+        });
+    }
+
     render() {
+        const children = this.parseChildren();
+
         return (
             <Text
                 onPress={this.handlePress}
                 onLongPress={this.props.onLongPress}
             >
-                {this.props.children}
+                {children}
             </Text>
         );
     }
