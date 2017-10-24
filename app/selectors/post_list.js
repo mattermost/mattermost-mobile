@@ -46,16 +46,6 @@ export function makePreparePostIdsForPostList() {
                     continue;
                 }
 
-                // Only add the new messages line if a lastViewedAt time is set
-                if (lastViewedAt && !addedNewMessagesIndicator) {
-                    const postIsUnread = post.create_at > lastViewedAt;
-
-                    if (postIsUnread) {
-                        out.push(START_OF_NEW_MESSAGES);
-                        addedNewMessagesIndicator = true;
-                    }
-                }
-
                 // Push on a date header if the last post was on a different day than the current one
                 const postDate = new Date(post.create_at);
 
@@ -66,6 +56,16 @@ export function makePreparePostIdsForPostList() {
                 lastDate = postDate;
 
                 out.push(post.id);
+
+                // Only add the new messages line if a lastViewedAt time is set
+                if (lastViewedAt && !addedNewMessagesIndicator && post.user_id !== currentUserId) {
+                    const postIsUnread = post.create_at > lastViewedAt;
+
+                    if (postIsUnread) {
+                        out.push(START_OF_NEW_MESSAGES);
+                        addedNewMessagesIndicator = true;
+                    }
+                }
             }
 
             // Push on the date header for the oldest post
