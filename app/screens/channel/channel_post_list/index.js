@@ -25,8 +25,6 @@ function makeMapStateToProps() {
             channelId,
             channelRefreshingFailed,
             currentUserId: getCurrentUserId(state),
-            channelType: channel.type,
-            channelDisplayName: channel.display_name,
             postIds: getPostIdsInCurrentChannel(state),
             postVisibility: state.views.channel.postVisibility[channelId],
             lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,

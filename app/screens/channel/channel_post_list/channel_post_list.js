@@ -10,8 +10,6 @@ import {
     View
 } from 'react-native';
 
-import {General} from 'mattermost-redux/constants';
-
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
@@ -25,10 +23,8 @@ class ChannelPostList extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired
         }).isRequired,
-        channelDisplayName: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
-        channelType: PropTypes.string,
         currentUserId: PropTypes.string,
         intl: intlShape.isRequired,
         lastViewedAt: PropTypes.number,
@@ -73,22 +69,14 @@ class ChannelPostList extends PureComponent {
     };
 
     goToThread = (post) => {
-        const {actions, channelId, channelDisplayName, channelType, intl, navigator, theme} = this.props;
+        const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
         actions.loadThreadIfNecessary(post.root_id, channelId);
         actions.selectPost(rootId);
 
-        let title;
-        if (channelType === General.DM_CHANNEL) {
-            title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
-        } else {
-            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: channelDisplayName});
-        }
-
         const options = {
             screen: 'Thread',
-            title,
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {

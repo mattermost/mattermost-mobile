@@ -3882,7 +3882,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "0.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/f6d97c8a49e9402fcb5d72604751c9a5ae6d7e5a"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/14b5f58c9be349c0f9514bc9e457ea4ac6bf2d03"
   dependencies:
     deep-equal "1.0.1"
     harmony-reflect "1.5.1"
@@ -5264,9 +5264,17 @@ redux-persist-transform-filter@0.0.15:
     lodash.set "^4.3.2"
     lodash.unset "^4.5.2"
 
-redux-persist@4.9.1, redux-persist@^4.5.0:
+redux-persist@4.9.1:
   version "4.9.1"
   resolved "https://registry.yarnpkg.com/redux-persist/-/redux-persist-4.9.1.tgz#271fa31d1c782ebf9082fb5174e829db24faf59e"
+  dependencies:
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.4"
+    lodash-es "^4.17.4"
+
+redux-persist@^4.5.0:
+  version "4.10.1"
+  resolved "https://registry.yarnpkg.com/redux-persist/-/redux-persist-4.10.1.tgz#4fb2b789942f10f56d51cc7ad068d9d6beb46124"
   dependencies:
     json-stringify-safe "^5.0.1"
     lodash "^4.17.4"

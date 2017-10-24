@@ -15,6 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
+import PostListRetry from 'app/components/post_list_retry';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 Animatable.initializeRegistryWithDefinitions({
@@ -36,6 +37,11 @@ Animatable.initializeRegistryWithDefinitions({
 
 export default class SearchPreview extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            getPostsAfter: PropTypes.func.isRequired,
+            getPostsBefore: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired
+        }).isRequired,
         channelId: PropTypes.string,
         channelName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
@@ -51,41 +57,65 @@ export default class SearchPreview extends PureComponent {
         postIds: []
     };
 
-    state = {
-        showPosts: false,
-        animationEnded: false
-    };
+    constructor(props) {
+        super(props);
 
-    componentWillReceiveProps(nextProps) {
-        const {animationEnded, showPosts} = this.state;
-        if (animationEnded && !showPosts && nextProps.postIds.length) {
-            this.setState({showPosts: true});
+        const {postIds} = props;
+        let show = false;
+        if (postIds && postIds.length >= 10) {
+            show = true;
+        }
+
+        this.state = {
+            show,
+            error: false
+        };
+    }
+
+    componentDidMount() {
+        if (!this.state.show) {
+            this.loadPosts();
         }
     }
 
     handleClose = () => {
-        this.refs.view.zoomOut().then(() => {
-            if (this.props.onClose) {
-                this.props.onClose();
-            }
-        });
-        return true;
+        if (this.refs.view) {
+            this.refs.view.zoomOut().then(() => {
+                if (this.props.onClose) {
+                    this.props.onClose();
+                }
+            });
+        }
     };
 
     handlePress = () => {
-        const {channelId, onPress} = this.props;
-        this.refs.view.growOut().then(() => {
-            if (onPress) {
-                onPress(channelId);
-            }
-        });
+        const {channelId, channelName, onPress} = this.props;
+
+        if (this.refs.view) {
+            this.refs.view.growOut().then(() => {
+                if (onPress) {
+                    onPress(channelId, channelName);
+                }
+            });
+        }
     };
 
-    showPostList = () => {
-        this.setState({animationEnded: true});
-        if (!this.state.showPosts && this.props.postIds.length) {
-            this.setState({showPosts: true});
-        }
+    loadPosts = async () => {
+        const {actions, channelId, focusedPostId} = this.props;
+
+        const result = await Promise.all([
+            actions.getPostThread(focusedPostId, false),
+            actions.getPostsBefore(channelId, focusedPostId, 0, 5),
+            actions.getPostsAfter(channelId, focusedPostId, 0, 5)
+        ]);
+
+        const error = result.some((res) => Boolean(res.error));
+        this.setState({show: true, error});
+    };
+
+    retry = () => {
+        this.setState({show: false, error: false});
+        this.loadPosts();
     };
 
     render() {
@@ -93,13 +123,21 @@ export default class SearchPreview extends PureComponent {
             channelName,
             currentUserId,
             focusedPostId,
+            navigator,
             postIds,
             theme
         } = this.props;
         const style = getStyleSheet(theme);
 
         let postList;
-        if (this.state.showPosts) {
+        if (this.state.error) {
+            postList = (
+                <PostListRetry
+                    retry={this.retry}
+                    theme={theme}
+                />
+            );
+        } else if (this.state.show) {
             postList = (
                 <PostList
                     highlightPostId={focusedPostId}
@@ -124,10 +162,10 @@ export default class SearchPreview extends PureComponent {
                 <Animatable.View
                     ref='view'
                     animation='zoomIn'
-                    duration={500}
+                    duration={200}
                     delay={0}
                     style={style.wrapper}
-                    onAnimationEnd={this.showPostList}
+                    useNativeDriver={true}
                 >
                     <View
                         style={style.header}
@@ -184,16 +222,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             flex: 1,
+            marginBottom: 10,
             marginHorizontal: 10,
             opacity: 0,
             ...Platform.select({
                 android: {
-                    marginTop: 10,
-                    marginBottom: 35
+                    marginTop: 10
                 },
                 ios: {
-                    marginTop: 20,
-                    marginBottom: 10
+                    marginTop: 20
                 }
             })
         },

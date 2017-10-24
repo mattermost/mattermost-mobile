@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
@@ -9,7 +9,6 @@ import {
     InteractionManager,
     Platform,
     SectionList,
-    StyleSheet,
     Text,
     TouchableHighlight,
     TouchableOpacity,
@@ -18,53 +17,51 @@ import {
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import Post from 'app/components/post';
+import PostListRetry from 'app/components/post_list_retry';
 import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
-import {ViewTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import ChannelDisplayName from './channel_display_name';
 
 const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
 const MODIFIER_LABEL_HEIGHT = 58;
-const POSTS_PER_PAGE = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
 
-class Search extends Component {
+class Search extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
-            getPostsAfter: PropTypes.func.isRequired,
-            getPostsBefore: PropTypes.func.isRequired,
-            getPostThread: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPosts: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
         }).isRequired,
-        channels: PropTypes.array.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        posts: PropTypes.array,
+        postIds: PropTypes.array,
         recent: PropTypes.array.isRequired,
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
-        posts: []
+        postIds: [],
+        recent: []
     };
 
     constructor(props) {
@@ -81,28 +78,22 @@ class Search extends Component {
     }
 
     componentDidMount() {
-        this.refs.searchBar.focus();
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return (
-            this.props.recent !== nextProps.recent ||
-            this.props.posts !== nextProps.posts ||
-            this.state !== nextState
-        );
+        if (this.refs.searchBar) {
+            this.refs.searchBar.focus();
+        }
     }
 
     componentDidUpdate(prevProps) {
         const {searchingStatus: status, recent} = this.props;
         const {searchingStatus: prevStatus} = prevProps;
-        const recentLenght = recent.length;
+        const recentLength = recent.length;
         const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
 
         if (shouldScroll) {
             requestAnimationFrame(() => {
                 this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                     animated: true,
-                    offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLenght * RECENT_LABEL_HEIGHT) + ((recentLenght + 1) * RECENT_SEPARATOR_HEIGHT)
+                    offset: SECTION_HEIGHT + (2 * MODIFIER_LABEL_HEIGHT) + (recentLength * RECENT_LABEL_HEIGHT) + ((recentLength + 1) * RECENT_SEPARATOR_HEIGHT)
                 });
             });
         }
@@ -119,26 +110,16 @@ class Search extends Component {
     };
 
     goToThread = (post) => {
-        const {actions, channels, intl, navigator, theme} = this.props;
+        const {actions, navigator, theme} = this.props;
         const channelId = post.channel_id;
-        const channel = channels.find((c) => c.id === channelId);
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
         actions.loadThreadIfNecessary(rootId, channelId);
         actions.selectPost(rootId);
 
-        let title;
-        if (channel.type === General.DM_CHANNEL) {
-            title = intl.formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
-        } else {
-            const channelName = channel.display_name;
-            title = intl.formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName});
-        }
-
         const options = {
             screen: 'Thread',
-            title,
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
@@ -194,7 +175,7 @@ class Search extends Component {
     };
 
     keyPostExtractor = (item) => {
-        return `result-${item.id}`;
+        return item.id || item;
     };
 
     onBlur = () => {
@@ -202,7 +183,9 @@ class Search extends Component {
     };
 
     onFocus = () => {
-        this.setState({isFocused: true});
+        if (!this.state.isFocused) {
+            this.setState({isFocused: true});
+        }
         this.scrollToTop();
     };
 
@@ -217,23 +200,10 @@ class Search extends Component {
     };
 
     previewPost = (post) => {
-        const {actions, channels} = this.props;
         const focusedPostId = post.id;
-        const channelId = post.channel_id;
 
         Keyboard.dismiss();
-        actions.getPostThread(focusedPostId, false);
-        actions.getPostsBefore(channelId, focusedPostId, 0, POSTS_PER_PAGE);
-        actions.getPostsAfter(channelId, focusedPostId, 0, POSTS_PER_PAGE);
-
-        const channel = channels.find((c) => c.id === channelId);
-        let displayName = '';
-
-        if (channel) {
-            displayName = channel.display_name;
-        }
-
-        this.setState({preview: true, postId: focusedPostId, channelName: displayName});
+        this.setState({preview: true, postId: focusedPostId});
     };
 
     removeSearchTerms = (item) => {
@@ -276,10 +246,10 @@ class Search extends Component {
     };
 
     renderPost = ({item, index}) => {
-        const {channels, posts, theme} = this.props;
+        const {postIds, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
-        if (item.id === SEARCHING || item.id === NO_RESULTS) {
+        if (item.id) {
             return (
                 <View style={style.customItem}>
                     {item.component}
@@ -287,25 +257,16 @@ class Search extends Component {
             );
         }
 
-        const channel = channels.find((c) => c.id === item.channel_id);
-        let displayName = '';
-
-        if (channel) {
-            displayName = channel.display_name;
-        }
-
         let separator;
-        if (index === posts.length - 1) {
+        if (index === postIds.length - 1) {
             separator = this.renderPostSeparator();
         }
 
         return (
             <View>
-                <Text style={style.channelName}>
-                    {displayName}
-                </Text>
+                <ChannelDisplayName postId={item}/>
                 <Post
-                    postId={item.id}
+                    postId={item}
                     renderReplies={true}
                     onPress={this.previewPost}
                     onReply={this.goToThread}
@@ -394,18 +355,23 @@ class Search extends Component {
         );
     };
 
+    retry = () => {
+        this.search(this.state.value.trim());
+    };
+
     scrollToTop = () => {
-        this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
-            animated: false,
-            offset: 0
-        });
+        if (this.refs.list) {
+            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                animated: false,
+                offset: 0
+            });
+        }
     };
 
     search = (terms, isOrSearch) => {
         const {actions, currentTeamId} = this.props;
-        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
 
-        this.handleTextChanged(`${terms} `);
+        this.handleTextChanged(`${terms.trim()} `);
 
         // Trigger onSelectionChanged Manually when submitting
         this.handleSelectionChange({
@@ -415,6 +381,8 @@ class Search extends Component {
                 }
             }
         });
+
+        actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
     };
 
     setModifierValue = (modifier) => {
@@ -431,24 +399,28 @@ class Search extends Component {
 
         this.handleTextChanged(newValue, true);
 
-        this.refs.searchBar.focus();
+        if (this.refs.searchBar) {
+            this.refs.searchBar.focus();
+        }
     };
 
     setRecentValue = (recent) => {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);
-        this.refs.searchBar.blur();
+
+        if (this.refs.searchBar) {
+            this.refs.searchBar.blur();
+        }
     };
 
     handleClosePreview = () => {
-        // console.warn('close preview');
         this.setState({preview: false, postId: null});
     };
 
-    handleJumpToChannel = (channelId) => {
+    handleJumpToChannel = (channelId, channelDisplayName) => {
         if (channelId) {
-            const {actions, channels, currentChannelId} = this.props;
+            const {actions, currentChannelId} = this.props;
             const {
                 handleSelectChannel,
                 markChannelAsRead,
@@ -457,22 +429,20 @@ class Search extends Component {
                 viewChannel
             } = actions;
 
-            setChannelLoading();
+            setChannelLoading(channelId !== currentChannelId);
+            setChannelDisplayName(channelDisplayName);
 
-            const channel = channels.find((c) => c.id === channelId);
-            let displayName = '';
-
-            if (channel) {
-                displayName = channel.display_name;
-            }
-
-            this.props.navigator.dismissModal({animationType: 'none'});
-
-            markChannelAsRead(channelId, currentChannelId);
-            viewChannel(channelId, currentChannelId);
-            setChannelDisplayName(displayName);
             InteractionManager.runAfterInteractions(() => {
                 handleSelectChannel(channelId);
+                requestAnimationFrame(() => {
+                    // mark the channel as viewed after all the frame has flushed
+                    markChannelAsRead(channelId, currentChannelId);
+                    if (channelId !== currentChannelId) {
+                        viewChannel(currentChannelId);
+                    }
+                });
+
+                this.props.navigator.dismissModal({animationType: 'slide-down'});
             });
         }
     };
@@ -481,13 +451,13 @@ class Search extends Component {
         const {
             intl,
             navigator,
-            posts,
+            postIds,
             recent,
             searchingStatus,
             theme
         } = this.props;
 
-        const {channelName, postId, preview, value} = this.state;
+        const {postId, preview, value} = this.state;
         const style = getStyleFromTheme(theme);
         const sections = [{
             data: [{
@@ -524,7 +494,8 @@ class Search extends Component {
         }
 
         let results;
-        if (searchingStatus === RequestStatus.STARTED) {
+        switch (searchingStatus) {
+        case RequestStatus.STARTED:
             results = [{
                 id: SEARCHING,
                 component: (
@@ -533,9 +504,10 @@ class Search extends Component {
                     </View>
                 )
             }];
-        } else if (searchingStatus === RequestStatus.SUCCESS) {
-            if (posts.length) {
-                results = posts;
+            break;
+        case RequestStatus.SUCCESS:
+            if (postIds.length) {
+                results = postIds;
             } else if (this.state.value) {
                 results = [{
                     id: NO_RESULTS,
@@ -548,6 +520,20 @@ class Search extends Component {
                     )
                 }];
             }
+            break;
+        case RequestStatus.FAILURE:
+            results = [{
+                id: RequestStatus.FAILURE,
+                component: (
+                    <View style={style.searching}>
+                        <PostListRetry
+                            retry={this.retry}
+                            theme={theme}
+                        />
+                    </View>
+                )
+            }];
+            break;
         }
 
         if (results) {
@@ -566,7 +552,6 @@ class Search extends Component {
             previewComponent = (
                 <SearchPreview
                     ref='preview'
-                    channelName={channelName}
                     focusedPostId={postId}
                     navigator={navigator}
                     onClose={this.handleClosePreview}
@@ -720,14 +705,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: StyleSheet.hairlineWidth
-        },
-        channelName: {
-            color: changeOpacity(theme.centerChannelColor, 0.8),
-            fontSize: 14,
-            fontWeight: '600',
-            marginTop: 5,
-            paddingHorizontal: 16
+            height: 1
         },
         sectionList: {
             flex: 1,
@@ -747,7 +725,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             textAlignVertical: 'center'
         },
         searching: {
-            marginTop: 25
+            marginTop: 65
         }
     };
 });
