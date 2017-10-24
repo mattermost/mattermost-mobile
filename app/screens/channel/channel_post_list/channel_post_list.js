@@ -69,7 +69,7 @@ class ChannelPostList extends PureComponent {
     };
 
     goToThread = (post) => {
-        const {actions, channelId, intl, navigator, theme} = this.props;
+        const {actions, channelId, navigator, theme} = this.props;
         const rootId = (post.root_id || post.id);
 
         actions.loadThreadIfNecessary(post.root_id, channelId);
@@ -87,7 +87,6 @@ class ChannelPostList extends PureComponent {
             },
             passProps: {
                 channelId,
-                intl,
                 rootId
             }
         };

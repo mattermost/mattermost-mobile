@@ -89,7 +89,7 @@ class Search extends PureComponent {
         const recentLength = recent.length;
         const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
 
-        if (shouldScroll && this.refs.list) {
+        if (shouldScroll) {
             requestAnimationFrame(() => {
                 this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                     animated: true,
@@ -110,7 +110,7 @@ class Search extends PureComponent {
     };
 
     goToThread = (post) => {
-        const {actions, intl, navigator, theme} = this.props;
+        const {actions, navigator, theme} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
 
@@ -130,7 +130,6 @@ class Search extends PureComponent {
             },
             passProps: {
                 channelId,
-                intl,
                 rootId
             }
         };

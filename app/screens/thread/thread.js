@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {injectIntl, intlShape} from 'react-intl';
 
 import {General} from 'mattermost-redux/constants';
 
@@ -12,7 +13,7 @@ import PostTextbox from 'app/components/post_textbox';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-export default class Thread extends PureComponent {
+class Thread extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired
@@ -20,7 +21,7 @@ export default class Thread extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelType: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
-        intl: PropTypes.object,
+        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         myMember: PropTypes.object.isRequired,
         rootId: PropTypes.string.isRequired,
@@ -98,3 +99,5 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
+
+export default injectIntl(Thread);

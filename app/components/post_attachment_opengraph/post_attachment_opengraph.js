@@ -50,7 +50,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.link !== this.props.link && this.mounted) {
+        if (nextProps.link !== this.props.link) {
             this.setState({imageLoaded: false});
             this.fetchData(nextProps.link, nextProps.openGraphData);
         }

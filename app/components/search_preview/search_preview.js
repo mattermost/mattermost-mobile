@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
@@ -35,7 +35,7 @@ Animatable.initializeRegistryWithDefinitions({
     }
 });
 
-export default class SearchPreview extends Component {
+export default class SearchPreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getPostsAfter: PropTypes.func.isRequired,
@@ -57,28 +57,25 @@ export default class SearchPreview extends Component {
         postIds: []
     };
 
-    state = {
-        show: false,
-        error: false
-    };
-
     constructor(props) {
         super(props);
 
         const {postIds} = props;
+        let show = false;
         if (postIds && postIds.length >= 10) {
-            this.state.show = true;
+            show = true;
         }
+
+        this.state = {
+            show,
+            error: false
+        };
     }
 
     componentDidMount() {
         if (!this.state.show) {
             this.loadPosts();
         }
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return this.state.show !== nextState.show;
     }
 
     handleClose = () => {
@@ -165,7 +162,7 @@ export default class SearchPreview extends Component {
                 <Animatable.View
                     ref='view'
                     animation='zoomIn'
-                    duration={350}
+                    duration={200}
                     delay={0}
                     style={style.wrapper}
                     useNativeDriver={true}
