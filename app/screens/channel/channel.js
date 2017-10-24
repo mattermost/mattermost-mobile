@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
-    NetInfo,
     Platform,
     View
 } from 'react-native';
@@ -22,6 +21,7 @@ import StatusBar from 'app/components/status_bar';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
+import networkConnectionListener from 'app/utils/network';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelPostList from './channel_post_list';
@@ -53,8 +53,8 @@ class Channel extends PureComponent {
 
     componentWillMount() {
         EventEmitter.on('leave_team', this.handleLeaveTeam);
-        NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectionChange);
-        NetInfo.isConnected.fetch().then(this.handleConnectionChange);
+
+        this.networkListener = networkConnectionListener(this.handleConnectionChange);
 
         if (this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
@@ -79,7 +79,7 @@ class Channel extends PureComponent {
         const {closeWebSocket, stopPeriodicStatusUpdates} = this.props.actions;
 
         EventEmitter.off('leave_team', this.handleLeaveTeam);
-        NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
+        this.networkListener.removeEventListener();
 
         closeWebSocket();
         stopPeriodicStatusUpdates();
