@@ -28,6 +28,10 @@ export function makePreparePostIdsForPostList() {
         getCurrentUserId,
         shouldShowJoinLeaveMessages,
         (posts, lastViewedAt, currentUserId, showJoinLeave) => {
+            if (posts.length === 0) {
+                return [];
+            }
+
             const out = [];
 
             let lastDate = null;
@@ -35,8 +39,10 @@ export function makePreparePostIdsForPostList() {
 
             const filterOptions = {showJoinLeave};
 
-            // Remember that we're iterating through the posts from newest to oldest
-            for (const post of posts) {
+            // Iterating through the posts from oldest to newest
+            for (let i = posts.length - 1; i >= 0; i--) {
+                const post = posts[i];
+
                 if (post.state === Posts.POST_DELETED && post.user_id === currentUserId) {
                     continue;
                 }
@@ -46,34 +52,27 @@ export function makePreparePostIdsForPostList() {
                     continue;
                 }
 
-                // Only add the new messages line if a lastViewedAt time is set
-                if (lastViewedAt && !addedNewMessagesIndicator) {
-                    const postIsUnread = post.create_at > lastViewedAt;
-
-                    if (postIsUnread) {
-                        out.push(START_OF_NEW_MESSAGES);
-                        addedNewMessagesIndicator = true;
-                    }
-                }
-
                 // Push on a date header if the last post was on a different day than the current one
                 const postDate = new Date(post.create_at);
 
-                if (lastDate && lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + lastDate.toDateString());
+                if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
+                    out.push(DATE_LINE + postDate.toDateString());
+
+                    lastDate = postDate;
                 }
 
-                lastDate = postDate;
+                // Only add the new messages line if a lastViewedAt time is set
+                const postIsUnread = post.create_at > lastViewedAt;
+                if (lastViewedAt != null && !addedNewMessagesIndicator && postIsUnread) {
+                    out.push(START_OF_NEW_MESSAGES);
+                    addedNewMessagesIndicator = true;
+                }
 
                 out.push(post.id);
             }
 
-            // Push on the date header for the oldest post
-            if (lastDate) {
-                out.push(DATE_LINE + lastDate.toDateString());
-            }
-
-            return out;
+            // Flip it back to newest to oldest
+            return out.reverse();
         }
     );
 }
