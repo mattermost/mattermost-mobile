@@ -27,7 +27,6 @@ export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
-            initialize: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired
@@ -85,9 +84,8 @@ export default class SelectTeam extends PureComponent {
     };
 
     goToChannelView = () => {
-        const {actions, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
 
-        actions.initialize();
         navigator.resetTo({
             screen: 'Channel',
             animated: false,

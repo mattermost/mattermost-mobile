@@ -263,9 +263,7 @@ const state = {
             loginId: '',
             password: ''
         },
-        notification: null,
         root: {
-            appInitializing: false,
             hydrationComplete: false,
             purge: false
         },

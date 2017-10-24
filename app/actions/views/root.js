@@ -1,16 +1,16 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {ViewTypes} from 'app/constants';
-import {
-    handleSelectChannel,
-    setChannelDisplayName
-} from 'app/actions/views/channel';
-import {handleTeamChange, selectFirstAvailableTeam} from 'app/actions/views/select_team';
-
 import {General} from 'mattermost-redux/constants';
 import {getClientConfig, getLicenseConfig} from 'mattermost-redux/actions/general';
-import {getChannelAndMyMember, markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
+import {getPosts} from 'mattermost-redux/actions/posts';
+import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
+
+import {
+    handleSelectChannel,
+    setChannelDisplayName,
+    retryGetPostsAction
+} from 'app/actions/views/channel';
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
@@ -23,48 +23,39 @@ export function loadConfigAndLicense() {
     };
 }
 
-export function queueNotification(notification) {
-    return async (dispatch, getState) => {
-        dispatch({type: ViewTypes.NOTIFICATION_CHANGED, data: notification}, getState);
-    };
-}
-
-export function clearNotification() {
-    return async (dispatch, getState) => {
-        dispatch({type: ViewTypes.NOTIFICATION_CHANGED, data: null}, getState);
-    };
-}
-
-export function goToNotification(notification) {
+export function loadFromPushNotification(notification) {
     return async (dispatch, getState) => {
         const state = getState();
         const {data} = notification;
-        const {currentTeamId, teams} = state.entities.teams;
-        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
+        const {currentChannelId} = state.entities.channels;
         const channelId = data.channel_id;
 
-        // if the notification does not have a team id is because its from a DM or GM
+        // when the notification does not have a team id is because its from a DM or GM
         const teamId = data.team_id || currentTeamId;
 
-        dispatch(setChannelDisplayName(''));
-
-        if (teamId && teamId !== currentTeamId) {
-            handleTeamChange(teams[teamId], false)(dispatch, getState);
-        } else if (!teamId) {
-            await selectFirstAvailableTeam()(dispatch, getState);
+        //verify that we have the team loaded
+        if (teamId && (!teams[teamId] || !myTeamMembers[teamId])) {
+            await Promise.all([
+                getMyTeams()(dispatch, getState),
+                getMyTeamMembers()(dispatch, getState)
+            ]);
         }
 
-        if (!channels[channelId] || !myMembers[channelId]) {
-            getChannelAndMyMember(channelId)(dispatch, getState);
+        // when the notification is from a team other than the current team
+        if (teamId !== currentTeamId) {
+            selectTeam({id: teamId})(dispatch, getState);
         }
 
-        if (channelId !== currentChannelId) {
+        // when the notification is from the same channel as the current channel
+        // we should get the posts
+        if (channelId === currentChannelId) {
+            await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        } else {
+            // when the notification is from a channel other than the current channel
+            dispatch(setChannelDisplayName(''));
             handleSelectChannel(channelId)(dispatch, getState);
         }
-
-        viewChannel(channelId)(dispatch, getState);
-
-        markChannelAsRead(channelId, currentChannelId)(dispatch, getState);
     };
 }
 
@@ -74,8 +65,6 @@ export function purgeOfflineStore() {
 
 export default {
     loadConfigAndLicense,
-    queueNotification,
-    clearNotification,
-    goToNotification,
+    loadFromPushNotification,
     purgeOfflineStore
 };

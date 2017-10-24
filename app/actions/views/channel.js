@@ -179,7 +179,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
     };
 }
 
-async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
+export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
     for (let i = 0; i < maxTries; i++) {
         const {data} = await action(dispatch, getState);
 

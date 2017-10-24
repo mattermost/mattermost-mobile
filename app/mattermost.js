@@ -36,9 +36,9 @@ import {
     setStatusBarHeight
 } from 'app/actions/device';
 import {
-    goToNotification,
+
     loadConfigAndLicense,
-    queueNotification,
+    loadFromPushNotification,
     purgeOfflineStore
 } from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
@@ -57,6 +57,7 @@ import {
     LOGGER_JAVASCRIPT,
     LOGGER_NATIVE
 } from 'app/utils/sentry';
+import {stripTrailingSlashes} from 'app/utils/url';
 
 import Config from 'assets/config';
 
@@ -378,6 +379,10 @@ export default class Mattermost {
     // We need to wait for hydration to occur before load the router.
     listenForHydration = () => {
         const state = this.store.getState();
+        if (!this.isConfigured) {
+            this.configurePushNotifications();
+        }
+
         Orientation.getOrientation((orientation) => {
             this.orientationDidChange(orientation);
         });
@@ -385,6 +390,7 @@ export default class Mattermost {
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
 
+            const isNotActive = AppState.currentState !== 'active';
             const notification = PushNotifications.getNotification();
             if (notification) {
                 // If we have a notification means that the app was started cause of a reply
@@ -407,7 +413,7 @@ export default class Mattermost {
                         this.launchApp();
                     }
                 });
-            } else if (AppState.currentState === 'background') {
+            } else if (isNotActive) {
                 // for IOS replying from push notification starts the app in the background
                 this.shouldRelaunchonActive = true;
                 this.configurePushNotifications();
@@ -434,10 +440,19 @@ export default class Mattermost {
         this.isConfigured = true;
     };
 
-    onPushNotification = (deviceNotification) => {
-        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
+    onPushNotification = async (deviceNotification) => {
         const {dispatch, getState} = this.store;
         const state = getState();
+        const {token, url} = state.entities.general.credentials;
+        let startAppFromPushNotification = false;
+
+        // mark the app as started as soon as possible
+        if (token && url && !this.appStarted) {
+            this.appStarted = true;
+            startAppFromPushNotification = true;
+        }
+
+        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
         const notification = {
             data,
             message
@@ -451,22 +466,20 @@ export default class Mattermost {
             markChannelAsRead(data.channel_id)(dispatch, getState);
         } else if (foreground) {
             EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-        } else if (userInteraction) {
-            if (!notification.localNotification) {
-                if (!state.views.root.appInitializing) {
-                    // go to notification if the app is initialized
+        } else if (userInteraction && !notification.localNotification) {
+            if (startAppFromPushNotification) {
+                Client.setToken(token);
+                Client4.setToken(token);
+                Client4.setUrl(stripTrailingSlashes(url));
+                Client.setUrl(stripTrailingSlashes(url));
+            }
 
-                    if (!Client4.getUrl()) {
-                        // Make sure the Client has the server url set
-                        Client4.setUrl(state.entities.general.credentials.url);
-                    }
+            await loadFromPushNotification(notification)(dispatch, getState);
 
-                    goToNotification(notification)(dispatch, getState);
-                    EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
-                } else if (state.entities.general.credentials.token) {
-                    // queue notification if app is not initialized but we are logged in
-                    queueNotification(notification)(dispatch, getState);
-                }
+            if (startAppFromPushNotification) {
+                this.startAppFromPushNotification();
+            } else {
+                EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
             }
         }
     };
@@ -566,13 +579,32 @@ export default class Mattermost {
     };
 
     startApp = (animationType = 'none') => {
-        if (!this.isConfigured) {
-            this.configurePushNotifications();
+        if (!this.appStarted) {
+            Navigation.startSingleScreenApp({
+                screen: {
+                    screen: 'Root',
+                    navigatorStyle: {
+                        navBarHidden: true,
+                        statusBarHidden: false,
+                        statusBarHideWithNavBar: false,
+                        screenBackgroundColor: 'transparent'
+                    }
+                },
+                passProps: {
+                    allowOtherServers: this.allowOtherServers
+                },
+                appStyle: {
+                    orientation: 'auto'
+                },
+                animationType
+            });
         }
+    };
 
+    startAppFromPushNotification = () => {
         Navigation.startSingleScreenApp({
             screen: {
-                screen: 'Root',
+                screen: 'Channel',
                 navigatorStyle: {
                     navBarHidden: true,
                     statusBarHidden: false,
@@ -586,7 +618,8 @@ export default class Mattermost {
             appStyle: {
                 orientation: 'auto'
             },
-            animationType
+            animationType: 'none'
         });
+        this.appStarted = false;
     };
 }
