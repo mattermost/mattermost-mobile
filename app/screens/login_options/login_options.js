@@ -8,8 +8,7 @@ import {
     Image,
     ScrollView,
     StyleSheet,
-    Text,
-    View
+    Text
 } from 'react-native';
 import Button from 'react-native-button';
 import Orientation from 'react-native-orientation';
@@ -193,35 +192,33 @@ class LoginOptions extends PureComponent {
 
     render() {
         return (
-            <View style={style.container}>
-                <ScrollView
-                    style={style.container}
-                    contentContainerStyle={style.innerContainer}
-                    ref={this.scrollRef}
-                >
-                    <StatusBar/>
-                    <Image
-                        source={logo}
-                    />
-                    <Text style={GlobalStyles.header}>
-                        {this.props.config.SiteName}
-                    </Text>
-                    <FormattedText
-                        style={GlobalStyles.subheader}
-                        id='web.root.signup_info'
-                        defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                    />
-                    <FormattedText
-                        style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
-                        id='mobile.login_options.choose_title'
-                        defaultMessage='Choose your login method'
-                    />
-                    {this.renderEmailOption()}
-                    {this.renderLdapOption()}
-                    {this.renderGitlabOption()}
-                    {this.renderSamlOption()}
-                </ScrollView>
-            </View>
+            <ScrollView
+                style={style.container}
+                contentContainerStyle={style.innerContainer}
+                ref={this.scrollRef}
+            >
+                <StatusBar/>
+                <Image
+                    source={logo}
+                />
+                <Text style={GlobalStyles.header}>
+                    {this.props.config.SiteName}
+                </Text>
+                <FormattedText
+                    style={GlobalStyles.subheader}
+                    id='web.root.signup_info'
+                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                />
+                <FormattedText
+                    style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
+                    id='mobile.login_options.choose_title'
+                    defaultMessage='Choose your login method'
+                />
+                {this.renderEmailOption()}
+                {this.renderLdapOption()}
+                {this.renderGitlabOption()}
+                {this.renderSamlOption()}
+            </ScrollView>
         );
     }
 }
