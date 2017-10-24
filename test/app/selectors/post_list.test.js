@@ -34,12 +34,11 @@ describe('Selectors.PostList', () => {
                 }
             };
             const lastViewedAt = Number.POSITIVE_INFINITY;
-            const postIds = ['1001', '1002'];
+            const postIds = ['1002', '1001'];
 
             // Defaults to show post
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') !== -1);
+            assert.deepEqual(removeDateLines(now), ['1002', '1001']);
 
             // Show join/leave posts
             state = {
@@ -61,8 +60,7 @@ describe('Selectors.PostList', () => {
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') !== -1);
+            assert.deepEqual(removeDateLines(now), ['1002', '1001']);
 
             // Hide join/leave posts
             state = {
@@ -84,8 +82,43 @@ describe('Selectors.PostList', () => {
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
+            assert.deepEqual(removeDateLines(now), ['1001']);
+        });
+
+        it('new messages indicator', () => {
+            const preparePostIdsForPostList = makePreparePostIdsForPostList();
+
+            const state = {
+                entities: {
+                    posts: {
+                        posts: {
+                            1000: {id: '1000', create_at: 1000},
+                            1005: {id: '1005', create_at: 1005},
+                            1010: {id: '1010', create_at: 1010}
+                        }
+                    },
+                    preferences: {
+                        myPreferences: {}
+                    },
+                    users: {
+                        currentUserId: '1234'
+                    }
+                }
+            };
+
+            const postIds = ['1010', '1005', '1000']; // Remember that we list the posts backwards
+
+            // Show new messages indicator before all posts
+            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 0});
+            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000', START_OF_NEW_MESSAGES]);
+
+            // Show indicator between posts
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003});
+            assert.deepEqual(removeDateLines(now), ['1010', '1005', START_OF_NEW_MESSAGES, '1000']);
+
+            // Don't show indicator when all posts are read
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1020});
+            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
         });
 
         it('memoization', () => {
@@ -120,31 +153,17 @@ describe('Selectors.PostList', () => {
                 }
             };
 
-            let postIds = ['1001', '1003', '1004', '1006'];
+            let postIds = ['1006', '1004', '1003', '1001'];
             let lastViewedAt = initialPosts['1001'].create_at + 1;
 
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
 
             // No changes
             let prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
 
             // lastViewedAt changed slightly
             lastViewedAt = initialPosts['1001'].create_at + 2;
@@ -152,14 +171,7 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
 
             // lastViewedAt changed a lot
             lastViewedAt += initialPosts['1003'].create_at + 1;
@@ -167,18 +179,12 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.notEqual(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             // postIds changed, but still shallowly equal
             postIds = [...postIds];
@@ -186,14 +192,7 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             // Post changed, not in postIds
             state = {
@@ -213,14 +212,7 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             // Post changed, in postIds
             state = {
@@ -240,14 +232,7 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') !== -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             // Filter changed
             state = {
@@ -271,18 +256,17 @@ describe('Selectors.PostList', () => {
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.notEqual(now, prev);
-            assert.ok(now.indexOf('1001') !== -1);
-            assert.ok(now.indexOf('1002') === -1);
-            assert.ok(now.indexOf('1003') !== -1);
-            assert.ok(now.indexOf('1004') !== -1);
-            assert.ok(now.indexOf('1005') === -1);
-            assert.ok(now.indexOf('1006') === -1);
-            assert.ok(now.findIndex((id) => id.startsWith(DATE_LINE)) !== -1);
-            assert.ok(now.indexOf(START_OF_NEW_MESSAGES) !== -1);
+            assert.deepEqual(removeDateLines(now), ['1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             prev = now;
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
             assert.equal(now, prev);
+            assert.deepEqual(removeDateLines(now), ['1004', START_OF_NEW_MESSAGES, '1003', '1001']);
         });
     });
 });
+
+// Remove date lines when checking equality since those depend on time-zone of the computer running the tests
+function removeDateLines(list) {
+    return list.filter((item) => !item.startsWith(DATE_LINE));
+}
