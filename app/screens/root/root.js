@@ -12,6 +12,7 @@ import {stripTrailingSlashes} from 'app/utils/url';
 export default class Root extends Component {
     static propTypes = {
         allowOtherServers: PropTypes.bool,
+        currentUser: PropTypes.object,
         credentials: PropTypes.object,
         justInit: PropTypes.bool,
         navigator: PropTypes.object,
@@ -73,7 +74,7 @@ export default class Root extends Component {
     };
 
     loadStoreAndScene = () => {
-        const {actions, credentials} = this.props;
+        const {actions, currentUser, credentials} = this.props;
         const {loadMe} = actions;
         if (credentials.token && credentials.url) {
             Client.setToken(credentials.token);
@@ -81,7 +82,12 @@ export default class Root extends Component {
             Client4.setUrl(stripTrailingSlashes(credentials.url));
             Client.setUrl(stripTrailingSlashes(credentials.url));
 
-            loadMe().then(this.goToLoadTeam).catch(this.goToLoadTeam);
+            if (currentUser) {
+                loadMe();
+                this.goToLoadTeam();
+            } else {
+                loadMe().then(this.goToLoadTeam).catch(this.goToLoadTeam);
+            }
         } else {
             this.goToSelectServer();
         }
