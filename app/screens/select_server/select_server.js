@@ -29,7 +29,6 @@ import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {UpgradeTypes} from 'app/constants/view';
 import checkUpgradeType from 'app/utils/client_upgrade';
 
-import LocalConfig from 'assets/config';
 import logo from 'assets/images/logo.png';
 
 class SelectServer extends PureComponent {
@@ -79,7 +78,7 @@ class SelectServer extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (!this.props.transition && nextProps.transition) {
-            if (LocalConfig.EnableMobileClientUpgrade) {
+            if (Config.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = nextProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
@@ -109,6 +108,7 @@ class SelectServer extends PureComponent {
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: false,
+                disabledBackGesture: Config.AutoSelectServerUrl,
                 statusBarHidden: true,
                 statusBarHideWithNavBar: true,
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -240,6 +240,7 @@ class SelectServer extends PureComponent {
                         <Image
                             source={logo}
                         />
+
                         <View>
                             <FormattedText
                                 style={[GlobalStyles.header, GlobalStyles.label]}
@@ -247,22 +248,20 @@ class SelectServer extends PureComponent {
                                 defaultMessage='Enter Server URL'
                             />
                         </View>
-                        {!Config.AutoSelectServerUrl &&
-                            <TextInputWithLocalizedPlaceholder
-                                ref={this.inputRef}
-                                value={serverUrl}
-                                editable={allowOtherServers}
-                                onChangeText={this.props.actions.handleServerUrlChanged}
-                                onSubmitEditing={this.onClick}
-                                style={[GlobalStyles.inputBox, (allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
-                                autoCapitalize='none'
-                                autoCorrect={false}
-                                keyboardType='url'
-                                placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
-                                returnKeyType='go'
-                                underlineColorAndroid='transparent'
-                            />
-                        }
+                        <TextInputWithLocalizedPlaceholder
+                            ref={this.inputRef}
+                            value={serverUrl}
+                            editable={allowOtherServers}
+                            onChangeText={this.props.actions.handleServerUrlChanged}
+                            onSubmitEditing={this.onClick}
+                            style={[GlobalStyles.inputBox, (allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            keyboardType='url'
+                            placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
+                            returnKeyType='go'
+                            underlineColorAndroid='transparent'
+                        />
                         {proceed}
                         <ErrorText error={this.state.error || error}/>
                     </View>
