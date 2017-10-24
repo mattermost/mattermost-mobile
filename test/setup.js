@@ -21,7 +21,13 @@ mockery.registerMock('react-native', {
             return {width: 0, height: 0}
         }
     },
-    NativeModules: {}
+    NativeModules: {},
+    NetInfo: {
+        isConnected: {
+            addEventListener: () => true,
+            fetch: () => Promise.resolve(true)
+        }
+    }
 });
 mockery.registerMock('react-native-device-info', {
     getDeviceLocale() {
