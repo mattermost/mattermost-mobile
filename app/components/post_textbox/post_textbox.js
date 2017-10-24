@@ -63,7 +63,8 @@ class PostTextbox extends PureComponent {
 
     state = {
         contentHeight: INITIAL_HEIGHT,
-        inputWidth: null
+        inputWidth: null,
+        keyboardType: 'default'
     };
 
     componentDidMount() {
@@ -188,9 +189,19 @@ class PostTextbox extends PureComponent {
         }
 
         // Shrink the input textbox since the layout events lag slightly
-        this.setState({
+        const nextState = {
             contentHeight: INITIAL_HEIGHT
-        });
+        };
+
+        // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+        // are typed successively without blurring the input
+        let callback;
+        if (Platform.OS === 'android') {
+            nextState.keyboardType = 'email-address';
+            callback = () => this.setState({keyboardType: 'default'});
+        }
+
+        this.setState(nextState, callback);
     };
 
     handleUploadFiles = (images) => {
@@ -381,6 +392,7 @@ class PostTextbox extends PureComponent {
                             style={[style.input, {height: textInputHeight}]}
                             onSubmitEditing={this.handleSubmit}
                             onLayout={this.handleInputSizeChange}
+                            keyboardType={this.state.keyboardType}
                         />
                         {this.renderSendButton()}
                     </View>
