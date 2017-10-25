@@ -5,7 +5,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {Text} from 'react-native';
-import deviceInfo from 'react-native-device-info';
 
 class FormattedTime extends React.PureComponent {
     static propTypes = {
@@ -25,9 +24,7 @@ class FormattedTime extends React.PureComponent {
 
         Reflect.deleteProperty(props, 'format');
 
-        const timeZone = deviceInfo.getTimezone();
-
-        const formattedTime = intl.formatDate(value, {...props, timeZone, hour: 'numeric', minute: 'numeric'});
+        const formattedTime = intl.formatDate(value, {...props, hour: 'numeric', minute: 'numeric'});
 
         if (typeof children === 'function') {
             return children(formattedTime);
