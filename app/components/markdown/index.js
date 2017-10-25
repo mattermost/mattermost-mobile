@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {Parser} from 'commonmark';
-import Renderer, {uriTransformer} from 'commonmark-react-renderer';
+import Renderer from 'commonmark-react-renderer';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -11,7 +11,6 @@ import {
     Text,
     View
 } from 'react-native';
-import urlParse from 'url-parse';
 
 import AtMention from 'app/components/at_mention';
 import ChannelLink from 'app/components/channel_link';
@@ -113,8 +112,7 @@ export default class Markdown extends PureComponent {
                 htmlBlock: this.renderHtml,
                 htmlInline: this.renderHtml
             },
-            renderParagraphsInLists: true,
-            transformLinkUri: this.transformLinkUri
+            renderParagraphsInLists: true
         });
     }
 
@@ -290,14 +288,6 @@ export default class Markdown extends PureComponent {
         }
 
         return rendered;
-    }
-
-    transformLinkUri = (uri) => {
-        const filteredUri = uriTransformer(uri);
-
-        const parsed = urlParse(filteredUri, {});
-
-        return parsed.href;
     }
 
     renderLink = ({children, href}) => {

@@ -7,6 +7,7 @@ import {Linking, Text} from 'react-native';
 import urlParse from 'url-parse';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import Config from 'assets/config';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
@@ -65,7 +66,7 @@ export default class MarkdownLink extends PureComponent {
     }
 
     render() {
-        const children = this.parseChildren();
+        const children = Config.ExperimentalNormalizeMarkdownLinks ? this.parseChildren() : this.props.children;
 
         return (
             <Text
