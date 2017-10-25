@@ -23,10 +23,10 @@ function handleConnectionChange(onChange) {
 export default function networkConnectionListener(onChange) {
     const connectionChanged = handleConnectionChange(onChange);
 
-    NetInfo.isConnected.addEventListener('change', connectionChanged);
+    NetInfo.isConnected.addEventListener('connectionChange', connectionChanged);
     NetInfo.isConnected.fetch().then(connectionChanged);
 
-    const removeEventListener = () => NetInfo.isConnected.removeEventListener('change', connectionChanged); // eslint-disable-line
+    const removeEventListener = () => NetInfo.isConnected.removeEventListener('connectionChange', connectionChanged); // eslint-disable-line
 
     return {
         removeEventListener
