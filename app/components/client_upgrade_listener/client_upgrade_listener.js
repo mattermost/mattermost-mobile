@@ -112,7 +112,7 @@ class ClientUpgradeListener extends PureComponent {
         this.toggleUpgradeMessage(false);
     }
 
-    handleLeanMore = () => {
+    handleLearnMore = () => {
         this.props.navigator.dismissAllModals({animationType: 'none'});
 
         this.props.navigator.showModal({
@@ -154,7 +154,7 @@ class ClientUpgradeListener extends PureComponent {
                                 defaultMessage='Upgrade'
                             />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={this.handleLeanMore}>
+                        <TouchableOpacity onPress={this.handleLearnMore}>
                             <FormattedText
                                 style={styles.button}
                                 id='mobile.client_upgrade.listener.learn_more_button'
