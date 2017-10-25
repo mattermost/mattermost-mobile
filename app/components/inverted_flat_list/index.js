@@ -133,7 +133,10 @@ const styles = StyleSheet.create({
     },
     vertical: Platform.select({
         android: {
-            scaleY: -1
+            transform: [
+                {perspective: 1},
+                {scaleY: -1}
+            ]
         },
         ios: {
             transform: [{scaleY: -1}]
@@ -141,7 +144,10 @@ const styles = StyleSheet.create({
     }),
     horizontal: Platform.select({
         android: {
-            scaleX: -1
+            transform: [
+                {perspective: 1},
+                {scaleY: -1}
+            ]
         },
         ios: {
             transform: [{scaleX: -1}]
