@@ -296,7 +296,7 @@ export function insertToDraft(value) {
     return (dispatch, getState) => {
         const state = getState();
         const channelId = getCurrentChannelId(state);
-        const threadId = state.views.thread.currentThreadId;
+        const threadId = state.entities.posts.selectedPostId;
 
         let draft;
         let cursorPosition;

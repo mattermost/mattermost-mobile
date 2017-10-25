@@ -16,7 +16,6 @@ describe('Actions.Views.Thread', () => {
         await ThreadActions.handleCommentDraftChanged('1234', 'draft1')(store.dispatch, store.getState);
 
         assert.deepEqual(store.getState().views.thread, {
-            currentThreadId: '',
             drafts: {
                 1234: {
                     draft: 'draft1'
@@ -27,7 +26,6 @@ describe('Actions.Views.Thread', () => {
         await ThreadActions.handleCommentDraftChanged('1235', 'draft2')(store.dispatch, store.getState);
 
         assert.deepEqual(store.getState().views.thread, {
-            currentThreadId: '',
             drafts: {
                 1234: {
                     draft: 'draft1'
@@ -41,7 +39,6 @@ describe('Actions.Views.Thread', () => {
         await ThreadActions.handleCommentDraftChanged('1235', 'draft3')(store.dispatch, store.getState);
 
         assert.deepEqual(store.getState().views.thread, {
-            currentThreadId: '',
             drafts: {
                 1234: {
                     draft: 'draft1'

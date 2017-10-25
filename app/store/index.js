@@ -44,22 +44,6 @@ export default function configureAppStore(initialState) {
         ['login', 'root']
     );
 
-    const threadsBlackListFilter = createTransform((inboundState) => {
-        if (!inboundState.thread.currentThreadId) {
-            return inboundState;
-        }
-
-        const {thread} = inboundState;
-
-        return {
-            ...inboundState,
-            thread: {
-                ...thread,
-                currentThreadId: ''
-            }
-        };
-    }, null, {whitelist: ['views']});
-
     const typingBlackListFilter = createBlacklistFilter(
         'entities',
         ['typing']
@@ -204,8 +188,7 @@ export default function configureAppStore(initialState) {
                 setTransformer,
                 viewsBlackListFilter,
                 typingBlackListFilter,
-                channelViewBlackListFilter,
-                threadsBlackListFilter
+                channelViewBlackListFilter
             ]
         }
     };
