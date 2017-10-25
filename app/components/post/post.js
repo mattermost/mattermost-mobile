@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
+    Clipboard,
     View,
     ViewPropTypes
 } from 'react-native';
@@ -317,6 +318,15 @@ class Post extends PureComponent {
         }
     };
 
+    handleCopyText = (text) => {
+        let textToCopy = this.props.post.message;
+        if (typeof text === 'string') {
+            textToCopy = text;
+        }
+
+        Clipboard.setString(textToCopy);
+    }
+
     render() {
         const {
             commentedOnPost,
@@ -369,6 +379,7 @@ class Post extends PureComponent {
                             isSearchResult={isSearchResult}
                             navigator={this.props.navigator}
                             onAddReaction={this.handleAddReaction}
+                            onCopyText={this.handleCopyText}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
                             onPostEdit={this.handlePostEdit}

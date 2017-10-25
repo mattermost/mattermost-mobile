@@ -11,14 +11,15 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import youTubeVideoId from 'youtube-video-id';
+
 import youtubePlayIcon from 'assets/images/icons/youtube-play-icon.png';
 
 import PostAttachmentOpenGraph from 'app/components/post_attachment_opengraph';
 import SlackAttachments from 'app/components/slack_attachments';
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {emptyFunction} from 'app/utils/general';
 import {isImageLink, isYoutubeLink} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
@@ -33,12 +34,17 @@ export default class PostBodyAdditionalContent extends PureComponent {
         link: PropTypes.string,
         message: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
+        onLongPress: PropTypes.func,
         openGraphData: PropTypes.object,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired
     };
+
+    static defaultProps = {
+        onLongPress: emptyFunction
+    }
 
     constructor(props) {
         super(props);
@@ -163,6 +169,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     navigator={navigator}
                     textStyles={textStyles}
                     theme={theme}
+                    onLongPress={this.props.onLongPress}
                 />
             );
         }

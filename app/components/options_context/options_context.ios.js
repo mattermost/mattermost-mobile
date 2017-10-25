@@ -14,8 +14,17 @@ export default class OptionsContext extends PureComponent {
     };
 
     static defaultProps = {
-        actions: []
+        actions: [],
+        additionalActions: []
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            actions: props.actions
+        };
+    }
 
     handleHideUnderlay = () => {
         if (!this.isShowing) {
@@ -39,9 +48,21 @@ export default class OptionsContext extends PureComponent {
 
     hide = () => {
         this.refs.toolTip.hideMenu();
+        this.setState({
+            actions: this.props.actions
+        });
     };
 
-    show = () => {
+    show = (additionalAction) => {
+        const nextActions = [...this.props.actions];
+        if (additionalAction && additionalAction.text && !additionalAction.nativeEvent) {
+            nextActions.unshift(additionalAction);
+        }
+
+        this.setState({
+            actions: nextActions
+        });
+
         this.refs.toolTip.showMenu();
     };
 
@@ -56,7 +77,7 @@ export default class OptionsContext extends PureComponent {
                 onHideUnderlay={this.handleHideUnderlay}
                 onShowUnderlay={this.handleShowUnderlay}
                 ref='toolTip'
-                actions={this.props.actions}
+                actions={this.state.actions}
                 arrowDirection='down'
                 longPress={true}
                 onPress={this.handlePress}

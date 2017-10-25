@@ -5,6 +5,7 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Clipboard,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -26,7 +27,8 @@ class MarkdownCodeBlock extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         language: PropTypes.string,
         content: PropTypes.string.isRequired,
-        textStyle: CustomPropTypes.Style
+        textStyle: CustomPropTypes.Style,
+        onLongPress: PropTypes.func.isRequired
     };
 
     static defaultProps = {
@@ -71,6 +73,21 @@ class MarkdownCodeBlock extends React.PureComponent {
             }
         });
     });
+
+    handleLongPress = () => {
+        const {formatMessage} = this.props.intl;
+
+        const action = {
+            text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
+            onPress: this.handleCopyCode
+        };
+
+        this.props.onLongPress(action);
+    }
+
+    handleCopyCode = () => {
+        Clipboard.setString(this.props.content);
+    }
 
     trimContent = (content) => {
         const lines = content.split('\n');
@@ -131,7 +148,10 @@ class MarkdownCodeBlock extends React.PureComponent {
         }
 
         return (
-            <TouchableOpacity onPress={this.handlePress}>
+            <TouchableOpacity
+                onPress={this.handlePress}
+                onLongPress={this.handleLongPress}
+            >
                 <View style={style.container}>
                     <View style={style.lineNumbers}>
                         <Text style={style.lineNumbersText}>

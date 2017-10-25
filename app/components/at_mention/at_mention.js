@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text} from 'react-native';
+import {Clipboard, Text} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -15,6 +15,7 @@ class AtMention extends React.PureComponent {
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
         navigator: PropTypes.object.isRequired,
+        onLongPress: PropTypes.func.isRequired,
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
@@ -86,6 +87,20 @@ class AtMention extends React.PureComponent {
         };
     }
 
+    handleLongPress = () => {
+        const action = {
+            text: 'Copy Mention',
+            onPress: this.handleCopyMention
+        };
+
+        this.props.onLongPress(action);
+    }
+
+    handleCopyMention = () => {
+        const {username} = this.state;
+        Clipboard.setString(`@${username}`);
+    }
+
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, textStyle} = this.props;
         const username = this.state.username;
@@ -100,6 +115,7 @@ class AtMention extends React.PureComponent {
             <Text
                 style={textStyle}
                 onPress={isSearchResult ? onPostPress : this.goToUserProfile}
+                onLongPress={this.handleLongPress}
             >
                 <Text style={mentionStyle}>
                     {'@' + username}

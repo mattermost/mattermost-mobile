@@ -22,7 +22,8 @@ export default class SlackAttachment extends PureComponent {
         blockStyles: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         textStyles: PropTypes.object,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        onLongPress: PropTypes.func.isRequired
     };
 
     constructor(props) {
@@ -117,6 +118,7 @@ export default class SlackAttachment extends PureComponent {
                             blockStyles={blockStyles}
                             value={(field.value || '')}
                             navigator={navigator}
+                            onLongPress={this.props.onLongPress}
                         />
                     </View>
                 </View>
@@ -163,7 +165,7 @@ export default class SlackAttachment extends PureComponent {
         this.setState({collapsed, text});
     };
 
-    render() {
+    render() { // eslint-disable-line complexity
         const {
             attachment,
             baseTextStyle,
@@ -185,6 +187,7 @@ export default class SlackAttachment extends PureComponent {
                         blockStyles={blockStyles}
                         value={attachment.pretext}
                         navigator={navigator}
+                        onLongPress={this.props.onLongPress}
                     />
                 </View>
             );
@@ -293,6 +296,7 @@ export default class SlackAttachment extends PureComponent {
                         blockStyles={blockStyles}
                         value={this.state.text}
                         navigator={navigator}
+                        onLongPress={this.props.onLongPress}
                     />
                     {moreLess}
                 </View>
