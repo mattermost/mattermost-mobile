@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Image, TouchableOpacity, View} from 'react-native';
 
-import MattermostIcon from 'app/components/mattermost_icon';
+import AppIcon from 'app/components/app_icon';
 import ProfilePicture from 'app/components/profile_picture';
 import {emptyFunction} from 'app/utils/general';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
@@ -25,7 +25,7 @@ function PostProfilePicture(props) {
     if (isSystemMessage) {
         return (
             <View>
-                <MattermostIcon
+                <AppIcon
                     color={theme.centerChannelColor}
                     height={PROFILE_PICTURE_SIZE}
                     width={PROFILE_PICTURE_SIZE}

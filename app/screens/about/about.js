@@ -16,8 +16,10 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import MattermostIcon from 'app/components/mattermost_icon';
+import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
+
+const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
 export default class About extends PureComponent {
     static propTypes = {
@@ -27,11 +29,11 @@ export default class About extends PureComponent {
     };
 
     handleAboutTeam = () => {
-        Linking.openURL('http://www.mattermost.org/');
+        Linking.openURL(Config.AboutTeamURL);
     };
 
     handleAboutEnterprise = () => {
-        Linking.openURL('http://about.mattermost.com/');
+        Linking.openURL(Config.AboutEnterpriseURL);
     };
 
     handlePlatformNotice = () => {
@@ -73,7 +75,7 @@ export default class About extends PureComponent {
                     onPress={this.handleAboutTeam}
                 >
                     <Text style={style.learnLink}>
-                        {'mattermost.org'}
+                        {Config.TeamEditionLearnURL}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -108,7 +110,7 @@ export default class About extends PureComponent {
                         onPress={this.handleAboutEnterprise}
                     >
                         <Text style={style.learnLink}>
-                            {'about.mattermost.com'}
+                            {Config.EELearnURL}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -126,13 +128,13 @@ export default class About extends PureComponent {
                 licensee = (
                     <View style={style.licenseContainer}>
                         <FormattedText
-                            id='about.licensed'
-                            defaultMessage='Licensed to:'
+                            id='mobile.about.licensed'
+                            defaultMessage='Licensed to: {company}'
                             style={style.info}
+                            values={{
+                                company: license.Company
+                            }}
                         />
-                        <Text style={style.info}>
-                            {'\u00a0' + license.Company}
-                        </Text>
                     </View>
                 );
             }
@@ -172,7 +174,7 @@ export default class About extends PureComponent {
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>
-                        <MattermostIcon
+                        <AppIcon
                             color={theme.centerChannelColor}
                             height={120}
                             width={120}
@@ -181,7 +183,7 @@ export default class About extends PureComponent {
                     <View style={style.infoContainer}>
                         <View style={style.titleContainer}>
                             <Text style={style.title}>
-                                {'Mattermost '}
+                                {`${config.SiteName} `}
                             </Text>
                             {title}
                         </View>
@@ -206,6 +208,16 @@ export default class About extends PureComponent {
                         />
                         {licensee}
                         {learnMore}
+                        {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
+                            <FormattedText
+                                id='mobile.about.powered_by'
+                                defaultMessage='{site} is powered by Mattermost'
+                                style={style.footerText}
+                                values={{
+                                    site: this.props.config.SiteName
+                                }}
+                            />
+                        }
                         <FormattedText
                             id='mobile.about.copyright'
                             defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
@@ -339,12 +351,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         licenseContainer: {
             flex: 1,
             flexDirection: 'row',
-            marginVertical: 20
+            marginTop: 20
         },
         noticeContainer: {
             flex: 1,
-            flexDirection: 'column',
-            marginTop: 10
+            flexDirection: 'column'
         },
         noticeLink: {
             color: theme.linkColor,
@@ -353,8 +364,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         hashContainer: {
             flex: 1,
-            flexDirection: 'column',
-            marginVertical: 15
+            flexDirection: 'column'
         },
         footerGroup: {
             flex: 1,
@@ -363,7 +373,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footerText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 11,
-            lineHeight: 13
+            lineHeight: 13,
+            marginBottom: 10
         }
     };
 });
