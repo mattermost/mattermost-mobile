@@ -174,7 +174,7 @@ class Login extends PureComponent {
 
             if (this.props.config.EnableMultifactorAuthentication === 'true') {
                 this.props.actions.checkMfa(this.props.loginId).then((result) => {
-                    if (result) {
+                    if (result.data) {
                         this.goToMfa();
                     } else {
                         this.signIn();
