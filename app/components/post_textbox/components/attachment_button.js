@@ -1,5 +1,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {injectIntl, intlShape} from 'react-intl';
 import {
     Platform,
     StyleSheet,
@@ -10,21 +11,38 @@ import ImagePicker from 'react-native-image-picker';
 
 import {changeOpacity} from 'app/utils/theme';
 
-export default class AttachmentButton extends PureComponent {
+class AttachmentButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
+        intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired
     };
 
     attachFileFromCamera = () => {
+        const {formatMessage} = this.props.intl;
         const options = {
             quality: 0.7,
             noData: true,
             storageOptions: {
                 cameraRoll: true,
                 waitUntilSaved: true
+            },
+            permissionDenied: {
+                title: formatMessage({
+                    id: 'mobile.android.camera_permission_denied_title',
+                    defaultMessage: 'Camera access is required'
+                }),
+                text: formatMessage({
+                    id: 'mobile.android.camera_permission_denied_description',
+                    defaultMessage: 'To take photos and videos with your camera, please change your permission settings.'
+                }),
+                reTryTitle: formatMessage({
+                    id: 'mobile.android.permission_denied_retry',
+                    defaultMessage: 'Set Permission'
+                }),
+                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})
             }
         };
 
@@ -38,9 +56,25 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachFileFromLibrary = () => {
+        const {formatMessage} = this.props.intl;
         const options = {
             quality: 0.7,
-            noData: true
+            noData: true,
+            permissionDenied: {
+                title: formatMessage({
+                    id: 'mobile.android.photos_permission_denied_title',
+                    defaultMessage: 'Photo library access is required'
+                }),
+                text: formatMessage({
+                    id: 'mobile.android.photos_permission_denied_description',
+                    defaultMessage: 'To upload images from your library, please change your permission settings.'
+                }),
+                reTryTitle: formatMessage({
+                    id: 'mobile.android.permission_denied_retry',
+                    defaultMessage: 'Set Permission'
+                }),
+                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})
+            }
         };
 
         if (Platform.OS === 'ios') {
@@ -57,10 +91,26 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachVideoFromLibraryAndroid = () => {
+        const {formatMessage} = this.props.intl;
         const options = {
             quality: 0.7,
             mediaType: 'video',
-            noData: true
+            noData: true,
+            permissionDenied: {
+                title: formatMessage({
+                    id: 'mobile.android.videos_permission_denied_title',
+                    defaultMessage: 'Video library access is required'
+                }),
+                text: formatMessage({
+                    id: 'mobile.android.videos_permission_denied_description',
+                    defaultMessage: 'To upload videos from your library, please change your permission settings.'
+                }),
+                reTryTitle: formatMessage({
+                    id: 'mobile.android.permission_denied_retry',
+                    defaultMessage: 'Set Permission'
+                }),
+                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})
+            }
         };
 
         ImagePicker.launchImageLibrary(options, (response) => {
@@ -70,7 +120,7 @@ export default class AttachmentButton extends PureComponent {
 
             this.uploadFiles([response]);
         });
-    }
+    };
 
     uploadFiles = (images) => {
         this.props.uploadFiles(images);
@@ -175,3 +225,5 @@ const style = StyleSheet.create({
         justifyContent: 'center'
     }
 });
+
+export default injectIntl(AttachmentButton);
