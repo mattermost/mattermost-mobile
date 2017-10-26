@@ -85,5 +85,4 @@ function leftMergeDirs(rootA, rootB, dest, path) {
 
 // Assumes dist/assets exists and is empty
 leftMergeDirs('assets/base/', 'assets/override/', 'dist/assets/', '');
-
 /* eslint-enable no-console */

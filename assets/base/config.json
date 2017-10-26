@@ -13,6 +13,11 @@
     "SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX",
     "ExperimentalUsernamePressIsMention": false,
 
+    "HideEmailLoginExperimental": false,
+    "HideGitLabLoginExperimental": false,
+    "HideLDAPLoginExperimental": false,
+    "HideSAMLLoginExperimental": false,
+
     "SentryEnabled": false,
     "SentryDsnIos": "",
     "SentryDsnAndroid": "",

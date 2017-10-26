@@ -20,6 +20,7 @@ import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 
+import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 import logo from 'assets/images/logo.png';
 
@@ -82,17 +83,30 @@ class LoginOptions extends PureComponent {
 
     renderEmailOption = () => {
         const {config} = this.props;
-        if (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') {
+        const forceHideFromLocal = LocalConfig.HideEmailLoginExperimental;
+
+        if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
+            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
+            const additionalStyle = {
+                backgroundColor
+            };
+
+            if (config.hasOwnProperty('EmailLoginButtonBorderColor')) {
+                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
+            }
+
+            const textColor = config.EmailLoginButtonTextColor || 'white';
+
             return (
                 <Button
                     key='email'
                     onPress={() => preventDoubleTap(this.goToLogin, this)}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#2389d7'}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <FormattedText
                         id='signup.email'
                         defaultMessage='Email and Password'
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     />
                 </Button>
             );
@@ -103,11 +117,24 @@ class LoginOptions extends PureComponent {
 
     renderLdapOption = () => {
         const {config, license} = this.props;
-        if (license.IsLicensed === 'true' && config.EnableLdap === 'true') {
+        const forceHideFromLocal = LocalConfig.HideLDAPLoginExperimental;
+
+        if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
+            const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
+            const additionalStyle = {
+                backgroundColor
+            };
+
+            if (config.hasOwnProperty('LDAPLoginButtonBorderColor')) {
+                additionalStyle.borderColor = config.LDAPLoginButtonBorderColor;
+            }
+
+            const textColor = config.LDAPLoginButtonTextColor || 'white';
+
             let buttonText;
             if (config.LdapLoginFieldName) {
                 buttonText = (
-                    <Text style={[GlobalStyles.signupButtonText, {color: 'white'}]}>
+                    <Text style={[GlobalStyles.signupButtonText, {color: textColor}]}>
                         {config.LdapLoginFieldName}
                     </Text>
                 );
@@ -116,7 +143,7 @@ class LoginOptions extends PureComponent {
                     <FormattedText
                         id='login.ldapUsernameLower'
                         defaultMessage='AD/LDAP username'
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     />
                 );
             }
@@ -125,7 +152,7 @@ class LoginOptions extends PureComponent {
                 <Button
                     key='ldap'
                     onPress={() => preventDoubleTap(this.goToLogin, this)}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#2389d7'}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     {buttonText}
                 </Button>
@@ -137,10 +164,13 @@ class LoginOptions extends PureComponent {
 
     renderGitlabOption = () => {
         const {config, serverVersion} = this.props;
+
+        const forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
+
         const match = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
         if (match) {
             const version = match[0];
-            if (config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0')) {
+            if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true' && semver.valid(version) && semver.gte(version, 'v3.10.0')) {
                 return (
                     <Button
                         key='gitlab'
@@ -167,15 +197,29 @@ class LoginOptions extends PureComponent {
 
     renderSamlOption = () => {
         const {config, license} = this.props;
-        if (config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
+        const forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
+
+        if (!forceHideFromLocal && config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
+            const backgroundColor = config.SamlLoginButtonColor || '#34a28b';
+
+            const additionalStyle = {
+                backgroundColor
+            };
+
+            if (config.SAMLLoginButtonBorderColor) {
+                additionalStyle.borderColor = config.SamlLoginButtonBorderColor;
+            }
+
+            const textColor = config.SamlLoginButtonTextColor || 'white';
+
             return (
                 <Button
                     key='saml'
                     onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.SAML)}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#34a28b'}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <Text
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     >
                         {config.SamlLoginButtonText}
                     </Text>

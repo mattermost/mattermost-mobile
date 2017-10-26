@@ -299,15 +299,28 @@ class Login extends PureComponent {
                 />
             );
         } else {
+            const additionalStyle = {};
+            if (this.props.config.EmailLoginButtonColor) {
+                additionalStyle.backgroundColor = this.props.config.EmailLoginButtonColor;
+            }
+            if (this.props.config.EmailLoginButtonBorderColor) {
+                additionalStyle.borderColor = this.props.config.EmailLoginButtonBorderColor;
+            }
+
+            const additionalTextStyle = {};
+            if (this.props.config.EmailLoginButtonTextColor) {
+                additionalTextStyle.color = this.props.config.EmailLoginButtonTextColor;
+            }
+
             proceed = (
                 <Button
                     onPress={this.preSignIn}
-                    containerStyle={GlobalStyles.signupButton}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'
-                        style={GlobalStyles.signupButtonText}
+                        style={[GlobalStyles.signupButtonText, additionalTextStyle]}
                     />
                 </Button>
             );
