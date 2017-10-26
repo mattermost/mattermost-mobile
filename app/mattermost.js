@@ -271,6 +271,11 @@ export default class Mattermost {
         let serverUrl = null;
         let username = null;
 
+        if (Config.AutoSelectServerUrl) {
+            handleServerUrlChanged(Config.DefaultServerUrl)(dispatch, getState);
+            this.allowOtherServers = false;
+        }
+
         try {
             const config = await mattermostManaged.getConfig();
             if (config) {

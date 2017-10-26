@@ -24,6 +24,8 @@
         }
     },
 
+    "AutoSelectServerUrl": false,
+
     "EnableMobileClientUpgrade": false,
     "EnableMobileClientUpgradeUserSetting": false,
     "EnableForceMobileClientUpgrade": false,

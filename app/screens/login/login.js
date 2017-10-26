@@ -314,7 +314,7 @@ class Login extends PureComponent {
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <KeyboardAwareScrollView

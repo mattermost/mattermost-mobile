@@ -20,6 +20,7 @@ import urlParse from 'url-parse';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {Client, Client4} from 'mattermost-redux/client';
 
+import Config from 'assets/config';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -28,7 +29,6 @@ import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {UpgradeTypes} from 'app/constants/view';
 import checkUpgradeType from 'app/utils/client_upgrade';
 
-import LocalConfig from 'assets/config';
 import logo from 'assets/images/logo.png';
 
 class SelectServer extends PureComponent {
@@ -66,7 +66,7 @@ class SelectServer extends PureComponent {
     componentDidMount() {
         const {allowOtherServers, pingRequest, serverUrl} = this.props;
         if (pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
-            // If the app is managed, the server url is set and the user can't change it
+            // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
             // we automatically trigger the ping to move to the next screen
             this.onClick();
         }
@@ -78,7 +78,7 @@ class SelectServer extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (!this.props.transition && nextProps.transition) {
-            if (LocalConfig.EnableMobileClientUpgrade) {
+            if (Config.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = nextProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
@@ -108,6 +108,7 @@ class SelectServer extends PureComponent {
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: false,
+                disabledBackGesture: Config.AutoSelectServerUrl,
                 statusBarHidden: true,
                 statusBarHideWithNavBar: true,
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -147,6 +148,8 @@ class SelectServer extends PureComponent {
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
+                navBarHidden: Config.AutoSelectServerUrl,
+                disabledBackGesture: Config.AutoSelectServerUrl,
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor
@@ -237,6 +240,7 @@ class SelectServer extends PureComponent {
                         <Image
                             source={logo}
                         />
+
                         <View>
                             <FormattedText
                                 style={[GlobalStyles.header, GlobalStyles.label]}
@@ -250,7 +254,7 @@ class SelectServer extends PureComponent {
                             editable={allowOtherServers}
                             onChangeText={this.props.actions.handleServerUrlChanged}
                             onSubmitEditing={this.onClick}
-                            style={[GlobalStyles.inputBox, allowOtherServers ? {} : {backgroundColor: '#e3e3e3'}]}
+                            style={[GlobalStyles.inputBox, (allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'
