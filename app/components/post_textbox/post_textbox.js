@@ -39,7 +39,9 @@ class PostTextbox extends PureComponent {
             handleClearFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
-            userTyping: PropTypes.func.isRequired
+            userTyping: PropTypes.func.isRequired,
+            handlePostDraftSelectionChanged: PropTypes.func.isRequired,
+            handleCommentDraftSelectionChanged: PropTypes.func.isRequired
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
@@ -56,7 +58,6 @@ class PostTextbox extends PureComponent {
 
     static defaultProps = {
         files: [],
-        onSelectionChange: () => true,
         rootId: '',
         value: ''
     };
@@ -239,12 +240,6 @@ class PostTextbox extends PureComponent {
         actions.userTyping(channelId, rootId);
     };
 
-    handleSelectionChange = (event) => {
-        if (this.autocomplete) {
-            this.autocomplete.handleSelectionChange(event);
-        }
-    };
-
     handleContentSizeChange = (event) => {
         let contentHeight = event.nativeEvent.layout.height;
         if (contentHeight < INITIAL_HEIGHT) {
@@ -319,6 +314,17 @@ class PostTextbox extends PureComponent {
         return null;
     }
 
+    handlePostDraftSelectionChanged = (event) => {
+        const cursorPosition = event.nativeEvent.selection.end;
+        if (this.props.rootId) {
+            this.props.actions.handleCommentDraftSelectionChanged(this.props.rootId, cursorPosition);
+        } else {
+            this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
+        }
+
+        this.autocomplete.handleSelectionChange(event);
+    }
+
     render() {
         const {
             canUploadFiles,
@@ -382,7 +388,7 @@ class PostTextbox extends PureComponent {
                             ref='input'
                             value={textValue}
                             onChangeText={this.handleTextChange}
-                            onSelectionChange={this.handleSelectionChange}
+                            onSelectionChange={this.handlePostDraftSelectionChanged}
                             placeholder={intl.formatMessage(placeholder)}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
                             multiline={true}

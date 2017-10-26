@@ -18,7 +18,7 @@ function makeMapStateToProps() {
         const {config} = state.entities.general;
         const post = getPost(state, ownProps.postId);
         const commentedOnUser = getUser(state, ownProps.commentedOnUserId);
-        const user = getUser(state, post.user_id);
+        const user = getUser(state, post.user_id) || {};
         const teammateNameDisplay = getTeammateNameDisplaySetting(state);
         const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
 
@@ -34,7 +34,8 @@ function makeMapStateToProps() {
             isPendingOrFailedPost: isPostPendingOrFailed(post),
             isSystemMessage: isSystemMessage(post),
             overrideUsername: post.props && post.props.override_username,
-            theme: getTheme(state)
+            theme: getTheme(state),
+            username: user.username
         };
     };
 }

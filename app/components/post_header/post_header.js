@@ -31,26 +31,30 @@ export default class PostHeader extends PureComponent {
         isSystemMessage: PropTypes.bool,
         militaryTime: PropTypes.bool,
         onPress: PropTypes.func,
-        onViewUserProfile: PropTypes.func,
+        onUsernamePress: PropTypes.func,
         overrideUsername: PropTypes.string,
         renderReplies: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        username: PropTypes.string.isRequired
     };
 
     static defaultProps = {
         commentCount: 0,
         onPress: emptyFunction,
-        onViewUserProfile: emptyFunction
+        onUsernamePress: emptyFunction
     };
+
+    handleUsernamePress = () => {
+        this.props.onUsernamePress(this.props.username);
+    }
 
     getDisplayName = (style) => {
         const {
             enablePostUsernameOverride,
             fromWebHook,
             isSystemMessage,
-            onViewUserProfile,
             overrideUsername
         } = this.props;
 
@@ -80,7 +84,7 @@ export default class PostHeader extends PureComponent {
             );
         } else if (this.props.displayName) {
             return (
-                <TouchableOpacity onPress={onViewUserProfile}>
+                <TouchableOpacity onPress={this.handleUsernamePress}>
                     <Text style={style.displayName}>
                         {this.props.displayName}
                     </Text>

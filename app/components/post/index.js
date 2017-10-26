@@ -8,6 +8,7 @@ import {addReaction, createPost, deletePost, removePost} from 'mattermost-redux/
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 
+import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Post from './post';
@@ -62,7 +63,9 @@ function mapDispatchToProps(dispatch) {
             addReaction,
             createPost,
             deletePost,
-            removePost
+            removePost,
+            setPostTooltipVisible,
+            insertToDraft
         }, dispatch)
     };
 }

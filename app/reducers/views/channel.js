@@ -18,156 +18,199 @@ function displayName(state = '', action) {
     }
 }
 
-function drafts(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.POST_DRAFT_CHANGED: {
-        return {
+function handlePostDraftChanged(state, action) {
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {draft: action.draft})
+    };
+}
+
+function handlePostDraftSelectionChanged(state, action) {
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {
+            cursorPosition: action.cursorPosition
+        })
+    };
+}
+
+function handleSetPostDraft(state, action) {
+    return {
+        ...state,
+        [action.channelId]: {
+            draft: action.draft,
+            cursorPosition: 0,
+            files: action.files
+        }
+    };
+}
+
+function handleSelectChannel(state, action) {
+    let data = {...state};
+    if (action.data && !data[action.data]) {
+        data = {
             ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {draft: action.postDraft})
-        };
-    }
-    case ViewTypes.SET_POST_DRAFT: {
-        return {
-            ...state,
-            [action.channelId]: {
-                draft: action.postDraft,
-                files: action.files
+            [action.data]: {
+                draft: '',
+                cursorPosition: 0,
+                files: []
             }
         };
     }
-    case ChannelTypes.SELECT_CHANNEL: {
-        let data = {...state};
-        if (action.data && !data[action.data]) {
-            data = {
-                ...state,
-                [action.data]: {
-                    draft: '',
-                    files: []
-                }
+
+    return data;
+}
+
+function handleSetTempUploadFileForPostDraft(state, action) {
+    if (action.rootId) {
+        return state;
+    }
+
+    const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
+    const files = [
+        ...state[action.channelId].files,
+        ...tempFiles
+    ];
+
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files})
+    };
+}
+
+function handleRetryUploadFileForPost(state, action) {
+    if (action.rootId) {
+        return state;
+    }
+
+    const files = state[action.channelId].files.map((f) => {
+        if (f.clientId === action.clientId) {
+            return {
+                ...f,
+                loading: true,
+                failed: false
             };
         }
 
-        return data;
+        return f;
+    });
+
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files})
+    };
+}
+
+function handleReceivedUploadFiles(state, action) {
+    if (action.rootId || !state[action.channelId].files) {
+        return state;
     }
-    case ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT: {
-        if (action.rootId) {
-            return state;
+
+    // Reconcile tempFiles with the received uploaded files
+    const files = state[action.channelId].files.map((tempFile) => {
+        const file = action.data.find((f) => f.clientId === tempFile.clientId);
+        if (file) {
+            return {
+                ...file,
+                localPath: tempFile.localPath
+            };
         }
 
-        const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
-        const files = [
-            ...state[action.channelId].files,
-            ...tempFiles
-        ];
+        return tempFile;
+    });
 
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files})
-        };
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files})
+    };
+}
+
+function handleUploadFilesFailure(state, action) {
+    if (action.rootId) {
+        return state;
     }
-    case ViewTypes.RETRY_UPLOAD_FILE_FOR_POST: {
-        if (action.rootId) {
-            return state;
+
+    const clientIds = action.clientIds;
+    const files = state[action.channelId].files.map((tempFile) => {
+        if (clientIds.includes(tempFile.clientId)) {
+            return {
+                ...tempFile,
+                loading: false,
+                failed: true
+            };
         }
 
-        const files = state[action.channelId].files.map((f) => {
-            if (f.clientId === action.clientId) {
-                return {
-                    ...f,
-                    loading: true,
-                    failed: false
-                };
-            }
+        return tempFile;
+    });
 
-            return f;
-        });
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files})
+    };
+}
 
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files})
-        };
+function handleClearFilesForPostDraft(state, action) {
+    if (action.rootId) {
+        return state;
     }
-    case FileTypes.RECEIVED_UPLOAD_FILES: {
-        if (action.rootId || !state[action.channelId].files) {
-            return state;
-        }
 
-        // Reconcile tempFiles with the received uploaded files
-        const files = state[action.channelId].files.map((tempFile) => {
-            const file = action.data.find((f) => f.clientId === tempFile.clientId);
-            if (file) {
-                return {
-                    ...file,
-                    localPath: tempFile.localPath
-                };
-            }
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files: []})
+    };
+}
 
-            return tempFile;
-        });
-
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files})
-        };
+function handleRemoveFileFromPostDraft(state, action) {
+    if (action.rootId) {
+        return state;
     }
-    case FileTypes.UPLOAD_FILES_FAILURE: {
-        if (action.rootId) {
-            return state;
-        }
 
-        const clientIds = action.clientIds;
-        const files = state[action.channelId].files.map((tempFile) => {
-            if (clientIds.includes(tempFile.clientId)) {
-                return {
-                    ...tempFile,
-                    loading: false,
-                    failed: true
-                };
-            }
+    const files = state[action.channelId].files.filter((file) => (file.clientId !== action.clientId));
 
-            return tempFile;
-        });
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files})
+    };
+}
 
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files})
-        };
+function handleRemoveLastFileFromPostDraft(state, action) {
+    if (action.rootId) {
+        return state;
     }
-    case ViewTypes.CLEAR_FILES_FOR_POST_DRAFT: {
-        if (action.rootId) {
-            return state;
-        }
 
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files: []})
-        };
-    }
-    case ViewTypes.REMOVE_FILE_FROM_POST_DRAFT: {
-        if (action.rootId) {
-            return state;
-        }
+    const files = [...state[action.channelId].files];
+    files.splice(-1);
 
-        const files = state[action.channelId].files.filter((file) => (file.clientId !== action.clientId));
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files})
+    };
+}
 
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files})
-        };
-    }
-    case ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT: {
-        if (action.rootId) {
-            return state;
-        }
-
-        const files = [...state[action.channelId].files];
-        files.splice(-1);
-
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files})
-        };
-    }
+function drafts(state = {}, action) { // eslint-disable-line complexity
+    switch (action.type) {
+    case ViewTypes.POST_DRAFT_CHANGED:
+        return handlePostDraftChanged(state, action);
+    case ViewTypes.POST_DRAFT_SELECTION_CHANGED:
+        return handlePostDraftSelectionChanged(state, action);
+    case ViewTypes.SET_POST_DRAFT:
+        return handleSetPostDraft(state, action);
+    case ChannelTypes.SELECT_CHANNEL:
+        return handleSelectChannel(state, action);
+    case ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT:
+        return handleSetTempUploadFileForPostDraft(state, action);
+    case ViewTypes.RETRY_UPLOAD_FILE_FOR_POST:
+        return handleRetryUploadFileForPost(state, action);
+    case FileTypes.RECEIVED_UPLOAD_FILES:
+        return handleReceivedUploadFiles(state, action);
+    case FileTypes.UPLOAD_FILES_FAILURE:
+        return handleUploadFilesFailure(state, action);
+    case ViewTypes.CLEAR_FILES_FOR_POST_DRAFT:
+        return handleClearFilesForPostDraft(state, action);
+    case ViewTypes.REMOVE_FILE_FROM_POST_DRAFT:
+        return handleRemoveFileFromPostDraft(state, action);
+    case ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT:
+        return handleRemoveLastFileFromPostDraft(state, action);
     default:
         return state;
     }

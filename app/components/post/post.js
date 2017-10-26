@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {isToolTipShowing} from 'react-native-tooltip';
 
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
@@ -25,7 +26,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import {isToolTipShowing} from 'react-native-tooltip';
+import Config from 'assets/config';
 
 class Post extends PureComponent {
     static propTypes = {
@@ -33,6 +34,7 @@ class Post extends PureComponent {
             addReaction: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
+            insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -116,6 +118,12 @@ class Post extends PureComponent {
             }
         });
     };
+
+    autofillUserMention = (username) => {
+        // create a general action that checks for currentThreadId in the state and decides
+        // whether to insert to root or thread
+        this.props.actions.insertToDraft(`@${username} `);
+    }
 
     handleEditDisable = () => {
         this.setState({canEdit: false});
@@ -330,6 +338,8 @@ class Post extends PureComponent {
         const selected = this.state && this.state.selected ? style.selected : null;
         const highlighted = highlight ? style.highlight : null;
 
+        const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
+
         return (
             <View style={[style.container, this.props.style, highlighted, selected]}>
                 <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
@@ -349,7 +359,7 @@ class Post extends PureComponent {
                             shouldRenderReplyButton={shouldRenderReplyButton}
                             showFullDate={showFullDate}
                             onPress={this.handleReply}
-                            onViewUserProfile={this.viewUserProfile}
+                            onUsernamePress={onUsernamePress}
                             renderReplies={renderReplies}
                             theme={theme}
                         />

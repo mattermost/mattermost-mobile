@@ -18,6 +18,7 @@ import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {
     getChannelByName,
     getDirectChannelName,
@@ -273,13 +274,64 @@ export function handleSelectChannel(channelId) {
     };
 }
 
-export function handlePostDraftChanged(channelId, postDraft) {
+export function handlePostDraftChanged(channelId, draft) {
     return async (dispatch, getState) => {
         dispatch({
             type: ViewTypes.POST_DRAFT_CHANGED,
             channelId,
-            postDraft
+            draft
         }, getState);
+    };
+}
+
+export function handlePostDraftSelectionChanged(channelId, cursorPosition) {
+    return {
+        type: ViewTypes.POST_DRAFT_SELECTION_CHANGED,
+        channelId,
+        cursorPosition
+    };
+}
+
+export function insertToDraft(value) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const channelId = getCurrentChannelId(state);
+        const threadId = state.entities.posts.selectedPostId;
+
+        let draft;
+        let cursorPosition;
+        let action;
+        if (state.views.thread.drafts[threadId]) {
+            const threadDraft = state.views.thread.drafts[threadId];
+            draft = threadDraft.draft;
+            cursorPosition = threadDraft.cursorPosition;
+            action = {
+                type: ViewTypes.COMMENT_DRAFT_CHANGED,
+                rootId: threadId
+            };
+        } else if (state.views.channel.drafts[channelId]) {
+            const channelDraft = state.views.channel.drafts[channelId];
+            draft = channelDraft.draft;
+            cursorPosition = channelDraft.cursorPosition;
+            action = {
+                type: ViewTypes.POST_DRAFT_CHANGED,
+                channelId
+            };
+        }
+
+        let nextDraft = `${value}`;
+        if (cursorPosition > 0) {
+            const beginning = draft.slice(0, cursorPosition);
+            const end = draft.slice(cursorPosition);
+            nextDraft = `${beginning}${value}${end}`;
+        }
+
+        if (action && nextDraft !== draft) {
+            dispatch({
+                ...action,
+                draft: nextDraft
+            });
+        }
     };
 }
 
