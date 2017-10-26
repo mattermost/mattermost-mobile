@@ -3,6 +3,12 @@
 
 import keyMirror from 'mattermost-redux/utils/key_mirror';
 
+export const UpgradeTypes = {
+    CAN_UPGRADE: 'can_upgrade',
+    MUST_UPGRADE: 'must_upgrade',
+    NO_UPGRADE: 'no_upgrade'
+};
+
 const ViewTypes = keyMirror({
     SERVER_URL_CHANGED: null,
 
@@ -44,7 +50,9 @@ const ViewTypes = keyMirror({
     RECEIVED_FOCUSED_POST: null,
     LOADING_POSTS: null,
 
-    RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null
+    RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
+
+    SET_LAST_UPGRADE_CHECK: null
 });
 
 export default {

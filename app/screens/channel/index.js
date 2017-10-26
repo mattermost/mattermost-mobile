@@ -26,10 +26,10 @@ function mapStateToProps(state) {
     const {myChannels: channelsRequest} = state.requests.channels;
 
     return {
+        channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
-        theme: getTheme(state),
-        channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE
+        theme: getTheme(state)
     };
 }
 

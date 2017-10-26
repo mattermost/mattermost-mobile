@@ -4,6 +4,7 @@
 import {combineReducers} from 'redux';
 
 import channel from './channel';
+import clientUpgrade from './client_upgrade';
 import fetchCache from './fetch_cache';
 import i18n from './i18n';
 import login from './login';
@@ -15,6 +16,7 @@ import thread from './thread';
 
 export default combineReducers({
     channel,
+    clientUpgrade,
     fetchCache,
     i18n,
     login,

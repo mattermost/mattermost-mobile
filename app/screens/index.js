@@ -12,6 +12,7 @@ import Channel from 'app/screens/channel';
 import ChannelAddMembers from 'app/screens/channel_add_members';
 import ChannelInfo from 'app/screens/channel_info';
 import ChannelMembers from 'app/screens/channel_members';
+import ClientUpgrade from 'app/screens/client_upgrade';
 import Code from 'app/screens/code';
 import CreateChannel from 'app/screens/create_channel';
 import EditPost from 'app/screens/edit_post';
@@ -62,6 +63,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(ChannelAddMembers), store, Provider);
     Navigation.registerComponent('ChannelInfo', () => wrapWithContextProvider(ChannelInfo), store, Provider);
     Navigation.registerComponent('ChannelMembers', () => wrapWithContextProvider(ChannelMembers), store, Provider);
+    Navigation.registerComponent('ClientUpgrade', () => wrapWithContextProvider(ClientUpgrade), store, Provider);
     Navigation.registerComponent('Code', () => wrapWithContextProvider(Code), store, Provider);
     Navigation.registerComponent('CreateChannel', () => wrapWithContextProvider(CreateChannel), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
