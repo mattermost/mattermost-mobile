@@ -223,7 +223,8 @@ export function selectInitialChannel(teamId) {
         const {channels, myMembers} = state.entities.channels;
         const {currentUserId} = state.entities.users;
         const {myPreferences} = state.entities.preferences;
-        const lastChannelId = state.views.team.lastChannelForTeam[teamId] || '';
+        const lastChannelForTeam = state.views.team.lastChannelForTeam[teamId];
+        const lastChannelId = lastChannelForTeam && lastChannelForTeam.length ? lastChannelForTeam[0] : '';
         const lastChannel = channels[lastChannelId];
 
         const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&

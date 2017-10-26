@@ -11,7 +11,6 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import configureStore from 'mattermost-redux/store';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import Config from 'assets/config';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 import networkConnectionListener from 'app/utils/network';
@@ -195,11 +194,7 @@ export default function configureAppStore(initialState) {
         }
     };
 
-    const additionalMiddleware = [createSentryMiddleware()];
-    if (Config.EnableMessageRetention) {
-        additionalMiddleware.push(messageRetention);
-    }
-
+    const additionalMiddleware = [createSentryMiddleware(), messageRetention];
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
         additionalMiddleware
     });

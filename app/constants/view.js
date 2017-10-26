@@ -10,6 +10,7 @@ export const UpgradeTypes = {
 };
 
 const ViewTypes = keyMirror({
+    DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
 
     LOGIN_ID_CHANGED: null,
