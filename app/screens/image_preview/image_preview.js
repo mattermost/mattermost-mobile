@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     Animated,
     InteractionManager,
     PanResponder,
@@ -17,6 +18,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -53,6 +55,10 @@ export default class ImagePreview extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    static contextTypes = {
+        intl: intlShape
+    }
+
     constructor(props) {
         super(props);
 
@@ -63,6 +69,7 @@ export default class ImagePreview extends PureComponent {
         this.state = {
             currentFile,
             drag: new Animated.ValueXY(),
+            files: props.files,
             footerOpacity: new Animated.Value(1),
             pagingEnabled: true,
             showFileInfo: true,
@@ -97,6 +104,10 @@ export default class ImagePreview extends PureComponent {
             InteractionManager.runAfterInteractions(() => {
                 this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: false});
             });
+        }
+
+        if (!nextProps.files.length) {
+            this.showDeletedFilesAlert();
         }
     }
 
@@ -197,6 +208,28 @@ export default class ImagePreview extends PureComponent {
         }
     };
 
+    showDeletedFilesAlert = () => {
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.image_preview.deleted_post_title',
+                defaultMessage: 'Post Deleted'
+            }),
+            intl.formatMessage({
+                id: 'mobile.image_preview.deleted_post_message',
+                defaultMessage: "This post and it's files have been deleted. The previewer will now be closed."
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK'
+                }),
+                onPress: () => this.close()
+            }]
+        );
+    }
+
     showDownloadOptions = () => {
         if (Platform.OS === 'android') {
             if (this.state.showDownloader) {
@@ -213,7 +246,7 @@ export default class ImagePreview extends PureComponent {
         this.setHeaderAndFileInfoVisible(false);
 
         const options = {
-            title: this.props.files[this.state.currentFile].name,
+            title: this.state.files[this.state.currentFile].name,
             items: [{
                 action: this.showDownloader,
                 text: {
@@ -257,7 +290,9 @@ export default class ImagePreview extends PureComponent {
     };
 
     renderDownloadButton = () => {
-        const {canDownloadFiles, files} = this.props;
+        const {canDownloadFiles} = this.props;
+        const {files} = this.state;
+
         const file = files[this.state.currentFile];
 
         let icon;
@@ -325,7 +360,7 @@ export default class ImagePreview extends PureComponent {
                         onScroll={this.handleScroll}
                         scrollEventThrottle={2}
                     >
-                        {this.props.files.map((file, index) => {
+                        {this.state.files.map((file, index) => {
                             let component;
                             if (file.has_preview_image || file.mime_type === 'image/gif') {
                                 component = (
@@ -387,7 +422,7 @@ export default class ImagePreview extends PureComponent {
                                     />
                                 </TouchableOpacity>
                                 <Text style={style.title}>
-                                    {`${this.state.currentFile + 1}/${this.props.files.length}`}
+                                    {`${this.state.currentFile + 1}/${this.state.files.length}`}
                                 </Text>
                                 {this.renderDownloadButton()}
                             </View>
@@ -400,14 +435,14 @@ export default class ImagePreview extends PureComponent {
                             pointerEvents='none'
                         >
                             <Text style={style.filename}>
-                                {this.props.files[this.state.currentFile].name}
+                                {this.state.files[this.state.currentFile].name}
                             </Text>
                         </LinearGradient>
                     </AnimatedView>
                 </AnimatedView>
                 <Downloader
                     show={this.state.showDownloader}
-                    file={this.props.files[this.state.currentFile]}
+                    file={this.state.files[this.state.currentFile]}
                     deviceHeight={this.props.deviceHeight}
                     deviceWidth={this.props.deviceWidth}
                     onDownloadCancel={this.hideDownloader}
