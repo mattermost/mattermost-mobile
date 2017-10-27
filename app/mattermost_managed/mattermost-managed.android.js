@@ -7,9 +7,12 @@ import JailMonkey from 'jail-monkey';
 
 const {MattermostManaged} = NativeModules;
 
+let localConfig;
+
 export default {
     addEventListener: (name, callback) => {
         DeviceEventEmitter.addListener(name, (config) => {
+            localConfig = config;
             if (callback && typeof callback === 'function') {
                 callback(config);
             }
@@ -19,6 +22,17 @@ export default {
     authenticate: LocalAuth.authenticate,
     blurAppScreen: MattermostManaged.blurAppScreen,
     getConfig: MattermostManaged.getConfig,
+    getLocalConfig: async () => {
+        if (!localConfig) {
+            try {
+                localConfig = await MattermostManaged.getConfig();
+            } catch (error) {
+                // do nothing...
+            }
+        }
+
+        return localConfig || {};
+    },
     isDeviceSecure: async () => {
         try {
             return await LocalAuth.isDeviceSecure();

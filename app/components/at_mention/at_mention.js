@@ -4,13 +4,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Clipboard, Text} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import mattermostManaged from 'app/mattermost_managed';
 
-class AtMention extends React.PureComponent {
+export default class AtMention extends React.PureComponent {
     static propTypes = {
-        intl: intlShape,
         isSearchResult: PropTypes.bool,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
@@ -21,6 +21,10 @@ class AtMention extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired
     };
+
+    static contextTypes = {
+        intl: intlShape
+    }
 
     constructor(props) {
         super(props);
@@ -43,7 +47,8 @@ class AtMention extends React.PureComponent {
     }
 
     goToUserProfile = () => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.push({
             screen: 'UserProfile',
@@ -87,11 +92,21 @@ class AtMention extends React.PureComponent {
         };
     }
 
-    handleLongPress = () => {
-        const action = {
-            text: 'Copy Mention',
-            onPress: this.handleCopyMention
-        };
+    handleLongPress = async () => {
+        const {intl} = this.context;
+
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'false') {
+            action = {
+                text: intl.formatMessage({
+                    id: 'mobile.mention.copy_mention',
+                    defaultMessage: 'Copy Mention'
+                }),
+                onPress: this.handleCopyMention
+            };
+        }
 
         this.props.onLongPress(action);
     }
@@ -125,5 +140,3 @@ class AtMention extends React.PureComponent {
         );
     }
 }
-
-export default injectIntl(AtMention);

@@ -9,6 +9,7 @@ import {injectIntl, intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import Config from 'assets/config';
+import mattermostManaged from 'app/mattermost_managed';
 
 class MarkdownLink extends PureComponent {
     static propTypes = {
@@ -67,13 +68,18 @@ class MarkdownLink extends PureComponent {
         });
     }
 
-    handleLongPress = () => {
+    handleLongPress = async () => {
         const {formatMessage} = this.props.intl;
 
-        const action = {
-            text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
-            onPress: this.handleCopyURL
-        };
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'true') {
+            action = {
+                text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
+                onPress: this.handleCopyURL
+            };
+        }
 
         this.props.onLongPress(action);
     }

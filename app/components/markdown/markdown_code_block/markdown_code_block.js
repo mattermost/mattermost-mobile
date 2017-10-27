@@ -17,6 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import mattermostManaged from 'app/mattermost_managed';
 
 const MAX_LINES = 4;
 
@@ -74,13 +75,18 @@ class MarkdownCodeBlock extends React.PureComponent {
         });
     });
 
-    handleLongPress = () => {
+    handleLongPress = async () => {
         const {formatMessage} = this.props.intl;
 
-        const action = {
-            text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
-            onPress: this.handleCopyCode
-        };
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'true') {
+            action = {
+                text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
+                onPress: this.handleCopyCode
+            };
+        }
 
         this.props.onLongPress(action);
     }

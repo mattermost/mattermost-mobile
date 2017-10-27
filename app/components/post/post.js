@@ -51,6 +51,7 @@ class Post extends PureComponent {
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
+        managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
@@ -337,7 +338,8 @@ class Post extends PureComponent {
             renderReplies,
             shouldRenderReplyButton,
             showFullDate,
-            theme
+            theme,
+            managedConfig
         } = this.props;
 
         if (!post) {
@@ -387,6 +389,7 @@ class Post extends PureComponent {
                             postId={post.id}
                             renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
                             toggleSelected={this.toggleSelected}
+                            managedConfig={managedConfig}
                         />
                     </View>
                 </View>

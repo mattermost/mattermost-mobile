@@ -1973,6 +1973,7 @@
   "mobile.markdown.code.copy_code": "Copy Code",
   "mobile.markdown.link.copy_url": "Copy URL",
   "mobile.markdown.code.plusMoreLines": "+{count, number} more lines",
+  "mobile.mention.copy_mention": "Copy Mention",
   "mobile.more_dms.start": "Start",
   "mobile.more_dms.title": "New Conversation",
   "mobile.notice_mobile_link": "mobile apps",

@@ -42,6 +42,7 @@ class PostBody extends PureComponent {
         isPostEphemeral: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        managedConfig: PropTypes.object,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         onAddReaction: PropTypes.func,
@@ -140,6 +141,7 @@ class PostBody extends PureComponent {
             isSearchResult,
             isSystemMessage,
             intl,
+            managedConfig,
             message,
             navigator,
             onFailedPostPress,
@@ -162,10 +164,12 @@ class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
-            actions.push({
-                text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
-                onPress: this.props.onCopyText
-            });
+            if (managedConfig.copyAndPasteProtection !== 'true') {
+                actions.push({
+                    text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
+                    onPress: this.props.onCopyText
+                });
+            }
 
             if (isFlagged) {
                 actions.push({

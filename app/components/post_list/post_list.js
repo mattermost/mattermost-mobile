@@ -12,6 +12,7 @@ import ChannelIntro from 'app/components/channel_intro';
 import FlatList from 'app/components/inverted_flat_list';
 import Post from 'app/components/post';
 import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
+import mattermostManaged from 'app/mattermost_managed';
 
 import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
@@ -43,11 +44,38 @@ export default class PostList extends PureComponent {
         loadMore: () => true
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            managedConfig: {}
+        };
+    }
+
+    componentWillMount() {
+        mattermostManaged.addEventListener('change', this.setManagedConfig);
+    }
+
+    componentDidMount() {
+        this.setManagedConfig();
+    }
+
     componentDidUpdate(prevProps) {
         if (prevProps.channelId !== this.props.channelId && this.refs.list) {
             // When switching channels make sure we start from the bottom
             this.refs.list.scrollToOffset({y: 0, animated: false});
         }
+    }
+
+    setManagedConfig = async (config) => {
+        let nextConfig = config;
+        if (!nextConfig) {
+            nextConfig = await mattermostManaged.getLocalConfig();
+        }
+
+        this.setState({
+            managedConfig: nextConfig
+        });
     }
 
     getItem = (data, index) => data[index];
@@ -115,6 +143,7 @@ export default class PostList extends PureComponent {
             renderReplies,
             shouldRenderReplyButton
         } = this.props;
+        const {managedConfig} = this.state;
 
         return (
             <Post
@@ -127,6 +156,7 @@ export default class PostList extends PureComponent {
                 shouldRenderReplyButton={shouldRenderReplyButton}
                 onPress={onPostPress}
                 navigator={navigator}
+                managedConfig={managedConfig}
             />
         );
     };
