@@ -6,7 +6,8 @@ import PropTypes from 'prop-types';
 import {
     ScrollView,
     Text,
-    View
+    View,
+    Linking
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
@@ -19,6 +20,7 @@ import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import UserProfileRow from './user_profile_row';
+import Config from 'assets/config';
 
 class UserProfile extends PureComponent {
     static propTypes = {
@@ -30,7 +32,6 @@ class UserProfile extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
-        createChannelRequest: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string,
@@ -103,6 +104,46 @@ class UserProfile extends PureComponent {
         }
     };
 
+    handleLinkPress = (link) => {
+        const username = this.props.user.username;
+        const email = this.props.user.email;
+
+        return () => {
+            var hydrated = link.replace(/{email}/, email);
+            hydrated = hydrated.replace(/{username}/, username);
+            Linking.openURL(hydrated);
+        };
+    };
+
+    renderAdditionalOptions = () => {
+        if (!Config.ExperimentalProfileLinks) {
+            return null;
+        }
+
+        const profileLinks = Config.ExperimentalProfileLinks;
+
+        const additionalOptions = profileLinks.map((l) => {
+            var action;
+            if (l.type === 'link') {
+                action = this.handleLinkPress(l.url);
+            }
+
+            return (
+                <UserProfileRow
+                    key={l.defaultMessage}
+                    action={action}
+                    defaultMessage={l.defaultMessage}
+                    textId={l.textId}
+                    icon={l.icon}
+                    iconType={l.iconType}
+                    theme={this.props.theme}
+                />
+            );
+        });
+
+        return additionalOptions;
+    }
+
     render() {
         const {config, theme, user} = this.props;
         const style = createStyleSheet(theme);
@@ -134,10 +175,12 @@ class UserProfile extends PureComponent {
                         action={this.sendMessage}
                         defaultMessage='Send Message'
                         icon='paper-plane-o'
+                        iconType='fontawesome'
                         textId='mobile.routes.user_profile.send_message'
                         theme={theme}
                     />
                     }
+                    {this.renderAdditionalOptions()}
                 </ScrollView>
             </View>
         );

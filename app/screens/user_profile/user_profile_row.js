@@ -9,10 +9,10 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
+import VectorIcon from 'app/components/vector_icon.js';
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -61,7 +61,7 @@ function createTouchableComponent(children, action) {
 }
 
 function userProfileRow(props) {
-    const {action, defaultMessage, detail, icon, textId, togglable, theme, shouldRender = true} = props;
+    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconType, shouldRender = true} = props;
 
     if (!shouldRender) {
         return null;
@@ -72,9 +72,10 @@ function userProfileRow(props) {
     const RowComponent = (
         <View style={style.wrapper}>
             <View style={style.container}>
-                <Icon
+                <VectorIcon
                     name={icon}
                     size={15}
+                    type={iconType}
                     style={style.leftIcon}
                 />
                 <FormattedText
@@ -88,9 +89,10 @@ function userProfileRow(props) {
                         onValueChange={action}
                         value={detail}
                     /> :
-                    <Icon
+                    <VectorIcon
                         name='chevron-right'
                         size={15}
+                        type={'fontawesome'}
                         style={style.rightIcon}
                     />
                 }
@@ -114,6 +116,7 @@ userProfileRow.propTypes = {
         PropTypes.bool
     ]),
     icon: PropTypes.string.isRequired,
+    iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
     iconColor: PropTypes.string,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
