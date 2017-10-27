@@ -8,6 +8,7 @@ const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 
 let replyCategory;
+const replies = new Set();
 
 class PushNotification {
     constructor() {
@@ -74,7 +75,8 @@ class PushNotification {
             const text = action.text;
             const badge = parseInt(action.notification._badge, 10) - 1; //eslint-disable-line no-underscore-dangle
 
-            if (this.onReply) {
+            if (this.onReply && !replies.has(action.completionKey)) {
+                replies.add(action.completionKey);
                 this.onReply(data, text, badge, completed);
             }
         } else {

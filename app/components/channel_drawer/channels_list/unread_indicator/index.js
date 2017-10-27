@@ -8,11 +8,10 @@ import {
     View,
     ViewPropTypes
 } from 'react-native';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import AboveIcon from './above_icon';
 
 export default class UnreadIndicator extends PureComponent {
     static propTypes = {
@@ -45,10 +44,11 @@ export default class UnreadIndicator extends PureComponent {
                         id='sidebar.unreads'
                         defaultMessage='More unreads'
                     />
-                    <AboveIcon
-                        width={12}
-                        height={12}
+                    <IonIcon
+                        size={14}
+                        name='md-arrow-round-up'
                         color={theme.mentionColor}
+                        style={style.arrow}
                     />
                 </View>
             </TouchableWithoutFeedback>
@@ -75,6 +75,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 4,
             textAlign: 'center',
             textAlignVertical: 'center'
+        },
+        arrow: {
+            position: 'relative',
+            bottom: -1
         }
     };
 });

@@ -13,7 +13,8 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     StyleSheet,
-    View
+    View,
+    ViewPropTypes
 } from 'react-native';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
@@ -42,10 +43,10 @@ export default class Search extends Component {
         inputStyle: PropTypes.oneOfType([
             PropTypes.number,
             PropTypes.object,
-            View.propTypes.style
+            ViewPropTypes.style
         ]),
         onLayout: PropTypes.func,
-        cancelButtonStyle: View.propTypes.style,
+        cancelButtonStyle: ViewPropTypes.style,
         autoFocus: PropTypes.bool,
         placeholder: PropTypes.string,
         cancelTitle: PropTypes.oneOfType([

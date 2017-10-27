@@ -15,6 +15,11 @@
 
 RCT_EXPORT_MODULE();
 
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
+}
+
 @synthesize bridge = _bridge;
 
 - (void)dealloc

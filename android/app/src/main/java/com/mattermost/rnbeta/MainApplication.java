@@ -71,6 +71,11 @@ public class MainApplication extends NavigationApplication implements INotificat
   }
 
   @Override
+  public String getJSMainModuleName() {
+    return "index";
+  }
+
+  @Override
   public void onCreate() {
     super.onCreate();
     instance = this;

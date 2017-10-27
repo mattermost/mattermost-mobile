@@ -14,7 +14,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
-import CustomSectionList from 'app/components/custom_section_list';
+import CustomSectionList from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';

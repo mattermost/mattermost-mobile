@@ -217,7 +217,7 @@ export default class SearchBarAndroid extends PureComponent {
                             styles.searchBarInput,
                             inputNoBackground,
                             {height: this.props.inputHeight},
-                            isFocused ? {} : styles.searchBarBlurredInput
+                            isFocused ? {paddingBottom: (this.props.inputHeight - 17) / 2} : styles.searchBarBlurredInput
                         ]}
                     />
                     {isFocused && value ?
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
         fontWeight: 'normal',
         textAlignVertical: 'center',
         fontSize: 15,
-        includeFontPadding: false
+        includeFontPadding: true
     },
     searchBarBlurredInput: {
         padding: 0
