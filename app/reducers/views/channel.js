@@ -4,7 +4,8 @@
 import {combineReducers} from 'redux';
 import {
     ChannelTypes,
-    FileTypes
+    FileTypes,
+    PostTypes
 } from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
@@ -238,6 +239,14 @@ function retryFailed(state = false, action) {
     switch (action.type) {
     case ViewTypes.SET_CHANNEL_RETRY_FAILED:
         return action.failed;
+    case PostTypes.GET_POSTS_SUCCESS:
+    case PostTypes.GET_POSTS_SINCE_SUCCESS: {
+        if (state) {
+            return false;
+        }
+
+        return state;
+    }
     default:
         return state;
     }

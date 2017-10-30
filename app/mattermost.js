@@ -194,8 +194,10 @@ export default class Mattermost {
             try {
                 if (!isActive && !this.inBackgroundSince) {
                     this.inBackgroundSince = Date.now();
+                    dispatch({type: ViewTypes.DATA_CLEANUP, payload: getState()});
                 } else if (isActive && this.inBackgroundSince && (Date.now() - this.inBackgroundSince) >= AUTHENTICATION_TIMEOUT) {
                     this.inBackgroundSince = null;
+
                     if (this.mdmEnabled) {
                         const config = await mattermostManaged.getConfig();
                         const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
@@ -206,6 +208,8 @@ export default class Mattermost {
                             }
                         }
                     }
+                } else if (isActive) {
+                    this.inBackgroundSince = null;
                 }
             } catch (error) {
                 // do nothing

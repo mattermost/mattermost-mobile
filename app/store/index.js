@@ -16,6 +16,7 @@ import appReducer from 'app/reducers';
 import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
+import {messageRetention} from './middleware';
 import {transformSet} from './utils';
 
 function getAppReducer() {
@@ -193,7 +194,8 @@ export default function configureAppStore(initialState) {
         }
     };
 
+    const additionalMiddleware = [createSentryMiddleware(), messageRetention];
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
-        additionalMiddleware: createSentryMiddleware()
+        additionalMiddleware
     });
 }

@@ -17,11 +17,33 @@ function lastTeamId(state = '', action) {
 
 function lastChannelForTeam(state = {}, action) {
     switch (action.type) {
-    case ViewTypes.SET_LAST_CHANNEL_FOR_TEAM:
+    case ViewTypes.SET_LAST_CHANNEL_FOR_TEAM: {
+        const team = state[action.teamId];
+        const channelIds = [];
+
+        if (!action.channelId) {
+            return state;
+        }
+
+        if (team) {
+            channelIds.push(...team);
+            const index = channelIds.indexOf(action.channelId);
+            if (index === -1) {
+                channelIds.unshift(action.channelId);
+                channelIds.slice(0, 5);
+            } else {
+                channelIds.splice(index, 1);
+                channelIds.unshift(action.channelId);
+            }
+        } else {
+            channelIds.push(action.channelId);
+        }
+
         return {
             ...state,
-            [action.teamId]: action.channelId
+            [action.teamId]: channelIds
         };
+    }
     default:
         return state;
     }
