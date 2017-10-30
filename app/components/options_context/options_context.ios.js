@@ -56,7 +56,8 @@ export default class OptionsContext extends PureComponent {
     show = (additionalAction) => {
         const nextActions = [...this.props.actions];
         if (additionalAction && additionalAction.text && !additionalAction.nativeEvent) {
-            nextActions.unshift(additionalAction);
+            const copyPostIndex = nextActions.findIndex((action) => action.copyPost);
+            nextActions.splice(copyPostIndex + 1, 0, additionalAction);
         }
 
         this.setState({

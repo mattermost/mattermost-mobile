@@ -164,10 +164,16 @@ class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
+            actions.push({
+                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                onPress: this.props.onAddReaction
+            });
+
             if (managedConfig.copyAndPasteProtection !== 'true') {
                 actions.push({
                     text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
-                    onPress: this.props.onCopyText
+                    onPress: this.props.onCopyText,
+                    copyPost: true
                 });
             }
 
@@ -190,11 +196,6 @@ class PostBody extends PureComponent {
             if (canDelete && !hasBeenDeleted) {
                 actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
             }
-
-            actions.push({
-                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                onPress: this.props.onAddReaction
-            });
         }
 
         let body;
