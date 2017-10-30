@@ -225,7 +225,7 @@ export default class ImagePreview extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK'
                 }),
-                onPress: () => this.close()
+                onPress: this.close
             }]
         );
     }
