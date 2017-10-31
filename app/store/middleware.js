@@ -148,6 +148,7 @@ function cleanupState(action, keepCurrent = false) {
 
     postIdsToKeep.forEach((postId) => {
         const post = payload.entities.posts.posts[postId];
+
         if (post) {
             const skip = keepCurrent && currentChannelId === post.channel_id;
 
@@ -173,6 +174,18 @@ function cleanupState(action, keepCurrent = false) {
                 fileIds.forEach((fileId) => {
                     nextEntitites.files.files[fileId] = payload.entities.files.files[fileId];
                 });
+            }
+        } else {
+            // If the post is not in the store we need to remove it from the postsInChannel
+            const channelIds = Object.keys(nextEntitites.posts.postsInChannel);
+            for (let i = 0; i < channelIds.length; i++) {
+                const channelId = channelIds[i];
+                const posts = nextEntitites.posts.postsInChannel[channelId];
+                const index = posts.indexOf(postId);
+                if (index !== -1) {
+                    posts.splice(index, 1);
+                    break;
+                }
             }
         }
     });
