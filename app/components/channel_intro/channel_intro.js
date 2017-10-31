@@ -306,8 +306,9 @@ class ChannelIntro extends PureComponent {
     };
 
     render() {
-        const {isLoadingPosts, theme} = this.props;
+        const {currentChannel, isLoadingPosts, theme} = this.props;
         const style = getStyleSheet(theme);
+        const channelType = currentChannel.type;
 
         if (isLoadingPosts) {
             return (
@@ -317,14 +318,23 @@ class ChannelIntro extends PureComponent {
             );
         }
 
+        let profiles;
+        if (channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL) {
+            profiles = (
+                <View>
+                    <View style={style.profilesContainer}>
+                        {this.buildProfiles()}
+                    </View>
+                    <View style={style.namesContainer}>
+                        {this.buildNames()}
+                    </View>
+                </View>
+            );
+        }
+
         return (
             <View style={style.container}>
-                <View style={style.profilesContainer}>
-                    {this.buildProfiles()}
-                </View>
-                <View style={style.namesContainer}>
-                    {this.buildNames()}
-                </View>
+                {profiles}
                 <View style={style.contentContainer}>
                     {this.buildContent()}
                 </View>
