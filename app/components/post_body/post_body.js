@@ -42,9 +42,11 @@ class PostBody extends PureComponent {
         isPostEphemeral: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        managedConfig: PropTypes.object,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         onAddReaction: PropTypes.func,
+        onCopyText: PropTypes.func,
         onFailedPostPress: PropTypes.func,
         onPostDelete: PropTypes.func,
         onPostEdit: PropTypes.func,
@@ -59,6 +61,7 @@ class PostBody extends PureComponent {
     static defaultProps = {
         fileIds: [],
         onAddReaction: emptyFunction,
+        onCopyText: emptyFunction,
         onFailedPostPress: emptyFunction,
         onPostDelete: emptyFunction,
         onPostEdit: emptyFunction,
@@ -91,9 +94,9 @@ class PostBody extends PureComponent {
         actions.unflagPost(postId);
     };
 
-    showOptionsContext = () => {
+    showOptionsContext = (additionalAction) => {
         if (this.refs.options) {
-            this.refs.options.show();
+            this.refs.options.show(additionalAction);
         }
     };
 
@@ -125,7 +128,7 @@ class PostBody extends PureComponent {
         return attachments;
     }
 
-    render() {
+    render() { // eslint-disable-line complexity
         const {
             canDelete,
             canEdit,
@@ -138,6 +141,7 @@ class PostBody extends PureComponent {
             isSearchResult,
             isSystemMessage,
             intl,
+            managedConfig,
             message,
             navigator,
             onFailedPostPress,
@@ -160,6 +164,19 @@ class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
+            actions.push({
+                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                onPress: this.props.onAddReaction
+            });
+
+            if (managedConfig.copyAndPasteProtection !== 'true') {
+                actions.push({
+                    text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
+                    onPress: this.props.onCopyText,
+                    copyPost: true
+                });
+            }
+
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
@@ -179,11 +196,6 @@ class PostBody extends PureComponent {
             if (canDelete && !hasBeenDeleted) {
                 actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
             }
-
-            actions.push({
-                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                onPress: this.props.onAddReaction
-            });
         }
 
         let body;
@@ -265,6 +277,7 @@ class PostBody extends PureComponent {
                             message={message}
                             postProps={postProps}
                             textStyles={textStyles}
+                            onLongPress={this.showOptionsContext}
                         />
                         {this.renderFileAttachments()}
                         {hasReactions && <Reactions postId={postId}/>}

@@ -16,11 +16,12 @@ export default class SlackAttachments extends PureComponent {
         blockStyles: PropTypes.object,
         textStyles: PropTypes.object,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
+        onLongPress: PropTypes.func.isRequired
     };
 
     render() {
-        const {attachments, baseTextStyle, blockStyles, navigator, textStyles, theme} = this.props;
+        const {attachments, baseTextStyle, blockStyles, navigator, textStyles, theme, onLongPress} = this.props;
         const content = [];
 
         attachments.forEach((attachment, i) => {
@@ -33,6 +34,7 @@ export default class SlackAttachments extends PureComponent {
                     textStyles={textStyles}
                     navigator={navigator}
                     theme={theme}
+                    onLongPress={onLongPress}
                 />
             );
         });

@@ -3,16 +3,19 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Linking, Text} from 'react-native';
+import {Clipboard, Linking, Text} from 'react-native';
 import urlParse from 'url-parse';
+import {injectIntl, intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import Config from 'assets/config';
+import mattermostManaged from 'app/mattermost_managed';
 
-export default class MarkdownLink extends PureComponent {
+class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
+        intl: intlShape.isRequired,
         onLongPress: PropTypes.func
     };
 
@@ -65,16 +68,38 @@ export default class MarkdownLink extends PureComponent {
         });
     }
 
+    handleLongPress = async () => {
+        const {formatMessage} = this.props.intl;
+
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'true') {
+            action = {
+                text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
+                onPress: this.handleCopyURL
+            };
+        }
+
+        this.props.onLongPress(action);
+    }
+
+    handleCopyURL = () => {
+        Clipboard.setString(this.props.href);
+    }
+
     render() {
         const children = Config.ExperimentalNormalizeMarkdownLinks ? this.parseChildren() : this.props.children;
 
         return (
             <Text
                 onPress={this.handlePress}
-                onLongPress={this.props.onLongPress}
+                onLongPress={this.handleLongPress}
             >
                 {children}
             </Text>
         );
     }
 }
+
+export default injectIntl(MarkdownLink);

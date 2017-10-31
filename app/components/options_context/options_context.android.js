@@ -20,16 +20,22 @@ export default class OptionsContext extends PureComponent {
         cancelText: 'Cancel'
     };
 
-    show = () => {
+    show = (additionalAction) => {
         const {actions, cancelText} = this.props;
-        if (actions.length) {
-            const actionsText = actions.map((a) => a.text);
+        const nextActions = [...actions];
+        if (additionalAction && !additionalAction.nativeEvent && additionalAction.text) {
+            const copyPostIndex = nextActions.findIndex((action) => action.copyPost);
+            nextActions.splice(copyPostIndex + 1, 0, additionalAction);
+        }
+
+        if (nextActions.length) {
+            const actionsText = nextActions.map((a) => a.text);
             RNBottomSheet.showBottomSheetWithOptions({
                 options: [...actionsText, cancelText],
-                cancelButtonIndex: actions.length
+                cancelButtonIndex: nextActions.length
             }, (value) => {
-                if (value !== actions.length) {
-                    const selectedOption = actions[value];
+                if (value !== nextActions.length) {
+                    const selectedOption = nextActions[value];
                     if (selectedOption && selectedOption.onPress) {
                         selectedOption.onPress();
                     }

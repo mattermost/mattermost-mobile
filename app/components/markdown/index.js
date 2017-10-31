@@ -149,6 +149,7 @@ export default class Markdown extends PureComponent {
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
                 isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
+                onLongPress={this.props.onLongPress}
                 onPostPress={this.props.onPostPress}
                 navigator={this.props.navigator}
             />
@@ -223,6 +224,7 @@ export default class Markdown extends PureComponent {
                 content={content}
                 language={props.language}
                 textStyle={this.props.textStyles.codeBlock}
+                onLongPress={this.props.onLongPress}
             />
         );
     }

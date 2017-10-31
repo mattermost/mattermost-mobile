@@ -5,6 +5,7 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Clipboard,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -16,6 +17,7 @@ import FormattedText from 'app/components/formatted_text';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import mattermostManaged from 'app/mattermost_managed';
 
 const MAX_LINES = 4;
 
@@ -26,7 +28,8 @@ class MarkdownCodeBlock extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         language: PropTypes.string,
         content: PropTypes.string.isRequired,
-        textStyle: CustomPropTypes.Style
+        textStyle: CustomPropTypes.Style,
+        onLongPress: PropTypes.func.isRequired
     };
 
     static defaultProps = {
@@ -71,6 +74,26 @@ class MarkdownCodeBlock extends React.PureComponent {
             }
         });
     });
+
+    handleLongPress = async () => {
+        const {formatMessage} = this.props.intl;
+
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'true') {
+            action = {
+                text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
+                onPress: this.handleCopyCode
+            };
+        }
+
+        this.props.onLongPress(action);
+    }
+
+    handleCopyCode = () => {
+        Clipboard.setString(this.props.content);
+    }
 
     trimContent = (content) => {
         const lines = content.split('\n');
@@ -131,7 +154,10 @@ class MarkdownCodeBlock extends React.PureComponent {
         }
 
         return (
-            <TouchableOpacity onPress={this.handlePress}>
+            <TouchableOpacity
+                onPress={this.handlePress}
+                onLongPress={this.handleLongPress}
+            >
                 <View style={style.container}>
                     <View style={style.lineNumbers}>
                         <Text style={style.lineNumbersText}>

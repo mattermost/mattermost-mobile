@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
+    Clipboard,
     View,
     ViewPropTypes
 } from 'react-native';
@@ -50,6 +51,7 @@ class Post extends PureComponent {
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
+        managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
@@ -317,6 +319,15 @@ class Post extends PureComponent {
         }
     };
 
+    handleCopyText = (text) => {
+        let textToCopy = this.props.post.message;
+        if (typeof text === 'string') {
+            textToCopy = text;
+        }
+
+        Clipboard.setString(textToCopy);
+    }
+
     render() {
         const {
             commentedOnPost,
@@ -327,7 +338,8 @@ class Post extends PureComponent {
             renderReplies,
             shouldRenderReplyButton,
             showFullDate,
-            theme
+            theme,
+            managedConfig
         } = this.props;
 
         if (!post) {
@@ -369,6 +381,7 @@ class Post extends PureComponent {
                             isSearchResult={isSearchResult}
                             navigator={this.props.navigator}
                             onAddReaction={this.handleAddReaction}
+                            onCopyText={this.handleCopyText}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
                             onPostEdit={this.handlePostEdit}
@@ -376,6 +389,7 @@ class Post extends PureComponent {
                             postId={post.id}
                             renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
                             toggleSelected={this.toggleSelected}
+                            managedConfig={managedConfig}
                         />
                     </View>
                 </View>

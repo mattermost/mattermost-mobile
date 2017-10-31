@@ -3,23 +3,28 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {Clipboard, Text} from 'react-native';
+import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import mattermostManaged from 'app/mattermost_managed';
 
-class AtMention extends React.PureComponent {
+export default class AtMention extends React.PureComponent {
     static propTypes = {
-        intl: intlShape,
         isSearchResult: PropTypes.bool,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: CustomPropTypes.Style,
         navigator: PropTypes.object.isRequired,
+        onLongPress: PropTypes.func.isRequired,
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired
     };
+
+    static contextTypes = {
+        intl: intlShape
+    }
 
     constructor(props) {
         super(props);
@@ -42,7 +47,8 @@ class AtMention extends React.PureComponent {
     }
 
     goToUserProfile = () => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.push({
             screen: 'UserProfile',
@@ -86,6 +92,30 @@ class AtMention extends React.PureComponent {
         };
     }
 
+    handleLongPress = async () => {
+        const {intl} = this.context;
+
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'false') {
+            action = {
+                text: intl.formatMessage({
+                    id: 'mobile.mention.copy_mention',
+                    defaultMessage: 'Copy Mention'
+                }),
+                onPress: this.handleCopyMention
+            };
+        }
+
+        this.props.onLongPress(action);
+    }
+
+    handleCopyMention = () => {
+        const {username} = this.state;
+        Clipboard.setString(`@${username}`);
+    }
+
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, textStyle} = this.props;
         const username = this.state.username;
@@ -100,6 +130,7 @@ class AtMention extends React.PureComponent {
             <Text
                 style={textStyle}
                 onPress={isSearchResult ? onPostPress : this.goToUserProfile}
+                onLongPress={this.handleLongPress}
             >
                 <Text style={mentionStyle}>
                     {'@' + username}
@@ -109,5 +140,3 @@ class AtMention extends React.PureComponent {
         );
     }
 }
-
-export default injectIntl(AtMention);
