@@ -36,7 +36,17 @@ export function messageRetention() {
 function resetStateForNewVersion(action) {
     const {payload} = action;
     const lastChannelForTeam = getLastChannelForTeam(payload);
-    const currentUserId = payload.entities.users.currentUserId;
+    let users = {};
+
+    if (payload.entities.users) {
+        const currentUserId = payload.entities.users.currentUserId;
+        users = {
+            currentUserId,
+            profiles: {
+                [currentUserId]: payload.entities.users.profiles[currentUserId]
+            }
+        };
+    }
 
     const nextState = {
         app: {
@@ -50,12 +60,7 @@ function resetStateForNewVersion(action) {
                 teams: payload.entities.teams.teams,
                 myMembers: payload.entities.teams.myMembers
             },
-            users: {
-                currentUserId,
-                profiles: {
-                    [currentUserId]: payload.entities.users.profiles[currentUserId]
-                }
-            },
+            users,
             preferences: payload.entities.preferences,
             search: {
                 recent: payload.entities.search.recent
@@ -125,7 +130,7 @@ function cleanupState(action, keepCurrent = false) {
             // we need to check that the channel id is not already included
             // the reason it can be included is cause at least one of the last channels viewed
             // in a team can be a DM or GM and the id can be duplicate
-            if (!nextEntitites.posts.postsInChannel[id]) {
+            if (!nextEntitites.posts.postsInChannel[id] && payload.entities.posts.postsInChannel[id]) {
                 let postIds;
                 if (keepCurrent && currentChannelId === id) {
                     postIds = payload.entities.posts.postsInChannel[id];
@@ -143,30 +148,32 @@ function cleanupState(action, keepCurrent = false) {
 
     postIdsToKeep.forEach((postId) => {
         const post = payload.entities.posts.posts[postId];
-        const skip = keepCurrent && currentChannelId === post.channel_id;
+        if (post) {
+            const skip = keepCurrent && currentChannelId === post.channel_id;
 
-        if (!skip && retentionPeriod && (Date.now() - post.create_at) / (1000 * 3600 * 24) > retentionPeriod) {
-            const postsInChannel = nextEntitites.posts.postsInChannel[post.channel_id];
-            const index = postsInChannel.indexOf(postId);
-            if (index !== -1) {
-                postsInChannel.splice(index, 1);
+            if (!skip && retentionPeriod && (Date.now() - post.create_at) / (1000 * 3600 * 24) > retentionPeriod) {
+                const postsInChannel = nextEntitites.posts.postsInChannel[post.channel_id] || [];
+                const index = postsInChannel.indexOf(postId);
+                if (index !== -1) {
+                    postsInChannel.splice(index, 1);
+                }
+                return;
             }
-            return;
-        }
 
-        nextEntitites.posts.posts[postId] = post;
+            nextEntitites.posts.posts[postId] = post;
 
-        const reaction = payload.entities.posts.reactions[postId];
-        if (reaction) {
-            nextEntitites.posts.reactions[postId] = reaction;
-        }
+            const reaction = payload.entities.posts.reactions[postId];
+            if (reaction) {
+                nextEntitites.posts.reactions[postId] = reaction;
+            }
 
-        const fileIds = payload.entities.files.fileIdsByPostId[postId];
-        if (fileIds) {
-            nextEntitites.files.fileIdsByPostId[postId] = fileIds;
-            fileIds.forEach((fileId) => {
-                nextEntitites.files.files[fileId] = payload.entities.files.files[fileId];
-            });
+            const fileIds = payload.entities.files.fileIdsByPostId[postId];
+            if (fileIds) {
+                nextEntitites.files.fileIdsByPostId[postId] = fileIds;
+                fileIds.forEach((fileId) => {
+                    nextEntitites.files.files[fileId] = payload.entities.files.files[fileId];
+                });
+            }
         }
     });
 
