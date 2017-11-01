@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    InteractionManager,
     SectionList,
     Text,
     TouchableHighlight,
@@ -298,18 +299,17 @@ class List extends PureComponent {
     }, 100);
 
     updateUnreadIndicators = ({viewableItems}) => {
-        const {unreadChannelIds} = this.props;
-        const firstUnread = unreadChannelIds[0];
-        if (firstUnread) {
-            const isVisible = viewableItems.find((v) => v.item === firstUnread);
+        InteractionManager.runAfterInteractions(() => {
+            const {unreadChannelIds} = this.props;
+            const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
+            if (firstUnread && viewableItems.length) {
+                const isVisible = viewableItems.find((v) => v.item === firstUnread);
 
-            if (isVisible) {
-                return this.emitUnreadIndicatorChange(false);
+                return this.emitUnreadIndicatorChange(!isVisible);
             }
-            return this.emitUnreadIndicatorChange(true);
-        }
 
-        return this.emitUnreadIndicatorChange(false);
+            return this.emitUnreadIndicatorChange(false);
+        });
     };
 
     render() {
