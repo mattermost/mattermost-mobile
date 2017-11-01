@@ -205,12 +205,26 @@ function cleanupState(action, keepCurrent = false) {
             }
         },
         views: {
-            ...resetPayload.views
+            ...resetPayload.views,
+            channel: {
+                ...resetPayload.views.channel,
+
+                // on data cleanup we need to keep the postVisibility
+                postVisibility: payload.views.channel.postVisibility
+            }
         }
     };
 
     if (keepCurrent) {
         nextState.errors = payload.errors;
+
+        // keep the statuses for users in the current channel
+        const profileIdsInCurrentChannel = payload.entities.users.profilesInChannel[currentChannelId];
+        const nextStatuses = {};
+        for (const id of profileIdsInCurrentChannel) {
+            nextStatuses[id] = statuses[id];
+        }
+        nextState.entities.users.statuses = nextStatuses;
     }
 
     return {
