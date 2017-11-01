@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
+    ImageBackground,
     Linking,
     Platform,
     StyleSheet,
@@ -185,7 +186,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                         {...this.responder}
                         onPress={this.playYouTubeVideo}
                     >
-                        <Image
+                        <ImageBackground
                             style={[styles.image, {width, height}]}
                             source={{uri: imgUrl}}
                             resizeMode={'cover'}
@@ -197,7 +198,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                                     onPress={this.playYouTubeVideo}
                                 />
                             </TouchableWithoutFeedback>
-                        </Image>
+                        </ImageBackground>
                     </TouchableWithoutFeedback>
                 );
             }
