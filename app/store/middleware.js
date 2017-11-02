@@ -109,7 +109,6 @@ function cleanupState(action, keepCurrent = false) {
     const {payload: resetPayload} = resetStateForNewVersion(action);
     const {payload} = action;
     const {currentChannelId} = payload.entities.channels;
-    const {statuses, ...otherUsers} = payload.entities.users; //eslint-disable-line no-unused-vars
 
     const {lastChannelForTeam} = resetPayload.views.team;
     const nextEntitites = {
@@ -202,32 +201,18 @@ function cleanupState(action, keepCurrent = false) {
             preferences: resetPayload.entities.preferences,
             search: resetPayload.entities.search,
             teams: resetPayload.entities.teams,
-            users: {
-                ...otherUsers
-            }
+            users: payload.entities.users
         },
         views: {
             ...resetPayload.views,
             channel: {
                 ...resetPayload.views.channel,
-
-                // on data cleanup we need to keep the postVisibility
-                postVisibility: payload.views.channel.postVisibility
+                ...payload.views.channel
             }
         }
     };
 
-    if (keepCurrent) {
-        nextState.errors = payload.errors;
-
-        // keep the statuses for users in the current channel
-        const profileIdsInCurrentChannel = payload.entities.users.profilesInChannel[currentChannelId];
-        const nextStatuses = {};
-        for (const id of profileIdsInCurrentChannel) {
-            nextStatuses[id] = statuses[id];
-        }
-        nextState.entities.users.statuses = nextStatuses;
-    }
+    nextState.errors = payload.errors;
 
     return {
         type: 'persist/REHYDRATE',
