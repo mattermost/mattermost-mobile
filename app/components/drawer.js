@@ -21,13 +21,13 @@ export default class Drawer extends BaseDrawer {
     }
 
     componentDidMount() {
-        this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow);
-        this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
+        Keyboard.addListener('keyboardDidShow', this.keyboardDidShow);
+        Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
     }
 
     componentWillUnmount() {
-        this.keyboardDidShowListener.remove();
-        this.keyboardDidHideListener.remove();
+        Keyboard.removeListener('keyboardDidShow', this.keyboardDidShow);
+        Keyboard.removeListener('keyboardDidHide', this.keyboardDidHide);
     }
 
     getMainHeight = () => '100%';
