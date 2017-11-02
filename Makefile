@@ -86,7 +86,7 @@ run-android: | check-device-android start prepare-android-build
 	@echo Running Android app in development
 	@react-native run-android --no-packager
 
-test: pre-run
+test: | pre-run check-style
 	@yarn test
 
 check-style: .yarninstall
@@ -122,6 +122,7 @@ post-install:
 	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 	@sed -i'' -e 's|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_FULL_USER);|g' node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation/params/Orientation.java
 	@cd ./node_modules/react-native-svg/ios && rm -rf PerformanceBezier && git clone https://github.com/adamwulf/PerformanceBezier.git
+	@cd ./node_modules/mattermost-redux && yarn run build
 
 start-packager:
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \

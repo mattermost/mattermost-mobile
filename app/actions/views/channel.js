@@ -23,13 +23,13 @@ import {
     getChannelByName,
     getDirectChannelName,
     getUserIdFromChannelName,
-    isDirectChannelVisible,
-    isGroupChannelVisible,
     isDirectChannel,
     isGroupChannel
 } from 'mattermost-redux/utils/channel_utils';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
+
+import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels';
 
 const MAX_POST_TRIES = 3;
 
