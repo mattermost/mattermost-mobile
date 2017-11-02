@@ -607,6 +607,8 @@ export default class Mattermost {
                 },
                 animationType
             });
+
+            this.appStarted = true;
         }
     };
 
