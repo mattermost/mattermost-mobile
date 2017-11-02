@@ -10,9 +10,9 @@ export function messageRetention() {
     return (next) => (action) => {
         if (action.type === 'persist/REHYDRATE') {
             const {app} = action.payload;
-            const {entities} = action.payload;
+            const {entities, views} = action.payload;
 
-            if (!entities) {
+            if (!entities || !views) {
                 return next(action);
             }
 
@@ -40,12 +40,14 @@ function resetStateForNewVersion(action) {
 
     if (payload.entities.users) {
         const currentUserId = payload.entities.users.currentUserId;
-        users = {
-            currentUserId,
-            profiles: {
-                [currentUserId]: payload.entities.users.profiles[currentUserId]
-            }
-        };
+        if (currentUserId) {
+            users = {
+                currentUserId,
+                profiles: {
+                    [currentUserId]: payload.entities.users.profiles[currentUserId]
+                }
+            };
+        }
     }
 
     const nextState = {
