@@ -333,7 +333,7 @@ class List extends PureComponent {
                     stickySectionHeadersEnabled={false}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 3,
-                        waitForInteraction: false
+                        waitForInteraction: true
                     }}
                 />
                 <UnreadIndicator
