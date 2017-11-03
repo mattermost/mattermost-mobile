@@ -358,6 +358,7 @@ export default class Mattermost {
     };
 
     handleReset = () => {
+        this.appStarted = false;
         this.resetBadgeAndVersion();
         this.startApp('fade');
     };
@@ -560,6 +561,7 @@ export default class Mattermost {
 
         const {dispatch, getState} = this.store;
         await loadConfigAndLicense()(dispatch, getState);
+        this.appStarted = false;
         this.startApp('fade');
     };
 
