@@ -197,5 +197,7 @@ export default function configureAppStore(initialState) {
     const additionalMiddleware = [createSentryMiddleware(), messageRetention];
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
         additionalMiddleware
+    }, {
+        storage: AsyncStorage
     });
 }
