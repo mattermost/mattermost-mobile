@@ -2,7 +2,7 @@
 
 ## v1.4 Release 
 
-- Release Date: November 5, 2017
+- Release Date: November 6, 2017
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
 
 ### Highlights 
