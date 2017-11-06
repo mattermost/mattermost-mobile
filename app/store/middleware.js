@@ -116,6 +116,7 @@ function cleanupState(action, keepCurrent = false) {
             posts: {},
             postsInChannel: {},
             reactions: {},
+            openGraph: payload.entities.posts.openGraph,
             selectedPostId: payload.entities.posts.selectedPostId,
             currentFocusedPostId: payload.entities.posts.currentFocusedPostId
         },
