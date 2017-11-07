@@ -12,29 +12,47 @@ import webhookIcon from 'assets/images/icons/webhook.jpg';
 
 const PROFILE_PICTURE_SIZE = 32;
 
-function PostProfilePicture(props) {
-    const {
-        enablePostIconOverride,
-        fromWebHook,
-        isSystemMessage,
-        onViewUserProfile,
-        overrideIconUrl,
-        theme,
-        userId
-    } = props;
-    if (isSystemMessage) {
-        return (
-            <View>
-                <AppIcon
-                    color={theme.centerChannelColor}
-                    height={PROFILE_PICTURE_SIZE}
-                    width={PROFILE_PICTURE_SIZE}
-                />
-            </View>
-        );
-    } else if (fromWebHook) {
-        if (enablePostIconOverride) {
+export default class PostProfilePicture extends React.PureComponent {
+    static propTypes = {
+        enablePostIconOverride: PropTypes.bool,
+        fromWebHook: PropTypes.bool,
+        isSystemMessage: PropTypes.bool,
+        overrideIconUrl: PropTypes.string,
+        onViewUserProfile: PropTypes.func,
+        theme: PropTypes.object,
+        userId: PropTypes.string
+    };
+
+    static defaultProps = {
+        onViewUserProfile: emptyFunction
+    };
+
+    render() {
+        const {
+            enablePostIconOverride,
+            fromWebHook,
+            isSystemMessage,
+            onViewUserProfile,
+            overrideIconUrl,
+            theme,
+            userId
+        } = this.props;
+
+        if (isSystemMessage) {
+            return (
+                <View>
+                    <AppIcon
+                        color={theme.centerChannelColor}
+                        height={PROFILE_PICTURE_SIZE}
+                        width={PROFILE_PICTURE_SIZE}
+                    />
+                </View>
+            );
+        }
+
+        if (fromWebHook && enablePostIconOverride) {
             const icon = overrideIconUrl ? {uri: overrideIconUrl} : webhookIcon;
+
             return (
                 <View>
                     <Image
@@ -49,36 +67,21 @@ function PostProfilePicture(props) {
             );
         }
 
-        return (
+        let component = (
             <ProfilePicture
                 userId={userId}
                 size={PROFILE_PICTURE_SIZE}
             />
         );
+
+        if (!fromWebHook) {
+            component = (
+                <TouchableOpacity onPress={onViewUserProfile}>
+                    {component}
+                </TouchableOpacity>
+            );
+        }
+
+        return component;
     }
-
-    return (
-        <TouchableOpacity onPress={onViewUserProfile}>
-            <ProfilePicture
-                userId={userId}
-                size={PROFILE_PICTURE_SIZE}
-            />
-        </TouchableOpacity>
-    );
 }
-
-PostProfilePicture.propTypes = {
-    enablePostIconOverride: PropTypes.bool,
-    fromWebHook: PropTypes.bool,
-    isSystemMessage: PropTypes.bool,
-    overrideIconUrl: PropTypes.string,
-    onViewUserProfile: PropTypes.func,
-    theme: PropTypes.object,
-    userId: PropTypes.string
-};
-
-PostProfilePicture.defaultProps = {
-    onViewUserProfile: emptyFunction
-};
-
-export default PostProfilePicture;
