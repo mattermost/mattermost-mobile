@@ -35,7 +35,7 @@ export default class LoadMorePosts extends PureComponent {
 
         if (this.props.loading) {
             i18nId = 'mobile.loading_posts';
-            defaultMessage = 'Loading Messages...';
+            defaultMessage = 'Loading messages...';
         }
 
         return (
