@@ -1,5 +1,19 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.4 Release 
+
+- Release Date: November 6, 2017
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights 
+
+#### Performance improvements
+- Various performance improvements to decrease channel load times 
+
+### Bug Fixes
+- Fixed issue with Android app sometimes showing a white screen when re-opening the app
+- Fixed an issue with orientation lock not working on Android 
+
 ## v1.3 Release 
 
 - Release Date: October 5, 2017
