@@ -162,18 +162,25 @@ export default class PostList extends PureComponent {
     };
 
     renderFooter = () => {
+        if (!this.props.channelId) {
+            return null;
+        }
+
         if (this.props.showLoadMore) {
-            return <LoadMorePosts theme={this.props.theme}/>;
-        } else if (this.props.channelId) {
-            // FIXME: Only show the channel intro when we are at the very start of the channel
             return (
-                <View>
-                    <ChannelIntro navigator={this.props.navigator}/>
-                </View>
+                <LoadMorePosts
+                    channelId={this.props.channelId}
+                    theme={this.props.theme}
+                />
             );
         }
 
-        return null;
+        // FIXME: Only show the channel intro when we are at the very start of the channel
+        return (
+            <View>
+                <ChannelIntro navigator={this.props.navigator}/>
+            </View>
+        );
     };
 
     render() {

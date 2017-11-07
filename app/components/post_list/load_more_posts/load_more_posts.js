@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import {
     TouchableOpacity,
@@ -14,8 +13,9 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';
 
-class LoadMorePosts extends PureComponent {
+export default class LoadMorePosts extends PureComponent {
     static propTypes = {
+        channelId: PropTypes.string.isRequired, // eslint-disable no-unused-prop-types
         loading: PropTypes.bool.isRequired,
         loadMore: PropTypes.func,
         theme: PropTypes.object.isRequired,
@@ -32,10 +32,12 @@ class LoadMorePosts extends PureComponent {
     renderText(style) {
         let i18nId = 'posts_view.loadMore';
         let defaultMessage = 'Load more messages';
+
         if (this.props.loading) {
             i18nId = 'mobile.loading_posts';
             defaultMessage = 'Loading Messages...';
         }
+
         return (
             <FormattedText
                 id={i18nId}
@@ -73,11 +75,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
-
-function mapStateToProps(state, ownProps) {
-    return {
-        loading: state.views.channel.loadingPosts[ownProps.channelId] || false
-    };
-}
-
-export default connect(mapStateToProps)(LoadMorePosts);
