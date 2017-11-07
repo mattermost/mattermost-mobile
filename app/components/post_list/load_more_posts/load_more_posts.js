@@ -15,7 +15,7 @@ import FormattedText from 'app/components/formatted_text';
 
 export default class LoadMorePosts extends PureComponent {
     static propTypes = {
-        channelId: PropTypes.string.isRequired, // eslint-disable no-unused-prop-types
+        channelId: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
         loading: PropTypes.bool.isRequired,
         loadMore: PropTypes.func,
         theme: PropTypes.object.isRequired,
