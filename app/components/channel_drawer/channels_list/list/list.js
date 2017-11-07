@@ -69,10 +69,10 @@ class List extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevState.sections !== this.state.sections && this.refs.list) {
+        if (prevState.sections !== this.state.sections && this.refs.list._wrapperListRef.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.refs.list.recordInteraction();
             this.updateUnreadIndicators({
-                viewableItems: Array.from(this.refs.list._wrapperListRef._listRef._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+                viewableItems: Array.from(this.refs.list._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
             });
         }
     }
@@ -286,7 +286,7 @@ class List extends PureComponent {
 
     scrollToTop = () => {
         if (this.refs.list) {
-            this.refs.list._wrapperListRef._listRef.scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
                 animated: true

@@ -104,6 +104,10 @@ class PostTextbox extends PureComponent {
         }
     }
 
+    attachAutocomplete = (c) => {
+        this.autocomplete = c;
+    };
+
     blur = () => {
         this.refs.input.blur();
     };
@@ -119,6 +123,20 @@ class PostTextbox extends PureComponent {
         return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
     };
 
+    changeDraft = (text) => {
+        const {
+            actions,
+            channelId,
+            rootId
+        } = this.props;
+
+        if (rootId) {
+            actions.handleCommentDraftChanged(rootId, text);
+        } else {
+            actions.handlePostDraftChanged(channelId, text);
+        }
+    };
+
     handleAndroidKeyboard = () => {
         this.blur();
     };
@@ -130,6 +148,50 @@ class PostTextbox extends PureComponent {
             return true;
         }
         return false;
+    };
+
+    handleBlur = () => {
+        if (this.refs.input && Platform.OS === 'android') {
+            this.refs.input.setNativeProps({
+                autoScroll: false
+            });
+        }
+    };
+
+    handleContentSizeChange = (event) => {
+        let contentHeight = event.nativeEvent.layout.height;
+        if (contentHeight < INITIAL_HEIGHT) {
+            contentHeight = INITIAL_HEIGHT;
+        }
+
+        this.setState({
+            contentHeight
+        });
+    };
+
+    handleFocus = () => {
+        if (this.refs.input && Platform.OS === 'android') {
+            this.refs.input.setNativeProps({
+                autoScroll: true
+            });
+        }
+    };
+
+    handleInputSizeChange = (event) => {
+        this.setState({
+            inputWidth: event.nativeEvent.layout.width
+        });
+    };
+
+    handlePostDraftSelectionChanged = (event) => {
+        const cursorPosition = event.nativeEvent.selection.end;
+        if (this.props.rootId) {
+            this.props.actions.handleCommentDraftSelectionChanged(this.props.rootId, cursorPosition);
+        } else {
+            this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
+        }
+
+        this.autocomplete.handleSelectionChange(event);
     };
 
     handleSendMessage = () => {
@@ -171,6 +233,60 @@ class PostTextbox extends PureComponent {
         }
     };
 
+    handleTextChange = (text) => {
+        const {
+            actions,
+            channelId,
+            rootId
+        } = this.props;
+
+        this.changeDraft(text);
+        actions.userTyping(channelId, rootId);
+    };
+
+    handleUploadFiles = (images) => {
+        this.props.actions.handleUploadFiles(images, this.props.rootId);
+    };
+
+    renderDisabledSendButton = () => {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View style={[style.sendButton, style.disableButton]}>
+                <PaperPlane
+                    height={13}
+                    width={15}
+                    color={theme.buttonColor}
+                />
+            </View>
+        );
+    };
+
+    renderSendButton = () => {
+        const {theme, uploadFileRequestStatus} = this.props;
+        const style = getStyleSheet(theme);
+
+        if (uploadFileRequestStatus === RequestStatus.STARTED) {
+            return this.renderDisabledSendButton();
+        } else if (this.canSend()) {
+            return (
+                <TouchableOpacity
+                    onPress={this.handleSendMessage}
+                    style={style.sendButton}
+                >
+                    <PaperPlane
+                        height={13}
+                        width={15}
+                        color={theme.buttonColor}
+                    />
+                </TouchableOpacity>
+            );
+        }
+
+        return null;
+    };
+
     sendMessage = () => {
         const {actions, currentUserId, channelId, files, rootId, value} = this.props;
 
@@ -205,125 +321,11 @@ class PostTextbox extends PureComponent {
         this.setState(nextState, callback);
     };
 
-    handleUploadFiles = (images) => {
-        this.props.actions.handleUploadFiles(images, this.props.rootId);
-    };
-
-    changeDraft = (text) => {
-        const {
-            actions,
-            channelId,
-            rootId
-        } = this.props;
-
-        if (rootId) {
-            actions.handleCommentDraftChanged(rootId, text);
-        } else {
-            actions.handlePostDraftChanged(channelId, text);
-        }
-    }
-
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
         this.handleTextChange('');
-    }
-
-    handleTextChange = (text) => {
-        const {
-            actions,
-            channelId,
-            rootId
-        } = this.props;
-
-        this.changeDraft(text);
-        actions.userTyping(channelId, rootId);
     };
-
-    handleContentSizeChange = (event) => {
-        let contentHeight = event.nativeEvent.layout.height;
-        if (contentHeight < INITIAL_HEIGHT) {
-            contentHeight = INITIAL_HEIGHT;
-        }
-
-        this.setState({
-            contentHeight
-        });
-    };
-
-    handleInputSizeChange = (event) => {
-        this.setState({
-            inputWidth: event.nativeEvent.layout.width
-        });
-    };
-
-    handleSubmit = () => {
-        // Workaround for android as the multiline is not working
-        if (Platform.OS === 'android') {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            this.timeout = setTimeout(() => {
-                let {value: msg} = this.props;
-                msg += '\n';
-                this.handleTextChange(msg);
-            }, 10);
-        }
-    };
-
-    attachAutocomplete = (c) => {
-        this.autocomplete = c;
-    };
-
-    renderDisabledSendButton = () => {
-        const {theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        return (
-            <View style={[style.sendButton, style.disableButton]}>
-                <PaperPlane
-                    height={13}
-                    width={15}
-                    color={theme.buttonColor}
-                />
-            </View>
-        );
-    }
-
-    renderSendButton = () => {
-        const {theme, uploadFileRequestStatus} = this.props;
-        const style = getStyleSheet(theme);
-
-        if (uploadFileRequestStatus === RequestStatus.STARTED) {
-            return this.renderDisabledSendButton();
-        } else if (this.canSend()) {
-            return (
-                <TouchableOpacity
-                    onPress={this.handleSendMessage}
-                    style={style.sendButton}
-                >
-                    <PaperPlane
-                        height={13}
-                        width={15}
-                        color={theme.buttonColor}
-                    />
-                </TouchableOpacity>
-            );
-        }
-
-        return null;
-    }
-
-    handlePostDraftSelectionChanged = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
-        if (this.props.rootId) {
-            this.props.actions.handleCommentDraftSelectionChanged(this.props.rootId, cursorPosition);
-        } else {
-            this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
-        }
-
-        this.autocomplete.handleSelectionChange(event);
-    }
 
     render() {
         const {
@@ -392,13 +394,14 @@ class PostTextbox extends PureComponent {
                             placeholder={intl.formatMessage(placeholder)}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
                             multiline={true}
-                            numberOfLines={10}
+                            numberOfLines={5}
                             blurOnSubmit={false}
                             underlineColorAndroid='transparent'
                             style={[style.input, {height: textInputHeight}]}
-                            onSubmitEditing={this.handleSubmit}
                             onLayout={this.handleInputSizeChange}
                             keyboardType={this.state.keyboardType}
+                            onFocus={this.handleFocus}
+                            onBlur={this.handleBlur}
                         />
                         {this.renderSendButton()}
                     </View>

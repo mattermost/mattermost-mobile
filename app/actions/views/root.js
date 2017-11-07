@@ -1,6 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {PostTypes} from 'mattermost-redux/action_types';
+import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import {getClientConfig, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
@@ -61,6 +63,41 @@ export function loadFromPushNotification(notification) {
 
 export function purgeOfflineStore() {
     return {type: General.OFFLINE_STORE_PURGE};
+}
+
+export function createPost(post) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentUserId = state.entities.users.currentUserId;
+
+        const timestamp = Date.now();
+        const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
+
+        const newPost = {
+            ...post,
+            pending_post_id: pendingPostId,
+            create_at: timestamp,
+            update_at: timestamp
+        };
+
+        try {
+            const payload = Client4.createPost({...newPost, create_at: 0});
+            dispatch({
+                type: PostTypes.RECEIVED_POSTS,
+                data: {
+                    order: [],
+                    posts: {
+                        [payload.id]: payload
+                    }
+                },
+                channelId: payload.channel_id
+            });
+        } catch (error) {
+            return {error};
+        }
+
+        return {data: true};
+    };
 }
 
 export default {
