@@ -453,16 +453,31 @@ export function increasePostVisibility(channelId, focusedPostId) {
         const currentPostVisibility = postVisibility[channelId] || 0;
 
         if (loadingPosts[channelId]) {
-            return true;
+            return;
         }
 
-        dispatch(batchActions([
-            {
-                type: ViewTypes.LOADING_POSTS,
-                data: true,
-                channelId
+        // Check if we already have the posts that we want to show
+        if (!focusedPostId) {
+            const loadedPostCount = state.entities.posts.postsInChannel[channelId].length;
+            const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+
+            if (loadedPostCount >= desiredPostVisibility) {
+                // We already have the posts, so we just need to show them
+                dispatch({
+                    type: ViewTypes.INCREASE_POST_VISIBILITY,
+                    data: channelId,
+                    amount: ViewTypes.POST_VISIBILITY_CHUNK_SIZE
+                });
+
+                return;
             }
-        ]));
+        }
+
+        dispatch({
+            type: ViewTypes.LOADING_POSTS,
+            data: true,
+            channelId
+        });
 
         const page = Math.floor(currentPostVisibility / ViewTypes.POST_VISIBILITY_CHUNK_SIZE);
 
@@ -489,7 +504,5 @@ export function increasePostVisibility(channelId, focusedPostId) {
             data: false,
             channelId
         });
-
-        return posts && posts.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
     };
 }
