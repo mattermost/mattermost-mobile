@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, TouchableOpacity, View} from 'react-native';
 
@@ -12,7 +12,7 @@ import webhookIcon from 'assets/images/icons/webhook.jpg';
 
 const PROFILE_PICTURE_SIZE = 32;
 
-export default class PostProfilePicture extends React.PureComponent {
+export default class PostProfilePicture extends PureComponent {
     static propTypes = {
         enablePostIconOverride: PropTypes.bool,
         fromWebHook: PropTypes.bool,
