@@ -3,10 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    StyleSheet,
-    View
-} from 'react-native';
+import {StyleSheet} from 'react-native';
 
 import ChannelIntro from 'app/components/channel_intro';
 import FlatList from 'app/components/inverted_flat_list';
@@ -175,11 +172,7 @@ export default class PostList extends PureComponent {
             );
         }
 
-        return (
-            <View>
-                <ChannelIntro navigator={this.props.navigator}/>
-            </View>
-        );
+        return <ChannelIntro navigator={this.props.navigator}/>;
     };
 
     render() {
