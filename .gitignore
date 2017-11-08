@@ -1,5 +1,8 @@
 assets/override
 dist
+*.zip
+server.PID
+mattermost.keystore
 
 # OSX
 #
@@ -26,28 +29,27 @@ DerivedData
 *.xcuserstate
 project.xcworkspace
 
-# Android/IJ
+# Android/IntelliJ
 #
-*.iml
+build/
 .idea
 .gradle
 local.properties
+*.iml
 
 # node.js
 #
 node_modules/
 npm-debug.log
 .npminstall
-
-# yarn
-#
+yarn-error.log
 .yarninstall
 
 # BUCK
 buck-out/
 \.buckd/
 android/app/libs
-android/keystores/debug.keystore
+*.keystore
 
 # Vim
 [._]*.s[a-w][a-z]
@@ -58,10 +60,17 @@ Session.vim
 *~
 tags
 
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
 fastlane/report.xml
-*.zip
-server.PID
-mattermost.keystore
+fastlane/Preview.html
+*/fastlane/screenshots
+
 
 # Sentry
 android/sentry.properties
