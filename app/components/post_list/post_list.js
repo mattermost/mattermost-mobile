@@ -175,7 +175,6 @@ export default class PostList extends PureComponent {
             );
         }
 
-        // FIXME: Only show the channel intro when we are at the very start of the channel
         return (
             <View>
                 <ChannelIntro navigator={this.props.navigator}/>
