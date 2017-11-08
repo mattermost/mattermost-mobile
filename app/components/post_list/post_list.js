@@ -3,10 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    StyleSheet,
-    View
-} from 'react-native';
+import {StyleSheet} from 'react-native';
 
 import ChannelIntro from 'app/components/channel_intro';
 import FlatList from 'app/components/inverted_flat_list';
@@ -162,18 +159,20 @@ export default class PostList extends PureComponent {
     };
 
     renderFooter = () => {
+        if (!this.props.channelId) {
+            return null;
+        }
+
         if (this.props.showLoadMore) {
-            return <LoadMorePosts theme={this.props.theme}/>;
-        } else if (this.props.channelId) {
-            // FIXME: Only show the channel intro when we are at the very start of the channel
             return (
-                <View>
-                    <ChannelIntro navigator={this.props.navigator}/>
-                </View>
+                <LoadMorePosts
+                    channelId={this.props.channelId}
+                    theme={this.props.theme}
+                />
             );
         }
 
-        return null;
+        return <ChannelIntro navigator={this.props.navigator}/>;
     };
 
     render() {
