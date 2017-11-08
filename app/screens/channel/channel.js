@@ -64,14 +64,6 @@ class Channel extends PureComponent {
         }
     }
 
-    componentDidMount() {
-        // Mark current channel as read when opening app while logged in
-        if (this.props.currentChannelId) {
-            this.props.actions.markChannelAsRead(this.props.currentChannelId);
-            this.props.actions.viewChannel(this.props.currentChannelId);
-        }
-    }
-
     componentWillReceiveProps(nextProps) {
         if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
             this.loadChannels(nextProps.currentTeamId);

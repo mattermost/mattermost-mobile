@@ -3,10 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet} from 'react-native';
+import {
+    StyleSheet,
+    FlatList
+} from 'react-native';
 
 import ChannelIntro from 'app/components/channel_intro';
-import FlatList from 'app/components/inverted_flat_list';
 import Post from 'app/components/post';
 import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
@@ -44,6 +46,7 @@ export default class PostList extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.newMessagesIndex = -1;
         this.state = {
             managedConfig: {}
         };
@@ -55,14 +58,26 @@ export default class PostList extends PureComponent {
 
     componentDidMount() {
         this.setManagedConfig();
+        this.scrollList();
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.channelId !== this.props.channelId && this.refs.list) {
-            // When switching channels make sure we start from the bottom
-            this.refs.list.scrollToOffset({y: 0, animated: false});
+        const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
+        if ((prevProps.channelId !== this.props.channelId || initialPosts) && this.refs.list) {
+            this.scrollList();
         }
     }
+
+    scrollList = () => {
+        requestAnimationFrame(() => {
+            if (this.props.postIds.length && this.newMessagesIndex !== -1) {
+                this.refs.list.scrollToIndex({index: this.newMessagesIndex, viewPosition: 1, viewOffset: -10, animated: true});
+                this.newMessagesIndex = -1;
+            } else {
+                this.refs.list.scrollToOffset({y: 0, animated: false});
+            }
+        });
+    };
 
     setManagedConfig = async (config) => {
         let nextConfig = config;
@@ -73,11 +88,7 @@ export default class PostList extends PureComponent {
         this.setState({
             managedConfig: nextConfig
         });
-    }
-
-    getItem = (data, index) => data[index];
-
-    getItemCount = (data) => data.length;
+    };
 
     keyExtractor = (item) => {
         // All keys are strings (either post IDs or special keys)
@@ -102,6 +113,7 @@ export default class PostList extends PureComponent {
 
     renderItem = ({item, index}) => {
         if (item === START_OF_NEW_MESSAGES) {
+            this.newMessagesIndex = index;
             return (
                 <NewMessagesDivider
                     theme={this.props.theme}
@@ -180,8 +192,7 @@ export default class PostList extends PureComponent {
             channelId,
             highlightPostId,
             loadMore,
-            postIds,
-            theme
+            postIds
         } = this.props;
 
         const refreshControl = {
@@ -205,9 +216,6 @@ export default class PostList extends PureComponent {
                 onEndReachedThreshold={0}
                 {...refreshControl}
                 renderItem={this.renderItem}
-                theme={theme}
-                getItem={this.getItem}
-                getItemCount={this.getItemCount}
                 contentContainerStyle={styles.postListContent}
             />
         );

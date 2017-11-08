@@ -4,7 +4,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     View,
     ViewPropTypes
 } from 'react-native';
@@ -47,7 +46,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         line: {
             flex: 1,
-            height: StyleSheet.hairlineWidth,
+            height: 1,
             backgroundColor: theme.newMessageSeparator
         },
         text: {
