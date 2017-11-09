@@ -133,7 +133,7 @@ class Post extends PureComponent {
 
     handlePostDelete = () => {
         const {formatMessage} = this.props.intl;
-        const {post, actions} = this.props;
+        const {actions, currentUserId, post} = this.props;
 
         Alert.alert(
             formatMessage({id: 'mobile.post.delete_title', defaultMessage: 'Delete Post'}),
@@ -147,6 +147,9 @@ class Post extends PureComponent {
                 onPress: () => {
                     this.editDisableAction.cancel();
                     actions.deletePost(post);
+                    if (post.user_id === currentUserId) {
+                        actions.removePost(post);
+                    }
                 }
             }]
         );

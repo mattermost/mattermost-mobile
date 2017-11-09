@@ -47,6 +47,11 @@ class Thread extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {
+            this.props.navigator.pop();
+            return;
+        }
+
         if (!this.state.lastViewedAt) {
             this.setState({lastViewedAt: nextProps.myMember.last_viewed_at});
         }
