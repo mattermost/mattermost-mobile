@@ -148,6 +148,10 @@ class UserProfile extends PureComponent {
         const {config, theme, user} = this.props;
         const style = createStyleSheet(theme);
 
+        if (!user) {
+            return null;
+        }
+
         return (
             <View style={style.container}>
                 <StatusBar/>
