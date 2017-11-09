@@ -77,7 +77,6 @@ class ChannelIntro extends PureComponent {
                     size={64}
                     statusBorderWidth={2}
                     statusSize={25}
-                    statusIconSize={15}
                 />
             </TouchableOpacity>
         ));

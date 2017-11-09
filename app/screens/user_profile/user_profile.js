@@ -160,7 +160,6 @@ class UserProfile extends PureComponent {
                             size={150}
                             statusBorderWidth={6}
                             statusSize={40}
-                            statusIconSize={18}
                         />
                         {this.getDisplayName()}
                         <Text style={style.username}>{`@${user.username}`}</Text>

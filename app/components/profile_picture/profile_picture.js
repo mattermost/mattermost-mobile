@@ -4,8 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, Platform, View} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
+import {General, Preferences} from 'mattermost-redux/constants';
+
+import {AwayIcon, DndIcon, OfflineIcon, OnlineIcon} from 'app/components/status_icons';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
@@ -13,8 +15,10 @@ import placeholder from 'assets/images/profile.jpg';
 import {Client4} from 'mattermost-redux/client';
 
 const statusToIcon = {
-    online: 'check',
-    away: 'minus'
+    away: AwayIcon,
+    dnd: DndIcon,
+    offline: OfflineIcon,
+    online: OnlineIcon
 };
 
 const STATUS_BUFFER = Platform.select({
@@ -27,7 +31,6 @@ export default class ProfilePicture extends PureComponent {
         size: PropTypes.number,
         statusBorderWidth: PropTypes.number,
         statusSize: PropTypes.number,
-        statusIconSize: PropTypes.number,
         user: PropTypes.object,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -39,8 +42,7 @@ export default class ProfilePicture extends PureComponent {
     static defaultProps = {
         size: 128,
         statusBorderWidth: 2,
-        statusSize: 14,
-        statusIconSize: 8
+        statusSize: 14
     };
 
     componentDidMount() {
@@ -50,37 +52,62 @@ export default class ProfilePicture extends PureComponent {
     }
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
 
         let pictureUrl;
         if (this.props.user) {
             pictureUrl = Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
         }
 
-        let statusIcon;
+        let Icon;
+        let iconColor;
         if (this.props.status && statusToIcon[this.props.status]) {
-            statusIcon = (
-                <Icon
-                    style={style.status}
-                    name={statusToIcon[this.props.status]}
-                    size={this.props.statusIconSize}
-                />
-            );
+            Icon = statusToIcon[this.props.status];
+
+            switch (this.props.status) {
+            case General.AWAY:
+                iconColor = theme.awayIndicator;
+                break;
+            case General.DND:
+                if (theme.dndIndicator) {
+                    iconColor = theme.dndIndicator;
+                } else {
+                    switch (theme.type) {
+                    case 'Organization':
+                        iconColor = Preferences.THEMES.organization.dndIndicator;
+                        break;
+                    case 'Mattermost Dark':
+                        iconColor = Preferences.THEMES.mattermostDark.dndIndicator;
+                        break;
+                    case 'Windows Dark':
+                        iconColor = Preferences.THEMES.windows10.dndIndicator;
+                        break;
+                    default:
+                        iconColor = Preferences.THEMES.default.dndIndicator;
+                        break;
+                    }
+                }
+                break;
+            case General.ONLINE:
+                iconColor = theme.onlineIndicator;
+                break;
+            default:
+                iconColor = theme.centerChannelColor;
+                break;
+            }
         } else {
-            statusIcon = (
-                <View
-                    style={[style.offlineIcon, {
-                        borderRadius: this.props.statusSize / 2,
-                        height: this.props.statusSize - this.props.statusBorderWidth,
-                        width: this.props.statusSize - this.props.statusBorderWidth,
-                        borderWidth: Platform.select({
-                            ios: this.props.statusBorderWidth,
-                            android: this.props.statusBorderWidth / 2
-                        })
-                    }]}
-                />
-            );
+            Icon = statusToIcon.offline;
+            iconColor = theme.centerChannelColor;
         }
+
+        const statusIcon = (
+            <Icon
+                height={this.props.statusSize}
+                width={this.props.statusSize}
+                color={iconColor}
+            />
+        );
 
         return (
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
@@ -91,32 +118,8 @@ export default class ProfilePicture extends PureComponent {
                     defaultSource={placeholder}
                 />
                 {this.props.status &&
-                    <View
-                        style={[
-                            style.statusWrapper,
-                            {
-                                width: this.props.statusSize,
-                                height: this.props.statusSize,
-                                borderWidth: this.props.statusBorderWidth,
-                                borderRadius: this.props.statusSize / 2,
-                                borderColor: this.props.theme.centerChannelBg
-                            }
-                        ]}
-                    >
-                        <View
-                            style={[
-                                style.statusContainer,
-                                {
-                                    width: this.props.statusSize - this.props.statusBorderWidth,
-                                    height: this.props.statusSize - this.props.statusBorderWidth,
-                                    borderRadius: (this.props.statusSize - this.props.statusBorderWidth) / 2,
-                                    padding: this.props.statusBorderWidth
-                                },
-                                style[this.props.status]
-                            ]}
-                        >
-                            {statusIcon}
-                        </View>
+                    <View style={[style.statusWrapper, {borderRadius: this.props.statusSize / 2}]}>
+                        {statusIcon}
                     </View>
                 }
             </View>
@@ -132,12 +135,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             right: 0,
             overflow: 'hidden',
             alignItems: 'center',
-            justifyContent: 'center'
-        },
-        statusContainer: {
-            alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'hidden'
+            backgroundColor: theme.centerChannelBg
         },
         status: {
             color: theme.centerChannelBg
@@ -147,6 +146,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         away: {
             backgroundColor: theme.awayIndicator
+        },
+        dnd: {
+            backgroundColor: 'red'
         },
         offline: {
             backgroundColor: theme.centerChannelBg
