@@ -91,7 +91,10 @@ export default class ImagePreview extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-            this.scrollView.scrollTo({x: (this.state.currentFile) * this.props.deviceWidth, animated: false});
+            if (this.scrollView) {
+                this.scrollView.scrollTo({x: (this.state.currentFile) * this.props.deviceWidth, animated: false});
+            }
+
             Animated.timing(this.state.wrapperViewOpacity, {
                 toValue: 1,
                 duration: 100
@@ -102,7 +105,9 @@ export default class ImagePreview extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
             InteractionManager.runAfterInteractions(() => {
-                this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: false});
+                if (this.scrollView) {
+                    this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: false});
+                }
             });
         }
 
