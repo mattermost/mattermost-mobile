@@ -65,7 +65,7 @@ function resetStateForNewVersion(action) {
             users,
             preferences: payload.entities.preferences,
             search: {
-                recent: payload.entities.search.recent
+                recent: payload.entities.search ? payload.entities.search.recent : {}
             }
         },
         views: {
