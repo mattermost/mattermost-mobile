@@ -9,6 +9,7 @@ const state = {
             appState: false,
             credentials: {},
             config: {},
+            dataRetentionPolicy: {},
             deviceToken: '',
             license: {},
             serverVersion: ''
@@ -44,6 +45,9 @@ const state = {
         },
         preferences: {
             myPreferences: {}
+        },
+        search: {
+            recent: []
         },
         typing: {}
     },
@@ -105,6 +109,10 @@ const state = {
                 error: null
             },
             config: {
+                status: 'not_started',
+                error: null
+            },
+            dataRetentionPolicy: {
                 status: 'not_started',
                 error: null
             },
@@ -252,8 +260,7 @@ const state = {
     navigation: '',
     views: {
         channel: {
-            drafts: {},
-            loading: false
+            drafts: {}
         },
         fetchCache: {},
         i18n: {
@@ -270,7 +277,9 @@ const state = {
         selectServer: {
             serverUrl: Config.DefaultServerUrl
         },
-        team: {},
+        team: {
+            lastTeamId: ''
+        },
         thread: {
             drafts: {}
         }

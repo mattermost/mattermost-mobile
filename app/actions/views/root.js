@@ -1,10 +1,10 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {PostTypes} from 'mattermost-redux/action_types';
+import {GeneralTypes, PostTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
-import {getClientConfig, getLicenseConfig} from 'mattermost-redux/actions/general';
+import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
 
@@ -16,10 +16,20 @@ import {
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
-        const [config, license] = await Promise.all([
+        const [configData, licenseData] = await Promise.all([
             getClientConfig()(dispatch, getState),
             getLicenseConfig()(dispatch, getState)
         ]);
+
+        const config = configData.data || {};
+        const license = licenseData.data || {};
+
+        if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
+            license.IsLicensed === 'true' && license.DataRetention === 'true') {
+            getDataRetentionPolicy()(dispatch, getState);
+        } else {
+            dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+        }
 
         return {config, license};
     };
