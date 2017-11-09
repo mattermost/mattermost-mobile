@@ -71,7 +71,9 @@ export default class Swiper extends PureComponent {
         if (this.runOnLayout) {
             if (Platform.OS === 'ios') {
                 setTimeout(() => {
-                    this.scrollView.scrollTo({x: this.props.width * this.state.index, animated: false});
+                    if (this.scrollView) {
+                        this.scrollView.scrollTo({x: this.props.width * this.state.index, animated: false});
+                    }
                 }, 100);
             } else {
                 this.scrollView.setPageWithoutAnimation(this.state.index);
