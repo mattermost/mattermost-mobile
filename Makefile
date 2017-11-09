@@ -122,6 +122,7 @@ post-install:
 	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 	@sed -i'' -e 's|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_FULL_USER);|g' node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation/params/Orientation.java
 	@sed -i'' -e "s|var AndroidTextInput = requireNativeComponent('AndroidTextInput', null);|var AndroidTextInput = requireNativeComponent('CustomTextInput', null);|g" node_modules/react-native/Libraries/Components/TextInput/TextInput.js
+	@sed -i'' -e 's^getItemLayout || index <= this._highestMeasuredFrameIndex,^!getItemLayout || index <= this._highestMeasuredFrameIndex,^g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 	@cd ./node_modules/react-native-svg/ios && rm -rf PerformanceBezier && git clone https://github.com/adamwulf/PerformanceBezier.git
 	@cd ./node_modules/mattermost-redux && yarn run build
 
