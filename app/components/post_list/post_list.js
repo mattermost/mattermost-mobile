@@ -69,6 +69,10 @@ export default class PostList extends PureComponent {
         }
     }
 
+    componentWillUnmount() {
+        mattermostManaged.clearListeners();
+    }
+
     scrollList = () => {
         InteractionManager.runAfterInteractions(() => {
             if (this.props.postIds.length && this.newMessagesIndex !== -1) {

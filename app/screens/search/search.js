@@ -106,6 +106,10 @@ class Search extends PureComponent {
         }
     }
 
+    componentWillUnmount() {
+        mattermostManaged.clearListeners();
+    }
+
     attachAutocomplete = (c) => {
         this.autocomplete = c;
     };
