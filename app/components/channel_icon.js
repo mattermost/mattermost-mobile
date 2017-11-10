@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {OnlineStatus, AwayStatus, OfflineStatus} from 'app/components/status_icons';
+import {AwayAvatar, DndAvatar, OfflineAvatar, OnlineAvatar} from 'app/components/status_icons';
 
 import {General} from 'mattermost-redux/constants';
 
@@ -90,30 +90,43 @@ export default class ChannelIcon extends React.PureComponent {
                 </View>
             );
         } else if (type === General.DM_CHANNEL) {
-            if (status === General.ONLINE) {
+            switch (status) {
+            case General.AWAY:
                 icon = (
-                    <OnlineStatus
-                        width={size}
-                        height={size}
-                        color={theme.onlineIndicator}
-                    />
-                );
-            } else if (status === General.AWAY) {
-                icon = (
-                    <AwayStatus
+                    <AwayAvatar
                         width={size}
                         height={size}
                         color={theme.awayIndicator}
                     />
                 );
-            } else {
+                break;
+            case General.DND:
                 icon = (
-                    <OfflineStatus
+                    <DndAvatar
+                        width={size}
+                        height={size}
+                        color={theme.dndIndicator}
+                    />
+                );
+                break;
+            case General.ONLINE:
+                icon = (
+                    <OnlineAvatar
+                        width={size}
+                        height={size}
+                        color={theme.onlineIndicator}
+                    />
+                );
+                break;
+            default:
+                icon = (
+                    <OfflineAvatar
                         width={size}
                         height={size}
                         color={offlineColor}
                     />
                 );
+                break;
             }
         }
 
