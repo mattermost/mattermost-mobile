@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, Platform, View} from 'react-native';
 
-import {General, Preferences} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 
 import {AwayIcon, DndIcon, OfflineIcon, OnlineIcon} from 'app/components/status_icons';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -70,24 +70,7 @@ export default class ProfilePicture extends PureComponent {
                 iconColor = theme.awayIndicator;
                 break;
             case General.DND:
-                if (theme.dndIndicator) {
-                    iconColor = theme.dndIndicator;
-                } else {
-                    switch (theme.type) {
-                    case 'Organization':
-                        iconColor = Preferences.THEMES.organization.dndIndicator;
-                        break;
-                    case 'Mattermost Dark':
-                        iconColor = Preferences.THEMES.mattermostDark.dndIndicator;
-                        break;
-                    case 'Windows Dark':
-                        iconColor = Preferences.THEMES.windows10.dndIndicator;
-                        break;
-                    default:
-                        iconColor = Preferences.THEMES.default.dndIndicator;
-                        break;
-                    }
-                }
+                iconColor = theme.dndIndicator;
                 break;
             case General.ONLINE:
                 iconColor = theme.onlineIndicator;
