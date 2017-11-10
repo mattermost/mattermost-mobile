@@ -5,6 +5,8 @@ import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
+import {getNotificationProps} from 'app/utils/notify_props';
+
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
         currentUser: PropTypes.object.isRequired,
@@ -18,7 +20,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         super(props);
 
         const {currentUser} = props;
-        const notifyProps = currentUser.notify_props || {};
+        const notifyProps = getNotificationProps(currentUser);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
@@ -43,7 +45,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
             mentionKeys.splice(usernameMentionIndex, 1);
         }
 
-        const comments = notifyProps.comments || 'never';
+        const comments = notifyProps.comments || 'any';
 
         const newState = {
             ...notifyProps,
