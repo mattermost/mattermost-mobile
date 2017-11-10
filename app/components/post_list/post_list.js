@@ -155,7 +155,7 @@ export default class PostList extends PureComponent {
         } = this.props;
         const {managedConfig} = this.state;
 
-        const highlight = highlightPostId && highlightPostId === postId;
+        const highlight = highlightPostId === postId;
         if (highlight) {
             this.newMessagesIndex = index;
         }
