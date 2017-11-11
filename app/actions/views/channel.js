@@ -10,8 +10,7 @@ import {
     fetchMyChannelsAndMembers,
     markChannelAsRead,
     selectChannel,
-    leaveChannel as serviceLeaveChannel,
-    unfavoriteChannel
+    leaveChannel as serviceLeaveChannel
 } from 'mattermost-redux/actions/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
@@ -20,14 +19,13 @@ import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+
 import {
     getChannelByName,
     getDirectChannelName,
     getUserIdFromChannelName,
     isDirectChannel,
-    isGroupChannel,
-    isFavoriteChannel
+    isGroupChannel
 } from 'mattermost-redux/utils/channel_utils';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
@@ -381,14 +379,10 @@ export function toggleGMChannel(channelId, visible) {
 export function closeDMChannel(channel) {
     return async (dispatch, getState) => {
         const state = getState();
-        const myPrefs = getMyPreferences(state);
-
-        if (isFavoriteChannel(myPrefs, channel.id)) {
-            unfavoriteChannel(channel.id)(dispatch, getState);
-        }
+        const currentChannelId = getCurrentChannelId(state);
 
         toggleDMChannel(channel.teammate_id, 'false')(dispatch, getState);
-        if (channel.isCurrent) {
+        if (channel.id === currentChannelId) {
             selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
         }
     };
@@ -397,14 +391,10 @@ export function closeDMChannel(channel) {
 export function closeGMChannel(channel) {
     return async (dispatch, getState) => {
         const state = getState();
-        const myPrefs = getMyPreferences(state);
-
-        if (isFavoriteChannel(myPrefs, channel.id)) {
-            unfavoriteChannel(channel.id)(dispatch, getState);
-        }
+        const currentChannelId = getCurrentChannelId(state);
 
         toggleGMChannel(channel.id, 'false')(dispatch, getState);
-        if (channel.isCurrent) {
+        if (channel.id === currentChannelId) {
             selectInitialChannel(state.entities.teams.currentTeamId)(dispatch, getState);
         }
     };
