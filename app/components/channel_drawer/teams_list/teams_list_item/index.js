@@ -11,18 +11,21 @@ import {removeProtocol} from 'app/utils/url';
 
 import TeamsListItem from './teams_list_item.js';
 
-function mapStateToProps(state, ownProps) {
-    const team = getTeam(state, ownProps.teamId);
+function makeMapStateToProps() {
     const getMentionCount = makeGetBadgeCountForTeamId();
 
-    return {
-        currentTeamId: getCurrentTeamId(state),
-        currentUrl: removeProtocol(getCurrentUrl(state)),
-        displayName: team.display_name,
-        mentionCount: getMentionCount(state, ownProps.teamId),
-        name: team.name,
-        theme: getTheme(state)
+    return function mapStateToProps(state, ownProps) {
+        const team = getTeam(state, ownProps.teamId);
+
+        return {
+            currentTeamId: getCurrentTeamId(state),
+            currentUrl: removeProtocol(getCurrentUrl(state)),
+            displayName: team.display_name,
+            mentionCount: getMentionCount(state, ownProps.teamId),
+            name: team.name,
+            theme: getTheme(state)
+        };
     };
 }
 
-export default connect(mapStateToProps)(TeamsListItem);
+export default connect(makeMapStateToProps)(TeamsListItem);
