@@ -251,11 +251,16 @@ class Post extends PureComponent {
     };
 
     handlePress = () => {
-        const {post, onPress} = this.props;
+        const {
+            isSearchResult,
+            onPress,
+            post
+        } = this.props;
+
         if (!isToolTipShowing) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
                 preventDoubleTap(onPress, null, post);
-            } else if (isPostEphemeral(post)) {
+            } else if (!isSearchResult && isPostEphemeral(post)) {
                 preventDoubleTap(this.onRemovePost, this, post);
             }
         }
