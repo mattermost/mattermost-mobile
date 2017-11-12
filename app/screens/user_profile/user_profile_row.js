@@ -61,7 +61,7 @@ function createTouchableComponent(children, action) {
 }
 
 function userProfileRow(props) {
-    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconType, shouldRender = true} = props;
+    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconType, iconSize, shouldRender = true} = props;
 
     if (!shouldRender) {
         return null;
@@ -74,7 +74,7 @@ function userProfileRow(props) {
             <View style={style.container}>
                 <VectorIcon
                     name={icon}
-                    size={15}
+                    size={iconSize}
                     type={iconType}
                     style={style.leftIcon}
                 />
@@ -118,6 +118,7 @@ userProfileRow.propTypes = {
     icon: PropTypes.string.isRequired,
     iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
     iconColor: PropTypes.string,
+    iconSize: PropTypes.number,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
@@ -126,6 +127,7 @@ userProfileRow.propTypes = {
 
 userProfileRow.defaultProps = {
     iconColor: 'rgba(0, 0, 0, 0.7)',
+    iconSize: 15,
     textColor: '#000',
     togglable: false
 };

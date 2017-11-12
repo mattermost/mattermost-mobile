@@ -137,6 +137,7 @@ class UserProfile extends PureComponent {
                     icon={l.icon}
                     iconType={l.iconType}
                     theme={this.props.theme}
+                    iconSize={l.iconSize}
                 />
             );
         });
