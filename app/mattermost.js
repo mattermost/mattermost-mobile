@@ -23,7 +23,6 @@ import {General} from 'mattermost-redux/constants';
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {logError} from 'mattermost-redux/actions/errors';
-import {createPost} from 'mattermost-redux/actions/posts';
 import {logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client, Client4} from 'mattermost-redux/client';
@@ -36,7 +35,7 @@ import {
     setStatusBarHeight
 } from 'app/actions/device';
 import {
-
+    createPost,
     loadConfigAndLicense,
     loadFromPushNotification,
     purgeOfflineStore

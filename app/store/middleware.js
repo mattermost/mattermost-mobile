@@ -4,6 +4,7 @@
 import DeviceInfo from 'react-native-device-info';
 
 import {ViewTypes} from 'app/constants';
+import initialState from 'app/initial_state';
 import Config from 'assets/config';
 
 export function messageRetention() {
@@ -23,6 +24,7 @@ export function messageRetention() {
 
             // Keep only the last 60 messages for the last 5 viewed channels in each team
             // and apply data retention on those posts if applies
+
             return next(cleanupState(action));
         } else if (action.type === ViewTypes.DATA_CLEANUP) {
             const nextAction = cleanupState(action, true);
@@ -36,8 +38,22 @@ export function messageRetention() {
 function resetStateForNewVersion(action) {
     const {payload} = action;
     const lastChannelForTeam = getLastChannelForTeam(payload);
-    let users = {};
 
+    let general = initialState.entities.general;
+    if (payload.entities.general) {
+        general = payload.entities.general;
+    }
+
+    let teams = initialState.entities.teams;
+    if (payload.entities.teams) {
+        teams = {
+            currentTeamId: payload.entities.teams.currentTeamId,
+            teams: payload.entities.teams.teams,
+            myMembers: payload.entities.teams.myMembers
+        };
+    }
+
+    let users = initialState.entities.users;
     if (payload.entities.users) {
         const currentUserId = payload.entities.users.currentUserId;
         if (currentUserId) {
@@ -50,38 +66,74 @@ function resetStateForNewVersion(action) {
         }
     }
 
+    let preferences = initialState.entities.preferences;
+    if (payload.entities.preferences) {
+        preferences = payload.entities.preferences;
+    }
+
+    let search = initialState.entities.search;
+    if (payload.entities.search && payload.entities.search.recent) {
+        search = {
+            recent: payload.entities.search.recent
+        };
+    }
+
+    let channelDrafts = initialState.views.channel.drafts;
+    if (payload.views.channel && payload.views.channel.drafts) {
+        channelDrafts = payload.views.channel.drafts;
+    }
+
+    let i18n = initialState.views.i18n;
+    if (payload.views.i18n) {
+        i18n = payload.views.i18n;
+    }
+
+    let fetchCache = initialState.views.fetchCache;
+    if (payload.views.fetchCache) {
+        fetchCache = payload.views.fetchCache;
+    }
+
+    let lastTeamId = initialState.views.team.lastTeamId;
+    if (payload.views.team && payload.views.team.lastTeamId) {
+        lastTeamId = payload.views.team.lastTeamId;
+    }
+
+    let threadDrafts = initialState.views.thread.drafts;
+    if (payload.views.thread && payload.views.thread.drafts) {
+        threadDrafts = payload.views.thread.drafts;
+    }
+
+    let selectServer = initialState.views.selectServer;
+    if (payload.views.selectServer) {
+        selectServer = payload.views.selectServer;
+    }
+
     const nextState = {
         app: {
             build: DeviceInfo.getBuildNumber(),
             version: DeviceInfo.getVersion()
         },
         entities: {
-            general: payload.entities.general,
-            teams: {
-                currentTeamId: payload.entities.teams.currentTeamId,
-                teams: payload.entities.teams.teams,
-                myMembers: payload.entities.teams.myMembers
-            },
+            general,
+            teams,
             users,
-            preferences: payload.entities.preferences,
-            search: {
-                recent: payload.entities.search ? payload.entities.search.recent : {}
-            }
+            preferences,
+            search
         },
         views: {
             channel: {
-                drafts: payload.views.channel.drafts
+                drafts: channelDrafts
             },
-            i18n: payload.views.i18n,
-            fetchCache: payload.views.fetchCache,
+            i18n,
+            fetchCache,
             team: {
-                lastTeamId: payload.views.team.lastTeamId,
+                lastTeamId,
                 lastChannelForTeam
             },
             thread: {
-                drafts: payload.views.thread.drafts
+                drafts: threadDrafts
             },
-            selectServer: payload.views.selectServer
+            selectServer
         }
     };
 
