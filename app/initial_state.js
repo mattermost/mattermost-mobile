@@ -45,6 +45,9 @@ const state = {
         preferences: {
             myPreferences: {}
         },
+        search: {
+            recent: []
+        },
         typing: {}
     },
     errors: [],
@@ -252,8 +255,7 @@ const state = {
     navigation: '',
     views: {
         channel: {
-            drafts: {},
-            loading: false
+            drafts: {}
         },
         fetchCache: {},
         i18n: {
@@ -270,7 +272,9 @@ const state = {
         selectServer: {
             serverUrl: Config.DefaultServerUrl
         },
-        team: {},
+        team: {
+            lastTeamId: ''
+        },
         thread: {
             drafts: {}
         }
