@@ -22,7 +22,6 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import Autocomplete from 'app/components/autocomplete';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
-import Post from 'app/components/post';
 import PostListRetry from 'app/components/post_list_retry';
 import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
@@ -31,6 +30,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
+import SearchResultPost from './search_result_post';
 
 const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
@@ -265,14 +265,10 @@ class Search extends PureComponent {
         return (
             <View>
                 <ChannelDisplayName postId={item}/>
-                <Post
+                <SearchResultPost
                     postId={item}
-                    renderReplies={true}
-                    onPress={this.previewPost}
-                    onReply={this.goToThread}
-                    isSearchResult={true}
-                    shouldRenderReplyButton={true}
-                    showFullDate={true}
+                    previewPost={this.previewPost}
+                    goToThread={this.goToThread}
                     navigator={this.props.navigator}
                 />
                 {separator}
