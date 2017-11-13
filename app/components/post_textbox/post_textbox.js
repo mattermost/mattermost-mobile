@@ -459,6 +459,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 10
         },
         inputWrapper: {
+            alignItems: 'flex-end',
             flexDirection: 'row',
             paddingVertical: 4,
             backgroundColor: theme.centerChannelBg,
