@@ -24,16 +24,16 @@ export default class ChannelMention extends PureComponent {
         myChannels: PropTypes.array,
         otherChannels: PropTypes.array,
         onChangeText: PropTypes.func.isRequired,
-        postDraft: PropTypes.string,
         privateChannels: PropTypes.array,
         publicChannels: PropTypes.array,
         requestStatus: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        value: PropTypes.string
     };
 
     static defaultProps = {
-        postDraft: '',
-        isSearch: false
+        isSearch: false,
+        value: ''
     };
 
     constructor(props) {
@@ -116,8 +116,8 @@ export default class ChannelMention extends PureComponent {
     }
 
     completeMention = (mention) => {
-        const {cursorPosition, isSearch, onChangeText, postDraft} = this.props;
-        const mentionPart = postDraft.substring(0, cursorPosition);
+        const {cursorPosition, isSearch, onChangeText, value} = this.props;
+        const mentionPart = value.substring(0, cursorPosition);
 
         let completedDraft;
         if (isSearch) {
@@ -127,8 +127,8 @@ export default class ChannelMention extends PureComponent {
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }
 
-        if (postDraft.length > cursorPosition) {
-            completedDraft += postDraft.substring(cursorPosition);
+        if (value.length > cursorPosition) {
+            completedDraft += value.substring(cursorPosition);
         }
 
         onChangeText(completedDraft, true);

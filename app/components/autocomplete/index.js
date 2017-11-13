@@ -17,7 +17,8 @@ export default class Autocomplete extends PureComponent {
     static propTypes = {
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
-        isSearch: PropTypes.bool
+        isSearch: PropTypes.bool,
+        value: PropTypes.string
     };
 
     static defaultProps = {

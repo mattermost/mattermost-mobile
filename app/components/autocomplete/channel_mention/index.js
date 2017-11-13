@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {searchChannels} from 'mattermost-redux/actions/channels';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
@@ -20,25 +19,9 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import ChannelMention from './channel_mention';
 
 function mapStateToProps(state, ownProps) {
-    const {cursorPosition, isSearch, rootId} = ownProps;
-    const currentChannelId = getCurrentChannelId(state);
+    const {cursorPosition, isSearch} = ownProps;
 
-    let postDraft = '';
-    if (isSearch) {
-        postDraft = state.views.search;
-    } else if (rootId) {
-        const threadDraft = state.views.thread.drafts[rootId];
-        if (threadDraft) {
-            postDraft = threadDraft.draft;
-        }
-    } else if (currentChannelId) {
-        const channelDraft = state.views.channel.drafts[currentChannelId];
-        if (channelDraft) {
-            postDraft = channelDraft.draft;
-        }
-    }
-
-    const value = postDraft.substring(0, cursorPosition);
+    const value = ownProps.value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForChannelMention(value, isSearch);
 
     let myChannels;
@@ -61,7 +44,6 @@ function mapStateToProps(state, ownProps) {
         privateChannels,
         currentTeamId: getCurrentTeamId(state),
         matchTerm,
-        postDraft,
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state)
     };

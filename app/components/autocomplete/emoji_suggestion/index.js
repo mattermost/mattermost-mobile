@@ -25,26 +25,11 @@ const getEmojisByName = createSelector(
     }
 );
 
-function mapStateToProps(state, ownProps) {
-    const {currentChannelId} = state.entities.channels;
+function mapStateToProps(state) {
     const emojis = getEmojisByName(state);
-
-    let postDraft;
-    if (ownProps.rootId) {
-        const threadDraft = state.views.thread.drafts[ownProps.rootId];
-        if (threadDraft) {
-            postDraft = threadDraft.draft;
-        }
-    } else if (currentChannelId) {
-        const channelDraft = state.views.channel.drafts[currentChannelId];
-        if (channelDraft) {
-            postDraft = channelDraft.draft;
-        }
-    }
 
     return {
         emojis,
-        postDraft,
         theme: getTheme(state)
     };
 }
