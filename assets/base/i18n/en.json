@@ -1957,7 +1957,7 @@
   "mobile.file_upload.more": "More",
   "mobile.file_upload.video": "Video Library",
   "mobile.help.title": "Help",
-  "mobile.image_preview.deleted_post_message": "This post and it's files have been deleted. The previewer will now be closed.",
+  "mobile.image_preview.deleted_post_message": "This post and its files have been deleted. The previewer will now be closed.",
   "mobile.image_preview.deleted_post_title": "Post Deleted",
   "mobile.image_preview.save": "Save Image",
   "mobile.intro_messages.DM": "This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.",
