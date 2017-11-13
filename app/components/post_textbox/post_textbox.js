@@ -3,16 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Alert,
-    BackHandler,
-    Keyboard,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -62,11 +53,16 @@ class PostTextbox extends PureComponent {
         value: ''
     };
 
-    state = {
-        contentHeight: INITIAL_HEIGHT,
-        inputWidth: null,
-        keyboardType: 'default'
-    };
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            contentHeight: INITIAL_HEIGHT,
+            inputWidth: null,
+            keyboardType: 'default',
+            value: props.value
+        };
+    }
 
     componentDidMount() {
         if (Platform.OS === 'android') {
@@ -76,24 +72,8 @@ class PostTextbox extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {intl} = this.props;
-        const {value} = nextProps;
-        const valueLength = value.trim().length;
-
-        if (valueLength > MAX_MESSAGE_LENGTH) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.message_length.title',
-                    defaultMessage: 'Message Length'
-                }),
-                intl.formatMessage({
-                    id: 'mobile.message_length.message',
-                    defaultMessage: 'Your current message is too long. Current character count: {max}/{count}'
-                }, {
-                    max: MAX_MESSAGE_LENGTH,
-                    count: valueLength
-                })
-            );
+        if (nextProps.channelId !== this.props.channelId || nextProps.rootId !== this.props.rootId) {
+            this.setState({value: nextProps.value});
         }
     }
 
@@ -113,7 +93,8 @@ class PostTextbox extends PureComponent {
     };
 
     canSend = () => {
-        const {files, uploadFileRequestStatus, value} = this.props;
+        const {files, uploadFileRequestStatus} = this.props;
+        const {value} = this.state;
         const valueLength = value.trim().length;
 
         if (files.length) {
@@ -134,6 +115,27 @@ class PostTextbox extends PureComponent {
             actions.handleCommentDraftChanged(rootId, text);
         } else {
             actions.handlePostDraftChanged(channelId, text);
+        }
+    };
+
+    checkMessageLength = (value) => {
+        const {intl} = this.props;
+        const valueLength = value.trim().length;
+
+        if (valueLength > MAX_MESSAGE_LENGTH) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.message_length.title',
+                    defaultMessage: 'Message Length'
+                }),
+                intl.formatMessage({
+                    id: 'mobile.message_length.message',
+                    defaultMessage: 'Your current message is too long. Current character count: {max}/{count}'
+                }, {
+                    max: MAX_MESSAGE_LENGTH,
+                    count: valueLength
+                })
+            );
         }
     };
 
@@ -169,6 +171,12 @@ class PostTextbox extends PureComponent {
         });
     };
 
+    handleEndEditing = (e) => {
+        if (e && e.nativeEvent) {
+            this.changeDraft(e.nativeEvent.text || '');
+        }
+    };
+
     handleFocus = () => {
         if (this.refs.input && Platform.OS === 'android') {
             this.refs.input.setNativeProps({
@@ -199,7 +207,8 @@ class PostTextbox extends PureComponent {
             return;
         }
 
-        const {files, value} = this.props;
+        const {files} = this.props;
+        const {value} = this.state;
 
         const isReactionMatch = value.match(IS_REACTION_REGEX);
         if (isReactionMatch) {
@@ -233,15 +242,19 @@ class PostTextbox extends PureComponent {
         }
     };
 
-    handleTextChange = (text) => {
+    handleTextChange = (value) => {
         const {
             actions,
             channelId,
             rootId
         } = this.props;
 
-        this.changeDraft(text);
-        actions.userTyping(channelId, rootId);
+        this.checkMessageLength(value);
+        this.setState({value});
+
+        if (value) {
+            actions.userTyping(channelId, rootId);
+        }
     };
 
     handleUploadFiles = (images) => {
@@ -253,12 +266,14 @@ class PostTextbox extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={[style.sendButton, style.disableButton]}>
-                <PaperPlane
-                    height={13}
-                    width={15}
-                    color={theme.buttonColor}
-                />
+            <View style={style.sendButtonContainer}>
+                <View style={[style.sendButton, style.disableButton]}>
+                    <PaperPlane
+                        height={13}
+                        width={15}
+                        color={theme.buttonColor}
+                    />
+                </View>
             </View>
         );
     };
@@ -273,13 +288,15 @@ class PostTextbox extends PureComponent {
             return (
                 <TouchableOpacity
                     onPress={this.handleSendMessage}
-                    style={style.sendButton}
+                    style={style.sendButtonContainer}
                 >
-                    <PaperPlane
-                        height={13}
-                        width={15}
-                        color={theme.buttonColor}
-                    />
+                    <View style={style.sendButton}>
+                        <PaperPlane
+                            height={13}
+                            width={15}
+                            color={theme.buttonColor}
+                        />
+                    </View>
                 </TouchableOpacity>
             );
         }
@@ -288,7 +305,8 @@ class PostTextbox extends PureComponent {
     };
 
     sendMessage = () => {
-        const {actions, currentUserId, channelId, files, rootId, value} = this.props;
+        const {actions, currentUserId, channelId, files, rootId} = this.props;
+        const {value} = this.state;
 
         const postFiles = files.filter((f) => !f.failed);
         const post = {
@@ -301,6 +319,7 @@ class PostTextbox extends PureComponent {
 
         actions.createPost(post, postFiles);
         this.handleTextChange('');
+        this.changeDraft('');
         if (postFiles.length) {
             actions.handleClearFiles(channelId, rootId);
         }
@@ -325,6 +344,7 @@ class PostTextbox extends PureComponent {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
         this.handleTextChange('');
+        this.changeDraft('');
     };
 
     render() {
@@ -332,14 +352,13 @@ class PostTextbox extends PureComponent {
             canUploadFiles,
             channelIsLoading,
             intl,
-            theme,
-            value
+            theme
         } = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
 
-        const textValue = channelIsLoading ? '' : value;
+        const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
         if (this.props.rootId) {
@@ -380,8 +399,8 @@ class PostTextbox extends PureComponent {
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}
-                    onChangeText={this.changeDraft}
-                    rootId={this.props.rootId}
+                    onChangeText={this.handleTextChange}
+                    value={this.state.value}
                 />
                 <View style={style.inputWrapper}>
                     {attachmentButton}
@@ -402,6 +421,7 @@ class PostTextbox extends PureComponent {
                             keyboardType={this.state.keyboardType}
                             onFocus={this.handleFocus}
                             onBlur={this.handleBlur}
+                            onEndEditing={this.handleEndEditing}
                         />
                         {this.renderSendButton()}
                     </View>
@@ -438,8 +458,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             backgroundColor: '#fff',
-            alignItems: 'flex-end',
-            marginRight: 10
+            alignItems: 'flex-end'
         },
         inputContainerWithoutFileUpload: {
             marginLeft: 10
@@ -451,6 +470,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
+        },
+        sendButtonContainer: {
+            paddingRight: 10
         },
         sendButton: {
             backgroundColor: theme.buttonBg,

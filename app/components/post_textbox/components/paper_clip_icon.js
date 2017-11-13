@@ -16,7 +16,7 @@ export default class PaperClipIcon extends Component {
         if (this.root) {
             this.root.setNativeProps(nativeProps);
         }
-    }
+    };
 
     render() {
         return (
