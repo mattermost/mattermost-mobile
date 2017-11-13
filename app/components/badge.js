@@ -32,7 +32,6 @@ export default class Badge extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.width = 0;
         this.mounted = false;
     }
 
@@ -67,6 +66,8 @@ export default class Badge extends PureComponent {
     };
 
     onLayout = (e) => {
+        const height = Math.max(e.nativeEvent.layout.height, this.props.minHeight);
+        const borderRadius = height / 2;
         let width;
 
         if (e.nativeEvent.layout.width <= e.nativeEvent.layout.height) {
@@ -75,26 +76,14 @@ export default class Badge extends PureComponent {
             width = e.nativeEvent.layout.width + this.props.extraPaddingHorizontal;
         }
         width = Math.max(width, this.props.minWidth);
-        if (this.width === width) {
-            return;
-        }
-        this.width = width;
-        const height = Math.max(e.nativeEvent.layout.height, this.props.minHeight);
-        const borderRadius = height / 2;
         this.setNativeProps({
             style: {
                 width,
                 height,
-                borderRadius
+                borderRadius,
+                opacity: 1
             }
         });
-        setTimeout(() => {
-            this.setNativeProps({
-                style: {
-                    opacity: 1
-                }
-            });
-        }, 100);
     };
 
     renderText = () => {
