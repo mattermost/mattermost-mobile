@@ -223,7 +223,7 @@ export default class ImagePreview extends PureComponent {
             }),
             intl.formatMessage({
                 id: 'mobile.image_preview.deleted_post_message',
-                defaultMessage: "This post and it's files have been deleted. The previewer will now be closed."
+                defaultMessage: "This post and its files have been deleted. The previewer will now be closed."
             }),
             [{
                 text: intl.formatMessage({
