@@ -131,7 +131,8 @@ function resetStateForNewVersion(action) {
             thread: {
                 drafts: threadDrafts
             },
-            selectServer
+            selectServer,
+            recentEmojis: payload.views.recentEmojis
         }
     };
 

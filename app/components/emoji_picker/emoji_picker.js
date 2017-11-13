@@ -3,12 +3,18 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
     SectionList,
+    Text,
     TouchableOpacity,
     View
 } from 'react-native';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
@@ -16,15 +22,18 @@ import SearchBar from 'app/components/search_bar';
 import {emptyFunction} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
+import EmojiPickerRow from './emoji_picker_row';
+
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7.5;
 const SECTION_MARGIN = 15;
 
-class EmojiPicker extends PureComponent {
+export default class EmojiPicker extends PureComponent {
     static propTypes = {
-        emojis: PropTypes.array.isRequired,
+        emojisByName: PropTypes.array.isRequired,
+        emojisBySection: PropTypes.array.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        intl: intlShape.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
         onEmojiPress: PropTypes.func,
         theme: PropTypes.object.isRequired
     };
@@ -33,26 +42,74 @@ class EmojiPicker extends PureComponent {
         onEmojiPress: emptyFunction
     };
 
-    leftButton = {
-        id: 'close-edit-post'
-    };
+    static contextTypes = {
+        intl: intlShape.isRequired
+    }
 
     constructor(props) {
         super(props);
 
+        this.sectionListGetItemLayout = sectionListGetItemLayout({
+            getItemHeight: () => {
+                return EMOJI_SIZE + (EMOJI_GUTTER * 2);
+            },
+            getSectionHeaderHeight: () => 28
+        });
+
         this.state = {
-            emojis: props.emojis,
-            searchTerm: '',
-            width: props.deviceWidth - (SECTION_MARGIN * 2)
+            emojis: this.renderableEmojis(props.emojisBySection, props.deviceWidth),
+            filteredEmojis: [],
+            searchTerm: ''
         };
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.deviceWidth !== this.props.deviceWidth) {
+        if (this.props.deviceWidth !== nextProps.deviceWidth) {
             this.setState({
-                width: nextProps.deviceWidth - (SECTION_MARGIN * 2)
+                emojis: this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth)
             });
         }
+    }
+
+    renderableEmojis = (emojis, deviceWidth) => {
+        const numberOfColumns = this.getNumberOfColumns(deviceWidth);
+
+        const nextEmojis = emojis.map((section) => {
+            const data = [];
+            let row = {
+                key: `${section.key}-0`,
+                items: []
+            };
+
+            section.data.forEach((emoji, index) => {
+                if (index % numberOfColumns === 0 && index !== 0) {
+                    data.push(row);
+                    row = {
+                        key: `${section.key}-${index}`,
+                        items: []
+                    };
+                }
+
+                row.items.push(emoji);
+            });
+
+            if (row.items.length) {
+                if (row.items.length < numberOfColumns) {
+                    // push some empty items to make sure flexbox can justfiy content correctly
+                    const emptyEmojis = new Array(numberOfColumns - row.items.length);
+                    row.items.push(...emptyEmojis);
+                }
+
+                data.push(row);
+            }
+
+            return {
+                ...section,
+                data
+            };
+        });
+
+        return nextEmojis;
     }
 
     changeSearchTerm = (text) => {
@@ -61,67 +118,93 @@ class EmojiPicker extends PureComponent {
         });
 
         clearTimeout(this.searchTermTimeout);
-        const timeout = text ? 350 : 0;
+        const timeout = text ? 100 : 0;
         this.searchTermTimeout = setTimeout(() => {
-            const emojis = this.searchEmojis(text);
+            const filteredEmojis = this.searchEmojis(text);
             this.setState({
-                emojis
+                filteredEmojis
             });
         }, timeout);
     };
 
     cancelSearch = () => {
         this.setState({
-            emojis: this.props.emojis,
+            filteredEmojis: [],
             searchTerm: ''
         });
-    };
+    }
 
     filterEmojiAliases = (aliases, searchTerm) => {
         return aliases.findIndex((alias) => alias.includes(searchTerm)) !== -1;
-    };
+    }
 
     searchEmojis = (searchTerm) => {
-        const {emojis} = this.props;
+        const {emojisByName} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
 
         if (!searchTerm) {
-            return emojis;
+            return [];
         }
 
-        const nextEmojis = [];
-        emojis.forEach((section) => {
-            const {data, ...otherProps} = section;
-            const {key, items} = data[0];
-
-            const nextData = {
-                key,
-                items: items.filter((item) => {
-                    if (item.aliases) {
-                        return this.filterEmojiAliases(item.aliases, searchTermLowerCase);
-                    }
-
-                    return item.name.includes(searchTermLowerCase);
-                })
-            };
-
-            if (nextData.items.length) {
-                nextEmojis.push({
-                    ...otherProps,
-                    data: [nextData]
-                });
-            }
-        });
+        const nextEmojis = emojisByName.filter((emoji) => emoji.includes(searchTermLowerCase)).sort();
 
         return nextEmojis;
+    }
+
+    getNumberOfColumns = (deviceWidth) => {
+        return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * 2)) / (EMOJI_SIZE + (EMOJI_GUTTER * 2)))));
+    }
+
+    renderItem = ({item}) => {
+        return (
+            <EmojiPickerRow
+                key={item.key}
+                emojiGutter={EMOJI_GUTTER}
+                emojiSize={EMOJI_SIZE}
+                items={item.items}
+                onEmojiPress={this.props.onEmojiPress}
+            />
+        );
+    }
+
+    flatListKeyExtractor = (item) => item;
+
+    flatListRenderItem = ({item}) => {
+        const style = getStyleSheetFromTheme(this.props.theme);
+
+        return (
+            <TouchableOpacity
+                onPress={() => this.props.onEmojiPress(item)}
+                style={style.flatListRow}
+            >
+                <View style={style.flatListEmoji}>
+                    <Emoji
+                        emojiName={item}
+                        size={20}
+                    />
+                </View>
+                <Text style={style.flatListEmojiName}>{`:${item}:`}</Text>
+            </TouchableOpacity>
+        );
     };
+
+    scrollToSection = (index) => {
+        this.sectionList.scrollToLocation({
+            sectionIndex: index,
+            itemIndex: 0,
+            viewOffset: 25
+        });
+    }
 
     renderSectionHeader = ({section}) => {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
 
         return (
-            <View key={section.title}>
+            <View
+                style={styles.sectionTitleContainer}
+                key={section.title}
+            >
                 <FormattedText
                     style={styles.sectionTitle}
                     id={section.id}
@@ -129,75 +212,86 @@ class EmojiPicker extends PureComponent {
                 />
             </View>
         );
-    };
+    }
 
-    renderEmojis = (emojis, index) => {
+    renderSectionIcons = () => {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
 
-        return (
-            <View
-                key={index}
-                style={styles.columnStyle}
-            >
-                {emojis.map((emoji, emojiIndex) => {
-                    const style = [styles.emoji];
-                    if (emojiIndex === 0) {
-                        style.push(styles.emojiLeft);
-                    } else if (emojiIndex === emojis.length - 1) {
-                        style.push(styles.emojiRight);
-                    }
+        return this.state.emojis.map((section, index) => {
+            const onPress = () => this.scrollToSection(index);
 
-                    return (
-                        <TouchableOpacity
-                            key={emoji.name}
-                            style={style}
-                            onPress={() => {
-                                this.props.onEmojiPress(emoji.name);
-                            }}
-                        >
-                            <Emoji
-                                emojiName={emoji.name}
-                                size={EMOJI_SIZE}
-                            />
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
-        );
-    };
+            return (
+                <TouchableOpacity
+                    key={section.key}
+                    onPress={onPress}
+                    style={styles.sectionIconContainer}
+                >
+                    <FontAwesomeIcon
+                        name={section.icon}
+                        size={17}
+                        style={styles.sectionIcon}
+                    />
+                </TouchableOpacity>
+            );
+        });
+    }
 
-    renderItem = ({item}) => {
-        const {theme} = this.props;
-        const styles = getStyleSheetFromTheme(theme);
+    sectionListKeyExtractor = (item) => item.key
 
-        const numColumns = Number((this.state.width / (EMOJI_SIZE + (EMOJI_GUTTER * 2))).toFixed(0));
-
-        const slices = item.items.reduce((slice, emoji, emojiIndex) => {
-            if (emojiIndex % numColumns === 0 && emojiIndex !== 0) {
-                slice.push([]);
-            }
-
-            slice[slice.length - 1].push(emoji);
-
-            return slice;
-        }, [[]]);
-
-        return (
-            <View style={styles.section}>
-                {slices.map(this.renderEmojis)}
-            </View>
-        );
-    };
+    attachSectionList = (c) => {
+        this.sectionList = c;
+    }
 
     render() {
-        const {intl, theme} = this.props;
-        const {emojis, searchTerm} = this.state;
+        const {deviceWidth, isLandscape, theme} = this.props;
+        const {emojis, filteredEmojis, searchTerm} = this.state;
+        const {intl} = this.context;
         const {formatMessage} = intl;
         const styles = getStyleSheetFromTheme(theme);
 
+        let listComponent;
+        if (searchTerm) {
+            listComponent = (
+                <FlatList
+                    keyboardShouldPersistTaps='always'
+                    style={styles.flatList}
+                    data={filteredEmojis}
+                    keyExtractor={this.flatListKeyExtractor}
+                    renderItem={this.flatListRenderItem}
+                    pageSize={10}
+                    initialListSize={10}
+                />
+            );
+        } else {
+            listComponent = (
+                <SectionList
+                    ref={this.attachSectionList}
+                    showsVerticalScrollIndicator={false}
+                    style={[styles.listView, {width: deviceWidth - (SECTION_MARGIN * 2)}]}
+                    sections={emojis}
+                    renderSectionHeader={this.renderSectionHeader}
+                    renderItem={this.renderItem}
+                    keyboardShouldPersistTaps='always'
+                    getItemLayout={this.sectionListGetItemLayout}
+                    removeClippedSubviews={true}
+                />
+            );
+        }
+
+        let keyboardOffset = 64;
+        if (Platform.OS === 'android') {
+            keyboardOffset = -200;
+        } else if (isLandscape) {
+            keyboardOffset = 51;
+        }
+
         return (
-            <View style={styles.wrapper}>
+            <KeyboardAvoidingView
+                behavior='padding'
+                style={{flex: 1}}
+                keyboardVerticalOffset={keyboardOffset}
+            >
                 <View style={styles.searchBar}>
                     <SearchBar
                         ref='search_bar'
@@ -220,22 +314,37 @@ class EmojiPicker extends PureComponent {
                     />
                 </View>
                 <View style={styles.container}>
-                    <SectionList
-                        showsVerticalScrollIndicator={false}
-                        style={styles.listView}
-                        sections={emojis}
-                        renderSectionHeader={this.renderSectionHeader}
-                        renderItem={this.renderItem}
-                        removeClippedSubviews={true}
-                    />
+                    {listComponent}
+                    {!searchTerm &&
+                        <View style={styles.bottomContentWrapper}>
+                            <View style={styles.bottomContent}>
+                                {this.renderSectionIcons()}
+                            </View>
+                        </View>
+                    }
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         );
     }
 }
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        bottomContent: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),
+            borderTopWidth: 1,
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+        },
+        bottomContentWrapper: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 35,
+            backgroundColor: 'white'
+        },
         columnStyle: {
             alignSelf: 'stretch',
             flexDirection: 'row',
@@ -260,6 +369,31 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         emojiRight: {
             marginRight: 0
         },
+        flatList: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+            alignSelf: 'stretch'
+        },
+        flatListEmoji: {
+            marginRight: 5
+        },
+        flatListEmojiName: {
+            fontSize: 13,
+            color: theme.centerChannelColor
+        },
+        flatListRow: {
+            height: 40,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            backgroundColor: theme.centerChannelBg,
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+        },
         listView: {
             backgroundColor: theme.centerChannelBg
         },
@@ -270,16 +404,27 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         section: {
             alignItems: 'center'
         },
+        sectionIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.4)
+        },
+        sectionIconContainer: {
+            width: 35,
+            height: 35,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
         sectionTitle: {
             color: changeOpacity(theme.centerChannelColor, 0.2),
             fontSize: 15,
-            fontWeight: '700',
-            paddingVertical: 5
+            fontWeight: '700'
+        },
+        sectionTitleContainer: {
+            height: 28,
+            justifyContent: 'center',
+            backgroundColor: theme.centerChannelBg
         },
         wrapper: {
             flex: 1
         }
     };
 });
-
-export default injectIntl(EmojiPicker);

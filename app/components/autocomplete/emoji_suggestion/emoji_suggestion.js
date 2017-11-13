@@ -66,7 +66,7 @@ export default class EmojiSuggestion extends Component {
 
         let data = [];
         if (matchTerm.length) {
-            data = nextProps.emojis.filter((emoji) => emoji.startsWith(matchTerm.toLowerCase())).sort();
+            data = nextProps.emojis.filter((emoji) => emoji.includes(matchTerm.toLowerCase())).sort();
         } else {
             const initialEmojis = [...nextProps.emojis];
             initialEmojis.splice(0, 300);

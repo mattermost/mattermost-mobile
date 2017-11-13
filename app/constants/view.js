@@ -56,7 +56,9 @@ const ViewTypes = keyMirror({
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
 
-    SET_LAST_UPGRADE_CHECK: null
+    SET_LAST_UPGRADE_CHECK: null,
+
+    ADD_RECENT_EMOJI: null
 });
 
 export default {
