@@ -295,7 +295,7 @@ class Post extends PureComponent {
             theme
         } = this.props;
 
-        if (!renderReplies || !post.root_id) {
+        if (!renderReplies || !post.root_id || isPostEphemeral(post)) {
             return null;
         }
 

@@ -253,6 +253,7 @@ class PostBody extends PureComponent {
                                 blockStyles={blockStyles}
                                 navigator={navigator}
                                 message={message}
+                                postId={postId}
                                 postProps={postProps}
                                 textStyles={textStyles}
                             />
@@ -275,6 +276,7 @@ class PostBody extends PureComponent {
                             blockStyles={blockStyles}
                             navigator={navigator}
                             message={message}
+                            postId={postId}
                             postProps={postProps}
                             textStyles={textStyles}
                             onLongPress={this.showOptionsContext}

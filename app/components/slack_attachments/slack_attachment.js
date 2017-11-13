@@ -10,10 +10,12 @@ import {
     View
 } from 'react-native';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import Markdown from 'app/components/markdown';
 import FormattedText from 'app/components/formatted_text';
+import Markdown from 'app/components/markdown';
+import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import InteractiveAction from './interactive_action';
 
 export default class SlackAttachment extends PureComponent {
     static propTypes = {
@@ -21,9 +23,10 @@ export default class SlackAttachment extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         navigator: PropTypes.object.isRequired,
-        textStyles: PropTypes.object,
+        postId: PropTypes.string.isRequired,
+        onLongPress: PropTypes.func.isRequired,
         theme: PropTypes.object,
-        onLongPress: PropTypes.func.isRequired
+        textStyles: PropTypes.object
     };
 
     constructor(props) {
@@ -31,6 +34,37 @@ export default class SlackAttachment extends PureComponent {
 
         this.state = this.getInitState();
     }
+
+    getActionView = (style) => {
+        const {attachment, postId} = this.props;
+        const {actions} = attachment;
+
+        if (!actions || !actions.length) {
+            return null;
+        }
+
+        const buttons = [];
+
+        actions.forEach((action) => {
+            if (!action.id || !action.name) {
+                return;
+            }
+            buttons.push(
+                <InteractiveAction
+                    key={action.id}
+                    id={action.id}
+                    name={action.name}
+                    postId={postId}
+                />
+            );
+        });
+
+        return (
+            <View style={style.actionsContainer}>
+                {buttons}
+            </View>
+        );
+    };
 
     getCollapsedText = () => {
         let text = this.props.attachment.text || '';
@@ -304,6 +338,7 @@ export default class SlackAttachment extends PureComponent {
         }
 
         const fields = this.getFieldsTable(style);
+        const actions = this.getActionView(style);
 
         let image;
         if (attachment.image_url) {
@@ -330,6 +365,7 @@ export default class SlackAttachment extends PureComponent {
                     {thumb}
                     {text}
                     {fields}
+                    {actions}
                     {image}
                 </View>
             </View>
@@ -344,8 +380,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             flex: 1,
             marginTop: 5,
-            paddingHorizontal: 10,
-            paddingVertical: 7
+            padding: 10
         },
         border: {
             borderLeftColor: changeOpacity(theme.linkColor, 0.6),
@@ -366,7 +401,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         title: {
             color: theme.centerChannelColor,
             fontWeight: '600',
-            marginVertical: 5
+            marginBottom: 5
         },
         titleLink: {
             color: theme.linkColor
@@ -409,6 +444,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         image: {
             flex: 1,
             height: 50
+        },
+        actionsContainer: {
+            flex: 1,
+            flexDirection: 'row'
         }
     };
 });
