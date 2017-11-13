@@ -37,6 +37,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
         openGraphData: PropTypes.object,
+        postId: PropTypes.string.isRequired,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         textStyles: PropTypes.object,
@@ -45,7 +46,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     static defaultProps = {
         onLongPress: emptyFunction
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -152,6 +153,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     getSlackAttachment = () => {
         const {
+            postId,
             postProps,
             baseTextStyle,
             blockStyles,
@@ -168,6 +170,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}
                     navigator={navigator}
+                    postId={postId}
                     textStyles={textStyles}
                     theme={theme}
                     onLongPress={this.props.onLongPress}

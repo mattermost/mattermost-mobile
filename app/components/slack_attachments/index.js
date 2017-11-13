@@ -14,14 +14,15 @@ export default class SlackAttachments extends PureComponent {
         attachments: PropTypes.array.isRequired,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
-        textStyles: PropTypes.object,
+        postId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
+        onLongPress: PropTypes.func.isRequired,
         theme: PropTypes.object,
-        onLongPress: PropTypes.func.isRequired
+        textStyles: PropTypes.object
     };
 
     render() {
-        const {attachments, baseTextStyle, blockStyles, navigator, textStyles, theme, onLongPress} = this.props;
+        const {attachments, baseTextStyle, blockStyles, navigator, onLongPress, postId, theme, textStyles} = this.props;
         const content = [];
 
         attachments.forEach((attachment, i) => {
@@ -31,10 +32,11 @@ export default class SlackAttachments extends PureComponent {
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}
                     key={'att_' + i}
-                    textStyles={textStyles}
                     navigator={navigator}
-                    theme={theme}
                     onLongPress={onLongPress}
+                    postId={postId}
+                    theme={theme}
+                    textStyles={textStyles}
                 />
             );
         });
