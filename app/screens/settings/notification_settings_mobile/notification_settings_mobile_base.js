@@ -6,6 +6,8 @@ import {Platform} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
+import {getNotificationProps} from 'app/utils/notify_props';
+
 export default class NotificationSettingsMobileBase extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
@@ -21,7 +23,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         super(props);
 
         const {currentUser} = props;
-        const notifyProps = currentUser.notify_props || {};
+        const notifyProps = getNotificationProps(currentUser);
 
         this.state = {
             ...notifyProps,

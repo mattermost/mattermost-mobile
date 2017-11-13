@@ -21,6 +21,7 @@ import {RadioButton, RadioButtonGroup} from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
+import {getNotificationProps} from 'app/utils/notify_props';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -154,7 +155,7 @@ class NotificationSettings extends PureComponent {
             }
 
             this.saveNotificationProps({
-                ...currentUser.notify_props,
+                ...getNotificationProps(currentUser),
                 email,
                 interval
             });
@@ -165,7 +166,7 @@ class NotificationSettings extends PureComponent {
         const {currentUser} = this.props;
         const {user_id} = notifyProps;
         const previousProps = {
-            ...currentUser.notify_props,
+            ...getNotificationProps(currentUser),
             user_id
         };
 
@@ -184,7 +185,7 @@ class NotificationSettings extends PureComponent {
         }
 
         const {config, currentUser, intl, myPreferences} = this.props;
-        const notifyProps = currentUser.notify_props || {};
+        const notifyProps = getNotificationProps(currentUser);
         const sendEmailNotifications = config.SendEmailNotifications === 'true';
         const emailBatchingEnabled = sendEmailNotifications && config.EnableEmailBatching === 'true';
 

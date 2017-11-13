@@ -14,6 +14,7 @@ import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils'
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
+import {getNotificationProps} from 'app/utils/notify_props';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Section from 'app/screens/settings/section';
@@ -33,7 +34,7 @@ export default class NotificationSettingsEmail extends PureComponent {
         super(props);
 
         const {currentUser} = props;
-        const notifyProps = currentUser.notify_props || {};
+        const notifyProps = getNotificationProps(currentUser);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.state = this.setStateFromNotifyProps(notifyProps);
