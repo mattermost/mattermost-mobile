@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     Text,
     TouchableOpacity,
     View
@@ -292,7 +293,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         flagContainer: {
             marginLeft: 10,
-            alignSelf: 'center'
+            alignSelf: 'center',
+            ...Platform.select({
+                ios: {
+                    marginBottom: 2
+                },
+                android: {
+                    marginBottom: 1
+                }
+            })
         }
     };
 });
