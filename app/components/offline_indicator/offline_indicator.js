@@ -126,7 +126,7 @@ export default class OfflineIndicator extends Component {
         switch (this.state.network) {
         case OFFLINE:
             i18nId = 'mobile.offlineIndicator.offline';
-            defaultMessage = 'No internet connection';
+            defaultMessage = 'Cannot connect to the server';
             break;
         case CONNECTING:
             i18nId = 'mobile.offlineIndicator.connecting';

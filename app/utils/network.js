@@ -1,9 +1,10 @@
 import {NetInfo} from 'react-native';
 
+import {Client4} from 'mattermost-redux/client';
+
 export async function checkConnection() {
-    // If the websocket cannot connect probably is because the Mattermost server
-    // is down and we don't want to make the app think the device is offline
-    const server = 'https://www.google.com';
+    // Ping the Mattermost server to detect if the we have network connection even if the websocket cannot connect
+    const server = `${Client4.getBaseRoute()}/system/ping?time=${Date.now()}`;
 
     try {
         await fetch(server);
