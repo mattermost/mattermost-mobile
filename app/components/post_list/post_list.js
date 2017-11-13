@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    InteractionManager,
     StyleSheet,
     FlatList
 } from 'react-native';
@@ -53,7 +54,7 @@ export default class PostList extends PureComponent {
     }
 
     componentWillMount() {
-        mattermostManaged.addEventListener('change', this.setManagedConfig);
+        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
     }
 
     componentDidMount() {
@@ -63,13 +64,17 @@ export default class PostList extends PureComponent {
 
     componentDidUpdate(prevProps) {
         const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
-        if ((prevProps.channelId !== this.props.channelId || initialPosts) && this.refs.list) {
+        if ((prevProps.channelId !== this.props.channelId || initialPosts || this.props.isSearchResult) && this.refs.list) {
             this.scrollList();
         }
     }
 
+    componentWillUnmount() {
+        mattermostManaged.removeEventListener(this.listenerId);
+    }
+
     scrollList = () => {
-        requestAnimationFrame(() => {
+        InteractionManager.runAfterInteractions(() => {
             if (this.props.postIds.length && this.newMessagesIndex !== -1) {
                 this.refs.list.scrollToIndex({index: this.newMessagesIndex, viewPosition: 1, viewOffset: -10, animated: true});
                 this.newMessagesIndex = -1;
@@ -131,7 +136,7 @@ export default class PostList extends PureComponent {
         const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
         const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
 
-        return this.renderPost(postId, previousPostId, nextPostId);
+        return this.renderPost(postId, previousPostId, nextPostId, index);
     };
 
     renderDateHeader = (date) => {
@@ -143,7 +148,7 @@ export default class PostList extends PureComponent {
         );
     };
 
-    renderPost = (postId, previousPostId, nextPostId) => {
+    renderPost = (postId, previousPostId, nextPostId, index) => {
         const {
             highlightPostId,
             isSearchResult,
@@ -154,12 +159,17 @@ export default class PostList extends PureComponent {
         } = this.props;
         const {managedConfig} = this.state;
 
+        const highlight = highlightPostId === postId;
+        if (highlight) {
+            this.newMessagesIndex = index;
+        }
+
         return (
             <Post
                 postId={postId}
                 previousPostId={previousPostId}
                 nextPostId={nextPostId}
-                highlight={highlightPostId && highlightPostId === postId}
+                highlight={highlight}
                 renderReplies={renderReplies}
                 isSearchResult={isSearchResult}
                 shouldRenderReplyButton={shouldRenderReplyButton}

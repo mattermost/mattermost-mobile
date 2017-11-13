@@ -26,6 +26,7 @@ import PostListRetry from 'app/components/post_list_retry';
 import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
+import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -73,11 +74,17 @@ class Search extends PureComponent {
             isFocused: true,
             postId: null,
             preview: false,
-            value: ''
+            value: '',
+            managedConfig: {}
         };
     }
 
+    componentWillMount() {
+        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
+    }
+
     componentDidMount() {
+        this.setManagedConfig();
         if (this.refs.searchBar) {
             this.refs.searchBar.focus();
         }
@@ -97,6 +104,10 @@ class Search extends PureComponent {
                 });
             });
         }
+    }
+
+    componentWillUnmount() {
+        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     attachAutocomplete = (c) => {
@@ -247,6 +258,7 @@ class Search extends PureComponent {
 
     renderPost = ({item, index}) => {
         const {postIds, theme} = this.props;
+        const {managedConfig} = this.state;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -270,6 +282,7 @@ class Search extends PureComponent {
                     previewPost={this.previewPost}
                     goToThread={this.goToThread}
                     navigator={this.props.navigator}
+                    managedConfig={managedConfig}
                 />
                 {separator}
             </View>
@@ -353,6 +366,17 @@ class Search extends PureComponent {
 
     retry = () => {
         this.search(this.state.value.trim());
+    };
+
+    setManagedConfig = async (config) => {
+        let nextConfig = config;
+        if (!nextConfig) {
+            nextConfig = await mattermostManaged.getLocalConfig();
+        }
+
+        this.setState({
+            managedConfig: nextConfig
+        });
     };
 
     scrollToTop = () => {

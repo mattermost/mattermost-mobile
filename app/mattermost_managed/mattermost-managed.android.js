@@ -7,18 +7,33 @@ import JailMonkey from 'jail-monkey';
 
 const {MattermostManaged} = NativeModules;
 
+const listeners = [];
 let localConfig;
 
 export default {
     addEventListener: (name, callback) => {
-        DeviceEventEmitter.addListener(name, (config) => {
+        const listener = DeviceEventEmitter.addListener(name, (config) => {
             localConfig = config;
             if (callback && typeof callback === 'function') {
                 callback(config);
             }
         });
+
+        listeners.push(listener);
+        return listener;
     },
-    clearListeners: () => true,
+    clearListeners: () => {
+        listeners.forEach((listener) => {
+            listener.remove();
+        });
+    },
+    removeEventListener: (listenerId) => {
+        const index = listeners.findIndex((listener) => listener === listenerId);
+        if (index !== -1) {
+            listenerId.remove();
+            listeners.splice(index, 1);
+        }
+    },
     authenticate: LocalAuth.authenticate,
     blurAppScreen: MattermostManaged.blurAppScreen,
     getConfig: MattermostManaged.getConfig,
