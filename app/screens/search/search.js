@@ -603,6 +603,7 @@ class Search extends PureComponent {
                     ref={this.attachAutocomplete}
                     onChangeText={this.handleTextChanged}
                     isSearch={true}
+                    value={value}
                 />
                 {previewComponent}
             </View>
