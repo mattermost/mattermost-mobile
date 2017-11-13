@@ -22,25 +22,25 @@ export default class EmojiSuggestion extends Component {
         }).isRequired,
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
-        postDraft: PropTypes.string,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
-        rootId: PropTypes.string
+        rootId: PropTypes.string,
+        value: PropTypes.string
     };
 
     static defaultProps = {
         defaultChannel: {},
-        postDraft: ''
+        value: ''
     };
 
     state = {
         active: false,
         dataSource: []
-    }
+    };
 
     componentWillReceiveProps(nextProps) {
         const regex = EMOJI_REGEX;
-        const match = nextProps.postDraft.substring(0, nextProps.cursorPosition).match(regex);
+        const match = nextProps.value.substring(0, nextProps.cursorPosition).match(regex);
 
         if (!match || this.state.emojiComplete) {
             this.setState({
@@ -74,8 +74,8 @@ export default class EmojiSuggestion extends Component {
     }
 
     completeSuggestion = (emoji) => {
-        const {actions, cursorPosition, onChangeText, postDraft, rootId} = this.props;
-        const emojiPart = postDraft.substring(0, cursorPosition);
+        const {actions, cursorPosition, onChangeText, value, rootId} = this.props;
+        const emojiPart = value.substring(0, cursorPosition);
 
         if (emojiPart.startsWith('+:')) {
             actions.addReactionToLatestPost(emoji, rootId);
@@ -83,8 +83,8 @@ export default class EmojiSuggestion extends Component {
         } else {
             let completedDraft = emojiPart.replace(EMOJI_REGEX, `:${emoji}: `);
 
-            if (postDraft.length > cursorPosition) {
-                completedDraft += postDraft.substring(cursorPosition);
+            if (value.length > cursorPosition) {
+                completedDraft += value.substring(cursorPosition);
             }
 
             onChangeText(completedDraft);

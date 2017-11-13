@@ -3,16 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Alert,
-    BackHandler,
-    Keyboard,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -62,11 +53,16 @@ class PostTextbox extends PureComponent {
         value: ''
     };
 
-    state = {
-        contentHeight: INITIAL_HEIGHT,
-        inputWidth: null,
-        keyboardType: 'default'
-    };
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            contentHeight: INITIAL_HEIGHT,
+            inputWidth: null,
+            keyboardType: 'default',
+            value: props.value
+        };
+    }
 
     componentDidMount() {
         if (Platform.OS === 'android') {
@@ -76,8 +72,54 @@ class PostTextbox extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.channelId !== this.props.channelId || nextProps.rootId !== this.props.rootId) {
+            this.setState({value: nextProps.value});
+        }
+    }
+
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        }
+    }
+
+    attachAutocomplete = (c) => {
+        this.autocomplete = c;
+    };
+
+    blur = () => {
+        this.refs.input.blur();
+    };
+
+    canSend = () => {
+        const {files, uploadFileRequestStatus} = this.props;
+        const {value} = this.state;
+        const valueLength = value.trim().length;
+
+        if (files.length) {
+            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && files.filter((f) => !f.failed).length > 0;
+        }
+
+        return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
+    };
+
+    changeDraft = (text) => {
+        const {
+            actions,
+            channelId,
+            rootId
+        } = this.props;
+
+        if (rootId) {
+            actions.handleCommentDraftChanged(rootId, text);
+        } else {
+            actions.handlePostDraftChanged(channelId, text);
+        }
+    };
+
+    checkMessageLength = (value) => {
         const {intl} = this.props;
-        const {value} = nextProps;
         const valueLength = value.trim().length;
 
         if (valueLength > MAX_MESSAGE_LENGTH) {
@@ -95,28 +137,6 @@ class PostTextbox extends PureComponent {
                 })
             );
         }
-    }
-
-    componentWillUnmount() {
-        if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
-            BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-        }
-    }
-
-    blur = () => {
-        this.refs.input.blur();
-    };
-
-    canSend = () => {
-        const {files, uploadFileRequestStatus, value} = this.props;
-        const valueLength = value.trim().length;
-
-        if (files.length) {
-            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && files.filter((f) => !f.failed).length > 0;
-        }
-
-        return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
     };
 
     handleAndroidKeyboard = () => {
@@ -132,12 +152,47 @@ class PostTextbox extends PureComponent {
         return false;
     };
 
+    handleContentSizeChange = (event) => {
+        let contentHeight = event.nativeEvent.layout.height;
+        if (contentHeight < INITIAL_HEIGHT) {
+            contentHeight = INITIAL_HEIGHT;
+        }
+
+        this.setState({
+            contentHeight
+        });
+    };
+
+    handleEndEditing = (e) => {
+        if (e && e.nativeEvent) {
+            this.changeDraft(e.nativeEvent.text || '');
+        }
+    };
+
+    handleInputSizeChange = (event) => {
+        this.setState({
+            inputWidth: event.nativeEvent.layout.width
+        });
+    };
+
+    handlePostDraftSelectionChanged = (event) => {
+        const cursorPosition = event.nativeEvent.selection.end;
+        if (this.props.rootId) {
+            this.props.actions.handleCommentDraftSelectionChanged(this.props.rootId, cursorPosition);
+        } else {
+            this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
+        }
+
+        this.autocomplete.handleSelectionChange(event);
+    };
+
     handleSendMessage = () => {
         if (!this.canSend()) {
             return;
         }
 
-        const {files, value} = this.props;
+        const {files} = this.props;
+        const {value} = this.state;
 
         const isReactionMatch = value.match(IS_REACTION_REGEX);
         if (isReactionMatch) {
@@ -171,8 +226,85 @@ class PostTextbox extends PureComponent {
         }
     };
 
+    handleSubmit = () => {
+        // Workaround for android as the multiline is not working
+        if (Platform.OS === 'android') {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            this.timeout = setTimeout(() => {
+                let {value: msg} = this.props;
+                msg += '\n';
+                this.handleTextChange(msg);
+            }, 10);
+        }
+    };
+
+    handleTextChange = (value) => {
+        const {
+            actions,
+            channelId,
+            rootId
+        } = this.props;
+
+        this.checkMessageLength(value);
+        this.setState({value});
+
+        if (value) {
+            actions.userTyping(channelId, rootId);
+        }
+    };
+
+    handleUploadFiles = (images) => {
+        this.props.actions.handleUploadFiles(images, this.props.rootId);
+    };
+
+    renderDisabledSendButton = () => {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View style={style.sendButtonContainer}>
+                <View style={[style.sendButton, style.disableButton]}>
+                    <PaperPlane
+                        height={13}
+                        width={15}
+                        color={theme.buttonColor}
+                    />
+                </View>
+            </View>
+        );
+    };
+
+    renderSendButton = () => {
+        const {theme, uploadFileRequestStatus} = this.props;
+        const style = getStyleSheet(theme);
+
+        if (uploadFileRequestStatus === RequestStatus.STARTED) {
+            return this.renderDisabledSendButton();
+        } else if (this.canSend()) {
+            return (
+                <TouchableOpacity
+                    onPress={this.handleSendMessage}
+                    style={style.sendButtonContainer}
+                >
+                    <View style={style.sendButton}>
+                        <PaperPlane
+                            height={13}
+                            width={15}
+                            color={theme.buttonColor}
+                        />
+                    </View>
+                </TouchableOpacity>
+            );
+        }
+
+        return null;
+    };
+
     sendMessage = () => {
-        const {actions, currentUserId, channelId, files, rootId, value} = this.props;
+        const {actions, currentUserId, channelId, files, rootId} = this.props;
+        const {value} = this.state;
 
         const postFiles = files.filter((f) => !f.failed);
         const post = {
@@ -185,6 +317,7 @@ class PostTextbox extends PureComponent {
 
         actions.createPost(post, postFiles);
         this.handleTextChange('');
+        this.changeDraft('');
         if (postFiles.length) {
             actions.handleClearFiles(channelId, rootId);
         }
@@ -205,139 +338,25 @@ class PostTextbox extends PureComponent {
         this.setState(nextState, callback);
     };
 
-    handleUploadFiles = (images) => {
-        this.props.actions.handleUploadFiles(images, this.props.rootId);
-    };
-
-    changeDraft = (text) => {
-        const {
-            actions,
-            channelId,
-            rootId
-        } = this.props;
-
-        if (rootId) {
-            actions.handleCommentDraftChanged(rootId, text);
-        } else {
-            actions.handlePostDraftChanged(channelId, text);
-        }
-    }
-
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
         this.handleTextChange('');
-    }
-
-    handleTextChange = (text) => {
-        const {
-            actions,
-            channelId,
-            rootId
-        } = this.props;
-
-        this.changeDraft(text);
-        actions.userTyping(channelId, rootId);
+        this.changeDraft('');
     };
-
-    handleContentSizeChange = (event) => {
-        let contentHeight = event.nativeEvent.layout.height;
-        if (contentHeight < INITIAL_HEIGHT) {
-            contentHeight = INITIAL_HEIGHT;
-        }
-
-        this.setState({
-            contentHeight
-        });
-    };
-
-    handleInputSizeChange = (event) => {
-        this.setState({
-            inputWidth: event.nativeEvent.layout.width
-        });
-    };
-
-    handleSubmit = () => {
-        // Workaround for android as the multiline is not working
-        if (Platform.OS === 'android') {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            this.timeout = setTimeout(() => {
-                let {value: msg} = this.props;
-                msg += '\n';
-                this.handleTextChange(msg);
-            }, 10);
-        }
-    };
-
-    attachAutocomplete = (c) => {
-        this.autocomplete = c;
-    };
-
-    renderDisabledSendButton = () => {
-        const {theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        return (
-            <View style={[style.sendButton, style.disableButton]}>
-                <PaperPlane
-                    height={13}
-                    width={15}
-                    color={theme.buttonColor}
-                />
-            </View>
-        );
-    }
-
-    renderSendButton = () => {
-        const {theme, uploadFileRequestStatus} = this.props;
-        const style = getStyleSheet(theme);
-
-        if (uploadFileRequestStatus === RequestStatus.STARTED) {
-            return this.renderDisabledSendButton();
-        } else if (this.canSend()) {
-            return (
-                <TouchableOpacity
-                    onPress={this.handleSendMessage}
-                    style={style.sendButton}
-                >
-                    <PaperPlane
-                        height={13}
-                        width={15}
-                        color={theme.buttonColor}
-                    />
-                </TouchableOpacity>
-            );
-        }
-
-        return null;
-    }
-
-    handlePostDraftSelectionChanged = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
-        if (this.props.rootId) {
-            this.props.actions.handleCommentDraftSelectionChanged(this.props.rootId, cursorPosition);
-        } else {
-            this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
-        }
-
-        this.autocomplete.handleSelectionChange(event);
-    }
 
     render() {
         const {
             canUploadFiles,
             channelIsLoading,
             intl,
-            theme,
-            value
+            theme
         } = this.props;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
 
-        const textValue = channelIsLoading ? '' : value;
+        const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
         if (this.props.rootId) {
@@ -378,8 +397,8 @@ class PostTextbox extends PureComponent {
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}
-                    onChangeText={this.changeDraft}
-                    rootId={this.props.rootId}
+                    onChangeText={this.handleTextChange}
+                    value={this.state.value}
                 />
                 <View style={style.inputWrapper}>
                     {attachmentButton}
@@ -392,13 +411,14 @@ class PostTextbox extends PureComponent {
                             placeholder={intl.formatMessage(placeholder)}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
                             multiline={true}
-                            numberOfLines={10}
+                            numberOfLines={5}
                             blurOnSubmit={false}
                             underlineColorAndroid='transparent'
                             style={[style.input, {height: textInputHeight}]}
                             onSubmitEditing={this.handleSubmit}
                             onLayout={this.handleInputSizeChange}
                             keyboardType={this.state.keyboardType}
+                            onEndEditing={this.handleEndEditing}
                         />
                         {this.renderSendButton()}
                     </View>
@@ -435,8 +455,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             backgroundColor: '#fff',
-            alignItems: 'flex-end',
-            marginRight: 10
+            alignItems: 'flex-end'
         },
         inputContainerWithoutFileUpload: {
             marginLeft: 10
@@ -448,6 +467,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
+        },
+        sendButtonContainer: {
+            paddingRight: 10
         },
         sendButton: {
             backgroundColor: theme.buttonBg,

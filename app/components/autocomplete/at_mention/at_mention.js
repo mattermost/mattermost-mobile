@@ -27,16 +27,16 @@ export default class AtMention extends PureComponent {
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
         outChannel: PropTypes.array,
-        postDraft: PropTypes.string,
         requestStatus: PropTypes.string.isRequired,
         teamMembers: PropTypes.array,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        value: PropTypes.string
     };
 
     static defaultProps = {
         defaultChannel: {},
-        postDraft: '',
-        isSearch: false
+        isSearch: false,
+        value: ''
     };
 
     constructor(props) {
@@ -144,8 +144,8 @@ export default class AtMention extends PureComponent {
     };
 
     completeMention = (mention) => {
-        const {cursorPosition, isSearch, onChangeText, postDraft} = this.props;
-        const mentionPart = postDraft.substring(0, cursorPosition);
+        const {cursorPosition, isSearch, onChangeText, value} = this.props;
+        const mentionPart = value.substring(0, cursorPosition);
 
         let completedDraft;
         if (isSearch) {
@@ -154,8 +154,8 @@ export default class AtMention extends PureComponent {
             completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
         }
 
-        if (postDraft.length > cursorPosition) {
-            completedDraft += postDraft.substring(cursorPosition);
+        if (value.length > cursorPosition) {
+            completedDraft += value.substring(cursorPosition);
         }
 
         onChangeText(completedDraft, true);

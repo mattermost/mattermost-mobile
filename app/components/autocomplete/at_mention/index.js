@@ -19,25 +19,10 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
-    const {cursorPosition, isSearch, rootId} = ownProps;
+    const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
 
-    let postDraft = '';
-    if (isSearch) {
-        postDraft = state.views.search;
-    } else if (ownProps.rootId) {
-        const threadDraft = state.views.thread.drafts[rootId];
-        if (threadDraft) {
-            postDraft = threadDraft.draft;
-        }
-    } else if (currentChannelId) {
-        const channelDraft = state.views.channel.drafts[currentChannelId];
-        if (channelDraft) {
-            postDraft = channelDraft.draft;
-        }
-    }
-
-    const value = postDraft.substring(0, cursorPosition);
+    const value = ownProps.value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForAtMention(value, isSearch);
 
     let teamMembers;
@@ -54,14 +39,12 @@ function mapStateToProps(state, ownProps) {
         currentChannelId,
         currentTeamId: getCurrentTeamId(state),
         defaultChannel: getDefaultChannel(state),
-        postDraft,
         matchTerm,
         teamMembers,
         inChannel,
         outChannel,
         requestStatus: state.requests.users.autocompleteUsers.status,
-        theme: getTheme(state),
-        ...ownProps
+        theme: getTheme(state)
     };
 }
 
