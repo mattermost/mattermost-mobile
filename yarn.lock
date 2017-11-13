@@ -5027,8 +5027,8 @@ react-native-navigation@1.1.216:
     lodash "4.x.x"
 
 react-native-notifications@enahum/react-native-notifications.git:
-  version "1.1.15"
-  resolved "https://codeload.github.com/enahum/react-native-notifications/tar.gz/37dd26bd0d900e32db0fccc0ace698b3f6844900"
+  version "1.1.17"
+  resolved "https://codeload.github.com/enahum/react-native-notifications/tar.gz/2300824b1cbd5fff33d20847b3cc75f304613927"
   dependencies:
     core-js "^1.0.0"
     uuid "^2.0.3"
