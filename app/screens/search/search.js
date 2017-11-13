@@ -80,7 +80,7 @@ class Search extends PureComponent {
     }
 
     componentWillMount() {
-        mattermostManaged.addEventListener('change', this.setManagedConfig);
+        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
     }
 
     componentDidMount() {
@@ -107,7 +107,7 @@ class Search extends PureComponent {
     }
 
     componentWillUnmount() {
-        mattermostManaged.clearListeners();
+        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     attachAutocomplete = (c) => {

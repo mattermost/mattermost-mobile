@@ -19,11 +19,19 @@ export default {
         });
 
         listeners.push(listener);
+        return listener;
     },
     clearListeners: () => {
         listeners.forEach((listener) => {
             listener.remove();
         });
+    },
+    removeEventListener: (listenerId) => {
+        const index = listeners.findIndex((listener) => listener === listenerId);
+        if (index !== -1) {
+            listenerId.remove();
+            listeners.splice(index, 1);
+        }
     },
     authenticate: LocalAuth.authenticate,
     blurAppScreen: BlurAppScreen.enabled,

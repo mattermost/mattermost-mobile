@@ -54,7 +54,7 @@ export default class PostList extends PureComponent {
     }
 
     componentWillMount() {
-        mattermostManaged.addEventListener('change', this.setManagedConfig);
+        this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
     }
 
     componentDidMount() {
@@ -70,7 +70,7 @@ export default class PostList extends PureComponent {
     }
 
     componentWillUnmount() {
-        mattermostManaged.clearListeners();
+        mattermostManaged.removeEventListener(this.listenerId);
     }
 
     scrollList = () => {
