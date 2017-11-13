@@ -261,47 +261,41 @@ class PostTextbox extends PureComponent {
         this.props.actions.handleUploadFiles(images, this.props.rootId);
     };
 
-    renderDisabledSendButton = () => {
-        const {theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        return (
-            <View style={style.sendButtonContainer}>
-                <View style={[style.sendButton, style.disableButton]}>
-                    <PaperPlane
-                        height={13}
-                        width={15}
-                        color={theme.buttonColor}
-                    />
-                </View>
-            </View>
-        );
-    };
-
     renderSendButton = () => {
         const {theme, uploadFileRequestStatus} = this.props;
         const style = getStyleSheet(theme);
 
+        const icon = (
+            <PaperPlane
+                height={13}
+                width={15}
+                color={theme.buttonColor}
+            />
+        );
+
+        let button = null;
         if (uploadFileRequestStatus === RequestStatus.STARTED) {
-            return this.renderDisabledSendButton();
+            button = (
+                <View style={style.sendButtonContainer}>
+                    <View style={[style.sendButton, style.disableButton]}>
+                        {icon}
+                    </View>
+                </View>
+            );
         } else if (this.canSend()) {
-            return (
+            button = (
                 <TouchableOpacity
                     onPress={this.handleSendMessage}
                     style={style.sendButtonContainer}
                 >
                     <View style={style.sendButton}>
-                        <PaperPlane
-                            height={13}
-                            width={15}
-                            color={theme.buttonColor}
-                        />
+                        {icon}
                     </View>
                 </TouchableOpacity>
             );
         }
 
-        return null;
+        return button;
     };
 
     sendMessage = () => {
@@ -458,7 +452,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             backgroundColor: '#fff',
-            alignItems: 'flex-end'
+            alignItems: 'stretch',
+            marginRight: 10
         },
         inputContainerWithoutFileUpload: {
             marginLeft: 10
@@ -472,27 +467,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20)
         },
         sendButtonContainer: {
-            paddingRight: 10
+            justifyContent: 'flex-end',
+            paddingHorizontal: 5,
+            paddingVertical: 3
         },
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 18,
-            marginRight: 5,
             height: 28,
             width: 28,
             alignItems: 'center',
-            justifyContent: 'center',
-            paddingLeft: 2,
-            ...Platform.select({
-                ios: {
-                    marginBottom: 3
-                },
-                android: {
-                    height: 29,
-                    marginBottom: 4,
-                    width: 29
-                }
-            })
+            justifyContent: 'center'
         }
     };
 });
