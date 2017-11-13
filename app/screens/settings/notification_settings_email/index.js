@@ -8,9 +8,8 @@ import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/pr
 
 import NotificationSettingsEmail from './notification_settings_email';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         config: getConfig(state),
         myPreferences: getMyPreferences(state),
         theme: getTheme(state)

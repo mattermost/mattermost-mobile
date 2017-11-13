@@ -11,9 +11,8 @@ import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notificatio
 
 import NotificationSettings from './notification_settings';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         config: state.entities.general.config,
         currentUser: getCurrentUser(state),
         myPreferences: getMyPreferences(state),
