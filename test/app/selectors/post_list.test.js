@@ -35,9 +35,10 @@ describe('Selectors.PostList', () => {
             };
             const lastViewedAt = Number.POSITIVE_INFINITY;
             const postIds = ['1002', '1001'];
+            const indicateNewMessages = true;
 
             // Defaults to show post
-            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(removeDateLines(now), ['1002', '1001']);
 
             // Show join/leave posts
@@ -59,7 +60,7 @@ describe('Selectors.PostList', () => {
                 }
             };
 
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(removeDateLines(now), ['1002', '1001']);
 
             // Hide join/leave posts
@@ -81,7 +82,7 @@ describe('Selectors.PostList', () => {
                 }
             };
 
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(removeDateLines(now), ['1001']);
         });
 
@@ -109,11 +110,11 @@ describe('Selectors.PostList', () => {
             const postIds = ['1010', '1005', '1000']; // Remember that we list the posts backwards
 
             // Show new messages indicator before all posts
-            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 0});
+            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 0, indicateNewMessages: true});
             assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000', START_OF_NEW_MESSAGES]);
 
             // Show indicator between posts
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003, indicateNewMessages: true});
             assert.deepEqual(removeDateLines(now), ['1010', '1005', START_OF_NEW_MESSAGES, '1000']);
 
             // Don't show indicator when all posts are read
@@ -156,12 +157,12 @@ describe('Selectors.PostList', () => {
             let postIds = ['1006', '1004', '1003', '1001'];
             let lastViewedAt = initialPosts['1001'].create_at + 1;
 
-            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            let now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
 
             // No changes
             let prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
 
@@ -169,7 +170,7 @@ describe('Selectors.PostList', () => {
             lastViewedAt = initialPosts['1001'].create_at + 2;
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', '1003', START_OF_NEW_MESSAGES, '1001']);
 
@@ -177,12 +178,12 @@ describe('Selectors.PostList', () => {
             lastViewedAt += initialPosts['1003'].create_at + 1;
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.notEqual(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
@@ -190,7 +191,7 @@ describe('Selectors.PostList', () => {
             postIds = [...postIds];
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
@@ -210,7 +211,7 @@ describe('Selectors.PostList', () => {
             };
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
@@ -230,7 +231,7 @@ describe('Selectors.PostList', () => {
             };
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1006', '1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
@@ -254,12 +255,12 @@ describe('Selectors.PostList', () => {
             };
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.notEqual(now, prev);
             assert.deepEqual(removeDateLines(now), ['1004', START_OF_NEW_MESSAGES, '1003', '1001']);
 
             prev = now;
-            now = preparePostIdsForPostList(state, {postIds, lastViewedAt});
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(removeDateLines(now), ['1004', START_OF_NEW_MESSAGES, '1003', '1001']);
         });
