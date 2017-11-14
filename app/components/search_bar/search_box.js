@@ -184,11 +184,6 @@ export default class Search extends Component {
 
     onFocus = () => {
         InteractionManager.runAfterInteractions(async () => {
-            const input = this.refs.input_keyword.getNode();
-            if (!input.isFocused()) {
-                input.focus();
-            }
-
             this.setState({expanded: true});
             await this.expandAnimation();
 
