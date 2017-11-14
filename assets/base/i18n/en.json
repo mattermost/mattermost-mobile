@@ -2423,6 +2423,7 @@
   "sso_signup.team_error": "Please enter a team name",
   "status_dropdown.set_away": "Away",
   "status_dropdown.set_dnd": "Do Not Disturb",
+  "status_dropdown.set_dnd.extra": "Disables Desktop and Push Notifications",
   "status_dropdown.set_offline": "Offline",
   "status_dropdown.set_online": "Online",
   "suggestion.loading": "Loading...",
