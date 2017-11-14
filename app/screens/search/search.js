@@ -150,7 +150,7 @@ class Search extends PureComponent {
 
     handleSelectionChange = (event) => {
         if (this.autocomplete) {
-            this.autocomplete.handleSelectionChange(event);
+            this.autocomplete.getWrappedInstance().handleSelectionChange(event);
         }
     };
 

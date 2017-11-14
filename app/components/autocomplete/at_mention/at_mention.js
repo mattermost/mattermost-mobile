@@ -9,6 +9,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';
+import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -26,6 +27,7 @@ export default class AtMention extends PureComponent {
         isSearch: PropTypes.bool,
         matchTerm: PropTypes.string,
         onChangeText: PropTypes.func.isRequired,
+        onResultCountChange: PropTypes.func.isRequired,
         outChannel: PropTypes.array,
         requestStatus: PropTypes.string.isRequired,
         teamMembers: PropTypes.array,
@@ -55,6 +57,9 @@ export default class AtMention extends PureComponent {
                 mentionComplete: false,
                 sections: []
             });
+
+            this.props.onResultCountChange(0);
+
             return;
         } else if (matchTerm === null) {
             // if the terms did not change but is null then we don't need to do anything
@@ -113,6 +118,8 @@ export default class AtMention extends PureComponent {
             this.setState({
                 sections
             });
+
+            this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
 
@@ -214,6 +221,7 @@ export default class AtMention extends PureComponent {
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
+                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
             />
         );

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import ProfilePicture from 'app/components/profile_picture';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AtMentionItem extends PureComponent {
     static propTypes = {
@@ -60,19 +60,14 @@ export default class AtMentionItem extends PureComponent {
         );
     }
 }
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
             paddingVertical: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            backgroundColor: theme.centerChannelBg
         },
         rowPicture: {
             marginHorizontal: 8,
