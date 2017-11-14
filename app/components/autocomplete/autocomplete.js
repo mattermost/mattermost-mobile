@@ -112,10 +112,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             zIndex: 5,
             ...Platform.select({
                 android: {
-                    top: 46
+                    top: 47
                 },
                 ios: {
-                    top: 61
+                    top: 64
                 }
             })
         }
