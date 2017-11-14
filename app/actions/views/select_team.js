@@ -28,9 +28,10 @@ export function handleTeamChange(teamId, selectChannel = true) {
         if (selectChannel) {
             actions.push({type: ChannelTypes.SELECT_CHANNEL, data: ''});
 
-            const lastChannelId = state.views.team.lastChannelForTeam[teamId] || '';
+            const lastChannels = state.views.team.lastChannelForTeam[teamId] || [];
+            const lastChannelId = lastChannels[0] || '';
             const currentChannelId = getCurrentChannelId(state);
-            viewChannel(lastChannelId, currentChannelId)(dispatch, getState);
+            viewChannel(currentChannelId)(dispatch, getState);
             markChannelAsRead(lastChannelId, currentChannelId)(dispatch, getState);
         }
 

@@ -25,9 +25,10 @@ export function makePreparePostIdsForPostList() {
     return createIdsSelector(
         (state, props) => getMyPosts(state, props.postIds),
         (state, props) => props.lastViewedAt,
+        (state, props) => props.indicateNewMessages,
         getCurrentUserId,
         shouldShowJoinLeaveMessages,
-        (posts, lastViewedAt, currentUserId, showJoinLeave) => {
+        (posts, lastViewedAt, indicateNewMessages, currentUserId, showJoinLeave) => {
             if (posts.length === 0) {
                 return [];
             }
@@ -62,8 +63,8 @@ export function makePreparePostIdsForPostList() {
                 }
 
                 // Only add the new messages line if a lastViewedAt time is set
-                const postIsUnread = post.create_at > lastViewedAt;
-                if (lastViewedAt != null && !addedNewMessagesIndicator && postIsUnread) {
+                const postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUserId;
+                if (lastViewedAt !== null && !addedNewMessagesIndicator && postIsUnread && indicateNewMessages) {
                     out.push(START_OF_NEW_MESSAGES);
                     addedNewMessagesIndicator = true;
                 }
