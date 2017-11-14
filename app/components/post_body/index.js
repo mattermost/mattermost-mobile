@@ -7,14 +7,13 @@ import {bindActionCreators} from 'redux';
 import {flagPost, unflagPost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
-import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isPostFlagged, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import PostBody from './post_body';
 
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
-    const myPreferences = getMyPreferences(state);
 
     return {
         ...ownProps,
@@ -23,7 +22,6 @@ function mapStateToProps(state, ownProps) {
         hasBeenDeleted: post.state === Posts.POST_DELETED,
         hasReactions: post.has_reactions,
         isFailed: post.failed,
-        isFlagged: isPostFlagged(post.id, myPreferences),
         isPending: post.id === post.pending_post_id,
         isPostEphemeral: isPostEphemeral(post),
         isSystemMessage: isSystemMessage(post),

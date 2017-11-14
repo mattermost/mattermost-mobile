@@ -7,9 +7,10 @@ import {bindActionCreators} from 'redux';
 import {addReaction, createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Post from './post';
 
@@ -18,6 +19,7 @@ function mapStateToProps(state, ownProps) {
 
     const {config, license} = state.entities.general;
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const myPreferences = getMyPreferences(state);
 
     let isFirstReply = true;
     let isLastReply = true;
@@ -53,7 +55,8 @@ function mapStateToProps(state, ownProps) {
         commentedOnPost,
         license,
         roles,
-        theme: getTheme(state)
+        theme: getTheme(state),
+        isFlagged: isPostFlagged(post.id, myPreferences)
     };
 }
 
