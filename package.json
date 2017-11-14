@@ -14,7 +14,7 @@
     "deep-equal": "1.0.1",
     "intl": "1.2.5",
     "jail-monkey": "0.0.9",
-    "mattermost-redux": "mattermost/mattermost-redux#master",
+    "mattermost-redux": "mattermost/mattermost-redux#rn-release-1.4",
     "prop-types": "15.5.10",
     "react": "16.0.0-alpha.12",
     "react-intl": "2.3.0",
