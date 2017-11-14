@@ -10,6 +10,7 @@ export default class SearchResultPost extends PureComponent {
     static propTypes = {
         isDeleted: PropTypes.bool.isRequired,
         goToThread: PropTypes.func.isRequired,
+        managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
         previewPost: PropTypes.func.isRequired
@@ -24,6 +25,7 @@ export default class SearchResultPost extends PureComponent {
             postComponentProps.onPress = this.props.previewPost;
             postComponentProps.onReply = this.props.goToThread;
             postComponentProps.shouldRenderReplyButton = true;
+            postComponentProps.managedConfig = this.props.managedConfig;
         }
 
         return (

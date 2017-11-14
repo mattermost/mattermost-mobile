@@ -203,6 +203,13 @@ function cleanupState(action, keepCurrent = false) {
         return array.concat(ids);
     }, []);
 
+    let searchResults = [];
+    if (payload.entities.search && payload.entities.search.results.length) {
+        const {results} = payload.entities.search;
+        searchResults = results;
+        postIdsToKeep.push(...results);
+    }
+
     postIdsToKeep.forEach((postId) => {
         const post = payload.entities.posts.posts[postId];
 
@@ -253,7 +260,10 @@ function cleanupState(action, keepCurrent = false) {
             emojis: payload.entities.emojis,
             general: resetPayload.entities.general,
             preferences: resetPayload.entities.preferences,
-            search: resetPayload.entities.search,
+            search: {
+                ...resetPayload.entities.search,
+                results: searchResults
+            },
             teams: resetPayload.entities.teams,
             users: payload.entities.users
         },
