@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity} from 'app/utils/theme';
 
 export default class SearchBarAndroid extends PureComponent {
@@ -32,10 +33,7 @@ export default class SearchBarAndroid extends PureComponent {
         titleCancelColor: PropTypes.string,
         tintColorSearch: PropTypes.string,
         tintColorDelete: PropTypes.string,
-        inputStyle: PropTypes.oneOfType([
-            PropTypes.number,
-            PropTypes.object
-        ]),
+        inputStyle: CustomPropTypes.Style,
         placeholder: PropTypes.string,
         returnKeyType: PropTypes.string,
         keyboardType: PropTypes.string,
@@ -44,7 +42,7 @@ export default class SearchBarAndroid extends PureComponent {
         inputBorderRadius: PropTypes.number,
         blurOnSubmit: PropTypes.bool,
         value: PropTypes.string,
-        containerStyle: PropTypes.object
+        containerStyle: CustomPropTypes.Style
     };
 
     static defaultProps = {

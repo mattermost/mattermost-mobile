@@ -587,12 +587,7 @@ class Search extends PureComponent {
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                        inputStyle={{
-                            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
-                            color: theme.sidebarHeaderTextColor,
-                            fontSize: 15,
-                            lineHeight: 66
-                        }}
+                        inputStyle={style.searchBarInput}
                         placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -604,7 +599,7 @@ class Search extends PureComponent {
                         onSelectionChange={this.handleSelectionChange}
                         autoCapitalize='none'
                         value={value}
-                        containerStyle={{padding: 0}}
+                        containerStyle={style.searchBarContainer}
                         backArrowSize={28}
                     />
                 </View>
@@ -644,6 +639,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     paddingTop: 20
                 }
             })
+        },
+        searchBarInput: {
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 15,
+            lineHeight: 66
+        },
+        searchBarContainer: {
+            padding: 0
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg
