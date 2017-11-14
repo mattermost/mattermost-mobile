@@ -233,7 +233,7 @@ class PostTextbox extends PureComponent {
                 clearTimeout(this.timeout);
             }
             this.timeout = setTimeout(() => {
-                let {value: msg} = this.props;
+                let {value: msg} = this.state;
                 msg += '\n';
                 this.handleTextChange(msg);
             }, 10);
