@@ -8,6 +8,7 @@ import {ViewTypes} from 'app/constants';
 import {UserTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
+    markChannelAsRead,
     selectChannel,
     leaveChannel as serviceLeaveChannel,
     unfavoriteChannel
@@ -236,20 +237,27 @@ export function selectInitialChannel(teamId) {
         if (lastChannelId && myMembers[lastChannelId] &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)) {
             handleSelectChannel(lastChannelId)(dispatch, getState);
+            markChannelAsRead(lastChannelId)(dispatch, getState);
             return;
         }
 
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
+        let channelId;
         if (channel) {
-            dispatch(setChannelDisplayName(''));
-            handleSelectChannel(channel.id)(dispatch, getState);
+            channelId = channel.id;
         } else {
             // Handle case when the default channel cannot be found
             // so we need to get the first available channel of the team
             const channelsInTeam = Object.values(channels).filter((c) => c.team_id === teamId);
             const firstChannel = channelsInTeam.length ? channelsInTeam[0].id : {id: ''};
+
+            channelId = firstChannel.id;
+        }
+
+        if (channelId) {
             dispatch(setChannelDisplayName(''));
-            handleSelectChannel(firstChannel.id)(dispatch, getState);
+            handleSelectChannel(channelId)(dispatch, getState);
+            markChannelAsRead(channelId)(dispatch, getState);
         }
     };
 }
