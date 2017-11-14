@@ -23,7 +23,6 @@ export function messageRetention() {
 
             // Keep only the last 60 messages for the last 5 viewed channels in each team
             // and apply data retention on those posts if applies
-
             return next(cleanupState(action));
         } else if (action.type === ViewTypes.DATA_CLEANUP) {
             const nextAction = cleanupState(action, true);
