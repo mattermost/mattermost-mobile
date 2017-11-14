@@ -10,7 +10,7 @@
     "analytics-react-native": "1.2.0",
     "babel-polyfill": "6.26.0",
     "commonmark": "hmhealey/commonmark.js#dda6d89198252d5fd4bb04c4cc0668766c22fd77",
-    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#6e259b66ae87d31d2f908effcd05776b9ea3446f",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#1f078d53b7993d30b2762dd7d78fdd21ee84dd21",
     "deep-equal": "1.0.1",
     "intl": "1.2.5",
     "jail-monkey": "0.1.0",
