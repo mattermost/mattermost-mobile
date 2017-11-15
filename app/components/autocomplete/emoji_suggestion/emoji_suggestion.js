@@ -14,6 +14,7 @@ import Emoji from 'app/components/emoji';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
+const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
 
 export default class EmojiSuggestion extends Component {
     static propTypes = {
@@ -81,7 +82,7 @@ export default class EmojiSuggestion extends Component {
             actions.addReactionToLatestPost(emoji, rootId);
             onChangeText('');
         } else {
-            let completedDraft = emojiPart.replace(EMOJI_REGEX, `:${emoji}: `);
+            let completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `:${emoji}: `);
 
             if (value.length > cursorPosition) {
                 completedDraft += value.substring(cursorPosition);
