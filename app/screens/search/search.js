@@ -46,6 +46,8 @@ class Search extends PureComponent {
             clearSearch: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
+            markChannelAsRead: PropTypes.func.isRequired,
+            markChannelAsViewed: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPosts: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired
@@ -442,7 +444,7 @@ class Search extends PureComponent {
                 markChannelAsRead,
                 setChannelLoading,
                 setChannelDisplayName,
-                viewChannel
+                markChannelAsViewed
             } = actions;
 
             setChannelLoading(channelId !== currentChannelId);
@@ -454,7 +456,7 @@ class Search extends PureComponent {
                     // mark the channel as viewed after all the frame has flushed
                     markChannelAsRead(channelId, currentChannelId);
                     if (channelId !== currentChannelId) {
-                        viewChannel(currentChannelId);
+                        markChannelAsViewed(currentChannelId);
                     }
                 });
 

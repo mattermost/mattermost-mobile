@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {joinChannel, viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {joinChannel, markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
 import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/entities/teams';
 
@@ -34,7 +34,7 @@ function mapDispatchToProps(dispatch) {
             getTeams,
             handleSelectChannel,
             joinChannel,
-            viewChannel,
+            markChannelAsViewed,
             makeDirectChannel,
             markChannelAsRead,
             setChannelDisplayName,

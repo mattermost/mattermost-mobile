@@ -3,7 +3,7 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {markChannelAsRead, viewChannel} from 'mattermost-redux/actions/channels';
+import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -31,7 +31,7 @@ export function handleTeamChange(teamId, selectChannel = true) {
             const lastChannels = state.views.team.lastChannelForTeam[teamId] || [];
             const lastChannelId = lastChannels[0] || '';
             const currentChannelId = getCurrentChannelId(state);
-            viewChannel(currentChannelId)(dispatch, getState);
+            markChannelAsViewed(currentChannelId)(dispatch, getState);
             markChannelAsRead(lastChannelId, currentChannelId)(dispatch, getState);
         }
 
