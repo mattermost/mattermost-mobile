@@ -13,11 +13,12 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     StyleSheet,
-    View,
-    ViewPropTypes
+    View
 } from 'react-native';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+
+import CustomPropTypes from 'app/constants/custom_prop_types';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
@@ -40,13 +41,9 @@ export default class Search extends Component {
         tintColorSearch: PropTypes.string,
         tintColorDelete: PropTypes.string,
         selectionColor: PropTypes.string,
-        inputStyle: PropTypes.oneOfType([
-            PropTypes.number,
-            PropTypes.object,
-            ViewPropTypes.style
-        ]),
+        inputStyle: CustomPropTypes.Style,
         onLayout: PropTypes.func,
-        cancelButtonStyle: ViewPropTypes.style,
+        cancelButtonStyle: CustomPropTypes.Style,
         autoFocus: PropTypes.bool,
         placeholder: PropTypes.string,
         cancelTitle: PropTypes.oneOfType([
@@ -184,11 +181,6 @@ export default class Search extends Component {
 
     onFocus = () => {
         InteractionManager.runAfterInteractions(async () => {
-            const input = this.refs.input_keyword.getNode();
-            if (!input.isFocused()) {
-                input.focus();
-            }
-
             this.setState({expanded: true});
             await this.expandAnimation();
 

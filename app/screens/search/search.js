@@ -27,7 +27,7 @@ import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
@@ -71,7 +71,6 @@ class Search extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.state = {
             channelName: '',
-            isFocused: true,
             postId: null,
             preview: false,
             value: '',
@@ -114,11 +113,11 @@ class Search extends PureComponent {
         this.autocomplete = c;
     };
 
-    cancelSearch = () => {
+    cancelSearch = wrapWithPreventDoubleTap(() => {
         const {navigator} = this.props;
         this.handleTextChanged('', true);
         navigator.dismissModal({animationType: 'slide-down'});
-    };
+    });
 
     goToThread = (post) => {
         const {actions, navigator, theme} = this.props;
@@ -189,14 +188,7 @@ class Search extends PureComponent {
         return item.id || item;
     };
 
-    onBlur = () => {
-        this.setState({isFocused: false});
-    };
-
     onFocus = () => {
-        if (!this.state.isFocused) {
-            this.setState({isFocused: true});
-        }
         this.scrollToTop();
     };
 
@@ -217,10 +209,10 @@ class Search extends PureComponent {
         this.setState({preview: true, postId: focusedPostId});
     };
 
-    removeSearchTerms = (item) => {
+    removeSearchTerms = wrapWithPreventDoubleTap((item) => {
         const {actions, currentTeamId} = this.props;
         actions.removeSearchTerms(currentTeamId, item.terms);
-    };
+    });
 
     renderModifiers = ({item}) => {
         const {theme} = this.props;
@@ -230,7 +222,7 @@ class Search extends PureComponent {
             <TouchableHighlight
                 key={item.modifier}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => preventDoubleTap(this.setModifierValue, this, item.value)}
+                onPress={() => this.setModifierValue(item.value)}
             >
                 <View style={style.modifierItemContainer}>
                     <View style={style.modifierItemWrapper}>
@@ -339,7 +331,7 @@ class Search extends PureComponent {
             <TouchableHighlight
                 key={item.terms}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={() => preventDoubleTap(this.setRecentValue, this, item)}
+                onPress={() => this.setRecentValue(item)}
             >
                 <View
                     style={style.recentItemContainer}
@@ -350,7 +342,7 @@ class Search extends PureComponent {
                         {item.terms}
                     </Text>
                     <TouchableOpacity
-                        onPress={() => preventDoubleTap(this.removeSearchTerms, this, item)}
+                        onPress={() => this.removeSearchTerms(item)}
                         style={style.recentRemove}
                     >
                         <IonIcon
@@ -405,7 +397,11 @@ class Search extends PureComponent {
         actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
     };
 
-    setModifierValue = (modifier) => {
+    handleSearchButtonPress = wrapWithPreventDoubleTap((text) => {
+        this.search(text);
+    });
+
+    setModifierValue = wrapWithPreventDoubleTap((modifier) => {
         const {value} = this.state;
         let newValue = '';
 
@@ -422,9 +418,9 @@ class Search extends PureComponent {
         if (this.refs.searchBar) {
             this.refs.searchBar.focus();
         }
-    };
+    });
 
-    setRecentValue = (recent) => {
+    setRecentValue = wrapWithPreventDoubleTap((recent) => {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);
@@ -432,7 +428,7 @@ class Search extends PureComponent {
         if (this.refs.searchBar) {
             this.refs.searchBar.blur();
         }
-    };
+    });
 
     handleClosePreview = () => {
         this.setState({preview: false, postId: null});
@@ -591,26 +587,19 @@ class Search extends PureComponent {
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                        inputStyle={{
-                            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
-                            color: theme.sidebarHeaderTextColor,
-                            fontSize: 15,
-                            lineHeight: 66
-                        }}
+                        inputStyle={style.searchBarInput}
                         placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                         titleCancelColor={theme.sidebarHeaderTextColor}
                         onChangeText={this.handleTextChanged}
-                        onBlur={this.onBlur}
-                        onFocus={this.onFocus}
-                        onSearchButtonPress={(text) => preventDoubleTap(this.search, this, text)}
-                        onCancelButtonPress={() => preventDoubleTap(this.cancelSearch, this)}
+                        onSearchButtonPress={this.handleSearchButtonPress}
+                        onCancelButtonPress={this.cancelSearch}
                         onSelectionChange={this.handleSelectionChange}
                         autoCapitalize='none'
                         value={value}
-                        containerStyle={{padding: 0}}
+                        containerStyle={style.searchBarContainer}
                         backArrowSize={28}
                     />
                 </View>
@@ -650,6 +639,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     paddingTop: 20
                 }
             })
+        },
+        searchBarInput: {
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 15,
+            lineHeight: 66
+        },
+        searchBarContainer: {
+            padding: 0
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg

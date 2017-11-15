@@ -1,9 +1,12 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {InteractionManager, Keyboard} from 'react-native';
-import PropTypes from 'prop-types';
+
+import CustomPropTypes from 'app/constants/custom_prop_types';
+
 import Search from './search_box';
 
 export default class SearchBarIos extends PureComponent {
@@ -19,14 +22,8 @@ export default class SearchBarIos extends PureComponent {
         titleCancelColor: PropTypes.string,
         tintColorSearch: PropTypes.string,
         tintColorDelete: PropTypes.string,
-        cancelButtonStyle: PropTypes.PropTypes.oneOfType([
-            PropTypes.number,
-            PropTypes.object
-        ]),
-        inputStyle: PropTypes.oneOfType([
-            PropTypes.number,
-            PropTypes.object
-        ]),
+        cancelButtonStyle: CustomPropTypes.Style,
+        inputStyle: CustomPropTypes.Style,
         placeholder: PropTypes.string,
         cancelTitle: PropTypes.oneOfType([
             PropTypes.string,
