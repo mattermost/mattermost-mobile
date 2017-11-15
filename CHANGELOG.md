@@ -1,5 +1,17 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.4.1 Release
+
+Release Date: Nov 15, 2017
+Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+
+- Fixed network detection issue causing some people to be unable to access the app
+- Fixed issue with lag when pressing send button 
+- Fixed app crash when opening notification settings
+- Fixed various other bugs to reduce app crashes
+
 ## v1.4 Release 
 
 - Release Date: November 6, 2017
