@@ -70,13 +70,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            backgroundColor: theme.centerChannelBg
         },
         rowPicture: {
             marginHorizontal: 8,

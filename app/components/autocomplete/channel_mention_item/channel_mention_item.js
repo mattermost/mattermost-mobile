@@ -8,7 +8,7 @@ import {
     TouchableOpacity
 } from 'react-native';
 
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
     static propTypes = {
@@ -46,19 +46,14 @@ export default class ChannelMentionItem extends PureComponent {
         );
     }
 }
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
             padding: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            backgroundColor: theme.centerChannelBg
         },
         rowDisplayName: {
             fontSize: 13,

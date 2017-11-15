@@ -199,7 +199,7 @@ class PostTextbox extends PureComponent {
             this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
         }
 
-        this.autocomplete.handleSelectionChange(event);
+        this.autocomplete.getWrappedInstance().handleSelectionChange(event);
     };
 
     handleSendMessage = () => {

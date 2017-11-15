@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import Autocomplete from './autocomplete';
+import AutocompleteDivider from './autocomplete_divider';
 
 function mapStateToProps(state) {
     return {
@@ -13,4 +13,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(Autocomplete);
+export default connect(mapStateToProps)(AutocompleteDivider);

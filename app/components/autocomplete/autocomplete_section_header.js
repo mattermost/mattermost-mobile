@@ -40,11 +40,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         sectionText: {
             fontSize: 12,

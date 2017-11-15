@@ -8,6 +8,7 @@ import {SectionList} from 'react-native';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
+import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -24,6 +25,7 @@ export default class ChannelMention extends PureComponent {
         myChannels: PropTypes.array,
         otherChannels: PropTypes.array,
         onChangeText: PropTypes.func.isRequired,
+        onResultCountChange: PropTypes.func.isRequired,
         privateChannels: PropTypes.array,
         publicChannels: PropTypes.array,
         requestStatus: PropTypes.string.isRequired,
@@ -53,6 +55,9 @@ export default class ChannelMention extends PureComponent {
                 mentionComplete: false,
                 sections: []
             });
+
+            this.props.onResultCountChange(0);
+
             return;
         } else if (matchTerm === null) {
             // if the terms did not change but is null then we don't need to do anything
@@ -112,6 +117,8 @@ export default class ChannelMention extends PureComponent {
             this.setState({
                 sections
             });
+
+            this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
 
@@ -178,6 +185,7 @@ export default class ChannelMention extends PureComponent {
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
+                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
             />
         );

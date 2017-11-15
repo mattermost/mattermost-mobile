@@ -10,8 +10,9 @@ import {
     View
 } from 'react-native';
 
+import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
@@ -25,6 +26,7 @@ export default class EmojiSuggestion extends Component {
         emojis: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
+        onResultCountChange: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         value: PropTypes.string
     };
@@ -49,6 +51,9 @@ export default class EmojiSuggestion extends Component {
                 matchTerm: null,
                 emojiComplete: false
             });
+
+            this.props.onResultCountChange(0);
+
             return;
         }
 
@@ -69,9 +74,11 @@ export default class EmojiSuggestion extends Component {
         }
 
         this.setState({
-            active: data.length,
+            active: data.length > 0,
             dataSource: data
         });
+
+        this.props.onResultCountChange(data.length);
     }
 
     completeSuggestion = (emoji) => {
@@ -137,6 +144,7 @@ export default class EmojiSuggestion extends Component {
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
                 renderItem={this.renderItem}
+                ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
             />
@@ -162,13 +170,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            backgroundColor: theme.centerChannelBg
         }
     };
 });
