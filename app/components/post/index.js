@@ -12,7 +12,6 @@ import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Post from './post';
 

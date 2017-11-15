@@ -27,6 +27,7 @@ import EmojiPickerRow from './emoji_picker_row';
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7.5;
 const SECTION_MARGIN = 15;
+const SECTION_HEADER_HEIGHT = 28;
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
@@ -53,13 +54,18 @@ export default class EmojiPicker extends PureComponent {
             getItemHeight: () => {
                 return EMOJI_SIZE + (EMOJI_GUTTER * 2);
             },
-            getSectionHeaderHeight: () => 28
+            getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT
         });
 
+        const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
+        const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
+
         this.state = {
-            emojis: this.renderableEmojis(props.emojisBySection, props.deviceWidth),
+            emojis,
+            emojiSectionIndexByOffset,
             filteredEmojis: [],
-            searchTerm: ''
+            searchTerm: '',
+            currentSectionIndex: 0
         };
     }
 
@@ -110,6 +116,17 @@ export default class EmojiPicker extends PureComponent {
         });
 
         return nextEmojis;
+    }
+
+    measureEmojiSections = (emojiSections) => {
+        let lastOffset = 0;
+        return emojiSections.map((section) => {
+            const start = lastOffset;
+            const nextOffset = (section.data.length * (EMOJI_SIZE + (EMOJI_GUTTER * 2))) + SECTION_HEADER_HEIGHT;
+            lastOffset += nextOffset;
+
+            return start;
+        });
     }
 
     changeSearchTerm = (text) => {
@@ -188,11 +205,43 @@ export default class EmojiPicker extends PureComponent {
         );
     };
 
+    onScroll = (e) => {
+        if (this.state.jumpToSection) {
+            return;
+        }
+
+        clearTimeout(this.setIndexTimeout);
+
+        const {contentOffset} = e.nativeEvent;
+        let nextIndex = this.state.emojiSectionIndexByOffset.findIndex((offset) => contentOffset.y <= offset);
+
+        if (nextIndex === -1) {
+            nextIndex = this.state.emojiSectionIndexByOffset.length;
+        }
+
+        if (nextIndex - 1 !== this.state.currentSectionIndex) {
+            this.setState({
+                currentSectionIndex: nextIndex - 1
+            });
+        }
+    }
+
     scrollToSection = (index) => {
-        this.sectionList.scrollToLocation({
-            sectionIndex: index,
-            itemIndex: 0,
-            viewOffset: 25
+        this.setState({
+            jumpToSection: true,
+            currentSectionIndex: index
+        }, () => {
+            this.sectionList.scrollToLocation({
+                sectionIndex: index,
+                itemIndex: 0,
+                viewOffset: 25
+            });
+
+            setTimeout(() => {
+                this.setState({
+                    jumpToSection: false
+                });
+            }, 300);
         });
     }
 
@@ -230,7 +279,7 @@ export default class EmojiPicker extends PureComponent {
                     <FontAwesomeIcon
                         name={section.icon}
                         size={17}
-                        style={styles.sectionIcon}
+                        style={[styles.sectionIcon, (index === this.state.currentSectionIndex && styles.sectionIconHighlight)]}
                     />
                 </TouchableOpacity>
             );
@@ -275,6 +324,7 @@ export default class EmojiPicker extends PureComponent {
                     keyboardShouldPersistTaps='always'
                     getItemLayout={this.sectionListGetItemLayout}
                     removeClippedSubviews={true}
+                    onScroll={this.onScroll}
                 />
             );
         }
@@ -395,7 +445,8 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
         },
         listView: {
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
+            marginBottom: 35
         },
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -405,13 +456,16 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center'
         },
         sectionIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.4)
+            color: changeOpacity(theme.centerChannelColor, 0.3)
         },
         sectionIconContainer: {
-            width: 35,
+            flex: 1,
             height: 35,
             alignItems: 'center',
             justifyContent: 'center'
+        },
+        sectionIconHighlight: {
+            color: theme.centerChannelColor
         },
         sectionTitle: {
             color: changeOpacity(theme.centerChannelColor, 0.2),
@@ -419,7 +473,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: '700'
         },
         sectionTitleContainer: {
-            height: 28,
+            height: SECTION_HEADER_HEIGHT,
             justifyContent: 'center',
             backgroundColor: theme.centerChannelBg
         },
