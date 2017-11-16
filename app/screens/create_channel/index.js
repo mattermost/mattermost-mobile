@@ -10,12 +10,11 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import CreateChannel from './create_channel';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {createChannel: createChannelRequest} = state.requests.channels;
 
     return {
         createChannelRequest,
-        channelType: ownProps.channelType,
         theme: getTheme(state)
     };
 }

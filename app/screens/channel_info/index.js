@@ -20,7 +20,7 @@ import {
     canManageChannelMembers
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, showDeleteOption} from 'mattermost-redux/utils/channel_utils';
+import {getUserIdFromChannelName, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isChannelAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import ChannelInfo from './channel_info';
@@ -47,6 +47,7 @@ function mapStateToProps(state) {
 
     return {
         canDeleteChannel: showDeleteOption(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
+        canEditChannel: showManagementOptions(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
