@@ -37,14 +37,12 @@ class Channel extends PureComponent {
             connection: PropTypes.func.isRequired,
             loadChannelsIfNecessary: PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
             selectFirstAvailableTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
-            stopPeriodicStatusUpdates: PropTypes.func.isRequired,
-            viewChannel: PropTypes.func.isRequired
+            stopPeriodicStatusUpdates: PropTypes.func.isRequired
         }).isRequired,
         currentChannelId: PropTypes.string,
         channelsRequestFailed: PropTypes.bool,

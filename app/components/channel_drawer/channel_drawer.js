@@ -30,7 +30,7 @@ export default class ChannelDrawer extends Component {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
-            viewChannel: PropTypes.func.isRequired,
+            markChannelAsViewed: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
@@ -203,7 +203,7 @@ export default class ChannelDrawer extends Component {
             markChannelAsRead,
             setChannelLoading,
             setChannelDisplayName,
-            viewChannel
+            markChannelAsViewed
         } = actions;
 
         setChannelLoading(channel.id !== currentChannelId);
@@ -217,7 +217,7 @@ export default class ChannelDrawer extends Component {
                 // mark the channel as viewed after all the frame has flushed
                 markChannelAsRead(channel.id, currentChannelId);
                 if (channel.id !== currentChannelId) {
-                    viewChannel(currentChannelId);
+                    markChannelAsViewed(currentChannelId);
                 }
             });
         });

@@ -472,7 +472,7 @@ export default class Mattermost {
         }
 
         if (data.type === 'clear') {
-            markChannelAsRead(data.channel_id)(dispatch, getState);
+            markChannelAsRead(data.channel_id, null, false)(dispatch, getState);
         } else if (foreground) {
             EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
         } else if (userInteraction && !notification.localNotification) {

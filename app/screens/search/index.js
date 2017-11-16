@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {viewChannel, markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
@@ -43,12 +43,12 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             loadThreadIfNecessary,
             markChannelAsRead,
+            markChannelAsViewed,
             removeSearchTerms,
             searchPosts,
             selectPost,
             setChannelDisplayName,
-            setChannelLoading,
-            viewChannel
+            setChannelLoading
         }, dispatch)
     };
 }
