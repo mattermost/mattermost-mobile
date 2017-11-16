@@ -9,7 +9,7 @@
   "dependencies": {
     "analytics-react-native": "1.2.0",
     "babel-polyfill": "6.26.0",
-    "commonmark": "hmhealey/commonmark.js#25dc6a4c456db579631797e29847752cb5e7d8d7",
+    "commonmark": "hmhealey/commonmark.js#dda6d89198252d5fd4bb04c4cc0668766c22fd77",
     "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#6e259b66ae87d31d2f908effcd05776b9ea3446f",
     "deep-equal": "1.0.1",
     "intl": "1.2.5",
