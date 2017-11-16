@@ -26,6 +26,12 @@ export default class OptionsContext extends PureComponent {
         };
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.actions !== nextProps.actions) {
+            this.setState({actions: nextProps.actions});
+        }
+    }
+
     handleHideUnderlay = () => {
         if (!this.isShowing) {
             this.props.toggleSelected(false, false);
