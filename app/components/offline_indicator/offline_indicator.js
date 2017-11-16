@@ -8,11 +8,13 @@ import {
     Animated,
     Platform,
     StyleSheet,
+    TouchableOpacity,
     View
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
+import checkNetwork from 'app/utils/network';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -25,6 +27,10 @@ const CONNECTED = 'connected';
 
 export default class OfflineIndicator extends Component {
     static propTypes = {
+        actions: PropTypes.shape({
+            connection: PropTypes.func.isRequired,
+            initWebSocket: PropTypes.func.isRequired
+        }).isRequired,
         isConnecting: PropTypes.bool,
         isOnline: PropTypes.bool,
         webSocketStatus: PropTypes.string
@@ -64,18 +70,16 @@ export default class OfflineIndicator extends Component {
         return nextState.network !== this.state.network && nextState.network;
     }
 
-    offline = () => {
-        this.setState({network: OFFLINE}, () => {
-            this.show();
-        });
-    };
-
-    connecting = () => {
-        const prevState = this.state.network;
-        this.setState({network: CONNECTING}, () => {
-            if (prevState !== OFFLINE) {
-                this.show();
-            }
+    connect = () => {
+        checkNetwork((result) => {
+            this.setState({network: CONNECTING}, () => {
+                if (result) {
+                    this.props.actions.connection(true);
+                    this.props.actions.initWebSocket(Platform.OS);
+                } else {
+                    this.setState({network: OFFLINE});
+                }
+            });
         });
     };
 
@@ -98,6 +102,21 @@ export default class OfflineIndicator extends Component {
         ]).start(() => {
             this.backgroundColor.setValue(0);
             this.setState({network: null});
+        });
+    };
+
+    connecting = () => {
+        const prevState = this.state.network;
+        this.setState({network: CONNECTING}, () => {
+            if (prevState !== OFFLINE) {
+                this.show();
+            }
+        });
+    };
+
+    offline = () => {
+        this.setState({network: OFFLINE}, () => {
+            this.show();
         });
     };
 
@@ -127,6 +146,18 @@ export default class OfflineIndicator extends Component {
         case OFFLINE:
             i18nId = 'mobile.offlineIndicator.offline';
             defaultMessage = 'Cannot connect to the server';
+            action = (
+                <TouchableOpacity
+                    onPress={this.connect}
+                    style={[styles.actionContainer, styles.actionButton]}
+                >
+                    <IonIcon
+                        color='#FFFFFF'
+                        name='ios-refresh'
+                        size={20}
+                    />
+                </TouchableOpacity>
+            );
             break;
         case CONNECTING:
             i18nId = 'mobile.offlineIndicator.connecting';
