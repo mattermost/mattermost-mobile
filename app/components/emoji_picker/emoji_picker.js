@@ -226,6 +226,14 @@ export default class EmojiPicker extends PureComponent {
         }
     }
 
+    onMomentumScrollEnd = () => {
+        if (this.state.jumpToSection) {
+            this.setState({
+                jumpToSection: false
+            });
+        }
+    }
+
     scrollToSection = (index) => {
         this.setState({
             jumpToSection: true,
@@ -236,12 +244,6 @@ export default class EmojiPicker extends PureComponent {
                 itemIndex: 0,
                 viewOffset: 25
             });
-
-            setTimeout(() => {
-                this.setState({
-                    jumpToSection: false
-                });
-            }, 300);
         });
     }
 
@@ -325,6 +327,7 @@ export default class EmojiPicker extends PureComponent {
                     getItemLayout={this.sectionListGetItemLayout}
                     removeClippedSubviews={true}
                     onScroll={this.onScroll}
+                    onMomentumScrollEnd={this.onMomentumScrollEnd}
                 />
             );
         }
