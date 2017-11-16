@@ -216,12 +216,14 @@ export default class EmojiPicker extends PureComponent {
         let nextIndex = this.state.emojiSectionIndexByOffset.findIndex((offset) => contentOffset.y <= offset);
 
         if (nextIndex === -1) {
-            nextIndex = this.state.emojiSectionIndexByOffset.length;
+            nextIndex = this.state.emojiSectionIndexByOffset.length - 1;
+        } else if (nextIndex !== 0) {
+            nextIndex -= 1;
         }
 
-        if (nextIndex - 1 !== this.state.currentSectionIndex) {
+        if (nextIndex !== this.state.currentSectionIndex) {
             this.setState({
-                currentSectionIndex: nextIndex - 1
+                currentSectionIndex: nextIndex
             });
         }
     }
@@ -328,6 +330,7 @@ export default class EmojiPicker extends PureComponent {
                     removeClippedSubviews={true}
                     onScroll={this.onScroll}
                     onMomentumScrollEnd={this.onMomentumScrollEnd}
+                    pageSize={30}
                 />
             );
         }
