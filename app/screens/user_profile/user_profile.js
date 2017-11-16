@@ -98,7 +98,7 @@ class UserProfile extends PureComponent {
                 }
             );
         } else {
-            navigator.pop({
+            navigator.popToRoot({
                 animated: true
             });
         }
