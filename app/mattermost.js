@@ -50,6 +50,7 @@ import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
+import {deleteFileCache} from 'app/utils/file';
 import {
     captureException,
     initializeSentry,
@@ -358,6 +359,7 @@ export default class Mattermost {
 
     handleReset = () => {
         this.appStarted = false;
+        deleteFileCache();
         this.resetBadgeAndVersion();
         this.startApp('fade');
     };

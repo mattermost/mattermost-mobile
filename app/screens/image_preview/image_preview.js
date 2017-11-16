@@ -28,6 +28,7 @@ import {emptyFunction} from 'app/utils/general';
 
 import Downloader from './downloader';
 import Previewer from './previewer';
+import VideoPreview from './video_preview';
 
 const {View: AnimatedView} = Animated;
 const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing the drag
@@ -37,6 +38,11 @@ const HEADER_HEIGHT = 64;
 const STATUSBAR_HEIGHT = Platform.select({
     ios: 0,
     android: 20
+});
+
+const SUPPORTED_VIDEO_FORMAT = Platform.select({
+    ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
+    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm']
 });
 
 export default class ImagePreview extends PureComponent {
@@ -57,7 +63,7 @@ export default class ImagePreview extends PureComponent {
 
     static contextTypes = {
         intl: intlShape
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -198,6 +204,16 @@ export default class ImagePreview extends PureComponent {
                 shouldShrinkImages: true
             });
         }
+    };
+
+    handleScrollStopped = () => {
+        EventEmitter.emit('stop-video-playback');
+    };
+
+    handleVideoSeek = (seeking) => {
+        this.setState({
+            isZooming: !seeking
+        });
     };
 
     attachScrollView = (c) => {
@@ -363,6 +379,7 @@ export default class ImagePreview extends PureComponent {
                         pagingEnabled={!this.state.isZooming}
                         bounces={false}
                         onScroll={this.handleScroll}
+                        onMomentumScrollEnd={this.handleScrollStopped}
                         scrollEventThrottle={2}
                     >
                         {this.state.files.map((file, index) => {
@@ -387,16 +404,32 @@ export default class ImagePreview extends PureComponent {
                                         onZoom={this.imageIsZooming}
                                     />
                                 );
+                            } else if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
+                                component = (
+                                    <VideoPreview
+                                        file={file}
+                                        onFullScreen={this.handleImageTap}
+                                        onSeeking={this.handleVideoSeek}
+                                        deviceHeight={this.props.deviceHeight}
+                                        deviceWidth={this.props.deviceWidth}
+                                        theme={this.props.theme}
+                                    />
+                                );
                             } else {
                                 component = (
-                                    <FileAttachmentIcon
-                                        file={file}
-                                        theme={this.props.theme}
-                                        iconHeight={120}
-                                        iconWidth={120}
-                                        wrapperHeight={200}
-                                        wrapperWidth={200}
-                                    />
+                                    <TouchableOpacity
+                                        activeOpacity={1}
+                                        onPress={this.handleImageTap}
+                                    >
+                                        <FileAttachmentIcon
+                                            file={file}
+                                            theme={this.props.theme}
+                                            iconHeight={120}
+                                            iconWidth={120}
+                                            wrapperHeight={200}
+                                            wrapperWidth={200}
+                                        />
+                                    </TouchableOpacity>
                                 );
                             }
 
@@ -472,7 +505,15 @@ const style = StyleSheet.create({
         height: 70,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
-        paddingBottom: 16
+        paddingBottom: 16,
+        ...Platform.select({
+            android: {
+                marginBottom: 13
+            },
+            ios: {
+                marginBottom: 0
+            }
+        })
     },
     footerHeaderWrapper: {
         position: 'absolute',
@@ -490,7 +531,15 @@ const style = StyleSheet.create({
     headerControls: {
         alignItems: 'center',
         justifyContent: 'space-around',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        ...Platform.select({
+            android: {
+                marginTop: 0
+            },
+            ios: {
+                marginTop: 5
+            }
+        })
     },
     headerIcon: {
         height: 44,

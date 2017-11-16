@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.facebook.react.ReactApplication;
+import com.brentvatne.react.ReactVideoPackage;
 import com.horcrux.svg.SvgPackage;
 import com.inprogress.reactnativeyoutube.ReactNativeYouTube;
 import io.sentry.RNSentryPackage;
@@ -66,7 +67,9 @@ public class MainApplication extends NavigationApplication implements INotificat
             new MattermostPackage(this),
             new RNSentryPackage(this),
             new ReactNativeExceptionHandlerPackage(),
-            new ReactNativeYouTube()
+            new ReactNativeYouTube(),
+            new ReactVideoPackage()
+
     );
   }
 

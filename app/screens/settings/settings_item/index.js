@@ -20,6 +20,7 @@ export default class SettingsItem extends PureComponent {
         isDestructor: PropTypes.bool,
         centered: PropTypes.bool,
         onPress: PropTypes.func,
+        rightComponent: PropTypes.node,
         separator: PropTypes.bool,
         showArrow: PropTypes.bool,
         theme: PropTypes.object.isRequired
@@ -39,6 +40,7 @@ export default class SettingsItem extends PureComponent {
             iconType,
             isDestructor,
             onPress,
+            rightComponent,
             separator,
             showArrow,
             theme
@@ -66,6 +68,18 @@ export default class SettingsItem extends PureComponent {
             );
         }
 
+        let additionalComponent;
+        if (showArrow) {
+            additionalComponent = (
+                <FontAwesomeIcon
+                    name='angle-right'
+                    style={style.arrow}
+                />
+            );
+        } else if (rightComponent) {
+            additionalComponent = rightComponent;
+        }
+
         return (
             <TouchableOpacity
                 onPress={onPress}
@@ -83,12 +97,9 @@ export default class SettingsItem extends PureComponent {
                                 defaultMessage={defaultMessage}
                                 style={[style.label, destructor, centered ? style.centerLabel : {}]}
                             />
-                            {showArrow &&
+                            {Boolean(additionalComponent) &&
                             <View style={style.arrowContainer}>
-                                <FontAwesomeIcon
-                                    name='angle-right'
-                                    style={style.arrow}
-                                />
+                                {additionalComponent}
                             </View>
                             }
                         </View>

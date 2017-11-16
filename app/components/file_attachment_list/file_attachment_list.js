@@ -57,7 +57,7 @@ export default class FileAttachmentList extends Component {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
+                screenBackgroundColor: 'black',
                 modalPresentationStyle: 'overCurrentContext'
             }
         });
