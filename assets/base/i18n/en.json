@@ -1941,6 +1941,8 @@
   "mobile.create_channel.private": "New Private Channel",
   "mobile.create_channel.public": "New Public Channel",
   "mobile.custom_list.no_results": "No Results",
+  "mobile.document_preview.failed_title": "Open Document failed",
+  "mobile.document_preview.failed_description": "An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n"
   "mobile.downloader.complete": "Download complete",
   "mobile.downloader.downloading": "Downloading...",
   "mobile.downloader.failed_description": "An error occurred while downloading the file. Please check your internet connection and try again.\n",

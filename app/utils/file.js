@@ -4,7 +4,7 @@
 import RNFetchBlob from 'react-native-fetch-blob';
 import {DeviceTypes} from 'app/constants/';
 
-const {VIDEOS_PATH} = DeviceTypes;
+const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
 
 export function generateId() {
     // Implementation taken from http://stackoverflow.com/a/2117523
@@ -27,17 +27,29 @@ export function generateId() {
 }
 
 export async function getFileCacheSize() {
-    const isDir = await RNFetchBlob.fs.isDir(VIDEOS_PATH);
-    if (isDir) {
-        const stats = await RNFetchBlob.fs.lstat(VIDEOS_PATH);
-        return stats.reduce((accumulator, stat) => {
+    const isDocsDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
+    const isVideosDir = await RNFetchBlob.fs.isDir(VIDEOS_PATH);
+    let size = 0;
+
+    if (isDocsDir) {
+        const docsStats = await RNFetchBlob.fs.lstat(DOCUMENTS_PATH);
+        size = docsStats.reduce((accumulator, stat) => {
             return accumulator + parseInt(stat.size, 10);
-        }, 0);
+        }, size);
     }
 
-    return 0;
+    if (isVideosDir) {
+        const videoStats = await RNFetchBlob.fs.lstat(VIDEOS_PATH);
+        size = videoStats.reduce((accumulator, stat) => {
+            return accumulator + parseInt(stat.size, 10);
+        }, size);
+    }
+
+    return size;
 }
 
 export async function deleteFileCache() {
-    return await RNFetchBlob.fs.unlink(VIDEOS_PATH);
+    await RNFetchBlob.fs.unlink(DOCUMENTS_PATH);
+    await RNFetchBlob.fs.unlink(VIDEOS_PATH);
+    return true;
 }

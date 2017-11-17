@@ -5032,6 +5032,10 @@ react-native-device-info@0.12.1:
   version "0.12.1"
   resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.12.1.tgz#659ed145caa5a86a4815904381b25e9ebe0c24f6"
 
+react-native-doc-viewer@2.4.7:
+  version "2.4.7"
+  resolved "https://registry.yarnpkg.com/react-native-doc-viewer/-/react-native-doc-viewer-2.4.7.tgz#8369572264cd2e2cc630b6aa8de846bb377b2599"
+
 react-native-drawer@2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/react-native-drawer/-/react-native-drawer-2.5.0.tgz#022cba5c0516126a9fc9cce3185cb46c644b51c4"

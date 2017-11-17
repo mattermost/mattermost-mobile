@@ -1,4 +1,6 @@
 rootProject.name = 'Mattermost'
+include ':react-native-doc-viewer'
+project(':react-native-doc-viewer').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-doc-viewer/android')
 include ':react-native-video'
 project(':react-native-video').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-video/android')
 include ':react-native-youtube'

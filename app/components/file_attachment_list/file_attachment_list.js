@@ -8,6 +8,7 @@ import {
     View,
     TouchableOpacity
 } from 'react-native';
+
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import {preventDoubleTap} from 'app/utils/tap';

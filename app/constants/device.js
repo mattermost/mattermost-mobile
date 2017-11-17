@@ -14,5 +14,6 @@ const deviceTypes = keyMirror({
 
 export default {
     ...deviceTypes,
+    DOCUMENTS_PATH: `${RNFetchBlob.fs.dirs.CacheDir}/Documents`,
     VIDEOS_PATH: `${RNFetchBlob.fs.dirs.CacheDir}/Videos`
 };

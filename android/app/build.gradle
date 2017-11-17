@@ -163,6 +163,7 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-doc-viewer')
     compile project(':react-native-video')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:25.0.1"
