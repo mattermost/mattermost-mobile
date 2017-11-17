@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
+    Text,
     TouchableHighlight,
     TouchableOpacity,
     View
@@ -34,6 +35,7 @@ class PostBody extends PureComponent {
         canEdit: PropTypes.bool,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
+        hasBeenEdited: PropTypes.bool,
         hasReactions: PropTypes.bool,
         intl: intlShape.isRequired,
         isFailed: PropTypes.bool,
@@ -133,6 +135,7 @@ class PostBody extends PureComponent {
             canDelete,
             canEdit,
             hasBeenDeleted,
+            hasBeenEdited,
             hasReactions,
             isFailed,
             isFlagged,
@@ -232,6 +235,11 @@ class PostBody extends PureComponent {
                             onPostPress={onPress}
                             navigator={navigator}
                         />
+                        {hasBeenEdited &&
+                            <Text style={style.editedIndicatorText}>
+                                {formatMessage({id: 'post_message_view.edited', defaultMessage: '(edited)'})}
+                            </Text>
+                        }
                     </View>
                 </View>
             );
@@ -328,6 +336,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             opacity: 0.5
         },
         systemMessage: {
+            opacity: 0.6
+        },
+        editedIndicatorText: {
+            color: theme.centerChannelColor,
+            fontSize: 14,
             opacity: 0.6
         }
     };
