@@ -23,7 +23,7 @@ class AttachmentButton extends PureComponent {
     attachFileFromCamera = () => {
         const {formatMessage} = this.props.intl;
         const options = {
-            quality: 0.7,
+            quality: 1.0,
             noData: true,
             storageOptions: {
                 cameraRoll: true,
@@ -58,7 +58,7 @@ class AttachmentButton extends PureComponent {
     attachFileFromLibrary = () => {
         const {formatMessage} = this.props.intl;
         const options = {
-            quality: 0.7,
+            quality: 1.0,
             noData: true,
             permissionDenied: {
                 title: formatMessage({
@@ -93,7 +93,7 @@ class AttachmentButton extends PureComponent {
     attachVideoFromLibraryAndroid = () => {
         const {formatMessage} = this.props.intl;
         const options = {
-            quality: 0.7,
+            quality: 1.0,
             mediaType: 'video',
             noData: true,
             permissionDenied: {
