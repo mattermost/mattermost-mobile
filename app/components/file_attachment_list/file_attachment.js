@@ -65,7 +65,7 @@ export default class FileAttachment extends PureComponent {
         const style = getStyleSheet(theme);
 
         let mime = file.mime_type;
-        if (mime.includes(';')) {
+        if (mime && mime.includes(';')) {
             mime = mime.split(';')[0];
         }
 

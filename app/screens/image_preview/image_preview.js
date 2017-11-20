@@ -507,7 +507,7 @@ export default class ImagePreview extends PureComponent {
                     >
                         {this.state.files.map((file, index) => {
                             let mime = file.mime_type;
-                            if (mime.includes(';')) {
+                            if (mime && mime.includes(';')) {
                                 mime = mime.split(';')[0];
                             }
 
