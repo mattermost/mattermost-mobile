@@ -8,10 +8,12 @@ import {
     Platform,
     View
 } from 'react-native';
+
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ClientUpgradeListener from 'app/components/client_upgrade_listener';
 import ChannelDrawer from 'app/components/channel_drawer';
+import SettingsDrawer from 'app/components/settings_drawer';
 import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
@@ -201,26 +203,28 @@ class Channel extends PureComponent {
                 intl={intl}
                 navigator={navigator}
             >
-                <SafeAreaView navigator={navigator}>
-                    <StatusBar/>
-                    <OfflineIndicator/>
-                    <ChannelNavBar
-                        navigator={navigator}
-                        onPress={this.goToChannelInfo}
-                    />
-                    <KeyboardLayout>
-                        <View style={style.postList}>
-                            <ChannelPostList navigator={navigator}/>
-                        </View>
-                        <ChannelLoader theme={theme}/>
-                        <PostTextbox
-                            ref={this.attachPostTextbox}
+                <SettingsDrawer>
+                    <SafeAreaView navigator={navigator}>
+                        <StatusBar/>
+                        <OfflineIndicator/>
+                        <ChannelNavBar
                             navigator={navigator}
+                            onPress={this.goToChannelInfo}
                         />
-                        <ChannelLoader theme={theme}/>
-                    </KeyboardLayout>
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
-                </SafeAreaView>
+                        <KeyboardLayout>
+                            <View style={style.postList}>
+                                <ChannelPostList navigator={navigator}/>
+                            </View>
+                            <ChannelLoader theme={theme}/>
+                            <PostTextbox
+                                ref={this.attachPostTextbox}
+                                navigator={navigator}
+                            />
+                            <ChannelLoader theme={theme}/>
+                        </KeyboardLayout>
+                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+                    </SafeAreaView>
+                </SettingsDrawer>
             </ChannelDrawer>
         );
     }
