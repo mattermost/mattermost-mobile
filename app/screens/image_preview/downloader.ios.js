@@ -241,6 +241,28 @@ export default class Downloader extends PureComponent {
         });
     };
 
+    showDownloadFailedAlert = () => {
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.downloader.failed_title',
+                defaultMessage: 'Download failed'
+            }),
+            intl.formatMessage({
+                id: 'mobile.downloader.failed_description',
+                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK'
+                }),
+                onPress: () => this.downloadDidCancel()
+            }]
+        );
+    };
+
     startDownload = async () => {
         const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
 
@@ -263,7 +285,8 @@ export default class Downloader extends PureComponent {
                     try {
                         await RNFetchBlob.fs.mkdir(downloadPath);
                     } catch (error) {
-                        // Do nothing
+                        this.showDownloadFailedAlert();
+                        return;
                     }
                 }
 
@@ -317,24 +340,7 @@ export default class Downloader extends PureComponent {
                 RNFetchBlob.fs.unlink(`${downloadPath}/${file.id}.${file.extension}`);
             }
             if (error.message !== 'cancelled' && this.mounted) {
-                const {intl} = this.context;
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.downloader.failed_title',
-                        defaultMessage: 'Download failed'
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.downloader.failed_description',
-                        defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
-                    }),
-                    [{
-                        text: intl.formatMessage({
-                            id: 'mobile.server_upgrade.button',
-                            defaultMessage: 'OK'
-                        }),
-                        onPress: () => this.downloadDidCancel()
-                    }]
-                );
+                this.showDownloadFailedAlert();
             } else {
                 this.downloadDidCancel();
             }

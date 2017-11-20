@@ -91,7 +91,8 @@ export default class FileAttachmentDocument extends PureComponent {
                 try {
                     await RNFetchBlob.fs.mkdir(DOCUMENTS_PATH);
                 } catch (error) {
-                    // Do nothing
+                    this.showDownloadFailedAlert();
+                    return;
                 }
             }
 
@@ -168,6 +169,9 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     openDocument = (file, delay = 2000) => {
+        // The animation for the progress circle takes about 2 seconds to finish
+        // therefore we are delaying the opening of the document to have the UI
+        // shown nicely and smooth
         setTimeout(() => {
             if (!this.state.didCancel && this.mounted) {
                 const prefix = Platform.OS === 'android' ? 'file:/' : '';
@@ -231,6 +235,28 @@ export default class FileAttachmentDocument extends PureComponent {
                     wrapperWidth={iconWidth}
                 />
             </View>
+        );
+    };
+
+    showDownloadFailedAlert = () => {
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.downloader.failed_title',
+                defaultMessage: 'Download failed'
+            }),
+            intl.formatMessage({
+                id: 'mobile.downloader.failed_description',
+                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK'
+                }),
+                onPress: () => this.downloadDidCancel()
+            }]
         );
     };
 
