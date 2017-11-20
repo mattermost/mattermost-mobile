@@ -1,4 +1,6 @@
-// https://github.com/charliesbox/react-native-media-controls
+// Copyright (c) 2016-2017 Charles.
+// Modified work: Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
