@@ -23,12 +23,12 @@ const {VIDEOS_PATH} = DeviceTypes;
 
 export default class VideoPreview extends PureComponent {
     static propTypes = {
-        deviceHeight: PropTypes.number,
-        deviceWidth: PropTypes.number,
-        file: PropTypes.object,
-        onFullScreen: PropTypes.func,
-        onSeeking: PropTypes.func,
-        theme: PropTypes.object
+        deviceHeight: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
+        file: PropTypes.object.isRequired,
+        onFullScreen: PropTypes.func.isRequired,
+        onSeeking: PropTypes.func.isRequired,
+        theme: PropTypes.object.isRequired
     };
 
     static contextTypes = {

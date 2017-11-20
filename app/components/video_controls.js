@@ -1,5 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// https://github.com/charliesbox/react-native-media-controls
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
@@ -85,7 +84,7 @@ export default class VideoControls extends PureComponent {
         });
     };
 
-    fadeOutControls= (delay = 0) => {
+    fadeOutControls = (delay = 0) => {
         Animated.timing(this.state.opacity, {toValue: 0, duration: 250, delay}).start((result) => {
             if (result.finished) {
                 this.setState({isVisible: false});
@@ -218,8 +217,6 @@ export default class VideoControls extends PureComponent {
     };
 
     toggleControls = () => {
-        // value is the last value of the animation when stop animation was called.
-        // As this is an opacity effect, I (Charlie) used the value (0 or 1) as a boolean
         this.state.opacity.stopAnimation(
             (value) => {
                 this.setState({isVisible: Boolean(value)});

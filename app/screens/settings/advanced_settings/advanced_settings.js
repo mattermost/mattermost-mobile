@@ -58,7 +58,7 @@ class AdvancedSettings extends PureComponent {
         const {intl} = this.props;
         const {cacheSize} = this.state;
 
-        if (cacheSize !== '0 B') {
+        if (cacheSize) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.advanced_settings.delete_file_cache',
@@ -73,7 +73,7 @@ class AdvancedSettings extends PureComponent {
                     onPress: () => {
                         this.setState({cacheSize: null, cacheSizedFetched: false}, async () => {
                             await deleteFileCache();
-                            this.setState({cacheSize: getFormattedFileSize({size: 0}), cacheSizedFetched: true});
+                            this.setState({cacheSize: 0, cacheSizedFetched: true});
                         });
                     }
                 }, {
@@ -86,7 +86,7 @@ class AdvancedSettings extends PureComponent {
 
     getDownloadCacheSize = async () => {
         const size = await getFileCacheSize();
-        this.setState({cacheSize: getFormattedFileSize({size}), cacheSizedFetched: true});
+        this.setState({cacheSize: size, cacheSizedFetched: true});
     };
 
     renderCacheFileSize = () => {
@@ -105,7 +105,7 @@ class AdvancedSettings extends PureComponent {
         } else if (cacheSizedFetched) {
             component = (
                 <Text style={style.cacheSize}>
-                    {cacheSize}
+                    {getFormattedFileSize({size: cacheSize})}
                 </Text>
             );
         }

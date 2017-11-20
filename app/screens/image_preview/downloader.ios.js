@@ -84,14 +84,14 @@ export default class Downloader extends PureComponent {
     }
 
     downloadDidCancel = () => {
-        if (this.state.mounted) {
+        if (this.mounted) {
             this.setState({progress: 0, started: false, didCancel: false});
         }
         this.props.onDownloadCancel();
     };
 
     handleCancelDownload = () => {
-        if (this.state.mounted) {
+        if (this.mounted) {
             this.setState({
                 didCancel: true,
                 progress: 0,
@@ -157,7 +157,15 @@ export default class Downloader extends PureComponent {
         }
 
         let savedComponent;
-        if (saveToCameraRoll && isVideo) {
+        if (realFill < 100 || this.state.didCancel) {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.downloading'
+                    defaultMessage='Downloading...'
+                    style={styles.bottomText}
+                />
+            );
+        } else if (saveToCameraRoll && isVideo) {
             savedComponent = (
                 <FormattedText
                     id='mobile.downloader.video_saved'
@@ -187,13 +195,7 @@ export default class Downloader extends PureComponent {
             <View style={styles.progressContent}>
                 {component}
                 <View style={styles.bottomContent}>
-                    {(realFill < 100 || this.state.didCancel) ?
-                        <FormattedText
-                            id='mobile.downloader.downloading'
-                            defaultMessage='Downloading...'
-                            style={styles.bottomText}
-                        /> : savedComponent
-                    }
+                    {savedComponent}
                 </View>
             </View>
         );
@@ -292,20 +294,14 @@ export default class Downloader extends PureComponent {
                 }, () => {
                     // need to wait a bit for the progress circle UI to update to the give progress
                     setTimeout(async () => {
-                        try {
-                            // handles the case of a late cancellation by the user
-                            // and ensures that we remove the file if they did cancel late.
-                            if (this.state.didCancel) {
-                                // TODO: There's issue with deleting files from the cameraRoll on iOS here https://github.com/wkh237/react-native-fetch-blob/issues/479
-                                // This only occurs if the user cancels when the download is around 80% or more
+                        if (this.state.didCancel) {
+                            try {
                                 await RNFetchBlob.fs.unlink(path);
+                            } finally {
                                 this.props.onDownloadCancel();
-                            } else {
-                                this.props.onDownloadSuccess();
                             }
-                        } catch (error) {
-                            // ensure the downloader at least closes if a error
-                            this.props.onDownloadCancel();
+                        } else {
+                            this.props.onDownloadSuccess();
                         }
                     }, 2000);
                 });
