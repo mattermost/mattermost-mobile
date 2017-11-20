@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Parser} from 'commonmark';
+import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
@@ -15,6 +15,7 @@ import {
 import AtMention from 'app/components/at_mention';
 import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
+import FormattedText from 'app/components/formatted_text';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {concatStyles} from 'app/utils/theme';
 
@@ -30,6 +31,7 @@ export default class Markdown extends PureComponent {
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
         fontSizes: PropTypes.object,
+        isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
@@ -110,7 +112,9 @@ export default class Markdown extends PureComponent {
                 softBreak: this.renderSoftBreak,
 
                 htmlBlock: this.renderHtml,
-                htmlInline: this.renderHtml
+                htmlInline: this.renderHtml,
+
+                editedIndicator: this.renderEditedIndicator
             },
             renderParagraphsInLists: true
         });
@@ -303,8 +307,41 @@ export default class Markdown extends PureComponent {
         );
     }
 
+    renderEditedIndicator = ({context}) => {
+        let spacer = '';
+        let opacity = Platform.select({ios: 0.7, android: 1});
+        if (context[0] === 'paragraph') {
+            spacer = ' ';
+            opacity = Platform.select({ios: 0.5, android: 0.6});
+        }
+        const styles = [style.editedIndicatorText, {opacity}];
+        if (Platform.OS === 'ios') {
+            styles.push(this.computeTextStyle(this.props.baseTextStyle, context));
+        }
+        return (
+            <Text
+                style={styles}
+            >
+                {spacer}
+                <FormattedText
+                    id='post_message_view.edited'
+                    defaultMessage='(edited)'
+                />
+            </Text>
+        );
+    }
+
     render() {
         const ast = this.parser.parse(this.props.value);
+
+        if (this.props.isEdited) {
+            const editIndicatorNode = new Node('edited_indicator');
+            if (['code_block', 'thematic_break', 'block_quote'].includes(ast.lastChild.type)) {
+                ast.appendChild(editIndicatorNode);
+            } else {
+                ast.lastChild.appendChild(editIndicatorNode);
+            }
+        }
 
         return <View>{this.renderer.render(ast)}</View>;
     }
@@ -315,5 +352,8 @@ const style = StyleSheet.create({
         alignItems: 'flex-start',
         flexDirection: 'row',
         flexWrap: 'wrap'
+    },
+    editedIndicatorText: {
+        fontSize: 14
     }
 });
