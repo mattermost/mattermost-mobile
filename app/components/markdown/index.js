@@ -318,13 +318,17 @@ export default class Markdown extends PureComponent {
         if (Platform.OS === 'ios') {
             styles.push(this.computeTextStyle(this.props.baseTextStyle, context));
         }
-        return (<Text style={styles}>
-            {spacer}
-            <FormattedText
-                id='post_message_view.edited'
-                defaultMessage='(edited)'
-            />
-        </Text>);
+        return (
+            <Text
+                style={styles}
+            >
+                {spacer}
+                <FormattedText
+                    id='post_message_view.edited'
+                    defaultMessage='(edited)'
+                />
+            </Text>
+        );
     }
 
     render() {
