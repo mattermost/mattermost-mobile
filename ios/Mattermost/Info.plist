@@ -55,7 +55,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Take a Photo or Video and upload it to your mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Upload Photos and Videos to your Mattermost instance</string>
 	<key>UIAppFonts</key>

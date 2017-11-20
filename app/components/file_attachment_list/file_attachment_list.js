@@ -8,6 +8,7 @@ import {
     View,
     TouchableOpacity
 } from 'react-native';
+
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import {preventDoubleTap} from 'app/utils/tap';
@@ -57,7 +58,7 @@ export default class FileAttachmentList extends Component {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
+                screenBackgroundColor: 'black',
                 modalPresentationStyle: 'overCurrentContext'
             }
         });

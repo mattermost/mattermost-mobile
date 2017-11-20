@@ -76,9 +76,16 @@ export default class PostList extends PureComponent {
     scrollList = () => {
         InteractionManager.runAfterInteractions(() => {
             if (this.props.postIds.length && this.newMessagesIndex !== -1) {
-                this.refs.list.scrollToIndex({index: this.newMessagesIndex, viewPosition: 1, viewOffset: -10, animated: true});
+                if (this.refs.list) {
+                    this.refs.list.scrollToIndex({
+                        index: this.newMessagesIndex,
+                        viewPosition: 1,
+                        viewOffset: -10,
+                        animated: true
+                    });
+                }
                 this.newMessagesIndex = -1;
-            } else {
+            } else if (this.refs.list) {
                 this.refs.list.scrollToOffset({y: 0, animated: false});
             }
         });

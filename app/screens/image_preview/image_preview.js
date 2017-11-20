@@ -16,19 +16,24 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import RNFetchBlob from 'react-native-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {DeviceTypes} from 'app/constants/';
+import FileAttachmentDocument, {SUPPORTED_DOCS_FORMAT} from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 
 import Downloader from './downloader';
 import Previewer from './previewer';
+import VideoPreview from './video_preview';
 
+const {VIDEOS_PATH} = DeviceTypes;
 const {View: AnimatedView} = Animated;
 const DRAG_VERTICAL_THRESHOLD_START = 25; // When do we want to start capturing the drag
 const DRAG_VERTICAL_THRESHOLD_END = 100; // When do we want to navigate back
@@ -37,6 +42,10 @@ const HEADER_HEIGHT = 64;
 const STATUSBAR_HEIGHT = Platform.select({
     ios: 0,
     android: 20
+});
+const SUPPORTED_VIDEO_FORMAT = Platform.select({
+    ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
+    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm']
 });
 
 export default class ImagePreview extends PureComponent {
@@ -57,7 +66,7 @@ export default class ImagePreview extends PureComponent {
 
     static contextTypes = {
         intl: intlShape
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -104,11 +113,9 @@ export default class ImagePreview extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
-            InteractionManager.runAfterInteractions(() => {
-                if (this.scrollView) {
-                    this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: false});
-                }
-            });
+            if (this.scrollView) {
+                this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: true});
+            }
         }
 
         if (!nextProps.files.length) {
@@ -122,8 +129,70 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
+    attachScrollView = (c) => {
+        this.scrollView = c;
+    };
+
     close = () => {
         this.props.navigator.dismissModal({animationType: 'none'});
+    };
+
+    handleClose = () => {
+        if (this.state.showFileInfo) {
+            this.close();
+        }
+    };
+
+    hideDownloader = (hideFileInfo = true) => {
+        this.setState({showDownloader: false});
+        if (hideFileInfo) {
+            this.setHeaderAndFileInfoVisible(true);
+        }
+    };
+
+    handleImageDoubleTap = (x, y) => {
+        this.zoomableImages[this.state.currentFile].toggleZoom(x, y);
+    };
+
+    handleImageTap = () => {
+        this.hideDownloader(false);
+        this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
+    };
+
+    handleScroll = (event) => {
+        const offset = event.nativeEvent.contentOffset.x / this.props.deviceWidth;
+        const wholeNumber = Number((offset).toFixed(0));
+
+        if (Math.abs(offset - wholeNumber) < 0.01) {
+            this.setState({
+                currentFile: wholeNumber,
+                pagingEnabled: true,
+                shouldShrinkImages: false
+            });
+        } else if (!this.state.shouldShrinkImages && !this.state.isZooming) {
+            this.setState({
+                shouldShrinkImages: true
+            });
+        }
+    };
+
+    handleScrollStopped = () => {
+        EventEmitter.emit('stop-video-playback');
+    };
+
+    handleVideoSeek = (seeking) => {
+        this.setState({
+            isZooming: !seeking
+        });
+    };
+
+    imageIsZooming = (zooming) => {
+        if (zooming !== this.state.isZooming) {
+            this.setHeaderAndFileInfoVisible(!zooming);
+            this.setState({
+                isZooming: zooming
+            });
+        }
     };
 
     mainViewMoveShouldSetPanResponderCapture = (evt, gestureState) => {
@@ -152,19 +221,12 @@ export default class ImagePreview extends PureComponent {
         }
     };
 
-    handleClose = () => {
-        if (this.state.showFileInfo) {
-            this.close();
+    saveVideo = () => {
+        const file = this.state.files[this.state.currentFile];
+        if (this.refs.downloader) {
+            EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
+            this.refs.downloader.saveVideo(`${VIDEOS_PATH}/${file.id}.${file.extension}`);
         }
-    };
-
-    handleImageTap = () => {
-        this.hideDownloader(false);
-        this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
-    };
-
-    handleImageDoubleTap = (x, y) => {
-        this.zoomableImages[this.state.currentFile].toggleZoom(x, y);
     };
 
     setHeaderAndFileInfoVisible = (show) => {
@@ -182,35 +244,6 @@ export default class ImagePreview extends PureComponent {
             toValue: opacity,
             duration: 300
         }).start();
-    };
-
-    handleScroll = (event) => {
-        const offset = event.nativeEvent.contentOffset.x / this.props.deviceWidth;
-        const wholeNumber = Number((offset).toFixed(0));
-        if (Math.abs(offset - wholeNumber) < 0.01) {
-            this.setState({
-                currentFile: wholeNumber,
-                pagingEnabled: true,
-                shouldShrinkImages: false
-            });
-        } else if (!this.state.shouldShrinkImages && !this.state.isZooming) {
-            this.setState({
-                shouldShrinkImages: true
-            });
-        }
-    };
-
-    attachScrollView = (c) => {
-        this.scrollView = c;
-    };
-
-    imageIsZooming = (zooming) => {
-        if (zooming !== this.state.isZooming) {
-            this.setHeaderAndFileInfoVisible(!zooming);
-            this.setState({
-                isZooming: zooming
-            });
-        }
     };
 
     showDeletedFilesAlert = () => {
@@ -233,7 +266,15 @@ export default class ImagePreview extends PureComponent {
                 onPress: this.close
             }]
         );
-    }
+    };
+
+    showDownloader = () => {
+        EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
+
+        this.setState({
+            showDownloader: true
+        });
+    };
 
     showDownloadOptions = () => {
         if (Platform.OS === 'android') {
@@ -247,51 +288,112 @@ export default class ImagePreview extends PureComponent {
         }
     };
 
-    showIOSDownloadOptions = () => {
-        this.setHeaderAndFileInfoVisible(false);
-
-        const options = {
-            title: this.state.files[this.state.currentFile].name,
-            items: [{
+    showIOSDownloadOptions = async () => {
+        const file = this.state.files[this.state.currentFile];
+        const items = [];
+        if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
+            const path = `${VIDEOS_PATH}/${file.id}.${file.extension}`;
+            const exist = await RNFetchBlob.fs.exists(path);
+            if (exist) {
+                items.push({
+                    action: this.saveVideo,
+                    text: {
+                        id: 'mobile.image_preview.save_video',
+                        defaultMessage: 'Save Video'
+                    }
+                });
+            } else {
+                this.showVideoDownloadRequiredAlert();
+            }
+        } else {
+            items.push({
                 action: this.showDownloader,
                 text: {
                     id: 'mobile.image_preview.save',
                     defaultMessage: 'Save Image'
                 }
-            }],
+            });
+        }
+
+        const options = {
+            title: file.name,
+            items,
             onCancelPress: () => this.setHeaderAndFileInfoVisible(true)
         };
 
-        this.props.navigator.showModal({
-            screen: 'OptionsModal',
-            title: '',
-            animationType: 'none',
-            passProps: {
-                ...options
-            },
-            navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: false,
-                statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext'
-            }
-        });
-    };
+        if (items.length) {
+            this.setHeaderAndFileInfoVisible(false);
 
-    showDownloader = () => {
-        EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
-
-        this.setState({
-            showDownloader: true
-        });
-    };
-
-    hideDownloader = (hideFileInfo = true) => {
-        this.setState({showDownloader: false});
-        if (hideFileInfo) {
-            this.setHeaderAndFileInfoVisible(true);
+            this.props.navigator.showModal({
+                screen: 'OptionsModal',
+                title: '',
+                animationType: 'none',
+                passProps: {
+                    ...options
+                },
+                navigatorStyle: {
+                    navBarHidden: true,
+                    statusBarHidden: false,
+                    statusBarHideWithNavBar: false,
+                    screenBackgroundColor: 'transparent',
+                    modalPresentationStyle: 'overCurrentContext'
+                }
+            });
         }
+    };
+
+    showVideoDownloadRequiredAlert = () => {
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.video.save_error_title',
+                defaultMessage: 'Save Video Error'
+            }),
+            intl.formatMessage({
+                id: 'mobile.video.save_error_message',
+                defaultMessage: 'To save the video file you need to download it first.'
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK'
+                })
+            }]
+        );
+    };
+
+    renderAttachmentDocument = (file) => {
+        const {theme} = this.props;
+
+        return (
+            <FileAttachmentDocument
+                file={file}
+                theme={theme}
+                iconHeight={120}
+                iconWidth={120}
+                wrapperHeight={200}
+                wrapperWidth={200}
+            />
+        );
+    };
+
+    renderAttachmentIcon = (file) => {
+        return (
+            <TouchableOpacity
+                activeOpacity={1}
+                onPress={this.handleImageTap}
+            >
+                <FileAttachmentIcon
+                    file={file}
+                    theme={this.props.theme}
+                    iconHeight={120}
+                    iconWidth={120}
+                    wrapperHeight={200}
+                    wrapperWidth={200}
+                />
+            </TouchableOpacity>
+        );
     };
 
     renderDownloadButton = () => {
@@ -312,7 +414,7 @@ export default class ImagePreview extends PureComponent {
                         color='#fff'
                     />
                 );
-            } else if (file.has_preview_image) {
+            } else if (file.has_preview_image || SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
                 action = this.showDownloadOptions;
                 icon = (
                     <Icon
@@ -334,9 +436,46 @@ export default class ImagePreview extends PureComponent {
         );
     };
 
-    render() {
+    renderPreviewer = (file, index) => {
         const maxImageHeight = this.props.deviceHeight - STATUSBAR_HEIGHT;
 
+        return (
+            <Previewer
+                ref={(c) => {
+                    this.zoomableImages[index] = c;
+                }}
+                addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                fetchCache={this.props.fetchCache}
+                file={file}
+                theme={this.props.theme}
+                imageHeight={Math.min(maxImageHeight, file.height)}
+                imageWidth={Math.min(this.props.deviceWidth, file.width)}
+                shrink={this.state.shouldShrinkImages}
+                wrapperHeight={this.props.deviceHeight}
+                wrapperWidth={this.props.deviceWidth}
+                onImageTap={this.handleImageTap}
+                onImageDoubleTap={this.handleImageDoubleTap}
+                onZoom={this.imageIsZooming}
+            />
+        );
+    };
+
+    renderVideoPreview = (file) => {
+        const {deviceHeight, deviceWidth, theme} = this.props;
+
+        return (
+            <VideoPreview
+                file={file}
+                onFullScreen={this.handleImageTap}
+                onSeeking={this.handleVideoSeek}
+                deviceHeight={deviceHeight}
+                deviceWidth={deviceWidth}
+                theme={theme}
+            />
+        );
+    };
+
+    render() {
         const marginStyle = {
             ...Platform.select({
                 ios: {
@@ -363,41 +502,24 @@ export default class ImagePreview extends PureComponent {
                         pagingEnabled={!this.state.isZooming}
                         bounces={false}
                         onScroll={this.handleScroll}
+                        onMomentumScrollEnd={this.handleScrollStopped}
                         scrollEventThrottle={2}
                     >
                         {this.state.files.map((file, index) => {
+                            let mime = file.mime_type;
+                            if (mime && mime.includes(';')) {
+                                mime = mime.split(';')[0];
+                            }
+
                             let component;
                             if (file.has_preview_image || file.mime_type === 'image/gif') {
-                                component = (
-                                    <Previewer
-                                        ref={(c) => {
-                                            this.zoomableImages[index] = c;
-                                        }}
-                                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
-                                        fetchCache={this.props.fetchCache}
-                                        file={file}
-                                        theme={this.props.theme}
-                                        imageHeight={Math.min(maxImageHeight, file.height)}
-                                        imageWidth={Math.min(this.props.deviceWidth, file.width)}
-                                        shrink={this.state.shouldShrinkImages}
-                                        wrapperHeight={this.props.deviceHeight}
-                                        wrapperWidth={this.props.deviceWidth}
-                                        onImageTap={this.handleImageTap}
-                                        onImageDoubleTap={this.handleImageDoubleTap}
-                                        onZoom={this.imageIsZooming}
-                                    />
-                                );
+                                component = this.renderPreviewer(file, index);
+                            } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
+                                component = this.renderAttachmentDocument(file);
+                            } else if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
+                                component = this.renderVideoPreview(file);
                             } else {
-                                component = (
-                                    <FileAttachmentIcon
-                                        file={file}
-                                        theme={this.props.theme}
-                                        iconHeight={120}
-                                        iconWidth={120}
-                                        wrapperHeight={200}
-                                        wrapperWidth={200}
-                                    />
-                                );
+                                component = this.renderAttachmentIcon(file);
                             }
 
                             return (
@@ -446,6 +568,7 @@ export default class ImagePreview extends PureComponent {
                     </AnimatedView>
                 </AnimatedView>
                 <Downloader
+                    ref='downloader'
                     show={this.state.showDownloader}
                     file={this.state.files[this.state.currentFile]}
                     deviceHeight={this.props.deviceHeight}
@@ -472,7 +595,15 @@ const style = StyleSheet.create({
         height: 70,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
-        paddingBottom: 16
+        paddingBottom: 16,
+        ...Platform.select({
+            android: {
+                marginBottom: 13
+            },
+            ios: {
+                marginBottom: 0
+            }
+        })
     },
     footerHeaderWrapper: {
         position: 'absolute',
@@ -490,7 +621,15 @@ const style = StyleSheet.create({
     headerControls: {
         alignItems: 'center',
         justifyContent: 'space-around',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        ...Platform.select({
+            android: {
+                marginTop: 0
+            },
+            ios: {
+                marginTop: 5
+            }
+        })
     },
     headerIcon: {
         height: 44,

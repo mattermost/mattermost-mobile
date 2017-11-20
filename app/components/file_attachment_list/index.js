@@ -15,7 +15,6 @@ function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
     return function mapStateToProps(state, ownProps) {
         return {
-            ...ownProps,
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),

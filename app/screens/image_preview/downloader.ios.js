@@ -3,17 +3,11 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Animated,
-    CameraRoll,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import {Alert, Animated, CameraRoll, InteractionManager, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {intlShape} from 'react-intl';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -29,13 +23,24 @@ export default class Downloader extends PureComponent {
         file: PropTypes.object.isRequired,
         onDownloadCancel: PropTypes.func,
         onDownloadSuccess: PropTypes.func,
-        show: PropTypes.bool
+        prompt: PropTypes.bool,
+        show: PropTypes.bool,
+        downloadPath: PropTypes.string,
+        saveToCameraRoll: PropTypes.bool
     };
 
     static defaultProps = {
         onCancelPress: emptyFunction,
+        onDownloadCancel: emptyFunction,
         onDownloadSuccess: emptyFunction,
-        show: false
+        prompt: false,
+        show: false,
+        force: false,
+        saveToCameraRoll: true
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     constructor(props) {
@@ -43,8 +48,25 @@ export default class Downloader extends PureComponent {
 
         this.state = {
             downloaderTop: new Animated.Value(props.deviceHeight),
-            progress: 0
+            progress: 0,
+            started: false
         };
+    }
+
+    componentDidMount() {
+        this.mounted = true;
+        if (this.props.show) {
+            InteractionManager.runAfterInteractions(() => {
+                this.toggleDownloader(true);
+            });
+        }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        if (this.downloadTask) {
+            this.downloadTask.cancel();
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -61,6 +83,29 @@ export default class Downloader extends PureComponent {
         }
     }
 
+    downloadDidCancel = () => {
+        if (this.mounted) {
+            this.setState({progress: 0, started: false, didCancel: false});
+        }
+        this.props.onDownloadCancel();
+    };
+
+    handleCancelDownload = () => {
+        if (this.mounted) {
+            this.setState({
+                didCancel: true,
+                progress: 0,
+                started: false
+            });
+        }
+
+        if (this.downloadTask) {
+            this.downloadTask.cancel(() => {
+                this.props.onDownloadCancel();
+            });
+        }
+    };
+
     recenterDownloader = (props) => {
         const {deviceHeight, show} = props;
         const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
@@ -75,83 +120,9 @@ export default class Downloader extends PureComponent {
         ]).start();
     };
 
-    toggleDownloader = (show = true) => {
-        const {deviceHeight} = this.props;
-        const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
-
-        Animated.spring(this.state.downloaderTop, {
-            toValue: top,
-            tension: 8,
-            friction: 5
-        }).start(() => {
-            if (show) {
-                this.startDownload();
-            }
-        });
-    };
-
-    startDownload = async () => {
-        try {
-            const {file} = this.props;
-            const imageUrl = Client4.getFileUrl(file.id);
-
-            this.downloadTask = RNFetchBlob.config({
-                fileCache: true,
-                appendExt: file.extension
-            }).fetch('GET', imageUrl).progress((received, total) => {
-                const progress = (received / total) * 100;
-                this.setState({
-                    progress
-                });
-            });
-
-            const res = await this.downloadTask;
-            const path = res.path();
-            const newPath = await CameraRoll.saveToCameraRoll(path, 'photo');
-
-            this.setState({
-                progress: 100
-            }, () => {
-                // need to wait a bit for the progress circle UI to update to the give progress
-                setTimeout(async () => {
-                    try {
-                        // handles the case of a late cancellation by the user
-                        // and ensures that we remove the file if they did cancel late.
-                        if (this.state.didCancel) {
-                            // TODO: There's issue with deleting files from the cameraRoll on iOS here https://github.com/wkh237/react-native-fetch-blob/issues/479
-                            // This only occurs if the user cancels when the download is around 80% or more
-                            await RNFetchBlob.fs.unlink(newPath);
-                            this.props.onDownloadCancel();
-                        } else {
-                            this.props.onDownloadSuccess();
-                        }
-                    } catch (error) {
-                        // ensure the downloader at least closes if a error
-                        this.props.onDownloadCancel();
-                    }
-                }, 2000);
-            });
-
-            res.flush(); // remove the temp file
-            this.downloadTask = null;
-        } catch (error) {
-            // cancellation throws so we need to catch
-        }
-    }
-
-    handleCancelDownload = () => {
-        this.setState({
-            didCancel: true
-        });
-
-        if (this.downloadTask) {
-            this.downloadTask.cancel(() => {
-                this.props.onDownloadCancel();
-            });
-        }
-    }
-
     renderProgress = (fill) => {
+        const {saveToCameraRoll} = this.props;
+        const {isVideo} = this.state;
         const realFill = Number(fill.toFixed(0));
 
         let component;
@@ -169,6 +140,7 @@ export default class Downloader extends PureComponent {
                     <Text style={styles.progressText}>
                         {`${fill.toFixed(0)}%`}
                     </Text>
+                    {!isVideo &&
                     <TouchableOpacity
                         style={styles.cancelButton}
                         onPress={this.handleCancelDownload}
@@ -179,7 +151,43 @@ export default class Downloader extends PureComponent {
                             style={styles.cancelText}
                         />
                     </TouchableOpacity>
+                    }
                 </View>
+            );
+        }
+
+        let savedComponent;
+        if (realFill < 100 || this.state.didCancel) {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.downloading'
+                    defaultMessage='Downloading...'
+                    style={styles.bottomText}
+                />
+            );
+        } else if (saveToCameraRoll && isVideo) {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.video_saved'
+                    defaultMessage='Video Saved'
+                    style={styles.bottomText}
+                />
+            );
+        } else if (saveToCameraRoll) {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.image_saved'
+                    defaultMessage='Image Saved'
+                    style={styles.bottomText}
+                />
+            );
+        } else {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.complete'
+                    defaultMessage='Download complete'
+                    style={styles.bottomText}
+                />
             );
         }
 
@@ -187,34 +195,192 @@ export default class Downloader extends PureComponent {
             <View style={styles.progressContent}>
                 {component}
                 <View style={styles.bottomContent}>
-                    {(realFill < 100 || this.state.didCancel) ?
-                        <FormattedText
-                            id='mobile.downloader.downloading'
-                            defaultMessage='Downloading...'
-                            style={styles.bottomText}
-                        /> :
-                        <FormattedText
-                            id='mobile.downloader.success'
-                            defaultMessage='Image Saved'
-                            style={styles.bottomText}
-                        />
-                    }
+                    {savedComponent}
                 </View>
             </View>
         );
     };
 
+    renderStartDownload = () => {
+        return (
+            <View style={styles.progressContent}>
+                <TouchableOpacity onPress={this.startDownload}>
+                    <View style={styles.manualDownloadContainer}>
+                        <Icon
+                            name='md-download'
+                            size={48}
+                            color='white'
+                        />
+                        <View style={styles.downloadTextContainer}>
+                            <FormattedText
+                                id='file_attachment.download'
+                                defaultMessage='Download'
+                                style={styles.cancelText}
+                            />
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    saveVideo = (videoPath) => {
+        const {deviceHeight} = this.props;
+        const top = (deviceHeight / 2) - 100;
+        this.setState({progress: 100, started: true, force: true, isVideo: true});
+        Animated.spring(this.state.downloaderTop, {
+            toValue: top,
+            tension: 8,
+            friction: 5
+        }).start(async () => {
+            await CameraRoll.saveToCameraRoll(videoPath, 'video');
+            this.props.onDownloadSuccess();
+            InteractionManager.runAfterInteractions(() => {
+                this.setState({force: false, isVideo: false});
+            });
+        });
+    };
+
+    showDownloadFailedAlert = () => {
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.downloader.failed_title',
+                defaultMessage: 'Download failed'
+            }),
+            intl.formatMessage({
+                id: 'mobile.downloader.failed_description',
+                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK'
+                }),
+                onPress: () => this.downloadDidCancel()
+            }]
+        );
+    };
+
+    startDownload = async () => {
+        const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
+
+        try {
+            if (this.state.didCancel) {
+                this.setState({didCancel: false});
+            }
+
+            const imageUrl = Client4.getFileUrl(file.id);
+            const options = {
+                session: file.id,
+                timeout: 10000,
+                indicator: true,
+                overwrite: true
+            };
+
+            if (downloadPath && prompt) {
+                const isDir = await RNFetchBlob.fs.isDir(downloadPath);
+                if (!isDir) {
+                    try {
+                        await RNFetchBlob.fs.mkdir(downloadPath);
+                    } catch (error) {
+                        this.showDownloadFailedAlert();
+                        return;
+                    }
+                }
+
+                options.path = `${downloadPath}/${file.id}.${file.extension}`;
+            } else {
+                options.fileCache = true;
+                options.appendExt = file.extension;
+            }
+
+            this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl).
+                progress((received, total) => {
+                    const progress = (received / total) * 100;
+                    if (this.mounted) {
+                        this.setState({progress, started: true});
+                    }
+                });
+
+            const res = await this.downloadTask;
+            let path = res.path();
+
+            if (saveToCameraRoll) {
+                path = await CameraRoll.saveToCameraRoll(path, 'photo');
+            }
+
+            if (this.mounted) {
+                this.setState({
+                    progress: 100
+                }, () => {
+                    // need to wait a bit for the progress circle UI to update to the give progress
+                    setTimeout(async () => {
+                        if (this.state.didCancel) {
+                            try {
+                                await RNFetchBlob.fs.unlink(path);
+                            } finally {
+                                this.props.onDownloadCancel();
+                            }
+                        } else {
+                            this.props.onDownloadSuccess();
+                        }
+                    }, 2000);
+                });
+            }
+
+            if (saveToCameraRoll) {
+                res.flush(); // remove the temp file
+            }
+            this.downloadTask = null;
+        } catch (error) {
+            // cancellation throws so we need to catch
+            if (downloadPath) {
+                RNFetchBlob.fs.unlink(`${downloadPath}/${file.id}.${file.extension}`);
+            }
+            if (error.message !== 'cancelled' && this.mounted) {
+                this.showDownloadFailedAlert();
+            } else {
+                this.downloadDidCancel();
+            }
+        }
+    };
+
+    toggleDownloader = (show = true) => {
+        const {deviceHeight, prompt} = this.props;
+        const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
+
+        Animated.spring(this.state.downloaderTop, {
+            toValue: top,
+            tension: 8,
+            friction: 5
+        }).start(() => {
+            if (show && !prompt) {
+                this.startDownload();
+            }
+        });
+    };
+
     render() {
-        const {show} = this.props;
-        if (!show) {
+        const {show, downloadPath} = this.props;
+        if (!show && !this.state.force) {
             return null;
         }
 
-        const {didCancel, progress} = this.state;
+        const {didCancel, progress, started} = this.state;
 
         const trueProgress = didCancel ? 0 : progress;
 
         const containerHeight = show ? '100%' : 0;
+
+        let component;
+        if (downloadPath && !started) {
+            component = this.renderStartDownload;
+        } else {
+            component = this.renderProgress;
+        }
+
         return (
             <View style={[styles.container, {height: containerHeight}]}>
                 <AnimatedView style={[styles.downloader, {top: this.state.downloaderTop}]}>
@@ -228,7 +394,7 @@ export default class Downloader extends PureComponent {
                             rotation={0}
                             style={styles.progressCircle}
                         >
-                            {this.renderProgress}
+                            {component}
                         </AnimatedCircularProgress>
                     </View>
                 </AnimatedView>
@@ -308,5 +474,12 @@ const styles = StyleSheet.create({
     progressText: {
         color: 'white',
         fontSize: 18
+    },
+    manualDownloadContainer: {
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    downloadTextContainer: {
+        marginTop: 5
     }
 });
