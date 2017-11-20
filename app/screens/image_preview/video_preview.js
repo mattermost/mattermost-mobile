@@ -4,11 +4,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     StyleSheet,
     View
 } from 'react-native';
 import Video from 'react-native-video';
 import RNFetchBlob from 'react-native-fetch-blob';
+import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -21,12 +23,16 @@ const {VIDEOS_PATH} = DeviceTypes;
 
 export default class VideoPreview extends PureComponent {
     static propTypes = {
-        deviceHeight: PropTypes.number.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
+        deviceHeight: PropTypes.number,
+        deviceWidth: PropTypes.number,
         file: PropTypes.object,
         onFullScreen: PropTypes.func,
         onSeeking: PropTypes.func,
         theme: PropTypes.object
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     constructor(props) {
@@ -89,7 +95,24 @@ export default class VideoPreview extends PureComponent {
     };
 
     onError = () => {
-        //TODO: Show an error
+        const {intl} = this.context;
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.video_playback.failed_title',
+                defaultMessage: 'Video playback failed'
+            }),
+            intl.formatMessage({
+                id: 'mobile.video_playback.failed_description',
+                defaultMessage: 'An error occurred while trying to play the video.\n'
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'mobile.server_upgrade.button',
+                    defaultMessage: 'OK'
+                })
+            }]
+        );
     };
 
     onFullScreen = () => {

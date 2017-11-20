@@ -4,37 +4,17 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Alert,
-    Platform,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
-import OpenFile from 'react-native-doc-viewer';
-import RNFetchBlob from 'react-native-fetch-blob';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {intlShape} from 'react-intl';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
-import {DeviceTypes} from 'app/constants/';
-
+import FileAttachmentDocument, {SUPPORTED_DOCS_FORMAT} from './file_attachment_document';
 import FileAttachmentIcon from './file_attachment_icon';
 import FileAttachmentImage from './file_attachment_image';
-
-const {DOCUMENTS_PATH} = DeviceTypes;
-const SUPPORTED_DOCS_FORMAT = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.ms-excel',
-    'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/xml',
-    'text/csv'
-];
 
 export default class FileAttachment extends PureComponent {
     static propTypes = {
@@ -51,125 +31,8 @@ export default class FileAttachment extends PureComponent {
         onPreviewPress: () => true
     };
 
-    static contextTypes = {
-        intl: intlShape
-    };
-
-    state = {
-        didCancel: false,
-        downloading: false,
-        progress: 0
-    };
-
-    cancelDownload = () => {
-        this.setState({didCancel: true});
-        if (this.downloadTask) {
-            this.downloadTask.cancel();
-        }
-    };
-
-    downloadAndPreviewFile = async (file) => {
-        const path = `${DOCUMENTS_PATH}/${file.name}`;
-
-        try {
-            const isDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
-            if (!isDir) {
-                try {
-                    await RNFetchBlob.fs.mkdir(DOCUMENTS_PATH);
-                } catch (error) {
-                    // Do nothing
-                }
-            }
-
-            const options = {
-                session: file.id,
-                timeout: 10000,
-                indicator: true,
-                overwrite: true,
-                path
-            };
-
-            const exist = await RNFetchBlob.fs.exists(path);
-            if (exist) {
-                this.openDocument(file, 0);
-            } else {
-                this.setState({downloading: true});
-                this.downloadTask = RNFetchBlob.config(options).fetch('GET', Utils.getFileUrl(file.id)).
-                    progress((received, total) => {
-                        const progress = (received / total) * 100;
-                        this.setState({progress});
-                    });
-
-                await this.downloadTask;
-                this.setState({
-                    progress: 100
-                }, () => {
-                    // need to wait a bit for the progress circle UI to update to the give progress
-                    this.openDocument(file);
-                });
-            }
-        } catch (error) {
-            RNFetchBlob.fs.unlink(path);
-            this.setState({downloading: false, progress: 0});
-
-            if (error.message !== 'cancelled') {
-                const {intl} = this.context;
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.downloader.failed_title',
-                        defaultMessage: 'Download failed'
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.downloader.failed_description',
-                        defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
-                    }),
-                    [{
-                        text: intl.formatMessage({
-                            id: 'mobile.server_upgrade.button',
-                            defaultMessage: 'OK'
-                        })
-                    }]
-                );
-            }
-        }
-    };
-
-    openDocument = (file, delay = 2000) => {
-        setTimeout(() => {
-            if (!this.state.didCancel) {
-                const prefix = Platform.OS === 'android' ? 'file:/' : '';
-                const path = `${DOCUMENTS_PATH}/${file.name}`;
-                OpenFile.openDoc([{
-                    url: `${prefix}${path}`,
-                    fileName: file.name,
-                    fileType: file.extension
-                }], (error) => {
-                    if (error) {
-                        const {intl} = this.context;
-                        Alert.alert(
-                            intl.formatMessage({
-                                id: 'mobile.document_preview.failed_title',
-                                defaultMessage: 'Open Document failed'
-                            }),
-                            intl.formatMessage({
-                                id: 'mobile.document_preview.failed_description',
-                                defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n'
-                            }, {
-                                fileType: file.extension.toUpperCase()
-                            }),
-                            [{
-                                text: intl.formatMessage({
-                                    id: 'mobile.server_upgrade.button',
-                                    defaultMessage: 'OK'
-                                })
-                            }]
-                        );
-                        RNFetchBlob.fs.unlink(path);
-                    }
-                    this.setState({downloading: false, progress: 0});
-                });
-            }
-        }, delay);
+    handlePreviewPress = () => {
+        this.props.onPreviewPress(this.props.file);
     };
 
     renderFileInfo() {
@@ -197,90 +60,50 @@ export default class FileAttachment extends PureComponent {
         );
     }
 
-    handleInfoPress = () => {
-        if (!this.state.downloading) {
-            this.props.onInfoPress();
-        }
-    };
+    render() {
+        const {file, onInfoPress, theme} = this.props;
+        const style = getStyleSheet(theme);
 
-    handlePreviewPress = async () => {
-        const {file} = this.props;
-        const {downloading} = this.state;
         let mime = file.mime_type;
         if (mime.includes(';')) {
             mime = mime.split(';')[0];
         }
 
-        if (downloading) {
-            this.cancelDownload();
-        } else if (file && SUPPORTED_DOCS_FORMAT.includes(mime)) {
-            this.downloadAndPreviewFile(file);
-        } else {
-            this.props.onPreviewPress(this.props.file);
-        }
-    };
-
-    renderProgress = () => {
-        const {file, theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        return (
-            <View style={style.circularProgressContent}>
-                <FileAttachmentIcon
-                    file={file}
-                    theme={theme}
-                    wrapperHeight={65}
-                    wrapperWidth={65}
-                />
-            </View>
-        );
-    };
-
-    render() {
-        const {file, theme} = this.props;
-        const {downloading, progress} = this.state;
-        const style = getStyleSheet(theme);
-
         let fileAttachmentComponent;
         if (file.has_preview_image || file.loading || file.mime_type === 'image/gif') {
             fileAttachmentComponent = (
-                <FileAttachmentImage
-                    addFileToFetchCache={this.props.addFileToFetchCache}
-                    fetchCache={this.props.fetchCache}
+                <TouchableOpacity onPress={this.handlePreviewPress}>
+                    <FileAttachmentImage
+                        addFileToFetchCache={this.props.addFileToFetchCache}
+                        fetchCache={this.props.fetchCache}
+                        file={file}
+                        theme={theme}
+                    />
+                </TouchableOpacity>
+            );
+        } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
+            fileAttachmentComponent = (
+                <FileAttachmentDocument
                     file={file}
                     theme={theme}
                 />
-            );
-        } else if (downloading) {
-            fileAttachmentComponent = (
-                <AnimatedCircularProgress
-                    size={100}
-                    fill={progress}
-                    width={4}
-                    backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColor={theme.linkColor}
-                    rotation={0}
-                    style={style.circularProgress}
-                >
-                    {this.renderProgress}
-                </AnimatedCircularProgress>
             );
         } else {
             fileAttachmentComponent = (
-                <FileAttachmentIcon
-                    file={file}
-                    theme={theme}
-                />
+                <TouchableOpacity onPress={this.handlePreviewPress}>
+                    <FileAttachmentIcon
+                        file={file}
+                        theme={theme}
+                    />
+                </TouchableOpacity>
             );
         }
 
         return (
             <View style={style.fileWrapper}>
-                <TouchableOpacity onPress={this.handlePreviewPress}>
-                    {fileAttachmentComponent}
-                </TouchableOpacity>
+                {fileAttachmentComponent}
                 <TouchableOpacity
-                    onPress={this.handleInfoPress}
+                    onPress={onInfoPress}
                     style={style.fileInfoContainer}
                 >
                     {this.renderFileInfo()}

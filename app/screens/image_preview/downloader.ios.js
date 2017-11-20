@@ -35,6 +35,7 @@ export default class Downloader extends PureComponent {
         onDownloadSuccess: emptyFunction,
         prompt: false,
         show: false,
+        force: false,
         saveToCameraRoll: true
     };
 
@@ -82,6 +83,29 @@ export default class Downloader extends PureComponent {
         }
     }
 
+    downloadDidCancel = () => {
+        if (this.state.mounted) {
+            this.setState({progress: 0, started: false, didCancel: false});
+        }
+        this.props.onDownloadCancel();
+    };
+
+    handleCancelDownload = () => {
+        if (this.state.mounted) {
+            this.setState({
+                didCancel: true,
+                progress: 0,
+                started: false
+            });
+        }
+
+        if (this.downloadTask) {
+            this.downloadTask.cancel(() => {
+                this.props.onDownloadCancel();
+            });
+        }
+    };
+
     recenterDownloader = (props) => {
         const {deviceHeight, show} = props;
         const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
@@ -96,18 +120,122 @@ export default class Downloader extends PureComponent {
         ]).start();
     };
 
-    toggleDownloader = (show = true) => {
-        const {deviceHeight, prompt} = this.props;
-        const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
+    renderProgress = (fill) => {
+        const {saveToCameraRoll} = this.props;
+        const {isVideo} = this.state;
+        const realFill = Number(fill.toFixed(0));
 
+        let component;
+        if (realFill === 100) {
+            component = (
+                <Icon
+                    name='ios-checkmark'
+                    size={64}
+                    color='white'
+                />
+            );
+        } else {
+            component = (
+                <View style={styles.progressCirclePercentage}>
+                    <Text style={styles.progressText}>
+                        {`${fill.toFixed(0)}%`}
+                    </Text>
+                    {!isVideo &&
+                    <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={this.handleCancelDownload}
+                    >
+                        <FormattedText
+                            id='channel_modal.cancel'
+                            defaultMessage='Cancel'
+                            style={styles.cancelText}
+                        />
+                    </TouchableOpacity>
+                    }
+                </View>
+            );
+        }
+
+        let savedComponent;
+        if (saveToCameraRoll && isVideo) {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.video_saved'
+                    defaultMessage='Video Saved'
+                    style={styles.bottomText}
+                />
+            );
+        } else if (saveToCameraRoll) {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.image_saved'
+                    defaultMessage='Image Saved'
+                    style={styles.bottomText}
+                />
+            );
+        } else {
+            savedComponent = (
+                <FormattedText
+                    id='mobile.downloader.complete'
+                    defaultMessage='Download complete'
+                    style={styles.bottomText}
+                />
+            );
+        }
+
+        return (
+            <View style={styles.progressContent}>
+                {component}
+                <View style={styles.bottomContent}>
+                    {(realFill < 100 || this.state.didCancel) ?
+                        <FormattedText
+                            id='mobile.downloader.downloading'
+                            defaultMessage='Downloading...'
+                            style={styles.bottomText}
+                        /> : savedComponent
+                    }
+                </View>
+            </View>
+        );
+    };
+
+    renderStartDownload = () => {
+        return (
+            <View style={styles.progressContent}>
+                <TouchableOpacity onPress={this.startDownload}>
+                    <View style={styles.manualDownloadContainer}>
+                        <Icon
+                            name='md-download'
+                            size={48}
+                            color='white'
+                        />
+                        <View style={styles.downloadTextContainer}>
+                            <FormattedText
+                                id='file_attachment.download'
+                                defaultMessage='Download'
+                                style={styles.cancelText}
+                            />
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    saveVideo = (videoPath) => {
+        const {deviceHeight} = this.props;
+        const top = (deviceHeight / 2) - 100;
+        this.setState({progress: 100, started: true, force: true, isVideo: true});
         Animated.spring(this.state.downloaderTop, {
             toValue: top,
             tension: 8,
             friction: 5
-        }).start(() => {
-            if (show && !prompt) {
-                this.startDownload();
-            }
+        }).start(async () => {
+            await CameraRoll.saveToCameraRoll(videoPath, 'video');
+            this.props.onDownloadSuccess();
+            InteractionManager.runAfterInteractions(() => {
+                this.setState({force: false, isVideo: false});
+            });
         });
     };
 
@@ -147,9 +275,7 @@ export default class Downloader extends PureComponent {
                 progress((received, total) => {
                     const progress = (received / total) * 100;
                     if (this.mounted) {
-                        this.setState({
-                            progress, started: true
-                        });
+                        this.setState({progress, started: true});
                     }
                 });
 
@@ -210,128 +336,33 @@ export default class Downloader extends PureComponent {
                             id: 'mobile.server_upgrade.button',
                             defaultMessage: 'OK'
                         }),
-                        onPress: () => this.setState({progress: 0, started: false, didCancel: false})
+                        onPress: () => this.downloadDidCancel()
                     }]
                 );
             } else {
-                if (this.state.mounted) {
-                    this.setState({progress: 0, started: false, didCancel: false});
-                }
-                this.props.onDownloadCancel();
+                this.downloadDidCancel();
             }
         }
     };
 
-    handleCancelDownload = () => {
-        if (this.state.mounted) {
-            this.setState({
-                didCancel: true,
-                progress: 0,
-                started: false
-            });
-        }
+    toggleDownloader = (show = true) => {
+        const {deviceHeight, prompt} = this.props;
+        const top = show ? (deviceHeight / 2) - 100 : deviceHeight;
 
-        if (this.downloadTask) {
-            this.downloadTask.cancel(() => {
-                this.props.onDownloadCancel();
-            });
-        }
-    };
-
-    renderProgress = (fill) => {
-        const {saveToCameraRoll} = this.props;
-        const realFill = Number(fill.toFixed(0));
-
-        let component;
-        if (realFill === 100) {
-            component = (
-                <Icon
-                    name='ios-checkmark'
-                    size={64}
-                    color='white'
-                />
-            );
-        } else {
-            component = (
-                <View style={styles.progressCirclePercentage}>
-                    <Text style={styles.progressText}>
-                        {`${fill.toFixed(0)}%`}
-                    </Text>
-                    <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={this.handleCancelDownload}
-                    >
-                        <FormattedText
-                            id='channel_modal.cancel'
-                            defaultMessage='Cancel'
-                            style={styles.cancelText}
-                        />
-                    </TouchableOpacity>
-                </View>
-            );
-        }
-
-        let savedComponent;
-        if (saveToCameraRoll) {
-            savedComponent = (
-                <FormattedText
-                    id='mobile.downloader.image_saved'
-                    defaultMessage='Image Saved'
-                    style={styles.bottomText}
-                />
-            );
-        } else {
-            savedComponent = (
-                <FormattedText
-                    id='mobile.downloader.complete'
-                    defaultMessage='Download complete'
-                    style={styles.bottomText}
-                />
-            );
-        }
-
-        return (
-            <View style={styles.progressContent}>
-                {component}
-                <View style={styles.bottomContent}>
-                    {(realFill < 100 || this.state.didCancel) ?
-                        <FormattedText
-                            id='mobile.downloader.downloading'
-                            defaultMessage='Downloading...'
-                            style={styles.bottomText}
-                        /> : savedComponent
-                    }
-                </View>
-            </View>
-        );
-    };
-
-    renderStartDownload = () => {
-        return (
-            <View style={styles.progressContent}>
-                <TouchableOpacity onPress={this.startDownload}>
-                    <View style={styles.manualDownloadContainer}>
-                        <Icon
-                            name='md-download'
-                            size={48}
-                            color='white'
-                        />
-                        <View style={styles.downloadTextContainer}>
-                            <FormattedText
-                                id='file_attachment.download'
-                                defaultMessage='Download'
-                                style={styles.cancelText}
-                            />
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </View>
-        );
+        Animated.spring(this.state.downloaderTop, {
+            toValue: top,
+            tension: 8,
+            friction: 5
+        }).start(() => {
+            if (show && !prompt) {
+                this.startDownload();
+            }
+        });
     };
 
     render() {
         const {show, downloadPath} = this.props;
-        if (!show) {
+        if (!show && !this.state.force) {
             return null;
         }
 
