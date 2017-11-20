@@ -163,9 +163,17 @@ export default class EmojiPicker extends PureComponent {
             return [];
         }
 
-        const nextEmojis = emojisByName.filter((emoji) => emoji.includes(searchTermLowerCase)).sort();
+        const startsWith = [];
+        const includes = [];
+        emojisByName.forEach((emoji) => {
+            if (emoji.startsWith(searchTermLowerCase)) {
+                startsWith.push(emoji);
+            } else if (emoji.includes(searchTermLowerCase)) {
+                includes.push(emoji);
+            }
+        });
 
-        return nextEmojis;
+        return [...startsWith.sort(), ...includes.sort()];
     }
 
     getNumberOfColumns = (deviceWidth) => {
