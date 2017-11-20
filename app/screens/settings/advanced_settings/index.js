@@ -9,9 +9,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import AdvancedSettings from './advanced_settings';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         theme: getTheme(state)
     };
 }

@@ -7,10 +7,9 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import LoginOptions from './login_options';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {config, license, serverVersion} = state.entities.general;
     return {
-        ...ownProps,
         config,
         license,
         serverVersion,

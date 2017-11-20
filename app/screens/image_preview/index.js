@@ -19,7 +19,6 @@ function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
     return function mapStateToProps(state, ownProps) {
         return {
-            ...ownProps,
             ...getDimensions(state),
             canDownloadFiles: canDownloadFilesOnMobile(state),
             fetchCache: state.views.fetchCache,

@@ -33,7 +33,6 @@ function mapStateToProps(state, ownProps) {
     const {deviceHeight} = getDimensions(state);
 
     return {
-        ...ownProps,
         channelIsLoading: state.views.channel.loading,
         createPostRequestStatus: state.requests.posts.createPost.status,
         deviceHeight,

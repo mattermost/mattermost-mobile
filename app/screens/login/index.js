@@ -11,11 +11,10 @@ import {checkMfa, login} from 'mattermost-redux/actions/users';
 
 import Login from './login.js';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {checkMfa: checkMfaRequest, login: loginRequest} = state.requests.users;
     const {config, license} = state.entities.general;
     return {
-        ...ownProps,
         ...state.views.login,
         checkMfaRequest,
         loginRequest,

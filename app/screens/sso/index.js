@@ -11,9 +11,8 @@ import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
 
 import SSO from './sso';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         ...state.views.selectServer,
         theme: getTheme(state)
     };

@@ -27,7 +27,7 @@ const joinableChannels = createSelector(
     }
 );
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
     const {currentTeamId} = state.entities.teams;
     const {getChannels: requestStatus} = state.requests.channels;
@@ -36,7 +36,6 @@ function mapStateToProps(state, ownProps) {
     const channels = joinableChannels(state);
 
     return {
-        ...ownProps,
         canCreateChannels: showCreateOption(config, license, General.OPEN_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         currentUserId,
         currentTeamId,

@@ -7,9 +7,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import StatusBar from './status_bar';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         theme: getTheme(state)
     };
 }

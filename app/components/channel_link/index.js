@@ -10,10 +10,9 @@ import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/chan
 
 import ChannelLink from './channel_link';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        channelsByName: getChannelsNameMapInCurrentTeam(state),
-        ...ownProps
+        channelsByName: getChannelsNameMapInCurrentTeam(state)
     };
 }
 

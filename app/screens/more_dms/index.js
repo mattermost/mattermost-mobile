@@ -40,7 +40,7 @@ const getUsersForMoreDirectMessages = createSelector(
     sortAndRemoveCurrentUser
 );
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {searchProfiles: searchRequest} = state.requests.users;
 
     const config = getConfig(state);
@@ -56,7 +56,6 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        ...ownProps,
         config,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         allProfiles: getUsers(state),

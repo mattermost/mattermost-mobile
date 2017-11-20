@@ -15,7 +15,6 @@ function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     return {
-        ...ownProps,
         enablePostIconOverride: config.EnablePostIconOverride === 'true',
         fromWebHook: post.props && post.props.from_webhook === 'true',
         isSystemMessage: isSystemMessage(post),

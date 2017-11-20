@@ -7,10 +7,9 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import MarkdownCodeBlock from './markdown_code_block';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        theme: getTheme(state),
-        ...ownProps
+        theme: getTheme(state)
     };
 }
 
