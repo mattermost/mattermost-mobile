@@ -5127,7 +5127,7 @@ react-native-navigation@1.1.260:
 
 react-native-notifications@enahum/react-native-notifications.git:
   version "1.1.17"
-  resolved "https://codeload.github.com/enahum/react-native-notifications/tar.gz/2300824b1cbd5fff33d20847b3cc75f304613927"
+  resolved "https://codeload.github.com/enahum/react-native-notifications/tar.gz/8a8e59b4fe00a574462deb94071ac73d59e8648f"
   dependencies:
     core-js "^1.0.0"
     uuid "^2.0.3"
