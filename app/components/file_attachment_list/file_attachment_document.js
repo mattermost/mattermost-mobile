@@ -26,6 +26,7 @@ const {DOCUMENTS_PATH} = DeviceTypes;
 export const SUPPORTED_DOCS_FORMAT = [
     'application/pdf',
     'application/msword',
+    'application/rtf',
     'application/vnd.ms-excel',
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
