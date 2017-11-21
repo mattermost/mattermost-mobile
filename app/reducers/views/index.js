@@ -8,6 +8,7 @@ import clientUpgrade from './client_upgrade';
 import fetchCache from './fetch_cache';
 import i18n from './i18n';
 import login from './login';
+import recentEmojis from './recent_emojis';
 import root from './root';
 import search from './search';
 import selectServer from './select_server';
@@ -20,6 +21,7 @@ export default combineReducers({
     fetchCache,
     i18n,
     login,
+    recentEmojis,
     root,
     search,
     selectServer,

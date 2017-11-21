@@ -5140,6 +5140,10 @@ react-native-passcode-status@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-native-passcode-status/-/react-native-passcode-status-1.1.0.tgz#e5922d5f4d79bc09849438d620406e5ccd31168a"
 
+react-native-section-list-get-item-layout@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-section-list-get-item-layout/-/react-native-section-list-get-item-layout-2.1.0.tgz#ec5336fa769cfbe0c49ace50086a3cfdb2be2812"
+
 react-native-sentry@0.15.1:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/react-native-sentry/-/react-native-sentry-0.15.1.tgz#fd5e685faa8de8fc4f472703b57e023d45ee53aa"

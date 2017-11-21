@@ -6,48 +6,62 @@ import {createSelector} from 'reselect';
 
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 
-import {getDimensions} from 'app/selectors/device';
+import {getDimensions, isLandscape} from 'app/selectors/device';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {CategoryNames, Emojis, EmojiIndicesByCategory} from 'app/utils/emojis';
+import {CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from 'app/utils/emojis';
 
 import EmojiPicker from './emoji_picker';
 
 const categoryToI18n = {
     activity: {
         id: 'mobile.emoji_picker.activity',
-        defaultMessage: 'ACTIVITY'
+        defaultMessage: 'ACTIVITY',
+        icon: 'futbol-o'
     },
     custom: {
         id: 'mobile.emoji_picker.custom',
-        defaultMessage: 'CUSTOM'
+        defaultMessage: 'CUSTOM',
+        icon: 'at'
     },
     flags: {
         id: 'mobile.emoji_picker.flags',
-        defaultMessage: 'FLAGS'
+        defaultMessage: 'FLAGS',
+        icon: 'flag-o'
     },
     foods: {
         id: 'mobile.emoji_picker.foods',
-        defaultMessage: 'FOODS'
+        defaultMessage: 'FOODS',
+        icon: 'cutlery'
     },
     nature: {
         id: 'mobile.emoji_picker.nature',
-        defaultMessage: 'NATURE'
+        defaultMessage: 'NATURE',
+        icon: 'leaf'
     },
     objects: {
         id: 'mobile.emoji_picker.objects',
-        defaultMessage: 'OBJECTS'
+        defaultMessage: 'OBJECTS',
+        icon: 'lightbulb-o'
     },
     people: {
         id: 'mobile.emoji_picker.people',
-        defaultMessage: 'PEOPLE'
+        defaultMessage: 'PEOPLE',
+        icon: 'smile-o'
     },
     places: {
         id: 'mobile.emoji_picker.places',
-        defaultMessage: 'PLACES'
+        defaultMessage: 'PLACES',
+        icon: 'plane'
+    },
+    recent: {
+        id: 'mobile.emoji_picker.recent',
+        defaultMessage: 'RECENTLY USED',
+        icon: 'clock-o'
     },
     symbols: {
         id: 'mobile.emoji_picker.symbols',
-        defaultMessage: 'SYMBOLS'
+        defaultMessage: 'SYMBOLS',
+        icon: 'heart-o'
     }
 };
 
@@ -61,28 +75,24 @@ function fillEmoji(indice) {
 
 const getEmojisBySection = createSelector(
     getCustomEmojisByName,
-    (customEmojis) => {
+    (state) => state.views.recentEmojis,
+    (customEmojis, recentEmojis) => {
         const emoticons = CategoryNames.filter((name) => name !== 'custom').map((category) => {
+            const items = EmojiIndicesByCategory.get(category).map(fillEmoji);
+
             const section = {
                 ...categoryToI18n[category],
                 key: category,
-                data: [{
-                    key: `${category}-emojis`,
-                    items: EmojiIndicesByCategory.get(category).map(fillEmoji)
-                }]
+                data: items
             };
 
             return section;
         });
 
-        const customEmojiData = {
-            key: 'custom-emojis',
-            title: 'CUSTOM',
-            items: []
-        };
+        const customEmojiItems = [];
 
         for (const [key] of customEmojis) {
-            customEmojiData.items.push({
+            customEmojiItems.push({
                 name: key
             });
         }
@@ -90,20 +100,45 @@ const getEmojisBySection = createSelector(
         emoticons.push({
             ...categoryToI18n.custom,
             key: 'custom',
-            data: [customEmojiData]
+            data: customEmojiItems
         });
+
+        if (recentEmojis.length) {
+            const items = recentEmojis.map((emoji) => ({name: emoji}));
+
+            emoticons.unshift({
+                ...categoryToI18n.recent,
+                key: 'recent',
+                data: items
+            });
+        }
+
+        return emoticons;
+    }
+);
+
+const getEmojisByName = createSelector(
+    getCustomEmojisByName,
+    (customEmojis) => {
+        const emoticons = [];
+        for (const [key] of [...EmojiIndicesByAlias.entries(), ...customEmojis.entries()]) {
+            emoticons.push(key);
+        }
 
         return emoticons;
     }
 );
 
 function mapStateToProps(state) {
-    const emojis = getEmojisBySection(state);
+    const emojisBySection = getEmojisBySection(state);
+    const emojisByName = getEmojisByName(state);
     const {deviceWidth} = getDimensions(state);
 
     return {
-        emojis,
+        emojisByName,
+        emojisBySection,
         deviceWidth,
+        isLandscape: isLandscape(state),
         theme: getTheme(state)
     };
 }

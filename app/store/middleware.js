@@ -106,6 +106,11 @@ function resetStateForNewVersion(action) {
         selectServer = payload.views.selectServer;
     }
 
+    let recentEmojis = initialState.views.recentEmojis;
+    if (payload.views.recentEmojis) {
+        recentEmojis = payload.views.recentEmojis;
+    }
+
     const nextState = {
         app: {
             build: DeviceInfo.getBuildNumber(),
@@ -131,7 +136,8 @@ function resetStateForNewVersion(action) {
             thread: {
                 drafts: threadDrafts
             },
-            selectServer
+            selectServer,
+            recentEmojis
         }
     };
 
