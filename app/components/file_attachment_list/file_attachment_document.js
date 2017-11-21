@@ -179,7 +179,8 @@ export default class FileAttachmentDocument extends PureComponent {
                 OpenFile.openDoc([{
                     url: `${prefix}${path}`,
                     fileName: file.name,
-                    fileType: file.extension
+                    fileType: file.extension,
+                    cache: false
                 }], (error) => {
                     if (error) {
                         const {intl} = this.context;
