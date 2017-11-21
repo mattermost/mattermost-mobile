@@ -3,11 +3,24 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Image, Text} from 'react-native';
+import {
+    Image,
+    StyleSheet,
+    Text,
+    View
+} from 'react-native';
 
-export default class MarkdownLink extends React.PureComponent {
+import FormattedText from 'app/components/formatted_text';
+
+import CustomPropTypes from 'app/constants/custom_prop_types';
+
+const MAX_IMAGE_HEIGHT = 150;
+
+export default class MarkdownImage extends React.Component {
     static propTypes = {
-        src: PropTypes.string.isRequired
+        children: PropTypes.node,
+        source: PropTypes.string.isRequired,
+        textStyle: CustomPropTypes.Style
     };
 
     constructor(props) {
@@ -15,54 +28,104 @@ export default class MarkdownLink extends React.PureComponent {
 
         this.state = {
             width: 0,
-            height: 0
+            height: 0,
+            maxWidth: Math.MAX_INT,
+            failed: false
         };
     }
 
     componentWillMount() {
-        Image.getSize(this.props.src, this.handleSizeReceived);
+        this.loadImageSize(this.props.source);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.src !== nextProps.src) {
+        if (this.props.source !== nextProps.source) {
             this.setState({
                 width: 0,
-                height: 0
+                height: 0,
+                failed: false
             });
 
-            Image.getSize(nextProps.src, this.handleSizeReceived);
+            this.loadImageSize(nextProps.source);
         }
     }
+
+    loadImageSize = (source) => {
+        Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
+    };
 
     handleSizeReceived = (width, height) => {
         this.setState({
             width,
             height
         });
-    }
+    };
+
+    handleSizeFailed = () => {
+        this.setState({
+            failed: true
+        });
+    };
+
+    handleLayout = (event) => {
+        this.setState({
+            maxWidth: event.nativeEvent.layout.width
+        });
+    };
 
     render() {
-        if (!this.state.width || !this.state.height) {
-            return <Text/>;
+        let image = null;
+
+        if (this.state.width && this.state.height && this.state.maxWidth) {
+            let {width, height} = this.state;
+
+            const maxWidth = this.state.maxWidth;
+            if (width > maxWidth) {
+                height = height * (maxWidth / width);
+                width = maxWidth;
+            }
+
+            const maxHeight = MAX_IMAGE_HEIGHT;
+            if (height > maxHeight) {
+                width = width * (maxHeight / height);
+                height = maxHeight;
+            }
+
+            // React Native complains if we try to pass resizeMode as a style
+            image = (
+                <Image
+                    source={{uri: this.props.source}}
+                    resizeMode='contain'
+                    style={{width, height}}
+                />
+            );
+        } else if (this.state.failed) {
+            image = (
+                <Text>
+                    <FormattedText
+                        style={this.props.textStyle}
+                        id='mobile.markdown.image.error'
+                        defaultMessage='Image failed to load:'
+                    />
+                    {' '}
+                    {this.props.children}
+                </Text>
+            );
         }
 
-        let {width, height} = this.state;
-
-        const maxWidth = 200;
-
-        if (width > maxWidth) {
-            height = height * (maxWidth / width);
-            width = maxWidth;
-        }
-
-        // React Native complains if we try to pass resizeMode into a StyleSheet
         return (
-            <Image
-                source={{uri: this.props.src}}
+            <View
+                style={style.container}
                 onLayout={this.handleLayout}
-                resizeMode='cover'
-                style={{width, height}}
-            />
+            >
+                {image}
+            </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flex: 1
+    }
+});

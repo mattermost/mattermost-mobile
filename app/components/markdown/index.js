@@ -25,6 +25,7 @@ import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
+import {addListItemIndices, pullOutImages} from './transform';
 
 export default class Markdown extends PureComponent {
     static propTypes = {
@@ -117,8 +118,22 @@ export default class Markdown extends PureComponent {
 
                 editedIndicator: this.renderEditedIndicator
             },
-            renderParagraphsInLists: true
+            renderParagraphsInLists: true,
+            getExtraPropsForNode: this.getExtraPropsForNode
         });
+    }
+
+    getExtraPropsForNode = (node) => {
+        const extraProps = {
+            continue: node.continue,
+            index: node.index
+        };
+
+        if (node.type === 'image') {
+            extraProps.reactChildren = node.react.children;
+        }
+
+        return extraProps;
     }
 
     computeTextStyle = (baseStyle, context) => {
@@ -134,20 +149,14 @@ export default class Markdown extends PureComponent {
         return <Text style={this.computeTextStyle([this.props.baseTextStyle, this.props.textStyles.code], context)}>{literal}</Text>;
     }
 
-    renderImage = ({children, context, src}) => {
+    renderImage = ({reactChildren, context, src}) => {
         return (
-            <MarkdownImage src={src}/>
-        );
-
-        // TODO This will be properly implemented for PLT-5736
-        return (
-            <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>
-                {'!['}
-                {children}
-                {']('}
-                {src}
-                {')'}
-            </Text>
+            <MarkdownImage
+                source={src}
+                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+            >
+                {reactChildren}
+            </MarkdownImage>
         );
     }
 
@@ -249,11 +258,10 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderList = ({children, start, tight, type}) => {
+    renderList = ({children, tight, type}) => {
         return (
             <MarkdownList
                 ordered={type !== 'bullet'}
-                startAt={start}
                 tight={tight}
             >
                 {children}
@@ -337,7 +345,10 @@ export default class Markdown extends PureComponent {
     }
 
     render() {
-        const ast = this.parser.parse(this.props.value);
+        let ast = this.parser.parse(this.props.value);
+
+        ast = addListItemIndices(ast);
+        ast = pullOutImages(ast);
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');

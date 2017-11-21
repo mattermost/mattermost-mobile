@@ -15,21 +15,18 @@ export default class MarkdownListItem extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         ordered: PropTypes.bool.isRequired,
-        startAt: PropTypes.number,
+        continue: PropTypes.bool,
         index: PropTypes.number.isRequired,
-        tight: PropTypes.bool,
         bulletStyle: CustomPropTypes.Style,
         level: PropTypes.number
     };
 
-    static defaultProps = {
-        startAt: 1
-    };
-
     render() {
         let bullet;
-        if (this.props.ordered) {
-            bullet = (this.props.startAt + this.props.index) + '. ';
+        if (this.props.continue) {
+            bullet = '';
+        } else if (this.props.ordered) {
+            bullet = this.props.index + '. ';
         } else if (this.props.level % 2 === 0) {
             bullet = '◦';
         } else {
