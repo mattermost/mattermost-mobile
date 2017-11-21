@@ -10,6 +10,7 @@ import {IntlProvider} from 'react-intl';
 import {
     Alert,
     AppState,
+    Dimensions,
     InteractionManager,
     NativeModules,
     Platform
@@ -151,12 +152,27 @@ export default class Mattermost {
     configureAnalytics = (config) => {
         if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && Config.SegmentApiKey) {
             if (!global.analytics) {
+                const {height, width} = Dimensions.get('window');
                 global.analytics = new Analytics(Config.SegmentApiKey);
+                global.analytics_context = {
+                    app: {
+                        version: DeviceInfo.getVersion(),
+                        build: DeviceInfo.getBuildNumber()
+                    },
+                    device: {
+                        dimensions: {
+                            height,
+                            width
+                        },
+                        isTablet: DeviceInfo.isTablet(),
+                        os: DeviceInfo.getSystemVersion()
+                    },
+                    server: config.Version
+                };
+
                 global.analytics.identify({
                     userId: config.DiagnosticId,
-                    context: {
-                        ip: '0.0.0.0'
-                    },
+                    context: global.analytics_context,
                     page: {
                         path: '',
                         referrer: '',
