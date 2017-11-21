@@ -16,7 +16,6 @@ function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     return {
-        ...ownProps,
         postProps: post.props || {},
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,

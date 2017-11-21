@@ -7,9 +7,8 @@ import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis'
 
 import Emoji from './emoji';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         customEmojis: getCustomEmojisByName(state),
         token: state.entities.general.credentials.token
     };

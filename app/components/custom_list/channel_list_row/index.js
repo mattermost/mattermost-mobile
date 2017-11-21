@@ -15,8 +15,7 @@ function makeMapStateToProps() {
     return (state, ownProps) => {
         return {
             theme: getTheme(state),
-            channel: getChannel(state, ownProps),
-            ...ownProps
+            channel: getChannel(state, ownProps)
         };
     };
 }

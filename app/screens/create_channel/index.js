@@ -14,7 +14,6 @@ function mapStateToProps(state, ownProps) {
     const {createChannel: createChannelRequest} = state.requests.channels;
 
     return {
-        ...ownProps,
         createChannelRequest,
         channelType: ownProps.channelType,
         theme: getTheme(state)

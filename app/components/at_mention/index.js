@@ -9,11 +9,10 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import AtMention from './at_mention';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        usersByUsername: getUsersByUsername(state),
-        ...ownProps
+        usersByUsername: getUsersByUsername(state)
     };
 }
 

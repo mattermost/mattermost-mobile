@@ -13,13 +13,12 @@ import {removeProtocol} from 'app/utils/url';
 
 import Root from './root';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const locale = getCurrentLocale(state);
     Client.setLocale(locale);
     Client4.setAcceptLanguage(locale);
 
     return {
-        ...ownProps,
         theme: getTheme(state),
         currentChannelId: getCurrentChannelId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
