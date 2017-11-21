@@ -344,8 +344,12 @@ class PostTextbox extends PureComponent {
     render() {
         const {
             canUploadFiles,
+            channelId,
             channelIsLoading,
+            files,
             intl,
+            navigator,
+            rootId,
             theme
         } = this.props;
 
@@ -355,7 +359,7 @@ class PostTextbox extends PureComponent {
         const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
-        if (this.props.rootId) {
+        if (rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
         } else {
             placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
@@ -368,7 +372,7 @@ class PostTextbox extends PureComponent {
                 <AttachmentButton
                     blurTextBox={this.blur}
                     theme={theme}
-                    navigator={this.props.navigator}
+                    navigator={navigator}
                     uploadFiles={this.handleUploadFiles}
                 />
             );
@@ -386,15 +390,16 @@ class PostTextbox extends PureComponent {
                 </Text>
                 <Typing/>
                 <FileUploadPreview
-                    channelId={this.props.channelId}
-                    files={this.props.files}
+                    channelId={channelId}
+                    files={files}
                     inputHeight={textInputHeight}
-                    rootId={this.props.rootId}
+                    rootId={rootId}
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}
                     onChangeText={this.handleTextChange}
                     value={this.state.value}
+                    rootId={rootId}
                 />
                 <View style={style.inputWrapper}>
                     {attachmentButton}
