@@ -100,7 +100,8 @@
   },
   "scripts": {
     "test": "NODE_ENV=test nyc --reporter=text mocha --opts test/mocha.opts",
-    "postinstall": "make post-install"
+    "postinstall": "make post-install",
+    "start": "node ./node_modules/react-native/local-cli/cli.js start"
   },
   "rnpm": {
     "assets": [
