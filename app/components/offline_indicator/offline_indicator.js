@@ -172,6 +172,7 @@ export default class OfflineIndicator extends Component {
             );
             break;
         case CONNECTED:
+        default:
             i18nId = 'mobile.offlineIndicator.connected';
             defaultMessage = 'Connected';
             action = (
