@@ -23,7 +23,6 @@ import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
 import networkConnectionListener from 'app/utils/network';
-import {recordTime} from 'app/utils/segment';
 import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
 
@@ -40,6 +39,7 @@ class Channel extends PureComponent {
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
+            recordLoadTime: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired
         }).isRequired,
@@ -63,7 +63,7 @@ class Channel extends PureComponent {
 
     componentDidMount() {
         if (tracker.initialLoad) {
-            recordTime('Start time', 'initialLoad');
+            this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
     }
 
@@ -75,7 +75,7 @@ class Channel extends PureComponent {
 
     componentDidUpdate() {
         if (tracker.teamSwitch) {
-            recordTime('Switch Team', 'teamSwitch');
+            this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
         }
     }
 

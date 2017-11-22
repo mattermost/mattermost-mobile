@@ -15,7 +15,7 @@ export function init(config) {
     if (!global.analytics) {
         diagnosticId = config.DiagnosticId;
         const {height, width} = Dimensions.get('window');
-        global.analytics = new Analytics(Config.SegmentApiKey, {flushAt: 1});
+        global.analytics = new Analytics(Config.SegmentApiKey);
         global.analytics_context = {
             app: {
                 version: DeviceInfo.getVersion(),
@@ -29,6 +29,7 @@ export function init(config) {
                 isTablet: DeviceInfo.isTablet(),
                 os: DeviceInfo.getSystemVersion()
             },
+            ip: '0.0.0.0',
             server: config.Version
         };
 
@@ -47,7 +48,7 @@ export function init(config) {
     }
 }
 
-export function recordTime(screenName, category) {
+export function recordTime(screenName, category, userId) {
     if (global.analytics) {
         const startTime = tracker[category];
         tracker[category] = 0;
@@ -56,6 +57,7 @@ export function recordTime(screenName, category) {
             name: screenName,
             context: global.analytics_context,
             properties: {
+                actual_user_id: userId,
                 time: Date.now() - startTime
             }
         });

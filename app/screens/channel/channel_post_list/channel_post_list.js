@@ -13,7 +13,6 @@ import {
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
-import {recordTime} from 'app/utils/segment';
 import tracker from 'app/utils/time_tracker';
 
 class ChannelPostList extends PureComponent {
@@ -23,6 +22,7 @@ class ChannelPostList extends PureComponent {
             loadThreadIfNecessary: PropTypes.func.isRequired,
             increasePostVisibility: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            recordLoadTime: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired
         }).isRequired,
         channelId: PropTypes.string.isRequired,
@@ -68,7 +68,7 @@ class ChannelPostList extends PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
-            recordTime('Switch Channel', 'channelSwitch');
+            this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
         }
     }
 
