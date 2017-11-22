@@ -60,7 +60,7 @@ check-device-ios:
 		@exit 1; \
 	fi
 
-run-ios: | check-device-ios start
+run-ios: | check-device-ios start-build-packager
 	@echo Running iOS app in development
 	@react-native run-ios --simulator="${SIMULATOR}"
 
@@ -82,7 +82,7 @@ endif
 		@exit 1; \
 	fi
 
-run-android: | check-device-android start prepare-android-build
+run-android: | check-device-android start-build-packager prepare-android-build
 	@echo Running Android app in development
 	@react-native run-android --no-packager
 
