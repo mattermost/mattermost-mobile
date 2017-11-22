@@ -8,16 +8,12 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import SettingsDrawer from './settings_drawer.js';
 
-function mapStateToProps(state, ownProps) {
-    const {currentUserId} = state.entities.users;
-
+function mapStateToProps(state) {
     return {
-        ...ownProps,
-        currentUserId,
         isLandscape: isLandscape(state),
         isTablet: isTablet(state),
         theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps, null)(SettingsDrawer);
+export default connect(mapStateToProps, null, null, {withRef: true})(SettingsDrawer);

@@ -105,6 +105,18 @@ class Channel extends PureComponent {
         this.postTextbox.getWrappedInstance().getWrappedInstance().blur();
     };
 
+    channelDrawerRef = (ref) => {
+        if (ref) {
+            this.channelDrawer = ref.getWrappedInstance();
+        }
+    };
+
+    settingsDrawerRef = (ref) => {
+        if (ref) {
+            this.settingsDrawer = ref.getWrappedInstance();
+        }
+    };
+
     goToChannelInfo = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         const options = {
@@ -166,6 +178,18 @@ class Channel extends PureComponent {
         });
     };
 
+    openChannelDrawer = () => {
+        if (this.channelDrawer) {
+            this.channelDrawer.openChannelDrawer();
+        }
+    };
+
+    openSettingsDrawer = () => {
+        if (this.settingsDrawer) {
+            this.settingsDrawer.openSettingsDrawer();
+        }
+    };
+
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
     };
@@ -199,16 +223,23 @@ class Channel extends PureComponent {
 
         return (
             <ChannelDrawer
+                ref={this.channelDrawerRef}
                 blurPostTextBox={this.blurPostTextBox}
                 intl={intl}
                 navigator={navigator}
             >
-                <SettingsDrawer>
+                <SettingsDrawer
+                    ref={this.settingsDrawerRef}
+                    blurPostTextBox={this.blurPostTextBox}
+                    navigator={navigator}
+                >
                     <SafeAreaView navigator={navigator}>
                         <StatusBar/>
                         <OfflineIndicator/>
                         <ChannelNavBar
                             navigator={navigator}
+                            openChannelDrawer={this.openChannelDrawer}
+                            openSettingsDrawer={this.openSettingsDrawer}
                             onPress={this.goToChannelInfo}
                         />
                         <KeyboardLayout>

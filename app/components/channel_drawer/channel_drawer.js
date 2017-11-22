@@ -8,6 +8,7 @@ import {
     InteractionManager,
     Keyboard,
     Platform,
+    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -50,8 +51,8 @@ export default class ChannelDrawer extends Component {
         theme: PropTypes.object.isRequired
     };
 
-    closeLeftHandle = null;
-    openLeftHandle = null;
+    closeHandle = null;
+    openHandle = null;
     swiperIndex = 1;
 
     constructor(props) {
@@ -71,7 +72,6 @@ export default class ChannelDrawer extends Component {
     }
 
     componentDidMount() {
-        EventEmitter.on('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -104,7 +104,6 @@ export default class ChannelDrawer extends Component {
     }
 
     componentWillUnmount() {
-        EventEmitter.off('open_channel_drawer', this.openChannelDrawer);
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -132,15 +131,15 @@ export default class ChannelDrawer extends Component {
     handleDrawerClose = () => {
         this.resetDrawer();
 
-        if (this.closeLeftHandle) {
-            InteractionManager.clearInteractionHandle(this.closeLeftHandle);
-            this.closeLeftHandle = null;
+        if (this.closeHandle) {
+            InteractionManager.clearInteractionHandle(this.closeHandle);
+            this.closeHandle = null;
         }
     };
 
     handleDrawerCloseStart = () => {
-        if (!this.closeLeftHandle) {
-            this.closeLeftHandle = InteractionManager.createInteractionHandle();
+        if (!this.closeHandle) {
+            this.closeHandle = InteractionManager.createInteractionHandle();
         }
     };
 
@@ -149,15 +148,19 @@ export default class ChannelDrawer extends Component {
             Keyboard.dismiss();
         }
 
-        if (this.openLeftHandle) {
-            InteractionManager.clearInteractionHandle(this.openLeftHandle);
-            this.openLeftHandle = null;
+        if (this.openHandle) {
+            InteractionManager.clearInteractionHandle(this.openHandle);
+            this.openHandle = null;
         }
     };
 
     handleDrawerOpenStart = () => {
-        if (!this.openLeftHandle) {
-            this.openLeftHandle = InteractionManager.createInteractionHandle();
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(true, 'slide');
+        }
+
+        if (!this.openHandle) {
+            this.openHandle = InteractionManager.createInteractionHandle();
         }
     };
 
@@ -305,6 +308,10 @@ export default class ChannelDrawer extends Component {
     };
 
     resetDrawer = () => {
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(false, 'slide');
+        }
+
         if (this.drawerSwiper && this.swiperIndex !== 1) {
             this.drawerSwiper.getWrappedInstance().resetPage();
         }

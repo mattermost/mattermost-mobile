@@ -16,6 +16,8 @@ export default class ChannelNavBar extends PureComponent {
     static propTypes = {
         isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object.isRequired,
+        openChannelDrawer: PropTypes.func.isRequired,
+        openSettingsDrawer: PropTypes.func.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -27,7 +29,8 @@ export default class ChannelNavBar extends PureComponent {
     }
 
     render() {
-        const {isLandscape, navigator, theme, onPress} = this.props;
+        const {isLandscape, navigator, onPress, theme} = this.props;
+        const {openChannelDrawer, openSettingsDrawer} = this.props;
         const style = getStyleFromTheme(theme);
         const padding = {paddingHorizontal: 0};
 
@@ -45,11 +48,15 @@ export default class ChannelNavBar extends PureComponent {
 
         return (
             <View style={[style.header, padding, {height}]}>
-                <ChannelDrawerButton/>
+                <ChannelDrawerButton openDrawer={openChannelDrawer}/>
                 <ChannelTitle onPress={onPress}/>
                 <ChannelSearchButton
                     navigator={navigator}
                     theme={theme}
+                />
+                <ChannelDrawerButton
+                    openDrawer={openSettingsDrawer}
+                    type='right'
                 />
             </View>
         );

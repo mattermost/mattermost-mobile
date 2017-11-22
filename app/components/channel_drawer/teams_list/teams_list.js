@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     FlatList,
     Platform,
+    StatusBar,
     Text,
     TouchableHighlight,
     View
@@ -44,6 +45,7 @@ class TeamsList extends PureComponent {
     }
 
     selectTeam = (teamId) => {
+        StatusBar.setHidden(false, 'slide');
         requestAnimationFrame(() => {
             const {actions, closeChannelDrawer, currentTeamId} = this.props;
             if (teamId !== currentTeamId) {

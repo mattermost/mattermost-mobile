@@ -16,7 +16,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Badge from 'app/components/badge';
 import PushNotifications from 'app/push_notifications';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
@@ -26,17 +26,20 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 class ChannelDrawerButton extends PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
+        openDrawer: PropTypes.func.isRequired,
+        messageCount: PropTypes.number,
+        mentionCount: PropTypes.number,
         myTeamMembers: PropTypes.object,
         theme: PropTypes.object,
-        messageCount: PropTypes.number,
-        mentionCount: PropTypes.number
+        type: PropTypes.oneOf(['left', 'right'])
     };
 
     static defaultProps = {
         currentChannel: {},
         theme: {},
         messageCount: 0,
-        mentionCount: 0
+        mentionCount: 0,
+        type: 'left'
     };
 
     constructor(props) {
@@ -74,9 +77,9 @@ class ChannelDrawerButton extends PureComponent {
         this.setState({opacity: value > 0 ? 0.1 : 1});
     };
 
-    handlePress = () => {
-        EventEmitter.emit('open_channel_drawer');
-    };
+    handlePress = wrapWithPreventDoubleTap(() => {
+        this.props.openDrawer();
+    });
 
     render() {
         const {
@@ -84,52 +87,79 @@ class ChannelDrawerButton extends PureComponent {
             mentionCount,
             messageCount,
             myTeamMembers,
-            theme
+            theme,
+            type
         } = this.props;
         const style = getStyleFromTheme(theme);
 
-        let mentions = mentionCount;
-        let messages = messageCount;
+        let badge;
+        if (type === 'left') {
+            let mentions = mentionCount;
+            let messages = messageCount;
 
-        const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
-        members.forEach((m) => {
-            mentions = mentions + (m.mention_count || 0);
-            messages = messages + (m.msg_count || 0);
-        });
+            const members = Object.values(myTeamMembers).filter((m) => m.team_id !== currentTeamId);
+            members.forEach((m) => {
+                mentions = mentions + (m.mention_count || 0);
+                messages = messages + (m.msg_count || 0);
+            });
 
-        let badgeCount = 0;
-        if (mentions) {
-            badgeCount = mentions;
-        } else if (messages) {
-            badgeCount = -1;
+            let badgeCount = 0;
+            if (mentions) {
+                badgeCount = mentions;
+            } else if (messages) {
+                badgeCount = -1;
+            }
+
+            if (badgeCount) {
+                badge = (
+                    <Badge
+                        style={style.badge}
+                        countStyle={style.mention}
+                        count={badgeCount}
+                        minHeight={20}
+                        minWidth={20}
+                        onPress={this.handlePress}
+                    />
+                );
+            }
         }
 
-        let badge;
-        if (badgeCount) {
-            badge = (
-                <Badge
-                    style={style.badge}
-                    countStyle={style.mention}
-                    count={badgeCount}
-                    minHeight={20}
-                    minWidth={20}
-                    onPress={() => preventDoubleTap(this.handlePress, this)}
+        let containerStyle;
+        let wrapperStyle;
+        let icon;
+        switch (type) {
+        case 'left':
+            containerStyle = style.leftContainer;
+            wrapperStyle = style.leftWrapper;
+            icon = (
+                <Icon
+                    name='md-menu'
+                    size={25}
+                    color={theme.sidebarHeaderTextColor}
                 />
             );
+            break;
+        case 'right':
+            containerStyle = style.rightContainer;
+            wrapperStyle = style.rightWrapper;
+            icon = (
+                <Icon
+                    name='md-more'
+                    size={25}
+                    color={theme.sidebarHeaderTextColor}
+                />
+            );
+            break;
         }
 
         return (
             <TouchableOpacity
                 {...this.panResponder.panHandlers}
                 onPress={this.handlePress}
-                style={style.container}
+                style={containerStyle}
             >
-                <View style={[style.wrapper, {opacity: this.state.opacity, zIndex: 30}]}>
-                    <Icon
-                        name='md-menu'
-                        size={25}
-                        color={theme.sidebarHeaderTextColor}
-                    />
+                <View style={[style.wrapper, wrapperStyle, {opacity: this.state.opacity, zIndex: 30}]}>
+                    {icon}
                     {badge}
                 </View>
             </TouchableOpacity>
@@ -139,17 +169,25 @@ class ChannelDrawerButton extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
+        leftContainer: {
             width: 40
+        },
+        rightContainer: {
+            width: 20
         },
         wrapper: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'column',
             justifyContent: 'center',
-            paddingHorizontal: 10,
             paddingTop: 5,
             zIndex: 30
+        },
+        leftWrapper: {
+            paddingHorizontal: 10
+        },
+        rightWrapper: {
+            paddingRight: 10
         },
         badge: {
             backgroundColor: theme.mentionBj,
