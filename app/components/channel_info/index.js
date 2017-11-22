@@ -63,7 +63,8 @@ class ChannelInfo extends PureComponent {
 
     blur = () => {
         this.nameInput.refs.wrappedInstance.blur();
-        this.urlInput.refs.wrappedInstance.blur();
+
+        // this.urlInput.refs.wrappedInstance.blur();
         this.purposeInput.refs.wrappedInstance.blur();
         this.headerInput.refs.wrappedInstance.blur();
         this.scroll.scrollToPosition(0, 0, true);
