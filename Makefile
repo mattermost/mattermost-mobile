@@ -133,6 +133,15 @@ post-install:
 start-packager:
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
+		node ./node_modules/react-native/local-cli/cli.js start; \
+	else \
+		echo React Native packager server already running; \
+		ps -e | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
+	fi
+
+start-build-packager:
+	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID; \
 	else \
 		echo React Native packager server already running; \
@@ -165,7 +174,7 @@ do-build-ios:
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios $(ios_target)
 
 
-build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
+build-ios: | check-ios-target pre-run check-style start-build-packager do-build-ios stop-packager
 
 check-android-target:
 ifeq ($(android_target), )
@@ -188,7 +197,7 @@ do-build-android:
 	@echo "Building android $(android_target) app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android $(android_target)
 
-build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
+build-android: | check-android-target pre-run check-style start-build-packager prepare-android-build do-build-android stop-packager
 
 do-unsigned-ios:
 	@echo "Building unsigned iOS app"
