@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {Platform} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
 import {General} from 'mattermost-redux/constants';
@@ -48,7 +49,7 @@ class Thread extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {
-            this.props.navigator.pop();
+            this.close();
             return;
         }
 
@@ -60,6 +61,20 @@ class Thread extends PureComponent {
     componentWillUnmount() {
         this.props.actions.selectPost('');
     }
+
+    close = () => {
+        const {navigator} = this.props;
+
+        if (Platform.OS === 'ios') {
+            navigator.pop({
+                animated: true
+            });
+        } else {
+            navigator.dismissModal({
+                animationType: 'slide-down'
+            });
+        }
+    };
 
     render() {
         const {
