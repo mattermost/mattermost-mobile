@@ -1563,6 +1563,7 @@
   "file_attachment.download": "Download",
   "file_info_preview.size": "Size ",
   "file_info_preview.type": "File type ",
+  "file_upload.mobile.max_warning": "Uploads limited to 5 files maximum.",
   "file_upload.disabled": "File attachments are disabled.",
   "file_upload.fileAbove": "File above {max}MB cannot be uploaded: {filename}",
   "file_upload.filesAbove": "Files above {max}MB cannot be uploaded: {filenames}",
