@@ -133,7 +133,7 @@ post-install:
 start-packager:
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start & echo $$! > server.PID; \
+		node ./node_modules/react-native/local-cli/cli.js start; \
 	else \
 		echo React Native packager server already running; \
 		ps -e | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
