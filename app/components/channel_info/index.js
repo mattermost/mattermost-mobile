@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ErrorText from 'app/components/error_text';
@@ -240,7 +239,8 @@ class ChannelInfo extends PureComponent {
                                     </View>
                                 </View>
                             )}
-                            {editing && !displayHeaderOnly && (
+                            {/*TODO: Hide channel url field until it's added to CreateChannel */}
+                            {false && editing && !displayHeaderOnly && (
                                 <View>
                                     <View style={style.titleContainer30}>
                                         <FormattedText
@@ -293,6 +293,7 @@ class ChannelInfo extends PureComponent {
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             multiline={true}
                                             blurOnSubmit={false}
+                                            textAlignVertical='top'
                                             underlineColorAndroid='transparent'
                                         />
                                     </View>
@@ -330,6 +331,7 @@ class ChannelInfo extends PureComponent {
                                     multiline={true}
                                     blurOnSubmit={false}
                                     onFocus={this.scrollToEnd}
+                                    textAlignVertical='top'
                                     underlineColorAndroid='transparent'
                                 />
                             </View>
