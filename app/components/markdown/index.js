@@ -352,10 +352,10 @@ export default class Markdown extends PureComponent {
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
-            if (['code_block', 'thematic_break', 'block_quote'].includes(ast.lastChild.type)) {
-                ast.appendChild(editIndicatorNode);
-            } else {
+            if (['heading', 'paragraph'].includes(ast.lastChild.type)) {
                 ast.lastChild.appendChild(editIndicatorNode);
+            } else {
+                ast.appendChild(editIndicatorNode);
             }
         }
 
