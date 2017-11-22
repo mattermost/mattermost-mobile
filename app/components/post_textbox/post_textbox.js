@@ -98,7 +98,7 @@ class PostTextbox extends PureComponent {
         const valueLength = value.trim().length;
 
         if (files.length) {
-            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && files.filter((f) => !f.failed).length > 0;
+            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED;
         }
 
         return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
@@ -217,8 +217,8 @@ class PostTextbox extends PureComponent {
             return;
         }
 
-        const hasFailedImages = files.some((f) => f.failed);
-        if (hasFailedImages) {
+        const hasFailedAttachments = files.some((f) => f.failed);
+        if (hasFailedAttachments) {
             const {intl} = this.props;
 
             Alert.alert(
