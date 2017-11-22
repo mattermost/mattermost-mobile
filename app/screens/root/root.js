@@ -8,6 +8,7 @@ import {Client, Client4} from 'mattermost-redux/client';
 
 import Loading from 'app/components/loading';
 import {stripTrailingSlashes} from 'app/utils/url';
+import tracker from 'app/utils/time_tracker';
 
 export default class Root extends Component {
     static propTypes = {
@@ -37,6 +38,7 @@ export default class Root extends Component {
 
     goToLoadTeam = () => {
         const {navigator, theme} = this.props;
+        tracker.initialLoad = Date.now();
         navigator.resetTo({
             screen: 'LoadTeam',
             title: '',

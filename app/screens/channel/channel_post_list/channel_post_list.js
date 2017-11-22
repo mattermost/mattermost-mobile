@@ -13,6 +13,8 @@ import {
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
+import {recordTime} from 'app/utils/segment';
+import tracker from 'app/utils/time_tracker';
 
 class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -62,6 +64,12 @@ class ChannelPostList extends PureComponent {
             showLoadMore,
             visiblePostIds
         });
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
+            recordTime('Switch Channel', 'channelSwitch');
+        }
     }
 
     getVisiblePostIds = (props) => {

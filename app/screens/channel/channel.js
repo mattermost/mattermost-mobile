@@ -23,7 +23,8 @@ import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
 import networkConnectionListener from 'app/utils/network';
-
+import {recordTime} from 'app/utils/segment';
+import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
@@ -60,9 +61,21 @@ class Channel extends PureComponent {
         }
     }
 
+    componentDidMount() {
+        if (tracker.initialLoad) {
+            recordTime('Start time', 'initialLoad');
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
             this.loadChannels(nextProps.currentTeamId);
+        }
+    }
+
+    componentDidUpdate() {
+        if (tracker.teamSwitch) {
+            recordTime('Switch Team', 'teamSwitch');
         }
     }
 
