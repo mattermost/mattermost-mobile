@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
+    InteractionManager,
     Platform,
     StyleSheet,
     Text,
@@ -17,6 +18,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import {changeOpacity} from 'app/utils/theme';
 
 import {isDirectChannel} from 'mattermost-redux/utils/channel_utils';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import logo from 'assets/images/icon.png';
@@ -40,22 +42,23 @@ export default class Notification extends PureComponent {
     };
 
     notificationTapped = () => {
-        const {actions, navigator, notification, theme} = this.props;
+        const {actions, navigator, notification} = this.props;
 
-        navigator.dismissInAppNotification();
-        if (!notification.localNotification) {
-            actions.loadFromPushNotification(notification);
-            navigator.resetTo({
-                screen: 'Channel',
-                animated: false,
-                navigatorStyle: {
-                    navBarHidden: true,
-                    statusBarHidden: false,
-                    statusBarHideWithNavBar: false,
-                    screenBackgroundColor: theme.centerChannelBg
+        EventEmitter.emit('close_channel_drawer');
+        InteractionManager.runAfterInteractions(() => {
+            navigator.dismissInAppNotification();
+            if (!notification.localNotification) {
+                actions.loadFromPushNotification(notification);
+
+                if (Platform.OS === 'android') {
+                    navigator.dismissModal({animation: 'none'});
                 }
-            });
-        }
+
+                navigator.popToRoot({
+                    animated: false
+                });
+            }
+        });
     };
 
     getNotificationIcon = () => {
