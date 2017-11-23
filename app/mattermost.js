@@ -467,7 +467,7 @@ export default class Mattermost {
         this.isConfigured = true;
     };
 
-    onPushNotification = async (deviceNotification) => {
+    onPushNotification = (deviceNotification) => {
         const {dispatch, getState} = this.store;
         const state = getState();
         const {token, url} = state.entities.general.credentials;
@@ -494,6 +494,7 @@ export default class Mattermost {
         } else if (foreground) {
             EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
         } else if (userInteraction && !notification.localNotification) {
+            EventEmitter.emit('close_channel_drawer');
             if (startAppFromPushNotification) {
                 Client.setToken(token);
                 Client4.setToken(token);
@@ -501,13 +502,15 @@ export default class Mattermost {
                 Client.setUrl(stripTrailingSlashes(url));
             }
 
-            await loadFromPushNotification(notification)(dispatch, getState);
+            InteractionManager.runAfterInteractions(async () => {
+                await loadFromPushNotification(notification)(dispatch, getState);
 
-            if (startAppFromPushNotification) {
-                this.startAppFromPushNotification();
-            } else {
-                EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
-            }
+                if (startAppFromPushNotification) {
+                    this.startAppFromPushNotification();
+                } else {
+                    EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+                }
+            });
         }
     };
 

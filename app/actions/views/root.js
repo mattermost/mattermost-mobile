@@ -4,6 +4,7 @@
 import {GeneralTypes, PostTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
+import {markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
@@ -62,9 +63,11 @@ export function loadFromPushNotification(notification) {
         // when the notification is from the same channel as the current channel
         // we should get the posts
         if (channelId === currentChannelId) {
+            markChannelAsRead(channelId, null, false)(dispatch, getState);
             await retryGetPostsAction(getPosts(channelId), dispatch, getState);
         } else {
             // when the notification is from a channel other than the current channel
+            markChannelAsRead(channelId, currentChannelId, false)(dispatch, getState);
             dispatch(setChannelDisplayName(''));
             handleSelectChannel(channelId)(dispatch, getState);
         }
