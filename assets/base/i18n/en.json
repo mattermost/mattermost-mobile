@@ -1946,6 +1946,7 @@
   "mobile.client_upgrade.no_upgrade_subtitle": "You already have the latest version.",
   "mobile.client_upgrade.no_upgrade_title": "Your App Is Up to Date",
   "mobile.client_upgrade.upgrade": "Update",
+  "mobile.commands.error_title": "Error Executing Command",
   "mobile.components.channels_list_view.yourChannels": "Your channels:",
   "mobile.components.error_list.dismiss_all": "Dismiss All",
   "mobile.components.select_server_view.continue": "Continue",

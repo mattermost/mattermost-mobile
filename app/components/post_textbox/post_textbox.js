@@ -25,6 +25,7 @@ class PostTextbox extends PureComponent {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
+            executeCommand: PropTypes.func.isRequired,
             handleCommentDraftChanged: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
@@ -302,21 +303,27 @@ class PostTextbox extends PureComponent {
         const {actions, currentUserId, channelId, files, rootId} = this.props;
         const {value} = this.state;
 
-        const postFiles = files.filter((f) => !f.failed);
-        const post = {
-            user_id: currentUserId,
-            channel_id: channelId,
-            root_id: rootId,
-            parent_id: rootId,
-            message: value
-        };
+        if (value.indexOf('/') === 0) {
+            this.sendCommand(value);
+        } else {
+            const postFiles = files.filter((f) => !f.failed);
+            const post = {
+                user_id: currentUserId,
+                channel_id: channelId,
+                root_id: rootId,
+                parent_id: rootId,
+                message: value
+            };
 
-        actions.createPost(post, postFiles);
+            actions.createPost(post, postFiles);
+
+            if (postFiles.length) {
+                actions.handleClearFiles(channelId, rootId);
+            }
+        }
+
         this.handleTextChange('');
         this.changeDraft('');
-        if (postFiles.length) {
-            actions.handleClearFiles(channelId, rootId);
-        }
 
         // Shrink the input textbox since the layout events lag slightly
         const nextState = {
@@ -333,6 +340,21 @@ class PostTextbox extends PureComponent {
 
         this.setState(nextState, callback);
     };
+
+    sendCommand = async (msg) => {
+        const {actions, channelId, intl} = this.props;
+        const {error} = await actions.executeCommand(msg, channelId);
+
+        if (error) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.commands.error_title',
+                    defaultMessage: 'Error Executing Command'
+                }),
+                error.message
+            );
+        }
+    }
 
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;

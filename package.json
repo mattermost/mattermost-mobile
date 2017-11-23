@@ -99,7 +99,7 @@
     "underscore": "1.8.3"
   },
   "scripts": {
-    "test": "NODE_ENV=test nyc --reporter=text mocha --opts test/mocha.opts",
+    "test": "NODE_ENV=test nyc --reporter=text mocha --exit --opts test/mocha.opts",
     "postinstall": "make post-install"
   },
   "rnpm": {

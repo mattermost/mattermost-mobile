@@ -3959,9 +3959,27 @@ makeerror@1.0.x:
   dependencies:
     tmpl "1.0.x"
 
-mattermost-redux@mattermost/mattermost-redux#master:
+"mattermost-redux@file:../mattermost-redux":
   version "1.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/7c5c77c8fcf2b18530c7a5a07f229ee29a8f7822"
+  dependencies:
+    deep-equal "1.0.1"
+    form-data "2.3.1"
+    harmony-reflect "1.5.1"
+    isomorphic-fetch "2.2.1"
+    mime-db "1.30.0"
+    redux "3.7.2"
+    redux-action-buffer "1.1.0"
+    redux-batched-actions "0.2.0"
+    redux-offline "git+https://github.com/enahum/redux-offline.git"
+    redux-persist "4.9.1"
+    redux-thunk "2.2.0"
+    reselect "3.0.1"
+    serialize-error "2.1.0"
+    shallow-equals "1.0.0"
+
+mattermost-redux@mattermost/mattermost-redux:
+  version "1.0.1"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/c293dff26e4db3cde91bf405677700c9fc6a58d8"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
