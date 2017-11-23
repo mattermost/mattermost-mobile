@@ -304,7 +304,7 @@ class PostTextbox extends PureComponent {
         const {value} = this.state;
 
         if (value.indexOf('/') === 0) {
-            actions.executeCommand(value);
+            this.sendCommand(value);
         } else {
             const postFiles = files.filter((f) => !f.failed);
             const post = {
@@ -340,6 +340,21 @@ class PostTextbox extends PureComponent {
 
         this.setState(nextState, callback);
     };
+
+    sendCommand = async (msg) => {
+        const {actions, channelId, intl} = this.props;
+        const {error} = await actions.executeCommand(msg, channelId);
+
+        if (error) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.commands.error_title',
+                    defaultMessage: 'Error Executing Command'
+                }),
+                error.message
+            );
+        }
+    }
 
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;

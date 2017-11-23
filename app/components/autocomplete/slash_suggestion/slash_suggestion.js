@@ -14,7 +14,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import SlashSuggestionItem from './slash_suggestion_item';
 
 const SLASH_REGEX = /(^\/)([a-zA-Z-]*)$/;
-const FIVE_MINS = 1000 * 60 * 5;
+const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
 export default class SlashSuggestion extends Component {
     static propTypes = {
@@ -57,8 +57,7 @@ export default class SlashSuggestion extends Component {
             });
         }
 
-        const regex = SLASH_REGEX;
-        const match = nextValue.match(regex);
+        const match = nextValue.match(SLASH_REGEX);
 
         if (!match || this.state.suggestionComplete) {
             this.setState({
@@ -70,7 +69,7 @@ export default class SlashSuggestion extends Component {
             return;
         }
 
-        const dataIsStale = Date.now() - this.state.lastCommandRequest > FIVE_MINS; // 5 mins
+        const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
 
         if ((!nextCommands.length || dataIsStale) && nextCommandsRequest.status !== RequestStatus.STARTED) {
             this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
