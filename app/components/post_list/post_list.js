@@ -62,6 +62,12 @@ export default class PostList extends PureComponent {
         this.scrollList();
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.postIds !== this.props.postIds) {
+            this.newMessagesIndex = -1;
+        }
+    }
+
     componentDidUpdate(prevProps) {
         const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
         if ((prevProps.channelId !== this.props.channelId || initialPosts || this.props.isSearchResult) && this.refs.list) {
