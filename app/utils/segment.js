@@ -15,7 +15,7 @@ export function init(config) {
     if (!global.analytics) {
         diagnosticId = config.DiagnosticId;
         const {height, width} = Dimensions.get('window');
-        global.analytics = new Analytics(Config.SegmentApiKey);
+        global.analytics = new Analytics(Config.SegmentApiKey, {flushAt: 1});
         global.analytics_context = {
             app: {
                 version: DeviceInfo.getVersion(),
