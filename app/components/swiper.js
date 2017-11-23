@@ -282,14 +282,15 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
+        marginBottom: 13
     },
     dotStyle: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        marginLeft: 3,
-        marginRight: 3,
+        marginLeft: 4,
+        marginRight: 4,
         marginTop: 3,
         marginBottom: 3
     }
