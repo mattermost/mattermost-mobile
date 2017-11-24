@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Keyboard,
     InteractionManager
@@ -13,9 +13,8 @@ import ChannelInfo from 'app/components/channel_info';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-class CreateChannel extends PureComponent {
+export default class CreateChannel extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         createChannelRequest: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
@@ -24,6 +23,10 @@ class CreateChannel extends PureComponent {
         actions: PropTypes.shape({
             handleCreateChannel: PropTypes.func.isRequired
         })
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     static defaultProps = {
@@ -51,7 +54,9 @@ class CreateChannel extends PureComponent {
             header: ''
         };
 
-        this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        const {intl} = this.context;
+
+        this.rightButton.title = intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
 
         if (props.channelType === General.PRIVATE_CHANNEL) {
             this.left = {...this.leftButton, icon: props.closeButton};
@@ -195,4 +200,3 @@ class CreateChannel extends PureComponent {
     }
 }
 
-export default injectIntl(CreateChannel);

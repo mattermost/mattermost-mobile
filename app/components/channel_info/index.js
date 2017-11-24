@@ -1,8 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
 import {
     Dimensions,
     Platform,
@@ -24,9 +24,8 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getShortenedURL} from 'app/utils/url';
 
-class ChannelInfo extends PureComponent {
+export default class ChannelInfo extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         displayHeaderOnly: PropTypes.bool,
@@ -417,4 +416,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(ChannelInfo, {withRef: true});

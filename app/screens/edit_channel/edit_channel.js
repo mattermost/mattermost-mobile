@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {defineMessages, injectIntl, intlShape} from 'react-intl';
+import {defineMessages, intlShape} from 'react-intl';
 import {
     Keyboard,
     InteractionManager
@@ -47,9 +47,8 @@ const holders = defineMessages({
     }
 });
 
-class EditChannel extends PureComponent {
+export default class EditChannel extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         channel: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string,
         updateChannelRequest: PropTypes.object.isRequired,
@@ -60,6 +59,10 @@ class EditChannel extends PureComponent {
         actions: PropTypes.shape({
             patchChannel: PropTypes.func.isRequired
         })
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     rightButton = {
@@ -88,7 +91,9 @@ class EditChannel extends PureComponent {
             header
         };
 
-        this.rightButton.title = props.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
+        const {intl} = this.context;
+
+        this.rightButton.title = intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
             rightButtons: [this.rightButton]
@@ -148,7 +153,7 @@ class EditChannel extends PureComponent {
     };
 
     validateDisplayName = (displayName) => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
 
         if (!displayName) {
             return {error: formatMessage(holders.display_name_required)};
@@ -168,7 +173,7 @@ class EditChannel extends PureComponent {
     };
 
     validateChannelURL = (channelURL) => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
 
         if (!channelURL) {
             return {error: formatMessage(holders.name_required)};
@@ -292,4 +297,3 @@ class EditChannel extends PureComponent {
     }
 }
 
-export default injectIntl(EditChannel);
