@@ -49,10 +49,6 @@ export default class ChannelInfo extends PureComponent {
             channelURL: PropTypes.string,
             purpose: PropTypes.string,
             header: PropTypes.string
-        }),
-        actions: PropTypes.shape({
-            handleCreateChannel: PropTypes.func,
-            patchChannel: PropTypes.func
         })
     };
 
