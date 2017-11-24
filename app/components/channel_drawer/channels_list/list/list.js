@@ -5,12 +5,13 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     InteractionManager,
+    Platform,
     SectionList,
     Text,
     TouchableHighlight,
     View
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
@@ -21,12 +22,11 @@ import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
-class List extends PureComponent {
+export default class List extends PureComponent {
     static propTypes = {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         directChannelIds: PropTypes.array.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         publicChannelIds: PropTypes.array.isRequired,
@@ -34,6 +34,10 @@ class List extends PureComponent {
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         unreadChannelIds: PropTypes.array.isRequired
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     constructor(props) {
@@ -45,6 +49,7 @@ class List extends PureComponent {
             width: 0
         };
 
+        this.itemRefs = {};
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
@@ -64,6 +69,7 @@ class List extends PureComponent {
             nextProps.directChannelIds !== directChannelIds || nextProps.favoriteChannelIds !== favoriteChannelIds ||
             nextProps.publicChannelIds !== publicChannelIds || nextProps.privateChannelIds !== privateChannelIds ||
             nextProps.unreadChannelIds !== unreadChannelIds) {
+            this.itemRefs = {};
             this.setState({sections: this.buildSections(nextProps)});
         }
     }
@@ -140,7 +146,8 @@ class List extends PureComponent {
     };
 
     goToCreatePrivateChannel = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.showModal({
             screen: 'CreateChannel',
@@ -162,7 +169,8 @@ class List extends PureComponent {
     });
 
     goToDirectMessages = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.showModal({
             screen: 'MoreDirectMessages',
@@ -186,7 +194,8 @@ class List extends PureComponent {
     });
 
     goToMoreChannels = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.showModal({
             screen: 'MoreChannels',
@@ -218,6 +227,25 @@ class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
+    onPreview = (item) => {
+        if (Platform.OS === 'ios') {
+            const {intl} = this.context;
+
+            this.props.navigator.push({
+                screen: 'ChannelPeek',
+                previewCommit: false,
+                previewView: this.itemRefs[item],
+                previewActions: [{
+                    id: 'action-mark-as-read',
+                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'})
+                }],
+                passProps: {
+                    channelId: item
+                }
+            });
+        }
+    };
+
     renderSectionAction = (styles, action) => {
         const {theme} = this.props;
         return (
@@ -244,8 +272,12 @@ class List extends PureComponent {
     renderItem = ({item}) => {
         return (
             <ChannelItem
+                ref={(ref) => {
+                    this.itemRefs[item] = ref;
+                }}
                 channelId={item}
                 onSelectChannel={this.onSelectChannel}
+                onLongPress={() => this.onPreview(item)}
             />
         );
     };
@@ -253,15 +285,20 @@ class List extends PureComponent {
     renderUnreadItem = ({item}) => {
         return (
             <ChannelItem
+                ref={(ref) => {
+                    this.itemRefs[item] = ref;
+                }}
                 channelId={item}
                 isUnread={true}
                 onSelectChannel={this.onSelectChannel}
+                onLongPress={() => this.onPreview(item)}
             />
         );
     };
 
     renderSectionHeader = ({section}) => {
-        const {intl, styles} = this.props;
+        const {styles} = this.props;
+        const {intl} = this.context;
         const {
             action,
             bottomSeparator,
@@ -346,5 +383,3 @@ class List extends PureComponent {
         );
     }
 }
-
-export default injectIntl(List);

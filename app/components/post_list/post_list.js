@@ -201,7 +201,12 @@ export default class PostList extends PureComponent {
             );
         }
 
-        return <ChannelIntro navigator={this.props.navigator}/>;
+        return (
+            <ChannelIntro
+                channelId={this.props.channelId}
+                navigator={this.props.navigator}
+            />
+        );
     };
 
     render() {

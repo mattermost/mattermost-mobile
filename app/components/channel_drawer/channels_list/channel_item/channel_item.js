@@ -22,10 +22,15 @@ export default class ChannelItem extends PureComponent {
         fake: PropTypes.bool,
         isUnread: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
+        onLongPress: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         status: PropTypes.string,
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
+    };
+
+    static defaultProps = {
+        onLongPress: () => true
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
@@ -96,6 +101,7 @@ export default class ChannelItem extends PureComponent {
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
+                onLongPress={this.props.onLongPress}
             >
                 <View style={style.container}>
                     {extraBorder}
