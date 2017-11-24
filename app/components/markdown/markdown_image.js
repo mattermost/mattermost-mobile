@@ -1,26 +1,38 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
+import {intlShape} from 'react-intl';
 import {
+    Clipboard,
     Image,
+    Linking,
     StyleSheet,
     Text,
+    TouchableHighlight,
     View
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import mattermostManaged from 'app/mattermost_managed';
+import {normalizeProtocol} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
 
 export default class MarkdownImage extends React.Component {
     static propTypes = {
         children: PropTypes.node,
+        linkDestination: PropTypes.string,
+        onLongPress: PropTypes.func,
         source: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired
     };
 
     constructor(props) {
@@ -95,6 +107,36 @@ export default class MarkdownImage extends React.Component {
         });
     };
 
+    handleLinkPress = () => {
+        const url = normalizeProtocol(this.props.linkDestination);
+
+        Linking.canOpenURL(url).then((supported) => {
+            if (supported) {
+                Linking.openURL(url);
+            }
+        });
+    };
+
+    handleLinkLongPress = async () => {
+        const {formatMessage} = this.context.intl;
+
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'true') {
+            action = {
+                text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
+                onPress: this.handleLinkCopy
+            };
+        }
+
+        this.props.onLongPress(action);
+    };
+
+    handleLinkCopy = () => {
+        Clipboard.setString(this.props.linkDestination);
+    };
+
     render() {
         let image = null;
 
@@ -132,6 +174,17 @@ export default class MarkdownImage extends React.Component {
                     {' '}
                     {this.props.children}
                 </Text>
+            );
+        }
+
+        if (image && this.props.linkDestination) {
+            image = (
+                <TouchableHighlight
+                    onPress={this.handleLinkPress}
+                    onLongPress={this.handleLinkLongPress}
+                >
+                    {image}
+                </TouchableHighlight>
             );
         }
 
