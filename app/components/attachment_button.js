@@ -17,7 +17,9 @@ class AttachmentButton extends PureComponent {
         intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        uploadFiles: PropTypes.func.isRequired
+        uploadFiles: PropTypes.func.isRequired,
+        wrapper: PropTypes.bool,
+        children: PropTypes.node
     };
 
     attachFileFromCamera = () => {
@@ -139,7 +141,7 @@ class AttachmentButton extends PureComponent {
                 action();
             }
         }, 100);
-    }
+    };
 
     showFileAttachmentOptions = () => {
         this.props.blurTextBox();
@@ -190,7 +192,17 @@ class AttachmentButton extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, wrapper, children} = this.props;
+
+        if (wrapper) {
+            return (
+                <TouchableOpacity
+                    onPress={this.showFileAttachmentOptions}
+                >
+                    {children}
+                </TouchableOpacity>
+            );
+        }
 
         return (
             <TouchableOpacity

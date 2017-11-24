@@ -2120,6 +2120,7 @@
   "mobile.video.save_error_title": "Save Video Error",
   "mobile.video_playback.failed_description": "An error occurred while trying to play the video.\n",
   "mobile.video_playback.failed_title": "Video playback failed",
+  "mobile.account.settings.save": "Save",
   "modal.manaul_status.ask": "Do not ask me again",
   "modal.manaul_status.button": "Yes, set my status to \"Online\"",
   "modal.manaul_status.message": "Would you like to switch your status to \"Online\"?",
