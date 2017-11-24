@@ -358,7 +358,7 @@ describe('Components.Markdown.transform', () => {
                     type: 'paragraph',
                     children: [{
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image'
@@ -373,7 +373,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -396,7 +396,7 @@ describe('Components.Markdown.transform', () => {
                         literal: 'This is text with '
                     }, {
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image'
@@ -417,7 +417,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -444,14 +444,14 @@ describe('Components.Markdown.transform', () => {
                     type: 'paragraph',
                     children: [{
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image'
                         }]
                     }, {
                         type: 'image',
-                        src: 'http://example.com/image2',
+                        destination: 'http://example.com/image2',
                         children: [{
                             type: 'text',
                             literal: 'another image'
@@ -466,7 +466,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -477,7 +477,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image2',
+                    destination: 'http://example.com/image2',
                     children: [{
                         type: 'text',
                         literal: 'another image'
@@ -501,7 +501,7 @@ describe('Components.Markdown.transform', () => {
                         literal: 'This is the start 1'
                     }, {
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image 1'
@@ -512,7 +512,7 @@ describe('Components.Markdown.transform', () => {
                     level: 4,
                     children: [{
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image 2'
@@ -529,7 +529,7 @@ describe('Components.Markdown.transform', () => {
                         literal: 'This is the start 3'
                     }, {
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image 3'
@@ -543,14 +543,14 @@ describe('Components.Markdown.transform', () => {
                     level: 3,
                     children: [{
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image 4a'
                         }]
                     }, {
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'an image 4b'
@@ -569,7 +569,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image 1'
@@ -580,7 +580,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image 2'
@@ -602,7 +602,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image 3'
@@ -621,7 +621,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image 4a'
@@ -633,7 +633,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image 4b'
@@ -655,7 +655,7 @@ describe('Components.Markdown.transform', () => {
                         type: 'paragraph',
                         children: [{
                             type: 'image',
-                            src: 'http://example.com/image',
+                            destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
                                 literal: 'an image'
@@ -674,7 +674,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -699,7 +699,7 @@ describe('Components.Markdown.transform', () => {
                             literal: 'This is '
                         }, {
                             type: 'image',
-                            src: 'http://example.com/image',
+                            destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
                                 literal: 'an image'
@@ -724,7 +724,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -772,7 +772,7 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'image',
-                                src: 'http://example.com/image',
+                                destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
                                     literal: 'an image'
@@ -818,7 +818,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -871,7 +871,7 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'image',
-                                src: 'http://example.com/image',
+                                destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
                                     literal: 'an image'
@@ -907,7 +907,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -947,14 +947,14 @@ describe('Components.Markdown.transform', () => {
                                 literal: 'This is text'
                             }, {
                                 type: 'image',
-                                src: 'http://example.com/image',
+                                destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
                                     literal: 'an image'
                                 }]
                             }, {
                                 type: 'image',
-                                src: 'http://example.com/image',
+                                destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
                                     literal: 'an image'
@@ -987,7 +987,7 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'image',
-                                src: 'http://example.com/image',
+                                destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
                                     literal: 'an image'
@@ -1036,7 +1036,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1057,7 +1057,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1105,7 +1105,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1158,7 +1158,7 @@ describe('Components.Markdown.transform', () => {
                                         literal: 'This is text'
                                     }, {
                                         type: 'image',
-                                        src: 'http://example.com/image',
+                                        destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
                                             literal: 'an image'
@@ -1172,7 +1172,7 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'image',
-                                        src: 'http://example.com/image',
+                                        destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
                                             literal: 'an image'
@@ -1198,7 +1198,7 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'image',
-                                        src: 'http://example.com/image',
+                                        destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
                                             literal: 'an image'
@@ -1218,7 +1218,7 @@ describe('Components.Markdown.transform', () => {
                                         literal: 'This is text'
                                     }, {
                                         type: 'image',
-                                        src: 'http://example.com/image',
+                                        destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
                                             literal: 'an image'
@@ -1258,7 +1258,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1289,7 +1289,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1341,7 +1341,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1387,7 +1387,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1414,7 +1414,7 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'image',
-                                src: 'http://example.com/abc',
+                                destination: 'http://example.com/abc',
                                 children: [{
                                     type: 'text',
                                     literal: 'abc'
@@ -1431,7 +1431,7 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'image',
-                                        src: 'http://example.com/def',
+                                        destination: 'http://example.com/def',
                                         children: [{
                                             type: 'text',
                                             literal: 'def'
@@ -1445,7 +1445,7 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'image',
-                                        src: 'http://example.com/ghi',
+                                        destination: 'http://example.com/ghi',
                                         children: [{
                                             type: 'text',
                                             literal: 'ghi'
@@ -1467,7 +1467,7 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'image',
-                                src: 'http://example.com/jkl',
+                                destination: 'http://example.com/jkl',
                                 children: [{
                                     type: 'text',
                                     literal: 'jkl'
@@ -1481,7 +1481,7 @@ describe('Components.Markdown.transform', () => {
                         type: 'paragraph',
                         children: [{
                             type: 'image',
-                            src: 'http://example.com/mno',
+                            destination: 'http://example.com/mno',
                             children: [{
                                 type: 'text',
                                 literal: 'mno'
@@ -1490,7 +1490,7 @@ describe('Components.Markdown.transform', () => {
                             type: 'softbreak'
                         }, {
                             type: 'image',
-                            src: 'http://example.com/pqr',
+                            destination: 'http://example.com/pqr',
                             children: [{
                                 type: 'text',
                                 literal: 'pqr'
@@ -1504,14 +1504,14 @@ describe('Components.Markdown.transform', () => {
                     level: 1,
                     children: [{
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'vw'
                         }]
                     }, {
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'x'
@@ -1521,7 +1521,7 @@ describe('Components.Markdown.transform', () => {
                     type: 'paragraph',
                     children: [{
                         type: 'image',
-                        src: 'http://example.com/image',
+                        destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
                             literal: 'yz'
@@ -1545,7 +1545,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/abc',
+                    destination: 'http://example.com/abc',
                     children: [{
                         type: 'text',
                         literal: 'abc'
@@ -1575,7 +1575,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/def',
+                    destination: 'http://example.com/def',
                     children: [{
                         type: 'text',
                         literal: 'def'
@@ -1606,7 +1606,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/ghi',
+                    destination: 'http://example.com/ghi',
                     children: [{
                         type: 'text',
                         literal: 'ghi'
@@ -1625,7 +1625,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/jkl',
+                    destination: 'http://example.com/jkl',
                     children: [{
                         type: 'text',
                         literal: 'jkl'
@@ -1638,7 +1638,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/mno',
+                    destination: 'http://example.com/mno',
                     children: [{
                         type: 'text',
                         literal: 'mno'
@@ -1655,7 +1655,7 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/pqr',
+                    destination: 'http://example.com/pqr',
                     children: [{
                         type: 'text',
                         literal: 'pqr'
@@ -1668,7 +1668,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'vw'
@@ -1679,7 +1679,7 @@ describe('Components.Markdown.transform', () => {
                     continue: true
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'x'
@@ -1689,7 +1689,7 @@ describe('Components.Markdown.transform', () => {
                     children: []
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
+                    destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
                         literal: 'yz'
@@ -1712,7 +1712,7 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com',
                         children: [{
                             type: 'image',
-                            src: 'http://example.com/image',
+                            destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
                                 literal: 'an image'
@@ -1732,8 +1732,8 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
-                    destination: 'http://example.com',
+                    destination: 'http://example.com/image',
+                    linkDestination: 'http://example.com',
                     children: [{
                         type: 'text',
                         literal: 'an image'
@@ -1759,7 +1759,7 @@ describe('Components.Markdown.transform', () => {
                             literal: 'This is '
                         }, {
                             type: 'image',
-                            src: 'http://example.com/image',
+                            destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
                                 literal: 'an image'
@@ -1785,8 +1785,8 @@ describe('Components.Markdown.transform', () => {
                     }]
                 }, {
                     type: 'image',
-                    src: 'http://example.com/image',
-                    destination: 'http://example.com',
+                    destination: 'http://example.com/image',
+                    linkDestination: 'http://example.com',
                     children: [{
                         type: 'text',
                         literal: 'an image'

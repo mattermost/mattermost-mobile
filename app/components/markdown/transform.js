@@ -121,7 +121,7 @@ export function pullOutImages(ast) {
 
                     // This image is part of a link so include the destination along with it
                     if (parent.type === 'link') {
-                        image.destination = parent.destination;
+                        image.linkDestination = parent.destination;
                     }
 
                     // Move up the tree
