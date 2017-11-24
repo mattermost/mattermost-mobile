@@ -427,7 +427,7 @@ describe('Components.Markdown.transform', () => {
                     continue: true,
                     children: [{
                         type: 'text',
-                        literal: ' in it'
+                        literal: 'in it' // Note that we remove the preceding whitespace
                     }]
                 }]
             });
@@ -737,7 +737,7 @@ describe('Components.Markdown.transform', () => {
                         continue: true,
                         children: [{
                             type: 'text',
-                            literal: ' in a sentence'
+                            literal: 'in a sentence'
                         }]
                     }]
                 }]
@@ -1800,7 +1800,7 @@ describe('Components.Markdown.transform', () => {
                         continue: true,
                         children: [{
                             type: 'text',
-                            literal: ' in a sentence.'
+                            literal: 'in a sentence.'
                         }]
                     }]
                 }]

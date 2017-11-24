@@ -50,6 +50,12 @@ export function pullOutImages(ast) {
                 }
                 if (next) {
                     next._prev = prev;
+
+                    // Since the following text will be on a new line, a preceding space would cause the
+                    // alignment to be incorrect
+                    if (next.type === 'text' && next.literal.startsWith(' ')) {
+                        next.literal = next.literal.substring(1);
+                    }
                 }
 
                 // And from its parents
