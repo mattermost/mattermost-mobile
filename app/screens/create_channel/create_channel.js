@@ -43,7 +43,7 @@ export default class CreateChannel extends PureComponent {
         showAsAction: 'always'
     };
 
-    constructor(props) {
+    constructor(props, context) {
         super(props);
 
         this.state = {
@@ -54,9 +54,7 @@ export default class CreateChannel extends PureComponent {
             header: ''
         };
 
-        const {intl} = this.context;
-
-        this.rightButton.title = intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
 
         if (props.channelType === General.PRIVATE_CHANNEL) {
             this.left = {...this.leftButton, icon: props.closeButton};

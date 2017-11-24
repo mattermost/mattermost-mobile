@@ -1290,7 +1290,7 @@
   "channel_header.rename": "Rename Channel",
   "channel_header.setHeader": "Edit Channel Header",
   "channel_header.setPurpose": "Edit Channel Purpose",
-  "channel_header.edit": "Edit Channel",
+  "channel_header.mobile.edit": "Edit Channel",
   "channel_header.viewInfo": "View Info",
   "channel_header.viewMembers": "View Members",
   "channel_header.webrtc.call": "Start Video Call",

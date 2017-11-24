@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {defineMessages, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Keyboard,
     InteractionManager
@@ -16,7 +16,7 @@ import {ViewTypes} from 'app/constants';
 
 import {cleanUpUrlable} from 'app/utils/url';
 
-const holders = defineMessages({
+const messages = {
     display_name_required: {
         id: 'rename_channel.mobile.display_name_required',
         defaultMessage: 'Channel name is required'
@@ -45,7 +45,7 @@ const holders = defineMessages({
         id: 'rename_channel.mobile.name_lowercase',
         defaultMessage: 'URL be lowercase alphanumeric characters'
     }
-});
+};
 
 export default class EditChannel extends PureComponent {
     static propTypes = {
@@ -71,7 +71,7 @@ export default class EditChannel extends PureComponent {
         showAsAction: 'always'
     };
 
-    constructor(props) {
+    constructor(props, context) {
         super(props);
         const {
             channel: {
@@ -91,9 +91,7 @@ export default class EditChannel extends PureComponent {
             header
         };
 
-        const {intl} = this.context;
-
-        this.rightButton.title = intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
+        this.rightButton.title = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
             rightButtons: [this.rightButton]
@@ -156,15 +154,15 @@ export default class EditChannel extends PureComponent {
         const {formatMessage} = this.context.intl;
 
         if (!displayName) {
-            return {error: formatMessage(holders.display_name_required)};
+            return {error: formatMessage(messages.display_name_required)};
         } else if (displayName.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
-                holders.display_name_maxLength,
+                messages.display_name_maxLength,
                 {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
             )};
         } else if (displayName.length < ViewTypes.MIN_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
-                holders.display_name_minLength,
+                messages.display_name_minLength,
                 {minLength: ViewTypes.MIN_CHANNELNAME_LENGTH}
             )};
         }
@@ -176,10 +174,10 @@ export default class EditChannel extends PureComponent {
         const {formatMessage} = this.context.intl;
 
         if (!channelURL) {
-            return {error: formatMessage(holders.name_required)};
+            return {error: formatMessage(messages.name_required)};
         } else if (channelURL.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
-                holders.name_maxLength,
+                messages.name_maxLength,
                 {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
             )};
         }
@@ -189,7 +187,7 @@ export default class EditChannel extends PureComponent {
             return {error: null};
         }
 
-        return {error: formatMessage(holders.name_lowercase)};
+        return {error: formatMessage(messages.name_lowercase)};
     };
 
     onUpdateChannel = () => {
