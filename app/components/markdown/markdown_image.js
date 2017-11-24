@@ -32,10 +32,16 @@ export default class MarkdownImage extends React.Component {
             maxWidth: Math.MAX_INT,
             failed: false
         };
+
+        this.mounted = false;
     }
 
     componentWillMount() {
         this.loadImageSize(this.props.source);
+    }
+
+    componentDidMount() {
+        this.mounted = true;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -50,11 +56,19 @@ export default class MarkdownImage extends React.Component {
         }
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     loadImageSize = (source) => {
         Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
     };
 
     handleSizeReceived = (width, height) => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
             width,
             height
@@ -62,12 +76,20 @@ export default class MarkdownImage extends React.Component {
     };
 
     handleSizeFailed = () => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
             failed: true
         });
     };
 
     handleLayout = (event) => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
             maxWidth: event.nativeEvent.layout.width
         });
