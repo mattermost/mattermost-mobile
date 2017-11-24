@@ -7,6 +7,7 @@ import {Navigation} from 'react-native-navigation';
 import About from 'app/screens/about';
 
 import AddReaction from 'app/screens/add_reaction';
+import AccountSettings from 'app/screens/settings/account_settings';
 import AdvancedSettings from 'app/screens/settings/advanced_settings';
 import Channel from 'app/screens/channel';
 import ChannelAddMembers from 'app/screens/channel_add_members';
@@ -60,6 +61,7 @@ function wrapWithContextProvider(Comp, excludeEvents = true) {
 export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapWithContextProvider(About), store, Provider);
     Navigation.registerComponent('AddReaction', () => wrapWithContextProvider(AddReaction), store, Provider);
+    Navigation.registerComponent('AccountSettings', () => wrapWithContextProvider(AccountSettings), store, Provider);
     Navigation.registerComponent('AdvancedSettings', () => wrapWithContextProvider(AdvancedSettings), store, Provider);
     Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel, false), store, Provider);
     Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(ChannelAddMembers), store, Provider);

@@ -7,12 +7,12 @@ import {Alert, BackHandler, Keyboard, Platform, TextInput, TouchableOpacity, Vie
 import {intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
+import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import AttachmentButton from './components/attachment_button';
 import Typing from './components/typing';
 
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;

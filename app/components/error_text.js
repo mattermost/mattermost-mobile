@@ -48,7 +48,8 @@ class ErrorText extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         errorLabel: {
-            color: (theme.errorTextColor || '#DA4A4A')
+            color: (theme.errorTextColor || '#DA4A4A'),
+            textAlign: 'center'
         }
     };
 });
