@@ -361,13 +361,14 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 i18nId = 'user.settings.notifications.allActivity';
                 i18nMessage = 'For all activity';
                 break;
-            case 'mention':
-                i18nId = 'user.settings.notifications.onlyMentions';
-                i18nMessage = 'Only for mentions and direct messages';
-                break;
             case 'none':
                 i18nId = 'user.settings.notifications.never';
                 i18nMessage = 'Never';
+                break;
+            case 'mention':
+            default:
+                i18nId = 'user.settings.notifications.onlyMentions';
+                i18nMessage = 'Only for mentions and direct messages';
                 break;
             }
             props.description = (
@@ -412,10 +413,6 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         let i18nId;
         let i18nMessage;
         switch (this.state.push_status) {
-        case 'online':
-            i18nId = 'user.settings.push_notification.online';
-            i18nMessage = 'Online, away or offline';
-            break;
         case 'away':
             i18nId = 'user.settings.push_notification.away';
             i18nMessage = 'Away or offline';
@@ -423,6 +420,11 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         case 'offline':
             i18nId = 'user.settings.push_notification.offline';
             i18nMessage = 'Offline';
+            break;
+        case 'online':
+        default:
+            i18nId = 'user.settings.push_notification.online';
+            i18nMessage = 'Online, away or offline';
             break;
         }
 

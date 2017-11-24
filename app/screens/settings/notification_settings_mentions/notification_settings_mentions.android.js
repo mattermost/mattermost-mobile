@@ -201,10 +201,6 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
         let i18nId;
         let i18nMessage;
         switch (this.state.comments) {
-        case 'any':
-            i18nId = 'mobile.account_notifications.threads_start_participate';
-            i18nMessage = 'Threads that I start or participate in';
-            break;
         case 'root':
             i18nId = 'mobile.account_notifications.threads_start';
             i18nMessage = 'Threads that I start';
@@ -212,6 +208,11 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
         case 'never':
             i18nId = 'mobile.account_notifications.threads_mentions';
             i18nMessage = 'Mentions in threads';
+            break;
+        case 'any':
+        default:
+            i18nId = 'mobile.account_notifications.threads_start_participate';
+            i18nMessage = 'Threads that I start or participate in';
             break;
         }
 
