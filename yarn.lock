@@ -3961,7 +3961,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux#master:
   version "1.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/4f36c293b136cdfb9f44b9536a5006084d0dc758"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/fb083f67b5560ff64fe251415460a1af5d690e5a"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
@@ -5139,6 +5139,10 @@ react-native-orientation@enahum/react-native-orientation.git:
 react-native-passcode-status@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-native-passcode-status/-/react-native-passcode-status-1.1.0.tgz#e5922d5f4d79bc09849438d620406e5ccd31168a"
+
+react-native-safe-area@0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-safe-area/-/react-native-safe-area-0.2.1.tgz#9bf8eb8dd052b76fc4e830addcd63235dd29cf3c"
 
 react-native-section-list-get-item-layout@2.1.0:
   version "2.1.0"

@@ -10,7 +10,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
+import DeviceInfo from 'react-native-device-info';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
 import {UpgradeTypes} from 'app/constants/view';
@@ -21,7 +23,7 @@ const {View: AnimatedView} = Animated;
 
 const UPDATE_TIMEOUT = 60000;
 
-class ClientUpgradeListener extends PureComponent {
+export default class ClientUpgradeListener extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
@@ -30,7 +32,7 @@ class ClientUpgradeListener extends PureComponent {
         currentVersion: PropTypes.string,
         downloadLink: PropTypes.string,
         forceUpgrade: PropTypes.bool,
-        intl: intlShape.isRequired,
+        isLandscape: PropTypes.bool,
         lastUpgradeCheck: PropTypes.number,
         latestVersion: PropTypes.string,
         minVersion: PropTypes.string,
@@ -38,14 +40,28 @@ class ClientUpgradeListener extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
-    state = {
-        top: new Animated.Value(-100)
+    static contextTypes = {
+        intl: intlShape
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.isX = DeviceInfo.getModel() === 'iPhone X';
+
+        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+            this.closeButton = source;
+        });
+
+        this.state = {
+            top: new Animated.Value(-100)
+        };
     }
 
     componentDidMount() {
-        const {forceUpgrade, lastUpgradeCheck, latestVersion, minVersion} = this.props;
+        const {forceUpgrade, isLandscape, lastUpgradeCheck, latestVersion, minVersion} = this.props;
         if (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT) {
-            this.checkUpgrade(minVersion, latestVersion);
+            this.checkUpgrade(minVersion, latestVersion, isLandscape);
         }
     }
 
@@ -55,40 +71,54 @@ class ClientUpgradeListener extends PureComponent {
 
         const versionMismatch = latestVersion !== nextLatestVersion || minVersion !== nextMinVersion;
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
-            this.checkUpgrade(minVersion, latestVersion);
+            this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
+        } else if (this.props.isLandscape !== nextProps.isLandscape &&
+            this.state.upgradeType !== UpgradeTypes.NO_UPGRADE && this.isX) {
+            const newTop = nextProps.isLandscape ? 45 : 100;
+            this.setState({top: new Animated.Value(newTop)});
         }
     }
 
-    checkUpgrade = (minVersion, latestVersion) => {
+    checkUpgrade = (minVersion, latestVersion, isLandscape) => {
         const {actions, currentVersion} = this.props;
 
         const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion, actions.logError);
+
+        this.setState({upgradeType});
 
         if (upgradeType === UpgradeTypes.NO_UPGRADE) {
             return;
         }
 
-        this.setState({upgradeType});
-
-        setTimeout(this.toggleUpgradeMessage, 500);
+        setTimeout(() => {
+            this.toggleUpgradeMessage(true, isLandscape);
+        }, 500);
 
         actions.setLastUpgradeCheck();
-    }
+    };
 
-    toggleUpgradeMessage = (show = true) => {
-        const toValue = show ? 75 : -100;
+    toggleUpgradeMessage = (show = true, isLandscape) => {
+        let toValue = -100;
+        if (show) {
+            if (this.isX && isLandscape) {
+                toValue = 45;
+            } else {
+                toValue = this.isX ? 100 : 75;
+            }
+        }
         Animated.timing(this.state.top, {
             toValue,
             duration: 300
         }).start();
-    }
+    };
 
     handleDismiss = () => {
         this.toggleUpgradeMessage(false);
-    }
+    };
 
     handleDownload = () => {
-        const {downloadLink, intl} = this.props;
+        const {downloadLink} = this.props;
+        const {intl} = this.context;
 
         Linking.canOpenURL(downloadLink).then((supported) => {
             if (supported) {
@@ -110,17 +140,25 @@ class ClientUpgradeListener extends PureComponent {
         });
 
         this.toggleUpgradeMessage(false);
-    }
+    };
 
     handleLearnMore = () => {
-        this.props.navigator.dismissAllModals({animationType: 'none'});
+        const {intl} = this.context;
+        this.props.navigator.dismissModal({animationType: 'none'});
 
         this.props.navigator.showModal({
             screen: 'ClientUpgrade',
+            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'}),
             navigatorStyle: {
-                navBarHidden: true,
-                statusBarHidden: true,
-                statusBarHideWithNavBar: true
+                navBarHidden: false,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false
+            },
+            navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-upgrade',
+                    icon: this.closeButton
+                }]
             },
             passProps: {
                 upgradeType: this.state.upgradeType
@@ -128,9 +166,13 @@ class ClientUpgradeListener extends PureComponent {
         });
 
         this.toggleUpgradeMessage(false);
-    }
+    };
 
     render() {
+        if (this.state.upgradeType === UpgradeTypes.NO_UPGRADE) {
+            return null;
+        }
+
         const {forceUpgrade, theme} = this.props;
         const styles = getStyleSheet(theme);
 
@@ -227,5 +269,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
-
-export default injectIntl(ClientUpgradeListener);

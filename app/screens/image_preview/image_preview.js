@@ -26,6 +26,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {DeviceTypes} from 'app/constants/';
 import FileAttachmentDocument, {SUPPORTED_DOCS_FORMAT} from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+import SafeAreaView from 'app/components/safe_area_view';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 
@@ -476,116 +477,156 @@ export default class ImagePreview extends PureComponent {
     };
 
     render() {
-        const marginStyle = {
-            ...Platform.select({
-                ios: {
-                    marginTop: this.props.statusBarHeight
-                },
-                android: {
-                    marginTop: 10
-                }
-            })
-        };
-
         return (
-            <View style={[style.wrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth}]}>
-                <AnimatedView
-                    style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
-                    {...this.mainViewPanResponder.panHandlers}
-                >
-                    <ScrollView
-                        ref={this.attachScrollView}
-                        style={[style.ScrollView]}
-                        contentContainerStyle={style.scrollViewContent}
-                        scrollEnabled={!this.state.isZooming}
-                        horizontal={true}
-                        pagingEnabled={!this.state.isZooming}
-                        bounces={false}
-                        onScroll={this.handleScroll}
-                        onMomentumScrollEnd={this.handleScrollStopped}
-                        scrollEventThrottle={2}
-                    >
-                        {this.state.files.map((file, index) => {
-                            let mime = file.mime_type;
-                            if (mime && mime.includes(';')) {
-                                mime = mime.split(';')[0];
-                            }
-
-                            let component;
-                            if (file.has_preview_image || file.mime_type === 'image/gif') {
-                                component = this.renderPreviewer(file, index);
-                            } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
-                                component = this.renderAttachmentDocument(file);
-                            } else if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
-                                component = this.renderVideoPreview(file);
-                            } else {
-                                component = this.renderAttachmentIcon(file);
-                            }
-
-                            return (
-                                <View
-                                    key={file.id}
-                                    style={[style.pageWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth}]}
-                                >
-                                    {component}
-                                </View>
-                            );
-                        })}
-                    </ScrollView>
+            <SafeAreaView
+                backgroundColor='#000'
+                theme={this.props.theme}
+                navBarBackgroundColor='#000'
+            >
+                <View style={[style.wrapper]}>
                     <AnimatedView
-                        style={[style.footerHeaderWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth, opacity: this.state.footerOpacity}]}
-                        pointerEvents='box-none'
+                        style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
+                        {...this.mainViewPanResponder.panHandlers}
                     >
-                        <View style={style.header}>
-                            <View style={[style.headerControls, marginStyle]}>
-                                <TouchableOpacity
-                                    onPress={this.handleClose}
-                                    style={style.headerIcon}
-                                >
-                                    <Icon
-                                        name='md-close'
-                                        size={26}
-                                        color='#fff'
-                                    />
-                                </TouchableOpacity>
-                                <Text style={style.title}>
-                                    {`${this.state.currentFile + 1}/${this.state.files.length}`}
-                                </Text>
-                                {this.renderDownloadButton()}
-                            </View>
-                        </View>
-                        <LinearGradient
-                            style={style.footer}
-                            start={{x: 0.0, y: 0.0}}
-                            end={{x: 0.0, y: 0.9}}
-                            colors={['transparent', '#000000']}
-                            pointerEvents='none'
+                        <ScrollView
+                            ref={this.attachScrollView}
+                            style={[style.ScrollView]}
+                            contentContainerStyle={style.scrollViewContent}
+                            scrollEnabled={!this.state.isZooming}
+                            horizontal={true}
+                            pagingEnabled={!this.state.isZooming}
+                            bounces={false}
+                            onScroll={this.handleScroll}
+                            onMomentumScrollEnd={this.handleScrollStopped}
+                            scrollEventThrottle={2}
                         >
-                            <Text style={style.filename}>
-                                {this.state.files[this.state.currentFile].name}
-                            </Text>
-                        </LinearGradient>
+                            {this.state.files.map((file, index) => {
+                                let mime = file.mime_type;
+                                if (mime && mime.includes(';')) {
+                                    mime = mime.split(';')[0];
+                                }
+
+                                let component;
+                                if (file.has_preview_image || file.mime_type === 'image/gif') {
+                                    component = this.renderPreviewer(file, index);
+                                } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
+                                    component = this.renderAttachmentDocument(file);
+                                } else if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
+                                    component = this.renderVideoPreview(file);
+                                } else {
+                                    component = this.renderAttachmentIcon(file);
+                                }
+
+                                return (
+                                    <View
+                                        key={file.id}
+                                        style={[style.pageWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth}]}
+                                    >
+                                        {component}
+                                    </View>
+                                );
+                            })}
+                        </ScrollView>
+                        <AnimatedView style={[style.headerContainer, {width: this.props.deviceWidth, opacity: this.state.footerOpacity}]}>
+                            <View style={style.header}>
+                                <View style={style.headerControls}>
+                                    <TouchableOpacity
+                                        onPress={this.handleClose}
+                                        style={style.headerIcon}
+                                    >
+                                        <Icon
+                                            name='md-close'
+                                            size={26}
+                                            color='#fff'
+                                        />
+                                    </TouchableOpacity>
+                                    <Text style={style.title}>
+                                        {`${this.state.currentFile + 1}/${this.state.files.length}`}
+                                    </Text>
+                                    {this.renderDownloadButton()}
+                                </View>
+                            </View>
+                        </AnimatedView>
+                        <AnimatedView style={[style.footerContainer, {width: this.props.deviceWidth, opacity: this.state.footerOpacity}]}>
+                            <LinearGradient
+                                style={style.footer}
+                                start={{x: 0.0, y: 0.0}}
+                                end={{x: 0.0, y: 0.9}}
+                                colors={['transparent', '#000000']}
+                                pointerEvents='none'
+                            >
+                                <Text style={style.filename}>
+                                    {this.state.files[this.state.currentFile].name}
+                                </Text>
+                            </LinearGradient>
+                        </AnimatedView>
                     </AnimatedView>
-                </AnimatedView>
-                <Downloader
-                    ref='downloader'
-                    show={this.state.showDownloader}
-                    file={this.state.files[this.state.currentFile]}
-                    deviceHeight={this.props.deviceHeight}
-                    deviceWidth={this.props.deviceWidth}
-                    onDownloadCancel={this.hideDownloader}
-                    onDownloadStart={this.hideDownloader}
-                    onDownloadSuccess={this.hideDownloader}
-                />
-            </View>
+                    <Downloader
+                        ref='downloader'
+                        show={this.state.showDownloader}
+                        file={this.state.files[this.state.currentFile]}
+                        deviceHeight={this.props.deviceHeight}
+                        deviceWidth={this.props.deviceWidth}
+                        onDownloadCancel={this.hideDownloader}
+                        onDownloadStart={this.hideDownloader}
+                        onDownloadSuccess={this.hideDownloader}
+                    />
+                </View>
+            </SafeAreaView>
         );
     }
 }
 
 const style = StyleSheet.create({
-    filename: {
+    wrapper: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)'
+    },
+    scrollView: {
+        flex: 1,
+        backgroundColor: '#000'
+    },
+    scrollViewContent: {
+        backgroundColor: '#000'
+    },
+    pageWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1
+    },
+    headerContainer: {
+        position: 'absolute',
+        top: 0
+    },
+    header: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        height: HEADER_HEIGHT,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%'
+    },
+    headerControls: {
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        flexDirection: 'row'
+    },
+    headerIcon: {
+        height: 44,
+        width: 48,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    title: {
+        flex: 1,
+        marginHorizontal: 10,
         color: 'white',
-        fontSize: 15
+        fontSize: 15,
+        textAlign: 'center'
+    },
+    footerContainer: {
+        position: 'absolute',
+        bottom: 0
     },
     footer: {
         position: 'absolute',
@@ -599,66 +640,11 @@ const style = StyleSheet.create({
         ...Platform.select({
             android: {
                 marginBottom: 13
-            },
-            ios: {
-                marginBottom: 0
             }
         })
     },
-    footerHeaderWrapper: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0
-    },
-    header: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        height: HEADER_HEIGHT,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%'
-    },
-    headerControls: {
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        flexDirection: 'row',
-        ...Platform.select({
-            android: {
-                marginTop: 0
-            },
-            ios: {
-                marginTop: 5
-            }
-        })
-    },
-    headerIcon: {
-        height: 44,
-        width: 48,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    pageWrapper: {
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    scrollView: {
-        flex: 1,
-        backgroundColor: '#000'
-    },
-    scrollViewContent: {
-        backgroundColor: '#000'
-    },
-    title: {
-        flex: 1,
-        marginHorizontal: 10,
+    filename: {
         color: 'white',
-        fontSize: 15,
-        textAlign: 'center'
-    },
-    wrapper: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        fontSize: 15
     }
 });

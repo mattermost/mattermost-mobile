@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {init as initWebSocket} from 'mattermost-redux/actions/websocket';
 
 import {connection} from 'app/actions/device';
-import {getConnection} from 'app/selectors/device';
+import {getConnection, isLandscape} from 'app/selectors/device';
 
 import OfflineIndicator from './offline_indicator';
 
@@ -18,6 +18,7 @@ function mapStateToProps(state) {
 
     return {
         isConnecting,
+        isLandscape: isLandscape(state),
         isOnline: getConnection(state),
         webSocketStatus
     };

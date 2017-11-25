@@ -14,6 +14,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
@@ -23,6 +24,7 @@ import Autocomplete from 'app/components/autocomplete';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
+import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
@@ -55,6 +57,7 @@ class Search extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         postIds: PropTypes.array,
         recent: PropTypes.array.isRequired,
@@ -71,6 +74,7 @@ class Search extends PureComponent {
         super(props);
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        this.isX = DeviceInfo.getModel() === 'iPhone X';
         this.state = {
             channelName: '',
             postId: null,
@@ -87,7 +91,9 @@ class Search extends PureComponent {
     componentDidMount() {
         this.setManagedConfig();
         if (this.refs.searchBar) {
-            this.refs.searchBar.focus();
+            setTimeout(() => {
+                this.refs.searchBar.focus();
+            }, 500);
         }
     }
 
@@ -96,6 +102,10 @@ class Search extends PureComponent {
         const {searchingStatus: prevStatus} = prevProps;
         const recentLength = recent.length;
         const shouldScroll = prevStatus !== status && (status === RequestStatus.SUCCESS || status === RequestStatus.STARTED);
+
+        if (this.props.isLandscape !== prevProps.isLandscape) {
+            this.refs.searchBar.blur();
+        }
 
         if (shouldScroll) {
             requestAnimationFrame(() => {
@@ -468,6 +478,7 @@ class Search extends PureComponent {
     render() {
         const {
             intl,
+            isLandscape,
             navigator,
             postIds,
             recent,
@@ -580,48 +591,54 @@ class Search extends PureComponent {
         }
 
         return (
-            <View style={{flex: 1}}>
-                <StatusBar/>
-                <View style={style.header}>
-                    <SearchBar
-                        ref='searchBar'
-                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                        inputStyle={style.searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        titleCancelColor={theme.sidebarHeaderTextColor}
+            <SafeAreaView
+                excludeHeader={isLandscape && this.isX}
+                forceTop={44}
+                theme={theme}
+            >
+                <View style={{flex: 1}}>
+                    <StatusBar/>
+                    <View style={style.header}>
+                        <SearchBar
+                            ref='searchBar'
+                            placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={Platform.OS === 'ios' ? 33 : 46}
+                            inputStyle={style.searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            titleCancelColor={theme.sidebarHeaderTextColor}
+                            onChangeText={this.handleTextChanged}
+                            onSearchButtonPress={this.handleSearchButtonPress}
+                            onCancelButtonPress={this.cancelSearch}
+                            onSelectionChange={this.handleSelectionChange}
+                            autoCapitalize='none'
+                            value={value}
+                            containerStyle={style.searchBarContainer}
+                            backArrowSize={28}
+                        />
+                    </View>
+                    <Autocomplete
+                        ref={this.attachAutocomplete}
                         onChangeText={this.handleTextChanged}
-                        onSearchButtonPress={this.handleSearchButtonPress}
-                        onCancelButtonPress={this.cancelSearch}
-                        onSelectionChange={this.handleSelectionChange}
-                        autoCapitalize='none'
+                        isSearch={true}
                         value={value}
-                        containerStyle={style.searchBarContainer}
-                        backArrowSize={28}
                     />
+                    <SectionList
+                        ref='list'
+                        style={style.sectionList}
+                        renderSectionHeader={this.renderSectionHeader}
+                        sections={sections}
+                        keyboardShouldPersistTaps='always'
+                        keyboardDismissMode='interactive'
+                        stickySectionHeadersEnabled={Platform.OS === 'ios'}
+                    />
+                    {previewComponent}
                 </View>
-                <Autocomplete
-                    ref={this.attachAutocomplete}
-                    onChangeText={this.handleTextChanged}
-                    isSearch={true}
-                    value={value}
-                />
-                <SectionList
-                    ref='list'
-                    style={style.sectionList}
-                    renderSectionHeader={this.renderSectionHeader}
-                    sections={sections}
-                    keyboardShouldPersistTaps='always'
-                    keyboardDismissMode='interactive'
-                    stickySectionHeadersEnabled={Platform.OS === 'ios'}
-                />
-                {previewComponent}
-            </View>
+            </SafeAreaView>
         );
     }
 }
@@ -637,8 +654,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     justifyContent: 'center'
                 },
                 ios: {
-                    height: 64,
-                    paddingTop: 20
+                    height: 44
                 }
             })
         },

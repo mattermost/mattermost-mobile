@@ -11,6 +11,7 @@ import {
     StyleSheet,
     View
 } from 'react-native';
+import SafeAreaView from 'app/components/safe_area_view';
 
 import Drawer from 'app/components/drawer';
 import {alertErrorWithFallback} from 'app/utils/general';
@@ -362,14 +363,20 @@ export default class ChannelDrawer extends Component {
         );
 
         return (
-            <DrawerSwiper
-                ref={this.drawerSwiperRef}
-                onPageSelected={this.onPageSelected}
-                openDrawerOffset={openDrawerOffset}
-                showTeams={showTeams}
+            <SafeAreaView
+                backgroundColor={theme.sidebarHeaderBg}
+                navigator={navigator}
+                theme={theme}
             >
-                {lists}
-            </DrawerSwiper>
+                <DrawerSwiper
+                    ref={this.drawerSwiperRef}
+                    onPageSelected={this.onPageSelected}
+                    openDrawerOffset={openDrawerOffset}
+                    showTeams={showTeams}
+                >
+                    {lists}
+                </DrawerSwiper>
+            </SafeAreaView>
         );
     };
 

@@ -8,7 +8,6 @@ import {
     Platform,
     View
 } from 'react-native';
-
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ClientUpgradeListener from 'app/components/client_upgrade_listener';
@@ -18,6 +17,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import OfflineIndicator from 'app/components/offline_indicator';
 import PostListRetry from 'app/components/post_list_retry';
+import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -26,10 +26,8 @@ import networkConnectionListener from 'app/utils/network';
 
 import LocalConfig from 'assets/config';
 
-import ChannelDrawerButton from './channel_drawer_button';
+import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
-import ChannelSearchButton from './channel_search_button';
-import ChannelTitle from './channel_title';
 
 class Channel extends PureComponent {
     static propTypes = {
@@ -184,33 +182,32 @@ class Channel extends PureComponent {
                 intl={intl}
                 navigator={navigator}
             >
-                <StatusBar/>
-                <View>
-                    <OfflineIndicator/>
-                    <View style={style.header}>
-                        <ChannelDrawerButton/>
-                        <ChannelTitle onPress={this.goToChannelInfo}/>
-                        <ChannelSearchButton
-                            navigator={navigator}
-                            theme={theme}
-                        />
-                    </View>
-                </View>
-                <KeyboardLayout
-                    behavior='padding'
-                    style={style.keyboardLayout}
+                <SafeAreaView
+                    navigator={navigator}
+                    theme={theme}
                 >
-                    <View style={style.postList}>
-                        <ChannelPostList navigator={navigator}/>
-                    </View>
-                    <ChannelLoader theme={theme}/>
-                    <PostTextbox
-                        ref={this.attachPostTextbox}
+                    <StatusBar/>
+                    <OfflineIndicator/>
+                    <ChannelNavBar
                         navigator={navigator}
+                        onPress={this.goToChannelInfo}
                     />
-                    <ChannelLoader theme={theme}/>
-                </KeyboardLayout>
-                {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+                    <KeyboardLayout
+                        behavior='padding'
+                        style={style.keyboardLayout}
+                    >
+                        <View style={style.postList}>
+                            <ChannelPostList navigator={navigator}/>
+                        </View>
+                        <ChannelLoader theme={theme}/>
+                        <PostTextbox
+                            ref={this.attachPostTextbox}
+                            navigator={navigator}
+                        />
+                        <ChannelLoader theme={theme}/>
+                    </KeyboardLayout>
+                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+                </SafeAreaView>
             </ChannelDrawer>
         );
     }
@@ -218,22 +215,6 @@ class Channel extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        header: {
-            backgroundColor: theme.sidebarHeaderBg,
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            width: '100%',
-            zIndex: 10,
-            ...Platform.select({
-                android: {
-                    height: 46
-                },
-                ios: {
-                    height: 64,
-                    paddingTop: 20
-                }
-            })
-        },
         postList: {
             flex: 1
         },
@@ -244,7 +225,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         keyboardLayout: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-            zIndex: -1,
             paddingBottom: 0
         }
     };

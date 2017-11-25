@@ -13,11 +13,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
+import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import {emptyFunction} from 'app/utils/general';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -45,7 +47,7 @@ export default class EmojiPicker extends PureComponent {
 
     static contextTypes = {
         intl: intlShape.isRequired
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -60,6 +62,7 @@ export default class EmojiPicker extends PureComponent {
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
+        this.isX = DeviceInfo.getModel() === 'iPhone X';
         this.state = {
             emojis,
             emojiSectionIndexByOffset,
@@ -74,6 +77,10 @@ export default class EmojiPicker extends PureComponent {
             this.setState({
                 emojis: this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth)
             });
+
+            if (this.refs.search_bar) {
+                this.refs.search_bar.blur();
+            }
         }
     }
 
@@ -116,7 +123,7 @@ export default class EmojiPicker extends PureComponent {
         });
 
         return nextEmojis;
-    }
+    };
 
     measureEmojiSections = (emojiSections) => {
         let lastOffset = 0;
@@ -127,7 +134,7 @@ export default class EmojiPicker extends PureComponent {
 
             return start;
         });
-    }
+    };
 
     changeSearchTerm = (text) => {
         this.setState({
@@ -149,11 +156,11 @@ export default class EmojiPicker extends PureComponent {
             filteredEmojis: [],
             searchTerm: ''
         });
-    }
+    };
 
     filterEmojiAliases = (aliases, searchTerm) => {
         return aliases.findIndex((alias) => alias.includes(searchTerm)) !== -1;
-    }
+    };
 
     searchEmojis = (searchTerm) => {
         const {emojisByName} = this.props;
@@ -174,11 +181,11 @@ export default class EmojiPicker extends PureComponent {
         });
 
         return [...startsWith.sort(), ...includes.sort()];
-    }
+    };
 
     getNumberOfColumns = (deviceWidth) => {
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * 2)) / (EMOJI_SIZE + (EMOJI_GUTTER * 2)))));
-    }
+    };
 
     renderItem = ({item}) => {
         return (
@@ -190,7 +197,7 @@ export default class EmojiPicker extends PureComponent {
                 onEmojiPress={this.props.onEmojiPress}
             />
         );
-    }
+    };
 
     flatListKeyExtractor = (item) => item;
 
@@ -234,7 +241,7 @@ export default class EmojiPicker extends PureComponent {
                 currentSectionIndex: nextIndex
             });
         }
-    }
+    };
 
     onMomentumScrollEnd = () => {
         if (this.state.jumpToSection) {
@@ -242,7 +249,7 @@ export default class EmojiPicker extends PureComponent {
                 jumpToSection: false
             });
         }
-    }
+    };
 
     scrollToSection = (index) => {
         this.setState({
@@ -255,7 +262,7 @@ export default class EmojiPicker extends PureComponent {
                 viewOffset: 25
             });
         });
-    }
+    };
 
     renderSectionHeader = ({section}) => {
         const {theme} = this.props;
@@ -273,7 +280,7 @@ export default class EmojiPicker extends PureComponent {
                 />
             </View>
         );
-    }
+    };
 
     renderSectionIcons = () => {
         const {theme} = this.props;
@@ -296,13 +303,11 @@ export default class EmojiPicker extends PureComponent {
                 </TouchableOpacity>
             );
         });
-    }
-
-    sectionListKeyExtractor = (item) => item.key
+    };
 
     attachSectionList = (c) => {
         this.sectionList = c;
-    }
+    };
 
     render() {
         const {deviceWidth, isLandscape, theme} = this.props;
@@ -346,48 +351,55 @@ export default class EmojiPicker extends PureComponent {
         let keyboardOffset = 64;
         if (Platform.OS === 'android') {
             keyboardOffset = -200;
+        } else if (this.isX) {
+            keyboardOffset = isLandscape ? 35 : 107;
         } else if (isLandscape) {
-            keyboardOffset = 51;
+            keyboardOffset = 52;
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={{flex: 1}}
-                keyboardVerticalOffset={keyboardOffset}
+            <SafeAreaView
+                excludeHeader={true}
+                theme={theme}
             >
-                <View style={styles.searchBar}>
-                    <SearchBar
-                        ref='search_bar'
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
-                        inputStyle={{
-                            backgroundColor: theme.centerChannelBg,
-                            color: theme.centerChannelColor,
-                            fontSize: 13
-                        }}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.changeSearchTerm}
-                        onCancelButtonPress={this.cancelSearch}
-                        value={searchTerm}
-                    />
-                </View>
-                <View style={styles.container}>
-                    {listComponent}
-                    {!searchTerm &&
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={{flex: 1}}
+                    keyboardVerticalOffset={keyboardOffset}
+                >
+                    <View style={styles.searchBar}>
+                        <SearchBar
+                            ref='search_bar'
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={{
+                                backgroundColor: theme.centerChannelBg,
+                                color: theme.centerChannelColor,
+                                fontSize: 13
+                            }}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.changeSearchTerm}
+                            onCancelButtonPress={this.cancelSearch}
+                            value={searchTerm}
+                        />
+                    </View>
+                    <View style={styles.container}>
+                        {listComponent}
+                        {!searchTerm &&
                         <View style={styles.bottomContentWrapper}>
                             <View style={styles.bottomContent}>
                                 {this.renderSectionIcons()}
                             </View>
                         </View>
-                    }
-                </View>
-            </KeyboardAvoidingView>
+                        }
+                    </View>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 }
@@ -407,6 +419,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             left: 0,
             right: 0,
             height: 35,
+            width: '100%',
             backgroundColor: 'white'
         },
         columnStyle: {

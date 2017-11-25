@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
@@ -19,8 +20,6 @@ import checkNetwork from 'app/utils/network';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 const HEIGHT = 38;
-const NAVBAR = Platform.OS === 'ios' ? 64 : 46;
-const INITIAL_TOP = NAVBAR - HEIGHT;
 const OFFLINE = 'offline';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
@@ -32,6 +31,7 @@ export default class OfflineIndicator extends Component {
             initWebSocket: PropTypes.func.isRequired
         }).isRequired,
         isConnecting: PropTypes.bool,
+        isLandscape: PropTypes.bool,
         isOnline: PropTypes.bool,
         webSocketStatus: PropTypes.string
     };
@@ -43,16 +43,27 @@ export default class OfflineIndicator extends Component {
     constructor(props) {
         super(props);
 
+        this.isX = DeviceInfo.getModel() === 'iPhone X';
+        const navBar = this.getNavBarHeight(props.isLandscape);
+
         this.state = {
             network: null,
-            top: new Animated.Value(INITIAL_TOP)
+            navBar,
+            top: new Animated.Value(navBar - HEIGHT)
         };
 
         this.backgroundColor = new Animated.Value(0);
     }
 
     componentWillReceiveProps(nextProps) {
-        const {webSocketStatus} = this.props;
+        const {isLandscape, webSocketStatus} = this.props;
+
+        if (nextProps.isLandscape !== isLandscape && this.state.network) {
+            const navBar = this.getNavBarHeight(nextProps.isLandscape);
+            const top = new Animated.Value(navBar - HEIGHT);
+            this.setState({navBar, top});
+        }
+
         if (nextProps.isOnline) {
             if (this.state.network && webSocketStatus === RequestStatus.STARTED && nextProps.webSocketStatus === RequestStatus.SUCCESS) {
                 // Show the connected animation only if we had a previous network status
@@ -67,7 +78,7 @@ export default class OfflineIndicator extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return nextState.network !== this.state.network && nextState.network;
+        return (nextState.network !== this.state.network || nextProps.isLandscape !== this.props.isLandscape);
     }
 
     connect = () => {
@@ -94,7 +105,7 @@ export default class OfflineIndicator extends Component {
             ),
             Animated.timing(
                 this.state.top, {
-                    toValue: INITIAL_TOP,
+                    toValue: (this.state.navBar - HEIGHT),
                     duration: 300,
                     delay: 500
                 }
@@ -114,6 +125,23 @@ export default class OfflineIndicator extends Component {
         });
     };
 
+    getNavBarHeight = (isLandscape) => {
+        let navBar = 46;
+        if (Platform.OS === 'ios') {
+            if (this.isX && isLandscape) {
+                navBar = 32;
+            } else if (this.isX) {
+                navBar = 88;
+            } else if (isLandscape) {
+                navBar = 52;
+            } else {
+                navBar = 64;
+            }
+        }
+
+        return navBar;
+    };
+
     offline = () => {
         this.setState({network: OFFLINE}, () => {
             this.show();
@@ -123,7 +151,7 @@ export default class OfflineIndicator extends Component {
     show = () => {
         Animated.timing(
             this.state.top, {
-                toValue: NAVBAR,
+                toValue: this.state.navBar,
                 duration: 300
             }
         ).start();

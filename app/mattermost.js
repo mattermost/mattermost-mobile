@@ -410,12 +410,13 @@ export default class Mattermost {
             this.configurePushNotifications();
         }
 
-        Orientation.getOrientation((orientation) => {
-            this.orientationDidChange(orientation);
-        });
-
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
+
+            const orientation = Orientation.getInitialOrientation();
+            if (orientation) {
+                this.orientationDidChange(orientation);
+            }
 
             const isNotActive = AppState.currentState !== 'active';
             const notification = PushNotifications.getNotification();
