@@ -1922,6 +1922,7 @@
   "mobile.channel_list.alertNo": "No",
   "mobile.channel_list.alertTitleLeaveChannel": "Leave {term}",
   "mobile.channel_list.alertYes": "Yes",
+  "mobile.channel_list.channels": "CHANNELS",
   "mobile.channel_list.closeDM": "Close Direct Message",
   "mobile.channel_list.closeGM": "Close Group Message",
   "mobile.channel_list.dm": "Direct Message",
