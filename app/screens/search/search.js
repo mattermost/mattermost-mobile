@@ -617,7 +617,7 @@ class Search extends PureComponent {
                 forceTop={44}
                 theme={theme}
             >
-                <View style={{flex: 1}}>
+                <View style={style.container}>
                     <StatusBar/>
                     <View style={style.header}>
                         <SearchBar
@@ -666,6 +666,9 @@ class Search extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1
+        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',
