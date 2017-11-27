@@ -19,10 +19,11 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 
 import logo from 'assets/images/logo.png';
 
-import RequestStatus from 'mattermost-redux/constants/request_status';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 export default class Mfa extends PureComponent {
     static propTypes = {
@@ -83,7 +84,7 @@ export default class Mfa extends PureComponent {
         this.textInput.refs.wrappedInstance.blur();
     };
 
-    submit = () => {
+    submit = wrapWithPreventDoubleTap(() => {
         Keyboard.dismiss();
         if (!this.state.token) {
             this.setState({
@@ -98,7 +99,7 @@ export default class Mfa extends PureComponent {
         }
 
         this.props.actions.login(this.props.loginId, this.props.password, this.state.token);
-    };
+    });
 
     render() {
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED;

@@ -24,6 +24,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 
 import logo from 'assets/images/logo.png';
 
@@ -65,6 +66,8 @@ class Login extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
             this.props.actions.handleSuccessfulLogin().then(this.props.actions.getSession).then(this.goToLoadTeam);
+        } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
+            this.setState({isLoading: false});
         }
     }
 
@@ -106,6 +109,9 @@ class Login extends PureComponent {
 
     goToMfa = () => {
         const {intl, navigator, theme} = this.props;
+
+        this.setState({isLoading: false});
+
         navigator.push({
             screen: 'MFA',
             title: intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'}),
@@ -125,10 +131,10 @@ class Login extends PureComponent {
         this.passwd.blur();
     };
 
-    preSignIn = () => {
-        this.setState({error: null});
+    preSignIn = wrapWithPreventDoubleTap(() => {
+        this.setState({error: null, isLoading: true});
         Keyboard.dismiss();
-        InteractionManager.runAfterInteractions(() => {
+        InteractionManager.runAfterInteractions(async () => {
             if (!this.props.loginId) {
                 // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
                 let msgId = 'login.no';
@@ -173,18 +179,17 @@ class Login extends PureComponent {
             }
 
             if (this.props.config.EnableMultifactorAuthentication === 'true') {
-                this.props.actions.checkMfa(this.props.loginId).then((result) => {
-                    if (result.data) {
-                        this.goToMfa();
-                    } else {
-                        this.signIn();
-                    }
-                });
+                const result = await this.props.actions.checkMfa(this.props.loginId);
+                if (result.data) {
+                    this.goToMfa();
+                } else {
+                    this.signIn();
+                }
             } else {
                 this.signIn();
             }
         });
-    };
+    });
 
     signIn = () => {
         const {actions, loginId, loginRequest, password} = this.props;
@@ -288,7 +293,7 @@ class Login extends PureComponent {
     };
 
     render() {
-        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED;
+        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
 
         let proceed;
         if (isLoading) {
