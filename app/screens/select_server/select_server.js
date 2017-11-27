@@ -25,6 +25,7 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {UpgradeTypes} from 'app/constants/view';
 import checkUpgradeType from 'app/utils/client_upgrade';
@@ -163,7 +164,7 @@ class SelectServer extends PureComponent {
         this.blur();
     };
 
-    onClick = async () => {
+    onClick = wrapWithPreventDoubleTap(async () => {
         const preUrl = urlParse(this.props.serverUrl, true);
         const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
         let error = null;
@@ -185,7 +186,7 @@ class SelectServer extends PureComponent {
         }
 
         this.setState({error});
-    };
+    });
 
     inputRef = (ref) => {
         this.textInput = ref;
