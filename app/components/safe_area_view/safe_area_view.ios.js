@@ -79,7 +79,6 @@ export default class SafeAreaIos extends PureComponent {
         case 'willAppear':
         case 'didDisappear':
             this.getSafeAreaInsets();
-            Keyboard.dismiss();
             break;
         }
     };

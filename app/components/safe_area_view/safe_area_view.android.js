@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 export default class SafeAreaAndroid extends PureComponent {
     static propTypes = {
@@ -12,9 +12,15 @@ export default class SafeAreaAndroid extends PureComponent {
 
     render() {
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 {this.props.children}
             </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flex: 1
+    }
+});

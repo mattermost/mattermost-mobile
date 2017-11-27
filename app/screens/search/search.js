@@ -93,7 +93,7 @@ class Search extends PureComponent {
         if (this.refs.searchBar) {
             setTimeout(() => {
                 this.refs.searchBar.focus();
-            }, 500);
+            }, 150);
         }
     }
 
