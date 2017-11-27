@@ -15,6 +15,7 @@ import CustomList from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -144,7 +145,7 @@ class ChannelAddMembers extends PureComponent {
         });
     };
 
-    handleAddMembersPress = () => {
+    handleAddMembersPress = async () => {
         const {selectedMembers} = this.state;
         const {actions, currentChannel} = this.props;
         const membersToAdd = Object.keys(selectedMembers).filter((m) => selectedMembers[m]);
@@ -154,7 +155,9 @@ class ChannelAddMembers extends PureComponent {
             return;
         }
 
-        actions.handleAddChannelMembers(currentChannel.id, membersToAdd);
+        alertErrorIfInvalidPermissions(
+            await actions.handleAddChannelMembers(currentChannel.id, membersToAdd)
+        );
     };
 
     handleRowSelect = (id) => {

@@ -11,6 +11,27 @@ export function alertErrorWithFallback(intl, error, fallback, values) {
     Alert.alert('', msg);
 }
 
+export function alertErrorIfInvalidPermissions(result) {
+    function isForbidden(data) {
+        const {error} = data;
+        return error && error.status_code === 403;
+    }
+
+    let error = null;
+    if (Array.isArray(result)) {
+        const item = result.find((r) => isForbidden(r));
+        if (item) {
+            error = item.error;
+        }
+    } else if (isForbidden(result)) {
+        error = result.error;
+    }
+
+    if (error) {
+        Alert.alert(error.message);
+    }
+}
+
 export function emptyFunction() {
     return;
 }
