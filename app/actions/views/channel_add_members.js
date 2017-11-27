@@ -8,9 +8,9 @@ export function handleAddChannelMembers(channelId, members) {
         try {
             const requests = members.map((m) => dispatch(addChannelMember(channelId, m, getState)));
 
-            await Promise.all(requests);
+            return await Promise.all(requests);
         } catch (error) {
-            // should be handled by global error handling
+            return error;
         }
     };
 }
