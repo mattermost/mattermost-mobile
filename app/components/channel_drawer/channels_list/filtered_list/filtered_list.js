@@ -147,7 +147,7 @@ class FilteredList extends Component {
         },
         channels: {
             builder: this.buildChannelsForSearch,
-            id: 'sidebar.channels',
+            id: 'mobile.channel_list.channels',
             defaultMessage: 'CHANNELS'
         },
         dms: {
