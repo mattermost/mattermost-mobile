@@ -211,6 +211,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderParagraph = ({children, first}) => {
+        if (!children || children.length === 0) {
+            return null;
+        }
+
         const blockStyle = [style.block];
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);

@@ -160,7 +160,7 @@ export default class MarkdownImage extends React.Component {
                 <Image
                     source={{uri: this.props.source}}
                     resizeMode='contain'
-                    style={{width, height}}
+                    style={[{width, height}, style.image]}
                 />
             );
         } else if (this.state.failed) {
@@ -202,5 +202,8 @@ export default class MarkdownImage extends React.Component {
 const style = StyleSheet.create({
     container: {
         flex: 1
+    },
+    image: {
+        marginVertical: 5
     }
 });
