@@ -117,8 +117,7 @@ export function createPost(post) {
 
 export function recordLoadTime(screenName, category) {
     return async (dispatch, getState) => {
-        const state = getState();
-        const {currentUserId} = state.entities.users;
+        const {currentUserId} = getState().entities.users;
 
         recordTime(screenName, category, currentUserId);
     };
