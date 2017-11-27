@@ -227,6 +227,10 @@ class SelectServer extends PureComponent {
         }
 
         const error = pingRequest.error || configRequest.error || licenseRequest.error;
+        let statusStyle = 'dark-content';
+        if (Platform.OS === 'android') {
+            statusStyle = 'light-content';
+        }
 
         return (
             <KeyboardAvoidingView
@@ -234,7 +238,7 @@ class SelectServer extends PureComponent {
                 style={{flex: 1}}
                 keyboardVerticalOffset={0}
             >
-                <StatusBar barStyle='dark-content'/>
+                <StatusBar barStyle={statusStyle}/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image
