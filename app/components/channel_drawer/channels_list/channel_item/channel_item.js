@@ -4,15 +4,20 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Animated,
+    Platform,
     TouchableHighlight,
     Text,
     View
 } from 'react-native';
+import {intlShape} from 'react-intl';
 
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+const {View: AnimatedView} = Animated;
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
@@ -22,10 +27,15 @@ export default class ChannelItem extends PureComponent {
         fake: PropTypes.bool,
         isUnread: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
+        navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         status: PropTypes.string,
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
@@ -34,6 +44,30 @@ export default class ChannelItem extends PureComponent {
             onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
         });
     });
+
+    onPreview = () => {
+        const {channelId, navigator} = this.props;
+        if (Platform.OS === 'ios' && navigator && this.previewRef) {
+            const {intl} = this.context;
+
+            navigator.push({
+                screen: 'ChannelPeek',
+                previewCommit: false,
+                previewView: this.previewRef,
+                previewActions: [{
+                    id: 'action-mark-as-read',
+                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'})
+                }],
+                passProps: {
+                    channelId
+                }
+            });
+        }
+    };
+
+    setPreviewRef = (ref) => {
+        this.previewRef = ref;
+    };
 
     render() {
         const {
@@ -93,25 +127,28 @@ export default class ChannelItem extends PureComponent {
         );
 
         return (
-            <TouchableHighlight
-                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-                onPress={this.onPress}
-            >
-                <View style={style.container}>
-                    {extraBorder}
-                    <View style={[style.item, extraItemStyle]}>
-                        {icon}
-                        <Text
-                            style={[style.text, extraTextStyle]}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                        >
-                            {displayName}
-                        </Text>
-                        {badge}
+            <AnimatedView ref={this.setPreviewRef}>
+                <TouchableHighlight
+                    underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
+                    onPress={this.onPress}
+                    onLongPress={this.onPreview}
+                >
+                    <View style={style.container}>
+                        {extraBorder}
+                        <View style={[style.item, extraItemStyle]}>
+                            {icon}
+                            <Text
+                                style={[style.text, extraTextStyle]}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {displayName}
+                            </Text>
+                            {badge}
+                        </View>
                     </View>
-                </View>
-            </TouchableHighlight>
+                </TouchableHighlight>
+            </AnimatedView>
         );
     }
 }

@@ -10,7 +10,7 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
@@ -21,12 +21,11 @@ import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
-class List extends PureComponent {
+export default class List extends PureComponent {
     static propTypes = {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         directChannelIds: PropTypes.array.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         publicChannelIds: PropTypes.array.isRequired,
@@ -34,6 +33,10 @@ class List extends PureComponent {
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         unreadChannelIds: PropTypes.array.isRequired
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     constructor(props) {
@@ -140,7 +143,8 @@ class List extends PureComponent {
     };
 
     goToCreatePrivateChannel = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.showModal({
             screen: 'CreateChannel',
@@ -162,7 +166,8 @@ class List extends PureComponent {
     });
 
     goToDirectMessages = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.showModal({
             screen: 'MoreDirectMessages',
@@ -186,7 +191,8 @@ class List extends PureComponent {
     });
 
     goToMoreChannels = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
+        const {intl} = this.context;
 
         navigator.showModal({
             screen: 'MoreChannels',
@@ -245,6 +251,7 @@ class List extends PureComponent {
         return (
             <ChannelItem
                 channelId={item}
+                navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
             />
         );
@@ -255,13 +262,15 @@ class List extends PureComponent {
             <ChannelItem
                 channelId={item}
                 isUnread={true}
+                navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
             />
         );
     };
 
     renderSectionHeader = ({section}) => {
-        const {intl, styles} = this.props;
+        const {styles} = this.props;
+        const {intl} = this.context;
         const {
             action,
             bottomSeparator,
@@ -346,5 +355,3 @@ class List extends PureComponent {
         );
     }
 }
-
-export default injectIntl(List);

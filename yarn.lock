@@ -3959,27 +3959,9 @@ makeerror@1.0.x:
   dependencies:
     tmpl "1.0.x"
 
-"mattermost-redux@file:../mattermost-redux":
+mattermost-redux@mattermost/mattermost-redux#master:
   version "1.0.1"
-  dependencies:
-    deep-equal "1.0.1"
-    form-data "2.3.1"
-    harmony-reflect "1.5.1"
-    isomorphic-fetch "2.2.1"
-    mime-db "1.30.0"
-    redux "3.7.2"
-    redux-action-buffer "1.1.0"
-    redux-batched-actions "0.2.0"
-    redux-offline "git+https://github.com/enahum/redux-offline.git"
-    redux-persist "4.9.1"
-    redux-thunk "2.2.0"
-    reselect "3.0.1"
-    serialize-error "2.1.0"
-    shallow-equals "1.0.0"
-
-mattermost-redux@mattermost/mattermost-redux:
-  version "1.0.1"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/c293dff26e4db3cde91bf405677700c9fc6a58d8"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/4f36c293b136cdfb9f44b9536a5006084d0dc758"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
@@ -5137,9 +5119,9 @@ react-native-mock@0.3.1:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.260:
-  version "1.1.260"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.260.tgz#b886e23ab302f330145ecba94029807920421f97"
+react-native-navigation@1.1.295:
+  version "1.1.295"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.295.tgz#3ee6b2fc4f94671246498ed285f3592355c063d3"
   dependencies:
     lodash "4.x.x"
 

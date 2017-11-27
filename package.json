@@ -34,7 +34,7 @@
     "react-native-keyboard-aware-scroll-view": "0.4.1",
     "react-native-linear-gradient": "2.3.0",
     "react-native-local-auth": "enahum/react-native-local-auth.git",
-    "react-native-navigation": "1.1.260",
+    "react-native-navigation": "1.1.295",
     "react-native-notifications": "enahum/react-native-notifications.git",
     "react-native-orientation": "enahum/react-native-orientation.git",
     "react-native-passcode-status": "1.1.0",
