@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     InteractionManager,
-    Platform,
     SectionList,
     Text,
     TouchableHighlight,
@@ -49,7 +48,6 @@ export default class List extends PureComponent {
             width: 0
         };
 
-        this.itemRefs = {};
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
@@ -69,7 +67,6 @@ export default class List extends PureComponent {
             nextProps.directChannelIds !== directChannelIds || nextProps.favoriteChannelIds !== favoriteChannelIds ||
             nextProps.publicChannelIds !== publicChannelIds || nextProps.privateChannelIds !== privateChannelIds ||
             nextProps.unreadChannelIds !== unreadChannelIds) {
-            this.itemRefs = {};
             this.setState({sections: this.buildSections(nextProps)});
         }
     }
@@ -227,25 +224,6 @@ export default class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
-    onPreview = (item) => {
-        if (Platform.OS === 'ios') {
-            const {intl} = this.context;
-
-            this.props.navigator.push({
-                screen: 'ChannelPeek',
-                previewCommit: false,
-                previewView: this.itemRefs[item],
-                previewActions: [{
-                    id: 'action-mark-as-read',
-                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'})
-                }],
-                passProps: {
-                    channelId: item
-                }
-            });
-        }
-    };
-
     renderSectionAction = (styles, action) => {
         const {theme} = this.props;
         return (
@@ -272,12 +250,9 @@ export default class List extends PureComponent {
     renderItem = ({item}) => {
         return (
             <ChannelItem
-                ref={(ref) => {
-                    this.itemRefs[item] = ref;
-                }}
                 channelId={item}
+                navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
-                onLongPress={() => this.onPreview(item)}
             />
         );
     };
@@ -285,13 +260,10 @@ export default class List extends PureComponent {
     renderUnreadItem = ({item}) => {
         return (
             <ChannelItem
-                ref={(ref) => {
-                    this.itemRefs[item] = ref;
-                }}
                 channelId={item}
                 isUnread={true}
+                navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
-                onLongPress={() => this.onPreview(item)}
             />
         );
     };
