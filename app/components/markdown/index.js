@@ -7,7 +7,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -17,7 +16,7 @@ import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {concatStyles} from 'app/utils/theme';
+import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
@@ -39,6 +38,7 @@ export default class Markdown extends PureComponent {
         onLongPress: PropTypes.func,
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
+        theme: PropTypes.object.isRequired,
         value: PropTypes.string.isRequired
     };
 
@@ -220,6 +220,7 @@ export default class Markdown extends PureComponent {
             return null;
         }
 
+        const style = getStyleSheet(this.props.theme);
         const blockStyle = [style.block];
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
@@ -235,6 +236,8 @@ export default class Markdown extends PureComponent {
     }
 
     renderHeading = ({children, level}) => {
+        const style = getStyleSheet(this.props.theme);
+
         return (
             <View style={[style.block, this.props.blockStyles[`heading${level}`]]}>
                 <Text>
@@ -311,6 +314,8 @@ export default class Markdown extends PureComponent {
         let rendered = this.renderText(props);
 
         if (props.isBlock) {
+            const style = getStyleSheet(this.props.theme);
+
             rendered = (
                 <View style={style.block}>
                     {rendered}
@@ -334,15 +339,16 @@ export default class Markdown extends PureComponent {
 
     renderEditedIndicator = ({context}) => {
         let spacer = '';
-        let opacity = Platform.select({ios: 0.7, android: 1});
         if (context[0] === 'paragraph') {
             spacer = ' ';
-            opacity = Platform.select({ios: 0.5, android: 0.6});
         }
-        const styles = [style.editedIndicatorText, {opacity}];
-        if (Platform.OS === 'ios') {
-            styles.push(this.computeTextStyle(this.props.baseTextStyle, context));
-        }
+
+        const style = getStyleSheet(this.props.theme);
+        const styles = [
+            this.props.baseTextStyle,
+            style.editedIndicatorText
+        ];
+
         return (
             <Text
                 style={styles}
@@ -367,7 +373,10 @@ export default class Markdown extends PureComponent {
             if (['heading', 'paragraph'].includes(ast.lastChild.type)) {
                 ast.lastChild.appendChild(editIndicatorNode);
             } else {
-                ast.appendChild(editIndicatorNode);
+                const node = new Node('paragraph');
+                node.appendChild(editIndicatorNode);
+
+                ast.appendChild(node);
             }
         }
 
@@ -375,13 +384,28 @@ export default class Markdown extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    block: {
-        alignItems: 'flex-start',
-        flexDirection: 'row',
-        flexWrap: 'wrap'
-    },
-    editedIndicatorText: {
-        fontSize: 14
-    }
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    // Android has trouble giving text transparency depending on how it's nested,
+    // so we calculate the resulting colour manually
+    const editedOpacity = Platform.select({
+        ios: 0.3,
+        android: 1.0
+    });
+    const editedColor = Platform.select({
+        ios: theme.centerChannelColor,
+        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3)
+    });
+
+    return {
+        block: {
+            alignItems: 'flex-start',
+            flexDirection: 'row',
+            flexWrap: 'wrap'
+        },
+        editedIndicatorText: {
+            color: editedColor,
+            fontSize: 14,
+            opacity: editedOpacity
+        }
+    };
 });
