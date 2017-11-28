@@ -191,7 +191,7 @@ export default class EditChannelInfo extends PureComponent {
 
         if (saving) {
             return (
-                <View style={{flex: 1}}>
+                <View style={style.container}>
                     <StatusBar/>
                     <Loading/>
                 </View>
@@ -210,7 +210,7 @@ export default class EditChannelInfo extends PureComponent {
         }
 
         return (
-            <View style={{flex: 1}}>
+            <View style={style.container}>
                 <StatusBar/>
                 <KeyboardAwareScrollView
                     ref={this.scrollRef}
