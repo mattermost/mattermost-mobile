@@ -3959,7 +3959,7 @@ makeerror@1.0.x:
   dependencies:
     tmpl "1.0.x"
 
-mattermost-redux@mattermost/mattermost-redux#master:
+mattermost-redux@mattermost/mattermost-redux:
   version "1.0.1"
   resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/fb083f67b5560ff64fe251415460a1af5d690e5a"
   dependencies:
