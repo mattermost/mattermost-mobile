@@ -77,7 +77,8 @@ class Search extends PureComponent {
         this.isX = DeviceInfo.getModel() === 'iPhone X';
         this.state = {
             channelName: '',
-            postId: null,
+            focusedChannelId: null,
+            focusedPostId: null,
             preview: false,
             value: '',
             managedConfig: {}
@@ -215,10 +216,13 @@ class Search extends PureComponent {
     };
 
     previewPost = (post) => {
-        const focusedPostId = post.id;
-
         Keyboard.dismiss();
-        this.setState({preview: true, postId: focusedPostId});
+
+        this.setState({
+            preview: true,
+            focusedChannelId: post.channel_id,
+            focusedPostId: post.id
+        });
     };
 
     removeSearchTerms = wrapWithPreventDoubleTap((item) => {
@@ -443,7 +447,11 @@ class Search extends PureComponent {
     });
 
     handleClosePreview = () => {
-        this.setState({preview: false, postId: null});
+        this.setState({
+            preview: false,
+            focusedChannelId: null,
+            focusedPostId: null
+        });
     };
 
     handleJumpToChannel = (channelId, channelDisplayName) => {
@@ -486,7 +494,10 @@ class Search extends PureComponent {
             theme
         } = this.props;
 
-        const {postId, preview, value} = this.state;
+        const {
+            preview,
+            value
+        } = this.state;
         const style = getStyleFromTheme(theme);
         const sections = [{
             data: [{
@@ -578,10 +589,13 @@ class Search extends PureComponent {
 
         let previewComponent;
         if (preview) {
+            const {focusedChannelId, focusedPostId} = this.state;
+
             previewComponent = (
                 <SearchPreview
                     ref='preview'
-                    focusedPostId={postId}
+                    channelId={focusedChannelId}
+                    focusedPostId={focusedPostId}
                     navigator={navigator}
                     onClose={this.handleClosePreview}
                     onPress={this.handleJumpToChannel}
@@ -603,7 +617,7 @@ class Search extends PureComponent {
                 forceTop={44}
                 theme={theme}
             >
-                <View style={{flex: 1}}>
+                <View style={style.container}>
                     <StatusBar/>
                     <View style={style.header}>
                         <SearchBar
@@ -652,6 +666,9 @@ class Search extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1
+        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',
