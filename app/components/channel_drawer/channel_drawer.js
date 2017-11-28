@@ -15,6 +15,7 @@ import SafeAreaView from 'app/components/safe_area_view';
 
 import Drawer from 'app/components/drawer';
 import {alertErrorWithFallback} from 'app/utils/general';
+import tracker from 'app/utils/time_tracker';
 
 import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
@@ -207,6 +208,7 @@ export default class ChannelDrawer extends Component {
             markChannelAsViewed
         } = actions;
 
+        tracker.channelSwitch = Date.now();
         setChannelLoading(channel.id !== currentChannelId);
         setChannelDisplayName(channel.display_name);
 

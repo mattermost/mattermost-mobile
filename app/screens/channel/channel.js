@@ -23,7 +23,7 @@ import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
 import networkConnectionListener from 'app/utils/network';
-
+import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
@@ -39,6 +39,7 @@ class Channel extends PureComponent {
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
+            recordLoadTime: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired
         }).isRequired,
@@ -60,9 +61,21 @@ class Channel extends PureComponent {
         }
     }
 
+    componentDidMount() {
+        if (tracker.initialLoad) {
+            this.props.actions.recordLoadTime('Start time', 'initialLoad');
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
             this.loadChannels(nextProps.currentTeamId);
+        }
+    }
+
+    componentDidUpdate() {
+        if (tracker.teamSwitch) {
+            this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
         }
     }
 

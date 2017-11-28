@@ -16,6 +16,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FormattedText from 'app/components/formatted_text';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import tracker from 'app/utils/time_tracker';
 
 import TeamsListItem from './teams_list_item';
 
@@ -46,6 +47,7 @@ class TeamsList extends PureComponent {
         requestAnimationFrame(() => {
             const {actions, closeChannelDrawer, currentTeamId} = this.props;
             if (teamId !== currentTeamId) {
+                tracker.teamSwitch = Date.now();
                 actions.handleTeamChange(teamId);
             }
 

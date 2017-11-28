@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import 'babel-polyfill';
-import Analytics from 'analytics-react-native';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
@@ -10,7 +9,6 @@ import {IntlProvider} from 'react-intl';
 import {
     Alert,
     AppState,
-    Dimensions,
     InteractionManager,
     NativeModules,
     Platform
@@ -52,6 +50,7 @@ import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
 import {deleteFileCache} from 'app/utils/file';
+import {init as initAnalytics} from 'app/utils/segment';
 import {
     captureException,
     initializeSentry,
@@ -151,38 +150,7 @@ export default class Mattermost {
 
     configureAnalytics = (config) => {
         if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && Config.SegmentApiKey) {
-            if (!global.analytics) {
-                const {height, width} = Dimensions.get('window');
-                global.analytics = new Analytics(Config.SegmentApiKey);
-                global.analytics_context = {
-                    app: {
-                        version: DeviceInfo.getVersion(),
-                        build: DeviceInfo.getBuildNumber()
-                    },
-                    device: {
-                        dimensions: {
-                            height,
-                            width
-                        },
-                        isTablet: DeviceInfo.isTablet(),
-                        os: DeviceInfo.getSystemVersion()
-                    },
-                    server: config.Version
-                };
-
-                global.analytics.identify({
-                    userId: config.DiagnosticId,
-                    context: global.analytics_context,
-                    page: {
-                        path: '',
-                        referrer: '',
-                        search: '',
-                        title: '',
-                        url: ''
-                    },
-                    anonymousId: '00000000000000000000000000'
-                });
-            }
+            initAnalytics(config);
         } else {
             global.analytics = null;
         }
@@ -416,6 +384,16 @@ export default class Mattermost {
             const orientation = Orientation.getInitialOrientation();
             if (orientation) {
                 this.orientationDidChange(orientation);
+            }
+
+            const {config} = state.entities.general;
+            if (config) {
+                this.configureAnalytics(config);
+            }
+
+            const {currentUserId} = state.entities.users;
+            if (currentUserId) {
+                Client4.setUserId(currentUserId);
             }
 
             const isNotActive = AppState.currentState !== 'active';

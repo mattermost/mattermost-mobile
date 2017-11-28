@@ -20,6 +20,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import tracker from 'app/utils/time_tracker';
 
 const postMessageJS = "setTimeout(function() { postMessage(document.body.innerText, '*')});";
 
@@ -81,6 +82,7 @@ class SSO extends PureComponent {
 
     goToLoadTeam = (expiresAt) => {
         const {intl, navigator, theme} = this.props;
+        tracker.initialLoad = Date.now();
 
         if (expiresAt) {
             PushNotifications.localNotificationSchedule({
