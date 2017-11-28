@@ -254,7 +254,7 @@ export default class EditChannel extends PureComponent {
             },
             navigator,
             theme,
-            currentTeamUrl,
+            currentTeamUrl
         } = this.props;
         const {
             error,
@@ -283,12 +283,10 @@ export default class EditChannel extends PureComponent {
                 header={header}
                 purpose={purpose}
                 editing={true}
-                oldChannel={{
-                    displayName: oldDisplayName,
-                    channelURL: oldChannelURL,
-                    purpose: oldPurpose,
-                    header: oldHeader
-                }}
+                oldDisplayName={oldDisplayName}
+                oldChannelURL={oldChannelURL}
+                oldPurpose={oldPurpose}
+                oldHeader={oldHeader}
             />
         );
     }

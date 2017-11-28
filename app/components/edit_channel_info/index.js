@@ -43,13 +43,10 @@ export default class EditChannelInfo extends PureComponent {
         onChannelURLChange: PropTypes.func,
         onPurposeChange: PropTypes.func,
         onHeaderChange: PropTypes.func,
-        oldChannel: PropTypes.shape({
-            displayName: PropTypes.string,
-            currentTeamUrl: PropTypes.string,
-            channelURL: PropTypes.string,
-            purpose: PropTypes.string,
-            header: PropTypes.string
-        })
+        oldDisplayName: PropTypes.string,
+        oldChannelURL: PropTypes.string,
+        oldHeader: PropTypes.string,
+        oldPurpose: PropTypes.string
     };
 
     static defaultProps = {
@@ -108,12 +105,10 @@ export default class EditChannelInfo extends PureComponent {
 
     canUpdate = (displayName, channelURL, purpose, header) => {
         const {
-            oldChannel: {
-                displayName: oldDisplayName,
-                channelURL: oldChannelURL,
-                purpose: oldPurpose,
-                header: oldHeader
-            }
+            oldDisplayName,
+            oldChannelURL,
+            oldPurpose,
+            oldHeader
         } = this.props;
 
         return displayName !== oldDisplayName || channelURL !== oldChannelURL ||
