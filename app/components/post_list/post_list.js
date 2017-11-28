@@ -81,7 +81,7 @@ export default class PostList extends PureComponent {
 
     scrollList = () => {
         InteractionManager.runAfterInteractions(() => {
-            if (this.props.postIds.length && this.newMessagesIndex !== -1) {
+            if (this.props.postIds.length && this.newMessagesIndex !== -1 && this.newMessagesIndex <= this.props.postIds.length) {
                 if (this.refs.list) {
                     this.refs.list.scrollToIndex({
                         index: this.newMessagesIndex,
