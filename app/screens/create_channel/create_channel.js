@@ -186,7 +186,7 @@ export default class CreateChannel extends PureComponent {
                 theme={theme}
                 enableRightButton={this.emitCanCreateChannel}
                 error={error}
-                creating={creating}
+                saving={creating}
                 onDisplayNameChange={this.onDisplayNameChange}
                 onPurposeChange={this.onPurposeChange}
                 onHeaderChange={this.onHeaderChange}

@@ -29,9 +29,8 @@ export default class ChannelInfo extends PureComponent {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         displayHeaderOnly: PropTypes.bool,
-        creating: PropTypes.bool,
         editing: PropTypes.bool,
-        updating: PropTypes.bool,
+        saving: PropTypes.bool,
         error: PropTypes.string,
         displayName: PropTypes.string,
         currentTeamUrl: PropTypes.string,
@@ -174,14 +173,14 @@ export default class ChannelInfo extends PureComponent {
     render() {
         const {theme, editing, displayHeaderOnly, currentTeamUrl} = this.props;
         const {displayName, channelURL, header, purpose} = this.props;
-        const {error, creating, updating} = this.props;
+        const {error, saving} = this.props;
         const {height, width} = Dimensions.get('window');
         const fullUrl = currentTeamUrl + '/channels';
         const shortUrl = getShortenedURL(fullUrl, 35);
 
         const style = getStyleSheet(theme);
 
-        if (creating || updating) {
+        if (saving) {
             return (
                 <View style={{flex: 1}}>
                     <StatusBar/>

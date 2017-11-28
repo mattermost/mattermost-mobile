@@ -272,7 +272,7 @@ export default class EditChannel extends PureComponent {
                 theme={theme}
                 enableRightButton={this.emitCanUpdateChannel}
                 error={error}
-                updating={updating}
+                saving={updating}
                 displayHeaderOnly={isDMorGM}
                 currentTeamUrl={currentTeamUrl}
                 onDisplayNameChange={this.onDisplayNameChange}
