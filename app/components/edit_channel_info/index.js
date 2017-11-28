@@ -59,6 +59,7 @@ export default class EditChannelInfo extends PureComponent {
             this.nameInput.refs.wrappedInstance.blur();
         }
 
+        // TODO: uncomment below once the channel URL field is added
         // if (this.urlInput) {
         //     this.urlInput.refs.wrappedInstance.blur();
         // }
