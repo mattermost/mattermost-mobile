@@ -56,12 +56,22 @@ export default class ChannelInfo extends PureComponent {
     };
 
     blur = () => {
-        this.nameInput.refs.wrappedInstance.blur();
+        if (this.nameInput) {
+            this.nameInput.refs.wrappedInstance.blur();
+        }
 
-        // this.urlInput.refs.wrappedInstance.blur();
-        this.purposeInput.refs.wrappedInstance.blur();
-        this.headerInput.refs.wrappedInstance.blur();
-        this.scroll.scrollToPosition(0, 0, true);
+        // if (this.urlInput) {
+        //     this.urlInput.refs.wrappedInstance.blur();
+        // }
+        if (this.purposeInput) {
+            this.purposeInput.refs.wrappedInstance.blur();
+        }
+        if (this.headerInput) {
+            this.headerInput.refs.wrappedInstance.blur();
+        }
+        if (this.scroll) {
+            this.scroll.scrollToPosition(0, 0, true);
+        }
     };
 
     channelNameRef = (ref) => {
