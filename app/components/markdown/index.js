@@ -142,6 +142,11 @@ export default class Markdown extends PureComponent {
     }
 
     renderText = ({context, literal}) => {
+        if (context.indexOf('image') !== -1) {
+            // If this text is displayed, it will be styled by the image component
+            return <Text>{literal}</Text>;
+        }
+
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         return <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>{literal}</Text>;
     }
@@ -156,7 +161,7 @@ export default class Markdown extends PureComponent {
                 linkDestination={linkDestination}
                 onLongPress={this.props.onLongPress}
                 source={src}
-                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
             >
                 {reactChildren}
             </MarkdownImage>

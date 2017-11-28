@@ -28,7 +28,7 @@ export default class MarkdownImage extends React.Component {
         linkDestination: PropTypes.string,
         onLongPress: PropTypes.func,
         source: PropTypes.string.isRequired,
-        textStyle: CustomPropTypes.Style
+        errorTextStyle: CustomPropTypes.Style
     };
 
     static contextTypes = {
@@ -165,9 +165,8 @@ export default class MarkdownImage extends React.Component {
             );
         } else if (this.state.failed) {
             image = (
-                <Text>
+                <Text style={this.props.errorTextStyle}>
                     <FormattedText
-                        style={this.props.textStyle}
                         id='mobile.markdown.image.error'
                         defaultMessage='Image failed to load:'
                     />
