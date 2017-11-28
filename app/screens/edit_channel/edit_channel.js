@@ -14,6 +14,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {ViewTypes} from 'app/constants';
 
+import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {cleanUpUrlable} from 'app/utils/url';
 
 const messages = {
@@ -189,7 +190,7 @@ export default class EditChannel extends PureComponent {
         return {error: formatMessage(messages.name_lowercase)};
     };
 
-    onUpdateChannel = () => {
+    onUpdateChannel = async () => {
         Keyboard.dismiss();
         const {displayName, channelURL, purpose, header} = this.state;
         const {channel: {id}} = this.props;
@@ -211,7 +212,9 @@ export default class EditChannel extends PureComponent {
             return;
         }
 
-        this.props.actions.patchChannel(id, channel);
+        alertErrorIfInvalidPermissions(
+            await this.props.actions.patchChannel(id, channel)
+        );
     };
 
     onNavigatorEvent = (event) => {
