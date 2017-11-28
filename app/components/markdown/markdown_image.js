@@ -8,6 +8,7 @@ import {
     Clipboard,
     Image,
     Linking,
+    Platform,
     StyleSheet,
     Text,
     TouchableHighlight,
@@ -21,6 +22,9 @@ import mattermostManaged from 'app/mattermost_managed';
 import {normalizeProtocol} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
+
+const ANDROID_MAX_HEIGHT = 4096;
+const ANDROID_MAX_WIDTH = 4096;
 
 export default class MarkdownImage extends React.Component {
     static propTypes = {
@@ -143,26 +147,45 @@ export default class MarkdownImage extends React.Component {
         if (this.state.width && this.state.height && this.state.maxWidth) {
             let {width, height} = this.state;
 
-            const maxWidth = this.state.maxWidth;
-            if (width > maxWidth) {
-                height = height * (maxWidth / width);
-                width = maxWidth;
-            }
+            if (Platform.OS === 'android' && (width > ANDROID_MAX_WIDTH || height > ANDROID_MAX_HEIGHT)) {
+                // Android has a cap on the max image size that can be displayed
 
-            const maxHeight = MAX_IMAGE_HEIGHT;
-            if (height > maxHeight) {
-                width = width * (maxHeight / height);
-                height = maxHeight;
-            }
+                image = (
+                    <Text style={this.props.errorTextStyle}>
+                        <FormattedText
+                            id='mobile.markdown.image.too_large'
+                            defaultMessage='Image exceeds max dimensions of {maxWidth} by {maxHeight}:'
+                            values={{
+                                maxWidth: ANDROID_MAX_WIDTH,
+                                maxHeight: ANDROID_MAX_HEIGHT
+                            }}
+                        />
+                        {' '}
+                        {this.props.children}
+                    </Text>
+                );
+            } else {
+                const maxWidth = this.state.maxWidth;
+                if (width > maxWidth) {
+                    height = height * (maxWidth / width);
+                    width = maxWidth;
+                }
 
-            // React Native complains if we try to pass resizeMode as a style
-            image = (
-                <Image
-                    source={{uri: this.props.source}}
-                    resizeMode='contain'
-                    style={[{width, height}, style.image]}
-                />
-            );
+                const maxHeight = MAX_IMAGE_HEIGHT;
+                if (height > maxHeight) {
+                    width = width * (maxHeight / height);
+                    height = maxHeight;
+                }
+
+                // React Native complains if we try to pass resizeMode as a style
+                image = (
+                    <Image
+                        source={{uri: this.props.source}}
+                        resizeMode='contain'
+                        style={[{width, height}, style.image]}
+                    />
+                );
+            }
         } else if (this.state.failed) {
             image = (
                 <Text style={this.props.errorTextStyle}>

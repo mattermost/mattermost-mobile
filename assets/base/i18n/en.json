@@ -2008,6 +2008,7 @@
   "mobile.markdown.code.copy_code": "Copy Code",
   "mobile.markdown.code.plusMoreLines": "+{count, number} more lines",
   "mobile.markdown.image.error": "Image failed to load:",
+  "mobile.markdown.image.too_large": "Image exceeds max dimensions of {maxWidth} by {maxHeight}:",
   "mobile.markdown.link.copy_url": "Copy URL",
   "mobile.mention.copy_mention": "Copy Mention",
   "mobile.more_dms.start": "Start",
