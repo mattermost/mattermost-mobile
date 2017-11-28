@@ -3,10 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Platform,
-    View
-} from 'react-native';
+import {View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -123,15 +120,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             elevation: 5,
             flex: 1,
             maxHeight: 250,
-            zIndex: 5,
-            ...Platform.select({
-                android: {
-                    top: 47
-                },
-                ios: {
-                    top: 64
-                }
-            })
+            zIndex: 5
         }
     };
 });
