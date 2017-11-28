@@ -14,7 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
 
@@ -68,7 +68,7 @@ class Settings extends PureComponent {
         return contents.join('\n');
     };
 
-    goToAbout = () => {
+    goToAbout = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'About',
@@ -81,9 +81,9 @@ class Settings extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor
             }
         });
-    };
+    });
 
-    goToNotifications = () => {
+    goToNotifications = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'NotificationSettings',
@@ -97,9 +97,9 @@ class Settings extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
-    };
+    });
 
-    goToAdvancedSettings = () => {
+    goToAdvancedSettings = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'AdvancedSettings',
@@ -113,9 +113,9 @@ class Settings extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
-    };
+    });
 
-    goToSelectTeam = () => {
+    goToSelectTeam = wrapWithPreventDoubleTap(() => {
         const {currentUrl, intl, navigator, theme} = this.props;
 
         navigator.push({
@@ -134,14 +134,16 @@ class Settings extends PureComponent {
                 theme
             }
         });
-    };
+    });
 
-    goToClientUpgrade = () => {
+    goToClientUpgrade = wrapWithPreventDoubleTap(() => {
         const {intl, theme} = this.props;
 
         this.props.navigator.push({
             screen: 'ClientUpgrade',
-            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
+            title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'}),
+            animated: true,
+            backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: false,
                 statusBarHidden: true,
@@ -154,16 +156,12 @@ class Settings extends PureComponent {
                 userCheckedForUpgrade: true
             }
         });
-    }
+    });
 
-    handlePress = (action) => {
-        preventDoubleTap(action, this);
-    };
-
-    logout = () => {
+    logout = wrapWithPreventDoubleTap(() => {
         const {logout} = this.props.actions;
         InteractionManager.runAfterInteractions(logout);
-    };
+    });
 
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
@@ -175,20 +173,30 @@ class Settings extends PureComponent {
         }
     };
 
-    openErrorEmail = () => {
+    openErrorEmail = wrapWithPreventDoubleTap(() => {
         const {config} = this.props;
         const recipient = config.SupportEmail;
         const subject = `Problem with ${config.SiteName} React Native app`;
-        Linking.openURL(
-            `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`
-        );
-        this.props.actions.clearErrors();
-    };
+        const mailTo = `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`;
 
-    openHelp = () => {
+        Linking.canOpenURL(mailTo).then((supported) => {
+            if (supported) {
+                Linking.openURL(mailTo);
+                this.props.actions.clearErrors();
+            }
+        });
+    });
+
+    openHelp = wrapWithPreventDoubleTap(() => {
         const {config} = this.props;
-        Linking.openURL(config.HelpLink.toLowerCase());
-    };
+        const link = config.HelpLink ? config.HelpLink.toLowerCase() : '';
+
+        Linking.canOpenURL(link).then((supported) => {
+            if (supported) {
+                Linking.openURL(link);
+            }
+        });
+    });
 
     render() {
         const {config, joinableTeams, theme} = this.props;
@@ -207,7 +215,7 @@ class Settings extends PureComponent {
                         i18nId='user.settings.modal.notifications'
                         iconName='ios-notifications'
                         iconType='ion'
-                        onPress={() => this.handlePress(this.goToNotifications)}
+                        onPress={this.goToNotifications}
                         showArrow={showArrow}
                         theme={theme}
                     />
@@ -217,7 +225,7 @@ class Settings extends PureComponent {
                         i18nId='mobile.select_team.join_open'
                         iconName='list'
                         iconType='foundation'
-                        onPress={() => this.handlePress(this.goToSelectTeam)}
+                        onPress={this.goToSelectTeam}
                         showArrow={showArrow}
                         theme={theme}
                     />
@@ -228,7 +236,7 @@ class Settings extends PureComponent {
                         i18nId='mobile.help.title'
                         iconName='md-help'
                         iconType='ion'
-                        onPress={() => this.handlePress(this.openHelp)}
+                        onPress={this.openHelp}
                         showArrow={showArrow}
                         theme={theme}
                     />
@@ -238,7 +246,7 @@ class Settings extends PureComponent {
                         i18nId='sidebar_right_menu.report'
                         iconName='exclamation'
                         iconType='fontawesome'
-                        onPress={() => this.handlePress(this.openErrorEmail)}
+                        onPress={this.openErrorEmail}
                         showArrow={showArrow}
                         theme={theme}
                     />
@@ -247,7 +255,7 @@ class Settings extends PureComponent {
                         i18nId='mobile.advanced_settings.title'
                         iconName='ios-hammer'
                         iconType='ion'
-                        onPress={() => this.handlePress(this.goToAdvancedSettings)}
+                        onPress={this.goToAdvancedSettings}
                         showArrow={showArrow}
                         theme={theme}
                     />
@@ -257,7 +265,7 @@ class Settings extends PureComponent {
                             i18nId='mobile.settings.modal.check_for_upgrade'
                             iconName='update'
                             iconType='material'
-                            onPress={() => this.handlePress(this.goToClientUpgrade)}
+                            onPress={this.goToClientUpgrade}
                             showArrow={showArrow}
                             theme={theme}
                         />
@@ -267,7 +275,7 @@ class Settings extends PureComponent {
                         i18nId='about.title'
                         iconName='ios-information-circle'
                         iconType='ion'
-                        onPress={() => this.handlePress(this.goToAbout)}
+                        onPress={this.goToAbout}
                         separator={false}
                         showArrow={showArrow}
                         theme={theme}
@@ -280,7 +288,7 @@ class Settings extends PureComponent {
                             defaultMessage='Logout'
                             i18nId='sidebar_right_menu.logout'
                             isDestructor={true}
-                            onPress={() => this.handlePress(this.logout)}
+                            onPress={this.logout}
                             separator={false}
                             showArrow={false}
                             theme={theme}

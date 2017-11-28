@@ -16,6 +16,7 @@ import {
     setChannelDisplayName,
     setChannelLoading
 } from 'app/actions/views/channel';
+import {isLandscape} from 'app/selectors/device';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
 
 import Search from './search';
@@ -29,6 +30,7 @@ function mapStateToProps(state) {
     return {
         currentTeamId,
         currentChannelId,
+        isLandscape: isLandscape(state),
         postIds: state.entities.search.results,
         recent: recent[currentTeamId],
         searchingStatus: searchRequest.status

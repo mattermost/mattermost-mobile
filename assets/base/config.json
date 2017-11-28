@@ -33,9 +33,9 @@
     
     "AutoSelectServerUrl": false,
 
-    "EnableMobileClientUpgrade": false,
-    "EnableMobileClientUpgradeUserSetting": false,
-    "EnableForceMobileClientUpgrade": false,
-    "MobileClientUpgradeAndroidApkLink": "",
-    "MobileClientUpgradeIosIpaLink": ""
+    "EnableMobileClientUpgrade": true,
+    "EnableMobileClientUpgradeUserSetting": true,
+    "EnableForceMobileClientUpgrade": true,
+    "MobileClientUpgradeAndroidApkLink": "https://about.mattermost.com/mattermost-android-app/",
+    "MobileClientUpgradeIosIpaLink": "https://about.mattermost.com/mattermost-ios-app/"
 }

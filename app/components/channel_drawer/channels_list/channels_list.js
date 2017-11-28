@@ -34,7 +34,7 @@ class ChannelsList extends React.PureComponent {
 
     constructor(props) {
         super(props);
-        this.firstUnreadChannel = null;
+
         this.state = {
             searching: false,
             term: ''
@@ -192,12 +192,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1
         },
         statusBar: {
-            backgroundColor: theme.sidebarHeaderBg,
-            ...Platform.select({
-                ios: {
-                    paddingTop: 20
-                }
-            })
+            backgroundColor: theme.sidebarHeaderBg
         },
         headerContainer: {
             alignItems: 'center',

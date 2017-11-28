@@ -134,6 +134,8 @@ export default class Search extends Component {
 
     blur = () => {
         this.refs.input_keyword.getNode().blur();
+        this.setState({expanded: false});
+        this.collapseAnimation();
     };
 
     focus = () => {

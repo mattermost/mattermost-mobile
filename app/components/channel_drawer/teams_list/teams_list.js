@@ -148,12 +148,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1
         },
         statusBar: {
-            backgroundColor: theme.sidebarHeaderBg,
-            ...Platform.select({
-                ios: {
-                    paddingTop: 20
-                }
-            })
+            backgroundColor: theme.sidebarHeaderBg
         },
         headerContainer: {
             alignItems: 'center',
