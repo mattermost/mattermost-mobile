@@ -590,6 +590,13 @@ class Search extends PureComponent {
             );
         }
 
+        const searchBarInput = {
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 15,
+            lineHeight: 66
+        };
+
         return (
             <SafeAreaView
                 excludeHeader={isLandscape && this.isX}
@@ -605,7 +612,7 @@ class Search extends PureComponent {
                             cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
                             inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                            inputStyle={style.searchBarInput}
+                            inputStyle={searchBarInput}
                             placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                             selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                             tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -657,12 +664,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     height: 44
                 }
             })
-        },
-        searchBarInput: {
-            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
-            color: theme.sidebarHeaderTextColor,
-            fontSize: 15,
-            lineHeight: 66
         },
         searchBarContainer: {
             padding: 0

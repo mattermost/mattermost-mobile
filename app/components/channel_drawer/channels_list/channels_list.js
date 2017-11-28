@@ -140,6 +140,13 @@ class ChannelsList extends React.PureComponent {
             );
         }
 
+        const searchBarInput = {
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 15,
+            lineHeight: 66
+        };
+
         const title = (
             <View style={styles.searchContainer}>
                 <SearchBar
@@ -148,7 +155,7 @@ class ChannelsList extends React.PureComponent {
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
                     inputHeight={33}
-                    inputStyle={styles.searchBarInput}
+                    inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -267,12 +274,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 3
                 }
             })
-        },
-        searchBarInput: {
-            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
-            color: theme.sidebarHeaderTextColor,
-            fontSize: 15,
-            lineHeight: 66
         },
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),
