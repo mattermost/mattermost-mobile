@@ -27,18 +27,18 @@ import {getShortenedURL} from 'app/utils/url';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {
-        navigator: PropTypes.object,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         channelType: PropTypes.string,
+        enableRightButton: PropTypes.func,
+        saving: PropTypes.bool.isRequired,
         editing: PropTypes.bool,
-        saving: PropTypes.bool,
         error: PropTypes.string,
         displayName: PropTypes.string,
         currentTeamUrl: PropTypes.string,
         channelURL: PropTypes.string,
         purpose: PropTypes.string,
         header: PropTypes.string,
-        enableRightButton: PropTypes.func,
         onDisplayNameChange: PropTypes.func,
         onChannelURLChange: PropTypes.func,
         onPurposeChange: PropTypes.func,

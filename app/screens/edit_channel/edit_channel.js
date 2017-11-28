@@ -49,11 +49,11 @@ const messages = {
 
 export default class EditChannel extends PureComponent {
     static propTypes = {
-        channel: PropTypes.object.isRequired,
-        currentTeamUrl: PropTypes.string,
-        updateChannelRequest: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        channel: PropTypes.object.isRequired,
+        currentTeamUrl: PropTypes.string.isRequired,
+        updateChannelRequest: PropTypes.object.isRequired,
         closeButton: PropTypes.object,
         actions: PropTypes.shape({
             patchChannel: PropTypes.func.isRequired

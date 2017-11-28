@@ -15,9 +15,9 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {
-        createChannelRequest: PropTypes.object.isRequired,
-        navigator: PropTypes.object,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        createChannelRequest: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         closeButton: PropTypes.object,
         actions: PropTypes.shape({
