@@ -26,8 +26,8 @@ class RadioButton extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            scaleValue: new Animated.Value(0.001),
-            opacityValue: new Animated.Value(0.1)
+            scaleValue: new Animated.Value(0),
+            opacityValue: new Animated.Value(0)
         };
 
         this.responder = {
@@ -134,7 +134,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: 'rgba(0,0,0,0)',
+            backgroundColor: theme.centerChannelBg,
             marginBottom: 15
         },
         ripple: {
