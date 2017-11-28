@@ -342,8 +342,8 @@ class PostTextbox extends PureComponent {
     };
 
     sendCommand = async (msg) => {
-        const {actions, channelId, intl} = this.props;
-        const {error} = await actions.executeCommand(msg, channelId);
+        const {actions, channelId, intl, rootId} = this.props;
+        const {error} = await actions.executeCommand(msg, channelId, rootId);
 
         if (error) {
             Alert.alert(

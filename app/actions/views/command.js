@@ -4,7 +4,7 @@
 import {executeCommand as executeCommandService} from 'mattermost-redux/actions/integrations';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
-export function executeCommand(message, channelId) {
+export function executeCommand(message, channelId, rootId) {
     return async (dispatch, getState) => {
         const state = getState();
 
@@ -12,7 +12,9 @@ export function executeCommand(message, channelId) {
 
         const args = {
             channel_id: channelId,
-            team_id: teamId
+            team_id: teamId,
+            root_id: rootId,
+            parent_id: rootId
         };
 
         let msg = message;
