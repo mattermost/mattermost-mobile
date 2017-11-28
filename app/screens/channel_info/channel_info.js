@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import StatusBar from 'app/components/status_bar';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -35,6 +35,7 @@ class ChannelInfo extends PureComponent {
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
+        canEditChannel: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             closeDMChannel: PropTypes.func.isRequired,
             closeGMChannel: PropTypes.func.isRequired,
@@ -74,7 +75,7 @@ class ChannelInfo extends PureComponent {
         }
     };
 
-    goToChannelAddMembers = () => {
+    goToChannelAddMembers = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             backButtonTitle: '',
@@ -88,9 +89,9 @@ class ChannelInfo extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
-    };
+    });
 
-    goToChannelMembers = () => {
+    goToChannelMembers = wrapWithPreventDoubleTap(() => {
         const {canManageUsers, intl, navigator, theme} = this.props;
         const id = canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers';
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
@@ -107,9 +108,36 @@ class ChannelInfo extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg
             }
         });
+    });
+
+    handleChannelEdit = wrapWithPreventDoubleTap(() => {
+        const {intl, navigator, theme} = this.props;
+        const id = 'mobile.channel_info.edit';
+        const defaultMessage = 'Edit Channel';
+
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'EditChannel',
+            title: intl.formatMessage({id, defaultMessage}),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
+    });
+
+    handleLeave = () => {
+        this.handleDeleteOrLeave('leave');
     };
 
-    handleDeleteOrLeave(eventType) {
+    handleDelete = () => {
+        this.handleDeleteOrLeave('delete');
+    };
+
+    handleDeleteOrLeave = wrapWithPreventDoubleTap((eventType) => {
         const {formatMessage} = this.props.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === General.OPEN_CHANNEL ?
@@ -171,9 +199,9 @@ class ChannelInfo extends PureComponent {
                 onPress: onPressAction
             }],
         );
-    }
+    });
 
-    handleClose = () => {
+    handleClose = wrapWithPreventDoubleTap(() => {
         const {currentChannel, isCurrent, isFavorite} = this.props;
         const channel = Object.assign({}, currentChannel, {isCurrent}, {isFavorite});
         const {closeDMChannel, closeGMChannel} = this.props.actions;
@@ -190,7 +218,7 @@ class ChannelInfo extends PureComponent {
             });
             break;
         }
-    };
+    });
 
     handleFavorite = () => {
         const {isFavorite, actions, currentChannel} = this.props;
@@ -232,6 +260,7 @@ class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             canManageUsers,
+            canEditChannel,
             navigator,
             status,
             theme
@@ -299,7 +328,7 @@ class ChannelInfo extends PureComponent {
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
-                                    action={() => preventDoubleTap(this.goToChannelMembers)}
+                                    action={this.goToChannelMembers}
                                     defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                                     detail={currentChannelMemberCount}
                                     icon='users'
@@ -312,7 +341,7 @@ class ChannelInfo extends PureComponent {
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
-                                    action={() => preventDoubleTap(this.goToChannelAddMembers)}
+                                    action={this.goToChannelAddMembers}
                                     defaultMessage='Add Members'
                                     icon='user-plus'
                                     textId='channel_header.addMembers'
@@ -320,11 +349,23 @@ class ChannelInfo extends PureComponent {
                                 />
                             </View>
                         }
+                        {canEditChannel && (
+                            <View>
+                                <View style={style.separator}/>
+                                <ChannelInfoRow
+                                    action={this.handleChannelEdit}
+                                    defaultMessage='Edit Channel'
+                                    icon='edit'
+                                    textId='mobile.channel_info.edit'
+                                    theme={theme}
+                                />
+                            </View>
+                        )}
                         {this.renderLeaveOrDeleteChannelRow() &&
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
-                                    action={() => preventDoubleTap(this.handleDeleteOrLeave, this, 'leave')}
+                                    action={this.handleLeave}
                                     defaultMessage='Leave Channel'
                                     icon='sign-out'
                                     textId='navbar.leave'
@@ -336,7 +377,7 @@ class ChannelInfo extends PureComponent {
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel &&
                         <View style={style.footer}>
                             <ChannelInfoRow
-                                action={() => preventDoubleTap(this.handleDeleteOrLeave, this, 'delete')}
+                                action={this.handleDelete}
                                 defaultMessage='Delete Channel'
                                 icon='trash'
                                 iconColor='#CA3B27'
@@ -349,7 +390,7 @@ class ChannelInfo extends PureComponent {
                     {this.renderCloseDirect() &&
                     <View style={style.footer}>
                         <ChannelInfoRow
-                            action={() => preventDoubleTap(this.handleClose, this)}
+                            action={this.handleClose}
                             defaultMessage={defaultMessage}
                             icon='times'
                             iconColor='#CA3B27'

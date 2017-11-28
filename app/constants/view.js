@@ -65,5 +65,7 @@ export default {
     ...ViewTypes,
     POST_VISIBILITY_CHUNK_SIZE: 15,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
-    EMBED_PREVIEW: 'embed_preview'
+    EMBED_PREVIEW: 'embed_preview',
+    MIN_CHANNELNAME_LENGTH: 2,
+    MAX_CHANNELNAME_LENGTH: 22
 };

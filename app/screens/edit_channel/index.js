@@ -4,19 +4,24 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleCreateChannel} from 'app/actions/views/create_channel';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
+import {patchChannel} from 'mattermost-redux/actions/channels';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getDimensions} from 'app/selectors/device';
 
-import CreateChannel from './create_channel';
+import EditChannel from './edit_channel';
 
 function mapStateToProps(state) {
-    const {createChannel: createChannelRequest} = state.requests.channels;
+    const {updateChannel: updateChannelRequest} = state.requests.channels;
+    const channel = getCurrentChannel(state);
     const {deviceWidth, deviceHeight} = getDimensions(state);
 
     return {
-        createChannelRequest,
+        channel,
+        currentTeamUrl: getCurrentTeamUrl(state),
+        updateChannelRequest,
         theme: getTheme(state),
         deviceWidth,
         deviceHeight
@@ -26,9 +31,9 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleCreateChannel
+            patchChannel
         }, dispatch)
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateChannel);
+export default connect(mapStateToProps, mapDispatchToProps)(EditChannel);

@@ -1,6 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {latinise} from './latinise.js';
+
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 const imgRegex = /.+\/(.+\.(?:jpg|gif|bmp|png|jpeg))(?:\?.*)?$/i;
 
@@ -55,4 +57,21 @@ export function normalizeProtocol(url) {
 
     const protocol = url.substring(0, index);
     return protocol.toLowerCase() + url.substring(index);
+}
+
+export function getShortenedURL(url = '', getLength = 27) {
+    if (url.length > 35) {
+        const subLength = getLength - 14;
+        return url.substring(0, 10) + '...' + url.substring(url.length - subLength, url.length) + '/';
+    }
+    return url + '/';
+}
+
+export function cleanUpUrlable(input) {
+    var cleaned = latinise(input);
+    cleaned = cleaned.trim().replace(/-/g, ' ').replace(/[^\w\s]/gi, '').toLowerCase().replace(/\s/g, '-');
+    cleaned = cleaned.replace(/-{2,}/, '-');
+    cleaned = cleaned.replace(/^-+/, '');
+    cleaned = cleaned.replace(/-+$/, '');
+    return cleaned;
 }

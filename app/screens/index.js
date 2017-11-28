@@ -11,6 +11,7 @@ import AdvancedSettings from 'app/screens/settings/advanced_settings';
 import Channel from 'app/screens/channel';
 import ChannelAddMembers from 'app/screens/channel_add_members';
 import ChannelInfo from 'app/screens/channel_info';
+import EditChannel from 'app/screens/edit_channel';
 import ChannelMembers from 'app/screens/channel_members';
 import ChannelPeek from 'app/screens/channel_peek';
 import ClientUpgrade from 'app/screens/client_upgrade';
@@ -63,6 +64,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('Channel', () => wrapWithContextProvider(Channel, false), store, Provider);
     Navigation.registerComponent('ChannelAddMembers', () => wrapWithContextProvider(ChannelAddMembers), store, Provider);
     Navigation.registerComponent('ChannelInfo', () => wrapWithContextProvider(ChannelInfo), store, Provider);
+    Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(EditChannel), store, Provider);
     Navigation.registerComponent('ChannelMembers', () => wrapWithContextProvider(ChannelMembers), store, Provider);
     Navigation.registerComponent('ChannelPeek', () => wrapWithContextProvider(ChannelPeek), store, Provider);
     Navigation.registerComponent('ClientUpgrade', () => wrapWithContextProvider(ClientUpgrade), store, Provider);
