@@ -122,17 +122,16 @@ export default class EditChannelInfo extends PureComponent {
     onDisplayNameChangeText = (displayName) => {
         const {editing, onDisplayNameChange} = this.props;
         onDisplayNameChange(displayName);
-        if (!editing && displayName && displayName.length >= 2) {
-            this.props.enableRightButton(true);
-        } else {
-            this.props.enableRightButton(false);
-        }
 
         if (editing) {
             const {channelURL, purpose, header} = this.props;
             const canUpdate = this.canUpdate(displayName, channelURL, purpose, header);
             this.enableRightButton(canUpdate);
+            return;
         }
+
+        const displayNameExists = displayName && displayName.length >= 2;
+        this.props.enableRightButton(displayNameExists);
     };
 
     onDisplayURLChangeText = (channelURL) => {
@@ -173,7 +172,9 @@ export default class EditChannelInfo extends PureComponent {
     };
 
     scrollToEnd = () => {
-        this.scroll.scrollToFocusedInput(findNodeHandle(this.lastText));
+        if (this.scroll && this.lastText) {
+            this.scroll.scrollToFocusedInput(findNodeHandle(this.lastText));
+        }
     };
 
     render() {
