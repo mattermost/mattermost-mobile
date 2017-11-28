@@ -416,17 +416,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 10,
             marginHorizontal: 15
-        },
-        navTitle: {
-            ...Platform.select({
-                android: {
-                    fontSize: 18
-                },
-                ios: {
-                    fontSize: 15,
-                    fontWeight: 'bold'
-                }
-            })
         }
     };
 });
