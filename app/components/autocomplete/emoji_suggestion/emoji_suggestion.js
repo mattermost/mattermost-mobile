@@ -24,6 +24,7 @@ export default class EmojiSuggestion extends Component {
         }).isRequired,
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
+        isSearch: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -42,6 +43,10 @@ export default class EmojiSuggestion extends Component {
     };
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.isSearch) {
+            return;
+        }
+
         const regex = EMOJI_REGEX;
         const match = nextProps.value.substring(0, nextProps.cursorPosition).match(regex);
 

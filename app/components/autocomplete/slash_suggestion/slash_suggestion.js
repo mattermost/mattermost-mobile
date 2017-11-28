@@ -24,6 +24,7 @@ export default class SlashSuggestion extends Component {
         currentTeamId: PropTypes.string.isRequired,
         commands: PropTypes.array,
         commandsRequest: PropTypes.object.isRequired,
+        isSearch: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -43,6 +44,10 @@ export default class SlashSuggestion extends Component {
     };
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.isSearch) {
+            return;
+        }
+
         const {currentTeamId} = this.props;
         const {
             commands: nextCommands,
