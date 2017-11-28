@@ -43,3 +43,16 @@ export function isImageLink(link) {
     const match = link.trim().match(imgRegex);
     return Boolean(match && match[1]);
 }
+
+// Converts the protocol of a link (eg. http, ftp) to be lower case since
+// Android doesn't handle uppercase links.
+export function normalizeProtocol(url) {
+    const index = url.indexOf(':');
+    if (index === -1) {
+        // There's no protocol on the link to be normalized
+        return url;
+    }
+
+    const protocol = url.substring(0, index);
+    return protocol.toLowerCase() + url.substring(index);
+}
