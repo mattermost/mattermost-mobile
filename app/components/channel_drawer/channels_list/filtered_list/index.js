@@ -94,7 +94,7 @@ const getGroupChannelMemberDetails = createSelector(
     getGroupDetails
 );
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
 
     const profiles = getUsers(state);
@@ -119,8 +119,7 @@ function mapStateToProps(state, ownProps) {
         searchOrder,
         pastDirectMessages: pastDirectMessages(state),
         restrictDms,
-        theme: getTheme(state),
-        ...ownProps
+        theme: getTheme(state)
     };
 }
 

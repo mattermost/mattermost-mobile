@@ -14,6 +14,7 @@ import Loading from 'app/components/loading';
 import CustomList from 'app/components/custom_list';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -228,9 +229,11 @@ class ChannelMembers extends PureComponent {
         }
     };
 
-    removeMembers = (membersToRemove) => {
+    removeMembers = async (membersToRemove) => {
         const {actions, currentChannel} = this.props;
-        actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove);
+        alertErrorIfInvalidPermissions(
+            await actions.handleRemoveChannelMembers(currentChannel.id, membersToRemove)
+        );
     };
 
     renderMemberRow = (props) => {

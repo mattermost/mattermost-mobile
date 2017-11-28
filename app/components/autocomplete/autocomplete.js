@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
+import SlashSuggestion from './slash_suggestion';
 
 export default class Autocomplete extends PureComponent {
     static propTypes = {
@@ -31,7 +32,8 @@ export default class Autocomplete extends PureComponent {
         cursorPosition: 0,
         atMentionCount: 0,
         channelMentionCount: 0,
-        emojiCount: 0
+        emojiCount: 0,
+        commandCount: 0
     };
 
     handleSelectionChange = (event) => {
@@ -52,6 +54,10 @@ export default class Autocomplete extends PureComponent {
         this.setState({emojiCount});
     };
 
+    handleCommandCountChange = (commandCount) => {
+        this.setState({commandCount});
+    };
+
     render() {
         const style = getStyleFromTheme(this.props.theme);
 
@@ -63,27 +69,34 @@ export default class Autocomplete extends PureComponent {
         }
 
         // We always need to render something, but we only draw the borders when we have results to show
-        if (this.state.atMentionCount + this.state.channelMentionCount + this.state.emojiCount > 0) {
+        const {atMentionCount, channelMentionCount, emojiCount, commandCount} = this.state;
+        if (atMentionCount + channelMentionCount + emojiCount + commandCount > 0) {
             containerStyle.push(style.borders);
         }
 
         return (
-            <View style={containerStyle}>
-                <AtMention
-                    cursorPosition={this.state.cursorPosition}
-                    onResultCountChange={this.handleAtMentionCountChange}
-                    {...this.props}
-                />
-                <ChannelMention
-                    cursorPosition={this.state.cursorPosition}
-                    onResultCountChange={this.handleChannelMentionCountChange}
-                    {...this.props}
-                />
-                <EmojiSuggestion
-                    cursorPosition={this.state.cursorPosition}
-                    onResultCountChange={this.handleEmojiCountChange}
-                    {...this.props}
-                />
+            <View>
+                <View style={containerStyle}>
+                    <AtMention
+                        cursorPosition={this.state.cursorPosition}
+                        onResultCountChange={this.handleAtMentionCountChange}
+                        {...this.props}
+                    />
+                    <ChannelMention
+                        cursorPosition={this.state.cursorPosition}
+                        onResultCountChange={this.handleChannelMentionCountChange}
+                        {...this.props}
+                    />
+                    <EmojiSuggestion
+                        cursorPosition={this.state.cursorPosition}
+                        onResultCountChange={this.handleEmojiCountChange}
+                        {...this.props}
+                    />
+                    <SlashSuggestion
+                        onResultCountChange={this.handleCommandCountChange}
+                        {...this.props}
+                    />
+                </View>
             </View>
         );
     }
@@ -99,7 +112,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         borders: {
             borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 0
         },
         container: {
             bottom: 0,

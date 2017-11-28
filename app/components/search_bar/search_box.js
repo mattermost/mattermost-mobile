@@ -134,10 +134,17 @@ export default class Search extends Component {
 
     blur = () => {
         this.refs.input_keyword.getNode().blur();
+        this.setState({expanded: false});
+        this.collapseAnimation();
     };
 
     focus = () => {
-        this.refs.input_keyword.getNode().focus();
+        InteractionManager.runAfterInteractions(() => {
+            const input = this.refs.input_keyword.getNode();
+            if (!input.isFocused()) {
+                input.focus();
+            }
+        });
     };
 
     onBlur = () => {
@@ -198,6 +205,7 @@ export default class Search extends Component {
                 duration: 200
             }
         ).start();
+        this.focus();
 
         if (this.props.onDelete) {
             this.props.onDelete();

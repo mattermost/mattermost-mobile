@@ -37,7 +37,6 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        ...ownProps,
         myChannels,
         otherChannels,
         publicChannels,

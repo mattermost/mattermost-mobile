@@ -8,7 +8,7 @@ import {flagPost, unflagPost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isEdited, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import PostBody from './post_body';
 
@@ -16,10 +16,10 @@ function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     return {
-        ...ownProps,
         postProps: post.props || {},
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,
+        hasBeenEdited: isEdited(post),
         hasReactions: post.has_reactions,
         isFailed: post.failed,
         isPending: post.id === post.pending_post_id,

@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     ScrollView,
     Text,
     View,
@@ -37,6 +38,20 @@ class UserProfile extends PureComponent {
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired
+    };
+
+    close = () => {
+        const {navigator} = this.props;
+
+        if (Platform.OS === 'ios') {
+            navigator.popToRoot({
+                animated: true
+            });
+        } else {
+            navigator.dismissModal({
+                animationType: 'slide-down'
+            });
+        }
     };
 
     displaySendMessageOption = () => {
@@ -75,7 +90,7 @@ class UserProfile extends PureComponent {
     };
 
     sendMessage = async () => {
-        const {actions, currentDisplayName, intl, teammateNameDisplay, navigator, user} = this.props;
+        const {actions, currentDisplayName, intl, teammateNameDisplay, user} = this.props;
 
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
@@ -98,9 +113,7 @@ class UserProfile extends PureComponent {
                 }
             );
         } else {
-            navigator.popToRoot({
-                animated: true
-            });
+            this.close();
         }
     };
 

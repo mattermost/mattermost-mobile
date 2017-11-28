@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import 'babel-polyfill';
-import Analytics from 'analytics-react-native';
 import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
@@ -50,6 +49,8 @@ import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
+import {deleteFileCache} from 'app/utils/file';
+import {init as initAnalytics} from 'app/utils/segment';
 import {
     captureException,
     initializeSentry,
@@ -149,23 +150,7 @@ export default class Mattermost {
 
     configureAnalytics = (config) => {
         if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && Config.SegmentApiKey) {
-            if (!global.analytics) {
-                global.analytics = new Analytics(Config.SegmentApiKey);
-                global.analytics.identify({
-                    userId: config.DiagnosticId,
-                    context: {
-                        ip: '0.0.0.0'
-                    },
-                    page: {
-                        path: '',
-                        referrer: '',
-                        search: '',
-                        title: '',
-                        url: ''
-                    },
-                    anonymousId: '00000000000000000000000000'
-                });
-            }
+            initAnalytics(config);
         } else {
             global.analytics = null;
         }
@@ -358,6 +343,7 @@ export default class Mattermost {
 
     handleReset = () => {
         this.appStarted = false;
+        deleteFileCache();
         this.resetBadgeAndVersion();
         this.startApp('fade');
     };
@@ -392,12 +378,23 @@ export default class Mattermost {
             this.configurePushNotifications();
         }
 
-        Orientation.getOrientation((orientation) => {
-            this.orientationDidChange(orientation);
-        });
-
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
+
+            const orientation = Orientation.getInitialOrientation();
+            if (orientation) {
+                this.orientationDidChange(orientation);
+            }
+
+            const {config} = state.entities.general;
+            if (config) {
+                this.configureAnalytics(config);
+            }
+
+            const {currentUserId} = state.entities.users;
+            if (currentUserId) {
+                Client4.setUserId(currentUserId);
+            }
 
             const isNotActive = AppState.currentState !== 'active';
             const notification = PushNotifications.getNotification();
@@ -449,7 +446,7 @@ export default class Mattermost {
         this.isConfigured = true;
     };
 
-    onPushNotification = async (deviceNotification) => {
+    onPushNotification = (deviceNotification) => {
         const {dispatch, getState} = this.store;
         const state = getState();
         const {token, url} = state.entities.general.credentials;
@@ -476,6 +473,7 @@ export default class Mattermost {
         } else if (foreground) {
             EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
         } else if (userInteraction && !notification.localNotification) {
+            EventEmitter.emit('close_channel_drawer');
             if (startAppFromPushNotification) {
                 Client.setToken(token);
                 Client4.setToken(token);
@@ -483,13 +481,15 @@ export default class Mattermost {
                 Client.setUrl(stripTrailingSlashes(url));
             }
 
-            await loadFromPushNotification(notification)(dispatch, getState);
+            InteractionManager.runAfterInteractions(async () => {
+                await loadFromPushNotification(notification)(dispatch, getState);
 
-            if (startAppFromPushNotification) {
-                this.startAppFromPushNotification();
-            } else {
-                EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
-            }
+                if (startAppFromPushNotification) {
+                    this.startAppFromPushNotification();
+                } else {
+                    EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+                }
+            });
         }
     };
 

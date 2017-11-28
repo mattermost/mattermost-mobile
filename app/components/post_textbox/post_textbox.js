@@ -25,6 +25,7 @@ class PostTextbox extends PureComponent {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
+            executeCommand: PropTypes.func.isRequired,
             handleCommentDraftChanged: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
@@ -98,7 +99,7 @@ class PostTextbox extends PureComponent {
         const valueLength = value.trim().length;
 
         if (files.length) {
-            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && files.filter((f) => !f.failed).length > 0;
+            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED;
         }
 
         return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
@@ -217,8 +218,8 @@ class PostTextbox extends PureComponent {
             return;
         }
 
-        const hasFailedImages = files.some((f) => f.failed);
-        if (hasFailedImages) {
+        const hasFailedAttachments = files.some((f) => f.failed);
+        if (hasFailedAttachments) {
             const {intl} = this.props;
 
             Alert.alert(
@@ -302,21 +303,27 @@ class PostTextbox extends PureComponent {
         const {actions, currentUserId, channelId, files, rootId} = this.props;
         const {value} = this.state;
 
-        const postFiles = files.filter((f) => !f.failed);
-        const post = {
-            user_id: currentUserId,
-            channel_id: channelId,
-            root_id: rootId,
-            parent_id: rootId,
-            message: value
-        };
+        if (value.indexOf('/') === 0) {
+            this.sendCommand(value);
+        } else {
+            const postFiles = files.filter((f) => !f.failed);
+            const post = {
+                user_id: currentUserId,
+                channel_id: channelId,
+                root_id: rootId,
+                parent_id: rootId,
+                message: value
+            };
 
-        actions.createPost(post, postFiles);
+            actions.createPost(post, postFiles);
+
+            if (postFiles.length) {
+                actions.handleClearFiles(channelId, rootId);
+            }
+        }
+
         this.handleTextChange('');
         this.changeDraft('');
-        if (postFiles.length) {
-            actions.handleClearFiles(channelId, rootId);
-        }
 
         // Shrink the input textbox since the layout events lag slightly
         const nextState = {
@@ -334,6 +341,21 @@ class PostTextbox extends PureComponent {
         this.setState(nextState, callback);
     };
 
+    sendCommand = async (msg) => {
+        const {actions, channelId, intl} = this.props;
+        const {error} = await actions.executeCommand(msg, channelId);
+
+        if (error) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.commands.error_title',
+                    defaultMessage: 'Error Executing Command'
+                }),
+                error.message
+            );
+        }
+    }
+
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
         actions.addReactionToLatestPost(emoji, rootId);
@@ -344,8 +366,12 @@ class PostTextbox extends PureComponent {
     render() {
         const {
             canUploadFiles,
+            channelId,
             channelIsLoading,
+            files,
             intl,
+            navigator,
+            rootId,
             theme
         } = this.props;
 
@@ -355,7 +381,7 @@ class PostTextbox extends PureComponent {
         const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
-        if (this.props.rootId) {
+        if (rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
         } else {
             placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
@@ -368,7 +394,7 @@ class PostTextbox extends PureComponent {
                 <AttachmentButton
                     blurTextBox={this.blur}
                     theme={theme}
-                    navigator={this.props.navigator}
+                    navigator={navigator}
                     uploadFiles={this.handleUploadFiles}
                 />
             );
@@ -386,15 +412,16 @@ class PostTextbox extends PureComponent {
                 </Text>
                 <Typing/>
                 <FileUploadPreview
-                    channelId={this.props.channelId}
-                    files={this.props.files}
+                    channelId={channelId}
+                    files={files}
                     inputHeight={textInputHeight}
-                    rootId={this.props.rootId}
+                    rootId={rootId}
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}
                     onChangeText={this.handleTextChange}
                     value={this.state.value}
+                    rootId={rootId}
                 />
                 <View style={style.inputWrapper}>
                     {attachmentButton}

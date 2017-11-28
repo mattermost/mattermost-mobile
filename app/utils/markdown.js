@@ -64,6 +64,9 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         mention: {
             color: theme.linkColor
+        },
+        error: {
+            color: theme.errorTextColor
         }
     };
 });

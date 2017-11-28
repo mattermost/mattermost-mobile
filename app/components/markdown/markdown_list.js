@@ -3,30 +3,33 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 export default class MarkdownList extends PureComponent {
     static propTypes = {
-        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]).isRequired,
+        children: PropTypes.node.isRequired,
         ordered: PropTypes.bool.isRequired,
-        startAt: PropTypes.number,
         tight: PropTypes.bool
     };
 
     render() {
-        const children = React.Children.map(this.props.children, (child, i) => {
+        const children = React.Children.map(this.props.children, (child) => {
             return React.cloneElement(child, {
                 ordered: this.props.ordered,
-                startAt: this.props.startAt,
-                index: i,
                 tight: this.props.tight
             });
         });
 
         return (
-            <View style={{marginRight: 20}}>
+            <View style={style.indent}>
                 {children}
             </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    indent: {
+        marginRight: 20
+    }
+});

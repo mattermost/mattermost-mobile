@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Parser} from 'commonmark';
+import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
@@ -15,14 +15,17 @@ import {
 import AtMention from 'app/components/at_mention';
 import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
+import FormattedText from 'app/components/formatted_text';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {concatStyles} from 'app/utils/theme';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
+import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
+import {addListItemIndices, pullOutImages} from './transform';
 
 export default class Markdown extends PureComponent {
     static propTypes = {
@@ -30,6 +33,7 @@ export default class Markdown extends PureComponent {
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
         fontSizes: PropTypes.object,
+        isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
@@ -110,10 +114,27 @@ export default class Markdown extends PureComponent {
                 softBreak: this.renderSoftBreak,
 
                 htmlBlock: this.renderHtml,
-                htmlInline: this.renderHtml
+                htmlInline: this.renderHtml,
+
+                editedIndicator: this.renderEditedIndicator
             },
-            renderParagraphsInLists: true
+            renderParagraphsInLists: true,
+            getExtraPropsForNode: this.getExtraPropsForNode
         });
+    }
+
+    getExtraPropsForNode = (node) => {
+        const extraProps = {
+            continue: node.continue,
+            index: node.index
+        };
+
+        if (node.type === 'image') {
+            extraProps.reactChildren = node.react.children;
+            extraProps.linkDestination = node.linkDestination;
+        }
+
+        return extraProps;
     }
 
     computeTextStyle = (baseStyle, context) => {
@@ -121,6 +142,11 @@ export default class Markdown extends PureComponent {
     }
 
     renderText = ({context, literal}) => {
+        if (context.indexOf('image') !== -1) {
+            // If this text is displayed, it will be styled by the image component
+            return <Text>{literal}</Text>;
+        }
+
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         return <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>{literal}</Text>;
     }
@@ -129,16 +155,16 @@ export default class Markdown extends PureComponent {
         return <Text style={this.computeTextStyle([this.props.baseTextStyle, this.props.textStyles.code], context)}>{literal}</Text>;
     }
 
-    renderImage = ({children, context, src}) => {
-        // TODO This will be properly implemented for PLT-5736
+    renderImage = ({linkDestination, reactChildren, context, src}) => {
         return (
-            <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>
-                {'!['}
-                {children}
-                {']('}
-                {src}
-                {')'}
-            </Text>
+            <MarkdownImage
+                linkDestination={linkDestination}
+                onLongPress={this.props.onLongPress}
+                source={src}
+                errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
+            >
+                {reactChildren}
+            </MarkdownImage>
         );
     }
 
@@ -190,6 +216,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderParagraph = ({children, first}) => {
+        if (!children || children.length === 0) {
+            return null;
+        }
+
         const blockStyle = [style.block];
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
@@ -240,11 +270,10 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderList = ({children, start, tight, type}) => {
+    renderList = ({children, tight, type}) => {
         return (
             <MarkdownList
                 ordered={type !== 'bullet'}
-                startAt={start}
                 tight={tight}
             >
                 {children}
@@ -303,8 +332,44 @@ export default class Markdown extends PureComponent {
         );
     }
 
+    renderEditedIndicator = ({context}) => {
+        let spacer = '';
+        let opacity = Platform.select({ios: 0.7, android: 1});
+        if (context[0] === 'paragraph') {
+            spacer = ' ';
+            opacity = Platform.select({ios: 0.5, android: 0.6});
+        }
+        const styles = [style.editedIndicatorText, {opacity}];
+        if (Platform.OS === 'ios') {
+            styles.push(this.computeTextStyle(this.props.baseTextStyle, context));
+        }
+        return (
+            <Text
+                style={styles}
+            >
+                {spacer}
+                <FormattedText
+                    id='post_message_view.edited'
+                    defaultMessage='(edited)'
+                />
+            </Text>
+        );
+    }
+
     render() {
-        const ast = this.parser.parse(this.props.value);
+        let ast = this.parser.parse(this.props.value);
+
+        ast = addListItemIndices(ast);
+        ast = pullOutImages(ast);
+
+        if (this.props.isEdited) {
+            const editIndicatorNode = new Node('edited_indicator');
+            if (['heading', 'paragraph'].includes(ast.lastChild.type)) {
+                ast.lastChild.appendChild(editIndicatorNode);
+            } else {
+                ast.appendChild(editIndicatorNode);
+            }
+        }
 
         return <View>{this.renderer.render(ast)}</View>;
     }
@@ -315,5 +380,8 @@ const style = StyleSheet.create({
         alignItems: 'flex-start',
         flexDirection: 'row',
         flexWrap: 'wrap'
+    },
+    editedIndicatorText: {
+        fontSize: 14
     }
 });

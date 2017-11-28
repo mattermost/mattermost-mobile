@@ -16,6 +16,7 @@ import {
     selectInitialChannel
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
+import {recordLoadTime} from 'app/actions/views/root';
 import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -42,6 +43,7 @@ function mapDispatchToProps(dispatch) {
             selectInitialChannel,
             initWebSocket,
             closeWebSocket,
+            recordLoadTime,
             startPeriodicStatusUpdates,
             stopPeriodicStatusUpdates
         }, dispatch)

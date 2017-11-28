@@ -60,7 +60,7 @@ check-device-ios:
 		@exit 1; \
 	fi
 
-run-ios: | check-device-ios start
+run-ios: | check-device-ios start-build-packager
 	@echo Running iOS app in development
 	@react-native run-ios --simulator="${SIMULATOR}"
 
@@ -82,7 +82,7 @@ endif
 		@exit 1; \
 	fi
 
-run-android: | check-device-android start prepare-android-build
+run-android: | check-device-android start-build-packager prepare-android-build
 	@echo Running Android app in development
 	@react-native run-android --no-packager
 
@@ -122,7 +122,7 @@ post-install:
 	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 	@sed -i'' -e 's|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_FULL_USER);|g' node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation/params/Orientation.java
 	@sed -i'' -e "s|var AndroidTextInput = requireNativeComponent('AndroidTextInput', null);|var AndroidTextInput = requireNativeComponent('CustomTextInput', null);|g" node_modules/react-native/Libraries/Components/TextInput/TextInput.js
-	@sed -i'' -e 's^getItemLayout || index <= this._highestMeasuredFrameIndex,^!getItemLayout || index <= this._highestMeasuredFrameIndex,^g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
+	@sed -i'' -e 's^getItemLayout || index <= this._highestMeasuredFrameIndex,^!getItemLayout || index !== -1,^g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
 	@if [ $(shell grep "const Platform" node_modules/react-native/Libraries/Lists/VirtualizedList.js | grep -civ grep) -eq 0 ]; then \
 		sed $ -i'' -e "s|const ReactNative = require('ReactNative');|const ReactNative = require('ReactNative');`echo $\\\\\\r;`const Platform = require('Platform');|g" node_modules/react-native/Libraries/Lists/VirtualizedList.js; \
 	fi
@@ -131,6 +131,15 @@ post-install:
 	@cd ./node_modules/mattermost-redux && yarn run build
 
 start-packager:
+	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
+		echo Starting React Native packager server; \
+		node ./node_modules/react-native/local-cli/cli.js start; \
+	else \
+		echo React Native packager server already running; \
+		ps -e | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
+	fi
+
+start-build-packager:
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID; \
@@ -165,7 +174,7 @@ do-build-ios:
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios $(ios_target)
 
 
-build-ios: | check-ios-target pre-run check-style start-packager do-build-ios stop-packager
+build-ios: | check-ios-target pre-run check-style start-build-packager do-build-ios stop-packager
 
 check-android-target:
 ifeq ($(android_target), )
@@ -188,7 +197,7 @@ do-build-android:
 	@echo "Building android $(android_target) app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android $(android_target)
 
-build-android: | check-android-target pre-run check-style start-packager prepare-android-build do-build-android stop-packager
+build-android: | check-android-target pre-run check-style start-build-packager prepare-android-build do-build-android stop-packager
 
 do-unsigned-ios:
 	@echo "Building unsigned iOS app"

@@ -34,6 +34,7 @@ class PostBody extends PureComponent {
         canEdit: PropTypes.bool,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
+        hasBeenEdited: PropTypes.bool,
         hasReactions: PropTypes.bool,
         intl: intlShape.isRequired,
         isFailed: PropTypes.bool,
@@ -133,6 +134,7 @@ class PostBody extends PureComponent {
             canDelete,
             canEdit,
             hasBeenDeleted,
+            hasBeenEdited,
             hasReactions,
             isFailed,
             isFlagged,
@@ -224,13 +226,15 @@ class PostBody extends PureComponent {
                     <View style={[{flex: 1}, (isPendingOrFailedPost && style.pendingPost)]}>
                         <Markdown
                             baseTextStyle={messageStyle}
-                            textStyles={textStyles}
                             blockStyles={blockStyles}
+                            isEdited={hasBeenEdited}
                             isSearchResult={isSearchResult}
-                            value={message}
+                            navigator={navigator}
                             onLongPress={this.showOptionsContext}
                             onPostPress={onPress}
-                            navigator={navigator}
+                            textStyles={textStyles}
+                            theme={theme}
+                            value={message}
                         />
                     </View>
                 </View>

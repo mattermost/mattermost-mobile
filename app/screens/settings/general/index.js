@@ -15,11 +15,10 @@ import {removeProtocol} from 'app/utils/url';
 
 import Settings from './settings';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     const {config} = state.entities.general;
 
     return {
-        ...ownProps,
         config,
         theme: getTheme(state),
         errors: state.errors,

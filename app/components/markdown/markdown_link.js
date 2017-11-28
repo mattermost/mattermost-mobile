@@ -5,27 +5,32 @@ import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Clipboard, Linking, Text} from 'react-native';
 import urlParse from 'url-parse';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import Config from 'assets/config';
 import mattermostManaged from 'app/mattermost_managed';
 
-class MarkdownLink extends PureComponent {
+import Config from 'assets/config';
+
+import {normalizeProtocol} from 'app/utils/url';
+
+export default class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
-        intl: intlShape.isRequired,
         onLongPress: PropTypes.func
     };
 
     static defaultProps = {
         onLongPress: () => true
-    }
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired
+    };
 
     handlePress = () => {
-        // Android doesn't like the protocol being upper case
-        const url = this.props.href;
+        const url = normalizeProtocol(this.props.href);
 
         Linking.canOpenURL(url).then((supported) => {
             if (supported) {
@@ -69,7 +74,7 @@ class MarkdownLink extends PureComponent {
     }
 
     handleLongPress = async () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
 
         const config = await mattermostManaged.getLocalConfig();
 
@@ -101,5 +106,3 @@ class MarkdownLink extends PureComponent {
         );
     }
 }
-
-export default injectIntl(MarkdownLink);

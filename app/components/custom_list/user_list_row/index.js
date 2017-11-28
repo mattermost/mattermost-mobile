@@ -12,8 +12,7 @@ function mapStateToProps(state, ownProps) {
     return {
         theme: getTheme(state),
         user: getUser(state, ownProps.id),
-        teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        ...ownProps
+        teammateNameDisplay: getTeammateNameDisplaySetting(state)
     };
 }
 

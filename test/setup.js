@@ -39,7 +39,17 @@ mockery.registerMock('react-native-sentry', {
         captureBreadcrumb() {}
     }
 });
-
+mockery.registerMock('react-native-fetch-blob', {
+    RNFetchBlob: {
+        DocumentDir: ''
+    },
+    fs: {
+        dirs: {
+            DocumentDir: '',
+            CacheDir: ''
+        }
+    }
+});
 // Ignore all node_modules except these
 const modulesToCompile = [
     'react-native'

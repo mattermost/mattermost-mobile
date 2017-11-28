@@ -14,7 +14,6 @@ function mapStateToProps(state, ownProps) {
     const {editPost: editPostRequest} = state.requests.posts;
 
     return {
-        ...ownProps,
         editPostRequest,
         post: ownProps.post,
         theme: getTheme(state)

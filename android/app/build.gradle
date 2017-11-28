@@ -106,7 +106,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 64
+        versionCode 65
         versionName "1.5.0"
         multiDexEnabled true
         ndk {
@@ -163,6 +163,8 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-doc-viewer')
+    compile project(':react-native-video')
     compile fileTree(dir: "libs", include: ["*.jar"])
     compile "com.android.support:appcompat-v7:25.0.1"
     compile 'com.android.support:percent:25.3.1'

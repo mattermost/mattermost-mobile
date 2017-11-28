@@ -8,9 +8,8 @@ import {getUsers} from 'mattermost-redux/selectors/entities/users';
 
 import SelectedUsers from './selected_users';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         theme: getTheme(state),
         profiles: getUsers(state),
         teammateNameDisplay: getTeammateNameDisplaySetting(state)

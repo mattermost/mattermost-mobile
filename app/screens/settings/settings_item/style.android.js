@@ -44,6 +44,10 @@ export default makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1
+        },
+        arrowContainer: {
+            justifyContent: 'center',
+            paddingRight: 15
         }
     };
 });

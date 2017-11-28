@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {Platform} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
 import {General} from 'mattermost-redux/constants';
@@ -10,6 +11,7 @@ import {General} from 'mattermost-redux/constants';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
+import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -48,7 +50,7 @@ class Thread extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {
-            this.props.navigator.pop();
+            this.close();
             return;
         }
 
@@ -60,6 +62,20 @@ class Thread extends PureComponent {
     componentWillUnmount() {
         this.props.actions.selectPost('');
     }
+
+    close = () => {
+        const {navigator} = this.props;
+
+        if (Platform.OS === 'ios') {
+            navigator.pop({
+                animated: true
+            });
+        } else {
+            navigator.dismissModal({
+                animationType: 'slide-down'
+            });
+        }
+    };
 
     render() {
         const {
@@ -73,25 +89,31 @@ class Thread extends PureComponent {
         const style = getStyle(theme);
 
         return (
-            <KeyboardLayout
-                behavior='padding'
-                style={style.container}
-                keyboardVerticalOffset={65}
+            <SafeAreaView
+                excludeHeader={true}
+                keyboardOffset={20}
+                theme={theme}
             >
                 <StatusBar/>
-                <PostList
-                    indicateNewMessages={true}
-                    postIds={postIds}
-                    currentUserId={myMember.user_id}
-                    lastViewedAt={this.state.lastViewedAt}
-                    navigator={navigator}
-                />
-                <PostTextbox
-                    rootId={rootId}
-                    channelId={channelId}
-                    navigator={navigator}
-                />
-            </KeyboardLayout>
+                <KeyboardLayout
+                    behavior='padding'
+                    style={style.container}
+                    keyboardVerticalOffset={65}
+                >
+                    <PostList
+                        indicateNewMessages={true}
+                        postIds={postIds}
+                        currentUserId={myMember.user_id}
+                        lastViewedAt={this.state.lastViewedAt}
+                        navigator={navigator}
+                    />
+                    <PostTextbox
+                        rootId={rootId}
+                        channelId={channelId}
+                        navigator={navigator}
+                    />
+                </KeyboardLayout>
+            </SafeAreaView>
         );
     }
 }

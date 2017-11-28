@@ -10,6 +10,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
+import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {handlePostDraftChanged, handlePostDraftSelectionChanged} from 'app/actions/views/channel';
 import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
@@ -39,6 +40,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             addReactionToLatestPost,
             createPost,
+            executeCommand,
             handleClearFiles,
             handleCommentDraftChanged,
             handlePostDraftChanged,

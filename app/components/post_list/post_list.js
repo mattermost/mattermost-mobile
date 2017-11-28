@@ -62,6 +62,12 @@ export default class PostList extends PureComponent {
         this.scrollList();
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.postIds !== this.props.postIds) {
+            this.newMessagesIndex = -1;
+        }
+    }
+
     componentDidUpdate(prevProps) {
         const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
         if ((prevProps.channelId !== this.props.channelId || initialPosts || this.props.isSearchResult) && this.refs.list) {
@@ -76,9 +82,16 @@ export default class PostList extends PureComponent {
     scrollList = () => {
         InteractionManager.runAfterInteractions(() => {
             if (this.props.postIds.length && this.newMessagesIndex !== -1) {
-                this.refs.list.scrollToIndex({index: this.newMessagesIndex, viewPosition: 1, viewOffset: -10, animated: true});
+                if (this.refs.list) {
+                    this.refs.list.scrollToIndex({
+                        index: this.newMessagesIndex,
+                        viewPosition: 1,
+                        viewOffset: -10,
+                        animated: true
+                    });
+                }
                 this.newMessagesIndex = -1;
-            } else {
+            } else if (this.refs.list) {
                 this.refs.list.scrollToOffset({y: 0, animated: false});
             }
         });
@@ -194,7 +207,12 @@ export default class PostList extends PureComponent {
             );
         }
 
-        return <ChannelIntro navigator={this.props.navigator}/>;
+        return (
+            <ChannelIntro
+                channelId={this.props.channelId}
+                navigator={this.props.navigator}
+            />
+        );
     };
 
     render() {

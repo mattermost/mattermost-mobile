@@ -101,6 +101,11 @@ export default class Root extends PureComponent {
 
     handleNotificationTapped = async () => {
         const {navigator} = this.props;
+
+        if (Platform.OS === 'android') {
+            navigator.dismissModal({animation: 'none'});
+        }
+
         navigator.popToRoot({
             animated: false
         });

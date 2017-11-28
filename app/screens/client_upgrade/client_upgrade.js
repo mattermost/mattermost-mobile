@@ -11,7 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -20,7 +20,7 @@ import logo from 'assets/images/logo.png';
 import checkUpgradeType from 'app/utils/client_upgrade';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-class ClientUpgrade extends PureComponent {
+export default class ClientUpgrade extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
@@ -31,15 +31,23 @@ class ClientUpgrade extends PureComponent {
         userCheckedForUpgrade: PropTypes.bool,
         downloadLink: PropTypes.string.isRequired,
         forceUpgrade: PropTypes.bool,
-        intl: intlShape.isRequired,
         latestVersion: PropTypes.string,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         upgradeType: PropTypes.string
     };
 
-    state = {
-        upgradeType: UpgradeTypes.NO_UPGRADE
+    static contextTypes = {
+        intl: intlShape
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+        this.state = {
+            upgradeType: UpgradeTypes.NO_UPGRADE
+        };
     }
 
     componentDidMount() {
@@ -77,10 +85,11 @@ class ClientUpgrade extends PureComponent {
         } else {
             this.props.navigator.dismissModal();
         }
-    }
+    };
 
     handleDownload = () => {
-        const {downloadLink, intl} = this.props;
+        const {downloadLink} = this.props;
+        const {intl} = this.context;
 
         Linking.canOpenURL(downloadLink).then((supported) => {
             if (supported) {
@@ -100,17 +109,17 @@ class ClientUpgrade extends PureComponent {
 
             return false;
         });
-    }
+    };
 
-    handleUpgrade = () => {
-        const {actions, downloadLink} = this.props;
-
-        try {
-            Linking.openURL(downloadLink);
-        } catch (error) {
-            actions.logError(error);
+    onNavigatorEvent = (event) => {
+        if (event.type === 'NavBarButtonPress') {
+            if (event.id === 'close-upgrade') {
+                this.props.navigator.dismissModal({
+                    animationType: 'slide-down'
+                });
+            }
         }
-    }
+    };
 
     renderMustUpgrade() {
         const {theme} = this.props;
@@ -318,5 +327,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
-
-export default injectIntl(ClientUpgrade);

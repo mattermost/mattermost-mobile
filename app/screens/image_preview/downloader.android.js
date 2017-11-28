@@ -11,6 +11,7 @@ import {
     View
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
+import {intlShape} from 'react-intl';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -37,18 +38,29 @@ export default class Downloader extends PureComponent {
         show: false
     };
 
+    static contextTypes = {
+        intl: intlShape
+    };
+
     checkForPermissions = async () => {
         const canWriteToStorage = await PermissionsAndroid.check(EXTERNAL_STORAGE_PERMISSION);
         if (!canWriteToStorage) {
-            const permissionRequest = await PermissionsAndroid.request(EXTERNAL_STORAGE_PERMISSION, 'We need access to the downloads folder to save files.');
+            const {intl} = this.context;
+            const description = intl.formatMessage({
+                id: 'mobile.downloader.android_permission',
+                defaultMessage: 'We need access to the downloads folder to save files.'
+            });
+
+            const permissionRequest = await PermissionsAndroid.request(EXTERNAL_STORAGE_PERMISSION, description);
             return permissionRequest === 'granted';
         }
 
         return true;
-    }
+    };
 
     handleDownload = async () => {
         const {file, onDownloadCancel, onDownloadStart, onDownloadSuccess} = this.props;
+        const {intl} = this.context;
 
         const canWriteToStorage = await this.checkForPermissions();
         if (!canWriteToStorage) {
@@ -57,7 +69,20 @@ export default class Downloader extends PureComponent {
         }
 
         try {
-            ToastAndroid.show('Download started', ToastAndroid.SHORT);
+            const started = intl.formatMessage({
+                id: 'mobile.downloader.android_started',
+                defaultMessage: 'Download started'
+            });
+            const title = intl.formatMessage({
+                id: 'mobile.downloader.android_success',
+                defaultMessage: 'download successful'
+            });
+            const complete = intl.formatMessage({
+                id: 'mobile.downloader.android_complete',
+                defaultMessage: 'Download complete'
+            });
+
+            ToastAndroid.show(started, ToastAndroid.SHORT);
             onDownloadStart();
 
             const imageUrl = Client4.getFileUrl(file.id);
@@ -68,7 +93,7 @@ export default class Downloader extends PureComponent {
                     useDownloadManager: true,
                     notification: true,
                     path: `${RNFetchBlob.fs.dirs.DownloadDir}/${file.name}`,
-                    title: `${file.name} download successful`,
+                    title: `${file.name} ${title}`,
                     mime: file.mime_type,
                     description: file.name,
                     mediaScannable: true
@@ -79,13 +104,18 @@ export default class Downloader extends PureComponent {
 
             await task;
 
-            ToastAndroid.show('Download complete', ToastAndroid.SHORT);
+            ToastAndroid.show(complete, ToastAndroid.SHORT);
             onDownloadSuccess();
         } catch (error) {
-            ToastAndroid.show('Download failed', ToastAndroid.SHORT);
+            const failed = intl.formatMessage({
+                id: 'mobile.downloader.android_failed',
+                defaultMessage: 'Download failed'
+            });
+
+            ToastAndroid.show(failed, ToastAndroid.SHORT);
             onDownloadCancel();
         }
-    }
+    };
 
     render() {
         const {show} = this.props;

@@ -1,36 +1,90 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image} from 'react-native';
+import React from 'react';
+import {intlShape} from 'react-intl';
+import {
+    Clipboard,
+    Image,
+    Linking,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableHighlight,
+    View
+} from 'react-native';
 
-export default class MarkdownLink extends PureComponent {
+import FormattedText from 'app/components/formatted_text';
+
+import CustomPropTypes from 'app/constants/custom_prop_types';
+import mattermostManaged from 'app/mattermost_managed';
+import {normalizeProtocol} from 'app/utils/url';
+
+const MAX_IMAGE_HEIGHT = 150;
+
+const ANDROID_MAX_HEIGHT = 4096;
+const ANDROID_MAX_WIDTH = 4096;
+
+export default class MarkdownImage extends React.Component {
     static propTypes = {
-        src: PropTypes.string.isRequired
+        children: PropTypes.node,
+        linkDestination: PropTypes.string,
+        onLongPress: PropTypes.func,
+        source: PropTypes.string.isRequired,
+        errorTextStyle: CustomPropTypes.Style
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            width: 10000,
-            maxWidth: 10000,
-            height: 0
+            width: 0,
+            height: 0,
+            maxWidth: Math.MAX_INT,
+            failed: false
         };
+
+        this.mounted = false;
     }
 
     componentWillMount() {
-        Image.getSize(this.props.src, this.handleSizeReceived, this.handleSizeFailed);
+        this.loadImageSize(this.props.source);
+    }
+
+    componentDidMount() {
+        this.mounted = true;
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.src !== nextProps.src) {
-            Image.getSize(nextProps.src, this.handleSizeReceived, this.handleSizeFailed);
+        if (this.props.source !== nextProps.source) {
+            this.setState({
+                width: 0,
+                height: 0,
+                failed: false
+            });
+
+            this.loadImageSize(nextProps.source);
         }
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
+    loadImageSize = (source) => {
+        Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
+    };
+
     handleSizeReceived = (width, height) => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
             width,
             height
@@ -38,33 +92,140 @@ export default class MarkdownLink extends PureComponent {
     };
 
     handleSizeFailed = () => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
-            width: 0,
-            height: 0
+            failed: true
         });
-    }
+    };
 
     handleLayout = (event) => {
+        if (!this.mounted) {
+            return;
+        }
+
         this.setState({
             maxWidth: event.nativeEvent.layout.width
         });
-    }
+    };
 
-    render() {
-        let {width, maxWidth, height} = this.state; // eslint-disable-line prefer-const
+    handleLinkPress = () => {
+        const url = normalizeProtocol(this.props.linkDestination);
 
-        if (width > maxWidth) {
-            height = height * (maxWidth / width);
-            width = maxWidth;
+        Linking.canOpenURL(url).then((supported) => {
+            if (supported) {
+                Linking.openURL(url);
+            }
+        });
+    };
+
+    handleLinkLongPress = async () => {
+        const {formatMessage} = this.context.intl;
+
+        const config = await mattermostManaged.getLocalConfig();
+
+        let action;
+        if (config.copyAndPasteProtection !== 'true') {
+            action = {
+                text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
+                onPress: this.handleLinkCopy
+            };
         }
 
-        // React Native complains if we try to pass resizeMode into a StyleSheet
+        this.props.onLongPress(action);
+    };
+
+    handleLinkCopy = () => {
+        Clipboard.setString(this.props.linkDestination);
+    };
+
+    render() {
+        let image = null;
+
+        if (this.state.width && this.state.height && this.state.maxWidth) {
+            let {width, height} = this.state;
+
+            if (Platform.OS === 'android' && (width > ANDROID_MAX_WIDTH || height > ANDROID_MAX_HEIGHT)) {
+                // Android has a cap on the max image size that can be displayed
+
+                image = (
+                    <Text style={this.props.errorTextStyle}>
+                        <FormattedText
+                            id='mobile.markdown.image.too_large'
+                            defaultMessage='Image exceeds max dimensions of {maxWidth} by {maxHeight}:'
+                            values={{
+                                maxWidth: ANDROID_MAX_WIDTH,
+                                maxHeight: ANDROID_MAX_HEIGHT
+                            }}
+                        />
+                        {' '}
+                        {this.props.children}
+                    </Text>
+                );
+            } else {
+                const maxWidth = this.state.maxWidth;
+                if (width > maxWidth) {
+                    height = height * (maxWidth / width);
+                    width = maxWidth;
+                }
+
+                const maxHeight = MAX_IMAGE_HEIGHT;
+                if (height > maxHeight) {
+                    width = width * (maxHeight / height);
+                    height = maxHeight;
+                }
+
+                // React Native complains if we try to pass resizeMode as a style
+                image = (
+                    <Image
+                        source={{uri: this.props.source}}
+                        resizeMode='contain'
+                        style={[{width, height}, style.image]}
+                    />
+                );
+            }
+        } else if (this.state.failed) {
+            image = (
+                <Text style={this.props.errorTextStyle}>
+                    <FormattedText
+                        id='mobile.markdown.image.error'
+                        defaultMessage='Image failed to load:'
+                    />
+                    {' '}
+                    {this.props.children}
+                </Text>
+            );
+        }
+
+        if (image && this.props.linkDestination) {
+            image = (
+                <TouchableHighlight
+                    onPress={this.handleLinkPress}
+                    onLongPress={this.handleLinkLongPress}
+                >
+                    {image}
+                </TouchableHighlight>
+            );
+        }
+
         return (
-            <Image
-                source={{uri: this.props.src}}
+            <View
+                style={style.container}
                 onLayout={this.handleLayout}
-                style={{width, height, flexShrink: 1, resizeMode: 'cover'}}
-            />
+            >
+                {image}
+            </View>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flex: 1
+    },
+    image: {
+        marginVertical: 5
+    }
+});
