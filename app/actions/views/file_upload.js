@@ -18,21 +18,29 @@ export function handleUploadFiles(files, rootId) {
         const clientIds = [];
 
         files.forEach((file) => {
-            const mimeType = lookupMimeType(file.fileName);
-            const extension = file.fileName.split('.').pop().replace('.', '');
+            let name = file.fileName;
+            let mimeType = lookupMimeType(name);
+            let extension = name.split('.').pop().replace('.', '');
+            const uri = file.uri;
             const clientId = generateId();
+
+            if (extension === 'HEIC') {
+                extension = 'JPG';
+                name = name.replace(/HEIC/, 'jpg');
+                mimeType = 'image/jpeg';
+            }
 
             clientIds.push({
                 clientId,
-                localPath: file.uri,
-                name: file.fileName,
+                localPath: uri,
+                name,
                 type: mimeType,
                 extension
             });
 
             const fileData = {
-                uri: file.uri,
-                name: file.fileName,
+                uri,
+                name,
                 type: mimeType,
                 extension
             };
