@@ -55,7 +55,6 @@ export default class EditChannel extends PureComponent {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         closeButton: PropTypes.object,
-        isDMorGM: PropTypes.bool,
         actions: PropTypes.shape({
             patchChannel: PropTypes.func.isRequired
         })
@@ -250,12 +249,12 @@ export default class EditChannel extends PureComponent {
                 display_name: oldDisplayName,
                 name: oldChannelURL,
                 header: oldHeader,
-                purpose: oldPurpose
+                purpose: oldPurpose,
+                type
             },
             navigator,
             theme,
             currentTeamUrl,
-            isDMorGM
         } = this.props;
         const {
             error,
@@ -273,7 +272,7 @@ export default class EditChannel extends PureComponent {
                 enableRightButton={this.emitCanUpdateChannel}
                 error={error}
                 saving={updating}
-                displayHeaderOnly={isDMorGM}
+                channelType={type}
                 currentTeamUrl={currentTeamUrl}
                 onDisplayNameChange={this.onDisplayNameChange}
                 onChannelURLChange={this.onChannelURLChange}

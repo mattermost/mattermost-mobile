@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {patchChannel} from 'mattermost-redux/actions/channels';
-import {General} from 'mattermost-redux/constants';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -21,8 +20,6 @@ function mapStateToProps(state) {
         channel,
         currentTeamUrl: getCurrentTeamUrl(state),
         updateChannelRequest,
-        isDMorGM: channel.type === General.DM_CHANNEL ||
-            channel.type === General.GM_CHANNEL,
         theme: getTheme(state)
     };
 }

@@ -22,13 +22,14 @@ import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {General} from 'mattermost-redux/constants';
 import {getShortenedURL} from 'app/utils/url';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
-        displayHeaderOnly: PropTypes.bool,
+        channelType: PropTypes.string,
         editing: PropTypes.bool,
         saving: PropTypes.bool,
         error: PropTypes.string,
@@ -181,7 +182,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     render() {
-        const {theme, editing, displayHeaderOnly, currentTeamUrl} = this.props;
+        const {theme, editing, channelType, currentTeamUrl} = this.props;
         const {displayName, channelURL, header, purpose} = this.props;
         const {error, saving} = this.props;
         const {height, width} = Dimensions.get('window');
@@ -189,6 +190,9 @@ export default class ChannelInfo extends PureComponent {
         const shortUrl = getShortenedURL(fullUrl, 35);
 
         const style = getStyleSheet(theme);
+
+        const displayHeaderOnly = channelType === General.DM_CHANNEL ||
+            channelType === General.GM_CHANNEL;
 
         if (saving) {
             return (
