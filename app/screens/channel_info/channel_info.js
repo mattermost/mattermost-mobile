@@ -129,6 +129,14 @@ class ChannelInfo extends PureComponent {
         });
     });
 
+    handleLeave = () => {
+        this.handleDeleteOrLeave('leave');
+    };
+
+    handleDelete = () => {
+        this.handleDeleteOrLeave('delete');
+    };
+
     handleDeleteOrLeave = wrapWithPreventDoubleTap((eventType) => {
         const {formatMessage} = this.props.intl;
         const channel = this.props.currentChannel;
@@ -357,7 +365,7 @@ class ChannelInfo extends PureComponent {
                             <View>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
-                                    action={() => this.handleDeleteOrLeave('leave')}
+                                    action={this.handleLeave}
                                     defaultMessage='Leave Channel'
                                     icon='sign-out'
                                     textId='navbar.leave'
@@ -369,7 +377,7 @@ class ChannelInfo extends PureComponent {
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel &&
                         <View style={style.footer}>
                             <ChannelInfoRow
-                                action={() => this.handleDeleteOrLeave('delete')}
+                                action={this.handleDelete}
                                 defaultMessage='Delete Channel'
                                 icon='trash'
                                 iconColor='#CA3B27'
