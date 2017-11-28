@@ -25,7 +25,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {General} from 'mattermost-redux/constants';
 import {getShortenedURL} from 'app/utils/url';
 
-export default class ChannelInfo extends PureComponent {
+export default class EditChannelInfo extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,

@@ -9,7 +9,7 @@ import {
     InteractionManager
 } from 'react-native';
 
-import ChannelInfo from 'app/components/channel_info';
+import EditChannelInfo from 'app/components/edit_channel_info';
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {ViewTypes} from 'app/constants';
@@ -266,7 +266,7 @@ export default class EditChannel extends PureComponent {
         } = this.state;
 
         return (
-            <ChannelInfo
+            <EditChannelInfo
                 navigator={navigator}
                 theme={theme}
                 enableRightButton={this.emitCanUpdateChannel}
