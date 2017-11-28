@@ -18,31 +18,31 @@ import {cleanUpUrlable} from 'app/utils/url';
 
 const messages = {
     display_name_required: {
-        id: 'rename_channel.mobile.display_name_required',
+        id: 'mobile.rename_channel.display_name_required',
         defaultMessage: 'Channel name is required'
     },
     display_name_maxLength: {
-        id: 'rename_channel.mobile.display_name_maxLength',
+        id: 'mobile.rename_channel.display_name_maxLength',
         defaultMessage: 'Channel name must be less than {maxLength, number} characters'
     },
     display_name_minLength: {
-        id: 'rename_channel.mobile.display_name_minLength',
+        id: 'mobile.rename_channel.display_name_minLength',
         defaultMessage: 'Channel name must be {minLength, number} or more characters'
     },
     name_required: {
-        id: 'rename_channel.mobile.name_required',
+        id: 'mobile.rename_channel.name_required',
         defaultMessage: 'URL is required'
     },
     name_maxLength: {
-        id: 'rename_channel.mobile.name_maxLength',
+        id: 'mobile.rename_channel.name_maxLength',
         defaultMessage: 'URL must be less than {maxLength, number} characters'
     },
     name_minLength: {
-        id: 'rename_channel.mobile.name_minLength',
+        id: 'mobile.rename_channel.name_minLength',
         defaultMessage: 'URL must be {minLength, number} or more characters'
     },
     name_lowercase: {
-        id: 'rename_channel.mobile.name_lowercase',
+        id: 'mobile.rename_channel.name_lowercase',
         defaultMessage: 'URL be lowercase alphanumeric characters'
     }
 };

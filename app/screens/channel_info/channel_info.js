@@ -112,7 +112,7 @@ class ChannelInfo extends PureComponent {
 
     handleChannelEdit = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
-        const id = 'channel_header.mobile.edit';
+        const id = 'mobile.channel_info.edit';
         const defaultMessage = 'Edit Channel';
 
         navigator.push({
@@ -356,7 +356,7 @@ class ChannelInfo extends PureComponent {
                                     action={this.handleChannelEdit}
                                     defaultMessage='Edit Channel'
                                     icon='edit'
-                                    textId='channel_header.mobile.edit'
+                                    textId='mobile.channel_info.edit'
                                     theme={theme}
                                 />
                             </View>
