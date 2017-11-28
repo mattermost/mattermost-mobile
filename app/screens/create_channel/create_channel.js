@@ -17,6 +17,8 @@ export default class CreateChannel extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
         createChannelRequest: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         closeButton: PropTypes.object,
@@ -170,7 +172,9 @@ export default class CreateChannel extends PureComponent {
     render() {
         const {
             navigator,
-            theme
+            theme,
+            deviceWidth,
+            deviceHeight
         } = this.props;
         const {
             error,
@@ -193,6 +197,8 @@ export default class CreateChannel extends PureComponent {
                 displayName={displayName}
                 purpose={purpose}
                 header={header}
+                deviceWidth={deviceWidth}
+                deviceHeight={deviceHeight}
             />
         );
     }

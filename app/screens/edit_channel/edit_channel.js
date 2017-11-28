@@ -52,6 +52,8 @@ export default class EditChannel extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
         channel: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         updateChannelRequest: PropTypes.object.isRequired,
@@ -257,7 +259,9 @@ export default class EditChannel extends PureComponent {
             },
             navigator,
             theme,
-            currentTeamUrl
+            currentTeamUrl,
+            deviceWidth,
+            deviceHeight
         } = this.props;
         const {
             error,
@@ -290,6 +294,8 @@ export default class EditChannel extends PureComponent {
                 oldChannelURL={oldChannelURL}
                 oldPurpose={oldPurpose}
                 oldHeader={oldHeader}
+                deviceWidth={deviceWidth}
+                deviceHeight={deviceHeight}
             />
         );
     }

@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Platform,
     TouchableWithoutFeedback,
     View,
@@ -29,6 +28,8 @@ export default class EditChannelInfo extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
+        deviceHeight: PropTypes.number.isRequired,
         channelType: PropTypes.string,
         enableRightButton: PropTypes.func,
         saving: PropTypes.bool.isRequired,
@@ -178,10 +179,19 @@ export default class EditChannelInfo extends PureComponent {
     };
 
     render() {
-        const {theme, editing, channelType, currentTeamUrl} = this.props;
-        const {displayName, channelURL, header, purpose} = this.props;
+        const {
+            theme,
+            editing,
+            channelType,
+            currentTeamUrl,
+            deviceWidth,
+            deviceHeight,
+            displayName,
+            channelURL,
+            header,
+            purpose
+        } = this.props;
         const {error, saving} = this.props;
-        const {height, width} = Dimensions.get('window');
         const fullUrl = currentTeamUrl + '/channels';
         const shortUrl = getShortenedURL(fullUrl, 35);
 
@@ -202,7 +212,7 @@ export default class EditChannelInfo extends PureComponent {
         let displayError;
         if (error) {
             displayError = (
-                <View style={[style.errorContainer, {width}]}>
+                <View style={[style.errorContainer, {deviceWidth}]}>
                     <View style={style.errorWrapper}>
                         <ErrorText error={error}/>
                     </View>
@@ -219,7 +229,7 @@ export default class EditChannelInfo extends PureComponent {
                 >
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
-                        <View style={[style.scrollView, {height: height + (Platform.OS === 'android' ? 200 : 0)}]}>
+                        <View style={[style.scrollView, {height: deviceHeight + (Platform.OS === 'android' ? 200 : 0)}]}>
                             {!displayHeaderOnly && (
                                 <View>
                                     <View>

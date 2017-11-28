@@ -7,15 +7,19 @@ import {connect} from 'react-redux';
 import {handleCreateChannel} from 'app/actions/views/create_channel';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getDimensions} from 'app/selectors/device';
 
 import CreateChannel from './create_channel';
 
 function mapStateToProps(state) {
     const {createChannel: createChannelRequest} = state.requests.channels;
+    const {deviceWidth, deviceHeight} = getDimensions(state);
 
     return {
         createChannelRequest,
-        theme: getTheme(state)
+        theme: getTheme(state),
+        deviceWidth,
+        deviceHeight
     };
 }
 
