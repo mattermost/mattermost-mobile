@@ -8,9 +8,13 @@ import RadioButton from './radio_button';
 
 export default class RadioButtonGroup extends PureComponent {
     static propTypes = {
-        children: PropTypes.node.isRequired,
+        options: PropTypes.array,
         name: PropTypes.string.isRequired,
         onSelect: PropTypes.func
+    };
+
+    static defaultProps: {
+        options: []
     };
 
     state = {};
@@ -19,18 +23,18 @@ export default class RadioButtonGroup extends PureComponent {
         super(props);
 
         this.selected = null;
-        React.Children.forEach(this.props.children, (option) => {
-            if (option) {
+        if (this.props.options.length) {
+            this.props.options.forEach((option) => {
                 const {
                     value,
                     checked
-                } = option.props;
+                } = option;
 
                 if (!this.state.selected && checked) {
                     this.selected = value;
                 }
-            }
-        });
+            });
+        }
 
         this.state = {selected: this.selected};
     }
@@ -55,14 +59,15 @@ export default class RadioButtonGroup extends PureComponent {
     };
 
     render = () => {
-        const options = React.Children.map(this.props.children, (option) => {
-            if (option) {
+        let options;
+        if (this.props.options.length) {
+            options = this.props.options.map((option) => {
                 const {
                     value,
                     label,
                     disabled,
                     ...other
-                } = option.props;
+                } = option;
 
                 const {name} = this.props;
 
@@ -79,10 +84,8 @@ export default class RadioButtonGroup extends PureComponent {
                         checked={this.state.selected && value === this.state.selected}
                     />
                 );
-            }
-
-            return null;
-        }, this);
+            });
+        }
 
         return (
             <View>

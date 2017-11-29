@@ -12,7 +12,7 @@ import {
 import {injectIntl} from 'react-intl';
 
 import FormattedText from 'app/components/formatted_text';
-import {RadioButton, RadioButtonGroup} from 'app/components/radio_button';
+import RadioButtonGroup from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import SectionItem from 'app/screens/settings/section_item';
@@ -114,6 +114,29 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
     renderReplyModal(style) {
         const {intl} = this.props;
 
+        const options = [{
+            label: intl.formatMessage({
+                id: 'mobile.account_notifications.threads_start_participate',
+                defaultMessage: 'Threads that I start or participate in'
+            }),
+            value: 'any',
+            checked: this.state.comments === 'any'
+        }, {
+            label: intl.formatMessage({
+                id: 'mobile.account_notifications.threads_start',
+                defaultMessage: 'Threads that I start'
+            }),
+            value: 'root',
+            checked: this.state.comments === 'root'
+        }, {
+            label: intl.formatMessage({
+                id: 'mobile.account_notifications.threads_mentions',
+                defaultMessage: 'Mentions in threads'
+            }),
+            value: 'never',
+            checked: this.state.comments === 'never'
+        }];
+
         return (
             <Modal
                 animationType='slide'
@@ -134,32 +157,8 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                             <RadioButtonGroup
                                 name='replySettings'
                                 onSelect={this.onReplyChanged}
-                            >
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'mobile.account_notifications.threads_start_participate',
-                                        defaultMessage: 'Threads that I start or participate in'
-                                    })}
-                                    value='any'
-                                    checked={this.state.comments === 'any'}
-                                />
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'mobile.account_notifications.threads_start',
-                                        defaultMessage: 'Threads that I start'
-                                    })}
-                                    value='root'
-                                    checked={this.state.comments === 'root'}
-                                />
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'mobile.account_notifications.threads_mentions',
-                                        defaultMessage: 'Mentions in threads'
-                                    })}
-                                    value='never'
-                                    checked={this.state.comments === 'never'}
-                                />
-                            </RadioButtonGroup>
+                                options={options}
+                            />
                         </View>
                         <View style={style.modalFooter}>
                             <View style={style.separator}/>
