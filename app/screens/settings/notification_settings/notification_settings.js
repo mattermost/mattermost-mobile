@@ -17,7 +17,7 @@ import {Preferences, RequestStatus} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import FormattedText from 'app/components/formatted_text';
-import {RadioButton, RadioButtonGroup} from 'app/components/radio_button';
+import RadioButtonGroup from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
@@ -135,6 +135,8 @@ class NotificationSettings extends PureComponent {
                     notificationPreferences
                 }
             });
+        }).catch((e) => {
+            Alert.alert('There was a problem getting the device preferences', e.message);
         });
     };
 
@@ -226,6 +228,42 @@ class NotificationSettings extends PureComponent {
             );
         }
 
+        const emailOptions = [{
+            label: intl.formatMessage({
+                id: 'user.settings.notifications.email.immediately',
+                defaultMessage: 'Immediately'
+            }),
+            value: sendImmediatleyValue,
+            checked: sendImmediatley
+        }];
+
+        if (emailBatchingEnabled) {
+            emailOptions.push({
+                label: intl.formatMessage({
+                    id: 'user.settings.notifications.email.everyXMinutes',
+                    defaultMessage: 'Every {count, plural, one {minute} other {{count, number} minutes}}'
+                }, {count: Preferences.INTERVAL_FIFTEEN_MINUTES / 60}),
+                value: Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
+                checked: fifteenMinutes
+            }, {
+                label: intl.formatMessage({
+                    id: 'user.settings.notifications.email.everyHour',
+                    defaultMessage: 'Every hour'
+                }),
+                value: Preferences.INTERVAL_HOUR.toString(),
+                checked: hourly
+            });
+        }
+
+        emailOptions.push({
+            label: intl.formatMessage({
+                id: 'user.settings.notifications.email.never',
+                defaultMessage: 'Never'
+            }),
+            value: 'false',
+            checked: never
+        });
+
         return (
             <Modal
                 animationType='slide'
@@ -254,44 +292,8 @@ class NotificationSettings extends PureComponent {
                             <RadioButtonGroup
                                 name='emailSettings'
                                 onSelect={this.setEmailNotifications}
-                            >
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.email.immediately',
-                                        defaultMessage: 'Immediately'
-                                    })}
-                                    value={sendImmediatleyValue}
-                                    checked={sendImmediatley}
-                                />
-                                {emailBatchingEnabled &&
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.email.everyXMinutes',
-                                        defaultMessage: 'Every {count, plural, one {minute} other {{count, number} minutes}}'
-                                    }, {count: Preferences.INTERVAL_FIFTEEN_MINUTES / 60})}
-                                    value={Preferences.INTERVAL_FIFTEEN_MINUTES.toString()}
-                                    checked={fifteenMinutes}
-                                />
-                                }
-                                {emailBatchingEnabled &&
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.email.everyHour',
-                                        defaultMessage: 'Every hour'
-                                    })}
-                                    value={Preferences.INTERVAL_HOUR.toString()}
-                                    checked={hourly}
-                                />
-                                }
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.email.never',
-                                        defaultMessage: 'Never'
-                                    })}
-                                    value='false'
-                                    checked={never}
-                                />
-                            </RadioButtonGroup>
+                                options={emailOptions}
+                            />
                             }
                             {helpText}
                         </View>

@@ -8,3 +8,5 @@ export {
     RadioButton,
     RadioButtonGroup
 };
+
+export default RadioButtonGroup;

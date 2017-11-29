@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-import {RadioButton, RadioButtonGroup} from 'app/components/radio_button';
+import RadioButtonGroup from 'app/components/radio_button';
 import NotificationPreferences from 'app/notification_preferences';
 import PushNotifications from 'app/push_notifications';
 import StatusBar from 'app/components/status_bar';
@@ -84,6 +84,29 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const {config, intl} = this.props;
         const pushNotificationsEnabled = config.SendPushNotifications === 'true';
 
+        const options = [{
+            label: intl.formatMessage({
+                id: 'user.settings.notifications.allActivity',
+                defaultMessage: 'For all activity'
+            }),
+            value: 'all',
+            checked: this.state.push === 'all'
+        }, {
+            label: intl.formatMessage({
+                id: 'user.settings.notifications.onlyMentions',
+                defaultMessage: 'Only for mentions and direct messages'
+            }),
+            value: 'mention',
+            checked: this.state.push === 'mention'
+        }, {
+            label: intl.formatMessage({
+                id: 'user.settings.notifications.never',
+                defaultMessage: 'Never'
+            }),
+            value: 'none',
+            checked: this.state.push === 'none'
+        }];
+
         return (
             <Modal
                 animationType='slide'
@@ -105,32 +128,8 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                             <RadioButtonGroup
                                 name='pushSettings'
                                 onSelect={this.onMobilePushChanged}
-                            >
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.allActivity',
-                                        defaultMessage: 'For all activity'
-                                    })}
-                                    value='all'
-                                    checked={this.state.push === 'all'}
-                                />
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.onlyMentions',
-                                        defaultMessage: 'Only for mentions and direct messages'
-                                    })}
-                                    value='mention'
-                                    checked={this.state.push === 'mention'}
-                                />
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.notifications.never',
-                                        defaultMessage: 'Never'
-                                    })}
-                                    value='none'
-                                    checked={this.state.push === 'none'}
-                                />
-                            </RadioButtonGroup>
+                                options={options}
+                            />
                             }
                             {!pushNotificationsEnabled &&
                             <FormattedText
@@ -179,6 +178,29 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     renderMobilePushStatusModal(style) {
         const {intl} = this.props;
 
+        const options = [{
+            label: intl.formatMessage({
+                id: 'user.settings.push_notification.online',
+                defaultMessage: 'Online, away or offline'
+            }),
+            value: 'online',
+            checked: this.state.push_status === 'online'
+        }, {
+            label: intl.formatMessage({
+                id: 'user.settings.push_notification.away',
+                defaultMessage: 'Away or offline'
+            }),
+            value: 'away',
+            checked: this.state.push_status === 'away'
+        }, {
+            label: intl.formatMessage({
+                id: 'user.settings.push_notification.offline',
+                defaultMessage: 'Offline'
+            }),
+            value: 'offline',
+            checked: this.state.push_status === 'offline'
+        }];
+
         return (
             <Modal
                 animationType='slide'
@@ -199,32 +221,8 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                             <RadioButtonGroup
                                 name='pushStatusSettings'
                                 onSelect={this.onMobilePushStatusChanged}
-                            >
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.push_notification.online',
-                                        defaultMessage: 'Online, away or offline'
-                                    })}
-                                    value='online'
-                                    checked={this.state.push_status === 'online'}
-                                />
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.push_notification.away',
-                                        defaultMessage: 'Away or offline'
-                                    })}
-                                    value='away'
-                                    checked={this.state.push_status === 'away'}
-                                />
-                                <RadioButton
-                                    label={intl.formatMessage({
-                                        id: 'user.settings.push_notification.offline',
-                                        defaultMessage: 'Offline'
-                                    })}
-                                    value='offline'
-                                    checked={this.state.push_status === 'offline'}
-                                />
-                            </RadioButtonGroup>
+                                options={options}
+                            />
                         </View>
                         <View style={style.modalFooter}>
                             <View style={style.separator}/>
@@ -262,16 +260,32 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const {defaultSound, selectedUri} = this.state;
         const {intl, notificationPreferences} = this.props;
         const {defaultUri, sounds} = notificationPreferences;
-        const soundsArray = sounds.filter((s) => s.uri !== defaultUri).map((s, i) => {
-            return (
-                <RadioButton
-                    key={`sound-${i}`}
-                    label={s.name}
-                    value={s.uri}
-                    checked={s.uri === selectedUri}
-                />
-            );
-        });
+        const soundsArray = [{
+            label: intl.formatMessage({
+                id: 'mobile.notification_settings_mobile.default_sound',
+                defaultMessage: 'Default ({sound})'
+            }, {sound: defaultSound}),
+            value: defaultUri,
+            checked: selectedUri === null
+        }, {
+            label: intl.formatMessage({
+                id: 'mobile.notification_settings_mobile.no_sound',
+                defaultMessage: 'None'
+            }),
+            value: 'none',
+            checked: selectedUri === 'none'
+        }];
+
+        if (sounds && sounds.length) {
+            const filteredSounds = sounds.filter((s) => s.uri !== defaultUri).map((s) => {
+                return {
+                    label: s.name,
+                    value: s.uri,
+                    checked: s.uri === selectedUri
+                };
+            });
+            soundsArray.push(...filteredSounds);
+        }
 
         return (
             <Modal
@@ -294,25 +308,8 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                                 <RadioButtonGroup
                                     name='soundsSettings'
                                     onSelect={this.onMobileSoundChanged}
-                                >
-                                    <RadioButton
-                                        label={intl.formatMessage({
-                                            id: 'mobile.notification_settings_mobile.default_sound',
-                                            defaultMessage: 'Default ({sound})'
-                                        }, {sound: defaultSound})}
-                                        value={defaultUri}
-                                        checked={selectedUri === null}
-                                    />
-                                    <RadioButton
-                                        label={intl.formatMessage({
-                                            id: 'mobile.notification_settings_mobile.no_sound',
-                                            defaultMessage: 'None'
-                                        })}
-                                        value='none'
-                                        checked={selectedUri === 'none'}
-                                    />
-                                    {soundsArray}
-                                </RadioButtonGroup>
+                                    options={soundsArray}
+                                />
                             </ScrollView>
                         </View>
                         <View style={style.modalFooter}>
