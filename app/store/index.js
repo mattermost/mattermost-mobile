@@ -4,7 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 import {AsyncStorage} from 'react-native';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import {createTransform, persistStore} from 'redux-persist';
+import {createTransform, persistStore} from 'mattermost-redux/store/persist';
 
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
 import {General, RequestStatus} from 'mattermost-redux/constants';
