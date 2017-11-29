@@ -233,7 +233,6 @@ class PostBody extends PureComponent {
                             onLongPress={this.showOptionsContext}
                             onPostPress={onPress}
                             textStyles={textStyles}
-                            theme={theme}
                             value={message}
                         />
                     </View>
