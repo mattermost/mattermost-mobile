@@ -11,13 +11,14 @@ import {
     KeyboardAvoidingView,
     Platform,
     StatusBar,
+    StyleSheet,
+    Text,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
 import Button from 'react-native-button';
 import urlParse from 'url-parse';
 
-import {RequestStatus} from 'mattermost-redux/constants';
 import {Client, Client4} from 'mattermost-redux/client';
 
 import Config from 'assets/config';
@@ -42,31 +43,30 @@ class SelectServer extends PureComponent {
         }).isRequired,
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
-        configRequest: PropTypes.object.isRequired,
         currentVersion: PropTypes.string,
         intl: intlShape.isRequired,
         latestVersion: PropTypes.string,
         license: PropTypes.object,
-        licenseRequest: PropTypes.object.isRequired,
         minVersion: PropTypes.string,
         navigator: PropTypes.object,
-        pingRequest: PropTypes.object.isRequired,
         serverUrl: PropTypes.string.isRequired,
-        theme: PropTypes.object,
-        transition: PropTypes.bool.isRequired
+        theme: PropTypes.object
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
+            connecting: false,
             error: null
         };
+
+        this.cancelPing = null;
     }
 
     componentDidMount() {
-        const {allowOtherServers, pingRequest, serverUrl} = this.props;
-        if (pingRequest.status === RequestStatus.NOT_STARTED && !allowOtherServers && serverUrl) {
+        const {allowOtherServers, serverUrl} = this.props;
+        if (!allowOtherServers && serverUrl) {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
             // we automatically trigger the ping to move to the next screen
             this.onClick();
@@ -74,23 +74,6 @@ class SelectServer extends PureComponent {
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (!this.props.transition && nextProps.transition) {
-            if (Config.EnableMobileClientUpgrade) {
-                this.props.actions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = nextProps;
-                const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
-                if (upgradeType === UpgradeTypes.NO_UPGRADE) {
-                    this.handleLoginOptions();
-                } else {
-                    this.handleShowClientUpgrade(upgradeType);
-                }
-            } else {
-                this.handleLoginOptions();
-            }
         }
     }
 
@@ -167,26 +150,86 @@ class SelectServer extends PureComponent {
     onClick = wrapWithPreventDoubleTap(async () => {
         const preUrl = urlParse(this.props.serverUrl, true);
         const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
-        let error = null;
 
         Keyboard.dismiss();
 
-        if (isValidUrl(url)) {
-            Client4.setUrl(url);
-            Client.setUrl(url);
-            this.props.actions.handleServerUrlChanged(url);
-            await this.props.actions.getPing();
-        } else {
-            error = {
-                intl: {
-                    id: 'mobile.server_url.invalid_format',
-                    defaultMessage: 'URL must start with http:// or https://'
-                }
-            };
+        if (this.state.connecting) {
+            this.cancelPing();
+
+            return;
         }
 
-        this.setState({error});
+        if (!isValidUrl(url)) {
+            this.setState({
+                error: {
+                    intl: {
+                        id: 'mobile.server_url.invalid_format',
+                        defaultMessage: 'URL must start with http:// or https://'
+                    }
+                }
+            });
+
+            return;
+        }
+
+        this.pingServer(url);
     });
+
+    pingServer = (url) => {
+        this.setState({
+            connecting: true,
+            error: null
+        });
+
+        Client4.setUrl(url);
+        Client.setUrl(url);
+        this.props.actions.handleServerUrlChanged(url);
+
+        let cancel = false;
+        this.cancelPing = () => {
+            cancel = true;
+
+            this.setState({
+                connecting: false
+            });
+
+            this.cancelPing = null;
+        };
+
+        this.props.actions.getPing().then((result) => {
+            if (cancel) {
+                return;
+            }
+
+            this.setState({
+                connecting: false,
+                error: result.error
+            });
+
+            if (!result.error) {
+                if (Config.EnableMobileClientUpgrade) {
+                    this.props.actions.setLastUpgradeCheck();
+                    const {currentVersion, minVersion, latestVersion} = this.props;
+                    const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
+                    if (upgradeType === UpgradeTypes.NO_UPGRADE) {
+                        this.handleLoginOptions();
+                    } else {
+                        this.handleShowClientUpgrade(upgradeType);
+                    }
+                } else {
+                    this.handleLoginOptions();
+                }
+            }
+        }).catch(() => {
+            if (cancel) {
+                return;
+            }
+
+            this.setState({
+                connecting: false
+            });
+        });
+    };
 
     inputRef = (ref) => {
         this.textInput = ref;
@@ -199,44 +242,55 @@ class SelectServer extends PureComponent {
     };
 
     render() {
-        const {allowOtherServers, serverUrl, pingRequest, configRequest, licenseRequest} = this.props;
-        const isLoading = pingRequest.status === RequestStatus.STARTED ||
-            configRequest.status === RequestStatus.STARTED ||
-            licenseRequest.status === RequestStatus.STARTED;
+        const {
+            allowOtherServers,
+            serverUrl
+        } = this.props;
+        const {
+            connecting,
+            error
+        } = this.state;
 
-        let proceed;
-        if (isLoading) {
-            proceed = (
+        let buttonIcon;
+        let buttonText;
+        if (connecting) {
+            buttonIcon = (
                 <ActivityIndicator
                     animating={true}
                     size='small'
+                    style={style.connectingIndicator}
+                />
+            );
+            buttonText = (
+                <FormattedText
+                    id='mobile.components.select_server_view.connecting'
+                    defaultMessage='Connecting...'
                 />
             );
         } else {
-            proceed = (
-                <Button
-                    onPress={this.onClick}
-                    containerStyle={GlobalStyles.signupButton}
-                >
-                    <FormattedText
-                        style={GlobalStyles.signupButtonText}
-                        id='mobile.components.select_server_view.proceed'
-                        defaultMessage='Proceed'
-                    />
-                </Button>
+            buttonText = (
+                <FormattedText
+                    id='mobile.components.select_server_view.connect'
+                    defaultMessage='Connect'
+                />
             );
         }
 
-        const error = pingRequest.error || configRequest.error || licenseRequest.error;
         let statusStyle = 'dark-content';
         if (Platform.OS === 'android') {
             statusStyle = 'light-content';
         }
 
+        const inputDisabled = !allowOtherServers || connecting;
+        const inputStyle = [GlobalStyles.inputBox];
+        if (inputDisabled) {
+            inputStyle.push(style.disabledInput);
+        }
+
         return (
             <KeyboardAvoidingView
                 behavior='padding'
-                style={{flex: 1}}
+                style={style.container}
                 keyboardVerticalOffset={0}
             >
                 <StatusBar barStyle={statusStyle}/>
@@ -256,10 +310,10 @@ class SelectServer extends PureComponent {
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
                             value={serverUrl}
-                            editable={allowOtherServers}
+                            editable={!inputDisabled}
                             onChangeText={this.props.actions.handleServerUrlChanged}
                             onSubmitEditing={this.onClick}
-                            style={[GlobalStyles.inputBox, (allowOtherServers) ? {} : {backgroundColor: '#e3e3e3'}]}
+                            style={inputStyle}
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'
@@ -267,13 +321,36 @@ class SelectServer extends PureComponent {
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                         />
-                        {proceed}
-                        <ErrorText error={this.state.error || error}/>
+                        <Button
+                            onPress={this.onClick}
+                            containerStyle={[GlobalStyles.signupButton, style.connectButton]}
+                        >
+                            {buttonIcon}
+                            <Text style={GlobalStyles.signupButtonText}>
+                                {buttonText}
+                            </Text>
+                        </Button>
+                        <ErrorText error={error}/>
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flex: 1
+    },
+    disabledInput: {
+        backgroundColor: '#e3e3e3'
+    },
+    connectButton: {
+        alignItems: 'center'
+    },
+    connectingIndicator: {
+        marginRight: 5
+    }
+});
 
 export default injectIntl(SelectServer);
