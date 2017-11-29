@@ -3,7 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, View} from 'react-native';
+import {
+    Keyboard,
+    Platform,
+    View
+} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -14,6 +19,7 @@ import SlashSuggestion from './slash_suggestion';
 
 export default class Autocomplete extends PureComponent {
     static propTypes = {
+        deviceHeight: PropTypes.number,
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         isSearch: PropTypes.bool,
@@ -30,7 +36,8 @@ export default class Autocomplete extends PureComponent {
         atMentionCount: 0,
         channelMentionCount: 0,
         emojiCount: 0,
-        commandCount: 0
+        commandCount: 0,
+        keyboardOffset: 0
     };
 
     handleSelectionChange = (event) => {
@@ -55,6 +62,33 @@ export default class Autocomplete extends PureComponent {
         this.setState({commandCount});
     };
 
+    componentWillMount() {
+        this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow);
+        this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
+    }
+
+    componentWillUnmount() {
+        this.keyboardDidShowListener.remove();
+        this.keyboardDidHideListener.remove();
+    }
+
+    keyboardDidShow = (e) => {
+        const {height} = e.endCoordinates;
+        this.setState({keyboardOffset: height});
+    }
+
+    keyboardDidHide = () => {
+        this.setState({keyboardOffset: 0});
+    }
+
+    listHeight() {
+        let offset = Platform.select({ios: 65, android: 75});
+        if (DeviceInfo.getModel() === 'iPhone X') {
+            offset = 90;
+        }
+        return this.props.deviceHeight - offset - this.state.keyboardOffset;
+    }
+
     render() {
         const style = getStyleFromTheme(this.props.theme);
 
@@ -76,16 +110,18 @@ export default class Autocomplete extends PureComponent {
                 containerStyle.push(style.borders);
             }
         }
-
+        const listHeight = this.listHeight();
         return (
             <View style={wrapperStyle}>
                 <View style={containerStyle}>
                     <AtMention
+                        listHeight={listHeight}
                         cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleAtMentionCountChange}
                         {...this.props}
                     />
                     <ChannelMention
+                        listHeight={listHeight}
                         cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         {...this.props}
@@ -131,7 +167,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             flex: 1,
-            maxHeight: 250,
             ...Platform.select({
                 android: {
                     top: 46

@@ -5,10 +5,14 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {getDimensions} from 'app/selectors/device';
+
 import Autocomplete from './autocomplete';
 
 function mapStateToProps(state) {
+    const {deviceHeight} = getDimensions(state);
     return {
+        deviceHeight,
         theme: getTheme(state)
     };
 }
