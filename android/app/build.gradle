@@ -79,7 +79,7 @@ project.ext.react = [
 apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
-if (System.getenv("MM_SENTRY_ENABLED") == "true") {
+if (System.getenv("SENTRY_ENABLED") == "true") {
     apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 }
 
