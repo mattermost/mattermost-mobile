@@ -110,17 +110,18 @@ export default class Autocomplete extends PureComponent {
                 containerStyle.push(style.borders);
             }
         }
+        const listHeight = this.listHeight();
         return (
             <View style={wrapperStyle}>
                 <View style={containerStyle}>
                     <AtMention
-                        listHeight={this.listHeight()}
+                        listHeight={listHeight}
                         cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleAtMentionCountChange}
                         {...this.props}
                     />
                     <ChannelMention
-                        listHeight={this.listHeight()}
+                        listHeight={listHeight}
                         cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         {...this.props}
