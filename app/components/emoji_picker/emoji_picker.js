@@ -358,10 +358,7 @@ export default class EmojiPicker extends PureComponent {
         }
 
         return (
-            <SafeAreaView
-                excludeHeader={true}
-                theme={theme}
-            >
+            <SafeAreaView excludeHeader={true}>
                 <KeyboardAvoidingView
                     behavior='padding'
                     style={{flex: 1}}

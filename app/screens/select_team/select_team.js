@@ -21,7 +21,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class SelectTeam extends PureComponent {
     static propTypes = {
@@ -55,6 +55,10 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+
         if (this.props.teams !== nextProps.teams) {
             this.buildData(nextProps);
         }

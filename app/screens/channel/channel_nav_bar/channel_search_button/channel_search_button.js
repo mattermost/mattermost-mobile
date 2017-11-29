@@ -41,9 +41,6 @@ export default class ChannelSearchButton extends PureComponent {
             navigatorStyle: {
                 navBarHidden: true,
                 screenBackgroundColor: theme.centerChannelBg
-            },
-            passProps: {
-                theme
             }
         });
     });

@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
 import {getNotificationProps} from 'app/utils/notify_props';
+import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
@@ -26,6 +27,12 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
 
         this.goingBack = true; //use to identify if the navigator is popping this screen
         this.state = this.setStateFromNotifyProps(notifyProps);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
     }
 
     onNavigatorEvent = (event) => {

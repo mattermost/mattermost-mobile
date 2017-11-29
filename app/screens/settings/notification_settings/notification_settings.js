@@ -23,7 +23,7 @@ import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
 import {getNotificationProps} from 'app/utils/notify_props';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 class NotificationSettings extends PureComponent {
     static propTypes = {
@@ -44,6 +44,10 @@ class NotificationSettings extends PureComponent {
     };
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+
         const {updateMeRequest, intl} = nextProps;
         if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(

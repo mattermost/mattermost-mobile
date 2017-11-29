@@ -9,6 +9,7 @@ import {selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {
     handleSelectChannel,
@@ -33,7 +34,8 @@ function mapStateToProps(state) {
         isLandscape: isLandscape(state),
         postIds: state.entities.search.results,
         recent: recent[currentTeamId],
-        searchingStatus: searchRequest.status
+        searchingStatus: searchRequest.status,
+        theme: getTheme(state)
     };
 }
 

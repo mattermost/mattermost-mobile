@@ -11,13 +11,20 @@ import {
 } from 'react-native';
 
 import {getCodeFont} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired
     };
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+    }
 
     countLines = (content) => {
         return content.split('\n').length;

@@ -14,7 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
@@ -25,8 +25,15 @@ export default class About extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
+        navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+    }
 
     handleAboutTeam = () => {
         Linking.openURL(Config.AboutTeamURL);

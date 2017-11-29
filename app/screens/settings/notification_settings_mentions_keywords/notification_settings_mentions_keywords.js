@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
@@ -25,6 +25,12 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
     }
 
     handleSubmit = () => {

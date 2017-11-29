@@ -15,7 +15,7 @@ import DeviceInfo from 'react-native-device-info';
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
 
 import LocalConfig from 'assets/config';
@@ -41,6 +41,12 @@ class Settings extends PureComponent {
     constructor(props) {
         super(props);
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
     }
 
     errorEmailBody = () => {

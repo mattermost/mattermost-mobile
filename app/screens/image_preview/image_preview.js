@@ -480,7 +480,6 @@ export default class ImagePreview extends PureComponent {
         return (
             <SafeAreaView
                 backgroundColor='#000'
-                theme={this.props.theme}
                 navBarBackgroundColor='#000'
             >
                 <View style={[style.wrapper]}>

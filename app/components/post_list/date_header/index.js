@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import SafeAreaView from './safe_area_view';
+import DateHeader from './date_header';
 
 function mapStateToProps(state) {
     return {
@@ -13,5 +13,5 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(SafeAreaView);
+export default connect(mapStateToProps)(DateHeader);
 

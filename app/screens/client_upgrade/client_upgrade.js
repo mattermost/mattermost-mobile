@@ -18,7 +18,7 @@ import StatusBar from 'app/components/status_bar';
 import {UpgradeTypes} from 'app/constants/view';
 import logo from 'assets/images/logo.png';
 import checkUpgradeType from 'app/utils/client_upgrade';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {
@@ -53,6 +53,12 @@ export default class ClientUpgrade extends PureComponent {
     componentDidMount() {
         if (this.props.userCheckedForUpgrade) {
             this.checkUpgrade(this.props);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
     }
 

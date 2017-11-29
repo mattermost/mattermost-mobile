@@ -17,7 +17,7 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorIfInvalidPermissions} from 'app/utils/general';
 import {createMembersSections, loadingText, markSelectedProfiles} from 'app/utils/member_list';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
@@ -81,6 +81,10 @@ class ChannelAddMembers extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+
         const {loadMoreRequestStatus} = this.props;
         if (loadMoreRequestStatus === RequestStatus.STARTED &&
             nextProps.loadMoreRequestStatus === RequestStatus.SUCCESS) {
