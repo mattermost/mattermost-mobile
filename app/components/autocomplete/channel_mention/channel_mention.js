@@ -198,7 +198,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg
         },
         search: {
-            height: 250
+            minHeight: 125,
+            maxHeight: 250
         }
     };
 });
