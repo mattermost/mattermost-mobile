@@ -9,11 +9,12 @@ import {
     InteractionManager
 } from 'react-native';
 
-import EditChannelInfo from 'app/components/edit_channel_info';
 import {RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {ViewTypes} from 'app/constants';
 
+import EditChannelInfo from 'app/components/edit_channel_info';
+import {ViewTypes} from 'app/constants';
+import {setNavigatorStyles} from 'app/utils/theme';
 import {cleanUpUrlable} from 'app/utils/url';
 
 const messages = {
@@ -107,6 +108,10 @@ export default class EditChannel extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+
         const {updateChannelRequest} = nextProps;
 
         if (this.props.updateChannelRequest !== updateChannelRequest) {

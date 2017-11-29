@@ -75,3 +75,12 @@ export function blendColors(background, foreground, opacity) {
 export function concatStyles(...styles) {
     return [].concat(styles);
 }
+
+export function setNavigatorStyles(navigator, theme) {
+    navigator.setStyle({
+        navBarTextColor: theme.sidebarHeaderTextColor,
+        navBarBackgroundColor: theme.sidebarHeaderBg,
+        navBarButtonColor: theme.sidebarHeaderTextColor,
+        screenBackgroundColor: theme.centerChannelBg
+    });
+}

@@ -18,7 +18,7 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import ProfilePicture from 'app/components/profile_picture';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 import UserProfileRow from './user_profile_row';
 import Config from 'assets/config';
@@ -39,6 +39,12 @@ class UserProfile extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired
     };
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+    }
 
     close = () => {
         const {navigator} = this.props;

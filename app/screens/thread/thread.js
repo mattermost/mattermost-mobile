@@ -13,7 +13,7 @@ import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 class Thread extends PureComponent {
     static propTypes = {
@@ -49,6 +49,10 @@ class Thread extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+
         if (this.props.postIds !== nextProps.postIds && !nextProps.postIds.length) {
             this.close();
             return;
@@ -92,7 +96,6 @@ class Thread extends PureComponent {
             <SafeAreaView
                 excludeHeader={true}
                 keyboardOffset={20}
-                theme={theme}
             >
                 <StatusBar/>
                 <KeyboardLayout

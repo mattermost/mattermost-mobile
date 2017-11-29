@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
 import {getNotificationProps} from 'app/utils/notify_props';
+import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMobileBase extends PureComponent {
     static propTypes = {
@@ -35,6 +36,12 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         this.push = this.state.push;
         this.pushStatus = this.state.push_status;
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
     }
 
     getNotificationPreferences = (props) => {

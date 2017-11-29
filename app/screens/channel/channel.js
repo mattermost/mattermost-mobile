@@ -68,6 +68,12 @@ class Channel extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            this.props.navigator.setStyle({
+                screenBackgroundColor: nextProps.theme.centerChannelBg
+            });
+        }
+
         if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
             this.loadChannels(nextProps.currentTeamId);
         }
@@ -195,20 +201,14 @@ class Channel extends PureComponent {
                 intl={intl}
                 navigator={navigator}
             >
-                <SafeAreaView
-                    navigator={navigator}
-                    theme={theme}
-                >
+                <SafeAreaView navigator={navigator}>
                     <StatusBar/>
                     <OfflineIndicator/>
                     <ChannelNavBar
                         navigator={navigator}
                         onPress={this.goToChannelInfo}
                     />
-                    <KeyboardLayout
-                        behavior='padding'
-                        style={style.keyboardLayout}
-                    >
+                    <KeyboardLayout behavior='padding'>
                         <View style={style.postList}>
                             <ChannelPostList navigator={navigator}/>
                         </View>
@@ -234,11 +234,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         loading: {
             backgroundColor: theme.centerChannelBg,
             flex: 1
-        },
-        keyboardLayout: {
-            backgroundColor: theme.centerChannelBg,
-            flex: 1,
-            paddingBottom: 0
         }
     };
 });

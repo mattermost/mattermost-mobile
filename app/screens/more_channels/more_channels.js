@@ -19,7 +19,7 @@ import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 class MoreChannels extends PureComponent {
     static propTypes = {
@@ -93,6 +93,10 @@ class MoreChannels extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (this.props.theme !== nextProps.theme) {
+            setNavigatorStyles(this.props.navigator, nextProps.theme);
+        }
+
         const {requestStatus} = this.props;
         if (this.state.searching &&
             nextProps.requestStatus.status === RequestStatus.SUCCESS) {

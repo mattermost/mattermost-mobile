@@ -5,12 +5,15 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {KeyboardAvoidingView, Platform, View} from 'react-native';
 
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {
         behaviour: PropTypes.string,
         children: PropTypes.node,
         keyboardVerticalOffset: PropTypes.number,
-        statusBarHeight: PropTypes.number
+        statusBarHeight: PropTypes.number,
+        theme: PropTypes.object.isRequired
     };
 
     static defaultProps = {
@@ -18,11 +21,15 @@ export default class KeyboardLayout extends PureComponent {
     };
 
     render() {
-        const {behaviour, children, keyboardVerticalOffset, statusBarHeight, ...otherProps} = this.props;
+        const {behaviour, children, keyboardVerticalOffset, statusBarHeight, theme, ...otherProps} = this.props;
+        const style = getStyleFromTheme(theme);
 
         if (Platform.OS === 'android') {
             return (
-                <View {...otherProps}>
+                <View
+                    style={style.keyboardLayout}
+                    {...otherProps}
+                >
                     {children}
                 </View>
             );
@@ -39,6 +46,7 @@ export default class KeyboardLayout extends PureComponent {
             <KeyboardAvoidingView
                 behaviour={behaviour}
                 keyboardVerticalOffset={height}
+                style={style.keyboardLayout}
                 {...otherProps}
             >
                 {children}
@@ -46,3 +54,13 @@ export default class KeyboardLayout extends PureComponent {
         );
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        keyboardLayout: {
+            backgroundColor: theme.centerChannelBg,
+            flex: 1,
+            paddingBottom: 0
+        }
+    };
+});

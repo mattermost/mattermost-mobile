@@ -5,15 +5,13 @@ import {connect} from 'react-redux';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {getStatusBarHeight} from 'app/selectors/device';
-
-import KeyboardLayout from './keyboard_layout';
+import DateHeader from './date_header';
 
 function mapStateToProps(state) {
     return {
-        statusBarHeight: getStatusBarHeight(state),
         theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps)(KeyboardLayout);
+export default connect(mapStateToProps)(DateHeader);
+

@@ -440,10 +440,6 @@ class Search extends PureComponent {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);
-
-        if (this.refs.searchBar) {
-            this.refs.searchBar.blur();
-        }
     });
 
     handleClosePreview = () => {
@@ -615,7 +611,6 @@ class Search extends PureComponent {
             <SafeAreaView
                 excludeHeader={isLandscape && this.isX}
                 forceTop={44}
-                theme={theme}
             >
                 <View style={style.container}>
                     <StatusBar/>

@@ -154,10 +154,7 @@ export default class PostList extends PureComponent {
 
     renderDateHeader = (date) => {
         return (
-            <DateHeader
-                theme={this.props.theme}
-                date={date}
-            />
+            <DateHeader date={date}/>
         );
     };
 
