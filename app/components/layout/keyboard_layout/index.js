@@ -3,13 +3,16 @@
 
 import {connect} from 'react-redux';
 
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
 import {getStatusBarHeight} from 'app/selectors/device';
 
 import KeyboardLayout from './keyboard_layout';
 
 function mapStateToProps(state) {
     return {
-        statusBarHeight: getStatusBarHeight(state)
+        statusBarHeight: getStatusBarHeight(state),
+        theme: getTheme(state)
     };
 }
 

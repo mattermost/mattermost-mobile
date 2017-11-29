@@ -208,10 +208,7 @@ class Channel extends PureComponent {
                         navigator={navigator}
                         onPress={this.goToChannelInfo}
                     />
-                    <KeyboardLayout
-                        behavior='padding'
-                        style={style.keyboardLayout}
-                    >
+                    <KeyboardLayout behavior='padding'>
                         <View style={style.postList}>
                             <ChannelPostList navigator={navigator}/>
                         </View>
@@ -237,10 +234,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         loading: {
             backgroundColor: theme.centerChannelBg,
             flex: 1
-        },
-        keyboardLayout: {
-            flex: 1,
-            paddingBottom: 0
         }
     };
 });
