@@ -642,12 +642,6 @@ class Search extends PureComponent {
                             backArrowSize={28}
                         />
                     </View>
-                    <Autocomplete
-                        ref={this.attachAutocomplete}
-                        onChangeText={this.handleTextChanged}
-                        isSearch={true}
-                        value={value}
-                    />
                     <SectionList
                         ref='list'
                         style={style.sectionList}
@@ -656,6 +650,12 @@ class Search extends PureComponent {
                         keyboardShouldPersistTaps='always'
                         keyboardDismissMode='interactive'
                         stickySectionHeadersEnabled={Platform.OS === 'ios'}
+                    />
+                    <Autocomplete
+                        ref={this.attachAutocomplete}
+                        onChangeText={this.handleTextChanged}
+                        isSearch={true}
+                        value={value}
                     />
                     {previewComponent}
                 </View>
@@ -763,8 +763,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 1
         },
         sectionList: {
-            flex: 1,
-            zIndex: -1
+            flex: 1
         },
         customItem: {
             alignItems: 'center',

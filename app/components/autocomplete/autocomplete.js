@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -58,21 +58,27 @@ export default class Autocomplete extends PureComponent {
     render() {
         const style = getStyleFromTheme(this.props.theme);
 
-        const containerStyle = [style.base];
+        const wrapperStyle = [];
+        const containerStyle = [];
         if (this.props.isSearch) {
-            containerStyle.push(style.searchContainer);
+            wrapperStyle.push(style.base, style.searchContainer);
+            containerStyle.push(style.content);
         } else {
-            containerStyle.push(style.container);
+            containerStyle.push(style.base, style.container);
         }
 
         // We always need to render something, but we only draw the borders when we have results to show
         const {atMentionCount, channelMentionCount, emojiCount, commandCount} = this.state;
         if (atMentionCount + channelMentionCount + emojiCount + commandCount > 0) {
-            containerStyle.push(style.borders);
+            if (this.props.isSearch) {
+                wrapperStyle.push(style.bordersSearch);
+            } else {
+                containerStyle.push(style.borders);
+            }
         }
 
         return (
-            <View>
+            <View style={wrapperStyle}>
                 <View style={containerStyle}>
                     <AtMention
                         cursorPosition={this.state.cursorPosition}
@@ -112,15 +118,28 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderBottomWidth: 0
         },
+        bordersSearch: {
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2)
+        },
         container: {
             bottom: 0,
             maxHeight: 200
         },
+        content: {
+            flex: 1
+        },
         searchContainer: {
-            elevation: 5,
             flex: 1,
             maxHeight: 250,
-            zIndex: 5
+            ...Platform.select({
+                android: {
+                    top: 46
+                },
+                ios: {
+                    top: 44
+                }
+            })
         }
     };
 });
