@@ -218,7 +218,7 @@ export default class AtMention extends PureComponent {
             <SectionList
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
-                style={[style.listView, isSearch ? style.search : null, {height: listHeight}]}
+                style={[style.listView, isSearch ? [style.search, {height: listHeight}] : null]}
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
