@@ -44,6 +44,7 @@ class SelectServer extends PureComponent {
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
         currentVersion: PropTypes.string,
+        hasConfigAndLicense: PropTypes.bool.isRequired,
         intl: intlShape.isRequired,
         latestVersion: PropTypes.string,
         license: PropTypes.object,
@@ -57,6 +58,7 @@ class SelectServer extends PureComponent {
         super(props);
 
         this.state = {
+            connected: false,
             connecting: false,
             error: null
         };
@@ -75,6 +77,25 @@ class SelectServer extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+
+        this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
+    }
+
+    componentWillUpdate(nextProps, nextState) {
+        if (nextState.connected && nextProps.hasConfigAndLicense && !(this.state.connected && this.props.hasConfigAndLicense)) {
+            if (Config.EnableMobileClientUpgrade) {
+                this.props.actions.setLastUpgradeCheck();
+                const {currentVersion, minVersion, latestVersion} = nextProps;
+                const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
+                if (upgradeType === UpgradeTypes.NO_UPGRADE) {
+                    this.handleLoginOptions(nextProps);
+                } else {
+                    this.handleShowClientUpgrade(upgradeType);
+                }
+            } else {
+                this.handleLoginOptions(nextProps);
+            }
+        }
     }
 
     componentWillUnmount() {
@@ -82,6 +103,14 @@ class SelectServer extends PureComponent {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
+
+    handleNavigatorEvent = (event) => {
+        if (event.id === 'didDisappear') {
+            this.setState({
+                connected: false
+            });
+        }
+    };
 
     handleShowClientUpgrade = (upgradeType) => {
         const {intl, theme} = this.props;
@@ -106,8 +135,8 @@ class SelectServer extends PureComponent {
         });
     }
 
-    handleLoginOptions = () => {
-        const {config, intl, license, theme} = this.props;
+    handleLoginOptions = (props) => {
+        const {config, intl, license, theme} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
 
@@ -177,6 +206,7 @@ class SelectServer extends PureComponent {
 
     pingServer = (url) => {
         this.setState({
+            connected: false,
             connecting: true,
             error: null
         });
@@ -202,24 +232,10 @@ class SelectServer extends PureComponent {
             }
 
             this.setState({
+                connected: true,
                 connecting: false,
                 error: result.error
             });
-
-            if (!result.error) {
-                if (Config.EnableMobileClientUpgrade) {
-                    this.props.actions.setLastUpgradeCheck();
-                    const {currentVersion, minVersion, latestVersion} = this.props;
-                    const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
-                    if (upgradeType === UpgradeTypes.NO_UPGRADE) {
-                        this.handleLoginOptions();
-                    } else {
-                        this.handleShowClientUpgrade(upgradeType);
-                    }
-                } else {
-                    this.handleLoginOptions();
-                }
-            }
         }).catch(() => {
             if (cancel) {
                 return;

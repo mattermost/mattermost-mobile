@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getPing, resetPing} from 'mattermost-redux/actions/general';
+import {RequestStatus} from 'mattermost-redux/constants';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
@@ -14,6 +15,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
+    const {config: configRequest, license: licenseRequest} = state.requests.general;
     const {config, license} = state.entities.general;
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
@@ -21,6 +23,7 @@ function mapStateToProps(state) {
         ...state.views.selectServer,
         config,
         currentVersion,
+        hasConfigAndLicense: configRequest.status === RequestStatus.SUCCESS && licenseRequest.status === RequestStatus.SUCCESS,
         latestVersion,
         license,
         minVersion,
