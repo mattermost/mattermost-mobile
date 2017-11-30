@@ -15,25 +15,19 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
-    const {config: configRequest, license: licenseRequest, server: pingRequest} = state.requests.general;
+    const {config: configRequest, license: licenseRequest} = state.requests.general;
     const {config, license} = state.entities.general;
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
-
-    const success = RequestStatus.SUCCESS;
-    const transition = (pingRequest.status === success && configRequest.status === success && licenseRequest.status === success);
 
     return {
         ...state.views.selectServer,
         config,
-        configRequest,
         currentVersion,
-        pingRequest,
+        hasConfigAndLicense: configRequest.status === RequestStatus.SUCCESS && licenseRequest.status === RequestStatus.SUCCESS,
         latestVersion,
         license,
-        licenseRequest,
         minVersion,
-        theme: getTheme(state),
-        transition
+        theme: getTheme(state)
     };
 }
 
