@@ -233,7 +233,7 @@ class SelectServer extends PureComponent {
             }
 
             this.setState({
-                connected: true,
+                connected: !result.error,
                 connecting: false,
                 error: result.error
             });
