@@ -182,7 +182,7 @@ class SelectServer extends PureComponent {
 
         Keyboard.dismiss();
 
-        if (this.state.connecting) {
+        if (this.state.connecting || this.state.connected) {
             this.cancelPing();
 
             return;
@@ -220,6 +220,7 @@ class SelectServer extends PureComponent {
             cancel = true;
 
             this.setState({
+                connected: false,
                 connecting: false
             });
 
@@ -263,13 +264,14 @@ class SelectServer extends PureComponent {
             serverUrl
         } = this.props;
         const {
+            connected,
             connecting,
             error
         } = this.state;
 
         let buttonIcon;
         let buttonText;
-        if (connecting) {
+        if (connected || connecting) {
             buttonIcon = (
                 <ActivityIndicator
                     animating={true}
@@ -297,7 +299,7 @@ class SelectServer extends PureComponent {
             statusStyle = 'light-content';
         }
 
-        const inputDisabled = !allowOtherServers || connecting;
+        const inputDisabled = !allowOtherServers || connected || connecting;
         const inputStyle = [GlobalStyles.inputBox];
         if (inputDisabled) {
             inputStyle.push(style.disabledInput);
