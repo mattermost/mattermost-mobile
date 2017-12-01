@@ -110,7 +110,14 @@ export default function configureAppStore(initialState) {
                 throw new Error('Offline Action: commit action must be present.');
             }
 
-            return promiseTimeout(effect(), 10000);
+            if (action.meta.offline.canTimeout) {
+                const defaultTimeout = 10000;
+                const timeout = action.meta.offline.timeout || defaultTimeout;
+
+                return promiseTimeout(effect(), timeout);
+            }
+
+            return effect();
         },
         detectNetwork: (callback) => networkConnectionListener(callback),
         persist: (store, options) => {
