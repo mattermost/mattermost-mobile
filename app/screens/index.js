@@ -16,6 +16,7 @@ import ChannelPeek from 'app/screens/channel_peek';
 import ClientUpgrade from 'app/screens/client_upgrade';
 import Code from 'app/screens/code';
 import CreateChannel from 'app/screens/create_channel';
+import DisplaySettings from 'app/screens/settings/display_settings';
 import EditChannel from 'app/screens/edit_channel';
 import EditPost from 'app/screens/edit_post';
 import EditProfile from 'app/screens/edit_profile';
@@ -40,6 +41,7 @@ import SelectServer from 'app/screens/select_server';
 import SelectTeam from 'app/screens/select_team';
 import Settings from 'app/screens/settings/general';
 import Thread from 'app/screens/thread';
+import ClockDisplay from 'app/screens/clock_display';
 import UserProfile from 'app/screens/user_profile';
 
 import IntlWrapper from 'app/components/root';
@@ -70,6 +72,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('ClientUpgrade', () => wrapWithContextProvider(ClientUpgrade), store, Provider);
     Navigation.registerComponent('Code', () => wrapWithContextProvider(Code), store, Provider);
     Navigation.registerComponent('CreateChannel', () => wrapWithContextProvider(CreateChannel), store, Provider);
+    Navigation.registerComponent('DisplaySettings', () => wrapWithContextProvider(DisplaySettings), store, Provider);
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(EditChannel), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(EditProfile), store, Provider);
@@ -94,5 +97,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('Settings', () => wrapWithContextProvider(Settings), store, Provider);
     Navigation.registerComponent('SSO', () => wrapWithContextProvider(SSO), store, Provider);
     Navigation.registerComponent('Thread', () => wrapWithContextProvider(Thread), store, Provider);
+    Navigation.registerComponent('ClockDisplay', () => wrapWithContextProvider(ClockDisplay), store, Provider);
     Navigation.registerComponent('UserProfile', () => wrapWithContextProvider(UserProfile), store, Provider);
 }

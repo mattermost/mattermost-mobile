@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 function section(props) {
     const {
         children,
+        disableHeader,
         disableFooter,
         footerDefaultMessage,
         footerId,
@@ -27,12 +28,14 @@ function section(props) {
 
     return (
         <View style={style.container}>
-            <FormattedText
-                id={headerId}
-                defaultMessage={headerDefaultMessage}
-                values={headerValues}
-                style={style.header}
-            />
+            {(headerId && !disableHeader) &&
+                <FormattedText
+                    id={headerId}
+                    defaultMessage={headerDefaultMessage}
+                    values={headerValues}
+                    style={style.header}
+                />
+            }
             <View style={style.items}>
                 {children}
             </View>
@@ -50,12 +53,13 @@ function section(props) {
 
 section.propTypes = {
     children: PropTypes.node.isRequired,
+    disableHeader: PropTypes.bool,
     disableFooter: PropTypes.bool,
     footerDefaultMessage: PropTypes.string,
     footerId: PropTypes.string,
     footerValues: PropTypes.object,
-    headerDefaultMessage: PropTypes.string.isRequired,
-    headerId: PropTypes.string.isRequired,
+    headerDefaultMessage: PropTypes.string,
+    headerId: PropTypes.string,
     headerValues: PropTypes.object,
     theme: PropTypes.object.isRequired
 };
