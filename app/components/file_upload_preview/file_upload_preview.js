@@ -124,7 +124,7 @@ export default class FileUploadPreview extends PureComponent {
                     {showFileMaxWarning && (
                         <FormattedText
                             style={style.warning}
-                            id='file_upload.mobile.max_warning'
+                            id='mobile.file_upload.max_warning'
                             defaultMessage='Uploads limited to 5 files maximum.'
                         />
                     )}
