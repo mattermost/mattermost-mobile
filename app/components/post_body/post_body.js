@@ -47,6 +47,7 @@ class PostBody extends PureComponent {
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
         onAddReaction: PropTypes.func,
+        onCopyPermalink: PropTypes.func,
         onCopyText: PropTypes.func,
         onFailedPostPress: PropTypes.func,
         onPostDelete: PropTypes.func,
@@ -62,6 +63,7 @@ class PostBody extends PureComponent {
     static defaultProps = {
         fileIds: [],
         onAddReaction: emptyFunction,
+        onCopyPermalink: emptyFunction,
         onCopyText: emptyFunction,
         onFailedPostPress: emptyFunction,
         onPostDelete: emptyFunction,
@@ -198,6 +200,11 @@ class PostBody extends PureComponent {
             if (canDelete && !hasBeenDeleted) {
                 actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
             }
+
+            actions.push({
+                text: formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'}),
+                onPress: this.props.onCopyPermalink
+            });
         }
 
         let body;

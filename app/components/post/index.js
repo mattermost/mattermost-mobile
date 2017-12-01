@@ -8,6 +8,7 @@ import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
 import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
@@ -49,6 +50,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         config,
+        currentTeamUrl: getCurrentTeamUrl(state),
         currentUserId: getCurrentUserId(state),
         post,
         isFirstReply,
