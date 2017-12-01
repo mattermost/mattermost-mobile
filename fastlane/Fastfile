@@ -635,14 +635,14 @@ end
 
 def link_sentry_android()
   if ENV['SENTRY_ENABLED'] == 'true'
+    url = 'https://sentry.io'
     File.open('../android/sentry.properties', 'w+') do |f|
       UI.message('Creating sentry.properties from environment')
       f.write(
-        'defaults.url=https://sentry.io/\n'\
+        "defaults.url=#{url}\n"\
         "defaults.org=#{ENV['SENTRY_ORG']}\n"\
         "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}\n"\
-        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"\
-        "cli.executable=${File.expand_path('node_modules/sentry-cli-binary/bin/sentry-cli')}\n"
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
       )
     end
   else
