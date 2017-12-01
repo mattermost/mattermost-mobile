@@ -18,7 +18,7 @@ import Typing from './components/typing';
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
 const MAX_MESSAGE_LENGTH = 4000;
-const MAX_IMAGE_COUNT = 5;
+const MAX_FILE_COUNT = 5;
 const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;
 
 class PostTextbox extends PureComponent {
@@ -425,7 +425,7 @@ class PostTextbox extends PureComponent {
                     theme={theme}
                     navigator={navigator}
                     fileCount={files.length}
-                    maxFileCount={MAX_IMAGE_COUNT}
+                    maxFileCount={MAX_FILE_COUNT}
                     onShowFileMaxWarning={this.onShowFileMaxWarning}
                     uploadFiles={this.handleUploadFiles}
                 />
