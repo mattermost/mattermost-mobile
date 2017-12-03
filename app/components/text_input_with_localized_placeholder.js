@@ -33,6 +33,7 @@ class TextInputWithLocalizedPlaceholder extends PureComponent {
                 ref='input'
                 {...otherProps}
                 placeholder={placeholderString}
+                disableFullscreenUI={true}
             />
         );
     }
