@@ -9,7 +9,6 @@ import {
     InteractionManager,
     PanResponder,
     Platform,
-    ScrollView,
     StatusBar,
     StyleSheet,
     Text,
@@ -27,6 +26,7 @@ import {DeviceTypes} from 'app/constants/';
 import FileAttachmentDocument, {SUPPORTED_DOCS_FORMAT} from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import SafeAreaView from 'app/components/safe_area_view';
+import Swiper from 'app/components/swiper';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 
@@ -83,7 +83,8 @@ export default class ImagePreview extends PureComponent {
             footerOpacity: new Animated.Value(1),
             pagingEnabled: true,
             showFileInfo: true,
-            wrapperViewOpacity: new Animated.Value(0)
+            wrapperViewOpacity: new Animated.Value(0),
+            limitOpacity: new Animated.Value(0)
         };
     }
 
@@ -101,10 +102,6 @@ export default class ImagePreview extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-            if (this.scrollView) {
-                this.scrollView.scrollTo({x: (this.state.currentFile) * this.props.deviceWidth, animated: false});
-            }
-
             Animated.timing(this.state.wrapperViewOpacity, {
                 toValue: 1,
                 duration: 100
@@ -113,12 +110,6 @@ export default class ImagePreview extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.deviceWidth !== nextProps.deviceWidth) {
-            if (this.scrollView) {
-                this.scrollView.scrollTo({x: (this.state.currentFile * nextProps.deviceWidth), animated: true});
-            }
-        }
-
         if (!nextProps.files.length) {
             this.showDeletedFilesAlert();
         }
@@ -130,12 +121,38 @@ export default class ImagePreview extends PureComponent {
         }
     }
 
-    attachScrollView = (c) => {
-        this.scrollView = c;
-    };
-
     close = () => {
         this.props.navigator.dismissModal({animationType: 'none'});
+    };
+
+    getPreviews = () => {
+        return this.state.files.map((file, index) => {
+            let mime = file.mime_type;
+            if (mime && mime.includes(';')) {
+                mime = mime.split(';')[0];
+            }
+
+            let component;
+
+            if (file.has_preview_image || file.mime_type === 'image/gif') {
+                component = this.renderPreviewer(file, index);
+            } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
+                component = this.renderAttachmentDocument(file);
+            } else if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
+                component = this.renderVideoPreview(file);
+            } else {
+                component = this.renderAttachmentIcon(file);
+            }
+
+            return (
+                <AnimatedView
+                    key={file.id}
+                    style={[style.pageWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth, opacity: index === this.state.currentFile ? 1 : this.state.limitOpacity}]}
+                >
+                    {component}
+                </AnimatedView>
+            );
+        });
     };
 
     handleClose = () => {
@@ -151,6 +168,12 @@ export default class ImagePreview extends PureComponent {
         }
     };
 
+    handleLayout = () => {
+        if (this.refs.swiper) {
+            this.refs.swiper.runOnLayout = true;
+        }
+    };
+
     handleImageDoubleTap = (x, y) => {
         this.zoomableImages[this.state.currentFile].toggleZoom(x, y);
     };
@@ -160,25 +183,17 @@ export default class ImagePreview extends PureComponent {
         this.setHeaderAndFileInfoVisible(!this.state.showFileInfo);
     };
 
-    handleScroll = (event) => {
-        const offset = event.nativeEvent.contentOffset.x / this.props.deviceWidth;
-        const wholeNumber = Number((offset).toFixed(0));
-
-        if (Math.abs(offset - wholeNumber) < 0.01) {
-            this.setState({
-                currentFile: wholeNumber,
-                pagingEnabled: true,
-                shouldShrinkImages: false
-            });
-        } else if (!this.state.shouldShrinkImages && !this.state.isZooming) {
-            this.setState({
-                shouldShrinkImages: true
-            });
+    handleIndexChanged = (currentFile) => {
+        if (Number.isInteger(currentFile)) {
+            this.setState({currentFile, limitOpacity: new Animated.Value(0)});
         }
     };
 
-    handleScrollStopped = () => {
-        EventEmitter.emit('stop-video-playback');
+    handleScroll = () => {
+        Animated.timing(this.state.limitOpacity, {
+            toValue: 1,
+            duration: 100
+        }).start();
     };
 
     handleVideoSeek = (seeking) => {
@@ -399,42 +414,46 @@ export default class ImagePreview extends PureComponent {
 
     renderDownloadButton = () => {
         const {canDownloadFiles} = this.props;
-        const {files} = this.state;
+        const {currentFile, files} = this.state;
 
-        const file = files[this.state.currentFile];
+        const file = files[currentFile];
 
-        let icon;
-        let action = emptyFunction;
-        if (canDownloadFiles) {
-            if (Platform.OS === 'android') {
-                action = this.showDownloadOptions;
-                icon = (
-                    <Icon
-                        name='md-more'
-                        size={32}
-                        color='#fff'
-                    />
-                );
-            } else if (file.has_preview_image || SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
-                action = this.showDownloadOptions;
-                icon = (
-                    <Icon
-                        name='ios-download-outline'
-                        size={26}
-                        color='#fff'
-                    />
-                );
+        if (file) {
+            let icon;
+            let action = emptyFunction;
+            if (canDownloadFiles) {
+                if (Platform.OS === 'android') {
+                    action = this.showDownloadOptions;
+                    icon = (
+                        <Icon
+                            name='md-more'
+                            size={32}
+                            color='#fff'
+                        />
+                    );
+                } else if (file.has_preview_image || SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
+                    action = this.showDownloadOptions;
+                    icon = (
+                        <Icon
+                            name='ios-download-outline'
+                            size={26}
+                            color='#fff'
+                        />
+                    );
+                }
             }
+
+            return (
+                <TouchableOpacity
+                    onPress={action}
+                    style={style.headerIcon}
+                >
+                    {icon}
+                </TouchableOpacity>
+            );
         }
 
-        return (
-            <TouchableOpacity
-                onPress={action}
-                style={style.headerIcon}
-            >
-                {icon}
-            </TouchableOpacity>
-        );
+        return null;
     };
 
     renderPreviewer = (file, index) => {
@@ -476,56 +495,48 @@ export default class ImagePreview extends PureComponent {
         );
     };
 
+    renderSwiper = () => {
+        return (
+            <Swiper
+                ref='swiper'
+                initialPage={this.state.currentFile}
+                onIndexChanged={this.handleIndexChanged}
+                width={this.props.deviceWidth}
+                activeDotColor={this.props.theme.sidebarBg}
+                dotColor={this.props.theme.sidebarText}
+                scrollEnabled={!this.state.isZooming}
+                showsPagination={false}
+                onScrollBegin={this.handleScroll}
+            >
+                {this.getPreviews()}
+            </Swiper>
+        );
+    };
+
     render() {
+        const {currentFile, files} = this.state;
+        const file = files[currentFile];
+
+        if (!file) {
+            return null;
+        }
+
+        const fileName = file ? file.name : '';
+
         return (
             <SafeAreaView
                 backgroundColor='#000'
                 navBarBackgroundColor='#000'
             >
-                <View style={[style.wrapper]}>
+                <View
+                    style={[style.wrapper]}
+                    onLayout={this.handleLayout}
+                >
                     <AnimatedView
-                        style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity}]}
+                        style={[this.state.drag.getLayout(), {opacity: this.state.wrapperViewOpacity, flex: 1}]}
                         {...this.mainViewPanResponder.panHandlers}
                     >
-                        <ScrollView
-                            ref={this.attachScrollView}
-                            style={[style.ScrollView]}
-                            contentContainerStyle={style.scrollViewContent}
-                            scrollEnabled={!this.state.isZooming}
-                            horizontal={true}
-                            pagingEnabled={!this.state.isZooming}
-                            bounces={false}
-                            onScroll={this.handleScroll}
-                            onMomentumScrollEnd={this.handleScrollStopped}
-                            scrollEventThrottle={2}
-                        >
-                            {this.state.files.map((file, index) => {
-                                let mime = file.mime_type;
-                                if (mime && mime.includes(';')) {
-                                    mime = mime.split(';')[0];
-                                }
-
-                                let component;
-                                if (file.has_preview_image || file.mime_type === 'image/gif') {
-                                    component = this.renderPreviewer(file, index);
-                                } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
-                                    component = this.renderAttachmentDocument(file);
-                                } else if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
-                                    component = this.renderVideoPreview(file);
-                                } else {
-                                    component = this.renderAttachmentIcon(file);
-                                }
-
-                                return (
-                                    <View
-                                        key={file.id}
-                                        style={[style.pageWrapper, {height: this.props.deviceHeight, width: this.props.deviceWidth}]}
-                                    >
-                                        {component}
-                                    </View>
-                                );
-                            })}
-                        </ScrollView>
+                        {this.renderSwiper()}
                         <AnimatedView style={[style.headerContainer, {width: this.props.deviceWidth, opacity: this.state.footerOpacity}]}>
                             <View style={style.header}>
                                 <View style={style.headerControls}>
@@ -540,7 +551,7 @@ export default class ImagePreview extends PureComponent {
                                         />
                                     </TouchableOpacity>
                                     <Text style={style.title}>
-                                        {`${this.state.currentFile + 1}/${this.state.files.length}`}
+                                        {`${currentFile + 1}/${files.length}`}
                                     </Text>
                                     {this.renderDownloadButton()}
                                 </View>
@@ -555,7 +566,7 @@ export default class ImagePreview extends PureComponent {
                                 pointerEvents='none'
                             >
                                 <Text style={style.filename}>
-                                    {this.state.files[this.state.currentFile].name}
+                                    {fileName}
                                 </Text>
                             </LinearGradient>
                         </AnimatedView>
@@ -563,7 +574,7 @@ export default class ImagePreview extends PureComponent {
                     <Downloader
                         ref='downloader'
                         show={this.state.showDownloader}
-                        file={this.state.files[this.state.currentFile]}
+                        file={file}
                         deviceHeight={this.props.deviceHeight}
                         deviceWidth={this.props.deviceWidth}
                         onDownloadCancel={this.hideDownloader}
@@ -628,7 +639,7 @@ const style = StyleSheet.create({
     footerContainer: {
         position: 'absolute',
         bottom: 0,
-        height: 70,
+        height: 40,
         zIndex: 2
     },
     footer: {
@@ -636,18 +647,13 @@ const style = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 70,
+        height: 40,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
-        paddingBottom: 16,
-        ...Platform.select({
-            android: {
-                marginBottom: 13
-            }
-        })
+        paddingBottom: 5
     },
     filename: {
         color: 'white',
-        fontSize: 15
+        fontSize: 14
     }
 });

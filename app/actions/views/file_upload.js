@@ -16,6 +16,7 @@ export function handleUploadFiles(files, rootId) {
         const channelId = state.entities.channels.currentChannelId;
         const formData = new FormData();
         const clientIds = [];
+        const re = /heic/i;
 
         files.forEach((file) => {
             let name = file.fileName;
@@ -24,9 +25,9 @@ export function handleUploadFiles(files, rootId) {
             const uri = file.uri;
             const clientId = generateId();
 
-            if (extension.toUpperCase() === 'HEIC') {
+            if (re.test(extension)) {
                 extension = 'JPG';
-                name = name.replace(/(HEIC|heic)/, 'jpg');
+                name = name.replace(re, 'jpg');
                 mimeType = 'image/jpeg';
             }
 

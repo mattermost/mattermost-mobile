@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    InteractionManager,
     View,
     ScrollView,
     ViewPagerAndroid,
@@ -30,7 +29,8 @@ export default class Swiper extends PureComponent {
             PropTypes.object,
             PropTypes.number
         ]),
-        width: PropTypes.number
+        width: PropTypes.number,
+        onScrollBegin: PropTypes.func
     };
 
     static defaultProps = {
@@ -38,7 +38,8 @@ export default class Swiper extends PureComponent {
         keyboardShouldPersistTaps: 'handled',
         onIndexChanged: () => null,
         scrollEnabled: true,
-        showsPagination: true
+        showsPagination: true,
+        onScrollBegin: () => true
     };
 
     constructor(props) {
@@ -84,6 +85,7 @@ export default class Swiper extends PureComponent {
 
     onScrollBegin = () => {
         this.isScrolling = true;
+        this.props.onScrollBegin();
     };
 
     onScrollEnd = (e) => {
@@ -98,11 +100,15 @@ export default class Swiper extends PureComponent {
         this.updateIndex(e.nativeEvent.contentOffset.x);
     };
 
-    scrollToStart = () => {
-        if (Platform.OS === 'ios') {
-            InteractionManager.runAfterInteractions(() => {
-                this.scrollView.scrollTo({x: 0, animated: false});
-            });
+    onPageScrollStateChanged = (e) => {
+        switch (e) {
+        case 'idle':
+            this.isScrolling = false;
+            break;
+        case 'dragging':
+            this.isScrolling = true;
+            this.props.onScrollBegin();
+            break;
         }
     };
 
@@ -141,8 +147,8 @@ export default class Swiper extends PureComponent {
             <ViewPagerAndroid
                 ref={this.refScrollView}
                 initialPage={this.props.initialPage}
-                onScrollBeginDrag={this.onScrollBegin}
                 onPageSelected={this.onScrollEnd}
+                onPageScrollStateChanged={this.onPageScrollStateChanged}
                 scrollEnabled={scrollEnabled}
                 key={pages.length}
                 style={[styles.wrapperAndroid, this.props.style]}
