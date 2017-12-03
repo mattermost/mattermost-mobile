@@ -265,8 +265,8 @@ public class CustomPushNotification extends PushNotification {
 
         boolean vibrate = notificationPreferences.getShouldVibrate();
         if (vibrate) {
-            // Each element then alternates between delay, vibrate, sleep, vibrate, sleep
-            notification.setVibrate(new long[] {1000, 1000, 500, 1000, 500});
+            // use the system default for vibration
+            notification.setDefaults(Notification.DEFAULT_VIBRATE);
         }
 
         boolean blink = notificationPreferences.getShouldBlink();
