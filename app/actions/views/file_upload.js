@@ -24,9 +24,9 @@ export function handleUploadFiles(files, rootId) {
             const uri = file.uri;
             const clientId = generateId();
 
-            if (extension === 'HEIC') {
+            if (extension.toUpperCase() === 'HEIC') {
                 extension = 'JPG';
-                name = name.replace(/HEIC/, 'jpg');
+                name = name.replace(/(HEIC|heic)/, 'jpg');
                 mimeType = 'image/jpeg';
             }
 
