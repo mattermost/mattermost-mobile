@@ -29,6 +29,7 @@ class PostTextbox extends PureComponent {
             handleCommentDraftChanged: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
+            handleClearFailedFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired,
@@ -208,7 +209,7 @@ class PostTextbox extends PureComponent {
             return;
         }
 
-        const {files} = this.props;
+        const {actions, channelId, files, rootId} = this.props;
         const {value} = this.state;
 
         const isReactionMatch = value.match(IS_REACTION_REGEX);
@@ -235,7 +236,11 @@ class PostTextbox extends PureComponent {
                     text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
                 }, {
                     text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                    onPress: this.sendMessage
+                    onPress: () => {
+                        // Remove only failed files
+                        actions.handleClearFailedFiles(channelId, rootId);
+                        this.sendMessage();
+                    }
                 }],
             );
         } else {

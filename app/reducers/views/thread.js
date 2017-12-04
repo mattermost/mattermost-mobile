@@ -192,6 +192,18 @@ function handleRemoveLastFromPostDraft(state, action) {
     };
 }
 
+function handleRemoveFailedFilesFromPostDraft(state, action) {
+    if (!action.rootId) {
+        return state;
+    }
+
+    const files = state[action.rootId].files.filter((f) => !f.failed);
+    return {
+        ...state,
+        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+    };
+}
+
 function drafts(state = {}, action) { // eslint-disable-line complexity
     switch (action.type) {
     case ViewTypes.COMMENT_DRAFT_CHANGED:
@@ -212,6 +224,8 @@ function drafts(state = {}, action) { // eslint-disable-line complexity
         return handleUploadFilesFailure(state, action);
     case ViewTypes.CLEAR_FILES_FOR_POST_DRAFT:
         return handleClearFilesForPostDraft(state, action);
+    case ViewTypes.CLEAR_FAILED_FILES_FOR_POST_DRAFT:
+        return handleRemoveFailedFilesFromPostDraft(state, action);
     case ViewTypes.REMOVE_FILE_FROM_POST_DRAFT:
         return handleRemoveFileFromPostDraft(state, action);
     case ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT:

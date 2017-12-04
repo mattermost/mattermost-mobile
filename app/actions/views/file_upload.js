@@ -107,6 +107,14 @@ export function handleClearFiles(channelId, rootId) {
     };
 }
 
+export function handleClearFailedFiles(channelId, rootId) {
+    return {
+        type: ViewTypes.CLEAR_FAILED_FILES_FOR_POST_DRAFT,
+        channelId,
+        rootId
+    };
+}
+
 export function handleRemoveFile(clientId, channelId, rootId) {
     return {
         type: ViewTypes.REMOVE_FILE_FROM_POST_DRAFT,

@@ -13,7 +13,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {handlePostDraftChanged, handlePostDraftSelectionChanged} from 'app/actions/views/channel';
-import {handleClearFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
+import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app/actions/views/thread';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
@@ -42,6 +42,7 @@ function mapDispatchToProps(dispatch) {
             createPost,
             executeCommand,
             handleClearFiles,
+            handleClearFailedFiles,
             handleCommentDraftChanged,
             handlePostDraftChanged,
             handleRemoveLastFile,
