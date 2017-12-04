@@ -213,9 +213,9 @@ do-unsigned-android:
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned
 	@mv android/app/build/outputs/apk/app-unsigned-unsigned.apk ./Mattermost-unsigned.apk
 
-unsigned-android: pre-run check-style start-packager do-unsigned-android stop-packager
+unsigned-android: pre-run check-style start-build-packager do-unsigned-android stop-packager
 
-unsigned-ios: pre-run check-style start-packager do-unsigned-ios stop-packager
+unsigned-ios: pre-run check-style start-build-packager do-unsigned-ios stop-packager
 
 alpha:
 	@:
