@@ -208,7 +208,7 @@ class Channel extends PureComponent {
                         navigator={navigator}
                         onPress={this.goToChannelInfo}
                     />
-                    <KeyboardLayout behavior='padding'>
+                    <KeyboardLayout>
                         <View style={style.postList}>
                             <ChannelPostList navigator={navigator}/>
                         </View>
