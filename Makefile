@@ -6,6 +6,7 @@
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
 POD := $(shell command -v pod 2> /dev/null)
+OS := $(shell sh -c 'uname -s 2>/dev/null')
 
 .yarninstall: package.json
 	@if ! [ $(shell command -v yarn 2> /dev/null) ]; then \
@@ -19,6 +20,7 @@ POD := $(shell command -v pod 2> /dev/null)
 	@touch $@
 
 .podinstall:
+ifeq ($(OS), Darwin)
 ifdef POD
 	@echo Getting Cocoapods dependencies;
 	@cd ios && pod install;
@@ -26,7 +28,7 @@ else
 	@echo "Cocoapods is not installed https://cocoapods.org/"
 	@exit 1
 endif
-
+endif
 	@touch $@
 
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
