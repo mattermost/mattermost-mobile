@@ -193,7 +193,7 @@ function handleRemoveFailedFilesFromPostDraft(state, action) {
         return state;
     }
 
-    const files = [...state[action.channelId].files].filter((f) => !f.failed);
+    const files = state[action.channelId].files.filter((f) => !f.failed);
     return {
         ...state,
         [action.channelId]: Object.assign({}, state[action.channelId], {files})
