@@ -29,6 +29,7 @@ class PostTextbox extends PureComponent {
             handleCommentDraftChanged: PropTypes.func.isRequired,
             handlePostDraftChanged: PropTypes.func.isRequired,
             handleClearFiles: PropTypes.func.isRequired,
+            handleClearFailedFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
             handleUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired,
@@ -237,7 +238,7 @@ class PostTextbox extends PureComponent {
                     text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
                     onPress: () => {
                         // Remove only failed files
-                        actions.handleClearFiles(channelId, rootId, true);
+                        actions.handleClearFailedFiles(channelId, rootId);
                         this.sendMessage();
                     }
                 }],

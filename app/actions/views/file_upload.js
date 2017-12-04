@@ -99,17 +99,17 @@ export function retryFileUpload(file, rootId) {
     };
 }
 
-export function handleClearFiles(channelId, rootId, onlyFailed = false) {
-    if (onlyFailed) {
-        return {
-            type: ViewTypes.CLEAR_FAILED_FILES_FOR_POST_DRAFT,
-            channelId,
-            rootId
-        };
-    }
-
+export function handleClearFiles(channelId, rootId) {
     return {
         type: ViewTypes.CLEAR_FILES_FOR_POST_DRAFT,
+        channelId,
+        rootId
+    };
+}
+
+export function handleClearFailedFiles(channelId, rootId) {
+    return {
+        type: ViewTypes.CLEAR_FAILED_FILES_FOR_POST_DRAFT,
         channelId,
         rootId
     };
