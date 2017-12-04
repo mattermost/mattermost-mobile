@@ -262,7 +262,7 @@ export default class Previewer extends Component {
                 onResponderRelease={this.handleResponderRelease}
                 style={[style.fileImageWrapper, {height: '100%', width: '100%'}]}
             >
-                <AnimatedView style={{height: imageHeight, width: this.state.imageWidth, backgroundColor: '#000', opacity}}>
+                <AnimatedView style={{flex: 1, backgroundColor: '#000', opacity}}>
                     <ImageView
                         ref={this.attachImageView}
                         source={source}
