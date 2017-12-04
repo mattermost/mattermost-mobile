@@ -49,10 +49,11 @@ export default class KeyboardLayout extends PureComponent {
         const {endCoordinates, duration, startCoordinates} = e;
 
         let height = 0;
-        if (startCoordinates.height < endCoordinates.height) {
+        if (startCoordinates.height < endCoordinates.height || endCoordinates.screenY < startCoordinates.screenY) {
             height = endCoordinates.height;
         }
 
+        this.setState({bottom: new Animated.Value(height)});
         Animated.timing(this.state.bottom, {
             toValue: height,
             duration
