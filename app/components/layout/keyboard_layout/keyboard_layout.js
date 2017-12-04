@@ -3,15 +3,15 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {KeyboardAvoidingView, Platform, View} from 'react-native';
+import {Animated, Keyboard, Platform, View} from 'react-native';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
+const {View: AnimatedView} = Animated;
+
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {
-        behaviour: PropTypes.string,
         children: PropTypes.node,
-        keyboardVerticalOffset: PropTypes.number,
         statusBarHeight: PropTypes.number,
         theme: PropTypes.object.isRequired
     };
@@ -20,8 +20,47 @@ export default class KeyboardLayout extends PureComponent {
         keyboardVerticalOffset: 0
     };
 
+    constructor(props) {
+        super(props);
+        this.subscriptions = [];
+        this.state = {
+            bottom: new Animated.Value(0)
+        };
+    }
+
+    componentWillMount() {
+        if (Platform.OS === 'ios') {
+            this.subscriptions = [
+                Keyboard.addListener('keyboardWillChangeFrame', this.onKeyboardChange)
+            ];
+        }
+    }
+
+    componentWillUnmount() {
+        this.subscriptions.forEach((sub) => sub.remove());
+    }
+
+    onKeyboardChange = (e) => {
+        if (!e) {
+            this.setState({bottom: new Animated.Value(0)});
+            return;
+        }
+
+        const {endCoordinates, duration, startCoordinates} = e;
+
+        let height = 0;
+        if (startCoordinates.height < endCoordinates.height) {
+            height = endCoordinates.height;
+        }
+
+        Animated.timing(this.state.bottom, {
+            toValue: height,
+            duration
+        }).start();
+    };
+
     render() {
-        const {behaviour, children, keyboardVerticalOffset, statusBarHeight, theme, ...otherProps} = this.props;
+        const {children, theme, ...otherProps} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (Platform.OS === 'android') {
@@ -35,22 +74,12 @@ export default class KeyboardLayout extends PureComponent {
             );
         }
 
-        let height = 0;
-        if (statusBarHeight > 20) {
-            height = (statusBarHeight - 20) + keyboardVerticalOffset;
-        } else {
-            height = keyboardVerticalOffset;
-        }
-
         return (
-            <KeyboardAvoidingView
-                behaviour={behaviour}
-                keyboardVerticalOffset={height}
-                style={style.keyboardLayout}
-                {...otherProps}
+            <AnimatedView
+                style={[style.keyboardLayout, {bottom: this.state.bottom}]}
             >
                 {children}
-            </KeyboardAvoidingView>
+            </AnimatedView>
         );
     }
 }
@@ -58,9 +87,9 @@ export default class KeyboardLayout extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         keyboardLayout: {
+            position: 'relative',
             backgroundColor: theme.centerChannelBg,
-            flex: 1,
-            paddingBottom: 0
+            flex: 1
         }
     };
 });

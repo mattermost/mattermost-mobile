@@ -448,6 +448,7 @@ class PostTextbox extends PureComponent {
                             onFocus={this.handleFocus}
                             onBlur={this.handleBlur}
                             onEndEditing={this.handleEndEditing}
+                            disableFullscreenUI={true}
                         />
                         {this.renderSendButton()}
                     </View>

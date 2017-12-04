@@ -369,6 +369,7 @@ class Login extends PureComponent {
                             underlineColorAndroid='transparent'
                             onSubmitEditing={this.passwordFocus}
                             blurOnSubmit={false}
+                            disableFullscreenUI={true}
                         />
                         <TextInput
                             ref={this.passwordRef}
@@ -382,6 +383,7 @@ class Login extends PureComponent {
                             underlineColorAndroid='transparent'
                             returnKeyType='go'
                             onSubmitEditing={this.preSignIn}
+                            disableFullscreenUI={true}
                         />
                         {proceed}
                     </KeyboardAwareScrollView>
