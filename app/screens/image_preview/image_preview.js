@@ -595,7 +595,9 @@ const style = StyleSheet.create({
     },
     headerContainer: {
         position: 'absolute',
-        top: 0
+        top: 0,
+        height: HEADER_HEIGHT,
+        zIndex: 2
     },
     header: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -625,7 +627,9 @@ const style = StyleSheet.create({
     },
     footerContainer: {
         position: 'absolute',
-        bottom: 0
+        bottom: 0,
+        height: 70,
+        zIndex: 2
     },
     footer: {
         position: 'absolute',
