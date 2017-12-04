@@ -3,10 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, NativeModules, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import SafeArea from 'react-native-safe-area';
 import Orientation from 'react-native-orientation';
+
+const {StatusBarManager} = NativeModules;
 
 export default class SafeAreaIos extends PureComponent {
     static propTypes = {
@@ -37,7 +39,8 @@ export default class SafeAreaIos extends PureComponent {
             keyboard: false,
             safeAreaInsets: {
                 top: 20, left: 0, bottom: 15, right: 0
-            }
+            },
+            statusBarHeight: 20
         };
     }
 
@@ -49,6 +52,7 @@ export default class SafeAreaIos extends PureComponent {
         Orientation.addOrientationListener(this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
+        this.getStatusBarHeight();
     }
 
     componentWillUnmount() {
@@ -57,7 +61,21 @@ export default class SafeAreaIos extends PureComponent {
         this.keyboardDidHideListener.remove();
     }
 
+    getStatusBarHeight = () => {
+        try {
+            StatusBarManager.getHeight(
+                (statusBarFrameData) => {
+                    this.setState({statusBarHeight: statusBarFrameData.height});
+                }
+            );
+        } catch (e) {
+            // not needed
+        }
+    };
+
     getSafeAreaInsets = () => {
+        this.getStatusBarHeight();
+
         if (this.isX) {
             SafeArea.getSafeAreaInsetsForRootView().then((result) => {
                 const {safeAreaInsets} = result;
@@ -83,13 +101,13 @@ export default class SafeAreaIos extends PureComponent {
         }
     };
 
-    render() {
-        const {backgroundColor, children, excludeHeader, forceTop, keyboardOffset, navBarBackgroundColor, theme} = this.props;
-        const {keyboard, safeAreaInsets} = this.state;
+    renderTopBar = () => {
+        const {safeAreaInsets, statusBarHeight} = this.state;
+        const {excludeHeader, forceTop, navBarBackgroundColor, theme} = this.props;
+        const hideTopBar = excludeHeader || !statusBarHeight;
 
-        let bgColor = theme.centerChannelBg;
-        if (backgroundColor) {
-            bgColor = backgroundColor;
+        if (hideTopBar) {
+            return null;
         }
 
         let topColor = theme.sidebarHeaderBg;
@@ -97,14 +115,34 @@ export default class SafeAreaIos extends PureComponent {
             topColor = navBarBackgroundColor;
         }
 
+        let top = safeAreaInsets.top;
+        if (forceTop && this.isX && !hideTopBar) {
+            top = forceTop;
+        }
+
+        return (
+            <View
+                style={{
+                    backgroundColor: topColor,
+                    paddingTop: top,
+                    zIndex: 10
+                }}
+            />
+        );
+    };
+
+    render() {
+        const {backgroundColor, children, keyboardOffset, theme} = this.props;
+        const {keyboard, safeAreaInsets} = this.state;
+
+        let bgColor = theme.centerChannelBg;
+        if (backgroundColor) {
+            bgColor = backgroundColor;
+        }
+
         let offset = 0;
         if (keyboardOffset && this.isX) {
             offset = keyboardOffset;
-        }
-
-        let top = safeAreaInsets.top;
-        if (forceTop && this.isX && !excludeHeader) {
-            top = forceTop;
         }
 
         return (
@@ -115,15 +153,7 @@ export default class SafeAreaIos extends PureComponent {
                     backgroundColor: bgColor
                 }}
             >
-                {!excludeHeader &&
-                <View
-                    style={{
-                        backgroundColor: topColor,
-                        paddingTop: top,
-                        zIndex: 10
-                    }}
-                />
-                }
+                {this.renderTopBar()}
                 {children}
             </View>
         );
