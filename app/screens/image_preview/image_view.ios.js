@@ -2,7 +2,8 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
-    ScrollView
+    ScrollView,
+    StyleSheet
 } from 'react-native';
 
 const {Image: AnimatedImage} = Animated;
@@ -73,7 +74,7 @@ export default class ImageView extends PureComponent {
                 alwaysBounceHorizontal={false}
                 alwaysBounceVertical={false}
                 bounces={false}
-                contentContainerStyle={{alignItems: 'center', justifyContent: 'center'}}
+                contentContainerStyle={style.content}
                 centerContent={true}
                 maximumZoomScale={maximumZoomScale}
                 minimumZoomScale={minimumZoomScale}
@@ -87,3 +88,11 @@ export default class ImageView extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    content: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center'
+    }
+});

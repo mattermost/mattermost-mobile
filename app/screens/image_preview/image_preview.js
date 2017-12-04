@@ -75,6 +75,7 @@ export default class ImagePreview extends PureComponent {
         this.zoomableImages = {};
 
         const currentFile = props.files.findIndex((file) => file.id === props.fileId);
+        this.initialPage = currentFile;
 
         this.state = {
             currentFile,
@@ -499,7 +500,7 @@ export default class ImagePreview extends PureComponent {
         return (
             <Swiper
                 ref='swiper'
-                initialPage={this.state.currentFile}
+                initialPage={this.initialPage}
                 onIndexChanged={this.handleIndexChanged}
                 width={this.props.deviceWidth}
                 activeDotColor={this.props.theme.sidebarBg}
