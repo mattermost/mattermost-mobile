@@ -68,7 +68,9 @@ export default class Swiper extends PureComponent {
         };
     };
 
-    onLayout = () => {
+    onLayout = (e) => {
+        this.offset = e.nativeEvent.layout.width * this.state.index;
+
         if (this.runOnLayout) {
             if (Platform.OS === 'ios') {
                 setTimeout(() => {
