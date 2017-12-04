@@ -14,7 +14,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
@@ -104,7 +103,7 @@ export default class FileUploadPreview extends PureComponent {
         }
 
         return (
-            <KeyboardLayout>
+            <View>
                 <View style={[style.container, {height: this.props.deviceHeight}]}>
                     <ScrollView
                         horizontal={true}
@@ -114,7 +113,7 @@ export default class FileUploadPreview extends PureComponent {
                         {this.buildFilePreviews()}
                     </ScrollView>
                 </View>
-            </KeyboardLayout>
+            </View>
         );
     }
 }

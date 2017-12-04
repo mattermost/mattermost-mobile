@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import ErrorText from 'app/components/error_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -181,11 +180,7 @@ class EditPost extends PureComponent {
         }
 
         return (
-            <KeyboardLayout
-                behavior='padding'
-                style={style.container}
-                keyboardVerticalOffset={0}
-            >
+            <View style={style.container}>
                 <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
@@ -207,7 +202,7 @@ class EditPost extends PureComponent {
                         />
                     </View>
                 </View>
-            </KeyboardLayout>
+            </View>
         );
     }
 }
