@@ -8,7 +8,6 @@ import {
     InteractionManager,
     Keyboard,
     Platform,
-    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
@@ -155,10 +154,6 @@ export default class ChannelDrawer extends Component {
     };
 
     handleDrawerOpenStart = () => {
-        if (Platform.OS === 'ios') {
-            StatusBar.setHidden(true, 'slide');
-        }
-
         if (!this.openHandle) {
             this.openHandle = InteractionManager.createInteractionHandle();
         }
@@ -308,10 +303,6 @@ export default class ChannelDrawer extends Component {
     };
 
     resetDrawer = () => {
-        if (Platform.OS === 'ios') {
-            StatusBar.setHidden(false, 'slide');
-        }
-
         if (this.drawerSwiper && this.swiperIndex !== 1) {
             this.drawerSwiper.getWrappedInstance().resetPage();
         }

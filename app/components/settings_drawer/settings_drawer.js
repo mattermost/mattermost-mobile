@@ -9,7 +9,6 @@ import {
     InteractionManager,
     Keyboard,
     Platform,
-    StatusBar,
     View
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -105,10 +104,6 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleDrawerClose = () => {
-        if (Platform.OS === 'ios') {
-            StatusBar.setHidden(false, 'slide');
-        }
-
         if (this.closeHandle) {
             InteractionManager.clearInteractionHandle(this.closeHandle);
             this.closeHandle = null;
@@ -133,10 +128,6 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleDrawerOpenStart = () => {
-        if (Platform.OS === 'ios') {
-            StatusBar.setHidden(true, 'slide');
-        }
-
         if (!this.openHandle) {
             this.openHandle = InteractionManager.createInteractionHandle();
         }
