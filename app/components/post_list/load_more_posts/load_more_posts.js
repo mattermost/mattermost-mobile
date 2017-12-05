@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    ActivityIndicator,
     TouchableOpacity,
     View,
     ViewPropTypes
@@ -30,20 +31,23 @@ export default class LoadMorePosts extends PureComponent {
     };
 
     renderText(style) {
-        let i18nId = 'posts_view.loadMore';
-        let defaultMessage = 'Load more messages';
-
         if (this.props.loading) {
-            i18nId = 'mobile.loading_posts';
-            defaultMessage = 'Loading messages...';
+            const i18nId = 'mobile.loading_posts';
+            const defaultMessage = 'Loading messages...';
+
+            return (
+                <FormattedText
+                    id={i18nId}
+                    defaultMessage={defaultMessage}
+                    style={style.text}
+                />
+            );
         }
 
         return (
-            <FormattedText
-                id={i18nId}
-                defaultMessage={defaultMessage}
-                style={style.text}
-            />
+            <View style={{flex: 1, alignItems: 'center'}}>
+                <ActivityIndicator/>
+            </View>
         );
     }
 

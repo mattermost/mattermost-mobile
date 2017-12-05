@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     InteractionManager,
+    Platform,
     StyleSheet,
     FlatList
 } from 'react-native';
@@ -238,7 +239,7 @@ export default class PostList extends PureComponent {
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderFooter}
                 onEndReached={loadMore}
-                onEndReachedThreshold={0}
+                onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
                 {...refreshControl}
                 renderItem={this.renderItem}
                 contentContainerStyle={styles.postListContent}
