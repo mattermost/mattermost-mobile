@@ -51,7 +51,6 @@
     "react-redux": "5.0.6",
     "redux": "3.7.2",
     "redux-batched-actions": "0.2.0",
-    "redux-persist": "4.9.1",
     "redux-persist-transform-filter": "0.0.16",
     "redux-thunk": "2.2.0",
     "reselect": "3.0.1",
