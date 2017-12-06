@@ -199,6 +199,7 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
+                    alwaysBounceVertical={false}
                 >
                     {this.renderMentionSection(style)}
                     {this.renderReplySection(style)}
