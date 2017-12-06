@@ -139,11 +139,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             flex: 1,
             fontSize: 17,
-            lineHeight: 43
-        },
-        arrowContainer: {
-            justifyContent: 'center',
-            paddingRight: 15
+            textAlignVertical: 'center',
+            includeFontPadding: false
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
