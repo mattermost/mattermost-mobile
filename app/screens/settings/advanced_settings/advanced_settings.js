@@ -121,7 +121,10 @@ class AdvancedSettings extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <ScrollView contentContainerStyle={style.wrapper}>
+                <ScrollView
+                    contentContainerStyle={style.wrapper}
+                    alwaysBounceVertical={false}
+                >
                     <View style={style.divider}/>
                     <SettingsItem
                         defaultMessage='Reset Cache'

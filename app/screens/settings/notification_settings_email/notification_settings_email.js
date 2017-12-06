@@ -212,6 +212,7 @@ export default class NotificationSettingsEmail extends PureComponent {
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
+                    alwaysBounceVertical={false}
                 >
                     {this.renderEmailSection()}
                 </ScrollView>

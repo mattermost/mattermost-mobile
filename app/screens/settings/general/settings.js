@@ -215,7 +215,10 @@ class Settings extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <ScrollView contentContainerStyle={style.wrapper}>
+                <ScrollView
+                    alwaysBounceVertical={false}
+                    contentContainerStyle={style.wrapper}
+                >
                     <View style={style.divider}/>
                     <SettingsItem
                         defaultMessage='Notifications'
