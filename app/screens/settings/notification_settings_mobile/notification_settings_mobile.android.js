@@ -639,6 +639,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
+                    alwaysBounceVertical={false}
                 >
                     {this.renderMobilePushSection()}
                     <View style={style.separator}/>

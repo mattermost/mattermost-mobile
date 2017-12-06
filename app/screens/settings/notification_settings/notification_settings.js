@@ -8,6 +8,7 @@ import {
     Alert,
     Modal,
     Platform,
+    ScrollView,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -341,7 +342,10 @@ class NotificationSettings extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.wrapper}>
+                <ScrollView
+                    contentContainerStyle={style.wrapper}
+                    alwaysBounceVertical={false}
+                >
                     <View style={style.divider}/>
                     <SettingsItem
                         defaultMessage='Mentions and Replies'
@@ -374,7 +378,7 @@ class NotificationSettings extends PureComponent {
                         theme={theme}
                     />
                     <View style={style.divider}/>
-                </View>
+                </ScrollView>
                 {this.renderEmailNotificationSettings(style)}
             </View>
         );
@@ -389,7 +393,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
             ...Platform.select({
                 ios: {
                     paddingTop: 35

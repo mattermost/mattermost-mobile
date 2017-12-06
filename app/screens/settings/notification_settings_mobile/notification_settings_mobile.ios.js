@@ -153,6 +153,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
+                    alwaysBounceVertical={false}
                 >
                     {this.renderMobilePushSection(style)}
                     {this.renderMobilePushStatusSection(style)}
