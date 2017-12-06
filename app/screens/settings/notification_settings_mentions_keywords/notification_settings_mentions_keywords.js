@@ -2,7 +2,7 @@
 // See License.txt for license information.
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -68,7 +68,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.wrapper}>
+                <ScrollView contentContainerStyle={style.wrapper}>
                     <View style={style.inputContainer}>
                         <TextInputWithLocalizedPlaceholder
                             autoFocus={true}
@@ -93,7 +93,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             style={style.help}
                         />
                     </View>
-                </View>
+                </ScrollView>
             </View>
         );
     }
@@ -106,7 +106,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg
         },
         wrapper: {
-            flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             paddingTop: 35
         },

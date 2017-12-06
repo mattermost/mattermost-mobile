@@ -8,6 +8,7 @@ import {
     ActivityIndicator,
     Alert,
     Platform,
+    ScrollView,
     Text,
     View
 } from 'react-native';
@@ -120,7 +121,7 @@ class AdvancedSettings extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.wrapper}>
+                <ScrollView contentContainerStyle={style.wrapper}>
                     <View style={style.divider}/>
                     <SettingsItem
                         defaultMessage='Reset Cache'
@@ -145,7 +146,7 @@ class AdvancedSettings extends PureComponent {
                         theme={theme}
                     />
                     <View style={style.divider}/>
-                </View>
+                </ScrollView>
             </View>
         );
     }
@@ -159,7 +160,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
             ...Platform.select({
                 ios: {
                     paddingTop: 35

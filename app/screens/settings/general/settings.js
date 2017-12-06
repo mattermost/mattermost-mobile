@@ -8,6 +8,7 @@ import {
     InteractionManager,
     Linking,
     Platform,
+    ScrollView,
     View
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -214,7 +215,7 @@ class Settings extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={style.wrapper}>
+                <ScrollView contentContainerStyle={style.wrapper}>
                     <View style={style.divider}/>
                     <SettingsItem
                         defaultMessage='Notifications'
@@ -301,7 +302,7 @@ class Settings extends PureComponent {
                         />
                         <View style={style.divider}/>
                     </View>
-                </View>
+                </ScrollView>
             </View>
         );
     }
@@ -315,7 +316,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
             ...Platform.select({
                 ios: {
                     paddingTop: 35
