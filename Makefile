@@ -2,6 +2,7 @@
 .PHONY: check-ios-target build-ios
 .PHONY: check-android-target prepare-android-build build-android
 .PHONY: start-packager stop-packager
+.PHONY: help
 
 ios_target := $(filter-out build-ios,$(MAKECMDGOALS))
 android_target := $(filter-out build-android,$(MAKECMDGOALS))
@@ -42,13 +43,13 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@echo "Generating app assets"
 	@node scripts/make-dist-assets.js
 
-pre-run: | .yarninstall .podinstall dist/assets
+pre-run: | .yarninstall .podinstall dist/assets ## Does some yarn and cocoapod updates/installs
 
-run: run-ios
+run: run-ios ## Pretty much the same as react-native run-ios
 
-start: | pre-run start-packager
+start: | pre-run start-packager ## Starts the package server
 
-stop: stop-packager
+stop: stop-packager ## Stops the package server; alias for 'stop-packager'
 
 check-device-ios:
 	@if ! [ $(shell command -v xcodebuild) ]; then \
@@ -60,7 +61,7 @@ check-device-ios:
 		@exit 1; \
 	fi
 
-run-ios: | check-device-ios start-build-packager
+run-ios: | check-device-ios start-build-packager ## Runs the app on an iOS emulator or dev device
 	@echo Running iOS app in development
 	@react-native run-ios --simulator="${SIMULATOR}"
 
@@ -82,18 +83,18 @@ endif
 		@exit 1; \
 	fi
 
-run-android: | check-device-android start-build-packager prepare-android-build
+run-android: | check-device-android start-build-packager prepare-android-build ## Runs the app on an Android emulator or dev device
 	@echo Running Android app in development
 	@react-native run-android --no-packager
 
-test: | pre-run check-style
+test: | pre-run check-style ## Runs tests and eslinting
 	@yarn test
 
-check-style: .yarninstall
+check-style: .yarninstall ## Runs eslint
 	@echo Checking for style guide compliance
 	@node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .
 
-clean:
+clean: ## Removes temp files
 	@echo Cleaning started
 
 	@yarn cache clean
@@ -130,7 +131,7 @@ post-install:
 	@cd ./node_modules/react-native-svg/ios && rm -rf PerformanceBezier && git clone https://github.com/adamwulf/PerformanceBezier.git
 	@cd ./node_modules/mattermost-redux && yarn run build
 
-start-packager:
+start-packager: ## Starts the package server
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start; \
@@ -139,7 +140,7 @@ start-packager:
 		ps -e | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
 	fi
 
-start-build-packager:
+start-build-packager: ## Starts the package server with --reset-cache flag
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start --reset-cache & echo $$! > server.PID; \
@@ -148,7 +149,7 @@ start-build-packager:
 		ps -e | grep -i "cli.js start" | grep -v grep | awk '{print $$1}' > server.PID; \
 	fi
 
-stop-packager:
+stop-packager: ## Stops the package server
 	@echo Stopping React Native packager server
 	@if [ -e "server.PID" ] ; then \
 		kill -9 `cat server.PID` && rm server.PID; \
@@ -228,3 +229,7 @@ beta:
 
 release:
 	@:
+
+## Help documentatin à la https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
