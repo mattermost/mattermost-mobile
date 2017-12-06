@@ -1,19 +1,28 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {isLandscape, isTablet} from 'app/selectors/device';
+import {logout} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import SettingsDrawer from './settings_drawer.js';
+import SettingsDrawer from './settings_drawer';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 function mapStateToProps(state) {
     return {
-        isLandscape: isLandscape(state),
-        isTablet: isTablet(state),
+        currentUser: getCurrentUser(state) || {},
         theme: getTheme(state)
     };
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(SettingsDrawer);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            logout
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(SettingsDrawer);

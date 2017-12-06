@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {clearErrors} from 'mattermost-redux/actions/errors';
-import {logout} from 'mattermost-redux/actions/users';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 
@@ -33,7 +32,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearErrors,
-            logout,
             purgeOfflineStore
         }, dispatch)
     };

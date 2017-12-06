@@ -9,6 +9,7 @@ import {
     InteractionManager,
     Keyboard,
     Platform,
+    ScrollView,
     View
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -17,19 +18,24 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
 import Drawer from 'app/components/drawer';
-import SettingsItem from 'app/screens/settings/settings_item';
+import UserStatus from 'app/components/user_status';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import DrawerItem from './drawer_item';
+import UserInfo from './user_info';
+import StatusLabel from './status_label';
+
 const DRAWER_INITIAL_OFFSET = 80;
-const DRAWER_LANDSCAPE_OFFSET = 150;
 
 export default class SettingsDrawer extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            logout: PropTypes.func.isRequired
+        }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
-        isLandscape: PropTypes.bool.isRequired,
-        isTablet: PropTypes.bool.isRequired,
+        currentUser: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired
     };
@@ -41,21 +47,12 @@ export default class SettingsDrawer extends PureComponent {
     constructor(props) {
         super(props);
 
-        let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-        if (props.isLandscape || props.isTablet) {
-            openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
-        }
-
         this.closeHandle = null;
         this.openHandle = null;
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
-
-        this.state = {
-            openDrawerOffset
-        };
     }
 
     componentDidMount() {
@@ -117,9 +114,7 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     handleDrawerOpen = () => {
-        if (this.state.openDrawerOffset !== 0) {
-            Keyboard.dismiss();
-        }
+        Keyboard.dismiss();
 
         if (this.openHandle) {
             InteractionManager.clearInteractionHandle(this.openHandle);
@@ -133,8 +128,7 @@ export default class SettingsDrawer extends PureComponent {
         }
     };
 
-    // This is just a test
-    goToAdvancedSettings = wrapWithPreventDoubleTap(() => {
+    goToSettings = wrapWithPreventDoubleTap(() => {
         const {intl} = this.context;
         const {navigator, theme} = this.props;
 
@@ -160,100 +154,77 @@ export default class SettingsDrawer extends PureComponent {
         });
     });
 
+    logout = wrapWithPreventDoubleTap(() => {
+        const {logout} = this.props.actions;
+        this.closeSettingsDrawer();
+        InteractionManager.runAfterInteractions(logout);
+    });
+
+    renderUserStatusIcon = (userId) => {
+        return (
+            <UserStatus
+                size={18}
+                userId={userId}
+            />
+        );
+    };
+
+    renderUserStatusLabel = (userId) => {
+        return (
+            <StatusLabel userId={userId}/>
+        );
+    };
+
     renderContent = () => {
-        const {navigator, theme} = this.props;
+        const {currentUser, navigator, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
             <SafeAreaView
-                backgroundColor={theme.centerChannelColor}
-                navBarBackgroundColor={theme.centerChannelColor}
+                backgroundColor={theme.centerChannelBg}
+                navBarBackgroundColor={theme.centerChannelBg}
+                footerColor={theme.centerChannelBg}
+                footerComponent={<View style={style.container}/>}
+                headerComponent={<View style={style.container}/>}
                 navigator={navigator}
                 theme={theme}
             >
-                <View style={{flex: 1}}>
-                    <View style={style.wrapper}>
-                        <View style={style.divider}/>
-                        <SettingsItem
-                            defaultMessage='Notifications'
-                            i18nId='user.settings.modal.notifications'
-                            iconName='ios-notifications'
-                            iconType='ion'
-                            onPress={() => true}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <SettingsItem
-                            defaultMessage='Open teams you can join'
-                            i18nId='mobile.select_team.join_open'
-                            iconName='list'
-                            iconType='foundation'
-                            onPress={() => true}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <SettingsItem
-                            defaultMessage='Help'
-                            i18nId='mobile.help.title'
-                            iconName='md-help'
-                            iconType='ion'
-                            onPress={() => true}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <SettingsItem
-                            defaultMessage='Report a Problem'
-                            i18nId='sidebar_right_menu.report'
-                            iconName='exclamation'
-                            iconType='fontawesome'
-                            onPress={() => true}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <SettingsItem
-                            defaultMessage='Advanced Settings'
-                            i18nId='mobile.advanced_settings.title'
-                            iconName='ios-hammer'
-                            iconType='ion'
-                            onPress={this.goToAdvancedSettings}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <SettingsItem
-                            defaultMessage='Check for Upgrade'
-                            i18nId='mobile.settings.modal.check_for_upgrade'
-                            iconName='update'
-                            iconType='material'
-                            onPress={() => true}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <SettingsItem
-                            defaultMessage='About Mattermost'
-                            i18nId='about.title'
-                            iconName='ios-information-circle'
-                            iconType='ion'
-                            onPress={() => true}
-                            separator={false}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <View style={style.divider}/>
-                        <View style={style.separator}>
-                            <View style={style.divider}/>
-                            <SettingsItem
+                <View style={style.container}>
+                    <ScrollView
+                        alwaysBounceVertical={false}
+                        contentContainerStyle={style.wrapper}
+                    >
+                        <UserInfo user={currentUser}/>
+                        <View style={style.block}>
+                            <DrawerItem
+                                labelComponent={this.renderUserStatusLabel(currentUser.id)}
+                                leftComponent={this.renderUserStatusIcon(currentUser.id)}
+                                separator={true}
+                                theme={theme}
+                            />
+                            <DrawerItem
+                                defaultMessage='Settings'
+                                i18nId='mobile.routes.settings'
+                                iconName='ios-options'
+                                iconType='ion'
+                                onPress={this.goToSettings}
+                                separator={false}
+                                theme={theme}
+                            />
+                        </View>
+                        <View style={style.separator}/>
+                        <View style={style.block}>
+                            <DrawerItem
                                 centered={true}
                                 defaultMessage='Logout'
                                 i18nId='sidebar_right_menu.logout'
                                 isDestructor={true}
-                                onPress={() => true}
+                                onPress={this.logout}
                                 separator={false}
-                                showArrow={false}
                                 theme={theme}
                             />
-                            <View style={style.divider}/>
                         </View>
-                    </View>
+                    </ScrollView>
                 </View>
             </SafeAreaView>
         );
@@ -261,7 +232,6 @@ export default class SettingsDrawer extends PureComponent {
 
     render() {
         const {children} = this.props;
-        const {openDrawerOffset} = this.state;
 
         return (
             <Drawer
@@ -278,10 +248,10 @@ export default class SettingsDrawer extends PureComponent {
                 disabled={false}
                 content={this.renderContent()}
                 tapToClose={true}
-                openDrawerOffset={openDrawerOffset}
+                openDrawerOffset={DRAWER_INITIAL_OFFSET}
                 onRequestClose={this.closeSettingsDrawer}
                 panOpenMask={0.05}
-                panCloseMask={openDrawerOffset}
+                panCloseMask={DRAWER_INITIAL_OFFSET}
                 panThreshold={0.25}
                 acceptPan={true}
                 negotiatePan={true}
@@ -313,12 +283,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
         },
         wrapper: {
-            backgroundColor: theme.centerChannelColor,
             flex: 1,
-            paddingTop: 44
+            paddingTop: 0
+        },
+        block: {
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderTopWidth: 1
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),

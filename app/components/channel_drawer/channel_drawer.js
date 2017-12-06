@@ -365,6 +365,7 @@ export default class ChannelDrawer extends Component {
         return (
             <SafeAreaView
                 backgroundColor={theme.sidebarHeaderBg}
+                footerColor={theme.sidebarHeaderBg}
                 navigator={navigator}
             >
                 <DrawerSwiper

@@ -5,21 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, Platform, View} from 'react-native';
 
-import {General} from 'mattermost-redux/constants';
-
-import {AwayIcon, DndIcon, OfflineIcon, OnlineIcon} from 'app/components/status_icons';
+import UserStatus from 'app/components/user_status';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
 
 import {Client4} from 'mattermost-redux/client';
-
-const statusToIcon = {
-    away: AwayIcon,
-    dnd: DndIcon,
-    offline: OfflineIcon,
-    online: OnlineIcon
-};
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
@@ -32,6 +23,7 @@ export default class ProfilePicture extends PureComponent {
         statusBorderWidth: PropTypes.number,
         statusSize: PropTypes.number,
         user: PropTypes.object,
+        showStatus: PropTypes.bool,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
@@ -40,6 +32,7 @@ export default class ProfilePicture extends PureComponent {
     };
 
     static defaultProps = {
+        showStatus: true,
         size: 128,
         statusBorderWidth: 2,
         statusSize: 14
@@ -60,35 +53,10 @@ export default class ProfilePicture extends PureComponent {
             pictureUrl = Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
         }
 
-        let Icon;
-        let iconColor;
-        if (this.props.status && statusToIcon[this.props.status]) {
-            Icon = statusToIcon[this.props.status];
-
-            switch (this.props.status) {
-            case General.AWAY:
-                iconColor = theme.awayIndicator;
-                break;
-            case General.DND:
-                iconColor = theme.dndIndicator;
-                break;
-            case General.ONLINE:
-                iconColor = theme.onlineIndicator;
-                break;
-            default:
-                iconColor = theme.centerChannelColor;
-                break;
-            }
-        } else {
-            Icon = statusToIcon.offline;
-            iconColor = theme.centerChannelColor;
-        }
-
         const statusIcon = (
-            <Icon
-                height={this.props.statusSize}
-                width={this.props.statusSize}
-                color={iconColor}
+            <UserStatus
+                size={this.props.statusSize}
+                status={this.props.status}
             />
         );
 
@@ -100,7 +68,7 @@ export default class ProfilePicture extends PureComponent {
                     source={{uri: pictureUrl}}
                     defaultSource={placeholder}
                 />
-                {this.props.status &&
+                {this.props.showStatus &&
                     <View style={[style.statusWrapper, {borderRadius: this.props.statusSize / 2}]}>
                         {statusIcon}
                     </View>
@@ -123,21 +91,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         status: {
             color: theme.centerChannelBg
-        },
-        online: {
-            backgroundColor: theme.onlineIndicator
-        },
-        away: {
-            backgroundColor: theme.awayIndicator
-        },
-        dnd: {
-            backgroundColor: 'red'
-        },
-        offline: {
-            backgroundColor: theme.centerChannelBg
-        },
-        offlineIcon: {
-            borderColor: '#bababa'
         }
     };
 });

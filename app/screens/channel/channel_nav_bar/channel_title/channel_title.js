@@ -73,7 +73,8 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             justifyContent: 'center',
-            marginHorizontal: 15
+            marginLeft: 20,
+            marginRight: 5
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
