@@ -255,6 +255,10 @@ export default class Previewer extends Component {
         };
 
         const opacity = isInFetchCache ? 1 : this.state.opacity;
+        const containerStyle = Platform.select({
+            android: {height: imageHeight, width: this.state.imageWidth, backgroundColor: '#000'},
+            ios: {flex: 1, backgroundColor: '#000'}
+        });
 
         return (
             <View
@@ -262,7 +266,7 @@ export default class Previewer extends Component {
                 onResponderRelease={this.handleResponderRelease}
                 style={[style.fileImageWrapper, {height: '100%', width: '100%'}]}
             >
-                <AnimatedView style={{flex: 1, backgroundColor: '#000', opacity}}>
+                <AnimatedView style={[containerStyle, {opacity}]}>
                     <ImageView
                         ref={this.attachImageView}
                         source={source}
