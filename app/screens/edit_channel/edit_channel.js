@@ -9,7 +9,7 @@ import {
     InteractionManager
 } from 'react-native';
 
-import {RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
@@ -199,23 +199,27 @@ export default class EditChannel extends PureComponent {
     onUpdateChannel = () => {
         Keyboard.dismiss();
         const {displayName, channelURL, purpose, header} = this.state;
-        const {channel: {id}} = this.props;
+        const {channel: {id, type}} = this.props;
+        const isDirect = type === General.DM_CHANNEL || type === General.GM_CHANNEL;
         const channel = {
-            display_name: displayName,
+            display_name: isDirect ? '' : displayName,
             name: channelURL,
             purpose,
             header
         };
 
-        let result = this.validateDisplayName(displayName.trim());
-        if (result.error) {
-            this.setState({error: result.error});
-            return;
-        }
-        result = this.validateChannelURL(channelURL.trim());
-        if (result.error) {
-            this.setState({error: result.error});
-            return;
+        if (!isDirect) {
+            let result = this.validateDisplayName(displayName.trim());
+            if (result.error) {
+                this.setState({error: result.error});
+                return;
+            }
+
+            result = this.validateChannelURL(channelURL.trim());
+            if (result.error) {
+                this.setState({error: result.error});
+                return;
+            }
         }
 
         this.props.actions.patchChannel(id, channel);

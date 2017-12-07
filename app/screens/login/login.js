@@ -131,6 +131,7 @@ class Login extends PureComponent {
     blur = () => {
         this.loginId.blur();
         this.passwd.blur();
+        Keyboard.dismiss();
     };
 
     preSignIn = wrapWithPreventDoubleTap(() => {
@@ -341,6 +342,7 @@ class Login extends PureComponent {
                         ref={this.scrollRef}
                         style={style.container}
                         contentContainerStyle={style.innerContainer}
+                        keyboardShouldPersistTaps='handled'
                     >
                         <Image
                             source={logo}
