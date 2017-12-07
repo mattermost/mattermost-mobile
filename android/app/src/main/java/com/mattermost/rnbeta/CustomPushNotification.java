@@ -56,8 +56,10 @@ public class CustomPushNotification extends PushNotification {
         if (notificationId != -1) {
             channelIdToNotificationCount.remove(channelId);
             channelIdToNotification.remove(channelId);
-            final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.cancel(notificationId);
+            if (context != null) {
+                final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(notificationId);
+            }
         }
     }
 
