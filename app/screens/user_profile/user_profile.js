@@ -49,11 +49,11 @@ class UserProfile extends PureComponent {
     close = () => {
         const {navigator} = this.props;
 
-        if (Platform.OS === 'ios') {
-            navigator.popToRoot({
-                animated: true
-            });
-        } else {
+        navigator.popToRoot({
+            animated: true
+        });
+
+        if (Platform.OS === 'android') {
             navigator.dismissModal({
                 animationType: 'slide-down'
             });
