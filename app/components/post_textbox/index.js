@@ -24,7 +24,7 @@ function mapStateToProps(state, ownProps) {
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
 
     return {
-        channelId: getCurrentChannelId(state),
+        channelId: ownProps.channelId || getCurrentChannelId(state),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         currentUserId: getCurrentUserId(state),
