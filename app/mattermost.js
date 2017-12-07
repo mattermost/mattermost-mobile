@@ -10,6 +10,7 @@ import {
     Alert,
     AppState,
     InteractionManager,
+    Keyboard,
     NativeModules,
     Platform
 } from 'react-native';
@@ -194,6 +195,7 @@ export default class Mattermost {
                     }
                 } else if (isActive) {
                     this.inBackgroundSince = null;
+                    Keyboard.dismiss();
                 }
             } catch (error) {
                 // do nothing
