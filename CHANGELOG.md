@@ -8,7 +8,7 @@
 ### Bug Fixes
 - Fixed an issue with the upgrade app screen showing with a transparent background
 - Fixed an issue with clearing or replying to notifications sometimes crashing the app on Android
-- Fixed the channel drawer to always show the channel list when opened, even if it was previously closed on the team selector page
+- Fixed an issue with the app sometimes crashing due to a missing funtion in the swiping control
 
 ## v1.5 Release 
 
