@@ -8,7 +8,7 @@
 ### Bug Fixes
 - Fixed an issue with the upgrade app screen showing with a transparent background
 - Fixed an issue with clearing or replying to notifications sometimes crashing the app on Android
-- Fixed an issue with the app sometimes crashing due to a missing funtion in the swiping control
+- Fixed an issue with the app sometimes crashing due to a missing function in the swiping control
 
 ## v1.5 Release 
 
