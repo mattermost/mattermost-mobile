@@ -15,6 +15,7 @@ import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
 import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
+import {promiseTimeout} from 'app/utils/promise_timeout';
 
 import {messageRetention} from './middleware';
 import {transformSet} from './utils';
@@ -102,6 +103,22 @@ export default function configureAppStore(initialState) {
     );
 
     const offlineOptions = {
+        effect: (effect, action) => {
+            if (typeof effect !== 'function') {
+                throw new Error('Offline Action: effect must be a function.');
+            } else if (!action.meta.offline.commit) {
+                throw new Error('Offline Action: commit action must be present.');
+            }
+
+            if (action.meta.offline.canTimeout) {
+                const defaultTimeout = 10000;
+                const timeout = action.meta.offline.timeout || defaultTimeout;
+
+                return promiseTimeout(effect(), timeout);
+            }
+
+            return effect();
+        },
         detectNetwork: (callback) => networkConnectionListener(callback),
         persist: (store, options) => {
             const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
