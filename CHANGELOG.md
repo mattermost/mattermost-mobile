@@ -1,5 +1,15 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.5.1 Release
+
+- Release Date: December 7, 2017
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+- Fixed an issue with the upgrade app screen showing with a transparent background
+- Fixed an issue with clearing or replying to notifications sometimes crashing the app on Android
+- Fixed the channel drawer to always show the channel list when opened, even if it was previously closed on the team selector page
+
 ## v1.5 Release 
 
 - Release Date: December 6, 2017
@@ -18,6 +28,7 @@
 - Added support for built-in slash commands /away, /online, /offline, /dnd, /header, /purpose, /kick, /me, /shrug
 
 ### Improvements
+- In iOS, 3D touch can now be used to peek into a channel to view the contents, and quickly mark it as read
 - Markdown images in posts now render 
 - Copy posts, URLs, and code blocks
 - Opening a channel with Unread messages takes you to the "New Messages" indicator 
@@ -29,7 +40,7 @@
 - Android notifications now follow the default system setting for vibration 
 - Fixed app crashing when opening notification settings on Android 
 - Fixed an issue where the "Proceed" button on sign in screen stopped working after pressing logout multiple times
-- Fixed HEIC images from iOS devices not previewing 
+- HEIC images posted from iPhones now get converted to JPEG before uploading
 
 ## v1.4.1 Release
 
