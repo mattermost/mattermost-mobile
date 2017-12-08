@@ -1,5 +1,34 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.5 Release 
+
+- Release Date: December 6, 2017
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights 
+
+#### File Viewer
+- Preview videos, RTF,  PDFs, Word, Excel, and Powerpoint files 
+
+#### iPhone X Compatibility
+- Added support for iPhone X
+
+#### Slash Commands
+- Added support for using custom slash commands
+- Added support for built-in slash commands /away, /online, /offline, /dnd, /header, /purpose, /kick, /me, /shrug
+
+### Improvements
+- Markdown images in posts now render 
+- Copy posts, URLs, and code blocks
+- Opening a channel with Unread messages takes you to the "New Messages" indicator 
+- Support for data retention, interactive message buttons, and viewing Do Not Disturb statuses depending on the server version
+- (Edited) indicator now shows up beside edited posts 
+
+### Bug Fixes 
+- Fixed app crashing when opening notification settings on Android 
+- Fixed an issue where the "Proceed" button on sign in screen stopped working after pressing logout multiple times
+- Fixed HEIC images from iOS devices not previewing 
+
 ## v1.4.1 Release
 
 Release Date: Nov 15, 2017
