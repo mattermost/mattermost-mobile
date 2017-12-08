@@ -18,7 +18,7 @@ import StatusBar from 'app/components/status_bar';
 import {UpgradeTypes} from 'app/constants/view';
 import logo from 'assets/images/logo.png';
 import checkUpgradeType from 'app/utils/client_upgrade';
-import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {
@@ -262,23 +262,29 @@ export default class ClientUpgrade extends PureComponent {
         const styles = getStyleFromTheme(theme);
 
         return (
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollViewContent}
-            >
+            <View style={styles.container}>
                 <StatusBar/>
-                <Image
-                    source={logo}
-                    style={styles.image}
-                />
-                {this.renderMessageContent()}
-            </ScrollView>
+                <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollViewContent}
+                >
+                    <Image
+                        source={logo}
+                        style={styles.image}
+                    />
+                    {this.renderMessageContent()}
+                </ScrollView>
+            </View>
         );
     }
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg
+        },
         image: {
             marginTop: 75,
             width: 76,
@@ -325,7 +331,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 30
         },
         scrollView: {
-            flex: 1
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
         },
         scrollViewContent: {
             paddingBottom: 20,

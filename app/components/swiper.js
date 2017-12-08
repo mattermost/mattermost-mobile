@@ -8,7 +8,7 @@ import {
     ScrollView,
     ViewPagerAndroid,
     Platform,
-    StyleSheet
+    StyleSheet, InteractionManager
 } from 'react-native';
 
 export default class Swiper extends PureComponent {
@@ -111,6 +111,14 @@ export default class Swiper extends PureComponent {
             this.isScrolling = true;
             this.props.onScrollBegin();
             break;
+        }
+    };
+
+    scrollToStart = () => {
+        if (Platform.OS === 'ios') {
+            InteractionManager.runAfterInteractions(() => {
+                this.scrollView.scrollTo({x: 0, animated: false});
+            });
         }
     };
 

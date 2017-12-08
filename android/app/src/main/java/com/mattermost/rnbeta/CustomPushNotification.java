@@ -63,6 +63,17 @@ public class CustomPushNotification extends PushNotification {
         }
     }
 
+    public static void clearNotification(Context mContext, int notificationId, String channelId) {
+        if (notificationId != -1) {
+            channelIdToNotificationCount.remove(channelId);
+            channelIdToNotification.remove(channelId);
+            if (mContext != null) {
+                final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(notificationId);
+            }
+        }
+    }
+
     @Override
     public void onReceived() throws InvalidNotificationException {
         Bundle data = mNotificationProps.asBundle();
