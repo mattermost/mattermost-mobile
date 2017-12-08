@@ -23,6 +23,7 @@
 - Opening a channel with Unread messages takes you to the "New Messages" indicator 
 - Support for data retention, interactive message buttons, and viewing Do Not Disturb statuses depending on the server version
 - (Edited) indicator now shows up beside edited posts 
+- Added a "Recently Used" section for emoji reactions
 
 ### Bug Fixes 
 - Android notifications now follow the default system setting for vibration 
