@@ -25,6 +25,7 @@
 - (Edited) indicator now shows up beside edited posts 
 
 ### Bug Fixes 
+- Android notifications now follow the default system setting for vibration 
 - Fixed app crashing when opening notification settings on Android 
 - Fixed an issue where the "Proceed" button on sign in screen stopped working after pressing logout multiple times
 - Fixed HEIC images from iOS devices not previewing 
