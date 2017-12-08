@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.RemoteInput;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
@@ -15,9 +16,11 @@ import com.facebook.react.jstasks.HeadlessJsTaskConfig;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 
 public class NotificationReplyService extends HeadlessJsTaskService {
+    private Context mContext;
 
     @Override
     protected @Nullable HeadlessJsTaskConfig getTaskConfig(Intent intent) {
+        mContext = getApplicationContext();
         if (CustomPushNotification.KEY_TEXT_REPLY.equals(intent.getAction())) {
             CharSequence message = getReplyMessage(intent);
 
@@ -27,8 +30,9 @@ public class NotificationReplyService extends HeadlessJsTaskService {
             bundle.putInt("msg_count", CustomPushNotification.getMessageCountInChannel(channelId));
 
             int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
-            CustomPushNotification.clearNotification(notificationId, channelId);
+            CustomPushNotification.clearNotification(mContext, notificationId, channelId);
 
+            Log.i("ReactNative", "Replying service");
             return new HeadlessJsTaskConfig(
                     "notificationReplied",
                     Arguments.fromBundle(bundle),
