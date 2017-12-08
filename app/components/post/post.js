@@ -39,6 +39,7 @@ class Post extends PureComponent {
             removePost: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
+        currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         highlight: PropTypes.bool,
         intl: intlShape.isRequired,
@@ -337,6 +338,13 @@ class Post extends PureComponent {
         Clipboard.setString(textToCopy);
     }
 
+    handleCopyPermalink = () => {
+        const {currentTeamUrl, postId} = this.props;
+        const permalink = `${currentTeamUrl}/pl/${postId}`;
+
+        Clipboard.setString(permalink);
+    }
+
     render() {
         const {
             commentedOnPost,
@@ -392,6 +400,7 @@ class Post extends PureComponent {
                             isSearchResult={isSearchResult}
                             navigator={this.props.navigator}
                             onAddReaction={this.handleAddReaction}
+                            onCopyPermalink={this.handleCopyPermalink}
                             onCopyText={this.handleCopyText}
                             onFailedPostPress={this.handleFailedPostPress}
                             onPostDelete={this.handlePostDelete}
