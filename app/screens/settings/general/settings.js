@@ -53,6 +53,7 @@ class Settings extends PureComponent {
     errorEmailBody = () => {
         const {config, currentUserId, currentTeamId, errors} = this.props;
         let contents = [
+            'Please share a description of the problem:\n\n',
             `Current User Id: ${currentUserId}`,
             `Current Team Id: ${currentTeamId}`,
             `Server Version: ${config.Version} (Build ${config.BuildNumber})`,
