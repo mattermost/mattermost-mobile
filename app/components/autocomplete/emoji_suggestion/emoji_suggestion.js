@@ -25,6 +25,7 @@ export default class EmojiSuggestion extends Component {
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
         isSearch: PropTypes.bool,
+        fuse: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
@@ -63,38 +64,41 @@ export default class EmojiSuggestion extends Component {
         }
 
         const matchTerm = match[3];
-        if (matchTerm !== this.state.matchTerm) {
+
+        const matchTermChanged = matchTerm !== this.state.matchTerm;
+        if (matchTermChanged) {
             this.setState({
                 matchTerm
             });
         }
 
-        let data = [];
-        if (matchTerm.length) {
-            const lowerCaseMatchTerm = matchTerm.toLowerCase();
-            const startsWith = [];
-            const includes = [];
-            nextProps.emojis.forEach((emoji) => {
-                if (emoji.startsWith(lowerCaseMatchTerm)) {
-                    startsWith.push(emoji);
-                } else {
-                    includes.push(emoji);
-                }
-            });
-            data = [...startsWith.sort(), ...includes.sort()];
-        } else {
+        if (matchTermChanged) {
+            this.handleFuzzySearch(matchTerm, nextProps);
+        } else if (!matchTerm.length) {
             const initialEmojis = [...nextProps.emojis];
             initialEmojis.splice(0, 300);
-            data = initialEmojis.sort();
-        }
+            const data = initialEmojis.sort();
 
+            this.setEmojiData(data);
+        }
+    }
+
+    handleFuzzySearch = async (matchTerm, props) => {
+        const {emojis, fuse} = props;
+
+        const results = await fuse.search(matchTerm.toLowerCase());
+        const data = results.map((index) => emojis[index]);
+        this.setEmojiData(data);
+    };
+
+    setEmojiData = (data) => {
         this.setState({
             active: data.length > 0,
             dataSource: data
         });
 
         this.props.onResultCountChange(data.length);
-    }
+    };
 
     completeSuggestion = (emoji) => {
         const {actions, cursorPosition, onChangeText, value, rootId} = this.props;
