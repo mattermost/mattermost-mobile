@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import FormattedText from 'app/components/formatted_text';
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 
@@ -31,7 +32,8 @@ export default class FileUploadPreview extends PureComponent {
         inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        filesUploadingForCurrentChannel: PropTypes.bool.isRequired
+        filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
+        showFileMaxWarning: PropTypes.bool.isRequired
     };
 
     handleRetryFileUpload = (file) => {
@@ -98,13 +100,20 @@ export default class FileUploadPreview extends PureComponent {
     };
 
     render() {
-        if (this.props.channelIsLoading || (!this.props.files.length && !this.props.filesUploadingForCurrentChannel)) {
+        const {
+            showFileMaxWarning,
+            channelIsLoading,
+            filesUploadingForCurrentChannel,
+            deviceHeight,
+            files
+        } = this.props;
+        if (channelIsLoading || (!files.length && !filesUploadingForCurrentChannel)) {
             return null;
         }
 
         return (
             <View>
-                <View style={[style.container, {height: this.props.deviceHeight}]}>
+                <View style={[style.container, {height: deviceHeight}]}>
                     <ScrollView
                         horizontal={true}
                         style={style.scrollView}
@@ -112,6 +121,14 @@ export default class FileUploadPreview extends PureComponent {
                     >
                         {this.buildFilePreviews()}
                     </ScrollView>
+                    {showFileMaxWarning && (
+                        <FormattedText
+                            style={style.warning}
+                            id='mobile.file_upload.max_warning'
+                            defaultMessage='Uploads limited to 5 files maximum.'
+                        />
+                    )}
+
                 </View>
             </View>
         );
@@ -186,5 +203,10 @@ const style = StyleSheet.create({
     scrollViewContent: {
         alignItems: 'flex-end',
         marginLeft: 14
+    },
+    warning: {
+        color: 'white',
+        marginLeft: 14,
+        marginBottom: 12
     }
 });

@@ -18,6 +18,7 @@ import Typing from './components/typing';
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
 const MAX_MESSAGE_LENGTH = 4000;
+const MAX_FILE_COUNT = 5;
 const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;
 
 class PostTextbox extends PureComponent {
@@ -62,7 +63,8 @@ class PostTextbox extends PureComponent {
             contentHeight: INITIAL_HEIGHT,
             inputWidth: null,
             keyboardType: 'default',
-            value: props.value
+            value: props.value,
+            showFileMaxWarning: false
         };
     }
 
@@ -100,7 +102,19 @@ class PostTextbox extends PureComponent {
         const valueLength = value.trim().length;
 
         if (files.length) {
-            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED;
+            const filesLoading = [];
+            const filesFailed = [];
+            files.forEach((file) => {
+                if (file.loading) {
+                    filesLoading.push(file);
+                }
+                if (!file.failed) {
+                    filesFailed.push(file);
+                }
+            });
+            const loadingComplete = filesLoading.length === 0;
+            const noneFailed = filesFailed.length > 0;
+            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && noneFailed && loadingComplete;
         }
 
         return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
@@ -268,7 +282,7 @@ class PostTextbox extends PureComponent {
     };
 
     renderSendButton = () => {
-        const {theme, uploadFileRequestStatus} = this.props;
+        const {files, theme} = this.props;
         const style = getStyleSheet(theme);
 
         const icon = (
@@ -280,7 +294,8 @@ class PostTextbox extends PureComponent {
         );
 
         let button = null;
-        if (uploadFileRequestStatus === RequestStatus.STARTED) {
+        const imagesLoading = files.filter((f) => f.loading).length > 0;
+        if (imagesLoading) {
             button = (
                 <View style={style.sendButtonContainer}>
                     <View style={[style.sendButton, style.disableButton]}>
@@ -368,6 +383,14 @@ class PostTextbox extends PureComponent {
         this.changeDraft('');
     };
 
+    onShowFileMaxWarning = () => {
+        this.setState({showFileMaxWarning: true}, () => {
+            setTimeout(() => {
+                this.setState({showFileMaxWarning: false});
+            }, 3000);
+        });
+    };
+
     render() {
         const {
             canUploadFiles,
@@ -379,6 +402,7 @@ class PostTextbox extends PureComponent {
             rootId,
             theme
         } = this.props;
+        const {showFileMaxWarning} = this.state;
 
         const style = getStyleSheet(theme);
         const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
@@ -400,6 +424,9 @@ class PostTextbox extends PureComponent {
                     blurTextBox={this.blur}
                     theme={theme}
                     navigator={navigator}
+                    fileCount={files.length}
+                    maxFileCount={MAX_FILE_COUNT}
+                    onShowFileMaxWarning={this.onShowFileMaxWarning}
                     uploadFiles={this.handleUploadFiles}
                 />
             );
@@ -421,6 +448,7 @@ class PostTextbox extends PureComponent {
                     files={files}
                     inputHeight={textInputHeight}
                     rootId={rootId}
+                    showFileMaxWarning={showFileMaxWarning}
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}

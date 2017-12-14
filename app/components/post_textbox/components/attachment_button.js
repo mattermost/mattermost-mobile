@@ -17,7 +17,10 @@ class AttachmentButton extends PureComponent {
         intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        uploadFiles: PropTypes.func.isRequired
+        uploadFiles: PropTypes.func.isRequired,
+        fileCount: PropTypes.number,
+        maxFileCount: PropTypes.number.isRequired,
+        onShowFileMaxWarning: PropTypes.func.isRequired
     };
 
     attachFileFromCamera = () => {
@@ -142,6 +145,13 @@ class AttachmentButton extends PureComponent {
     }
 
     showFileAttachmentOptions = () => {
+        const {fileCount, maxFileCount, onShowFileMaxWarning} = this.props;
+
+        if (fileCount === maxFileCount) {
+            onShowFileMaxWarning();
+            return;
+        }
+
         this.props.blurTextBox();
         const options = {
             items: [{
