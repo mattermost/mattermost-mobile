@@ -13,7 +13,7 @@ export function addListItemIndices(ast) {
             const node = e.node;
 
             if (node.type === 'list') {
-                let i = node.listStart || 1; // List indices match what would be displayed in the UI
+                let i = node.listStart == null ? 1 : node.listStart; // List indices match what would be displayed in the UI
 
                 for (let child = node.firstChild; child; child = child.next) {
                     child.index = i;
