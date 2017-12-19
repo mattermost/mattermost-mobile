@@ -10,7 +10,7 @@
 
 
 @interface MattermostManaged : NSObject <RCTBridgeModule>
-
+- (NSUserDefaults *)bucketByName:(NSString*)name;
 + (void)sendConfigChangedEvent;
 
 @end
