@@ -48,6 +48,7 @@ export default class SafeAreaIos extends PureComponent {
     }
 
     componentWillMount() {
+        this.mounted = true;
         this.getSafeAreaInsets();
         this.mounted = true;
     }
@@ -60,6 +61,7 @@ export default class SafeAreaIos extends PureComponent {
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         Orientation.removeOrientationListener(this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
@@ -81,13 +83,15 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     getSafeAreaInsets = () => {
-        this.getStatusBarHeight();
+        if (this.mounted) {
+            this.getStatusBarHeight();
 
-        if (this.isX) {
-            SafeArea.getSafeAreaInsetsForRootView().then((result) => {
-                const {safeAreaInsets} = result;
-                this.setState({safeAreaInsets});
-            });
+            if (this.isX) {
+                SafeArea.getSafeAreaInsetsForRootView().then((result) => {
+                    const {safeAreaInsets} = result;
+                    this.setState({safeAreaInsets});
+                });
+            }
         }
     };
 
