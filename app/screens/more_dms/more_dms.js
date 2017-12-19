@@ -420,6 +420,8 @@ class MoreDirectMessages extends PureComponent {
                     sectionKeyExtractor={this.sectionKeyExtractor}
                     compareItems={this.compareItems}
                     extraData={this.state.selectedIds}
+                    onListEndReached={this.loadMoreProfiles}
+                    listScrollRenderAheadDistance={50}
                     onRowPress={this.handleSelectUser}
                     loading={isLoading}
                     loadingText={loadingText}
