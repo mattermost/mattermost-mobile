@@ -184,7 +184,7 @@ class ChannelAddMembers extends PureComponent {
         let {page} = this.state;
         if (loadMoreRequestStatus !== RequestStatus.STARTED && next && !searching) {
             page = page + 1;
-            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then((data) => {
+            actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then(({data}) => {
                 if (data && data.length) {
                     this.setState({
                         page
