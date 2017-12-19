@@ -35,7 +35,7 @@ export function handleTeamChange(teamId, selectChannel = true) {
             markChannelAsRead(lastChannelId, currentChannelId)(dispatch, getState);
         }
 
-        dispatch(batchActions(actions), getState);
+        dispatch(batchActions(actions, 'BATCH_SELECT_TEAM'), getState);
     };
 }
 
