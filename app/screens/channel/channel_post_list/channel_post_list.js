@@ -10,6 +10,7 @@ import {
     View
 } from 'react-native';
 
+import ChannelIntro from 'app/components/channel_intro';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
@@ -118,6 +119,10 @@ class ChannelPostList extends PureComponent {
         actions.loadPostsIfNecessaryWithRetry(channelId);
     };
 
+    renderChannelIntro = () => {
+        return <ChannelIntro navigator={navigator}/>;
+    };
+
     render() {
         const {
             actions,
@@ -157,6 +162,7 @@ class ChannelPostList extends PureComponent {
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
                     navigator={navigator}
+                    renderFooter={this.renderChannelIntro}
                 />
             );
         }

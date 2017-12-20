@@ -10,7 +10,6 @@ import {
     FlatList
 } from 'react-native';
 
-import ChannelIntro from 'app/components/channel_intro';
 import Post from 'app/components/post';
 import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
@@ -35,6 +34,7 @@ export default class PostList extends PureComponent {
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         postIds: PropTypes.array.isRequired,
+        renderFooter: PropTypes.func,
         renderReplies: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
@@ -205,12 +205,11 @@ export default class PostList extends PureComponent {
             );
         }
 
-        return (
-            <ChannelIntro
-                channelId={this.props.channelId}
-                navigator={this.props.navigator}
-            />
-        );
+        if (!this.props.renderFooter) {
+            return null;
+        }
+
+        return this.props.renderFooter();
     };
 
     render() {
