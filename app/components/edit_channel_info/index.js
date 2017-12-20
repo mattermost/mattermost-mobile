@@ -251,6 +251,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholder={{id: 'channel_modal.nameEx', defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'}}
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
+                                            disableFullscreenUI={true}
                                         />
                                     </View>
                                 </View>
@@ -279,6 +280,7 @@ export default class EditChannelInfo extends PureComponent {
                                             placeholder={{id: 'rename_channel.handleHolder', defaultMessage: 'lowercase alphanumeric characters'}}
                                             placeholderTextColor={changeOpacity('#000', 0.5)}
                                             underlineColorAndroid='transparent'
+                                            disableFullscreenUI={true}
                                         />
                                     </View>
                                 </View>
@@ -311,6 +313,7 @@ export default class EditChannelInfo extends PureComponent {
                                             blurOnSubmit={false}
                                             textAlignVertical='top'
                                             underlineColorAndroid='transparent'
+                                            disableFullscreenUI={true}
                                         />
                                     </View>
                                     <View>
@@ -349,6 +352,7 @@ export default class EditChannelInfo extends PureComponent {
                                     onFocus={this.scrollToEnd}
                                     textAlignVertical='top'
                                     underlineColorAndroid='transparent'
+                                    disableFullscreenUI={true}
                                 />
                             </View>
                             <View ref={this.lastTextRef}>

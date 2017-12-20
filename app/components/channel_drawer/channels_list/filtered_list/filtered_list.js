@@ -20,6 +20,9 @@ import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ChannelDrawerItem from 'app/components/channel_drawer/channels_list/channel_item';
+import {ListTypes} from 'app/constants';
+
+const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 class FilteredList extends Component {
     static propTypes = {
@@ -387,10 +390,7 @@ class FilteredList extends Component {
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
-                    viewabilityConfig={{
-                        viewAreaCoveragePercentThreshold: 3,
-                        waitForInteraction: false
-                    }}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             </View>
         );

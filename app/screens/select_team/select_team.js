@@ -19,9 +19,11 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
-
+import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+
+const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 export default class SelectTeam extends PureComponent {
     static propTypes = {
@@ -225,10 +227,7 @@ export default class SelectTeam extends PureComponent {
                     data={teams}
                     renderItem={this.renderItem}
                     keyExtractor={(item) => item.id}
-                    viewabilityConfig={{
-                        viewAreaCoveragePercentThreshold: 3,
-                        waitForInteraction: false
-                    }}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             </View>
         );

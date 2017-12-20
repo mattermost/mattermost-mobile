@@ -2,7 +2,7 @@
 // See License.txt for license information.
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Dimensions,
     Platform,
@@ -17,17 +17,20 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-class EditPost extends PureComponent {
+export default class EditPost extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             editPost: PropTypes.func.isRequired
         }),
         closeButton: PropTypes.object,
         editPostRequest: PropTypes.object.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     leftButton = {
@@ -39,11 +42,11 @@ class EditPost extends PureComponent {
         showAsAction: 'always'
     };
 
-    constructor(props) {
+    constructor(props, context) {
         super(props);
 
         this.state = {message: props.post.message};
-        this.rightButton.title = props.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
+        this.rightButton.title = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
@@ -104,20 +107,6 @@ class EditPost extends PureComponent {
 
     focus = () => {
         this.messageInput.refs.wrappedInstance.focus();
-    };
-
-    handleSubmit = () => {
-        // Workaround for android as the multiline is not working
-        if (Platform.OS === 'android') {
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
-            this.timeout = setTimeout(() => {
-                let {message: msg} = this.state;
-                msg += '\n';
-                this.setState({message: msg});
-            }, 100);
-        }
     };
 
     messageRef = (ref) => {
@@ -198,7 +187,7 @@ class EditPost extends PureComponent {
                             placeholder={{id: 'edit_post.editPost', defaultMessage: 'Edit the post...'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'
-                            onSubmitEditing={this.handleSubmit}
+                            disableFullscreenUI={true}
                         />
                     </View>
                 </View>
@@ -239,5 +228,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
-
-export default injectIntl(EditPost);

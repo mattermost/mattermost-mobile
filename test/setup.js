@@ -10,6 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import register from 'babel-core/register';
 import mockery from 'mockery';
+import MockAsyncStorage from 'mock-async-storage';
 
 mockery.enable({
     warnOnReplace: false,
@@ -21,6 +22,7 @@ mockery.registerMock('react-native', {
             return {width: 0, height: 0}
         }
     },
+    AsyncStorage: new MockAsyncStorage(),
     NativeModules: {},
     NetInfo: {
         isConnected: {
@@ -32,7 +34,9 @@ mockery.registerMock('react-native', {
 mockery.registerMock('react-native-device-info', {
     getDeviceLocale() {
         return 'en';
-    }
+    },
+    getBuildNumber: () => true,
+    getVersion: () => true
 });
 mockery.registerMock('react-native-sentry', {
     Sentry: {

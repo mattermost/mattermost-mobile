@@ -105,7 +105,7 @@ export default class Mattermost {
         registerScreens(this.store, Provider);
 
         setJSExceptionHandler(this.errorHandler, false);
-        setNativeExceptionHandler(this.nativeErrorHandler);
+        setNativeExceptionHandler(this.nativeErrorHandler, false);
     }
 
     errorHandler = (e, isFatal) => {

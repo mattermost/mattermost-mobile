@@ -3,8 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {Alert, BackHandler, Keyboard, Platform, TextInput, TouchableOpacity, View} from 'react-native';
+import {intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
@@ -21,7 +21,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 const MAX_FILE_COUNT = 5;
 const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;
 
-class PostTextbox extends PureComponent {
+export default class PostTextbox extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
@@ -42,7 +42,6 @@ class PostTextbox extends PureComponent {
         channelIsLoading: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         files: PropTypes.array,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -56,12 +55,15 @@ class PostTextbox extends PureComponent {
         value: ''
     };
 
+    static contextTypes = {
+        intl: intlShape
+    };
+
     constructor(props) {
         super(props);
 
         this.state = {
             contentHeight: INITIAL_HEIGHT,
-            inputWidth: null,
             keyboardType: 'default',
             value: props.value,
             showFileMaxWarning: false
@@ -131,7 +133,7 @@ class PostTextbox extends PureComponent {
     };
 
     checkMessageLength = (value) => {
-        const {intl} = this.props;
+        const {intl} = this.context;
         const valueLength = value.trim().length;
 
         if (valueLength > MAX_MESSAGE_LENGTH) {
@@ -173,9 +175,11 @@ class PostTextbox extends PureComponent {
     };
 
     handleContentSizeChange = (event) => {
-        let contentHeight = event.nativeEvent.layout.height;
+        let contentHeight = event.nativeEvent.contentSize.height;
         if (contentHeight < INITIAL_HEIGHT) {
             contentHeight = INITIAL_HEIGHT;
+        } else if (Platform.OS === 'ios') {
+            contentHeight += 5;
         }
 
         this.setState({
@@ -195,12 +199,6 @@ class PostTextbox extends PureComponent {
                 autoScroll: true
             });
         }
-    };
-
-    handleInputSizeChange = (event) => {
-        this.setState({
-            inputWidth: event.nativeEvent.layout.width
-        });
     };
 
     handlePostDraftSelectionChanged = (event) => {
@@ -231,7 +229,7 @@ class PostTextbox extends PureComponent {
 
         const hasFailedAttachments = files.some((f) => f.failed);
         if (hasFailedAttachments) {
-            const {intl} = this.props;
+            const {intl} = this.context;
 
             Alert.alert(
                 intl.formatMessage({
@@ -374,7 +372,8 @@ class PostTextbox extends PureComponent {
     };
 
     sendCommand = async (msg) => {
-        const {actions, channelId, intl, rootId} = this.props;
+        const {intl} = this.context;
+        const {actions, channelId, rootId} = this.props;
         const {error} = await actions.executeCommand(msg, channelId, rootId);
 
         if (error) {
@@ -386,7 +385,7 @@ class PostTextbox extends PureComponent {
                 error.message
             );
         }
-    }
+    };
 
     sendReaction = (emoji) => {
         const {actions, rootId} = this.props;
@@ -404,12 +403,12 @@ class PostTextbox extends PureComponent {
     };
 
     render() {
+        const {intl} = this.context;
         const {
             canUploadFiles,
             channelId,
             channelIsLoading,
             files,
-            intl,
             navigator,
             rootId,
             theme
@@ -448,12 +447,6 @@ class PostTextbox extends PureComponent {
 
         return (
             <View>
-                <Text
-                    style={[style.input, style.hidden, {width: this.state.inputWidth}]}
-                    onLayout={this.handleContentSizeChange}
-                >
-                    {textValue + ' '}
-                </Text>
                 <Typing/>
                 <FileUploadPreview
                     channelId={channelId}
@@ -483,7 +476,7 @@ class PostTextbox extends PureComponent {
                             blurOnSubmit={false}
                             underlineColorAndroid='transparent'
                             style={[style.input, {height: textInputHeight}]}
-                            onLayout={this.handleInputSizeChange}
+                            onContentSizeChange={this.handleContentSizeChange}
                             keyboardType={this.state.keyboardType}
                             onFocus={this.handleFocus}
                             onBlur={this.handleBlur}
@@ -554,5 +547,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
-
-export default injectIntl(PostTextbox, {withRef: true});

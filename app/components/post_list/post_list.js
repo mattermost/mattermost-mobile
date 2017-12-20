@@ -46,17 +46,13 @@ export default class PostList extends PureComponent {
         loadMore: () => true
     };
 
-    constructor(props) {
-        super(props);
+    newMessagesIndex = -1;
+    scrollToMessageTries = 0;
+    makeExtraData = makeExtraData();
 
-        this.newMessagesIndex = -1;
-
-        this.makeExtraData = makeExtraData();
-
-        this.state = {
-            managedConfig: {}
-        };
-    }
+    state = {
+        managedConfig: {}
+    };
 
     componentWillMount() {
         this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
@@ -76,6 +72,7 @@ export default class PostList extends PureComponent {
     componentDidUpdate(prevProps) {
         const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
         if ((prevProps.channelId !== this.props.channelId || initialPosts || this.props.isSearchResult) && this.refs.list) {
+            this.scrollToMessageTries = 0;
             this.scrollList();
         }
     }
@@ -86,7 +83,7 @@ export default class PostList extends PureComponent {
 
     scrollList = () => {
         InteractionManager.runAfterInteractions(() => {
-            if (this.props.postIds.length && this.newMessagesIndex !== -1 && this.newMessagesIndex <= this.props.postIds.length) {
+            if (this.props.postIds.length && this.newMessagesIndex !== -1) {
                 if (this.refs.list) {
                     this.refs.list.scrollToIndex({
                         index: this.newMessagesIndex,
@@ -95,12 +92,21 @@ export default class PostList extends PureComponent {
                         animated: true
                     });
                 }
-                this.newMessagesIndex = -1;
             } else if (this.refs.list) {
                 this.refs.list.scrollToOffset({y: 0, animated: false});
             }
         });
     };
+
+    scrollListFailed = ({index}) => {
+        if (this.scrollToMessageTries < 3) {
+            this.scrollToMessageTries++;
+            setTimeout(() => {
+                this.newMessagesIndex = index;
+                this.scrollList();
+            }, 300);
+        }
+    }
 
     setManagedConfig = async (config) => {
         let nextConfig = config;
@@ -244,6 +250,7 @@ export default class PostList extends PureComponent {
                 ListFooterComponent={this.renderFooter}
                 onEndReached={loadMore}
                 onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
+                onScrollToIndexFailed={this.scrollListFailed}
                 {...refreshControl}
                 renderItem={this.renderItem}
                 contentContainerStyle={styles.postListContent}

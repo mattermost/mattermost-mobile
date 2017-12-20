@@ -160,6 +160,7 @@ export default class Mfa extends PureComponent {
                             placeholder={{id: 'login_mfa.token', defaultMessage: 'MFA Token'}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
+                            disableFullscreenUI={true}
                         />
                         {proceed}
                     </View>

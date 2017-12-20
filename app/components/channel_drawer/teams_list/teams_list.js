@@ -15,11 +15,17 @@ import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
+import {ListTypes} from 'app/constants';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
 import TeamsListItem from './teams_list_item';
+
+const VIEWABILITY_CONFIG = {
+    ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
+    waitForInteraction: true
+};
 
 class TeamsList extends PureComponent {
     static propTypes = {
@@ -135,10 +141,7 @@ class TeamsList extends PureComponent {
                     data={teamIds}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
-                    viewabilityConfig={{
-                        viewAreaCoveragePercentThreshold: 3,
-                        waitForInteraction: false
-                    }}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             </View>
         );

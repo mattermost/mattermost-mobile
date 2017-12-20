@@ -63,6 +63,7 @@ export default class EmojiPicker extends PureComponent {
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
         this.isX = DeviceInfo.getModel() === 'iPhone X';
+        this.scrollToSectionTries = 0;
         this.state = {
             emojis,
             emojiSectionIndexByOffset,
@@ -264,6 +265,15 @@ export default class EmojiPicker extends PureComponent {
         });
     };
 
+    handleScrollToSectionFailed = ({index}) => {
+        if (this.scrollToSectionTries < 1) {
+            setTimeout(() => {
+                this.scrollToSectionTries++;
+                this.scrollToSection(index);
+            }, 200);
+        }
+    }
+
     renderSectionHeader = ({section}) => {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
@@ -282,12 +292,17 @@ export default class EmojiPicker extends PureComponent {
         );
     };
 
+    handleSectionIconPress = (index) => {
+        this.scrollToSectionTries = 0;
+        this.scrollToSection(index);
+    }
+
     renderSectionIcons = () => {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
 
         return this.state.emojis.map((section, index) => {
-            const onPress = () => this.scrollToSection(index);
+            const onPress = () => this.handleSectionIconPress(index);
 
             return (
                 <TouchableOpacity
@@ -342,6 +357,7 @@ export default class EmojiPicker extends PureComponent {
                     getItemLayout={this.sectionListGetItemLayout}
                     removeClippedSubviews={true}
                     onScroll={this.onScroll}
+                    onScrollToIndexFailed={this.handleScrollToSectionFailed}
                     onMomentumScrollEnd={this.onMomentumScrollEnd}
                     pageSize={30}
                 />
@@ -416,8 +432,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             left: 0,
             right: 0,
             height: 35,
-            width: '100%',
-            backgroundColor: 'white'
+            width: '100%'
         },
         columnStyle: {
             alignSelf: 'stretch',

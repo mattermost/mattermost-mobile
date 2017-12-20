@@ -2,11 +2,13 @@
 // See License.txt for license information.
 
 import DeviceTypes from './device';
+import ListTypes from './list';
 import NavigationTypes from './navigation';
 import ViewTypes from './view';
 
 export {
     DeviceTypes,
+    ListTypes,
     NavigationTypes,
     ViewTypes
 };

@@ -18,8 +18,14 @@ import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
 import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
+import {ListTypes} from 'app/constants';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
+
+const VIEWABILITY_CONFIG = {
+    ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
+    waitForInteraction: true
+};
 
 export default class List extends PureComponent {
     static propTypes = {
@@ -340,10 +346,7 @@ export default class List extends PureComponent {
                     keyboardDismissMode='on-drag'
                     maxToRenderPerBatch={10}
                     stickySectionHeadersEnabled={false}
-                    viewabilityConfig={{
-                        viewAreaCoveragePercentThreshold: 3,
-                        waitForInteraction: true
-                    }}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
                 />
                 <UnreadIndicator
                     show={showIndicator}

@@ -528,6 +528,7 @@ export default class ImagePreview extends PureComponent {
             <SafeAreaView
                 backgroundColor='#000'
                 navBarBackgroundColor='#000'
+                excludeHeader={true}
             >
                 <View
                     style={[style.wrapper]}
@@ -622,7 +623,8 @@ const style = StyleSheet.create({
     headerControls: {
         alignItems: 'center',
         justifyContent: 'space-around',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        marginTop: 18
     },
     headerIcon: {
         height: 44,
@@ -640,7 +642,7 @@ const style = StyleSheet.create({
     footerContainer: {
         position: 'absolute',
         bottom: 0,
-        height: 40,
+        height: 64,
         zIndex: 2
     },
     footer: {
@@ -648,13 +650,14 @@ const style = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 40,
+        height: 64,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
         paddingBottom: 5
     },
     filename: {
         color: 'white',
-        fontSize: 14
+        fontSize: 14,
+        marginBottom: 10
     }
 });
