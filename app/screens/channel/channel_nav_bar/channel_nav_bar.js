@@ -11,6 +11,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
+import SettingDrawerButton from './settings_drawer_button';
 
 export default class ChannelNavBar extends PureComponent {
     static propTypes = {
@@ -49,15 +50,16 @@ export default class ChannelNavBar extends PureComponent {
         return (
             <View style={[style.header, padding, {height}]}>
                 <ChannelDrawerButton openDrawer={openChannelDrawer}/>
-                <ChannelTitle onPress={onPress}/>
+                <ChannelTitle
+                    onPress={onPress}
+                    height={height}
+                />
+                <View style={{flex: 1}}/>
                 <ChannelSearchButton
                     navigator={navigator}
                     theme={theme}
                 />
-                <ChannelDrawerButton
-                    openDrawer={openSettingsDrawer}
-                    type='right'
-                />
+                <SettingDrawerButton openDrawer={openSettingsDrawer}/>
             </View>
         );
     }

@@ -7,13 +7,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const SEARCH = 'search';
 
@@ -50,33 +50,45 @@ export default class ChannelSearchButton extends PureComponent {
             theme
         } = this.props;
 
+        const style = getStyle(theme);
+
         return (
-            <TouchableOpacity
-                onPress={this.handlePress}
-                style={style.container}
-            >
-                <View style={style.wrapper}>
-                    <AwesomeIcon
-                        name='search'
-                        size={18}
-                        color={theme.sidebarHeaderTextColor}
-                    />
-                </View>
-            </TouchableOpacity>
+            <View style={style.container}>
+                <TouchableOpacity
+                    onPress={this.handlePress}
+                    style={style.flex}
+                >
+                    <View style={style.wrapper}>
+                        <AwesomeIcon
+                            name='search'
+                            size={18}
+                            style={style.icon}
+                        />
+                    </View>
+                </TouchableOpacity>
+            </View>
         );
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        width: 40
-    },
-    wrapper: {
-        alignItems: 'center',
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 10,
-        zIndex: 30
-    }
+const getStyle = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            width: 40,
+            zIndex: 45
+        },
+        flex: {
+            flex: 1
+        },
+        wrapper: {
+            alignItems: 'flex-end',
+            flex: 1,
+            flexDirection: 'column',
+            justifyContent: 'center'
+        },
+        icon: {
+            backgroundColor: theme.sidebarHeaderBg,
+            color: theme.sidebarHeaderTextColor
+        }
+    };
 });

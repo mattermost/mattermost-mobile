@@ -12,7 +12,7 @@ import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 function mapStateToProps(state) {
     return {
-        currentUser: getCurrentUser(state) || {},
+        currentUser: getCurrentUser(state),
         theme: getTheme(state)
     };
 }

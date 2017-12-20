@@ -40,6 +40,10 @@ export default class SettingsDrawer extends PureComponent {
         theme: PropTypes.object.isRequired
     };
 
+    static defaultProps = {
+        currentUser: {}
+    };
+
     static contextTypes = {
         intl: intlShape
     };

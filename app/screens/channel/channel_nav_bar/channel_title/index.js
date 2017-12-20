@@ -4,8 +4,9 @@
 import {connect} from 'react-redux';
 
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import {getDimensions} from 'app/selectors/device';
 
 import ChannelTitle from './channel_title';
 
@@ -13,6 +14,7 @@ function mapStateToProps(state) {
     const currentChannel = getCurrentChannel(state);
 
     return {
+        ...getDimensions(state),
         currentChannelName: currentChannel ? currentChannel.display_name : '',
         displayName: state.views.channel.displayName,
         theme: getTheme(state)
