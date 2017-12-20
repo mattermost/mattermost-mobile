@@ -2,9 +2,11 @@
 // See License.txt for license information.
 
 import {connect} from 'react-redux';
+import {createSelector} from 'reselect';
+
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUser, makeGetProfilesInChannel} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser, makeGetProfilesInChannel} from 'mattermost-redux/selectors/entities/users';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -14,31 +16,62 @@ function makeMapStateToProps() {
     const getChannel = makeGetChannel();
     const getProfilesInChannel = makeGetProfilesInChannel();
 
+    const getOtherUserIdForDm = createSelector(
+        (state, channel) => channel,
+        getCurrentUserId,
+        (channel, currentUserId) => {
+            if (!channel) {
+                return '';
+            }
+
+            return channel.name.split('__').find((m) => m !== currentUserId);
+        }
+    );
+
+    const getChannelMembers = createSelector(
+        getCurrentUserId,
+        (state, channel) => getProfilesInChannel(state, channel.id),
+        (currentUserId, profilesInChannel) => {
+            const currentChannelMembers = profilesInChannel || [];
+            return currentChannelMembers.filter((m) => m.id !== currentUserId);
+        }
+    );
+
+    const getChannelMembersForDm = createSelector(
+        (state, channel) => getUser(state, getOtherUserIdForDm(state, channel)),
+        (otherUser) => {
+            if (!otherUser) {
+                return [];
+            }
+
+            return [otherUser];
+        }
+    );
+
     return function mapStateToProps(state, ownProps) {
         const currentChannel = getChannel(state, {id: ownProps.channelId}) || {};
-        const currentUser = getCurrentUser(state) || {};
         const {status: getPostsRequestStatus} = state.requests.posts.getPosts;
 
-        let currentChannelMembers = [];
-        if (currentChannel.type === General.DM_CHANNEL) {
-            const otherChannelMember = currentChannel.name.split('__').find((m) => m !== currentUser.id);
-            const otherProfile = state.entities.users.profiles[otherChannelMember];
-            if (otherProfile) {
-                currentChannelMembers.push(otherProfile);
-            }
-        } else {
-            currentChannelMembers = getProfilesInChannel(state, ownProps.channelId) || [];
-            currentChannelMembers = currentChannelMembers.filter((m) => m.id !== currentUser.id);
-        }
+        let currentChannelMembers;
+        let creator;
+        let postsInChannel;
 
-        const creator = currentChannel.creator_id === currentUser.id ? currentUser : state.entities.users.profiles[currentChannel.creator_id];
-        const postsInChannel = state.entities.posts.postsInChannel[ownProps.channelId] || [];
+        if (currentChannel) {
+            if (currentChannel.type === General.DM_CHANNEL) {
+                currentChannelMembers = getChannelMembersForDm(state, currentChannel);
+            } else {
+                currentChannelMembers = getChannelMembers(state, currentChannel);
+            }
+
+            creator = getUser(state, currentChannel.creator_id);
+            postsInChannel = state.entities.posts.postsInChannel[currentChannel.Id];
+        }
 
         return {
             creator,
             currentChannel,
             currentChannelMembers,
-            isLoadingPosts: !postsInChannel.length && getPostsRequestStatus === RequestStatus.STARTED,
+            isLoadingPosts: (!postsInChannel || postsInChannel.length === 0) && getPostsRequestStatus === RequestStatus.STARTED,
             theme: getTheme(state)
         };
     };
