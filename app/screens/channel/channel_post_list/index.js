@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {getPostIdsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentChannelId, getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -15,24 +15,18 @@ import {recordLoadTime} from 'app/actions/views/root';
 
 import ChannelPostList from './channel_post_list';
 
-function makeMapStateToProps() {
-    const getChannel = makeGetChannel();
+function mapStateToProps(state) {
+    const channelId = getCurrentChannelId(state);
+    const channelRefreshingFailed = state.views.channel.retryFailed;
 
-    return function mapStateToProps(state) {
-        const channelId = getCurrentChannelId(state);
-        const channelRefreshingFailed = state.views.channel.retryFailed;
-        const channel = getChannel(state, {id: channelId}) || {};
-
-        return {
-            channelId,
-            channelRefreshingFailed,
-            currentUserId: getCurrentUserId(state),
-            postIds: getPostIdsInCurrentChannel(state),
-            postVisibility: state.views.channel.postVisibility[channelId],
-            lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
-            totalMessageCount: channel.total_msg_count,
-            theme: getTheme(state)
-        };
+    return {
+        channelId,
+        channelRefreshingFailed,
+        currentUserId: getCurrentUserId(state),
+        postIds: getPostIdsInCurrentChannel(state),
+        postVisibility: state.views.channel.postVisibility[channelId],
+        lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
+        theme: getTheme(state)
     };
 }
 
@@ -49,4 +43,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(ChannelPostList);
+export default connect(mapStateToProps, mapDispatchToProps)(ChannelPostList);

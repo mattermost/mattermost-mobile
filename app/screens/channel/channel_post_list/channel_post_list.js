@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
 import {
     Platform,
     StyleSheet,
@@ -15,7 +14,7 @@ import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import tracker from 'app/utils/time_tracker';
 
-class ChannelPostList extends PureComponent {
+export default class ChannelPostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
@@ -28,12 +27,10 @@ class ChannelPostList extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
         currentUserId: PropTypes.string,
-        intl: intlShape.isRequired,
         lastViewedAt: PropTypes.number,
         navigator: PropTypes.object,
         postIds: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
-        totalMessageCount: PropTypes.number,
         theme: PropTypes.object.isRequired
     };
 
@@ -175,5 +172,3 @@ const style = StyleSheet.create({
         flex: 1
     }
 });
-
-export default injectIntl(ChannelPostList);
