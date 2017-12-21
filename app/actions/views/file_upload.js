@@ -19,7 +19,7 @@ export function handleUploadFiles(files, rootId) {
         const re = /heic/i;
 
         files.forEach((file) => {
-            let name = file.fileName;
+            let name = file.fileName || file.path;
             let mimeType = lookupMimeType(name);
             let extension = name.split('.').pop().replace('.', '');
             const uri = file.uri;
