@@ -212,7 +212,7 @@ class ChannelMembers extends PureComponent {
         if (requestStatus !== RequestStatus.STARTED && next && !searching) {
             page = page + 1;
             actions.getProfilesInChannel(currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then(
-                (data) => {
+                ({data}) => {
                     if (data && data.length) {
                         this.setState({
                             page

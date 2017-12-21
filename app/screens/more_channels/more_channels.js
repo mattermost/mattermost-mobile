@@ -181,7 +181,7 @@ class MoreChannels extends PureComponent {
                 this.props.currentTeamId,
                 page,
                 General.CHANNELS_CHUNK_SIZE
-            ).then((data) => {
+            ).then(({data}) => {
                 if (data && data.length) {
                     this.setState({
                         page
