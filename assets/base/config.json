@@ -17,6 +17,7 @@
     "HideGitLabLoginExperimental": false,
     "HideLDAPLoginExperimental": false,
     "HideSAMLLoginExperimental": false,
+    "HideSetStatusExperimental": true,
 
     "SentryEnabled": false,
     "SentryDsnIos": "",

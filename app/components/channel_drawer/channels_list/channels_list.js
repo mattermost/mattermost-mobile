@@ -16,9 +16,11 @@ import SearchBar from 'app/components/search_bar';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import Profile from './profile';
 import FilteredList from './filtered_list';
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
+import LocalConfig from 'assets/config';
 
 class ChannelsList extends React.PureComponent {
     static propTypes = {
@@ -182,6 +184,11 @@ class ChannelsList extends React.PureComponent {
                                 onShowTeams={onShowTeams}
                             />
                         </View>
+                        {LocalConfig.HideSetStatusExperimental && (
+                            <Profile
+                                navigator={navigator}
+                            />
+                        )}
                         {title}
                         {settings}
                     </View>
