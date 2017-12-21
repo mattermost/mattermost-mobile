@@ -4,10 +4,10 @@
 import {userTyping as wsUserTyping} from 'mattermost-redux/actions/websocket';
 
 export function userTyping(channelId, rootId) {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const {websocket} = getState().device;
         if (websocket.connected) {
-            wsUserTyping(channelId, rootId)(dispatch, getState());
+            wsUserTyping(channelId, rootId)(dispatch, getState);
         }
     };
 }
