@@ -165,6 +165,7 @@ export default class Mattermost {
             popInitialNotification: true,
             requestPermissions: true
         });
+        this.isConfigured = true;
     };
 
     handleAppStateChange = async (appState) => {
@@ -424,7 +425,6 @@ export default class Mattermost {
             } else if (isNotActive) {
                 // for IOS replying from push notification starts the app in the background
                 this.shouldRelaunchonActive = true;
-                this.configurePushNotifications();
                 this.startFakeApp();
             } else {
                 this.launchApp();
@@ -433,6 +433,7 @@ export default class Mattermost {
     };
 
     onRegisterDevice = (data) => {
+        this.isConfigured = true;
         const {dispatch, getState} = this.store;
         let prefix;
         if (Platform.OS === 'ios') {
@@ -445,7 +446,6 @@ export default class Mattermost {
         }
 
         setDeviceToken(`${prefix}:${data.token}`)(dispatch, getState);
-        this.isConfigured = true;
     };
 
     onPushNotification = (deviceNotification) => {
