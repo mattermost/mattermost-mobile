@@ -103,18 +103,14 @@ class PostTextbox extends PureComponent {
 
         if (files.length) {
             const filesLoading = [];
-            const filesFailed = [];
             files.forEach((file) => {
                 if (file.loading) {
                     filesLoading.push(file);
                 }
-                if (!file.failed) {
-                    filesFailed.push(file);
-                }
             });
+
             const loadingComplete = filesLoading.length === 0;
-            const noneFailed = filesFailed.length > 0;
-            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && noneFailed && loadingComplete;
+            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
         }
 
         return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
@@ -320,45 +316,61 @@ class PostTextbox extends PureComponent {
     };
 
     sendMessage = () => {
-        const {actions, currentUserId, channelId, files, rootId} = this.props;
+        const {actions, currentUserId, channelId, files, rootId, intl} = this.props;
         const {value} = this.state;
 
-        if (value.indexOf('/') === 0) {
-            this.sendCommand(value);
+        if (files.length === 0 && !value) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.post_textbox.empty.title',
+                    defaultMessage: 'Empty Message'
+                }),
+                intl.formatMessage({
+                    id: 'mobile.post_textbox.empty.message',
+                    defaultMessage: 'You are trying to send an empty message.\nPlease make sure you have a message or at least one attached file.'
+                }),
+                [{
+                    text: intl.formatMessage({id: 'mobile.post_textbox.empty.ok', defaultMessage: 'OK'})
+                }],
+            );
         } else {
-            const postFiles = files.filter((f) => !f.failed);
-            const post = {
-                user_id: currentUserId,
-                channel_id: channelId,
-                root_id: rootId,
-                parent_id: rootId,
-                message: value
+            if (value.indexOf('/') === 0) {
+                this.sendCommand(value);
+            } else {
+                const postFiles = files.filter((f) => !f.failed);
+                const post = {
+                    user_id: currentUserId,
+                    channel_id: channelId,
+                    root_id: rootId,
+                    parent_id: rootId,
+                    message: value
+                };
+
+                actions.createPost(post, postFiles);
+
+                if (postFiles.length) {
+                    actions.handleClearFiles(channelId, rootId);
+                }
+            }
+
+            this.handleTextChange('');
+            this.changeDraft('');
+
+            // Shrink the input textbox since the layout events lag slightly
+            const nextState = {
+                contentHeight: INITIAL_HEIGHT
             };
 
-            actions.createPost(post, postFiles);
-
-            if (postFiles.length) {
-                actions.handleClearFiles(channelId, rootId);
+            // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+            // are typed successively without blurring the input
+            let callback;
+            if (Platform.OS === 'android') {
+                nextState.keyboardType = 'email-address';
+                callback = () => this.setState({keyboardType: 'default'});
             }
+
+            this.setState(nextState, callback);
         }
-
-        this.handleTextChange('');
-        this.changeDraft('');
-
-        // Shrink the input textbox since the layout events lag slightly
-        const nextState = {
-            contentHeight: INITIAL_HEIGHT
-        };
-
-        // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-        // are typed successively without blurring the input
-        let callback;
-        if (Platform.OS === 'android') {
-            nextState.keyboardType = 'email-address';
-            callback = () => this.setState({keyboardType: 'default'});
-        }
-
-        this.setState(nextState, callback);
     };
 
     sendCommand = async (msg) => {
