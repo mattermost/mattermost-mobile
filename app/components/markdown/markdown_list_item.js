@@ -17,6 +17,7 @@ export default class MarkdownListItem extends PureComponent {
         ordered: PropTypes.bool.isRequired,
         continue: PropTypes.bool,
         index: PropTypes.number.isRequired,
+        bulletWidth: PropTypes.number,
         bulletStyle: CustomPropTypes.Style,
         level: PropTypes.number
     };
@@ -26,7 +27,7 @@ export default class MarkdownListItem extends PureComponent {
         if (this.props.continue) {
             bullet = '';
         } else if (this.props.ordered) {
-            bullet = this.props.index + '. ';
+            bullet = this.props.index + '.';
         } else if (this.props.level % 2 === 0) {
             bullet = '◦';
         } else {
@@ -35,7 +36,7 @@ export default class MarkdownListItem extends PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={style.bullet}>
+                <View style={[{width: this.props.bulletWidth}, style.bullet]}>
                     <Text style={this.props.bulletStyle}>
                         {bullet}
                     </Text>
@@ -50,7 +51,8 @@ export default class MarkdownListItem extends PureComponent {
 
 const style = StyleSheet.create({
     bullet: {
-        width: 15
+        alignItems: 'flex-end',
+        marginRight: 5
     },
     container: {
         flexDirection: 'row',

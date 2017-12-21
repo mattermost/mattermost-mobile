@@ -273,10 +273,11 @@ export default class Markdown extends PureComponent {
         );
     }
 
-    renderList = ({children, tight, type}) => {
+    renderList = ({children, start, tight, type}) => {
         return (
             <MarkdownList
                 ordered={type !== 'bullet'}
+                start={start}
                 tight={tight}
             >
                 {children}
