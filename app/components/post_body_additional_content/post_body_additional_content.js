@@ -32,6 +32,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         config: PropTypes.object,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        isReplyPost: PropTypes.bool,
         link: PropTypes.string,
         message: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
@@ -106,7 +107,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             return null;
         }
 
-        const {link, openGraphData, showLinkPreviews, theme} = this.props;
+        const {isReplyPost, link, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getSlackAttachment();
         if (attachments) {
             return attachments;
@@ -115,6 +116,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (link && showLinkPreviews) {
             return (
                 <PostAttachmentOpenGraph
+                    isReplyPost={isReplyPost}
                     link={link}
                     openGraphData={openGraphData}
                     theme={theme}

@@ -26,6 +26,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         actions: PropTypes.shape({
             getOpenGraphMetadata: PropTypes.func.isRequired
         }).isRequired,
+        isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
         openGraphData: PropTypes.object,
         theme: PropTypes.object.isRequired
@@ -67,7 +68,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     calculateLargeImageDimensions = (width, height) => {
         const {width: deviceWidth} = Dimensions.get('window');
         let maxHeight = MAX_IMAGE_HEIGHT;
-        let maxWidth = deviceWidth - 88;
+        let maxWidth = deviceWidth - 88 - (this.props.isReplyPost ? 15 : 0);
 
         if (height <= MAX_IMAGE_HEIGHT) {
             maxHeight = height;
@@ -160,7 +161,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     render() {
-        const {openGraphData, theme} = this.props;
+        const {isReplyPost, openGraphData, theme} = this.props;
         const {hasLargeImage, height, imageLoaded, imageUrl, offset, width} = this.state;
 
         if (!openGraphData || !openGraphData.description) {
@@ -187,7 +188,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         onPress={this.goToLink}
                     >
                         <Text
-                            style={style.siteSubtitle}
+                            style={[style.siteSubtitle, {marginRight: isReplyPost ? 10 : 0}]}
                             numberOfLines={3}
                             ellipsizeMode='tail'
                         >
