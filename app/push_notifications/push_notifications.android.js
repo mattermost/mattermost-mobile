@@ -11,6 +11,11 @@ class PushNotification {
         this.onNotification = null;
         this.onReply = null;
         this.deviceNotification = null;
+        this.deviceToken = null;
+
+        NotificationsAndroid.setRegistrationTokenUpdateListener((deviceToken) => {
+            this.deviceToken = deviceToken;
+        });
 
         NotificationsAndroid.setNotificationReceivedListener((notification) => {
             if (notification) {
@@ -61,12 +66,9 @@ class PushNotification {
         this.onNotification = options.onNotification;
         this.onReply = options.onReply;
 
-        NotificationsAndroid.refreshToken();
-        NotificationsAndroid.setRegistrationTokenUpdateListener((deviceToken) => {
-            if (this.onRegister) {
-                this.onRegister({token: deviceToken});
-            }
-        });
+        if (this.onRegister && this.deviceToken) {
+            this.onRegister({token: this.deviceToken});
+        }
 
         if (options.popInitialNotification) {
             PendingNotifications.getInitialNotification().
