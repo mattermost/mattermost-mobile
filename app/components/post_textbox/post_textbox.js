@@ -314,7 +314,8 @@ export default class PostTextbox extends PureComponent {
     };
 
     sendMessage = () => {
-        const {actions, currentUserId, channelId, files, rootId, intl} = this.props;
+        const {actions, currentUserId, channelId, files, rootId} = this.props;
+        const {intl} = this.context;
         const {value} = this.state;
 
         if (files.length === 0 && !value) {
