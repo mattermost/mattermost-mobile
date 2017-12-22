@@ -23,6 +23,7 @@ export default class KeyboardLayout extends PureComponent {
     constructor(props) {
         super(props);
         this.subscriptions = [];
+        this.count = 0;
         this.state = {
             bottom: new Animated.Value(0)
         };
@@ -31,7 +32,8 @@ export default class KeyboardLayout extends PureComponent {
     componentWillMount() {
         if (Platform.OS === 'ios') {
             this.subscriptions = [
-                Keyboard.addListener('keyboardWillChangeFrame', this.onKeyboardChange)
+                Keyboard.addListener('keyboardWillChangeFrame', this.onKeyboardChange),
+                Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide)
             ];
         }
     }
@@ -40,20 +42,22 @@ export default class KeyboardLayout extends PureComponent {
         this.subscriptions.forEach((sub) => sub.remove());
     }
 
+    onKeyboardWillHide = (e) => {
+        const {duration} = e;
+        Animated.timing(this.state.bottom, {
+            toValue: 0,
+            duration
+        }).start();
+    };
+
     onKeyboardChange = (e) => {
         if (!e) {
             this.setState({bottom: new Animated.Value(0)});
             return;
         }
 
-        const {endCoordinates, duration, startCoordinates} = e;
-
-        let height = 0;
-        if (startCoordinates.height < endCoordinates.height || endCoordinates.screenY < startCoordinates.screenY) {
-            height = endCoordinates.height;
-        }
-
-        this.setState({bottom: new Animated.Value(height)});
+        const {endCoordinates, duration} = e;
+        const {height} = endCoordinates;
         Animated.timing(this.state.bottom, {
             toValue: height,
             duration
