@@ -338,6 +338,7 @@ class SelectServer extends PureComponent {
                             placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
+                            disableFullscreenUI={true}
                         />
                         <Button
                             onPress={this.onClick}

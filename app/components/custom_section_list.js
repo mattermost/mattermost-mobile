@@ -88,13 +88,11 @@ export default class CustomSectionList extends React.PureComponent {
         initialNumToRender: PropTypes.number
     };
 
-    static defaultKeyExtractor = (item) => {
-        return item.id;
-    };
-
     static defaultProps = {
         showNoResults: true,
-        keyExtractor: CustomSectionList.defaultKeyExtractor,
+        keyExtractor: (item) => {
+            return item.id;
+        },
         onListEndReached: () => true,
         onListEndReachedThreshold: 50,
         loadingText: null,

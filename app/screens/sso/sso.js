@@ -33,6 +33,7 @@ const oneLoginFormScalingJS = `
             document.getElementById('body-main').setAttribute('style', 'height: auto; padding: 10px 0;');
             submitButton.removeEventListener('click', resetPadding);
         }
+        resetPadding();
         submitButton.addEventListener('click', resetPadding);
     })();
 `;

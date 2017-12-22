@@ -82,3 +82,6 @@ ios/sentry.properties
 # Pods
 .podinstall
 ios/Pods/
+
+#editor-settings
+.vscode
