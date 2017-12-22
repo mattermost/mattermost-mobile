@@ -14,6 +14,7 @@ import ChannelIntro from 'app/components/channel_intro';
 import Post from 'app/components/post';
 import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
+import {makeExtraData} from 'app/utils/list_view';
 
 import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
@@ -49,6 +50,9 @@ export default class PostList extends PureComponent {
         super(props);
 
         this.newMessagesIndex = -1;
+
+        this.makeExtraData = makeExtraData();
+
         this.state = {
             managedConfig: {}
         };
@@ -233,7 +237,7 @@ export default class PostList extends PureComponent {
             <FlatList
                 ref='list'
                 data={postIds}
-                extraData={highlightPostId}
+                extraData={this.makeExtraData(channelId, highlightPostId)}
                 initialNumToRender={15}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
