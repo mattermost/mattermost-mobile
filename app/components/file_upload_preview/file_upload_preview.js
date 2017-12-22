@@ -45,7 +45,7 @@ export default class FileUploadPreview extends PureComponent {
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
             let filePreviewComponent;
-            if (file.loading | file.has_preview_image) {
+            if (file.loading | (file.has_preview_image || file.mime_type === 'image/gif')) {
                 filePreviewComponent = (
                     <FileAttachmentImage
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
