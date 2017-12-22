@@ -119,22 +119,24 @@ class NotificationSettings extends PureComponent {
         const {currentUser, intl, navigator, theme} = this.props;
 
         NotificationPreferences.getPreferences().then((notificationPreferences) => {
-            navigator.push({
-                backButtonTitle: '',
-                screen: 'NotificationSettingsMobile',
-                title: intl.formatMessage({id: 'mobile.notification_settings.mobile_title', defaultMessage: 'Mobile Notifications'}),
-                animated: true,
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
-                },
-                passProps: {
-                    currentUser,
-                    onBack: this.saveNotificationProps,
-                    notificationPreferences
-                }
+            requestAnimationFrame(() => {
+                navigator.push({
+                    backButtonTitle: '',
+                    screen: 'NotificationSettingsMobile',
+                    title: intl.formatMessage({id: 'mobile.notification_settings.mobile_title', defaultMessage: 'Mobile Notifications'}),
+                    animated: true,
+                    navigatorStyle: {
+                        navBarTextColor: theme.sidebarHeaderTextColor,
+                        navBarBackgroundColor: theme.sidebarHeaderBg,
+                        navBarButtonColor: theme.sidebarHeaderTextColor,
+                        screenBackgroundColor: theme.centerChannelBg
+                    },
+                    passProps: {
+                        currentUser,
+                        onBack: this.saveNotificationProps,
+                        notificationPreferences
+                    }
+                });
             });
         }).catch((e) => {
             Alert.alert('There was a problem getting the device preferences', e.message);
