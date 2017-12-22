@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {logout} from 'mattermost-redux/actions/users';
+import {logout, setStatus} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import SettingsDrawer from './settings_drawer';
@@ -20,7 +20,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            logout
+            logout,
+            setStatus
         }, dispatch)
     };
 }

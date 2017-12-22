@@ -14,11 +14,13 @@ import {
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
 import Drawer from 'app/components/drawer';
 import UserStatus from 'app/components/user_status';
+import {NavigationTypes} from 'app/constants';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -31,7 +33,8 @@ const DRAWER_INITIAL_OFFSET = 80;
 export default class SettingsDrawer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            logout: PropTypes.func.isRequired
+            logout: PropTypes.func.isRequired,
+            setStatus: PropTypes.func.isRequired
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -132,6 +135,50 @@ export default class SettingsDrawer extends PureComponent {
         }
     };
 
+    handleSetStatus = wrapWithPreventDoubleTap(() => {
+        const items = [{
+            action: () => this.setStatus(General.ONLINE),
+            text: {
+                id: 'mobile.set_status.online',
+                defaultMessage: 'Online'
+            }
+        }, {
+            action: () => this.setStatus(General.AWAY),
+            text: {
+                id: 'mobile.set_status.away',
+                defaultMessage: 'Away'
+            }
+        }, {
+            action: () => this.setStatus(General.DND),
+            text: {
+                id: 'mobile.set_status.dnd',
+                defaultMessage: 'Do Not Disturb'
+            }
+        }, {
+            action: () => this.setStatus(General.OFFLINE),
+            text: {
+                id: 'mobile.set_status.offline',
+                defaultMessage: 'Offline'
+            }
+        }];
+
+        this.props.navigator.showModal({
+            screen: 'OptionsModal',
+            title: '',
+            animationType: 'none',
+            passProps: {
+                items
+            },
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext'
+            }
+        });
+    });
+
     goToSettings = wrapWithPreventDoubleTap(() => {
         const {intl} = this.context;
         const {navigator, theme} = this.props;
@@ -204,6 +251,7 @@ export default class SettingsDrawer extends PureComponent {
                                 labelComponent={this.renderUserStatusLabel(currentUser.id)}
                                 leftComponent={this.renderUserStatusIcon(currentUser.id)}
                                 separator={true}
+                                onPress={this.handleSetStatus}
                                 theme={theme}
                             />
                             <DrawerItem
@@ -232,6 +280,15 @@ export default class SettingsDrawer extends PureComponent {
                 </View>
             </SafeAreaView>
         );
+    };
+
+    setStatus = (status) => {
+        const {currentUser: {id: currentUserId}} = this.props;
+        this.props.actions.setStatus({
+            user_id: currentUserId,
+            status
+        });
+        EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
     };
 
     render() {
