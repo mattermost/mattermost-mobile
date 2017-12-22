@@ -134,23 +134,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 this.setState({downloading: false, progress: 0});
 
                 if (error.message !== 'cancelled') {
-                    const {intl} = this.context;
-                    Alert.alert(
-                        intl.formatMessage({
-                            id: 'mobile.downloader.failed_title',
-                            defaultMessage: 'Download failed'
-                        }),
-                        intl.formatMessage({
-                            id: 'mobile.downloader.failed_description',
-                            defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
-                        }),
-                        [{
-                            text: intl.formatMessage({
-                                id: 'mobile.server_upgrade.button',
-                                defaultMessage: 'OK'
-                            })
-                        }]
-                    );
+                    this.showDownloadFailedAlert();
                 }
             }
         }
@@ -256,8 +240,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 text: intl.formatMessage({
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK'
-                }),
-                onPress: () => this.downloadDidCancel()
+                })
             }]
         );
     };

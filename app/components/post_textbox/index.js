@@ -5,9 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {createPost} from 'mattermost-redux/actions/posts';
-import {userTyping} from 'mattermost-redux/actions/websocket';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {executeCommand} from 'app/actions/views/command';
@@ -15,7 +15,7 @@ import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {handlePostDraftChanged, handlePostDraftSelectionChanged} from 'app/actions/views/channel';
 import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app/actions/views/thread';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {userTyping} from 'app/actions/views/typing';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
 
 import PostTextbox from './post_textbox';
