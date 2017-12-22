@@ -8,10 +8,12 @@ import {
     Platform,
     View
 } from 'react-native';
+
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ClientUpgradeListener from 'app/components/client_upgrade_listener';
 import ChannelDrawer from 'app/components/channel_drawer';
+import SettingsDrawer from 'app/components/settings_drawer';
 import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
@@ -103,6 +105,18 @@ class Channel extends PureComponent {
         this.postTextbox.getWrappedInstance().getWrappedInstance().blur();
     };
 
+    channelDrawerRef = (ref) => {
+        if (ref) {
+            this.channelDrawer = ref.getWrappedInstance();
+        }
+    };
+
+    settingsDrawerRef = (ref) => {
+        if (ref) {
+            this.settingsDrawer = ref.getWrappedInstance();
+        }
+    };
+
     goToChannelInfo = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         const options = {
@@ -164,6 +178,18 @@ class Channel extends PureComponent {
         });
     };
 
+    openChannelDrawer = () => {
+        if (this.channelDrawer) {
+            this.channelDrawer.openChannelDrawer();
+        }
+    };
+
+    openSettingsDrawer = () => {
+        if (this.settingsDrawer) {
+            this.settingsDrawer.openSettingsDrawer();
+        }
+    };
+
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
     };
@@ -197,30 +223,39 @@ class Channel extends PureComponent {
 
         return (
             <ChannelDrawer
+                ref={this.channelDrawerRef}
                 blurPostTextBox={this.blurPostTextBox}
                 intl={intl}
                 navigator={navigator}
             >
-                <SafeAreaView navigator={navigator}>
-                    <StatusBar/>
-                    <OfflineIndicator/>
-                    <ChannelNavBar
-                        navigator={navigator}
-                        onPress={this.goToChannelInfo}
-                    />
-                    <KeyboardLayout>
-                        <View style={style.postList}>
-                            <ChannelPostList navigator={navigator}/>
-                        </View>
-                        <ChannelLoader theme={theme}/>
-                        <PostTextbox
-                            ref={this.attachPostTextbox}
+                <SettingsDrawer
+                    ref={this.settingsDrawerRef}
+                    blurPostTextBox={this.blurPostTextBox}
+                    navigator={navigator}
+                >
+                    <SafeAreaView navigator={navigator}>
+                        <StatusBar/>
+                        <OfflineIndicator/>
+                        <ChannelNavBar
                             navigator={navigator}
+                            openChannelDrawer={this.openChannelDrawer}
+                            openSettingsDrawer={this.openSettingsDrawer}
+                            onPress={this.goToChannelInfo}
                         />
-                        <ChannelLoader theme={theme}/>
-                    </KeyboardLayout>
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
-                </SafeAreaView>
+                        <KeyboardLayout>
+                            <View style={style.postList}>
+                                <ChannelPostList navigator={navigator}/>
+                            </View>
+                            <ChannelLoader theme={theme}/>
+                            <PostTextbox
+                                ref={this.attachPostTextbox}
+                                navigator={navigator}
+                            />
+                            <ChannelLoader theme={theme}/>
+                        </KeyboardLayout>
+                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
+                    </SafeAreaView>
+                </SettingsDrawer>
             </ChannelDrawer>
         );
     }

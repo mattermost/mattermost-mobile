@@ -5,15 +5,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    TouchableHighlight,
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FilteredList from './filtered_list';
@@ -57,30 +54,6 @@ class ChannelsList extends React.PureComponent {
         }
     };
 
-    openSettingsModal = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
-
-        navigator.showModal({
-            screen: 'Settings',
-            title: intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            },
-            navigatorButtons: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: this.closeButton
-                }]
-            }
-        });
-    });
-
     onSearch = (term) => {
         this.setState({term});
     };
@@ -107,7 +80,6 @@ class ChannelsList extends React.PureComponent {
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
 
-        let settings;
         let list;
         if (searching) {
             list = (
@@ -118,19 +90,6 @@ class ChannelsList extends React.PureComponent {
                 />
             );
         } else {
-            settings = (
-                <TouchableHighlight
-                    style={styles.settingsContainer}
-                    onPress={this.openSettingsModal}
-                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
-                >
-                    <AwesomeIcon
-                        name='cog'
-                        style={styles.settings}
-                    />
-                </TouchableHighlight>
-            );
-
             list = (
                 <List
                     navigator={navigator}
@@ -183,7 +142,6 @@ class ChannelsList extends React.PureComponent {
                             />
                         </View>
                         {title}
-                        {settings}
                     </View>
                 </View>
                 {list}
@@ -228,26 +186,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
             top: -1
         },
-        settingsContainer: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 10,
-            ...Platform.select({
-                android: {
-                    height: 46,
-                    marginRight: 6
-                },
-                ios: {
-                    height: 44,
-                    marginRight: 8
-                }
-            })
-        },
-        settings: {
-            color: theme.sidebarHeaderTextColor,
-            fontSize: 18,
-            fontWeight: '300'
-        },
         titleContainer: { // These aren't used by this component, but they are passed down to the list component
             alignItems: 'center',
             flex: 1,
@@ -266,6 +204,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             flex: 1,
+            paddingRight: 10,
             ...Platform.select({
                 android: {
                     marginBottom: 1

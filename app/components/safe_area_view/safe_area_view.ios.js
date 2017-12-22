@@ -15,10 +15,13 @@ export default class SafeAreaIos extends PureComponent {
         backgroundColor: PropTypes.string,
         children: PropTypes.node.isRequired,
         excludeHeader: PropTypes.bool,
+        footerColor: PropTypes.string,
+        footerComponent: PropTypes.node,
         forceTop: PropTypes.number,
         keyboardOffset: PropTypes.number.isRequired,
         navBarBackgroundColor: PropTypes.string,
         navigator: PropTypes.object,
+        headerComponent: PropTypes.node,
         theme: PropTypes.object.isRequired
     };
 
@@ -103,7 +106,7 @@ export default class SafeAreaIos extends PureComponent {
 
     renderTopBar = () => {
         const {safeAreaInsets, statusBarHeight} = this.state;
-        const {excludeHeader, forceTop, navBarBackgroundColor, theme} = this.props;
+        const {headerComponent, excludeHeader, forceTop, navBarBackgroundColor, theme} = this.props;
         const hideTopBar = excludeHeader || !statusBarHeight;
 
         if (hideTopBar) {
@@ -120,6 +123,20 @@ export default class SafeAreaIos extends PureComponent {
             top = forceTop;
         }
 
+        if (headerComponent) {
+            return (
+                <View
+                    style={{
+                        backgroundColor: topColor,
+                        height: top,
+                        zIndex: 10
+                    }}
+                >
+                    {headerComponent}
+                </View>
+            );
+        }
+
         return (
             <View
                 style={{
@@ -132,12 +149,17 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, children, keyboardOffset, theme} = this.props;
+        const {backgroundColor, children, footerColor, footerComponent, keyboardOffset, theme} = this.props;
         const {keyboard, safeAreaInsets} = this.state;
 
         let bgColor = theme.centerChannelBg;
         if (backgroundColor) {
             bgColor = backgroundColor;
+        }
+
+        let bottomColor = theme.centerChannelBg;
+        if (footerColor) {
+            bottomColor = footerColor;
         }
 
         let offset = 0;
@@ -149,12 +171,14 @@ export default class SafeAreaIos extends PureComponent {
             <View
                 style={{
                     flex: 1,
-                    paddingBottom: keyboard ? offset : safeAreaInsets.bottom - 15,
                     backgroundColor: bgColor
                 }}
             >
                 {this.renderTopBar()}
                 {children}
+                <View style={{height: keyboard ? offset : safeAreaInsets.bottom - 15, backgroundColor: bottomColor}}>
+                    {footerComponent}
+                </View>
             </View>
         );
     }

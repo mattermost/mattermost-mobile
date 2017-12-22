@@ -11,11 +11,14 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
+import SettingDrawerButton from './settings_drawer_button';
 
 export default class ChannelNavBar extends PureComponent {
     static propTypes = {
         isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object.isRequired,
+        openChannelDrawer: PropTypes.func.isRequired,
+        openSettingsDrawer: PropTypes.func.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -27,7 +30,8 @@ export default class ChannelNavBar extends PureComponent {
     }
 
     render() {
-        const {isLandscape, navigator, theme, onPress} = this.props;
+        const {isLandscape, navigator, onPress, theme} = this.props;
+        const {openChannelDrawer, openSettingsDrawer} = this.props;
         const style = getStyleFromTheme(theme);
         const padding = {paddingHorizontal: 0};
 
@@ -45,12 +49,17 @@ export default class ChannelNavBar extends PureComponent {
 
         return (
             <View style={[style.header, padding, {height}]}>
-                <ChannelDrawerButton/>
-                <ChannelTitle onPress={onPress}/>
+                <ChannelDrawerButton openDrawer={openChannelDrawer}/>
+                <ChannelTitle
+                    onPress={onPress}
+                    height={height}
+                />
+                <View style={{flex: 1}}/>
                 <ChannelSearchButton
                     navigator={navigator}
                     theme={theme}
                 />
+                <SettingDrawerButton openDrawer={openSettingsDrawer}/>
             </View>
         );
     }

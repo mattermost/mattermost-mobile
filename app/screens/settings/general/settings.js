@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import {
-    InteractionManager,
     Linking,
     Platform,
     ScrollView,
@@ -25,7 +24,6 @@ class Settings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearErrors: PropTypes.func.isRequired,
-            logout: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired
         }).isRequired,
         config: PropTypes.object.isRequired,
@@ -166,11 +164,6 @@ class Settings extends PureComponent {
         });
     });
 
-    logout = wrapWithPreventDoubleTap(() => {
-        const {logout} = this.props.actions;
-        InteractionManager.runAfterInteractions(logout);
-    });
-
     onNavigatorEvent = (event) => {
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-settings') {
@@ -271,15 +264,15 @@ class Settings extends PureComponent {
                         theme={theme}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
-                        <SettingsItem
-                            defaultMessage='Check for Upgrade'
-                            i18nId='mobile.settings.modal.check_for_upgrade'
-                            iconName='update'
-                            iconType='material'
-                            onPress={this.goToClientUpgrade}
-                            showArrow={showArrow}
-                            theme={theme}
-                        />
+                    <SettingsItem
+                        defaultMessage='Check for Upgrade'
+                        i18nId='mobile.settings.modal.check_for_upgrade'
+                        iconName='update'
+                        iconType='material'
+                        onPress={this.goToClientUpgrade}
+                        showArrow={showArrow}
+                        theme={theme}
+                    />
                     }
                     <SettingsItem
                         defaultMessage='About Mattermost'
@@ -292,20 +285,6 @@ class Settings extends PureComponent {
                         theme={theme}
                     />
                     <View style={style.divider}/>
-                    <View style={style.footer}>
-                        <View style={style.divider}/>
-                        <SettingsItem
-                            centered={true}
-                            defaultMessage='Logout'
-                            i18nId='sidebar_right_menu.logout'
-                            isDestructor={true}
-                            onPress={this.logout}
-                            separator={false}
-                            showArrow={false}
-                            theme={theme}
-                        />
-                        <View style={style.divider}/>
-                    </View>
                 </ScrollView>
             </View>
         );
@@ -329,9 +308,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1
-        },
-        footer: {
-            marginTop: 35
         }
     };
 });

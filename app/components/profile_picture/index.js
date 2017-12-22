@@ -18,7 +18,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        theme: ownProps.theme || getTheme(state),
+        theme: getTheme(state),
         status,
         user
     };
