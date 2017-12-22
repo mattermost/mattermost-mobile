@@ -33,6 +33,7 @@ export default class Badge extends PureComponent {
         super(props);
 
         this.mounted = false;
+        this.layoutReady = false;
     }
 
     componentWillMount() {
@@ -47,6 +48,12 @@ export default class Badge extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.count !== this.props.count) {
+            this.layoutReady = false;
+        }
     }
 
     componentWillUnmount() {
@@ -66,24 +73,27 @@ export default class Badge extends PureComponent {
     };
 
     onLayout = (e) => {
-        const height = Math.max(e.nativeEvent.layout.height, this.props.minHeight);
-        const borderRadius = height / 2;
-        let width;
+        if (!this.layoutReady) {
+            const height = Math.max(e.nativeEvent.layout.height, this.props.minHeight);
+            const borderRadius = height / 2;
+            let width;
 
-        if (e.nativeEvent.layout.width <= e.nativeEvent.layout.height) {
-            width = e.nativeEvent.layout.height;
-        } else {
-            width = e.nativeEvent.layout.width + this.props.extraPaddingHorizontal;
-        }
-        width = Math.max(width, this.props.minWidth);
-        this.setNativeProps({
-            style: {
-                width,
-                height,
-                borderRadius,
-                opacity: 1
+            if (e.nativeEvent.layout.width <= e.nativeEvent.layout.height) {
+                width = e.nativeEvent.layout.height;
+            } else {
+                width = e.nativeEvent.layout.width + this.props.extraPaddingHorizontal;
             }
-        });
+            width = Math.max(width, this.props.minWidth);
+            this.setNativeProps({
+                style: {
+                    width,
+                    height,
+                    borderRadius,
+                    opacity: 1
+                }
+            });
+            this.layoutReady = true;
+        }
     };
 
     renderText = () => {
