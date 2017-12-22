@@ -89,22 +89,6 @@ class Settings extends PureComponent {
         });
     });
 
-    goToAccount = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
-        navigator.push({
-            screen: 'AccountSettings',
-            backButtonTitle: '',
-            title: intl.formatMessage({id: 'user.settings.modal.title', defaultMessage: 'Account Settings'}),
-            animated: true,
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
-        });
-    });
-
     goToNotifications = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
@@ -230,15 +214,6 @@ class Settings extends PureComponent {
                     contentContainerStyle={style.wrapper}
                 >
                     <View style={style.divider}/>
-                    <SettingsItem
-                        defaultMessage='Account Settings'
-                        i18nId='user.settings.modal.title'
-                        iconName='ios-person'
-                        iconType='ion'
-                        onPress={this.goToAccount}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
                     <SettingsItem
                         defaultMessage='Notifications'
                         i18nId='user.settings.modal.notifications'

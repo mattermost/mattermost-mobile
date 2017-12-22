@@ -19,10 +19,14 @@ class AttachmentButton extends PureComponent {
         intl: intlShape.isRequired,
         maxFileCount: PropTypes.number.isRequired,
         navigator: PropTypes.object.isRequired,
-        onShowFileMaxWarning: PropTypes.func.isRequired,
+        onShowFileMaxWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         wrapper: PropTypes.bool
+    };
+
+    static defaultProps = {
+        maxFileCount: 5
     };
 
     attachFileFromCamera = () => {

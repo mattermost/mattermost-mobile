@@ -2097,6 +2097,7 @@
   "mobile.routes.channels": "Channels",
   "mobile.routes.code": "{language} Code",
   "mobile.routes.code.noLanguage": "Code",
+  "mobile.routes.edit_profile": "Edit Profile",
   "mobile.routes.enterServerUrl": "Enter Server URL",
   "mobile.routes.login": "Login",
   "mobile.routes.loginOptions": "Login Chooser",

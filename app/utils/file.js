@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import RNFetchBlob from 'react-native-fetch-blob';
+import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {DeviceTypes} from 'app/constants/';
 
 const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
@@ -52,4 +53,25 @@ export async function deleteFileCache() {
     await RNFetchBlob.fs.unlink(DOCUMENTS_PATH);
     await RNFetchBlob.fs.unlink(VIDEOS_PATH);
     return true;
+}
+
+export function buildFileUploadData(file) {
+    const re = /heic/i;
+    const uri = file.uri;
+    let name = file.fileName || file.path || file.uri;
+    let mimeType = lookupMimeType(name);
+    let extension = name.split('.').pop().replace('.', '');
+
+    if (re.test(extension)) {
+        extension = 'JPG';
+        name = name.replace(re, 'jpg');
+        mimeType = 'image/jpeg';
+    }
+
+    return {
+        uri,
+        name,
+        type: mimeType,
+        extension
+    };
 }

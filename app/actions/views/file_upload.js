@@ -4,9 +4,9 @@
 import FormData from 'form-data';
 import {Platform} from 'react-native';
 import {uploadFile} from 'mattermost-redux/actions/files';
-import {lookupMimeType, parseClientIdsFromFormData} from 'mattermost-redux/utils/file_utils';
+import {parseClientIdsFromFormData} from 'mattermost-redux/utils/file_utils';
 
-import {generateId} from 'app/utils/file';
+import {buildFileUploadData, generateId} from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
 
 export function handleUploadFiles(files, rootId) {
@@ -16,40 +16,18 @@ export function handleUploadFiles(files, rootId) {
         const channelId = state.entities.channels.currentChannelId;
         const formData = new FormData();
         const clientIds = [];
-        const re = /heic/i;
 
         files.forEach((file) => {
-            let name = file.fileName || file.path || file.uri;
-
-            if (name.includes('/')) {
-                name = name.split('/').pop();
-            }
-
-            let mimeType = lookupMimeType(name);
-            let extension = name.split('.').pop().replace('.', '');
-            const uri = file.uri;
+            const fileData = buildFileUploadData(file);
             const clientId = generateId();
-
-            if (re.test(extension)) {
-                extension = 'JPG';
-                name = name.replace(re, 'jpg');
-                mimeType = 'image/jpeg';
-            }
 
             clientIds.push({
                 clientId,
-                localPath: uri,
-                name,
-                type: mimeType,
-                extension
+                localPath: fileData.uri,
+                name: fileData.name,
+                type: fileData.mimeType,
+                extension: fileData.extension
             });
-
-            const fileData = {
-                uri,
-                name,
-                type: mimeType,
-                extension
-            };
 
             formData.append('files', fileData);
             formData.append('channel_id', channelId);

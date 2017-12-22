@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     View,
+    Text,
     TextInput
 } from 'react-native';
 
@@ -13,30 +14,37 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AccountSettingsItem extends PureComponent {
     static propTypes = {
-        theme: PropTypes.object.isRequired,
+        disabled: PropTypes.bool,
+        field: PropTypes.string.isRequired,
         format: PropTypes.shape({
             id: PropTypes.string.isRequired,
             defaultMessage: PropTypes.string.isRequired
         }),
-        value: PropTypes.string.isRequired,
-        updateValue: PropTypes.func.isRequired,
+        helpText: PropTypes.string,
         optional: PropTypes.bool,
-        editable: PropTypes.bool
+        theme: PropTypes.object.isRequired,
+        updateValue: PropTypes.func.isRequired,
+        value: PropTypes.string.isRequired
     };
 
     static defaultProps = {
         optional: false,
-        editable: true
+        disabled: false
+    };
+
+    onChangeText = (value) => {
+        const {field, updateValue} = this.props;
+        updateValue({[field]: value});
     };
 
     render() {
         const {
             theme,
             format,
+            helpText,
             optional,
-            editable,
-            value,
-            updateValue
+            disabled,
+            value
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -60,13 +68,19 @@ export default class AccountSettingsItem extends PureComponent {
                     <TextInput
                         ref={this.channelNameRef}
                         value={value}
-                        onChangeText={updateValue}
-                        style={style.input}
+                        onChangeText={this.onChangeText}
+                        style={[style.input, disabled ? style.disabled : null]}
                         autoCapitalize='none'
                         autoCorrect={false}
-                        editable={editable}
+                        editable={!disabled}
                         underlineColorAndroid='transparent'
+                        disableFullscreenUI={true}
                     />
+                    {disabled &&
+                    <Text style={style.helpText}>
+                        {helpText}
+                    </Text>
+                    }
                 </View>
             </View>
         );
@@ -88,6 +102,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 40,
             paddingHorizontal: 15
         },
+        disabled: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+        },
         title: {
             fontSize: 14,
             color: theme.centerChannelColor,
@@ -101,6 +118,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 14,
             marginLeft: 5
+        },
+        helpText: {
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            marginHorizontal: 15,
+            marginVertical: 10
         }
     };
 });
