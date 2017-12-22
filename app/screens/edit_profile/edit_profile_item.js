@@ -97,7 +97,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg
         },
         input: {
-            color: '#333',
+            color: theme.centerChannelColor,
             fontSize: 14,
             height: 40,
             paddingHorizontal: 15
