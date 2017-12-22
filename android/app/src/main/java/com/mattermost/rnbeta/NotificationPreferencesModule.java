@@ -69,7 +69,9 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
             }
 
             Uri defaultUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_NOTIFICATION);
-            result.putString("defaultUri", Uri.decode(defaultUri.toString()));
+            if (defaultUri != null) {
+                result.putString("defaultUri", Uri.decode(defaultUri.toString()));
+            }
             result.putString("selectedUri", mNotificationPreference.getNotificationSound());
             result.putBoolean("shouldVibrate", mNotificationPreference.getShouldVibrate());
             result.putBoolean("shouldBlink", mNotificationPreference.getShouldBlink());
