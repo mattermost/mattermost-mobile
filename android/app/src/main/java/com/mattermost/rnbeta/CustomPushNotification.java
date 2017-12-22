@@ -210,9 +210,15 @@ public class CustomPushNotification extends PushNotification {
             String summaryTitle = String.format("%s (%d)", title, numMessages);
 
             Notification.InboxStyle style = new Notification.InboxStyle();
-            List<Bundle> list = new ArrayList<Bundle>(channelIdToNotification.get(channelId));
+            List<Bundle> bundleArray = channelIdToNotification.get(channelId);
+            List<Bundle> list;
+            if (bundleArray != null) {
+                list = new ArrayList<Bundle>(bundleArray);
+            } else {
+                list = new ArrayList<Bundle>();
+            }
 
-            for (Bundle data : list){
+            for (Bundle data : list) {
                 String msg = data.getString("message");
                 if (msg != message) {
                     style.addLine(data.getString("message"));
