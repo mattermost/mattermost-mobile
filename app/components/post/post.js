@@ -370,6 +370,7 @@ class Post extends PureComponent {
         const style = getStyleSheet(theme);
         const selected = this.state && this.state.selected ? style.selected : null;
         const highlighted = highlight ? style.highlight : null;
+        const isReplyPost = this.isReplyPost();
 
         const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
 
@@ -414,7 +415,7 @@ class Post extends PureComponent {
                             toggleSelected={this.toggleSelected}
                             managedConfig={managedConfig}
                             isFlagged={isFlagged}
-                            isReplyPost={this.isReplyPost()}
+                            isReplyPost={isReplyPost}
                         />
                     </View>
                 </View>
