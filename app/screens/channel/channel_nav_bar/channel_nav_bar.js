@@ -35,8 +35,15 @@ export default class ChannelNavBar extends PureComponent {
         const style = getStyleFromTheme(theme);
         const padding = {paddingHorizontal: 0};
 
-        let height = 46;
-        if (Platform.OS === 'ios') {
+        let height;
+        switch (Platform.OS) {
+        case 'android':
+            height = 56;
+            if (isLandscape) {
+                height = 46;
+            }
+            break;
+        case 'ios':
             height = 44;
             if (isLandscape) {
                 height = 32;
@@ -45,6 +52,7 @@ export default class ChannelNavBar extends PureComponent {
             if (this.isX && isLandscape) {
                 padding.paddingHorizontal = 10;
             }
+            break;
         }
 
         return (

@@ -381,8 +381,11 @@ export default class ChannelDrawer extends Component {
     };
 
     render() {
-        const {children} = this.props;
+        const {children, isLandscape} = this.props;
         const {openDrawerOffset} = this.state;
+
+        const androidTop = isLandscape ? 46 : 56;
+        const iosTop = isLandscape ? 32 : 64;
 
         return (
             <Drawer
@@ -410,7 +413,7 @@ export default class ChannelDrawer extends Component {
                 tweenHandler={this.handleDrawerTween}
                 elevation={-5}
                 bottomPanOffset={Platform.OS === 'ios' ? 46 : 64}
-                topPanOffset={Platform.OS === 'ios' ? 64 : 46}
+                topPanOffset={Platform.OS === 'ios' ? iosTop : androidTop}
                 styles={{
                     main: {
                         shadowColor: '#000000',

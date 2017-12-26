@@ -152,8 +152,6 @@ class Settings extends PureComponent {
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: false,
-                statusBarHidden: true,
-                statusBarHideWithNavBar: true,
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor

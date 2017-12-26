@@ -165,7 +165,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
                 android: {
-                    height: 46
+                    height: 56
                 },
                 ios: {
                     height: 44
@@ -185,7 +185,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 50,
             ...Platform.select({
                 android: {
-                    height: 46
+                    height: 56
                 },
                 ios: {
                     height: 44
