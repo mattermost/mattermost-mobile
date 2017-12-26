@@ -145,8 +145,7 @@ class ChannelDrawerButton extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            width: 40,
-            zIndex: 45
+            width: 55
         },
         wrapper: {
             alignItems: 'center',
@@ -154,8 +153,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             justifyContent: 'center',
             paddingHorizontal: 10,
-            paddingTop: 5,
-            zIndex: 30
+            paddingTop: 5
         },
         badge: {
             backgroundColor: theme.mentionBj,
