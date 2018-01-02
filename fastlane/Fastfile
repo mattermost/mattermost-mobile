@@ -98,7 +98,7 @@ platform :ios do
 
   def replace_ios_assets()
     if ENV['IOS_REPLACE_ASSETS'] == 'true'
-      sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+      sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
     end
   end
 
@@ -252,7 +252,7 @@ platform :android do
     release_dir = "./android/app/src/main/java/#{packageId.gsub '.', '/'}/"
 
     if ENV['ANDROID_REPLACE_ASSETS'] == 'true'
-      sh 'cp -R ../assets/release/icons/android/* ../android/app/src/main/res/'
+      sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
     end
 
     if packageId != 'com.mattermost.rnbeta'
