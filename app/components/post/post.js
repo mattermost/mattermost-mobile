@@ -287,17 +287,20 @@ class Post extends PureComponent {
         removePost(post);
     };
 
+    isReplyPost = () => {
+        const {renderReplies, post} = this.props;
+        return Boolean(renderReplies && post.root_id && !isPostEphemeral(post));
+    };
+
     renderReplyBar = () => {
         const {
             commentedOnPost,
             isFirstReply,
             isLastReply,
-            post,
-            renderReplies,
             theme
         } = this.props;
 
-        if (!renderReplies || !post.root_id || isPostEphemeral(post)) {
+        if (!this.isReplyPost()) {
             return null;
         }
 
@@ -367,6 +370,7 @@ class Post extends PureComponent {
         const style = getStyleSheet(theme);
         const selected = this.state && this.state.selected ? style.selected : null;
         const highlighted = highlight ? style.highlight : null;
+        const isReplyPost = this.isReplyPost();
 
         const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
 
@@ -411,6 +415,7 @@ class Post extends PureComponent {
                             toggleSelected={this.toggleSelected}
                             managedConfig={managedConfig}
                             isFlagged={isFlagged}
+                            isReplyPost={isReplyPost}
                         />
                     </View>
                 </View>

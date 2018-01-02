@@ -41,6 +41,7 @@ class PostBody extends PureComponent {
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
         isPostEphemeral: PropTypes.bool,
+        isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
         managedConfig: PropTypes.object,
@@ -142,6 +143,7 @@ class PostBody extends PureComponent {
             isFlagged,
             isPending,
             isPostEphemeral,
+            isReplyPost,
             isSearchResult,
             isSystemMessage,
             intl,
@@ -266,6 +268,7 @@ class PostBody extends PureComponent {
                                 postId={postId}
                                 postProps={postProps}
                                 textStyles={textStyles}
+                                isReplyPost={isReplyPost}
                             />
                             {this.renderFileAttachments()}
                         </View>
@@ -290,6 +293,7 @@ class PostBody extends PureComponent {
                             postProps={postProps}
                             textStyles={textStyles}
                             onLongPress={this.showOptionsContext}
+                            isReplyPost={isReplyPost}
                         />
                         {this.renderFileAttachments()}
                         {hasReactions && <Reactions postId={postId}/>}
