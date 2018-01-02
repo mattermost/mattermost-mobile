@@ -11,6 +11,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from 'app/utils/emojis';
 
 import EmojiPicker from './emoji_picker';
+import Fuse from 'fuse.js';
 
 const categoryToI18n = {
     activity: {
@@ -120,22 +121,34 @@ const getEmojisBySection = createSelector(
 const getEmojisByName = createSelector(
     getCustomEmojisByName,
     (customEmojis) => {
-        const emoticons = [];
+        const emoticons = new Set();
         for (const [key] of [...EmojiIndicesByAlias.entries(), ...customEmojis.entries()]) {
-            emoticons.push(key);
+            emoticons.add(key);
         }
 
-        return emoticons;
+        return Array.from(emoticons);
     }
 );
 
 function mapStateToProps(state) {
     const emojisBySection = getEmojisBySection(state);
-    const emojisByName = getEmojisByName(state);
+    const emojis = getEmojisByName(state);
     const {deviceWidth} = getDimensions(state);
+    const options = {
+        shouldSort: true,
+        threshold: 0.3,
+        location: 0,
+        distance: 100,
+        minMatchCharLength: 2,
+        maxPatternLength: 32
+    };
+
+    const list = emojis.length ? emojis : [];
+    const fuse = new Fuse(list, options);
 
     return {
-        emojisByName,
+        fuse,
+        emojis,
         emojisBySection,
         deviceWidth,
         isLandscape: isLandscape(state),

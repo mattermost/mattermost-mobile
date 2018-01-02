@@ -33,7 +33,8 @@ const SECTION_HEADER_HEIGHT = 28;
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
-        emojisByName: PropTypes.array.isRequired,
+        fuse: PropTypes.object.isRequired,
+        emojis: PropTypes.array.isRequired,
         emojisBySection: PropTypes.array.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -164,24 +165,16 @@ export default class EmojiPicker extends PureComponent {
     };
 
     searchEmojis = (searchTerm) => {
-        const {emojisByName} = this.props;
+        const {emojis, fuse} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
 
         if (!searchTerm) {
             return [];
         }
 
-        const startsWith = [];
-        const includes = [];
-        emojisByName.forEach((emoji) => {
-            if (emoji.startsWith(searchTermLowerCase)) {
-                startsWith.push(emoji);
-            } else if (emoji.includes(searchTermLowerCase)) {
-                includes.push(emoji);
-            }
-        });
-
-        return [...startsWith.sort(), ...includes.sort()];
+        const results = fuse.search(searchTermLowerCase);
+        const data = results.map((index) => emojis[index]);
+        return data;
     };
 
     getNumberOfColumns = (deviceWidth) => {
