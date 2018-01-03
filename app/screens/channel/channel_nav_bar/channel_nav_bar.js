@@ -6,12 +6,21 @@ import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import {ViewTypes} from 'app/contants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
 import SettingDrawerButton from './settings_drawer_button';
+
+const {
+    ANDROID_TOP_LANDSCAPE,
+    ANDROID_TOP_PORTRAIT,
+    IOS_TOP_LANDSCAPE,
+    IOS_TOP_PORTRAIT,
+    STATUS_BAR_HEIGHT
+} = ViewTypes;
 
 export default class ChannelNavBar extends PureComponent {
     static propTypes = {
@@ -38,15 +47,15 @@ export default class ChannelNavBar extends PureComponent {
         let height;
         switch (Platform.OS) {
         case 'android':
-            height = 56;
+            height = ANDROID_TOP_PORTRAIT;
             if (isLandscape) {
-                height = 46;
+                height = ANDROID_TOP_LANDSCAPE;
             }
             break;
         case 'ios':
-            height = 44;
+            height = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
             if (isLandscape) {
-                height = 32;
+                height = IOS_TOP_LANDSCAPE;
             }
 
             if (this.isX && isLandscape) {

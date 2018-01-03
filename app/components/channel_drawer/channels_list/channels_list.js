@@ -11,11 +11,14 @@ import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
+import {ViewTypes} from 'app/contants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FilteredList from './filtered_list';
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
+
+const {ANDROID_TOP_PORTRAIT} = ViewTypes;
 
 class ChannelsList extends React.PureComponent {
     static propTypes = {
@@ -168,7 +171,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
                 android: {
-                    height: 56
+                    height: ANDROID_TOP_PORTRAIT
                 },
                 ios: {
                     height: 44

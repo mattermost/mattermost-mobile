@@ -15,13 +15,14 @@ import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
-import {ListTypes} from 'app/constants';
+import {ListTypes, ViewTypes} from 'app/constants';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
 import TeamsListItem from './teams_list_item';
 
+const {ANDROID_TOP_PORTRAIT} = ViewTypes;
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
     waitForInteraction: true
@@ -165,7 +166,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
                 android: {
-                    height: 56
+                    height: ANDROID_TOP_PORTRAIT
                 },
                 ios: {
                     height: 44
@@ -185,7 +186,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 50,
             ...Platform.select({
                 android: {
-                    height: 56
+                    height: ANDROID_TOP_PORTRAIT
                 },
                 ios: {
                     height: 44
