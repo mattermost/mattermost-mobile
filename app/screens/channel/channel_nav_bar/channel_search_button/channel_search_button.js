@@ -80,6 +80,8 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             flex: 1
         },
         wrapper: {
+            position: 'relative',
+            top: -1,
             alignItems: 'flex-end',
             flex: 1,
             flexDirection: 'column',

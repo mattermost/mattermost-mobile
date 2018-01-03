@@ -152,8 +152,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'column',
             justifyContent: 'center',
-            paddingHorizontal: 10,
-            paddingTop: 5
+            paddingHorizontal: 10
         },
         badge: {
             backgroundColor: theme.mentionBj,

@@ -70,6 +70,8 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         wrapper: {
             alignItems: 'center',
             flex: 1,
+            position: 'relative',
+            top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start'
         },
