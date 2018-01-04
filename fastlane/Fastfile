@@ -520,6 +520,7 @@ def git_actions
 
     unless ENV['GITHUB_PULL_REQUEST_API_TOKEN'].nil? || ENV['GITHUB_PULL_REQUEST_API_TOKEN'].empty?
       create_pull_request(
+          head: ENV['GIT_REMOTE_BRANCH'] || ENV['GIT_LOCAL_BRANCH'],
           repo: ENV['GITHUB_PULL_REQUEST_REPO'] || 'mattermost/mattermost-mobile',
           title: commit_message
       )
