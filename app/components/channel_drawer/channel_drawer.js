@@ -11,9 +11,13 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import SafeAreaView from 'app/components/safe_area_view';
+
+import {General, WebsocketEvents} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import Drawer from 'app/components/drawer';
+import SafeAreaView from 'app/components/safe_area_view';
+import {ViewTypes} from 'app/contants';
 import {alertErrorWithFallback} from 'app/utils/general';
 import tracker from 'app/utils/time_tracker';
 
@@ -21,9 +25,12 @@ import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swipper';
 import TeamsList from './teams_list';
 
-import {General, WebsocketEvents} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-
+const {
+    ANDROID_TOP_LANDSCAPE,
+    ANDROID_TOP_PORTRAIT,
+    IOS_TOP_LANDSCAPE,
+    IOS_TOP_PORTRAIT
+} = ViewTypes;
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
@@ -381,8 +388,11 @@ export default class ChannelDrawer extends Component {
     };
 
     render() {
-        const {children} = this.props;
+        const {children, isLandscape} = this.props;
         const {openDrawerOffset} = this.state;
+
+        const androidTop = isLandscape ? ANDROID_TOP_LANDSCAPE : ANDROID_TOP_PORTRAIT;
+        const iosTop = isLandscape ? IOS_TOP_LANDSCAPE : IOS_TOP_PORTRAIT;
 
         return (
             <Drawer
@@ -409,8 +419,8 @@ export default class ChannelDrawer extends Component {
                 tweenDuration={100}
                 tweenHandler={this.handleDrawerTween}
                 elevation={-5}
-                bottomPanOffset={Platform.OS === 'ios' ? 46 : 64}
-                topPanOffset={Platform.OS === 'ios' ? 64 : 46}
+                bottomPanOffset={Platform.OS === 'ios' ? ANDROID_TOP_LANDSCAPE : IOS_TOP_PORTRAIT}
+                topPanOffset={Platform.OS === 'ios' ? iosTop : androidTop}
                 styles={{
                     main: {
                         shadowColor: '#000000',
