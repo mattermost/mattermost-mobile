@@ -11,7 +11,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
-import {ViewTypes} from 'app/contants';
+import {ViewTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FilteredList from './filtered_list';

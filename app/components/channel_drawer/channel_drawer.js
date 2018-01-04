@@ -17,7 +17,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import Drawer from 'app/components/drawer';
 import SafeAreaView from 'app/components/safe_area_view';
-import {ViewTypes} from 'app/contants';
+import {ViewTypes} from 'app/constants';
 import {alertErrorWithFallback} from 'app/utils/general';
 import tracker from 'app/utils/time_tracker';
 

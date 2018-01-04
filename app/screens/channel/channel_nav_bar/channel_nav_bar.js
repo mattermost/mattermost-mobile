@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {ViewTypes} from 'app/contants';
+import {ViewTypes} from 'app/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
