@@ -1,154 +1,44 @@
-fastlane_version '2.56.0'
+fastlane_version '2.71.0'
 skip_docs
 
 platform :ios do
   before_all do |lane|
-    if lane == :beta or lane === :release
-      current_branch = (sh 'git rev-parse --abbrev-ref HEAD').chop!
-
-      UI.user_error!("To cut a beta or a release you need to be on master or in a release branch.
-      Current branch is #{current_branch}
-      Exiting") unless current_branch == 'master' or current_branch.start_with?('release')
-
-      if lane == :beta
-        sh "git checkout -b ios-#{lane}"
-      end
+    unless ENV['GIT_LOCAL_BRANCH'].nil? || ENV['GIT_LOCAL_BRANCH'].empty?
+        sh "git checkout -b #{ENV['GIT_LOCAL_BRANCH']}"
     end
   end
 
   after_all do |lane|
-    if lane == :beta
+    if ENV['RESET_GIT_BRANCH'] == 'true'
       reset_git_repo(
           force: true,
           skip_clean: true
       )
 
       sh 'git checkout master'
-      sh "git branch -D ios-#{lane}"
     end
   end
 
-  desc 'Build Release file'
-  desc 'This will also make sure the profile is up to date'
-  lane :dev do
-    match(type: 'adhoc', app_identifier: 'com.mattermost.rnbeta')
-
-    build_ios({
-              release: false,
-              increment_build: false,
-              ensure_git_status_clean: false,
-              method: 'ad-hoc'
-          })
-  end
-
-  desc 'Submit a new Beta Build to Apple TestFlight'
-  desc 'This will also make sure the profile is up to date'
-  lane :beta do
-    match(type: 'appstore', app_identifier: 'com.mattermost.rnbeta')
+  desc 'Build iOS app'
+  lane :build do
+    if ENV['SYNC_IOS_PROVISIONING_PROFILES'] == 'true'
+      match(type: ENV['MATCH_TYPE'] || 'adhoc')
+    end
 
     configure_from_env()
 
-    build_ios({
-              release: true,
-              increment_build: true,
-              ensure_git_status_clean: true,
-              method: 'app-store'
-          })
+    build_ios()
 
-    pilot(skip_waiting_for_build_processing: true)
-
-    commit = last_git_commit
-
-    push_to_git_remote(
-        remote: 'origin',
-        local_branch: 'ios-beta',
-        force: false,
-        tags: false
-    )
-
-    unless ENV['GITHUB_TOKEN'].nil?
-      create_pull_request(
-          api_token: ENV['GITHUB_TOKEN'],
-          repo: 'mattermost/mattermost-mobile',
-          head: 'mattermost:ios-beta',
-          base: 'master',
-          title: "IOS #{commit[:message]}"
-      )
+    if ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
+      pilot
     end
 
-    if ENV['MATTERMOST_WEBHOOK_URL']
-      testflight_url = ENV['TESTFLIGHT_URL']
-      send_message_for_ios(
-          '#### New iOS beta published on TestFlight',
-          '',
-          "#ios-beta in #{testflight_url.nil? ? 'TestFlight' : "[TestFlight](#{testflight_url})"} on [#{Time.new.utc.to_s}]",
-          [],
-          true
-      )
-    end
-  end
-
-  desc 'Deploy a new version to the App Store'
-  lane :release do
-    match(type: 'appstore', app_identifier: 'com.mattermost.rn')
-
-    configure_from_env()
-
-    # snapshot
-
-    update_app_identifier(
-        xcodeproj: './ios/Mattermost.xcodeproj',
-        plist_path: 'Mattermost/Info.plist',
-        app_identifier: 'com.mattermost.rn'
-    )
-    update_info_plist(
-        xcodeproj: './ios/Mattermost.xcodeproj',
-        plist_path: 'Mattermost/Info.plist',
-        display_name: 'Mattermost'
-    )
-
-    sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
-
-    build_ios({
-              release: true,
-              increment_build: false,
-              ensure_git_status_clean: false,
-              method: 'app-store'
-          })
-
-    # deliver(
-    #     force: true,
-    #     skip_screenshots: true,
-    #     skip_metadata: true,
-    #     submit_for_review: false, #lets try this after the first release
-    #     automatic_release: false #lets try this after the first release
-    # )
-
-    ### We are going to publish the app to the testflight first and not deliver it directly to the app store
-    pilot(skip_waiting_for_build_processing: true)
-
-    # frameit
-
-    reset_git_repo(
-        force: true,
-        skip_clean: true
-    )
-
-    if ENV['MATTERMOST_WEBHOOK_URL']
-      appstore_url = ENV['APPSTORE_URL']
-      send_message_for_ios(
-          '#### New iOS release published on the App Store',
-          '',
-          "#ios-release in #{appstore_url.nil? ? 'App Store' : "[App Store](#{appstore_url})"} on [#{Time.new.utc.to_s}]",
-          [],
-          true
-      )
-    end
+    git_actions()
   end
 
   desc 'Build an unsigned ipa'
   lane :unsigned do
-    if ENV['SEGMENT_API_KEY']
+    unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
       find_replace_string(
           path_to_file: './dist/assets/config.json',
           old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
@@ -156,18 +46,8 @@ platform :ios do
       )
     end
 
-    update_app_identifier(
-        xcodeproj: './ios/Mattermost.xcodeproj',
-        plist_path: 'Mattermost/Info.plist',
-        app_identifier: 'com.mattermost.rn'
-    )
-    update_info_plist(
-        xcodeproj: './ios/Mattermost.xcodeproj',
-        plist_path: 'Mattermost/Info.plist',
-        display_name: 'Mattermost'
-    )
-
-    sh 'cp -R ../assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+    update_identifiers()
+    replace_ios_assets()
   end
 
   error do |lane, exception|
@@ -176,31 +56,95 @@ platform :ios do
     end
   end
 
-  def build_ios(options)
-    if options[:ensure_git_status_clean]
+  def update_identifiers()
+    unless ENV['IOS_MAIN_APP_IDENTIFIER'].nil? || ENV['IOS_MAIN_APP_IDENTIFIER'].empty? || ENV['IOS_MAIN_APP_IDENTIFIER'] == 'com.mattermost.rnbeta'
+      update_app_identifier(
+          xcodeproj: './ios/Mattermost.xcodeproj',
+          plist_path: 'Mattermost/Info.plist',
+          app_identifier: ENV['IOS_MAIN_APP_IDENTIFIER']
+      )
+    end
+
+    if ENV['IOS_APP_NAME'] != 'Mattermost Beta'
+      update_info_plist(
+          xcodeproj: './ios/Mattermost.xcodeproj',
+          plist_path: 'Mattermost/Info.plist',
+          display_name: ENV['IOS_APP_NAME']
+      )
+    end
+
+    if Dir.exist?('../ios/MattermostShare/')
+      unless ENV['IOS_APP_GROUP'].nil? || ENV['IOS_APP_GROUP'].empty? || ENV['IOS_APP_GROUP'] == 'group.com.mattermost.rnbeta'
+        update_app_group_identifiers(
+            entitlements_file: './ios/Mattermost/Mattermost.entitlements',
+            app_group_identifiers: [ENV['IOS_APP_GROUP']]
+        )
+
+        update_app_group_identifiers(
+            entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
+            app_group_identifiers: [ENV['IOS_APP_GROUP']]
+        )
+      end
+
+      unless ENV['IOS_EXTENSION_APP_IDENTIFIER'].nil? || ENV['IOS_EXTENSION_APP_IDENTIFIER'].empty? || ENV['IOS_EXTENSION_APP_IDENTIFIER'] == 'com.mattermost.rnbeta.MattermostShare'
+        update_app_identifier(
+            xcodeproj: './ios/Mattermost.xcodeproj',
+            plist_path: 'MattermostShare/Info.plist',
+            app_identifier: ENV['IOS_EXTENSION_APP_IDENTIFIER']
+        )
+      end
+    end
+  end
+
+  def replace_ios_assets()
+    if ENV['IOS_REPLACE_ASSETS'] == 'true'
+      sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+    end
+  end
+
+  def build_ios()
+    if ENV['ENSURE_GIT_IS_CLEAN'] == 'true'
       ensure_git_status_clean
     end
 
-    if options[:increment_build]
+    if ENV['IOS_INCREMENT_BUILD_NUMBER'] == 'true'
       current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj').to_i
       increment_build_number(
           xcodeproj: './ios/Mattermost.xcodeproj',
           build_number: current_build_number + 1
       )
-      commit_version_bump(xcodeproj: './ios/Mattermost.xcodeproj')
+
+      commit_version_options = {
+          xcodeproj: './ios/Mattermost.xcodeproj'
+      }
+
+      commit_version_message = "#{ENV['IOS_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE']} #{(current_build_number + 1).to_s}"
+      unless ENV['IOS_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE'].nil? || ENV['IOS_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE'].empty?
+        commit_version_options[:message] = commit_version_message
+      end
+
+      commit_version_bump(commit_version_options)
     end
 
-    update_project_team(
-        path: './ios/Mattermost.xcodeproj',
-        teamid: ENV['FASTLANE_TEAM_ID']
-    )
+    update_identifiers()
+    replace_ios_assets()
+
+    unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
+      update_project_team(
+          path: './ios/Mattermost.xcodeproj',
+          teamid: ENV['FASTLANE_TEAM_ID']
+      )
+    end
+
+    config_mode = ENV['IOS_BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+    method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
 
     gym(
         clean: true,
         scheme: 'Mattermost',
-        configuration: (options[:release] ? 'Release' : 'Debug'),
+        configuration: config_mode,
         workspace: './ios/Mattermost.xcworkspace',
-        export_method: options[:method]
+        export_method: method
     )
   end
 
@@ -240,114 +184,49 @@ end
 
 platform :android do
   before_all do |lane|
-    if lane == :alpha or lane === :release
-      current_branch = (sh 'git rev-parse --abbrev-ref HEAD').chop!
-
-      UI.user_error!("To cut a beta or a release you need to be on master or in a release branch.
-      Current branch is #{current_branch}
-      Exiting") unless current_branch == 'master' or current_branch.start_with?('release')
-
-      if lane == :alpha
-        sh "git checkout -b android-#{lane}"
-      end
+    unless ENV['GIT_LOCAL_BRANCH'].nil? || ENV['GIT_LOCAL_BRANCH'].empty?
+      sh "git checkout -b #{ENV['GIT_LOCAL_BRANCH']}"
     end
   end
 
   after_all do |lane|
-    if lane == :alpha
+    if ENV['RESET_GIT_BRANCH'] == 'true'
+      packageId = ENV['ANDROID_PACKAGE_ID'] || 'com.mattermost.rnbeta'
+      beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
+      release_dir = "../android/app/src/main/java/#{packageId.gsub '.', '/'}"
+
+      if beta_dir != release_dir
+        sh "rm -rf #{release_dir}"
+      end
+
       reset_git_repo(
           force: true,
           skip_clean: true
       )
+
       sh 'git checkout master'
-      sh "git branch -D android-#{lane}"
     end
   end
 
-  desc 'Build Release file'
-  lane :dev do
-    build_android({release: true})
-  end
-
-  desc 'Submit a new Beta Build to Google Play'
-  lane :alpha do
+  desc 'Build Android app'
+  lane :build do
     configure_from_env()
+    link_sentry_android()
 
-    build_android({
-                      release: true,
-                      increment_build: true,
-                      ensure_git_status_clean: true
-                  })
+    build_android()
 
-    supply(
-        track: 'alpha',
-        apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
-    )
+    apk_path = "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}"
 
-    commit = last_git_commit
-
-    push_to_git_remote(
-        remote: 'origin',
-        local_branch: 'android-alpha',
-        force: false,
-        tags: false
-    )
-
-    unless ENV['GITHUB_TOKEN'].nil?
-      create_pull_request(
-          api_token: ENV['GITHUB_TOKEN'],
-          repo: 'mattermost/mattermost-mobile',
-          head: 'mattermost:android-alpha',
-          base: 'master',
-          title: "Android #{commit[:message]}"
+    if ENV['SUBMIT_ANDROID_TO_GOOGLE_PLAY'] == 'true'
+      supply(
+          track: ENV['SUPPLY_TRACK'] || 'alpha',
+          apk: apk_path
       )
     end
 
-    if ENV['MATTERMOST_WEBHOOK_URL']
-      beta_url = ENV['GOOGLE_PLAY_BETA_URL']
-      send_message_for_android(
-          '#### New Android beta published for Beta Testing',
-          '',
-          "#android-beta in #{beta_url.nil? ? 'Google Play Beta Program' : "[Google Play Beta Program](#{beta_url})"} on [#{Time.new.utc.to_s}]",
-          [],
-          true
-      )
-    end
-  end
+    sh "mv #{apk_path} ../Mattermost.apk"
 
-  desc 'Deploy a new version to Google Play'
-  lane :release do
-    prepare_release()
-
-    build_android({
-                      release: true,
-                      increment_build: false,
-                      ensure_git_status_clean: false
-                  })
-
-    supply(
-        track: 'beta',
-        apk: "#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}",
-    )
-
-
-    sh 'mv ../android/app/src/main/java/com/mattermost/rn/ ../android/app/src/main/java/com/mattermost/rnbeta/'
-
-    reset_git_repo(
-        force: true,
-        skip_clean: true
-    )
-
-    if ENV['MATTERMOST_WEBHOOK_URL']
-      google_play_url = ENV['GOOGLE_PLAY_URL']
-      send_message_for_android(
-          '#### New Android beta published for Production',
-          '',
-          "#android-beta in #{google_play_url.nil? ? 'Google Play' : "[Google Play](#{google_play_url})"} on [#{Time.new.utc.to_s}]",
-          [],
-          true
-      )
-    end
+    git_actions()
   end
 
   desc 'Build an unsigned apk'
@@ -368,63 +247,90 @@ platform :android do
   end
 
   def prepare_release
-    android_change_package_identifier(newIdentifier: 'com.mattermost.rn', manifest: './android/app/src/main/AndroidManifest.xml')
-    android_change_string_app_name(newName: 'Mattermost', stringsFile: './android/app/src/main/res/values/strings.xml')
-    android_update_application_id(app_folder_name: 'android/app', application_id: 'com.mattermost.rn')
+    packageId = ENV['ANDROID_PACKAGE_ID'] || 'com.mattermost.rnbeta'
+    beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
+    release_dir = "./android/app/src/main/java/#{packageId.gsub '.', '/'}/"
 
-    beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta/'
-    release_dir = '../android/app/src/main/java/com/mattermost/rn/'
+    if ENV['ANDROID_REPLACE_ASSETS'] == 'true'
+      sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
+    end
 
-    sh "mv #{beta_dir} #{release_dir}"
-    sh 'cp -R ../assets/release/icons/android/* ../android/app/src/main/res/'
+    if packageId != 'com.mattermost.rnbeta'
+      android_change_package_identifier(newIdentifier: packageId, manifest: './android/app/src/main/AndroidManifest.xml')
+      android_update_application_id(app_folder_name: 'android/app', application_id: packageId)
+    end
 
-    find_replace_string(
-        path_to_file: './android/app/src/main/java/com/mattermost/rn/MainApplication.java',
-        old_string: 'return BuildConfig.DEBUG;',
-        new_string: 'return false;'
-    )
+    unless ENV['ANDROID_APP_NAME'].nil? || ENV['ANDROID_APP_NAME'].empty? || ENV['ANDROID_APP_NAME'] == 'Mattermost Beta'
+      android_change_string_app_name(
+          newName: ENV['ANDROID_APP_NAME'],
+          stringsFile: './android/app/src/main/res/values/strings.xml'
+      )
 
-    find_replace_string(
-        path_to_file: './android/app/BUCK',
-        old_string: 'package com.mattermost.rnbeta;',
-        new_string: 'package com.mattermost.rn;'
-    )
-
-    find_replace_string(
-        path_to_file: './fastlane/metadata/android/en-US/title.txt',
-        old_string: 'Mattermost Beta',
-        new_string: 'Mattermost'
-    )
-
-    Dir.glob("#{release_dir}*.java") do |item|
       find_replace_string(
-          path_to_file: item[1..-1],
-          old_string: 'package com.mattermost.rnbeta;',
-          new_string: 'package com.mattermost.rn;'
+          path_to_file: './fastlane/metadata/android/en-US/title.txt',
+          old_string: 'Mattermost Beta',
+          new_string: ENV['ANDROID_APP_NAME']
       )
     end
 
-    configure_from_env()
+    if ENV['ANDROID_BUILD_FOR_RELEASE'] == 'true'
+      find_replace_string(
+          path_to_file: "#{beta_dir}MainApplication.java",
+          old_string: 'return BuildConfig.DEBUG;',
+          new_string: 'return false;'
+      )
+    end
+
+    if release_dir != beta_dir
+      unless Dir.exist?(".#{release_dir}")
+        FileUtils.mkdir_p ".#{release_dir}"
+      end
+
+      sh "mv .#{beta_dir}* .#{release_dir}"
+
+      find_replace_string(
+          path_to_file: './android/app/BUCK',
+          old_string: 'package com.mattermost.rnbeta;',
+          new_string: "package #{packageId};"
+      )
+
+      Dir.glob(".#{release_dir}*.java") do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'package com.mattermost.rnbeta;',
+            new_string: "package #{packageId};"
+        )
+      end
+    end
   end
 
-  def build_android(options)
-    if options[:ensure_git_status_clean]
+  def build_android()
+    if ENV['ENSURE_GIT_IS_CLEAN'] == 'true'
       ensure_git_status_clean
     end
 
-    if options[:increment_build]
+    if ENV['ANDROID_INCREMENT_BUILD_NUMBER'] == 'true'
       android_increment_version_code(app_folder_name: 'android/app')
-      android_commit_version_bump(
-          app_folder_name: 'android/app',
-          force: true
-      )
+      build_number = get_version_code('android/app')
+      commit_version_options = {
+          app_folder_name: 'android/app'
+      }
+
+      commit_version_message = "#{ENV['ANDROID_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE']} #{build_number.to_s}"
+      unless ENV['ANDROID_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE'].nil? || ENV['ANDROID_COMMIT_INCREMENT_BUILD_NUMBER_MESSAGE'].empty?
+        commit_version_options[:message] = commit_version_message
+      end
+
+      android_commit_version_bump(commit_version_options)
     end
 
-    link_sentry_android()
+    prepare_release()
+
+    config_mode = ENV['ANDROID_BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
 
     gradle(
         task: 'assemble',
-        build_type: (options[:release] ? 'Release' : 'Debug'),
+        build_type: config_mode,
         project_dir: 'android/'
     )
   end
@@ -524,10 +430,27 @@ platform :android do
         success: success
     )
   end
+
+  def link_sentry_android
+    if ENV['SENTRY_ENABLED'] == 'true'
+      url = 'https://sentry.io'
+      File.open('../android/sentry.properties', 'w+') do |f|
+        UI.message('Creating sentry.properties from environment')
+        f.write(
+            "defaults.url=#{url}\n"\
+        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
+        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}\n"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
+        )
+      end
+    else
+      UI.message('Not creating sentry.properties because Sentry is disabled')
+    end
+  end
 end
 
-def configure_from_env()
-  if ENV['SEGMENT_API_KEY']
+def configure_from_env
+  unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
@@ -535,7 +458,7 @@ def configure_from_env()
     )
   end
 
-  if ENV['SENTRY_ENABLED']
+  if ENV['SENTRY_ENABLED'] == 'true'
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryEnabled": false',
@@ -543,7 +466,7 @@ def configure_from_env()
     )
   end
 
-  if ENV['SENTRY_ORG']
+  unless ENV['SENTRY_ORG'].nil? || ENV['SENTRY_ORG'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryOrg": ""',
@@ -551,7 +474,7 @@ def configure_from_env()
     )
   end
 
-  if ENV['SENTRY_PROJECT_IOS']
+  unless ENV['SENTRY_PROJECT_IOS'].nil? || ENV['SENTRY_PROJECT_IOS'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryProjectIos": ""',
@@ -559,7 +482,7 @@ def configure_from_env()
     )
   end
 
-  if ENV['SENTRY_PROJECT_ANDROID']
+  unless ENV['SENTRY_PROJECT_ANDROID'].nil? || ENV['SENTRY_PROJECT_ANDROID'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryProjectAndroid": ""',
@@ -567,7 +490,7 @@ def configure_from_env()
     )
   end
 
-  if ENV['SENTRY_DSN_IOS']
+  unless ENV['SENTRY_DSN_IOS'].nil? || ENV['SENTRY_DSN_IOS'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryDsnIos": ""',
@@ -575,7 +498,7 @@ def configure_from_env()
     )
   end
 
-  if ENV['SENTRY_DSN_ANDROID']
+  unless ENV['SENTRY_DSN_ANDROID'].nil? || ENV['SENTRY_DSN_ANDROID'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
         old_string: '"SentryDsnAndroid": ""',
@@ -584,19 +507,22 @@ def configure_from_env()
   end
 end
 
-def link_sentry_android()
-  if ENV['SENTRY_ENABLED'] == 'true'
-    url = 'https://sentry.io'
-    File.open('../android/sentry.properties', 'w+') do |f|
-      UI.message('Creating sentry.properties from environment')
-      f.write(
-        "defaults.url=#{url}\n"\
-        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
-        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}\n"\
-        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
+def git_actions
+  if ENV['COMMIT_CHANGES_TO_GIT'] == 'true' && ENV['GIT_BRANCH'] != 'master'
+    commit_message = last_git_commit[:message]
+    push_to_git_remote(
+        remote: ENV['GIT_REMOTE'] || 'origin',
+        local_branch: ENV['GIT_BRANCH'],
+        remote_branch: ENV['GIT_REMOTE_BRANCH'] || ENV['GIT_BRANCH'],
+        force: false,
+        tags: false
+    )
+
+    unless ENV['GITHUB_PULL_REQUEST_API_TOKEN'].nil? || ENV['GITHUB_PULL_REQUEST_API_TOKEN'].empty?
+      create_pull_request(
+          repo: ENV['GITHUB_PULL_REQUEST_REPO'] || 'mattermost/mattermost-mobile',
+          title: commit_message
       )
     end
-  else
-    UI.message('Not creating sentry.properties because Sentry is disabled')
   end
 end
