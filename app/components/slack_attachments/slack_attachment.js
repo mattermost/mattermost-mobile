@@ -447,7 +447,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         actionsContainer: {
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
+            flexWrap: 'wrap'
         }
     };
 });
