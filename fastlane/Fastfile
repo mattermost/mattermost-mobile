@@ -75,7 +75,7 @@ platform :ios do
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — iOS: #{ios_install_url}"
-      mattermost(message: msg, username: 'Fastlane', mattermost_url: ENV['MATTERMOST_WEBHOOK_URL'])
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
     end
   end
 
@@ -189,7 +189,7 @@ platform :ios do
         payload: {},
         attachment_properties: {
             title: title,
-            thumb_url: 'https://lh3.googleusercontent.com/Nkbo3QohCOU8bGqSYtwB88o03XxUwRAxRHNdXPB9zFvYFzTwD7naYa-GYJaelBp-OIc=w300',
+            thumb_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
             fields: [{
                          title: 'Version',
                          value: version,
@@ -285,7 +285,7 @@ platform :android do
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — Android: #{android_install_path}"
-      mattermost(message: msg, username: 'Fastlane', mattermost_url: ENV['MATTERMOST_WEBHOOK_URL'])
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
     end
   end
 
@@ -459,7 +459,7 @@ platform :android do
         payload: {},
         attachment_properties: {
             title: title,
-            thumb_url: 'http://www.concretesolutions.com.br/blog/wp-content/uploads/2015/04/Android1.png',
+            thumb_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
             fields: [{
                          title: 'Version',
                          value: version_name,

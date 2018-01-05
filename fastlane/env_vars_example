@@ -153,6 +153,7 @@ export GITHUB_PULL_REQUEST_REPO=mattermost/mattermost-mobile
 
 ############ WEBHOOK ############
 export MATTERMOST_WEBHOOK_URL=
+export MATTERMOST_WEBHOOK_URL=$MATTERMOST_URL
 
 
 ############ AWS ############
