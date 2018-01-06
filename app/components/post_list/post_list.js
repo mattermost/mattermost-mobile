@@ -29,6 +29,7 @@ export default class PostList extends PureComponent {
         currentUserId: PropTypes.string,
         highlightPostId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
+        initialBatchToRender: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         loadMore: PropTypes.func,
@@ -72,7 +73,10 @@ export default class PostList extends PureComponent {
     componentDidUpdate(prevProps) {
         const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
         if ((prevProps.channelId !== this.props.channelId || initialPosts || this.props.isSearchResult) && this.refs.list) {
+            this.moreNewMessages = false;
             this.scrollToMessageTries = 0;
+            this.scrollList();
+        } else if (prevProps.channelId === this.props.channelId && this.moreNewMessages) {
             this.scrollList();
         }
     }
@@ -83,7 +87,7 @@ export default class PostList extends PureComponent {
 
     scrollList = () => {
         InteractionManager.runAfterInteractions(() => {
-            if (this.props.postIds.length && this.newMessagesIndex !== -1) {
+            if (this.props.postIds.length && this.newMessagesIndex !== -1 && !this.moreNewMessages) {
                 if (this.refs.list) {
                     this.refs.list.scrollToIndex({
                         index: this.newMessagesIndex,
@@ -91,7 +95,16 @@ export default class PostList extends PureComponent {
                         viewOffset: -10,
                         animated: true
                     });
+                    this.newMessagesIndex = -1;
                 }
+            } else if (this.refs.list && this.moreNewMessages) {
+                this.refs.list.scrollToIndex({
+                    index: this.props.postIds.length - 1,
+                    viewPosition: 1,
+                    viewOffset: -10,
+                    animated: true
+                });
+                this.moreNewMessages = false;
             } else if (this.refs.list) {
                 this.refs.list.scrollToOffset({y: 0, animated: false});
             }
@@ -143,9 +156,11 @@ export default class PostList extends PureComponent {
     renderItem = ({item, index}) => {
         if (item === START_OF_NEW_MESSAGES) {
             this.newMessagesIndex = index;
+            this.moreNewMessages = this.props.postIds.length === index + 2;
             return (
                 <NewMessagesDivider
                     theme={this.props.theme}
+                    moreMessages={this.moreNewMessages}
                 />
             );
         } else if (item.indexOf(DATE_LINE) === 0) {
@@ -227,6 +242,7 @@ export default class PostList extends PureComponent {
         const {
             channelId,
             highlightPostId,
+            initialBatchToRender,
             loadMore,
             postIds
         } = this.props;
@@ -244,7 +260,8 @@ export default class PostList extends PureComponent {
                 ref='list'
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId)}
-                initialNumToRender={15}
+                initialNumToRender={initialBatchToRender}
+                maxToRenderPerBatch={initialBatchToRender + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderFooter}
