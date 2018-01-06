@@ -132,6 +132,10 @@ class PushNotification {
     getNotification() {
         return null;
     }
+
+    resetNotification() {
+        this.deviceNotification = null;
+    }
 }
 
 export default new PushNotification();

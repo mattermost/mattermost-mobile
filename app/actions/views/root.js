@@ -81,7 +81,7 @@ export function purgeOfflineStore() {
 }
 
 export function createPost(post) {
-    return async (dispatch, getState) => {
+    return (dispatch, getState) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
 
@@ -95,8 +95,7 @@ export function createPost(post) {
             update_at: timestamp
         };
 
-        try {
-            const payload = Client4.createPost({...newPost, create_at: 0});
+        return Client4.createPost({...newPost, create_at: 0}).then((payload) => {
             dispatch({
                 type: PostTypes.RECEIVED_POSTS,
                 data: {
@@ -107,11 +106,7 @@ export function createPost(post) {
                 },
                 channelId: payload.channel_id
             });
-        } catch (error) {
-            return {error};
-        }
-
-        return {data: true};
+        });
     };
 }
 
