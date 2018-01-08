@@ -12,6 +12,50 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const defaultTheme = Preferences.THEMES.default;
 
+export function PublicChannel() {
+    return (
+        <View style={style.container}>
+            <Icon
+                name='globe'
+                style={style.icon}
+            />
+        </View>
+    );
+}
+
+export function PrivateChannel() {
+    return (
+        <View style={style.container}>
+            <Icon
+                name='lock'
+                style={style.icon}
+            />
+        </View>
+    );
+}
+
+export function DirectChannel() {
+    return (
+        <View style={style.container}>
+            <Icon
+                name='user'
+                style={style.icon}
+            />
+        </View>
+    );
+}
+
+export function GroupChannel() {
+    return (
+        <View style={style.container}>
+            <Icon
+                name='users'
+                style={style.icon}
+            />
+        </View>
+    );
+}
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -27,47 +71,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const style = getStyleSheet(defaultTheme);
-
-export const PublicChannel = () => { //eslint-disable-line
-    return (
-        <View style={style.container}>
-            <Icon
-                name='globe'
-                style={style.icon}
-            />
-        </View>
-    );
-};
-
-export const PrivateChannel = () => { //eslint-disable-line
-    return (
-        <View style={style.container}>
-            <Icon
-                name='lock'
-                style={style.icon}
-            />
-        </View>
-    );
-};
-
-export const DirectChannel = () => { //eslint-disable-line
-    return (
-        <View style={style.container}>
-            <Icon
-                name='user'
-                style={style.icon}
-            />
-        </View>
-    );
-};
-
-export const GroupChannel = () => { //eslint-disable-line
-    return (
-        <View style={style.container}>
-            <Icon
-                name='users'
-                style={style.icon}
-            />
-        </View>
-    );
-};

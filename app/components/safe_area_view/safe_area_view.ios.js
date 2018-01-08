@@ -83,15 +83,15 @@ export default class SafeAreaIos extends PureComponent {
     };
 
     getSafeAreaInsets = () => {
-        if (this.mounted) {
-            this.getStatusBarHeight();
+        this.getStatusBarHeight();
 
-            if (this.isX) {
-                SafeArea.getSafeAreaInsetsForRootView().then((result) => {
-                    const {safeAreaInsets} = result;
+        if (this.isX) {
+            SafeArea.getSafeAreaInsetsForRootView().then((result) => {
+                const {safeAreaInsets} = result;
+                if (this.mounted) {
                     this.setState({safeAreaInsets});
-                });
-            }
+                }
+            });
         }
     };
 

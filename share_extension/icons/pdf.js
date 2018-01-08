@@ -17,8 +17,8 @@ const PdfSvg = ({height, width}) => { //eslint-disable-line
                 viewBox='0 0 24 32'
             >
                 <G
-                    stoke='none'
-                    stokeWidth={1}
+                    stroke='none'
+                    strokeWidth={1}
                     fillRule='evenodd'
                 >
                     <G

@@ -55,18 +55,21 @@ export default class ExtensionTeams extends PureComponent {
             const defaultChannels = {};
             const teams = await Client4.getMyTeams();
             const myMembers = await Client4.getMyTeamMembers();
-            const myTeams = teams.filter(async (team) => {
+            const myTeams = [];
+
+            teams.forEach(async (team) => {
                 const belong = myMembers.find((member) => member.team_id === team.id);
                 if (belong) {
                     const channels = await Client4.getMyChannels(team.id);
                     defaultChannels[team.id] = channels.find((channel) => channel.name === General.DEFAULT_CHANNEL);
-                    return true;
+                    myTeams.push(team);
                 }
+            });
 
-                return false;
-            }).sort(this.sortDisplayName);
-
-            this.setState({defaultChannels, myTeams});
+            this.setState({
+                defaultChannels,
+                myTeams: myTeams.sort(this.sortDisplayName)
+            });
         } catch (error) {
             this.setState({error});
         }

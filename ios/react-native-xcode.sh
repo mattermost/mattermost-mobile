@@ -10,6 +10,13 @@
 # This script is supposed to be invoked as part of Xcode build process
 # and relies on environment variables (including PWD) set by Xcode
 
+# This scripts allows the app and app extension bundles to be shared or separated.
+# Separating bundles allows for a minimal footprint for both app and app extension.
+# The original script provided by RN does not bundle app extensions.
+
+# This way we can set the BundleEntryFilename to index.js for the main app and
+# the BundleEntryFilename to share.ios.js for the extension
+
 DEST=$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH
 MAIN_BUNDLE="main.jsbundle"
 BUNDLE_FILE="$DEST/$MAIN_BUNDLE"

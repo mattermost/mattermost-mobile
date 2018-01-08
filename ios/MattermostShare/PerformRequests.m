@@ -42,9 +42,6 @@ MattermostBucket *mattermostBucket;
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionDataTask *)task didCompleteWithError:(nullable NSError *)error {
   if(error != nil) {
     NSLog(@"ERROR %@", [error userInfo]);
-    if ([self.requestId containsString:@"files"]) {
-      //      [self cleanUpTempFiles:appGroupId];
-    }
   }
   NSLog(@"invalidating session %@", self.requestId);
   [session finishTasksAndInvalidate];
@@ -69,8 +66,6 @@ MattermostBucket *mattermostBucket;
     NSLog(@"Cleaning temp files");
     [self cleanUpTempFiles];
   }
-  
-  //  [session finishTasksAndInvalidate];
 }
 
 -(void)createPost {
