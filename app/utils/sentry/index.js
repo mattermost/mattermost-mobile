@@ -12,6 +12,7 @@ import {getCurrentTeam, getCurrentTeamMembership} from 'mattermost-redux/selecto
 import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 export const LOGGER_JAVASCRIPT = 'javascript';
+export const LOGGER_JAVASCRIPT_WARNING = 'javascript_warning';
 export const LOGGER_NATIVE = 'native';
 export const LOGGER_REDUX = 'redux';
 
