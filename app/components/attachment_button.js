@@ -14,13 +14,19 @@ import {changeOpacity} from 'app/utils/theme';
 class AttachmentButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
+        children: PropTypes.node,
+        fileCount: PropTypes.number,
         intl: intlShape.isRequired,
+        maxFileCount: PropTypes.number.isRequired,
         navigator: PropTypes.object.isRequired,
+        onShowFileMaxWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
-        fileCount: PropTypes.number,
-        maxFileCount: PropTypes.number.isRequired,
-        onShowFileMaxWarning: PropTypes.func.isRequired
+        wrapper: PropTypes.bool
+    };
+
+    static defaultProps = {
+        maxFileCount: 5
     };
 
     attachFileFromCamera = () => {
@@ -142,7 +148,7 @@ class AttachmentButton extends PureComponent {
                 action();
             }
         }, 100);
-    }
+    };
 
     showFileAttachmentOptions = () => {
         const {fileCount, maxFileCount, onShowFileMaxWarning} = this.props;
@@ -200,7 +206,17 @@ class AttachmentButton extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, wrapper, children} = this.props;
+
+        if (wrapper) {
+            return (
+                <TouchableOpacity
+                    onPress={this.showFileAttachmentOptions}
+                >
+                    {children}
+                </TouchableOpacity>
+            );
+        }
 
         return (
             <TouchableOpacity

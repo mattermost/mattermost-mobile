@@ -6,6 +6,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
+import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {GlobalStyles} from 'app/styles';
@@ -14,11 +15,12 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 class ErrorText extends PureComponent {
     static propTypes = {
         error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        textStyle: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired
     };
 
     render() {
-        const {error, theme} = this.props;
+        const {error, textStyle, theme} = this.props;
         if (!error) {
             return null;
         }
@@ -32,13 +34,13 @@ class ErrorText extends PureComponent {
                     id={intl.id}
                     defaultMessage={intl.defaultMessage}
                     values={intl.values}
-                    style={[GlobalStyles.errorLabel, style.errorLabel]}
+                    style={[GlobalStyles.errorLabel, style.errorLabel, textStyle]}
                 />
             );
         }
 
         return (
-            <Text style={[GlobalStyles.errorLabel, style.errorLabel]}>
+            <Text style={[GlobalStyles.errorLabel, style.errorLabel, textStyle]}>
                 {error.message || error}
             </Text>
         );

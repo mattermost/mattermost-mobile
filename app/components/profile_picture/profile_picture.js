@@ -4,9 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, Platform, View} from 'react-native';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import UserStatus from 'app/components/user_status';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
 
@@ -25,6 +26,8 @@ export default class ProfilePicture extends PureComponent {
         user: PropTypes.object,
         showStatus: PropTypes.bool,
         status: PropTypes.string,
+        edit: PropTypes.bool,
+        imageUri: PropTypes.string,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getStatusForId: PropTypes.func.isRequired
@@ -35,7 +38,8 @@ export default class ProfilePicture extends PureComponent {
         showStatus: true,
         size: 128,
         statusBorderWidth: 2,
-        statusSize: 14
+        statusSize: 14,
+        edit: false
     };
 
     componentDidMount() {
@@ -45,7 +49,7 @@ export default class ProfilePicture extends PureComponent {
     }
 
     render() {
-        const {theme} = this.props;
+        const {edit, imageUri, showStatus, theme} = this.props;
         const style = getStyleSheet(theme);
 
         let pictureUrl;
@@ -53,12 +57,34 @@ export default class ProfilePicture extends PureComponent {
             pictureUrl = Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
         }
 
-        const statusIcon = (
-            <UserStatus
-                size={this.props.statusSize}
-                status={this.props.status}
-            />
-        );
+        if (edit && imageUri) {
+            pictureUrl = imageUri;
+        }
+
+        let statusIcon;
+        let statusStyle;
+        if (edit) {
+            const iconColor = changeOpacity(theme.centerChannelColor, 0.6);
+            statusStyle = {
+                width: this.props.statusSize,
+                height: this.props.statusSize,
+                backgroundColor: 'white'
+            };
+            statusIcon = (
+                <FontAwesomeIcon
+                    name='camera'
+                    size={this.props.statusSize / 1.7}
+                    color={iconColor}
+                />
+            );
+        } else if (this.props.status && !edit) {
+            statusIcon = (
+                <UserStatus
+                    size={this.props.statusSize}
+                    status={this.props.status}
+                />
+            );
+        }
 
         return (
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
@@ -68,8 +94,8 @@ export default class ProfilePicture extends PureComponent {
                     source={{uri: pictureUrl}}
                     defaultSource={placeholder}
                 />
-                {this.props.showStatus &&
-                    <View style={[style.statusWrapper, {borderRadius: this.props.statusSize / 2}]}>
+                {(showStatus || edit) &&
+                    <View style={[style.statusWrapper, statusStyle, {borderRadius: this.props.statusSize / 2}]}>
                         {statusIcon}
                     </View>
                 }
