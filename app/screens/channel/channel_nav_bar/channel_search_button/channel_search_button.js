@@ -74,13 +74,14 @@ export default class ChannelSearchButton extends PureComponent {
 const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            width: 40,
-            zIndex: 45
+            width: 40
         },
         flex: {
             flex: 1
         },
         wrapper: {
+            position: 'relative',
+            top: -1,
             alignItems: 'flex-end',
             flex: 1,
             flexDirection: 'column',

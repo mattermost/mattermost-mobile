@@ -16,9 +16,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
         currentChannelName: PropTypes.string,
-        deviceWidth: PropTypes.number,
         displayName: PropTypes.string,
-        height: PropTypes.number,
         onPress: PropTypes.func,
         theme: PropTypes.object
     };
@@ -30,7 +28,7 @@ export default class ChannelTitle extends PureComponent {
     };
 
     render() {
-        const {currentChannelName, deviceWidth, displayName, height, onPress, theme} = this.props;
+        const {currentChannelName, displayName, onPress, theme} = this.props;
         const channelName = displayName || currentChannelName;
         const style = getStyle(theme);
         let icon;
@@ -46,20 +44,18 @@ export default class ChannelTitle extends PureComponent {
 
         return (
             <TouchableOpacity
-                style={[style.container, {height, width: deviceWidth}]}
+                style={style.container}
                 onPress={onPress}
             >
-                <View style={[style.wrapper, {width: deviceWidth}]}>
-                    <View style={style.innerContainer}>
-                        <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={style.text}
-                        >
-                            {channelName}
-                        </Text>
-                        {icon}
-                    </View>
+                <View style={style.wrapper}>
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={style.text}
+                    >
+                        {channelName}
+                    </Text>
+                    {icon}
                 </View>
             </TouchableOpacity>
         );
@@ -69,18 +65,15 @@ export default class ChannelTitle extends PureComponent {
 const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            position: 'absolute',
-            zIndex: 40
+            flex: 1
         },
         wrapper: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
-        },
-        innerContainer: {
-            alignItems: 'center',
+            position: 'relative',
+            top: -1,
             flexDirection: 'row',
-            marginHorizontal: 55
+            justifyContent: 'flex-start'
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
@@ -88,7 +81,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 17,
+            fontSize: 18,
             fontWeight: 'bold',
             textAlign: 'center'
         }
