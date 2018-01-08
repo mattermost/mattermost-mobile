@@ -32,6 +32,10 @@ export default class MarkdownLink extends PureComponent {
     handlePress = () => {
         const url = normalizeProtocol(this.props.href);
 
+        if (!url) {
+            return;
+        }
+
         Linking.canOpenURL(url).then((supported) => {
             if (supported) {
                 Linking.openURL(url);
