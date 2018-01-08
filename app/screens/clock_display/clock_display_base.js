@@ -24,26 +24,26 @@ export default class ClockDisplayBase extends PureComponent {
         super(props);
 
         this.state = {
-            militaryTime: props.militaryTime
+            newMilitaryTime: props.militaryTime
         };
     }
 
     setMilitaryTime = (value) => {
         this.setState({
-            militaryTime: value
+            newMilitaryTime: value
         });
 
         this.saveClockDisplayPreference(value);
     };
 
-    saveClockDisplayPreference = (militaryTime) => {
+    saveClockDisplayPreference = (newMilitaryTime) => {
         const {userId, actions: {savePreferences}} = this.props;
 
         const timePreference = {
             user_id: userId,
             category: Preferences.CATEGORY_DISPLAY_SETTINGS,
             name: 'use_military_time',
-            value: militaryTime
+            value: newMilitaryTime
         };
 
         savePreferences(userId, [timePreference]);

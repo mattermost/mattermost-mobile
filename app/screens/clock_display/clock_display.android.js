@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Platform,
     TouchableOpacity,
     Modal,
     View
@@ -18,35 +17,36 @@ import ClockDisplayBase from './clock_display_base';
 export default class ClockDisplay extends ClockDisplayBase {
     static propTypes = {
         showModal: PropTypes.bool.isRequired,
-        close: PropTypes.func.isRequired
+        militaryTime: PropTypes.bool.isRequired,
+        onClose: PropTypes.func.isRequired
     };
 
     setMilitaryTime = (value) => {
         this.setState({
-            militaryTime: value
+            newMilitaryTime: value
         });
     };
 
     closeModal = () => {
-        const {militaryTime, close} = this.props;
+        const {militaryTime, onClose} = this.props;
         this.setState({
-            militaryTime
+            newMilitaryTime: militaryTime
         });
 
-        close();
+        onClose();
     };
 
     saveSelection = () => {
-        const {militaryTime} = this.state;
-        const {close} = this.props;
-        this.saveClockDisplayPreference(militaryTime);
-        close();
+        const {newMilitaryTime} = this.state;
+        const {onClose} = this.props;
+        this.saveClockDisplayPreference(newMilitaryTime);
+        onClose();
     };
 
     renderClockDisplayModal = (style) => {
         const {showModal} = this.props;
         const {intl} = this.context;
-        const {militaryTime} = this.state;
+        const {newMilitaryTime} = this.state;
 
         const options = [{
             label: intl.formatMessage({
@@ -54,14 +54,14 @@ export default class ClockDisplay extends ClockDisplayBase {
                 defaultMessage: '12-hour clock (example: 4:00 PM)'
             }),
             value: 'false',
-            checked: militaryTime === 'false'
+            checked: newMilitaryTime === 'false'
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.display.militaryClock',
                 defaultMessage: '24-hour clock (example: 16:00)'
             }),
             value: 'true',
-            checked: militaryTime === 'true'
+            checked: newMilitaryTime === 'true'
         }];
 
         return (
@@ -105,7 +105,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                                         style={style.modalFooterOption}
                                     />
                                 </TouchableOpacity>
-                                <View style={{marginRight: 10}}/>
+                                <View style={style.modalFooterButtonSpacer}/>
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}
                                     onPress={this.saveSelection}
@@ -147,12 +147,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1,
-            ...Platform.select({
-                ios: {
-                    paddingTop: 35
-                }
-            })
+            flex: 1
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -208,6 +203,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         modalFooterOption: {
             color: theme.linkColor,
             fontSize: 14
+        },
+        modalFooterButtonSpacer: {
+            marginRight: 10
         }
     };
 });

@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getTheme, get as getPreference} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -13,10 +13,10 @@ import ClockDisplay from './clock_display';
 
 function mapStateToProps(state) {
     const militaryTime = getPreference(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time') || 'false';
-    const currentUser = getCurrentUser(state);
+    const currentUserId = getCurrentUserId(state);
 
     return {
-        userId: currentUser.id,
+        userId: currentUserId,
         theme: getTheme(state),
         militaryTime
     };

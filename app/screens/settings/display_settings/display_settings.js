@@ -19,12 +19,11 @@ import ClockDisplay from 'app/screens/clock_display';
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object.isRequired,
-        intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape.isRequired
     };
 
     state = {
@@ -38,7 +37,7 @@ export default class DisplaySettings extends PureComponent {
         if (Platform.OS === 'ios') {
             navigator.push({
                 screen: 'ClockDisplay',
-                title: intl.formatMessage({id: 'mobile.advanced_settings.clockDisplay', defaultMessage: 'Clock Display'}),
+                title: intl.formatMessage({id: 'user.settings.display.clockDisplay', defaultMessage: 'Clock Display'}),
                 animated: true,
                 backButtonTitle: '',
                 navigatorStyle: {
@@ -68,7 +67,7 @@ export default class DisplaySettings extends PureComponent {
             clockDisplayModal = (
                 <ClockDisplay
                     showModal={showClockDisplaySettings}
-                    close={this.closeClockDisplaySettings}
+                    onClose={this.closeClockDisplaySettings}
                 />
             );
         }
