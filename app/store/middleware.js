@@ -6,7 +6,12 @@ import DeviceInfo from 'react-native-device-info';
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
 
-export function messageRetention() {
+import {
+    captureException,
+    LOGGER_JAVASCRIPT_WARNING
+} from 'app/utils/sentry';
+
+export function messageRetention(store) {
     return (next) => (action) => {
         if (action.type === 'persist/REHYDRATE') {
             const {app} = action.payload;
@@ -23,7 +28,17 @@ export function messageRetention() {
 
             // Keep only the last 60 messages for the last 5 viewed channels in each team
             // and apply data retention on those posts if applies
-            return next(cleanupState(action));
+            let nextAction;
+            try {
+                nextAction = cleanupState(action);
+            } catch (e) {
+                // Sometimes, the payload is incomplete so log the error to Sentry and skip the cleanup
+                console.warn(e); // eslint-disable-line no-console
+                captureException(e, LOGGER_JAVASCRIPT_WARNING, store);
+                nextAction = action;
+            }
+
+            return next(nextAction);
         } else if (action.type === ViewTypes.DATA_CLEANUP) {
             const nextAction = cleanupState(action, true);
             return next(nextAction);
