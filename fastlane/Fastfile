@@ -1,4 +1,8 @@
 fastlane_version '2.71.0'
+
+require 'aws-sdk-s3'
+require 'erb'
+
 skip_docs
 
 platform :ios do
@@ -48,6 +52,31 @@ platform :ios do
 
     update_identifiers()
     replace_ios_assets()
+  end
+
+  lane :build_qa do
+    match(type: 'adhoc')
+    build_ios
+
+    current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj').to_i
+    plist_template = File.read('plist.erb')
+    abbreviated_commit_hash = `git rev-parse --short head`
+    abbreviated_commit_hash.strip!
+    plist_body = ERB.new(plist_template).result(binding)
+
+    s3 = Aws::S3::Resource.new(region: ENV['AWS_REGION'])
+    plist_obj = s3.bucket(ENV['AWS_BUCKET_NAME']).object("ios/#{abbreviated_commit_hash}.plist")
+    plist_obj.put(body: plist_body)
+
+    ipa_obj = s3.bucket(ENV['AWS_BUCKET_NAME']).object("ios/#{abbreviated_commit_hash}.ipa")
+    ipa_obj.upload_file('../Mattermost.ipa')
+
+    ios_install_url = "itms-services://?action=download-manifest&url=https://s3.#{ENV['AWS_REGION']}.amazonaws.com/#{ENV['AWS_BUCKET_NAME']}/ios/#{abbreviated_commit_hash}.plist"
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — iOS: #{ios_install_url}"
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
+    end
   end
 
   error do |lane, exception|
@@ -160,7 +189,7 @@ platform :ios do
         payload: {},
         attachment_properties: {
             title: title,
-            thumb_url: 'https://lh3.googleusercontent.com/Nkbo3QohCOU8bGqSYtwB88o03XxUwRAxRHNdXPB9zFvYFzTwD7naYa-GYJaelBp-OIc=w300',
+            thumb_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
             fields: [{
                          title: 'Version',
                          value: version,
@@ -238,6 +267,26 @@ platform :android do
         build_type: 'Unsigned',
         project_dir: 'android/'
     )
+  end
+
+  lane :build_qa do
+    prepare_release
+
+    build_android
+
+    abbreviated_commit_hash = last_git_commit[:abbreviated_commit_hash]
+
+    s3 = Aws::S3::Resource.new(region: ENV['AWS_REGION'])
+
+    apk_obj = s3.bucket(ENV['AWS_BUCKET_NAME']).object("android/#{abbreviated_commit_hash}.apk")
+    apk_obj.upload_file("#{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]}")
+
+    android_install_path = "https://s3.#{ENV['AWS_REGION']}.amazonaws.com/#{ENV['AWS_BUCKET_NAME']}/android/#{abbreviated_commit_hash}.apk"
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — Android: #{android_install_path}"
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
+    end
   end
 
   error do |lane, exception|
@@ -410,7 +459,7 @@ platform :android do
         payload: {},
         attachment_properties: {
             title: title,
-            thumb_url: 'http://www.concretesolutions.com.br/blog/wp-content/uploads/2015/04/Android1.png',
+            thumb_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
             fields: [{
                          title: 'Version',
                          value: version_name,

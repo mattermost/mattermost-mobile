@@ -149,3 +149,15 @@ export GITHUB_PULL_REQUEST_API_TOKEN=
 
 # The GitHub repo to submit the Pull Request against.
 export GITHUB_PULL_REQUEST_REPO=mattermost/mattermost-mobile
+
+
+############ WEBHOOK ############
+export MATTERMOST_WEBHOOK_URL=
+export MATTERMOST_URL=$MATTERMOST_WEBHOOK_URL
+
+
+############ AWS ############
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_BUCKET_NAME=
+export AWS_REGION=

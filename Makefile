@@ -166,7 +166,7 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
 		fi; \
     fi
 
-build-ios: | pre-run check-style
+build-ios: | pre-run check-style ## Creates an iOS build
 ifneq ($(IOS_APP_GROUP),)
 	@mkdir -p assets/override
 	@echo "{\n\t\"AppGroupId\": \"$$IOS_APP_GROUP\"\n}" > assets/override/config.json
@@ -180,7 +180,7 @@ endif
 	@ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' | xargs kill -9
 	@rm -rf assets/override
 
-build-android: | pre-run check-style prepare-android-build
+build-android: | pre-run check-style prepare-android-build ## Creates an Android build
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start & echo; \
