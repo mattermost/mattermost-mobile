@@ -1,5 +1,20 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.5.2 Release
+- Release Date: January 12, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+- Fixed an issue causing some Android devices to crash on launch
+- Fixed an issue with the app occasionally crashing when receiving push notifications in a new channel 
+- Channel footer area is now refreshed when switching between Group and Direct Message channels
+- Fixed an issue on some Android devices so Mattermost verifies it has permissions to access ringtones
+- Fixed an issue where the text box overlapped the keyboard on some iOS devices using multiple keyboard layouts
+- Fixed an issue with video uploads on Android devices
+- Fixed an issue with GIF uploads on iOS devices
+- Fixed an issue with the mention badge flickering on the channel drawer icon when there were over 10 unread mentions
+- Fixed an issue with the app occasionally freezing when requesting the RefreshToken
+
 ## v1.5.1 Release
 
 - Release Date: December 7, 2017
