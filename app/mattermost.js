@@ -51,7 +51,6 @@ import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
 import mattermostManaged from 'app/mattermost_managed';
 import {deleteFileCache} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
 import {init as initAnalytics} from 'app/utils/segment';
 import {
     captureException,
@@ -497,7 +496,7 @@ export default class Mattermost {
         }
     };
 
-    onPushNotificationReply = (data, text, badge, completed = emptyFunction) => {
+    onPushNotificationReply = (data, text, badge, completed) => {
         const {dispatch, getState} = this.store;
         const state = getState();
         const {currentUserId} = state.entities.users;
