@@ -401,11 +401,12 @@ export default class Mattermost {
 
             const isNotActive = AppState.currentState !== 'active';
             const notification = PushNotifications.getNotification();
-            if (notification) {
+            if (notification || this.replyNotificationData) {
                 // If we have a notification means that the app was started cause of a reply
                 // and the app was not sitting in the background nor opened
-                const {data, text, badge} = notification;
-                this.onPushNotificationReply(data, text, badge);
+                const notificationData = notification || this.replyNotificationData;
+                const {data, text, badge, completed} = notificationData;
+                this.onPushNotificationReply(data, text, badge, completed);
                 PushNotifications.resetNotification();
             }
 
@@ -521,17 +522,22 @@ export default class Mattermost {
                 Client4.setToken(state.entities.general.credentials.token);
             }
 
-            createPost(post)(dispatch, getState);
-            markChannelAsRead(data.channel_id)(dispatch, getState);
+            createPost(post)(dispatch, getState).then(() => {
+                markChannelAsRead(data.channel_id)(dispatch, getState);
 
-            if (badge >= 0) {
-                PushNotifications.setApplicationIconBadgeNumber(badge);
-            }
-        }
+                if (badge >= 0) {
+                    PushNotifications.setApplicationIconBadgeNumber(badge);
+                }
 
-        if (completed) {
-            // You must call to completed(), otherwise the action will not be triggered
-            completed();
+                this.replyNotificationData = null;
+            }).then(completed);
+        } else {
+            this.replyNotificationData = {
+                data,
+                text,
+                badge,
+                completed
+            };
         }
     };
 
