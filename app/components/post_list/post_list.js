@@ -33,13 +33,13 @@ export default class PostList extends PureComponent {
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         deviceHeight: PropTypes.number.isRequired,
-        hasNewMessage: PropTypes.bool,
         highlightPostId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
         initialBatchToRender: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         loadMore: PropTypes.func,
+        measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
@@ -61,7 +61,7 @@ export default class PostList extends PureComponent {
 
     state = {
         managedConfig: {},
-        scrollToNewMessage: false
+        scrollToMessage: false
     };
 
     componentWillMount() {
@@ -84,46 +84,16 @@ export default class PostList extends PureComponent {
 
     componentDidUpdate(prevProps) {
         const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
-        if ((prevProps.channelId !== this.props.channelId || initialPosts || this.props.isSearchResult) && this.refs.list) {
-            // this.moreNewMessages = false;
-            // this.scrollToMessageTries = 0;
-        }
-
-        if (this.props.hasNewMessage && this.state.scrollToNewMessage) {
-            this.scrollListToNewMessageOffset();
-        } else if (!this.props.hasNewMessage) {
+        if ((prevProps.channelId !== this.props.channelId || initialPosts) && this.refs.list) {
             this.scrollToBottomOffset();
+        } else if ((this.props.measureCellLayout || this.props.isSearchResult) && this.state.scrollToMessage) {
+            this.scrollListToMessageOffset();
         }
     }
 
     componentWillUnmount() {
         mattermostManaged.removeEventListener(this.listenerId);
     }
-
-    scrollList = () => {
-        InteractionManager.runAfterInteractions(() => {
-            if (this.props.postIds.length && this.newMessagesIndex !== -1 && !this.moreNewMessages) {
-                if (this.refs.list) {
-                    this.refs.list.scrollToIndex({
-                        index: this.newMessagesIndex,
-                        viewPosition: 1,
-                        viewOffset: -10,
-                        animated: true
-                    });
-                }
-            } else if (this.refs.list && this.moreNewMessages) {
-                this.refs.list.scrollToIndex({
-                    index: this.props.postIds.length - 1,
-                    viewPosition: 1,
-                    viewOffset: -10,
-                    animated: true
-                });
-                this.moreNewMessages = false;
-            } else if (this.refs.list) {
-                this.refs.list.scrollToOffset({offset: 0, animated: true});
-            }
-        });
-    };
 
     scrollToBottomOffset = () => {
         InteractionManager.runAfterInteractions(() => {
@@ -133,22 +103,22 @@ export default class PostList extends PureComponent {
         });
     }
 
-    scrollListToNewMessageOffset = () => {
+    getMeasurementOffset = (index) => {
+        const orderedKeys = Object.keys(this.itemMeasurements).sort().slice(0, index);
+        return orderedKeys.map((i) => this.itemMeasurements[i]).reduce((a, b) => a + b, 0);
+    }
+
+    scrollListToMessageOffset = () => {
         const index = this.moreNewMessages ? this.props.postIds.length : this.newMessagesIndex;
         if (index !== -1) {
-            const {deviceHeight} = this.props;
-            const windowHeight = deviceHeight - 100;
+            let offset = this.getMeasurementOffset(index);
 
-            const items = Object.values(this.itemMeasurements).slice(0, this.newMessagesIndex);
-            let offset = items.reduce((a, b) => a + b);
-
+            const windowHeight = this.state.postListHeight;
             if (index !== this.props.postIds.length - 1) {
                 if (offset < windowHeight) {
-                    return;
-                } else if (offset > windowHeight * 2) {
-                    offset = offset - (windowHeight / 2);
-                } else {
-                    offset = offset - 400;
+                    return; // no need to scroll since item is in view
+                } else if (offset > windowHeight) {
+                    offset = (offset - (windowHeight / 2)) + this.itemMeasurements[index];
                 }
             }
 
@@ -162,7 +132,7 @@ export default class PostList extends PureComponent {
                     this.newMessagesIndex = -1;
                     this.moreNewMessages = false;
                     this.setState({
-                        scrollToNewMessage: false
+                        scrollToMessage: false
                     });
                 }
             });
@@ -206,7 +176,7 @@ export default class PostList extends PureComponent {
         if (this.props.postIds.length === Object.values(this.itemMeasurements).length) {
             if (this.newMessagesIndex !== -1 && !this.newMessageScrolledTo) {
                 this.setState({
-                    scrollToNewMessage: true
+                    scrollToMessage: true
                 });
             }
         }
@@ -222,7 +192,7 @@ export default class PostList extends PureComponent {
                     onLayoutCalled={this.measureItem}
                     theme={this.props.theme}
                     moreMessages={this.moreNewMessages}
-                    shouldCallOnLayout={this.props.hasNewMessage && !this.newMessageScrolledTo}
+                    shouldCallOnLayout={this.props.measureCellLayout && !this.newMessageScrolledTo}
                 />
             );
         } else if (item.indexOf(DATE_LINE) === 0) {
@@ -246,7 +216,7 @@ export default class PostList extends PureComponent {
                 date={date}
                 index={index}
                 onLayoutCalled={this.measureItem}
-                shouldCallOnLayout={this.props.hasNewMessage && !this.newMessageScrolledTo}
+                shouldCallOnLayout={this.props.measureCellLayout && !this.newMessageScrolledTo}
             />
         );
     };
@@ -281,7 +251,7 @@ export default class PostList extends PureComponent {
                 navigator={navigator}
                 managedConfig={managedConfig}
                 onLayoutCalled={this.measureItem}
-                shouldCallOnLayout={this.props.hasNewMessage && !this.newMessageScrolledTo}
+                shouldCallOnLayout={this.props.measureCellLayout && !this.newMessageScrolledTo}
             />
         );
     };
@@ -308,6 +278,13 @@ export default class PostList extends PureComponent {
         );
     };
 
+    onLayout = (event) => {
+        const {height} = event.nativeEvent.layout;
+        this.setState({
+            postListHeight: height
+        });
+    }
+
     render() {
         const {
             channelId,
@@ -327,6 +304,7 @@ export default class PostList extends PureComponent {
 
         return (
             <FlatList
+                onLayout={this.onLayout}
                 ref='list'
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId)}

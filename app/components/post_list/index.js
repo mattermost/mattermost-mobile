@@ -15,13 +15,13 @@ function makeMapStateToProps() {
     const preparePostIds = makePreparePostIdsForPostList();
     return (state, ownProps) => {
         const postIds = preparePostIds(state, ownProps);
-        const hasNewMessage = postIds.indexOf(START_OF_NEW_MESSAGES) > -1;
+        const measureCellLayout = postIds.indexOf(START_OF_NEW_MESSAGES) > -1 || Boolean(ownProps.highlightPostId);
 
         const {deviceHeight} = state.device.dimension;
 
         return {
             deviceHeight,
-            hasNewMessage,
+            measureCellLayout,
             initialBatchToRender: 15,
             postIds,
             theme: getTheme(state)
