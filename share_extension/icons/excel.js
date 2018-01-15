@@ -2,13 +2,14 @@
 // See License.txt for license information.
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import {View} from 'react-native';
 import Svg, {
     G,
     Path
 } from 'react-native-svg';
 
-const ExcelSvg = ({height, width}) => { //eslint-disable-line
+function ExcelSvg({height, width}) {
     return (
         <View style={{height, width, alignItems: 'flex-start'}}>
             <Svg
@@ -44,6 +45,11 @@ const ExcelSvg = ({height, width}) => { //eslint-disable-line
             </Svg>
         </View>
     );
+}
+
+ExcelSvg.propTypes = {
+    height: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired
 };
 
 export default ExcelSvg;
