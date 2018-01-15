@@ -49,6 +49,7 @@
     "react-native-vector-icons": "4.4.2",
     "react-native-video": "2.0.0",
     "react-native-youtube": "1.0.1",
+    "react-navigation": "1.0.0-beta.23",
     "react-redux": "5.0.6",
     "redux": "3.7.2",
     "redux-batched-actions": "0.2.0",

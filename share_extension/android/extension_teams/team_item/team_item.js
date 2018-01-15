@@ -1,11 +1,11 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2018-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    TouchableHighlight,
     Text,
+    TouchableHighlight,
     View
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
@@ -13,69 +13,61 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {DirectChannel, GroupChannel, PublicChannel, PrivateChannel} from 'share_extension/icons/channel_type';
-
-const channelTypes = {
-    D: DirectChannel,
-    G: GroupChannel,
-    O: PublicChannel,
-    P: PrivateChannel
-};
-
-export default class ExtensionChannelItem extends PureComponent {
+export default class TeamItem extends PureComponent {
     static propTypes = {
-        channel: PropTypes.object.isRequired,
-        currentChannelId: PropTypes.string.isRequired,
-        onSelectChannel: PropTypes.func.isRequired,
+        currentTeamId: PropTypes.string.isRequired,
+        onSelectTeam: PropTypes.func.isRequired,
+        team: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
-        const {channel, onSelectChannel} = this.props;
-        requestAnimationFrame(() => {
-            onSelectChannel(channel);
-        });
+        const {onSelectTeam, team} = this.props;
+        onSelectTeam(team.id);
     });
 
     render() {
         const {
-            channel,
-            currentChannelId,
+            currentTeamId,
+            team,
             theme
         } = this.props;
+        const styles = getStyleSheet(theme);
 
-        const style = getStyleSheet(theme);
-        const isCurrent = channel.id === currentChannelId;
         let current;
-
-        if (isCurrent) {
+        if (team.id === currentTeamId) {
             current = (
-                <View style={style.checkmarkContainer}>
+                <View style={styles.checkmarkContainer}>
                     <IonIcon
                         name='md-checkmark'
-                        style={style.checkmark}
+                        style={styles.checkmark}
                     />
                 </View>
             );
         }
 
-        const Type = channelTypes[channel.type] || PublicChannel;
-        const icon = <Type/>;
+        const icon = (
+            <View style={styles.iconContainer}>
+                <Text style={styles.icon}>
+                    {team.display_name.substr(0, 2).toUpperCase()}
+                </Text>
+            </View>
+        );
 
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
             >
-                <View style={style.container}>
-                    <View style={style.item}>
+                <View style={styles.container}>
+                    <View style={styles.item}>
                         {icon}
                         <Text
-                            style={[style.text]}
+                            style={[styles.text]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
-                            {channel.display_name}
+                            {team.display_name}
                         </Text>
                         {current}
                     </View>
@@ -103,12 +95,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 16,
-            fontWeight: '600',
-            lineHeight: 16,
             paddingRight: 5
         },
         iconContainer: {
-            marginRight: 5
+            alignItems: 'center',
+            backgroundColor: theme.linkColor,
+            borderRadius: 2,
+            height: 30,
+            justifyContent: 'center',
+            width: 30,
+            marginRight: 10
+        },
+        icon: {
+            color: theme.sidebarText,
+            fontFamily: 'OpenSans',
+            fontSize: 15,
+            fontWeight: '600'
         },
         checkmarkContainer: {
             alignItems: 'flex-end'

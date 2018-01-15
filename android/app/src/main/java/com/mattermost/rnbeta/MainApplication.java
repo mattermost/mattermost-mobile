@@ -1,5 +1,6 @@
 package com.mattermost.rnbeta;
 
+import com.mattermost.share.SharePackage;
 import android.app.Application;
 import android.support.annotation.NonNull;
 import android.content.Context;
@@ -70,13 +71,14 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactNativeExceptionHandlerPackage(),
             new ReactNativeYouTube(),
             new ReactVideoPackage(),
-            new RNReactNativeDocViewerPackage()
+            new RNReactNativeDocViewerPackage(),
+            new SharePackage()
     );
   }
 
   @Override
   public String getJSMainModuleName() {
-    return "index";
+    return "index.android";
   }
 
   @Override
