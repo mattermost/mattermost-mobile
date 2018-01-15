@@ -19,6 +19,7 @@ import {
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
+        const {currentUserId} = getState().entities.users;
         const [configData, licenseData] = await Promise.all([
             getClientConfig()(dispatch, getState),
             getLicenseConfig()(dispatch, getState)
@@ -27,11 +28,13 @@ export function loadConfigAndLicense() {
         const config = configData.data || {};
         const license = licenseData.data || {};
 
-        if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
-            license.IsLicensed === 'true' && license.DataRetention === 'true') {
-            getDataRetentionPolicy()(dispatch, getState);
-        } else {
-            dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+        if (currentUserId) {
+            if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
+                license.IsLicensed === 'true' && license.DataRetention === 'true') {
+                getDataRetentionPolicy()(dispatch, getState);
+            } else {
+                dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+            }
         }
 
         return {config, license};
