@@ -53,19 +53,16 @@ export default class ExtensionTeam extends PureComponent {
 
     buildSections = (term) => {
         const sections = [];
-        const {
-            directChannels,
-            privateChannels,
-            publicChannels
+        let {
+            directChannels: directFiltered,
+            privateChannels: privateFiletered,
+            publicChannels: publicFiltered
         } = this.props;
 
-        let directFiltered = directChannels;
-        let privateFiletered = privateChannels;
-        let publicFiltered = publicChannels;
         if (term) {
-            directFiltered = directChannels.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
-            privateFiletered = privateChannels.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
-            publicFiltered = publicChannels.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
+            directFiltered = directFiltered.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
+            privateFiletered = privateFiletered.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
+            publicFiltered = publicFiltered.filter((c) => c.display_name.toLowerCase().includes(term.toLowerCase()));
         }
 
         if (publicFiltered.length) {

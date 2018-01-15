@@ -1,12 +1,5 @@
 // // Copyright (c) 2018-present Mattermost, Inc. All Rights Reserved.
 // // See License.txt for license information.
-//
-// import React, {PureComponent} from 'react';
-//
-// import initialState from 'app/initial_state';
-// import configureStore from 'app/store';
-//
-// export default class
 
 import {StackNavigator as stackNavigator} from 'react-navigation';
 
