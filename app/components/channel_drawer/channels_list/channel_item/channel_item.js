@@ -21,8 +21,10 @@ const {View: AnimatedView} = Animated;
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
+        currentUserId: PropTypes.string.isRequired,
         channelId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
+        channelTeammateId: PropTypes.string,
         displayName: PropTypes.string.isRequired,
         fake: PropTypes.bool,
         isUnread: PropTypes.bool,
@@ -71,8 +73,10 @@ export default class ChannelItem extends PureComponent {
 
     render() {
         const {
+            currentUserId,
             channelId,
             currentChannelId,
+            channelTeammateId,
             displayName,
             isUnread,
             mentions,
@@ -80,6 +84,16 @@ export default class ChannelItem extends PureComponent {
             theme,
             type
         } = this.props;
+
+        const {intl} = this.context;
+
+        let channelDisplayName = displayName;
+        if (currentUserId === channelTeammateId) {
+            channelDisplayName = intl.formatMessage({
+                id: 'mobile.channel.you',
+                defaultMessage: '{displayName} (you)'
+            }, {displayName});
+        }
 
         const style = getStyleSheet(theme);
         const isActive = channelId === currentChannelId;
@@ -142,7 +156,7 @@ export default class ChannelItem extends PureComponent {
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
-                                {displayName}
+                                {channelDisplayName}
                             </Text>
                             {badge}
                         </View>

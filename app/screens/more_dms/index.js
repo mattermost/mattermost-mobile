@@ -17,10 +17,8 @@ import {getCurrentUserId, getProfilesInCurrentTeam, getUsers} from 'mattermost-r
 
 import MoreDirectMessages from './more_dms';
 
-function sortAndRemoveCurrentUser(profiles, currentUserId) {
-    const users = {...profiles};
-    Reflect.deleteProperty(users, currentUserId);
-    return Object.values(users).sort((a, b) => {
+function sortCurrentUsers(profiles) {
+    return Object.values(profiles).sort((a, b) => {
         const nameA = a.username;
         const nameB = b.username;
 
@@ -30,14 +28,12 @@ function sortAndRemoveCurrentUser(profiles, currentUserId) {
 
 const getUsersInCurrentTeamForMoreDirectMessages = createSelector(
     getProfilesInCurrentTeam,
-    getCurrentUserId,
-    sortAndRemoveCurrentUser
+    sortCurrentUsers
 );
 
 const getUsersForMoreDirectMessages = createSelector(
     getUsers,
-    getCurrentUserId,
-    sortAndRemoveCurrentUser
+    sortCurrentUsers
 );
 
 function mapStateToProps(state) {

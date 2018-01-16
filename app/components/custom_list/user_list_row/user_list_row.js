@@ -3,6 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 import {
     Text,
     View
@@ -17,10 +18,15 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 export default class UserListRow extends React.PureComponent {
     static propTypes = {
         id: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         ...CustomListRow.propTypes
+    };
+
+    static contextTypes = {
+        intl: intlShape
     };
 
     onPress = () => {
@@ -28,25 +34,46 @@ export default class UserListRow extends React.PureComponent {
     };
 
     render() {
-        const style = getStyleFromTheme(this.props.theme);
+        const {formatMessage} = this.context.intl;
+        const {
+            currentUserId,
+            enabled,
+            onPress,
+            selectable,
+            selected,
+            teammateNameDisplay,
+            theme,
+            user
+        } = this.props;
+
+        const {id, username} = user;
+        const style = getStyleFromTheme(theme);
+
+        let usernameDisplay = `(@${username})`;
+        if (id === currentUserId) {
+            usernameDisplay = formatMessage({
+                id: 'mobile.more_dms.you',
+                defaultMessage: '(@{username} - you)'
+            }, {username});
+        }
 
         return (
             <CustomListRow
-                id={this.props.id}
-                theme={this.props.theme}
-                onPress={this.props.onPress ? this.onPress : null}
-                enabled={this.props.enabled}
-                selectable={this.props.selectable}
-                selected={this.props.selected}
+                id={id}
+                theme={theme}
+                onPress={onPress ? this.onPress : null}
+                enabled={enabled}
+                selectable={selectable}
+                selected={selected}
             >
                 <ProfilePicture
-                    userId={this.props.user.id}
+                    userId={id}
                     size={32}
                 />
                 <View style={style.textContainer}>
                     <View>
                         <Text style={style.displayName}>
-                            {displayUsername(this.props.user, this.props.teammateNameDisplay)}
+                            {displayUsername(user, teammateNameDisplay)}
                         </Text>
                     </View>
                     <View>
@@ -55,7 +82,7 @@ export default class UserListRow extends React.PureComponent {
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
-                            {`(@${this.props.user.username})`}
+                            {usernameDisplay}
                         </Text>
                     </View>
                 </View>

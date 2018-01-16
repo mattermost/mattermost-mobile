@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 
 import {getCurrentChannelId, makeGetChannel, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 
 import ChannelItem from './channel_item';
 
@@ -18,8 +19,15 @@ function makeMapStateToProps() {
             member = getMyChannelMember(state, ownProps.channelId);
         }
 
+        let teammate = null;
+        if (channel.teammate_id) {
+            teammate = getUser(state, channel.teammate_id);
+        }
+
         return {
+            currentUserId: getCurrentUserId(state),
             currentChannelId: getCurrentChannelId(state),
+            channelTeammateId: teammate && teammate.id,
             displayName: channel.display_name,
             fake: channel.fake,
             mentions: member ? member.mention_count : 0,

@@ -16,18 +16,6 @@ function makeMapStateToProps() {
     const getChannel = makeGetChannel();
     const getProfilesInChannel = makeGetProfilesInChannel();
 
-    const getOtherUserIdForDm = createSelector(
-        (state, channel) => channel,
-        getCurrentUserId,
-        (channel, currentUserId) => {
-            if (!channel) {
-                return '';
-            }
-
-            return channel.name.split('__').find((m) => m !== currentUserId);
-        }
-    );
-
     const getChannelMembers = createSelector(
         getCurrentUserId,
         (state, channel) => getProfilesInChannel(state, channel.id),
@@ -37,20 +25,14 @@ function makeMapStateToProps() {
         }
     );
 
-    const getChannelMembersForDm = createSelector(
-        (state, channel) => getUser(state, getOtherUserIdForDm(state, channel)),
-        (otherUser) => {
-            if (!otherUser) {
-                return [];
-            }
-
-            return [otherUser];
-        }
-    );
-
     return function mapStateToProps(state, ownProps) {
         const currentChannel = getChannel(state, {id: ownProps.channelId}) || {};
         const {status: getPostsRequestStatus} = state.requests.posts.getPosts;
+
+        const teammate = [];
+        if (currentChannel.teammate_id) {
+            teammate.push(getUser(state, currentChannel.teammate_id));
+        }
 
         let currentChannelMembers;
         let creator;
@@ -58,7 +40,7 @@ function makeMapStateToProps() {
 
         if (currentChannel) {
             if (currentChannel.type === General.DM_CHANNEL) {
-                currentChannelMembers = getChannelMembersForDm(state, currentChannel);
+                currentChannelMembers = teammate;
             } else {
                 currentChannelMembers = getChannelMembers(state, currentChannel);
             }
