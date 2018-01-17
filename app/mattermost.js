@@ -233,6 +233,7 @@ export default class Mattermost {
         const {dispatch, getState} = this.store;
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const intl = this.getIntl();
+        const state = getState();
 
         if (serverVersion) {
             if (semver.valid(version) && semver.lt(version, Config.MinServerVersion)) {
@@ -245,7 +246,7 @@ export default class Mattermost {
                     }],
                     {cancelable: false}
                 );
-            } else {
+            } else if (state.entities.users && state.entities.users.currentUserId) {
                 setServerVersion(serverVersion)(dispatch, getState);
                 const data = await loadConfigAndLicense()(dispatch, getState);
                 this.configureAnalytics(data.config);

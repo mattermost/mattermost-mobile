@@ -61,7 +61,8 @@ class SelectServer extends PureComponent {
         this.state = {
             connected: false,
             connecting: false,
-            error: null
+            error: null,
+            url: props.serverUrl
         };
 
         this.cancelPing = null;
@@ -177,6 +178,10 @@ class SelectServer extends PureComponent {
         this.blur();
     };
 
+    handleTextChanged = (url) => {
+        this.setState({url});
+    };
+
     onClick = wrapWithPreventDoubleTap(async () => {
         const preUrl = urlParse(this.props.serverUrl, true);
         const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
@@ -206,13 +211,11 @@ class SelectServer extends PureComponent {
     });
 
     pingServer = (url) => {
-        const {actions, config} = this.props;
-
         const {
             getPing,
             handleServerUrlChanged,
             loadConfigAndLicense
-        } = actions;
+        } = this.props.actions;
 
         this.setState({
             connected: false,
@@ -241,7 +244,7 @@ class SelectServer extends PureComponent {
                 return;
             }
 
-            if (!result.error && !Object.keys(config).length) {
+            if (!result.error) {
                 loadConfigAndLicense();
             }
 
@@ -272,14 +275,12 @@ class SelectServer extends PureComponent {
     };
 
     render() {
-        const {
-            allowOtherServers,
-            serverUrl
-        } = this.props;
+        const {allowOtherServers} = this.props;
         const {
             connected,
             connecting,
-            error
+            error,
+            url
         } = this.state;
 
         let buttonIcon;
@@ -340,9 +341,9 @@ class SelectServer extends PureComponent {
                         </View>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
-                            value={serverUrl}
+                            value={url}
                             editable={!inputDisabled}
-                            onChangeText={this.props.actions.handleServerUrlChanged}
+                            onChangeText={this.handleTextChanged}
                             onSubmitEditing={this.onClick}
                             style={inputStyle}
                             autoCapitalize='none'
