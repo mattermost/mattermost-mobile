@@ -38,6 +38,7 @@ class SelectServer extends PureComponent {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
+            loadConfigAndLicense: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired
         }).isRequired,
@@ -205,6 +206,14 @@ class SelectServer extends PureComponent {
     });
 
     pingServer = (url) => {
+        const {actions, config} = this.props;
+
+        const {
+            getPing,
+            handleServerUrlChanged,
+            loadConfigAndLicense
+        } = actions;
+
         this.setState({
             connected: false,
             connecting: true,
@@ -213,7 +222,7 @@ class SelectServer extends PureComponent {
 
         Client4.setUrl(url);
         Client.setUrl(url);
-        this.props.actions.handleServerUrlChanged(url);
+        handleServerUrlChanged(url);
 
         let cancel = false;
         this.cancelPing = () => {
@@ -227,9 +236,13 @@ class SelectServer extends PureComponent {
             this.cancelPing = null;
         };
 
-        this.props.actions.getPing().then((result) => {
+        getPing().then((result) => {
             if (cancel) {
                 return;
+            }
+
+            if (!result.error && !Object.keys(config).length) {
+                loadConfigAndLicense();
             }
 
             this.setState({
