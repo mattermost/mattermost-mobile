@@ -24,7 +24,7 @@ function makeMapStateToProps() {
                 return '';
             }
 
-            return channel.name.split('__').find((m) => m !== currentUserId);
+            return channel.name.split('__').find((m) => m !== currentUserId) || currentUserId;
         }
     );
 

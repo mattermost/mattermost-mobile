@@ -25,6 +25,7 @@ export default class ChannelItem extends PureComponent {
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
         fake: PropTypes.bool,
+        isMyUser: PropTypes.bool,
         isUnread: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
         navigator: PropTypes.object,
@@ -74,12 +75,23 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             displayName,
+            isMyUser,
             isUnread,
             mentions,
             status,
             theme,
             type
         } = this.props;
+
+        const {intl} = this.context;
+
+        let channelDisplayName = displayName;
+        if (isMyUser) {
+            channelDisplayName = intl.formatMessage({
+                id: 'channel_header.directchannel.you',
+                defaultMessage: '{displayName} (you)'
+            }, {displayname: displayName});
+        }
 
         const style = getStyleSheet(theme);
         const isActive = channelId === currentChannelId;
@@ -142,7 +154,7 @@ export default class ChannelItem extends PureComponent {
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
-                                {displayName}
+                                {channelDisplayName}
                             </Text>
                             {badge}
                         </View>

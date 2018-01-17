@@ -4,12 +4,13 @@
 import {connect} from 'react-redux';
 
 import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 
 import UserListRow from './user_list_row';
 
 function mapStateToProps(state, ownProps) {
     return {
+        isMyUser: getCurrentUserId(state) === ownProps.id,
         theme: getTheme(state),
         user: getUser(state, ownProps.id),
         teammateNameDisplay: getTeammateNameDisplaySetting(state)

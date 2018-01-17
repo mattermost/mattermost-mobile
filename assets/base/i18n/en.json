@@ -2036,6 +2036,7 @@
   "mobile.markdown.link.copy_url": "Copy URL",
   "mobile.mention.copy_mention": "Copy Mention",
   "mobile.more_dms.start": "Start",
+  "mobile.more_dms.you": "(@{username} - you)",
   "mobile.more_dms.title": "New Conversation",
   "mobile.notice_mobile_link": "mobile apps",
   "mobile.notice_platform_link": "platform",
