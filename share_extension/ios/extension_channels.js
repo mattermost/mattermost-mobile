@@ -20,7 +20,8 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import ExtensionChannelItem from './extension_channel_item';
+import ExtensionChannelItem from 'share_extension/common/extension_channel_item';
+
 import ExtensionNavBar from './extension_nav_bar';
 
 export default class ExtensionChannels extends PureComponent {

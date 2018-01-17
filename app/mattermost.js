@@ -415,14 +415,10 @@ export default class Mattermost {
             if (Platform.OS === 'android') {
                 // In case of Android we need to handle the bridge being initialized by HeadlessJS
                 Promise.resolve(Navigation.isAppLaunched()).then((appLaunched) => {
-                    if (notification) {
-                        if (appLaunched) {
-                            this.launchApp(); // App is launched -> show UI
-                        } else {
-                            new NativeEventsReceiver().appLaunched(this.launchApp); // App hasn't been launched yet -> show the UI only when needed.
-                        }
+                    if (appLaunched) {
+                        this.launchApp(); // App is launched -> show UI
                     } else {
-                        this.launchApp();
+                        new NativeEventsReceiver().appLaunched(this.launchApp); // App hasn't been launched yet -> show the UI only when needed.
                     }
                 });
             } else if (isNotActive) {

@@ -27,11 +27,13 @@ import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import Config from 'assets/config';
 
-import ExcelSvg from 'share_extension/icons/excel';
-import GenericSvg from 'share_extension/icons/generic';
-import PdfSvg from 'share_extension/icons/pdf';
-import PptSvg from 'share_extension/icons/ppt';
-import ZipSvg from 'share_extension/icons/zip';
+import {
+    ExcelSvg,
+    GenericSvg,
+    PdfSvg,
+    PptSvg,
+    ZipSvg
+} from 'share_extension/common/icons';
 
 import ExtensionChannels from './extension_channels';
 import ExtensionNavBar from './extension_nav_bar';
@@ -278,7 +280,10 @@ export default class ExtensionPost extends PureComponent {
         return (
             <View style={styles.unauthenticatedContainer}>
                 <Text style={styles.unauthenticated}>
-                    {'Authentication required: Please first login using the app.'}
+                    {formatMessage({
+                        id: 'mobile.extension.authentication_required',
+                        defaultMessage: 'Authentication required: Please first login using the app.'
+                    })}
                 </Text>
             </View>
         );
