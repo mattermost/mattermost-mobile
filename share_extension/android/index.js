@@ -4,12 +4,12 @@
 import React, {PureComponent} from 'react';
 import {Provider} from 'react-redux';
 import {IntlProvider} from 'react-intl';
-import DeviceInfo from 'react-native-device-info';
 
 import {Client4} from 'mattermost-redux/client';
 
 import {getTranslations} from 'app/i18n';
 import initialState from 'app/initial_state';
+import {getCurrentLocale} from 'app/selectors/i18n';
 import configureStore from 'app/store';
 
 import {extensionSelectTeamId} from './actions';
@@ -46,7 +46,7 @@ export default class ShareApp extends PureComponent {
             return null;
         }
 
-        const locale = DeviceInfo.getDeviceLocale().split('-')[0];
+        const locale = getCurrentLocale(this.store.getState());
 
         return (
             <Provider store={this.store}>

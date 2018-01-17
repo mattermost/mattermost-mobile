@@ -75,7 +75,7 @@ export default class ExtensionChannelItem extends PureComponent {
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
-                            {channel.display_name || channel.name}
+                            {channel.display_name}
                         </Text>
                         {current}
                     </View>
