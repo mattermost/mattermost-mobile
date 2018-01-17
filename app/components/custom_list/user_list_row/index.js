@@ -10,7 +10,7 @@ import UserListRow from './user_list_row';
 
 function mapStateToProps(state, ownProps) {
     return {
-        currentUserId: getCurrentUserId(state),
+        isMyUser: getCurrentUserId(state) === ownProps.id,
         theme: getTheme(state),
         user: getUser(state, ownProps.id),
         teammateNameDisplay: getTeammateNameDisplaySetting(state)

@@ -18,7 +18,7 @@ import {displayUsername} from 'mattermost-redux/utils/user_utils';
 export default class UserListRow extends React.PureComponent {
     static propTypes = {
         id: PropTypes.string.isRequired,
-        currentUserId: PropTypes.string.isRequired,
+        isMyUser: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
@@ -30,15 +30,16 @@ export default class UserListRow extends React.PureComponent {
     };
 
     onPress = () => {
-        this.props.onPress(this.props.id);
+        if (this.props.onPress) {
+            this.props.onPress(this.props.id);
+        }
     };
 
     render() {
         const {formatMessage} = this.context.intl;
         const {
-            currentUserId,
             enabled,
-            onPress,
+            isMyUser,
             selectable,
             selected,
             teammateNameDisplay,
@@ -50,7 +51,7 @@ export default class UserListRow extends React.PureComponent {
         const style = getStyleFromTheme(theme);
 
         let usernameDisplay = `(@${username})`;
-        if (id === currentUserId) {
+        if (isMyUser) {
             usernameDisplay = formatMessage({
                 id: 'mobile.more_dms.you',
                 defaultMessage: '(@{username} - you)'
@@ -61,7 +62,7 @@ export default class UserListRow extends React.PureComponent {
             <CustomListRow
                 id={id}
                 theme={theme}
-                onPress={onPress ? this.onPress : null}
+                onPress={this.onPress}
                 enabled={enabled}
                 selectable={selectable}
                 selected={selected}
