@@ -272,7 +272,12 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleUploadFiles = (images) => {
-        this.props.actions.handleUploadFiles(images, this.props.rootId);
+        // eslint-disable-next-line no-use-before-define
+        const asciiFreeImages = images.map((image) => ({
+            ...image,
+            fileName: image.fileName.replace(/[^\x00-\x7F]/g, '')
+        }));
+        this.props.actions.handleUploadFiles(asciiFreeImages, this.props.rootId);
     };
 
     renderSendButton = () => {
