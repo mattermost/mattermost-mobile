@@ -343,6 +343,7 @@ class Login extends PureComponent {
                         style={style.container}
                         contentContainerStyle={style.innerContainer}
                         keyboardShouldPersistTaps='handled'
+                        enableOnAndroid={true}
                     >
                         <Image
                             source={logo}
