@@ -183,7 +183,7 @@ class SelectServer extends PureComponent {
     };
 
     onClick = wrapWithPreventDoubleTap(async () => {
-        const preUrl = urlParse(this.props.serverUrl, true);
+        const preUrl = urlParse(this.state.url, true);
         const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
 
         Keyboard.dismiss();
