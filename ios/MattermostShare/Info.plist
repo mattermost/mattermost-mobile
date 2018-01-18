@@ -21,9 +21,9 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5.1</string>
+	<string>1.6.0</string>
 	<key>CFBundleVersion</key>
-	<string>74</string>
+	<string>79</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -36,7 +36,7 @@
 			<key>NSExtensionActivationRule</key>
 			<dict>
 				<key>NSExtensionActivationSupportsAttachmentsWithMaxCount</key>
-				<string>5</string>
+				<integer>5</integer>
 				<key>NSExtensionActivationSupportsFileWithMaxCount</key>
 				<integer>5</integer>
 				<key>NSExtensionActivationSupportsImageWithMaxCount</key>
