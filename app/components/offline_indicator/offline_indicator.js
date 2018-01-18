@@ -24,12 +24,13 @@ const HEIGHT = 38;
 const OFFLINE = 'offline';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
-const IOSX_TOP_PORTRAIT = 88;
 const {
     ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
-    IOS_TOP_PORTRAIT
+    IOS_TOP_PORTRAIT,
+    IOSX_TOP_PORTRAIT,
+    STATUS_BAR_HEIGHT
 } = ViewTypes;
 
 export default class OfflineIndicator extends Component {
@@ -147,7 +148,7 @@ export default class OfflineIndicator extends Component {
         } else if (this.isX) {
             return IOSX_TOP_PORTRAIT;
         } else if (isLandscape) {
-            return IOS_TOP_LANDSCAPE + 20;
+            return IOS_TOP_LANDSCAPE + STATUS_BAR_HEIGHT;
         }
 
         return IOS_TOP_PORTRAIT;
