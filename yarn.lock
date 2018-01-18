@@ -3974,7 +3974,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux:
   version "1.1.0"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/94861ab29626f54fa8c40a2a6a5fa3f3850c7299"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/b927e62835ef7f0015e4a5f8908f613d3492865d"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
