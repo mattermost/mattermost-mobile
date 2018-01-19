@@ -91,23 +91,10 @@ export default class Downloader extends PureComponent {
                 started: false
             });
         }
-        this.props.onDownloadCancel();
-    };
-
-    handleCancelDownload = () => {
-        if (this.mounted) {
-            this.setState({
-                didCancel: true,
-                progress: 0,
-                started: false
-            });
-        }
-
         if (this.downloadTask) {
-            this.downloadTask.cancel(() => {
-                this.props.onDownloadCancel();
-            });
+            this.downloadTask.cancel();
         }
+        this.props.onDownloadCancel();
     };
 
     recenterDownloader = (props) => {
@@ -147,7 +134,7 @@ export default class Downloader extends PureComponent {
                     {!isVideo &&
                     <TouchableOpacity
                         style={styles.cancelButton}
-                        onPress={this.handleCancelDownload}
+                        onPress={this.downloadDidCancel}
                     >
                         <FormattedText
                             id='channel_modal.cancel'
@@ -375,13 +362,11 @@ export default class Downloader extends PureComponent {
 
     render() {
         const {show, downloadPath} = this.props;
-        if (!show && !this.state.force) {
+        if ((!show || this.state.didCancel) && !this.state.force) {
             return null;
         }
 
         const {didCancel, progress, started} = this.state;
-
-        const trueProgress = didCancel ? 0 : progress;
 
         const containerHeight = show ? '100%' : 0;
 
@@ -391,14 +376,13 @@ export default class Downloader extends PureComponent {
         } else {
             component = this.renderProgress;
         }
-
         return (
             <View style={[styles.container, {height: containerHeight}]}>
                 <AnimatedView style={[styles.downloader, {top: this.state.downloaderTop}]}>
                     <View style={styles.progressCircleContent}>
                         <AnimatedCircularProgress
                             size={120}
-                            fill={trueProgress}
+                            fill={progress}
                             width={4}
                             backgroundColor='rgba(255, 255, 255, 0.5)'
                             tintColor='white'
