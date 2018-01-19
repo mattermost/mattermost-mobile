@@ -366,7 +366,7 @@ export default class Downloader extends PureComponent {
             return null;
         }
 
-        const {didCancel, progress, started} = this.state;
+        const {progress, started} = this.state;
 
         const containerHeight = show ? '100%' : 0;
 
