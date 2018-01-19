@@ -36,8 +36,12 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const config = getConfig(state);
-        const previewsEnabled = getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, `${ViewTypes.FEATURE_TOGGLE_PREFIX}${ViewTypes.EMBED_PREVIEW}`);
         const link = getFirstLink(ownProps.message);
+
+        // link previews use to be an advance settings until server version 4.4 where that was changed to be a display setting
+        // we are checking both here until we bump the server requirement for the mobile apps.
+        const previewsEnabled = getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, `${ViewTypes.FEATURE_TOGGLE_PREFIX}${ViewTypes.EMBED_PREVIEW}`) ||
+            getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
 
         return {
             ...getDimensions(state),
