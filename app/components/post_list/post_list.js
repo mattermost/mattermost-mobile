@@ -25,6 +25,8 @@ const DateHeaderWithLayout = withLayout(DateHeader);
 const NewMessagesDividerWithLayout = withLayout(NewMessagesDivider);
 const PostWithLayout = withLayout(Post);
 
+const INITAL_BATCH_TO_RENDER = 15;
+
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -35,7 +37,6 @@ export default class PostList extends PureComponent {
         deviceHeight: PropTypes.number.isRequired,
         highlightPostId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
-        initialBatchToRender: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         loadMore: PropTypes.func,
@@ -186,6 +187,7 @@ export default class PostList extends PureComponent {
         if (item === START_OF_NEW_MESSAGES) {
             this.newMessagesIndex = index;
             this.moreNewMessages = this.props.postIds.length === index + 2;
+
             return (
                 <NewMessagesDividerWithLayout
                     index={index}
@@ -289,7 +291,6 @@ export default class PostList extends PureComponent {
         const {
             channelId,
             highlightPostId,
-            initialBatchToRender,
             loadMore,
             postIds
         } = this.props;
@@ -308,8 +309,8 @@ export default class PostList extends PureComponent {
                 ref='list'
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId)}
-                initialNumToRender={initialBatchToRender}
-                maxToRenderPerBatch={initialBatchToRender + 1}
+                initialNumToRender={INITAL_BATCH_TO_RENDER}
+                maxToRenderPerBatch={INITAL_BATCH_TO_RENDER + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderFooter}

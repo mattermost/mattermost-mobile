@@ -22,7 +22,6 @@ function makeMapStateToProps() {
         return {
             deviceHeight,
             measureCellLayout,
-            initialBatchToRender: 15,
             postIds,
             theme: getTheme(state)
         };
