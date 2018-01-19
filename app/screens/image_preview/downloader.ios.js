@@ -85,7 +85,11 @@ export default class Downloader extends PureComponent {
 
     downloadDidCancel = () => {
         if (this.mounted) {
-            this.setState({progress: 0, started: false, didCancel: false});
+            this.setState({
+                didCancel: true,
+                progress: 0,
+                started: false
+            });
         }
         this.props.onDownloadCancel();
     };
@@ -227,7 +231,12 @@ export default class Downloader extends PureComponent {
     saveVideo = (videoPath) => {
         const {deviceHeight} = this.props;
         const top = (deviceHeight / 2) - 100;
-        this.setState({progress: 100, started: true, force: true, isVideo: true});
+        this.setState({
+            progress: 100,
+            started: true,
+            force: true,
+            isVideo: true
+        });
         Animated.spring(this.state.downloaderTop, {
             toValue: top,
             tension: 8,
