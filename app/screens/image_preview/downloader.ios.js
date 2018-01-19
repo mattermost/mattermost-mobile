@@ -305,14 +305,16 @@ export default class Downloader extends PureComponent {
                 options.appendExt = file.extension;
             }
 
-            this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl).
-                progress((received, total) => {
-                    const progress = (received / total) * 100;
-                    if (this.mounted) {
-                        this.setState({progress, started: true});
-                    }
-                });
-
+            this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl);
+            this.downloadTask.progress((received, total) => {
+                const progress = (received / total) * 100;
+                if (this.mounted) {
+                    this.setState({
+                        progress,
+                        started: true
+                    });
+                }
+            });
             const res = await this.downloadTask;
             let path = res.path();
 
