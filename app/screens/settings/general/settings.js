@@ -105,6 +105,22 @@ class Settings extends PureComponent {
         });
     });
 
+    goToDisplaySettings = wrapWithPreventDoubleTap(() => {
+        const {intl, navigator, theme} = this.props;
+        navigator.push({
+            screen: 'DisplaySettings',
+            title: intl.formatMessage({id: 'user.settings.modal.display', defaultMessage: 'Display'}),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg
+            }
+        });
+    });
+
     goToAdvancedSettings = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
@@ -218,6 +234,15 @@ class Settings extends PureComponent {
                         iconName='ios-notifications'
                         iconType='ion'
                         onPress={this.goToNotifications}
+                        showArrow={showArrow}
+                        theme={theme}
+                    />
+                    <SettingsItem
+                        defaultMessage='Display'
+                        i18nId='user.settings.modal.display'
+                        iconName='ios-apps'
+                        iconType='ion'
+                        onPress={this.goToDisplaySettings}
                         showArrow={showArrow}
                         theme={theme}
                     />
