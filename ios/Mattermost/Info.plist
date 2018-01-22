@@ -59,7 +59,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload Photos and Videos to your Mattermost instance or Save them to your device</string>
+	<string>Upload Photos and Videos to your Mattermost instance or save them to your device</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>
