@@ -19,6 +19,12 @@ export function removeProtocol(url = '') {
     return url.replace(/(^\w+:|^)\/\//, '');
 }
 
+export function removeAscii(url = '') {
+    /*eslint-disable */
+    return url.replace(/[^\x00-\x7F]/g, '');
+    /*eslint-enable */
+}
+
 export function extractFirstLink(text) {
     const pattern = /(^|[\s\n]|<br\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/i;
     let inText = text;
