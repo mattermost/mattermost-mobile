@@ -186,6 +186,9 @@ export default class PostList extends PureComponent {
     renderItem = ({item, index}) => {
         if (item === START_OF_NEW_MESSAGES) {
             this.newMessagesIndex = index;
+
+            // postIds includes a date item after the new message indicator so 2
+            // needs to be added to the index for the length check to be correct.
             this.moreNewMessages = this.props.postIds.length === index + 2;
 
             return (
