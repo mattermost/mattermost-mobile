@@ -2024,6 +2024,7 @@
   "mobile.intro_messages.DM": "This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.",
   "mobile.intro_messages.default_message": "This is the first channel teammates see when they sign up - use it for posting updates everyone needs to know.",
   "mobile.intro_messages.default_welcome": "Welcome to {name}!",
+  "mobile.ios.photos_permission_denied_description": "To save images and videos to your library, please change your permission settings.",
   "mobile.join_channel.error": "We couldn't join the channel {displayName}. Please check your connection and try again.",
   "mobile.loading_channels": "Loading Channels...",
   "mobile.loading_members": "Loading Members...",

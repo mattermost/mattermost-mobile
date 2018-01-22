@@ -19,6 +19,7 @@ import RNFetchBlob from 'react-native-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
+import Permissions from 'react-native-permissions';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -27,7 +28,7 @@ import FileAttachmentDocument, {SUPPORTED_DOCS_FORMAT} from 'app/components/file
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import SafeAreaView from 'app/components/safe_area_view';
 import Swiper from 'app/components/swiper';
-import {NavigationTypes} from 'app/constants';
+import {NavigationTypes, PermissionTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 
 import Downloader from './downloader';
@@ -306,8 +307,45 @@ export default class ImagePreview extends PureComponent {
     };
 
     showIOSDownloadOptions = async () => {
+        const {formatMessage} = this.context.intl;
         const file = this.state.files[this.state.currentFile];
         const items = [];
+        let permissionRequest;
+
+        const hasPermissionToStorage = await Permissions.check('photo');
+
+        switch (hasPermissionToStorage) {
+        case PermissionTypes.UNDETERMINED:
+            permissionRequest = await Permissions.request('photo');
+            if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                return;
+            }
+            break;
+        case PermissionTypes.DENIED: {
+            const canOpenSettings = await Permissions.canOpenSettings();
+            let grantOption = null;
+            if (canOpenSettings) {
+                grantOption = {
+                    text: formatMessage({id: 'mobile.android.permission_denied_retry', defaultMessage: 'Set permission'}),
+                    onPress: () => Permissions.openSettings()
+                };
+            }
+
+            Alert.alert(
+                formatMessage({id: 'mobile.android.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
+                formatMessage({
+                    id: 'mobile.ios.photos_permission_denied_description',
+                    defaultMessage: 'To save images and videos to your library, please change your permission settings.'
+                }),
+                [
+                    grantOption,
+                    {text: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})}
+                ]
+            );
+            return;
+        }
+        }
+
         if (SUPPORTED_VIDEO_FORMAT.includes(file.mime_type)) {
             const path = `${VIDEOS_PATH}/${file.id}.${file.extension}`;
             const exist = await RNFetchBlob.fs.exists(path);
@@ -528,6 +566,7 @@ export default class ImagePreview extends PureComponent {
             <SafeAreaView
                 backgroundColor='#000'
                 navBarBackgroundColor='#000'
+                footerColor='#000'
                 excludeHeader={true}
             >
                 <View
