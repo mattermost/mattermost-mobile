@@ -41,6 +41,7 @@ class Post extends PureComponent {
         config: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         highlight: PropTypes.bool,
         intl: intlShape.isRequired,
         style: ViewPropTypes.style,
@@ -374,6 +375,9 @@ class Post extends PureComponent {
 
         const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
 
+        // postWidth = deviceWidth - profilePic width - profilePictureContainer margins - right column margin
+        const postWidth = this.props.deviceWidth - 66;
+
         return (
             <View style={[style.container, this.props.style, highlighted, selected]}>
                 <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
@@ -398,25 +402,27 @@ class Post extends PureComponent {
                             theme={theme}
                             isFlagged={isFlagged}
                         />
-                        <PostBody
-                            canDelete={this.state.canDelete}
-                            canEdit={this.state.canEdit}
-                            isSearchResult={isSearchResult}
-                            navigator={this.props.navigator}
-                            onAddReaction={this.handleAddReaction}
-                            onCopyPermalink={this.handleCopyPermalink}
-                            onCopyText={this.handleCopyText}
-                            onFailedPostPress={this.handleFailedPostPress}
-                            onPostDelete={this.handlePostDelete}
-                            onPostEdit={this.handlePostEdit}
-                            onPress={this.handlePress}
-                            postId={post.id}
-                            renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
-                            toggleSelected={this.toggleSelected}
-                            managedConfig={managedConfig}
-                            isFlagged={isFlagged}
-                            isReplyPost={isReplyPost}
-                        />
+                        <View style={{maxWidth: postWidth}}>
+                            <PostBody
+                                canDelete={this.state.canDelete}
+                                canEdit={this.state.canEdit}
+                                isSearchResult={isSearchResult}
+                                navigator={this.props.navigator}
+                                onAddReaction={this.handleAddReaction}
+                                onCopyPermalink={this.handleCopyPermalink}
+                                onCopyText={this.handleCopyText}
+                                onFailedPostPress={this.handleFailedPostPress}
+                                onPostDelete={this.handlePostDelete}
+                                onPostEdit={this.handlePostEdit}
+                                onPress={this.handlePress}
+                                postId={post.id}
+                                renderReplyBar={commentedOnPost ? this.renderReplyBar : emptyFunction}
+                                toggleSelected={this.toggleSelected}
+                                managedConfig={managedConfig}
+                                isFlagged={isFlagged}
+                                isReplyPost={isReplyPost}
+                            />
+                        </View>
                     </View>
                 </View>
             </View>
