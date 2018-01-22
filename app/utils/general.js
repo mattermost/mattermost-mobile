@@ -35,9 +35,3 @@ export function alertErrorIfInvalidPermissions(result) {
 export function emptyFunction() {
     return;
 }
-
-export function removeAscii(url = '') {
-    /*eslint-disable no-control-regex */
-    return url.replace(/[^\x00-\x7F]/g, '');
-    /*eslint-enable */
-}

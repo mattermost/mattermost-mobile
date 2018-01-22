@@ -14,7 +14,6 @@ import PaperPlane from 'app/components/paper_plane';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Typing from './components/typing';
-import {removeAscii} from 'app/utils/general';
 
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
@@ -275,7 +274,7 @@ export default class PostTextbox extends PureComponent {
     handleUploadFiles = (images) => {
         const asciiFreeImages = images.map((image) => ({
             ...image,
-            fileName: removeAscii(image.fileName)
+            fileName: encodeURIComponent(image.fileName)
         }));
         this.props.actions.handleUploadFiles(asciiFreeImages, this.props.rootId);
     };

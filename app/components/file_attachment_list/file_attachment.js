@@ -49,7 +49,7 @@ export default class FileAttachment extends PureComponent {
                     numberOfLines={4}
                     style={style.fileName}
                 >
-                    {file.name.trim()}
+                    {decodeURIComponent(file.name).trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
                     <Text style={style.fileInfo}>
