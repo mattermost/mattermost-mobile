@@ -5186,6 +5186,10 @@ react-native-passcode-status@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-native-passcode-status/-/react-native-passcode-status-1.1.0.tgz#e5922d5f4d79bc09849438d620406e5ccd31168a"
 
+react-native-permissions@1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-1.0.6.tgz#504f01728191431ad4b82895c4a349981fb5802b"
+
 react-native-safe-area@0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/react-native-safe-area/-/react-native-safe-area-0.2.1.tgz#9bf8eb8dd052b76fc4e830addcd63235dd29cf3c"
