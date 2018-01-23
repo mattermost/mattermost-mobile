@@ -106,7 +106,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 79
+        versionCode 80
         versionName "1.6.0"
         multiDexEnabled true
         ndk {
