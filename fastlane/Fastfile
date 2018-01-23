@@ -1,7 +1,7 @@
 fastlane_version '2.71.0'
 
-require 'aws-sdk-s3'
-require 'erb'
+fastlane_require 'aws-sdk-s3'
+fastlane_require 'erb'
 
 skip_docs
 
