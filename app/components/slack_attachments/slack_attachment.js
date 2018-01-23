@@ -116,7 +116,7 @@ export default class SlackAttachment extends PureComponent {
                 fieldTables.push(
                     <View
                         key={`attachment__table__${nrTables}`}
-                        style={{flex: 1, flexDirection: 'row'}}
+                        style={{alignSelf: 'stretch', flexDirection: 'row'}}
                     >
                         {fieldInfos}
                     </View>
@@ -378,7 +378,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.15),
             borderWidth: 1,
-            flex: 1,
             marginTop: 5,
             padding: 10
         },
@@ -423,7 +422,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 12
         },
         headingContainer: {
-            flex: 1,
+            alignSelf: 'stretch',
             flexDirection: 'row',
             marginBottom: 5,
             marginTop: 10

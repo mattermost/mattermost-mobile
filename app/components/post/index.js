@@ -13,6 +13,7 @@ import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
+import {getDimensions} from 'app/selectors/device';
 
 import Post from './post';
 
@@ -48,10 +49,13 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
+    const {deviceWidth} = getDimensions(state);
+
     return {
         config,
         currentTeamUrl: getCurrentTeamUrl(state),
         currentUserId: getCurrentUserId(state),
+        deviceWidth,
         post,
         isFirstReply,
         isLastReply,
