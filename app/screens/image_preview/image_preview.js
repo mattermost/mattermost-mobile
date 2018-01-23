@@ -568,7 +568,7 @@ export default class ImagePreview extends PureComponent {
                                 pointerEvents='none'
                             >
                                 <Text style={style.filename}>
-                                    {fileName}
+                                    {decodeURIComponent(fileName)}
                                 </Text>
                             </LinearGradient>
                         </AnimatedView>
