@@ -2098,6 +2098,7 @@
   "mobile.post_textbox.empty.message": "You are trying to send an empty message.\nPlease make sure you have a message or at least one attached file.",
   "mobile.post_textbox.empty.ok": "OK",
   "mobile.post_textbox.empty.title": "Empty Message",
+  "mobile.posts_view.moreMsg": "More New Messages Above",
   "mobile.rename_channel.display_name_maxLength": "Channel name must be less than {maxLength, number} characters",
   "mobile.rename_channel.display_name_minLength": "Channel name must be {minLength, number} or more characters",
   "mobile.rename_channel.display_name_required": "Channel name is required",
