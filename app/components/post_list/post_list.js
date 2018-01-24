@@ -228,7 +228,8 @@ export default class PostList extends PureComponent {
             channelId,
             highlightPostId,
             loadMore,
-            postIds
+            postIds,
+            showLoadMore
         } = this.props;
 
         const refreshControl = {
@@ -243,7 +244,7 @@ export default class PostList extends PureComponent {
             <FlatList
                 ref='list'
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId)}
+                extraData={this.makeExtraData(channelId, highlightPostId, showLoadMore)}
                 initialNumToRender={15}
                 inverted={true}
                 keyExtractor={this.keyExtractor}

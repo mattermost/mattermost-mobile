@@ -28,6 +28,7 @@ export default class ChannelPostList extends PureComponent {
         channelRefreshingFailed: PropTypes.bool,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
+        loadMorePostsVisible: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         postIds: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
@@ -42,15 +43,13 @@ export default class ChannelPostList extends PureComponent {
         super(props);
 
         this.state = {
-            visiblePostIds: this.getVisiblePostIds(props),
-            showLoadMore: props.postIds.length >= props.postVisibility
+            visiblePostIds: this.getVisiblePostIds(props)
         };
     }
 
     componentWillReceiveProps(nextProps) {
         const {postIds: nextPostIds} = nextProps;
 
-        const showLoadMore = nextPostIds.length >= nextProps.postVisibility;
         let visiblePostIds = this.state.visiblePostIds;
 
         if (nextPostIds !== this.props.postIds || nextProps.postVisibility !== this.props.postVisibility) {
@@ -58,7 +57,6 @@ export default class ChannelPostList extends PureComponent {
         }
 
         this.setState({
-            showLoadMore,
             visiblePostIds
         });
     }
@@ -104,7 +102,7 @@ export default class ChannelPostList extends PureComponent {
     };
 
     loadMorePosts = () => {
-        if (this.state.showLoadMore) {
+        if (this.props.loadMorePostsVisible) {
             const {actions, channelId} = this.props;
             actions.increasePostVisibility(channelId);
         }
@@ -122,13 +120,13 @@ export default class ChannelPostList extends PureComponent {
             channelRefreshingFailed,
             currentUserId,
             lastViewedAt,
+            loadMorePostsVisible,
             navigator,
             postIds,
             theme
         } = this.props;
 
         const {
-            showLoadMore,
             visiblePostIds
         } = this.state;
 
@@ -145,7 +143,7 @@ export default class ChannelPostList extends PureComponent {
                 <PostList
                     postIds={visiblePostIds}
                     loadMore={this.loadMorePosts}
-                    showLoadMore={showLoadMore}
+                    showLoadMore={loadMorePostsVisible}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
