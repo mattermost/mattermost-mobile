@@ -94,8 +94,8 @@ start: | pre-run ## Starts the React Native packager server
 
 stop: ## Stops the React Native packager server
 	@echo Stopping React Native packager server
-	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 1 ]; then \
-		ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' | xargs kill -9; \
+	@if [ $(shell ps -ef | grep -i "cli.js start" | grep -civ grep) -eq 1 ]; then \
+		ps -ef | grep -i "cli.js start" | grep -iv grep | awk '{print $$2}' | xargs kill -9; \
 		echo React Native packager server stopped; \
 	else \
 		echo No React Native packager server running; \
