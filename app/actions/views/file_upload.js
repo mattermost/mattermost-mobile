@@ -29,6 +29,7 @@ export function handleUploadFiles(files, rootId) {
                 extension: fileData.extension
             });
 
+            fileData.name = encodeURIComponent(file.fileName) + '"; filename*="utf-8\'\'' + encodeURIComponent(file.fileName);
             formData.append('files', fileData);
             formData.append('channel_id', channelId);
             formData.append('client_ids', clientId);
