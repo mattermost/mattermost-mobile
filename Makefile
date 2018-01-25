@@ -5,13 +5,13 @@
 .PHONY: build-ios build-android unsigned-ios unsigned-android
 .PHONY: test help
 
-POD := $(shell command -v pod 2> /dev/null)
+POD := $(shell which pod 2> /dev/null)
 OS := $(shell sh -c 'uname -s 2>/dev/null')
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
 
 .yarninstall: package.json
-	@if ! [ $(shell command -v yarn 2> /dev/null) ]; then \
+	@if ! [ $(shell which yarn 2> /dev/null) ]; then \
 		@echo "yarn is not installed https://yarnpkg.com"; \
 		exit 1; \
 	fi
@@ -102,11 +102,11 @@ stop: ## Stops the React Native packager server
 	fi
 
 check-device-ios:
-	@if ! [ $(shell command -v xcodebuild) ]; then \
+	@if ! [ $(shell which xcodebuild) ]; then \
 		echo "xcode is not installed"; \
 		exit 1; \
 	fi
-	@if ! [ $(shell command -v watchman) ]; then \
+	@if ! [ $(shell which watchman) ]; then \
 		echo "watchman is not installed"; \
 		exit 1; \
 	fi
@@ -116,7 +116,7 @@ check-device-android:
 		@echo "ANDROID_HOME is not set"; \
 		@exit 1; \
 	fi
-	@if ! [ $(shell command -v adb 2> /dev/null) ]; then \
+	@if ! [ $(shell which adb 2> /dev/null) ]; then \
 		@echo "adb is not installed"; \
 		@exit 1; \
 	fi
@@ -124,7 +124,7 @@ check-device-android:
 	@echo "Connect your Android device or open the emulator"
 	@adb wait-for-device
 
-	@if ! [ $(shell command -v watchman 2> /dev/null) ]; then \
+	@if ! [ $(shell which watchman 2> /dev/null) ]; then \
 		@echo "watchman is not installed"; \
 		@exit 1; \
 	fi
