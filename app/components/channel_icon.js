@@ -23,6 +23,7 @@ export default class ChannelIcon extends React.PureComponent {
         membersCount: PropTypes.number,
         size: PropTypes.number,
         status: PropTypes.string,
+        teammateDeletedAt: PropTypes.number,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired
     };
@@ -35,7 +36,17 @@ export default class ChannelIcon extends React.PureComponent {
     };
 
     render() {
-        const {isActive, isUnread, isInfo, membersCount, size, status, theme, type} = this.props;
+        const {
+            isActive,
+            isUnread,
+            isInfo,
+            membersCount,
+            size,
+            status,
+            teammateDeletedAt,
+            theme,
+            type
+        } = this.props;
         const style = getStyleSheet(theme);
 
         let activeIcon;
@@ -88,6 +99,13 @@ export default class ChannelIcon extends React.PureComponent {
                         {membersCount}
                     </Text>
                 </View>
+            );
+        } else if (type === General.DM_CHANNEL && teammateDeletedAt) {
+            icon = (
+                <Icon
+                    name='trash'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                />
             );
         } else if (type === General.DM_CHANNEL) {
             switch (status) {
