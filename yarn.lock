@@ -3974,7 +3974,7 @@ makeerror@1.0.x:
 
 mattermost-redux@mattermost/mattermost-redux:
   version "1.1.0"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/b927e62835ef7f0015e4a5f8908f613d3492865d"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/7f2f352372a5ba587ed932c41eb550ba2cb1e94c"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
@@ -5185,6 +5185,10 @@ react-native-orientation@enahum/react-native-orientation.git:
 react-native-passcode-status@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-native-passcode-status/-/react-native-passcode-status-1.1.0.tgz#e5922d5f4d79bc09849438d620406e5ccd31168a"
+
+react-native-permissions@1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-1.0.6.tgz#504f01728191431ad4b82895c4a349981fb5802b"
 
 react-native-safe-area@0.2.1:
   version "0.2.1"

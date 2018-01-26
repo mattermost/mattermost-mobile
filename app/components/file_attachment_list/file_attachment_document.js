@@ -110,13 +110,13 @@ export default class FileAttachmentDocument extends PureComponent {
                 this.openDocument(file, 0);
             } else {
                 this.setState({downloading: true});
-                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id)).
-                    progress((received, total) => {
-                        const progress = (received / total) * 100;
-                        if (this.mounted) {
-                            this.setState({progress});
-                        }
-                    });
+                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
+                this.downloadTask.progress((received, total) => {
+                    const progress = (received / total) * 100;
+                    if (this.mounted) {
+                        this.setState({progress});
+                    }
+                });
 
                 await this.downloadTask;
                 if (this.mounted) {

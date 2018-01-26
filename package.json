@@ -39,6 +39,7 @@
     "react-native-notifications": "enahum/react-native-notifications.git",
     "react-native-orientation": "enahum/react-native-orientation.git",
     "react-native-passcode-status": "1.1.0",
+    "react-native-permissions": "1.0.6",
     "react-native-safe-area": "0.2.1",
     "react-native-section-list-get-item-layout": "2.1.0",
     "react-native-sentry": "0.15.1",

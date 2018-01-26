@@ -64,6 +64,7 @@
 		7F43D6401F6BFA82001FC614 /* libRCTPushNotification.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F63D2811E6C957C001FAE12 /* libRCTPushNotification.a */; };
 		7F6877B31E7836070094B63F /* libToolTipMenu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F6877B01E7835E50094B63F /* libToolTipMenu.a */; };
 		7F6C47A51FE87E8C00F5A912 /* PerformRequests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C47A41FE87E8C00F5A912 /* PerformRequests.m */; };
+		7F7D7F98201645E100D31155 /* libReactNativePermissions.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F7D7F87201645D300D31155 /* libReactNativePermissions.a */; };
 		7FB6006B1FE3116800DB284F /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 375218411F4B9E320035444B /* libRNFetchBlob.a */; };
 		7FBB5E9B1E1F5A4B000DE18A /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF290C1E1F4B4E00DBBE56 /* libRNVectorIcons.a */; };
 		7FC200E81EBB65370099331B /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FC200DF1EBB65100099331B /* libReactNativeNavigation.a */; };
@@ -460,6 +461,13 @@
 			remoteGlobalIDString = 4681C02C1B05271A004D67D4;
 			remoteInfo = ToolTipMenuTests;
 		};
+		7F7D7F86201645D300D31155 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9D23B34F1C767B80008B4819;
+			remoteInfo = ReactNativePermissions;
+		};
 		7F8AAB3B1F4E0FEB00F5A52C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 50ECB1D221E44F51B5690DF2 /* FastImage.xcodeproj */;
@@ -668,6 +676,7 @@
 		7F6877AA1E7835E50094B63F /* ToolTipMenu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ToolTipMenu.xcodeproj; path = "../node_modules/react-native-tooltip/ToolTipMenu.xcodeproj"; sourceTree = "<group>"; };
 		7F6C47A31FE87E8C00F5A912 /* PerformRequests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PerformRequests.h; sourceTree = "<group>"; };
 		7F6C47A41FE87E8C00F5A912 /* PerformRequests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformRequests.m; sourceTree = "<group>"; };
+		7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativePermissions.xcodeproj; path = "../node_modules/react-native-permissions/ios/ReactNativePermissions.xcodeproj"; sourceTree = "<group>"; };
 		7FC200BC1EBB65100099331B /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		7FDB92751F706F45006CDFD1 /* RNImagePicker.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNImagePicker.xcodeproj; path = "../node_modules/react-native-image-picker/ios/RNImagePicker.xcodeproj"; sourceTree = "<group>"; };
 		7FEB10961F6101710039A015 /* BlurAppScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BlurAppScreen.h; path = Mattermost/BlurAppScreen.h; sourceTree = "<group>"; };
@@ -756,6 +765,7 @@
 				7F2691A11EE1DC6A007574FE /* libRNNotifications.a in Frameworks */,
 				7F43D5D61F6BF8C2001FC614 /* libRNLocalAuth.a in Frameworks */,
 				7F43D5D71F6BF8D0001FC614 /* libRNPasscodeStatus.a in Frameworks */,
+				7F7D7F98201645E100D31155 /* libReactNativePermissions.a in Frameworks */,
 				7F43D5D81F6BF8E9001FC614 /* libJailMonkey.a in Frameworks */,
 				7F43D5D91F6BF8F4001FC614 /* libFastImage.a in Frameworks */,
 				7F43D5DA1F6BF92C001FC614 /* libRNFetchBlob.a in Frameworks */,
@@ -1118,6 +1128,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		7F7D7F53201645D300D31155 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7F7D7F87201645D300D31155 /* libReactNativePermissions.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		7F8AAB371F4E0FEB00F5A52C /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1241,6 +1259,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */,
 				7FDB92751F706F45006CDFD1 /* RNImagePicker.xcodeproj */,
 				37ABD3971F4CE13B001FDE6B /* ART.xcodeproj */,
 				3752184A1F4B9E980035444B /* RCTCameraRoll.xcodeproj */,
@@ -1415,7 +1434,7 @@
 					7FFE32991FD9CB640038C7A0 = {
 						CreatedOnToolsVersion = 9.1;
 						DevelopmentTeam = UQ8HT4Q2XM;
-						LastSwiftMigration = 0920;
+						LastSwiftMigration = 920;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
@@ -1524,6 +1543,10 @@
 				{
 					ProductGroup = 7FC200BD1EBB65100099331B /* Products */;
 					ProjectRef = 7FC200BC1EBB65100099331B /* ReactNativeNavigation.xcodeproj */;
+				},
+				{
+					ProductGroup = 7F7D7F53201645D300D31155 /* Products */;
+					ProjectRef = 7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */;
 				},
 				{
 					ProductGroup = 372E25631F5F0E1800A2BFAB /* Products */;
@@ -1929,6 +1952,13 @@
 			fileType = wrapper.cfbundle;
 			path = ToolTipMenuTests.xctest;
 			remoteRef = 7F6877B11E7835E50094B63F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7F7D7F87201645D300D31155 /* libReactNativePermissions.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libReactNativePermissions.a;
+			remoteRef = 7F7D7F86201645D300D31155 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		7F8AAB3C1F4E0FEB00F5A52C /* libFastImage.a */ = {
@@ -2370,7 +2400,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 79;
+				CURRENT_PROJECT_VERSION = 80;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
@@ -2419,7 +2449,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 79;
+				CURRENT_PROJECT_VERSION = 80;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;

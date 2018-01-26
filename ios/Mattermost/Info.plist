@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>79</string>
+	<string>80</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -54,12 +54,20 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Share post data accross devices with Mattermost</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Share contacts in your Mattermost instance</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a Photo or Video and upload it to your mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Send your current location to your Mattermost instance</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Share your route in your Mattermost instance</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload Photos and Videos to your Mattermost instance</string>
+	<string>Upload Photos and Videos to your Mattermost instance or save them to your device</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Send voice messages to your Mattermost instance</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>

@@ -14,15 +14,29 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 function NewMessagesDivider(props) {
     const style = getStyleFromTheme(props.theme);
 
+    let text = (
+        <FormattedText
+            id='posts_view.newMsg'
+            defaultMessage='New Messages'
+            style={style.text}
+        />
+    );
+
+    if (props.moreMessages) {
+        text = (
+            <FormattedText
+                id='mobile.posts_view.moreMsg'
+                defaultMessage='More New Messages Above'
+                style={style.text}
+            />
+        );
+    }
+
     return (
         <View style={[style.container, props.style]}>
             <View style={style.line}/>
             <View style={style.textContainer}>
-                <FormattedText
-                    id='posts_view.newMsg'
-                    defaultMessage='New Messages'
-                    style={style.text}
-                />
+                {text}
             </View>
             <View style={style.line}/>
         </View>
@@ -30,6 +44,7 @@ function NewMessagesDivider(props) {
 }
 
 NewMessagesDivider.propTypes = {
+    moreMessages: PropTypes.bool,
     style: ViewPropTypes.style,
     theme: PropTypes.object
 };
