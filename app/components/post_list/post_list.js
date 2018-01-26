@@ -295,7 +295,8 @@ export default class PostList extends PureComponent {
             channelId,
             highlightPostId,
             loadMore,
-            postIds
+            postIds,
+            showLoadMore
         } = this.props;
 
         const refreshControl = {
@@ -311,7 +312,7 @@ export default class PostList extends PureComponent {
                 onLayout={this.onLayout}
                 ref='list'
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId)}
+                extraData={this.makeExtraData(channelId, highlightPostId, showLoadMore)}
                 initialNumToRender={INITAL_BATCH_TO_RENDER}
                 maxToRenderPerBatch={INITAL_BATCH_TO_RENDER + 1}
                 inverted={true}

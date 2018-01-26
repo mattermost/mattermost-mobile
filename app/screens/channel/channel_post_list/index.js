@@ -26,6 +26,7 @@ function mapStateToProps(state) {
         postIds: getPostIdsInCurrentChannel(state),
         postVisibility: state.views.channel.postVisibility[channelId],
         lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
+        loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         theme: getTheme(state)
     };
 }
