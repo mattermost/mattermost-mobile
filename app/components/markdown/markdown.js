@@ -24,6 +24,9 @@ import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
+import MarkdownTable from './markdown_table';
+import MarkdownTableRow from './markdown_table_row';
+import MarkdownTableCell from './markdown_table_cell';
 import {addListItemIndices, pullOutImages} from './transform';
 
 export default class Markdown extends PureComponent {
@@ -82,6 +85,10 @@ export default class Markdown extends PureComponent {
 
                 htmlBlock: this.renderHtml,
                 htmlInline: this.renderHtml,
+
+                table: MarkdownTable,
+                table_row: MarkdownTableRow,
+                table_cell: MarkdownTableCell,
 
                 editedIndicator: this.renderEditedIndicator
             },
