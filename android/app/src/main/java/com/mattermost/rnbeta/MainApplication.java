@@ -78,7 +78,7 @@ public class MainApplication extends NavigationApplication implements INotificat
 
   @Override
   public String getJSMainModuleName() {
-    return "index.android";
+    return "index";
   }
 
   @Override
