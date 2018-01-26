@@ -87,24 +87,29 @@ export default class ExtensionPost extends PureComponent {
                 </View>
             </TouchableItem>
         );
-        const headerRight = (
-            <TouchableItem
-                accessibilityComponentType='button'
-                accessibilityTraits='button'
-                borderless={true}
-                delayPressIn={0}
-                pressColorAndroid='rgba(0, 0, 0, .32)'
-                onPress={params.post ? params.post : emptyFunction}
-            >
-                <View style={styles.left}>
-                    <PaperPlane
-                        color={defalultTheme.sidebarHeaderTextColor}
-                        height={20}
-                        width={20}
-                    />
-                </View>
-            </TouchableItem>
-        );
+
+        let headerRight = null;
+
+        if (params.post) {
+            headerRight = (
+                <TouchableItem
+                    accessibilityComponentType='button'
+                    accessibilityTraits='button'
+                    borderless={true}
+                    delayPressIn={0}
+                    pressColorAndroid='rgba(0, 0, 0, .32)'
+                    onPress={params.post}
+                >
+                    <View style={styles.left}>
+                        <PaperPlane
+                            color={defalultTheme.sidebarHeaderTextColor}
+                            height={20}
+                            width={20}
+                        />
+                    </View>
+                </TouchableItem>
+            );
+        }
 
         return {headerLeft, headerRight, title};
     };
@@ -130,8 +135,7 @@ export default class ExtensionPost extends PureComponent {
 
     componentDidMount() {
         this.props.navigation.setParams({
-            close: this.onClose,
-            post: this.onPost
+            close: this.onClose
         });
         this.auth();
     }
@@ -257,6 +261,10 @@ export default class ExtensionPost extends PureComponent {
         if (token && url) {
             const text = [];
             const files = [];
+
+            this.props.navigation.setParams({
+                post: this.onPost
+            });
 
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
