@@ -24,8 +24,7 @@ import {getToolTipVisible} from 'app/utils/tooltip';
 import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {canDeletePost, canEditPost, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {editDisable, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
 import Config from 'assets/config';
 
@@ -55,7 +54,8 @@ class Post extends PureComponent {
         license: PropTypes.object.isRequired,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object,
-        roles: PropTypes.string,
+        canEdit: PropTypes.bool.isRequired,
+        canDelete: PropTypes.bool.isRequired,
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
@@ -71,32 +71,26 @@ class Post extends PureComponent {
     constructor(props) {
         super(props);
 
-        const {config, license, currentUserId, roles, post} = props;
+        const {config, license, currentUserId, post} = props;
         this.editDisableAction = new DelayedAction(this.handleEditDisable);
         if (post) {
-            this.state = {
-                canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
-            };
-        } else {
-            this.state = {
-                canEdit: false,
-                canDelete: false
-            };
+            editDisable(config, license, currentUserId, post, this.editDisableAction);
         }
+        this.state = {
+            canEdit: this.props.canEdit
+        };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.config !== this.props.config ||
             nextProps.license !== this.props.license ||
             nextProps.currentUserId !== this.props.currentUserId ||
-            nextProps.post !== this.props.post ||
-            nextProps.roles !== this.props.roles) {
-            const {config, license, currentUserId, roles, post} = nextProps;
+            nextProps.post !== this.props.post) {
+            const {config, license, currentUserId, post} = nextProps;
 
+            editDisable(config, license, currentUserId, post, this.editDisableAction);
             this.setState({
-                canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+                canEdit: nextProps.canEdit
             });
         }
     }
@@ -404,7 +398,7 @@ class Post extends PureComponent {
                         />
                         <View style={{maxWidth: postWidth}}>
                             <PostBody
-                                canDelete={this.state.canDelete}
+                                canDelete={this.props.canDelete}
                                 canEdit={this.state.canEdit}
                                 isSearchResult={isSearchResult}
                                 navigator={this.props.navigator}

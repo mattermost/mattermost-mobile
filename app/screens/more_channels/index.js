@@ -36,7 +36,7 @@ function mapStateToProps(state) {
     const channels = joinableChannels(state);
 
     return {
-        canCreateChannels: showCreateOption(config, license, General.OPEN_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreateChannels: showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         currentUserId,
         currentTeamId,
         channels,

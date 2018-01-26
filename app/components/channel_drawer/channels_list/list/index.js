@@ -12,6 +12,7 @@ import {
     getSortedDirectChannelIds
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme, getFavoritesPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
@@ -26,9 +27,10 @@ function mapStateToProps(state) {
     const publicChannelIds = getSortedPublicChannelIds(state);
     const privateChannelIds = getSortedPrivateChannelIds(state);
     const directChannelIds = getSortedDirectChannelIds(state);
+    const currentTeamId = getCurrentTeamId(state);
 
     return {
-        canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreatePrivateChannels: showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         unreadChannelIds,
         favoriteChannelIds,
         publicChannelIds,

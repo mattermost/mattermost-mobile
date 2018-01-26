@@ -8,8 +8,10 @@ import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
-import {isPostFlagged} from 'mattermost-redux/utils/post_utils';
+import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {canDeletePost, canEditPost, isPostFlagged} from 'mattermost-redux/utils/post_utils';
+import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
@@ -23,6 +25,9 @@ function mapStateToProps(state, ownProps) {
     const {config, license} = state.entities.general;
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const myPreferences = getMyPreferences(state);
+    const currentUserId = getCurrentUserId(state);
+    const currentTeamId = getCurrentTeamId(state);
+    const currentChannelId = getCurrentChannelId(state);
 
     let isFirstReply = true;
     let isLastReply = true;
@@ -51,17 +56,25 @@ function mapStateToProps(state, ownProps) {
 
     const {deviceWidth} = getDimensions(state);
 
+    let canDelete = false;
+    let canEdit = false;
+    if (post) {
+        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin(roles), isSystemAdmin(roles));
+        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+    }
+
     return {
         config,
+        canDelete,
+        canEdit,
         currentTeamUrl: getCurrentTeamUrl(state),
-        currentUserId: getCurrentUserId(state),
+        currentUserId,
         deviceWidth,
         post,
         isFirstReply,
         isLastReply,
         commentedOnPost,
         license,
-        roles,
         theme: getTheme(state),
         isFlagged: isPostFlagged(post.id, myPreferences)
     };

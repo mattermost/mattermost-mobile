@@ -46,8 +46,8 @@ function mapStateToProps(state) {
     }
 
     return {
-        canDeleteChannel: showDeleteOption(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
-        canEditChannel: showManagementOptions(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
+        canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
+        canEditChannel: showManagementOptions(state, config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
