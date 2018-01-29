@@ -63,7 +63,7 @@ export default class ChannelLink extends React.PureComponent {
         const channel = this.state.channel;
 
         if (!channel) {
-            return <Text style={this.props.textStyle}>{'~' + this.props.channelName}</Text>;
+            return <Text style={this.props.textStyle}>{`~${this.props.channelName}`}</Text>;
         }
 
         const suffix = this.props.channelName.substring(channel.name.length);
@@ -74,7 +74,7 @@ export default class ChannelLink extends React.PureComponent {
                     style={this.props.linkStyle}
                     onPress={this.handlePress}
                 >
-                    {channel.display_name}
+                    {`~${channel.display_name}`}
                 </Text>
                 {suffix}
             </Text>
