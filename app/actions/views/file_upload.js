@@ -64,7 +64,7 @@ export function retryFileUpload(file, rootId) {
             type: file.type
         };
 
-        fileData.name = encodeURIComponent(file.fileName) + '"; filename*="utf-8\'\'' + encodeURIComponent(file.fileName);
+        fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
         formData.append('files', fileData);
         formData.append('channel_id', channelId);
         formData.append('client_ids', file.clientId);
