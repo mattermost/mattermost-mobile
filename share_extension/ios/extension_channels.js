@@ -128,13 +128,22 @@ export default class ExtensionChannels extends PureComponent {
                 return (channel.type === General.DM_CHANNEL && usersInDms.includes(teammateId)) || channel.type === General.GM_CHANNEL;
             });
 
-            const dmProfiles = await Client4.getProfilesByIds(usersInDms);
+            let dmProfiles;
+            if (usersInDms.length) {
+                dmProfiles = await Client4.getProfilesByIds(usersInDms);
+            }
 
             for (let i = 0; i < dms.length; i++) {
                 const channel = dms[i];
                 if (channel.type === General.DM_CHANNEL) {
                     const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-                    const profile = dmProfiles.find((p) => p.id === teammateId);
+                    let profile;
+                    if (dmProfiles) {
+                        profile = dmProfiles.find((p) => p.id === teammateId);
+                    } else {
+                        const response = await Client4.getProfilesByIds([teammateId]);
+                        profile = response[0] || {username: 'Not Found'};
+                    }
                     channelsMap[channel.id] = displayUsername(profile, Preferences.DISPLAY_PREFER_FULL_NAME);
                 } else if (channel.type === General.GM_CHANNEL) {
                     const members = await Client4.getChannelMembers(channel.id, 0, General.MAX_USERS_IN_GM);

@@ -220,6 +220,7 @@ export default class ExtensionPost extends PureComponent {
 
                 Client4.setUrl(credentials.url);
                 Client4.setToken(credentials.token);
+                Client4.setUserId(currentUserId);
                 this.setState({channel, currentUserId, files, team, value});
             } catch (error) {
                 this.setState({error});
