@@ -117,7 +117,6 @@ export default class ExtensionChannels extends PureComponent {
     loadChannels = async () => {
         try {
             const {currentUserId, teamId} = this.props;
-            const usersInDms = [];
             const channelsMap = {};
 
             // get the channels for the specified team
@@ -125,14 +124,20 @@ export default class ExtensionChannels extends PureComponent {
 
             // filter channels that are direct and group messages
             const dms = myChannels.filter((channel) => {
-                if (channel.type === General.DM_CHANNEL) {
-                    const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-                    if (!usersInDms.includes(teammateId)) {
-                        usersInDms.push(teammateId);
-                    }
-                }
                 return channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
             });
+
+            const usersInDms = dms.filter((channel) => {
+                return channel.type === General.DM_CHANNEL;
+            }).map((channel) => {
+                return getUserIdFromChannelName(currentUserId, channel.name);
+            }).reduce((acc, teammateId) => {
+                if (!acc.includes(teammateId)) {
+                    acc.push(teammateId);
+                }
+
+                return acc;
+            }, []);
 
             // get the user ids that belong to DMs & GMs
             let dmProfiles;
