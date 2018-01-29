@@ -6,6 +6,7 @@ import {uploadFile} from 'mattermost-redux/actions/files';
 
 import {buildFileUploadData, generateId} from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
+import {encodeHeaderURIStringToUTF8} from 'app/utils/file';
 
 export function handleUploadFiles(files, rootId) {
     return async (dispatch, getState) => {
@@ -27,7 +28,7 @@ export function handleUploadFiles(files, rootId) {
                 extension: fileData.extension
             });
 
-            fileData.name = encodeURIComponent(file.fileName) + '"; filename*="utf-8\'\'' + encodeURIComponent(file.fileName);
+            fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
             formData.append('files', fileData);
             formData.append('channel_id', channelId);
             formData.append('client_ids', clientId);

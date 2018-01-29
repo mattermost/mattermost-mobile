@@ -75,3 +75,6 @@ export function buildFileUploadData(file) {
         extension
     };
 }
+
+export const encodeHeaderURIStringToUTF8 = (string) =>
+    encodeURIComponent(string) + '"; filename*="utf-8\'\'' + encodeURIComponent(string);
