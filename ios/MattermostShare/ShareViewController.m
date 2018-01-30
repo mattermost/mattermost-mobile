@@ -54,13 +54,13 @@ RCT_EXPORT_METHOD(close:(NSDictionary *)data appGroupId:(NSString *)appGroupId) 
     NSArray *files = [data objectForKey:@"files"];
     NSString *requestId = [data objectForKey:@"requestId"];
     NSLog(@"Call createPost");
-    PerformRequests *request = [[PerformRequests alloc] initWithPost:post withFiles:files forRequestId:requestId inAppGroupId:appGroupId];
+    PerformRequests *request = [[PerformRequests alloc] initWithPost:post withFiles:files forRequestId:requestId inAppGroupId:appGroupId inContext:extensionContext];
     [request createPost];
-  }
-  
-  [extensionContext completeRequestReturningItems:nil
+  } else {
+    [extensionContext completeRequestReturningItems:nil
                                 completionHandler:nil];
-  NSLog(@"Extension closed");
+    NSLog(@"Extension closed");
+  }
 }
 
 RCT_REMAP_METHOD(data,
