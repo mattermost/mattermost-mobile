@@ -3,7 +3,7 @@
 
 import {getDataRetentionPolicy} from 'mattermost-redux/actions/general';
 import {GeneralTypes} from 'mattermost-redux/action_types';
-import {Client, Client4} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 import {ViewTypes} from 'app/constants';
 
@@ -38,9 +38,6 @@ export function handleSuccessfulLogin() {
                 token
             }
         }, getState);
-
-        Client.setToken(token);
-        Client.setUrl(url);
 
         if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
             license.IsLicensed === 'true' && license.DataRetention === 'true') {

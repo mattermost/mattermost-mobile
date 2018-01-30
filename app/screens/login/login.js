@@ -77,7 +77,7 @@ class Login extends PureComponent {
     }
 
     goToLoadTeam = (expiresAt) => {
-        const {intl, navigator, theme} = this.props;
+        const {intl, navigator} = this.props;
         tracker.initialLoad = Date.now();
 
         if (expiresAt) {
@@ -94,17 +94,17 @@ class Login extends PureComponent {
         }
 
         navigator.resetTo({
-            screen: 'LoadTeam',
+            screen: 'Channel',
             title: '',
             animated: false,
             backButtonTitle: '',
             navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: 'transparent'
             }
         });
     };

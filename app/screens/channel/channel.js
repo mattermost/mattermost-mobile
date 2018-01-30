@@ -60,6 +60,8 @@ class Channel extends PureComponent {
 
         if (this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
+        } else {
+            this.props.actions.selectFirstAvailableTeam();
         }
     }
 
