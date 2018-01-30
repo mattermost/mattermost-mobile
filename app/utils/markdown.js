@@ -1,15 +1,18 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {PixelRatio, Platform, StyleSheet} from 'react-native';
+import {Dimensions, PixelRatio, Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export function getCodeFont() {
     return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 }
 
-export const convertEmojiSizetoDeviceSize = (size) => {
-    return Platform.OS === 'ios' ? size : PixelRatio.get() * size;
+const scale = Dimensions.get('window').width / 320;
+
+export const normalizeFontSizeByDevice = (size) => {
+    const normalized = Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
+    return Platform.OS === 'ios' ? normalized : normalized + 2;
 };
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
@@ -29,38 +32,38 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             color: theme.linkColor
         },
         heading1: {
-            fontSize: 17,
+            fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
-            lineHeight: 25
+            lineHeight: normalizeFontSizeByDevice(25)
         },
         heading2: {
-            fontSize: 17,
+            fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
-            lineHeight: 25
+            lineHeight: normalizeFontSizeByDevice(25)
         },
         heading3: {
-            fontSize: 17,
+            fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
-            lineHeight: 25
+            lineHeight: normalizeFontSizeByDevice(25)
         },
         heading4: {
-            fontSize: 17,
+            fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
-            lineHeight: 25
+            lineHeight: normalizeFontSizeByDevice(25)
         },
         heading5: {
-            fontSize: 17,
+            fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
-            lineHeight: 25
+            lineHeight: normalizeFontSizeByDevice(25)
         },
         heading6: {
-            fontSize: 17,
+            fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
-            lineHeight: 25
+            lineHeight: normalizeFontSizeByDevice(25)
         },
         text: {
-            fontSize: 15,
-            lineHeight: 23
+            fontSize: normalizeFontSizeByDevice(15),
+            lineHeight: normalizeFontSizeByDevice(23)
         },
         code: {
             alignSelf: 'center',
