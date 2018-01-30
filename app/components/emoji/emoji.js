@@ -18,7 +18,10 @@ import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 import {Client4} from 'mattermost-redux/client';
 
 const scaleEmojiBasedOnDevise = (size) => {
-    return Platform.OS === 'ios' ? size * 1.2 : size * PixelRatio.get();
+    if (Platform.OS === 'ios') {
+        return size * 1.1; // slightly larger emojis look better on ios
+    }
+    return size * PixelRatio.get();
 };
 
 export default class Emoji extends React.PureComponent {

@@ -7,7 +7,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -175,17 +174,16 @@ export default class Markdown extends PureComponent {
         if (!children || children.length === 0) {
             return null;
         }
-        const {theme, textStyles} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
         const blockStyle = [style.block];
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
 
-        const paddingBottom = Platform.OS === 'ios' ? 0 : Math.round(StyleSheet.flatten(textStyles.text).lineHeight / 2);
         return (
             <View style={blockStyle}>
-                <Text style={{paddingBottom}}>
+                <Text>
                     {children}
                 </Text>
             </View>
@@ -193,16 +191,15 @@ export default class Markdown extends PureComponent {
     }
 
     renderHeading = ({children, level}) => {
-        const {theme, textStyles} = this.props;
+        const {theme} = this.props;
         let style = getStyleSheet(theme);
         style = {
             ...style.block,
             ...this.props.blockStyles[`heading${level}`]
         };
-        const paddingBottom = Platform.OS === 'ios' ? 0 : Math.round(StyleSheet.flatten(textStyles[`heading${level}`]).lineHeight / 2);
         return (
             <View style={style}>
-                <Text style={{paddingBottom}}>
+                <Text>
                     {children}
                 </Text>
             </View>
