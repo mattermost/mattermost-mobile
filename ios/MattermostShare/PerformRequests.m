@@ -16,13 +16,15 @@ MattermostBucket *mattermostBucket;
 - (id) initWithPost:(NSDictionary *) post
           withFiles:(NSArray *) files
        forRequestId:(NSString *)requestId
-       inAppGroupId:(NSString *) appGroupId {
+       inAppGroupId:(NSString *) appGroupId
+          inContext:(NSExtensionContext *) context {
   self = [super init];
   if (self) {
     self.post = post;
     self.files = files;
     self.appGroupId = appGroupId;
     self.requestId = requestId;
+    self.extensionContext = context;
 
     mattermostBucket = [[MattermostBucket alloc] init];
     self.bucket = [mattermostBucket bucketByName: appGroupId];
@@ -42,6 +44,8 @@ MattermostBucket *mattermostBucket;
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionDataTask *)task didCompleteWithError:(nullable NSError *)error {
   if(error != nil) {
     NSLog(@"ERROR %@", [error userInfo]);
+    [self.extensionContext completeRequestReturningItems:nil
+                                       completionHandler:nil];
   }
   NSLog(@"invalidating session %@", self.requestId);
   [session finishTasksAndInvalidate];
@@ -103,7 +107,7 @@ MattermostBucket *mattermostBucket;
     
     [dataForm appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", POST_BODY_BOUNDARY] dataUsingEncoding:NSUTF8StringEncoding]];
     [uploadRequest setHTTPBody:dataForm];
-    NSURLSession *uploadSession = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
+    NSURLSession *uploadSession = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     NSURLSessionDataTask *uploadTask = [uploadSession dataTaskWithRequest:uploadRequest];
     NSLog(@"Executing file request");
     [uploadTask resume];
@@ -132,6 +136,9 @@ MattermostBucket *mattermostBucket;
   NSURLSessionDataTask *createTask = [createSession dataTaskWithRequest:request];
   NSLog(@"Executing post request");
   [createTask resume];
+  [self.extensionContext completeRequestReturningItems:nil
+                                     completionHandler:nil];
+  NSLog(@"Extension closed");
 }
 
 - (void) cleanUpTempFiles {

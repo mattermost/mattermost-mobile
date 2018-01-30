@@ -61,22 +61,7 @@ export default class SharedApp extends PureComponent {
     }
 
     onClose = (data) => {
-        Animated.parallel([
-            Animated.timing(
-                this.state.backdropOpacity,
-                {
-                    toValue: 0,
-                    duration: 250
-                }),
-            Animated.timing(
-                this.state.containerOpacity,
-                {
-                    toValue: 0,
-                    duration: 250
-                })
-        ]).start(() => {
-            ShareExtension.close(data, Config.AppGroupId);
-        });
+        ShareExtension.close(data, Config.AppGroupId);
     };
 
     onLayout = (e) => {
