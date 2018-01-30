@@ -58,6 +58,10 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             fontWeight: '700',
             lineHeight: 25
         },
+        text: {
+            fontSize: 15,
+            lineHeight: 23
+        },
         code: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),

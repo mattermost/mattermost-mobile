@@ -7,6 +7,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
+    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -25,7 +26,6 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 import {addListItemIndices, pullOutImages} from './transform';
-import {convertEmojiSizetoDeviceSize} from '../../utils/markdown';
 
 export default class Markdown extends PureComponent {
     static propTypes = {
@@ -45,49 +45,6 @@ export default class Markdown extends PureComponent {
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
-        emojiSizes: {
-            ...Platform.select({
-                ios: {
-                    heading1: 25,
-                    heading2: 25,
-                    heading3: 25,
-                    heading4: 25,
-                    heading5: 25,
-                    heading6: 25,
-                    text: 20
-                },
-                android: {
-                    heading1: 60,
-                    heading2: 60,
-                    heading3: 60,
-                    heading4: 60,
-                    heading5: 60,
-                    heading6: 60,
-                    text: 45
-                }
-            })
-        },
-        fontSizes: {
-            heading1: 17,
-            heading2: 17,
-            heading3: 17,
-            heading4: 17,
-            heading5: 17,
-            heading6: 17,
-            text: 15
-        },
-        paddingBottom: {
-            ...Platform.select({
-                ios: {
-                    heading: 0,
-                    paragraph: 0
-                },
-                android: {
-                    heading: 5,
-                    paragraph: 4
-                }
-            })
-        },
         onLongPress: () => true
     };
 
@@ -205,18 +162,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderEmoji = ({context, emojiName, literal}) => {
-        let size;
-        const headingType = context.find((type) => type.startsWith('heading'));
-        if (headingType) {
-            size = this.props.emojiSizes[headingType];
-        } else {
-            size = this.props.emojiSizes.text;
-        }
         return (
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
-                size={size}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
@@ -226,18 +175,17 @@ export default class Markdown extends PureComponent {
         if (!children || children.length === 0) {
             return null;
         }
-
-        const style = getStyleSheet(this.props.theme);
+        const {theme, textStyles} = this.props;
+        const style = getStyleSheet(theme);
         const blockStyle = [style.block];
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
-        const textStyle = {
-            paddingBottom: this.props.paddingBottom.paragraph
-        };
+
+        const paddingBottom = Platform.OS === 'ios' ? 0 : Math.round(StyleSheet.flatten(textStyles.text).lineHeight / 2);
         return (
             <View style={blockStyle}>
-                <Text style={textStyle}>
+                <Text style={{paddingBottom}}>
                     {children}
                 </Text>
             </View>
@@ -245,17 +193,16 @@ export default class Markdown extends PureComponent {
     }
 
     renderHeading = ({children, level}) => {
-        let style = getStyleSheet(this.props.theme);
+        const {theme, textStyles} = this.props;
+        let style = getStyleSheet(theme);
         style = {
             ...style.block,
             ...this.props.blockStyles[`heading${level}`]
         };
-        const textStyle = {
-            paddingBottom: this.props.paddingBottom.header
-        };
+        const paddingBottom = Platform.OS === 'ios' ? 0 : Math.round(StyleSheet.flatten(textStyles[`heading${level}`]).lineHeight / 2);
         return (
             <View style={style}>
-                <Text style={textStyle}>
+                <Text style={{paddingBottom}}>
                     {children}
                 </Text>
             </View>

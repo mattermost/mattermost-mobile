@@ -21,7 +21,6 @@ export default class Emoji extends React.PureComponent {
         customEmojis: PropTypes.object,
         emojiName: PropTypes.string.isRequired,
         literal: PropTypes.string,
-        size: PropTypes.number.isRequired,
         textStyle: CustomPropTypes.Style,
         token: PropTypes.string.isRequired
     };
@@ -104,10 +103,11 @@ export default class Emoji extends React.PureComponent {
     render() {
         const {
             literal,
-            size,
             textStyle,
             token
         } = this.props;
+        const {fontSize, lineHeight} = StyleSheet.flatten(textStyle);
+        const size = lineHeight;
 
         if (!this.state.imageUrl) {
             return <Text style={textStyle}>{literal}</Text>;
@@ -140,7 +140,6 @@ export default class Emoji extends React.PureComponent {
 
         let marginTop = 0;
         if (textStyle) {
-            const fontSize = StyleSheet.flatten(textStyle).fontSize;
 
             // Center the image vertically on iOS (does nothing on Android)
             marginTop = (height - 16) / 2;
