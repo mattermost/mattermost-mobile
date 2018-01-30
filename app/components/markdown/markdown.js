@@ -32,8 +32,6 @@ export default class Markdown extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
-        fontSizes: PropTypes.object,
-        paddingBottom: PropTypes.object,
         isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
@@ -48,13 +46,26 @@ export default class Markdown extends PureComponent {
         textStyles: {},
         blockStyles: {},
         emojiSizes: {
-            heading1: 22,
-            heading2: 22,
-            heading3: 22,
-            heading4: 22,
-            heading5: 22,
-            heading6: 22,
-            text: 18
+            ...Platform.select({
+                ios: {
+                    heading1: 25,
+                    heading2: 25,
+                    heading3: 25,
+                    heading4: 25,
+                    heading5: 25,
+                    heading6: 25,
+                    text: 20
+                },
+                android: {
+                    heading1: 60,
+                    heading2: 60,
+                    heading3: 60,
+                    heading4: 60,
+                    heading5: 60,
+                    heading6: 60,
+                    text: 45
+                }
+            })
         },
         fontSizes: {
             heading1: 17,
@@ -195,21 +206,17 @@ export default class Markdown extends PureComponent {
 
     renderEmoji = ({context, emojiName, literal}) => {
         let size;
-        let fontSize;
         const headingType = context.find((type) => type.startsWith('heading'));
         if (headingType) {
             size = this.props.emojiSizes[headingType];
-            fontSize = this.props.fontSizes[headingType];
         } else {
             size = this.props.emojiSizes.text;
-            fontSize = this.props.fontSizes.text;
         }
         return (
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
-                size={convertEmojiSizetoDeviceSize(size)}
-                fontSize={fontSize}
+                size={size}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );

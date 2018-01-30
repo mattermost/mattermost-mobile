@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    ActivityIndicator,
     Dimensions,
     Image,
     NativeModules,
@@ -17,9 +18,10 @@ import {
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import {generateId} from 'app/utils/file';
@@ -42,6 +44,7 @@ import ExtensionTeams from './extension_teams';
 const ShareExtension = NativeModules.MattermostShare;
 const MAX_INPUT_HEIGHT = 95;
 const MAX_MESSAGE_LENGTH = 4000;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 const extensionSvg = {
     csv: ExcelSvg,
@@ -76,7 +79,9 @@ export default class ExtensionPost extends PureComponent {
             error: null,
             files: [],
             isLandscape,
-            value: ''
+            totalSize: 0,
+            value: '',
+            sending: false
         };
     }
 
@@ -185,6 +190,7 @@ export default class ExtensionPost extends PureComponent {
                 const text = [];
                 const urls = [];
                 const files = [];
+                let totalSize = 0;
 
                 for (let i = 0; i < items.length; i++) {
                     const item = items[i];
@@ -198,14 +204,18 @@ export default class ExtensionPost extends PureComponent {
                     default: {
                         const fullPath = item.value;
                         const filePath = fullPath.replace('file://', '');
+                        const fileSize = await RNFetchBlob.fs.stat(filePath);
                         const filename = fullPath.replace(/^.*[\\/]/, '');
                         const extension = filename.split('.').pop();
+
+                        totalSize += fileSize.size;
                         files.push({
                             extension,
                             filename,
                             filePath,
                             fullPath,
                             mimeType: lookupMimeType(filename.toLowerCase()),
+                            size: getFormattedFileSize(fileSize),
                             type: item.type
                         });
                         break;
@@ -220,7 +230,8 @@ export default class ExtensionPost extends PureComponent {
 
                 Client4.setUrl(credentials.url);
                 Client4.setToken(credentials.token);
-                this.setState({channel, currentUserId, files, team, value});
+                Client4.setUserId(currentUserId);
+                this.setState({channel, currentUserId, files, team, value, totalSize});
             } catch (error) {
                 this.setState({error});
             }
@@ -243,7 +254,34 @@ export default class ExtensionPost extends PureComponent {
     renderBody = (styles) => {
         const {formatMessage} = this.context.intl;
         const {credentials, theme} = this.props;
-        const {error, value} = this.state;
+        const {error, sending, totalSize, value} = this.state;
+
+        if (sending) {
+            return (
+                <View style={styles.sendingContainer}>
+                    <ActivityIndicator/>
+                    <Text style={styles.sendingText}>
+                        {formatMessage({
+                            id: 'mobile.extension.posting',
+                            defaultMessage: 'Posting...'
+                        })}
+                    </Text>
+                </View>
+            );
+        }
+
+        if (totalSize >= MAX_FILE_SIZE) {
+            return (
+                <View style={styles.unauthenticatedContainer}>
+                    <Text style={styles.unauthenticated}>
+                        {formatMessage({
+                            id: 'mobile.extension.max_file_size',
+                            defaultMessage: 'File attachments shared in Mattermost must be less than 20 Mb.'
+                        })}
+                    </Text>
+                </View>
+            );
+        }
 
         if (credentials && !error) {
             return (
@@ -292,8 +330,12 @@ export default class ExtensionPost extends PureComponent {
     renderChannelButton = (styles) => {
         const {formatMessage} = this.context.intl;
         const {credentials, theme} = this.props;
-        const {channel} = this.state;
+        const {channel, sending} = this.state;
         const channelName = channel ? channel.display_name : '';
+
+        if (sending) {
+            return null;
+        }
 
         if (!credentials) {
             return null;
@@ -405,7 +447,7 @@ export default class ExtensionPost extends PureComponent {
                         numberOfLines={1}
                         style={styles.filename}
                     >
-                        {file.filename}
+                        {`${file.size} - ${file.filename}`}
                     </Text>
                 </View>
             );
@@ -415,8 +457,12 @@ export default class ExtensionPost extends PureComponent {
     renderTeamButton = (styles) => {
         const {formatMessage} = this.context.intl;
         const {credentials, theme} = this.props;
-        const {team} = this.state;
+        const {sending, team} = this.state;
         const teamName = team ? team.display_name : '';
+
+        if (sending) {
+            return null;
+        }
 
         if (!credentials) {
             return null;
@@ -484,6 +530,7 @@ export default class ExtensionPost extends PureComponent {
                     requestId: generateId()
                 };
 
+                this.setState({sending: true});
                 onClose(data);
             } catch (error) {
                 this.setState({error});
@@ -496,6 +543,7 @@ export default class ExtensionPost extends PureComponent {
 
     render() {
         const {credentials, theme} = this.props;
+        const {totalSize, sending} = this.state;
         const {formatMessage} = this.context.intl;
         const styles = getStyleSheet(theme);
 
@@ -506,10 +554,10 @@ export default class ExtensionPost extends PureComponent {
             >
                 <ExtensionNavBar
                     authenticated={Boolean(credentials)}
-                    leftButtonTitle={formatMessage({id: 'mobile.share_extension.cancel', defaultMessage: 'Cancel'})}
+                    leftButtonTitle={sending ? null : formatMessage({id: 'mobile.share_extension.cancel', defaultMessage: 'Cancel'})}
                     onLeftButtonPress={this.handleCancel}
                     onRightButtonPress={this.sendMessage}
-                    rightButtonTitle={formatMessage({id: 'mobile.share_extension.send', defaultMessage: 'Send'})}
+                    rightButtonTitle={(totalSize >= MAX_FILE_SIZE || sending) ? null : formatMessage({id: 'mobile.share_extension.send', defaultMessage: 'Send'})}
                     theme={theme}
                 />
                 {this.renderBody(styles)}
@@ -644,6 +692,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             overflow: 'hidden',
             width: 38
+        },
+        sendingContainer: {
+            alignItems: 'center',
+            flex: 1,
+            justifyContent: 'center',
+            paddingHorizontal: 15
+        },
+        sendingText: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            paddingTop: 10
         }
     };
 });

@@ -246,7 +246,6 @@ class Channel extends PureComponent {
                             <View style={style.postList}>
                                 <ChannelPostList navigator={navigator}/>
                             </View>
-                            <ChannelLoader theme={theme}/>
                             <PostTextbox
                                 ref={this.attachPostTextbox}
                                 navigator={navigator}
