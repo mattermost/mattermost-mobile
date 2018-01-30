@@ -1,12 +1,16 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Platform, StyleSheet} from 'react-native';
+import {PixelRatio, Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export function getCodeFont() {
     return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 }
+
+export const convertEmojiSizetoDeviceSize = (size) => {
+    return Platform.OS === 'ios' ? size : PixelRatio.get() * size;
+};
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
     const codeFont = getCodeFont();
