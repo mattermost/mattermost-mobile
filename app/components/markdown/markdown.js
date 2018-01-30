@@ -31,7 +31,6 @@ export default class Markdown extends PureComponent {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         emojiSizes: PropTypes.object,
-        fontSizes: PropTypes.object,
         isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
@@ -66,15 +65,6 @@ export default class Markdown extends PureComponent {
                     text: 45
                 }
             })
-        },
-        fontSizes: {
-            heading1: 17,
-            heading2: 17,
-            heading3: 17,
-            heading4: 17,
-            heading5: 17,
-            heading6: 17,
-            text: 15
         },
         onLongPress: () => true
     };
@@ -194,14 +184,11 @@ export default class Markdown extends PureComponent {
 
     renderEmoji = ({context, emojiName, literal}) => {
         let size;
-        let fontSize;
         const headingType = context.find((type) => type.startsWith('heading'));
         if (headingType) {
             size = this.props.emojiSizes[headingType];
-            fontSize = this.props.fontSizes[headingType];
         } else {
             size = this.props.emojiSizes.text;
-            fontSize = this.props.fontSizes.text;
         }
 
         return (
@@ -209,7 +196,6 @@ export default class Markdown extends PureComponent {
                 emojiName={emojiName}
                 literal={literal}
                 size={size}
-                fontSize={fontSize}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
