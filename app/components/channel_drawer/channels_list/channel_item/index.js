@@ -26,7 +26,9 @@ function makeMapStateToProps() {
         if (channel.type === General.DM_CHANNEL && channel.teammate_id) {
             isMyUser = channel.teammate_id === currentUserId;
             const teammate = getUser(state, channel.teammate_id);
-            teammateDeletedAt = teammate.delete_at;
+            if (teammate && teammate.delete_at) {
+                teammateDeletedAt = teammate.delete_at;
+            }
         }
 
         return {
