@@ -54,7 +54,7 @@
         "eqeqeq": [2, "smart"],
         "func-call-spacing": [2, "never"],
         "func-names": 2,
-        "func-style": [2, "declaration"],
+        "func-style": [2, "declaration", { "allowArrowFunctions": true }],
         "generator-star-spacing": [0, {"before": false, "after": true}],
         "global-require": 2,
         "guard-for-in": 2,
