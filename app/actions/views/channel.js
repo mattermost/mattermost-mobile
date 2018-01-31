@@ -470,7 +470,8 @@ export function increasePostVisibility(channelId, focusedPostId) {
 
         // Check if we already have the posts that we want to show
         if (!focusedPostId) {
-            const loadedPostCount = state.entities.posts.postsInChannel[channelId].length;
+            const postsInChannel = state.entities.posts.postsInChannel[channelId] || [];
+            const loadedPostCount = postsInChannel.length;
             const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 
             if (loadedPostCount >= desiredPostVisibility) {
