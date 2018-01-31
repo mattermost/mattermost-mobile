@@ -11,7 +11,8 @@ import {
     SectionList,
     Text,
     TouchableOpacity,
-    View
+    View,
+    ActivityIndicator
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -30,6 +31,7 @@ const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7.5;
 const SECTION_MARGIN = 15;
 const SECTION_HEADER_HEIGHT = 28;
+const EMOJIS_PER_PAGE = 200;
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
@@ -39,7 +41,14 @@ export default class EmojiPicker extends PureComponent {
         deviceWidth: PropTypes.number.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         onEmojiPress: PropTypes.func,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        customEmojisEnabled: PropTypes.bool.isRequired,
+        customEmojiPage: PropTypes.number.isRequired,
+        actions: PropTypes.shape({
+            getCustomEmojis: PropTypes.func.isRequired,
+            incrementEmojiPickerPage: PropTypes.func.isRequired,
+            searchCustomEmojis: PropTypes.func.isRequired
+        }).isRequired
     };
 
     static defaultProps = {
@@ -70,19 +79,30 @@ export default class EmojiPicker extends PureComponent {
             emojiSectionIndexByOffset,
             filteredEmojis: [],
             searchTerm: '',
-            currentSectionIndex: 0
+            currentSectionIndex: 0,
+            missingPages: true
         };
     }
 
     componentWillReceiveProps(nextProps) {
+        let rebuildEmojis = false;
         if (this.props.deviceWidth !== nextProps.deviceWidth) {
-            this.setState({
-                emojis: this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth)
-            });
+            rebuildEmojis = true;
 
             if (this.refs.search_bar) {
                 this.refs.search_bar.blur();
             }
+        }
+
+        if (this.props.emojis !== nextProps.emojis) {
+            rebuildEmojis = true;
+        }
+
+        if (rebuildEmojis) {
+            const emojis = this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth);
+            this.setState({
+                emojis
+            });
         }
     }
 
@@ -145,7 +165,8 @@ export default class EmojiPicker extends PureComponent {
 
         clearTimeout(this.searchTermTimeout);
         const timeout = text ? 100 : 0;
-        this.searchTermTimeout = setTimeout(() => {
+        this.searchTermTimeout = setTimeout(async () => {
+            await this.props.actions.searchCustomEmojis(text);
             const filteredEmojis = this.searchEmojis(text);
             this.setState({
                 filteredEmojis
@@ -213,6 +234,26 @@ export default class EmojiPicker extends PureComponent {
             </TouchableOpacity>
         );
     };
+
+    loadMoreCustomEmojis = async () => {
+        if (!this.props.customEmojisEnabled) {
+            return;
+        }
+
+        const {data} = await this.props.actions.getCustomEmojis(this.props.customEmojiPage, EMOJIS_PER_PAGE);
+        this.setState({loadingMore: false});
+
+        if (!data) {
+            return;
+        }
+
+        if (data.length < EMOJIS_PER_PAGE) {
+            this.setState({missingPages: false});
+            return;
+        }
+
+        this.props.actions.incrementEmojiPickerPage();
+    }
 
     onScroll = (e) => {
         if (this.state.jumpToSection) {
@@ -317,6 +358,18 @@ export default class EmojiPicker extends PureComponent {
         this.sectionList = c;
     };
 
+    renderFooter = () => {
+        if (!this.state.missingPages) {
+            return null;
+        }
+
+        return (
+            <View style={{flex: 1, alignItems: 'center'}}>
+                <ActivityIndicator/>
+            </View>
+        );
+    }
+
     render() {
         const {deviceWidth, isLandscape, theme} = this.props;
         const {emojis, filteredEmojis, searchTerm} = this.state;
@@ -353,6 +406,9 @@ export default class EmojiPicker extends PureComponent {
                     onScrollToIndexFailed={this.handleScrollToSectionFailed}
                     onMomentumScrollEnd={this.onMomentumScrollEnd}
                     pageSize={30}
+                    ListFooterComponent={this.renderFooter}
+                    onEndReached={this.loadMoreCustomEmojis}
+                    onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
                 />
             );
         }

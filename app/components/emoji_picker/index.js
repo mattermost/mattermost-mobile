@@ -3,11 +3,15 @@
 
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
+import {bindActionCreators} from 'redux';
 
-import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
-
-import {getDimensions, isLandscape} from 'app/selectors/device';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getCustomEmojis, searchCustomEmojis} from 'mattermost-redux/actions/emojis';
+
+import {incrementEmojiPickerPage} from 'app/actions/views/emoji';
+import {getDimensions, isLandscape} from 'app/selectors/device';
 import {CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from 'app/utils/emojis';
 
 import EmojiPicker from './emoji_picker';
@@ -152,8 +156,20 @@ function mapStateToProps(state) {
         emojisBySection,
         deviceWidth,
         isLandscape: isLandscape(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
+        customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',
+        customEmojiPage: state.views.emoji.emojiPickerCustomPage
     };
 }
 
-export default connect(mapStateToProps)(EmojiPicker);
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators({
+            getCustomEmojis,
+            incrementEmojiPickerPage,
+            searchCustomEmojis
+        }, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(EmojiPicker);
