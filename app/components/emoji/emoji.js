@@ -149,18 +149,6 @@ export default class Emoji extends React.PureComponent {
             }
         }
 
-        let marginTop = 0;
-        // if (textStyle) {
-        //     // Center the image vertically on iOS (does nothing on Android)
-        //     marginTop = (height - 16) / 2;
-        //     // hack to get the vertical alignment looking better
-        //     if (fontSize === 17) {
-        //         marginTop -= 2;
-        //     } else if (fontSize === 15) {
-        //         marginTop += 1;
-        //     }
-        // }
-
         // Android can't change the size of an image after its first render, so
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
@@ -168,7 +156,7 @@ export default class Emoji extends React.PureComponent {
         return (
             <ImageComponent
                 key={key}
-                style={{width, height, marginTop}}
+                style={{width, height}}
                 source={source}
                 onError={this.onError}
             />
