@@ -6,7 +6,14 @@ import Orientation from 'react-native-orientation';
 import {Provider} from 'react-redux';
 import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
 import {IntlProvider} from 'react-intl';
-import {Alert, AppState, InteractionManager, Keyboard, NativeModules, Platform} from 'react-native';
+import {
+    Alert,
+    AppState,
+    InteractionManager,
+    Keyboard,
+    NativeModules,
+    Platform
+} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {setJSExceptionHandler, setNativeExceptionHandler} from 'react-native-exception-handler';
 import StatusBarSizeIOS from 'react-native-status-bar-size';
@@ -21,8 +28,18 @@ import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {calculateDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
-import {createPost, loadConfigAndLicense, loadFromPushNotification, purgeOfflineStore} from 'app/actions/views/root';
+import {
+    calculateDeviceDimensions,
+    setDeviceOrientation,
+    setDeviceAsTablet,
+    setStatusBarHeight
+} from 'app/actions/device';
+import {
+    createPost,
+    loadConfigAndLicense,
+    loadFromPushNotification,
+    purgeOfflineStore
+} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {handleLoginIdChanged} from 'app/actions/views/login';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
@@ -213,7 +230,7 @@ export default class Mattermost {
                     intl.formatMessage({id: 'mobile.server_upgrade.description', defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n'}),
                     [{
                         text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
-                        onPress: this.handleAppVersionUpgraded
+                        onPress: this.handleServerVersionUpgradeNeeded
                     }],
                     {cancelable: false}
                 );
@@ -331,7 +348,7 @@ export default class Mattermost {
         this.store.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
-    handleAppVersionUpgraded = async () => {
+    handleServerVersionUpgradeNeeded = async () => {
         const {dispatch, getState} = this.store;
 
         this.resetBadgeAndVersion();
