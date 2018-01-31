@@ -332,8 +332,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         message: {
             color: theme.centerChannelColor,
-            fontSize: normalizeFontSizeByDevice(15),
-            lineHeight: normalizeFontSizeByDevice(20)
+            fontSize: normalizeFontSizeByDevice(13),
+            lineHeight: normalizeFontSizeByDevice(16)
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',

@@ -114,11 +114,7 @@ export default class Markdown extends PureComponent {
             // If this text is displayed, it will be styled by the image component
             return <Text>{literal}</Text>;
         }
-
-        const style = {
-            ...StyleSheet.flatten(this.computeTextStyle(this.props.baseTextStyle, context)),
-            paddingBottom: 5 // ensures even spacing?
-        };
+        const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         return <Text style={style}>{literal}</Text>;
@@ -179,7 +175,7 @@ export default class Markdown extends PureComponent {
         if (!children || children.length === 0) {
             return null;
         }
-        const {theme, textStyles} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
         const blockStyle = [style.block];
         if (!first) {
@@ -201,9 +197,12 @@ export default class Markdown extends PureComponent {
             ...style.block,
             ...this.props.blockStyles[`heading${level}`]
         };
+        const textStyle = {
+            paddingBottom: StyleSheet.flatten(this.props.textStyles[`heading${level}`]).lineHeight * 0.3
+        };
         return (
             <View style={style}>
-                <Text>
+                <Text style={textStyle}>
                     {children}
                 </Text>
             </View>
@@ -307,7 +306,7 @@ export default class Markdown extends PureComponent {
             spacer = ' ';
         }
 
-        const parentStyles = this.computeTextStyle(this.props.baseTextStyle, context)
+        const parentStyles = this.computeTextStyle(this.props.baseTextStyle, context);
         const style = getStyleSheet(this.props.theme);
         const styles = [
             this.props.baseTextStyle,

@@ -11,8 +11,7 @@ export function getCodeFont() {
 const scale = Dimensions.get('window').width / 320;
 
 export const normalizeFontSizeByDevice = (size) => {
-    const normalized = Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
-    return Platform.OS === 'ios' ? normalized : normalized - 2;
+    return Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
 };
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
@@ -32,34 +31,34 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             color: theme.linkColor
         },
         heading1: {
-            fontSize: normalizeFontSizeByDevice(17),
+            fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(25)
+            lineHeight: normalizeFontSizeByDevice(22)
         },
         heading2: {
-            fontSize: normalizeFontSizeByDevice(17),
+            fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(25)
+            lineHeight: normalizeFontSizeByDevice(22)
         },
         heading3: {
-            fontSize: normalizeFontSizeByDevice(17),
+            fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(25)
+            lineHeight: normalizeFontSizeByDevice(22)
         },
         heading4: {
-            fontSize: normalizeFontSizeByDevice(17),
+            fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(25)
+            lineHeight: normalizeFontSizeByDevice(22)
         },
         heading5: {
-            fontSize: normalizeFontSizeByDevice(17),
+            fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(25)
+            lineHeight: normalizeFontSizeByDevice(22)
         },
         heading6: {
-            fontSize: normalizeFontSizeByDevice(17),
+            fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(25)
+            lineHeight: normalizeFontSizeByDevice(22)
         },
         code: {
             alignSelf: 'center',
