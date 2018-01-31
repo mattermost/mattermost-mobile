@@ -137,8 +137,8 @@ class SelectServer extends PureComponent {
         });
     }
 
-    handleLoginOptions = (props) => {
-        const {config, intl, license, theme} = props;
+    handleLoginOptions = () => {
+        const {config, intl, license, theme} = this.props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
 
