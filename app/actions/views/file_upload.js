@@ -4,9 +4,12 @@
 import {Platform} from 'react-native';
 import {uploadFile} from 'mattermost-redux/actions/files';
 
-import {buildFileUploadData, generateId} from 'app/utils/file';
+import {
+    buildFileUploadData,
+    encodeHeaderURIStringToUTF8,
+    generateId
+} from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
-import {encodeHeaderURIStringToUTF8} from 'app/utils/file';
 
 export function handleUploadFiles(files, rootId) {
     return async (dispatch, getState) => {
