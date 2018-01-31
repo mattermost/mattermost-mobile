@@ -9,7 +9,13 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {AwayAvatar, DndAvatar, OfflineAvatar, OnlineAvatar} from 'app/components/status_icons';
+import {
+    ArchiveIcon,
+    AwayAvatar,
+    DndAvatar,
+    OfflineAvatar,
+    OnlineAvatar
+} from 'app/components/status_icons';
 
 import {General} from 'mattermost-redux/constants';
 
@@ -23,6 +29,7 @@ export default class ChannelIcon extends React.PureComponent {
         membersCount: PropTypes.number,
         size: PropTypes.number,
         status: PropTypes.string,
+        teammateDeletedAt: PropTypes.number,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired
     };
@@ -35,7 +42,17 @@ export default class ChannelIcon extends React.PureComponent {
     };
 
     render() {
-        const {isActive, isUnread, isInfo, membersCount, size, status, theme, type} = this.props;
+        const {
+            isActive,
+            isUnread,
+            isInfo,
+            membersCount,
+            size,
+            status,
+            teammateDeletedAt,
+            theme,
+            type
+        } = this.props;
         const style = getStyleSheet(theme);
 
         let activeIcon;
@@ -88,6 +105,14 @@ export default class ChannelIcon extends React.PureComponent {
                         {membersCount}
                     </Text>
                 </View>
+            );
+        } else if (type === General.DM_CHANNEL && teammateDeletedAt) {
+            icon = (
+                <ArchiveIcon
+                    width={size}
+                    height={size}
+                    color={offlineColor}
+                />
             );
         } else if (type === General.DM_CHANNEL) {
             switch (status) {
