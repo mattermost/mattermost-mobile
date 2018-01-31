@@ -12,7 +12,7 @@ const scale = Dimensions.get('window').width / 320;
 
 export const normalizeFontSizeByDevice = (size) => {
     const normalized = Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
-    return Platform.OS === 'ios' ? normalized : normalized + 4;
+    return Platform.OS === 'ios' ? normalized : normalized - 2;
 };
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
@@ -30,10 +30,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         link: {
             color: theme.linkColor
-        },
-        default: {
-            fontSize: normalizeFontSizeByDevice(15),
-            lineHeight: normalizeFontSizeByDevice(23)
         },
         heading1: {
             fontSize: normalizeFontSizeByDevice(17),

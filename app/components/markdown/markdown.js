@@ -31,7 +31,6 @@ export default class Markdown extends PureComponent {
     static propTypes = {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
-        emojiSizes: PropTypes.object,
         isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
@@ -115,6 +114,7 @@ export default class Markdown extends PureComponent {
             // If this text is displayed, it will be styled by the image component
             return <Text>{literal}</Text>;
         }
+
         const style = {
             ...StyleSheet.flatten(this.computeTextStyle(this.props.baseTextStyle, context)),
             paddingBottom: 5 // ensures even spacing?
@@ -179,7 +179,7 @@ export default class Markdown extends PureComponent {
         if (!children || children.length === 0) {
             return null;
         }
-        const {theme} = this.props;
+        const {theme, textStyles} = this.props;
         const style = getStyleSheet(theme);
         const blockStyle = [style.block];
         if (!first) {

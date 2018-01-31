@@ -23,6 +23,7 @@ import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import Reactions from 'app/components/reactions';
+import {normalizeFontSizeByDevice} from '../../utils/markdown';
 
 class PostBody extends PureComponent {
     static propTypes = {
@@ -331,8 +332,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         message: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            lineHeight: 20
+            fontSize: normalizeFontSizeByDevice(15),
+            lineHeight: normalizeFontSizeByDevice(20)
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
