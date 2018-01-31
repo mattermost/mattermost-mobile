@@ -3,7 +3,12 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Image, Platform, Text} from 'react-native';
+import {
+    Image,
+    Platform,
+    StyleSheet,
+    Text
+} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -15,7 +20,6 @@ export default class Emoji extends React.PureComponent {
     static propTypes = {
         customEmojis: PropTypes.object,
         emojiName: PropTypes.string.isRequired,
-        fontSize: PropTypes.number,
         literal: PropTypes.string,
         size: PropTypes.number.isRequired,
         textStyle: CustomPropTypes.Style,
@@ -99,7 +103,6 @@ export default class Emoji extends React.PureComponent {
 
     render() {
         const {
-            fontSize,
             literal,
             size,
             textStyle,
@@ -136,7 +139,9 @@ export default class Emoji extends React.PureComponent {
         }
 
         let marginTop = 0;
-        if (fontSize) {
+        if (textStyle) {
+            const fontSize = StyleSheet.flatten(textStyle).fontSize;
+
             // Center the image vertically on iOS (does nothing on Android)
             marginTop = (height - 16) / 2;
 
