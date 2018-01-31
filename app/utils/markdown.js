@@ -31,6 +31,10 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         link: {
             color: theme.linkColor
         },
+        default: {
+            fontSize: normalizeFontSizeByDevice(15),
+            lineHeight: normalizeFontSizeByDevice(23)
+        },
         heading1: {
             fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
@@ -60,10 +64,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             fontSize: normalizeFontSizeByDevice(17),
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(25)
-        },
-        text: {
-            fontSize: normalizeFontSizeByDevice(15),
-            lineHeight: normalizeFontSizeByDevice(23)
         },
         code: {
             alignSelf: 'center',
