@@ -26,6 +26,8 @@ const NewMessagesDividerWithLayout = withLayout(NewMessagesDivider);
 const PostWithLayout = withLayout(Post);
 
 const INITAL_BATCH_TO_RENDER = 15;
+const NEW_MESSAGES_HEIGHT = 28;
+const DATE_HEADER_HEIGHT = 28;
 
 export default class PostList extends PureComponent {
     static propTypes = {
@@ -80,14 +82,12 @@ export default class PostList extends PureComponent {
         if (this.props.channelId !== nextProps.channelId) {
             this.itemMeasurements = {};
             this.newMessageScrolledTo = false;
+            this.scrollToBottomOffset();
         }
     }
 
-    componentDidUpdate(prevProps) {
-        const initialPosts = !prevProps.postIds.length && prevProps.postIds !== this.props.postIds;
-        if ((prevProps.channelId !== this.props.channelId || initialPosts) && this.refs.list) {
-            this.scrollToBottomOffset();
-        } else if ((this.props.measureCellLayout || this.props.isSearchResult) && this.state.scrollToMessage) {
+    componentDidUpdate() {
+        if ((this.props.measureCellLayout || this.props.isSearchResult) && this.state.scrollToMessage) {
             this.scrollListToMessageOffset();
         }
     }
@@ -110,17 +110,13 @@ export default class PostList extends PureComponent {
     }
 
     scrollListToMessageOffset = () => {
-        const index = this.moreNewMessages ? this.props.postIds.length : this.newMessagesIndex;
+        const index = this.moreNewMessages ? this.props.postIds.length - 1 : this.newMessagesIndex;
         if (index !== -1) {
-            let offset = this.getMeasurementOffset(index);
+            const offset = this.getMeasurementOffset(index);
 
             const windowHeight = this.state.postListHeight;
-            if (index !== this.props.postIds.length - 1) {
-                if (offset < windowHeight) {
-                    return; // no need to scroll since item is in view
-                } else if (offset > windowHeight) {
-                    offset = (offset - (windowHeight / 2)) + this.itemMeasurements[index];
-                }
+            if (index !== this.props.postIds.length - 1 && offset < windowHeight) {
+                return; // post is already in view, no need to scroll.
             }
 
             InteractionManager.runAfterInteractions(() => {
@@ -191,13 +187,12 @@ export default class PostList extends PureComponent {
             // needs to be added to the index for the length check to be correct.
             this.moreNewMessages = this.props.postIds.length === index + 2;
 
+            this.itemMeasurements[index] = NEW_MESSAGES_HEIGHT;
             return (
                 <NewMessagesDividerWithLayout
                     index={index}
-                    onLayoutCalled={this.measureItem}
                     theme={this.props.theme}
                     moreMessages={this.moreNewMessages}
-                    shouldCallOnLayout={this.props.measureCellLayout && !this.newMessageScrolledTo}
                 />
             );
         } else if (item.indexOf(DATE_LINE) === 0) {
@@ -216,12 +211,11 @@ export default class PostList extends PureComponent {
     };
 
     renderDateHeader = (date, index) => {
+        this.itemMeasurements[index] = DATE_HEADER_HEIGHT;
         return (
             <DateHeaderWithLayout
                 date={date}
                 index={index}
-                onLayoutCalled={this.measureItem}
-                shouldCallOnLayout={this.props.measureCellLayout && !this.newMessageScrolledTo}
             />
         );
     };

@@ -5,13 +5,19 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
+import {emptyFunction} from 'app/utils/general';
+
 function withLayout(WrappedComponent) {
     return class WithLayoutComponent extends PureComponent {
         static propTypes = {
             index: PropTypes.number.isRequired,
-            onLayoutCalled: PropTypes.func.isRequired,
+            onLayoutCalled: PropTypes.func,
             shouldCallOnLayout: PropTypes.bool
         };
+
+        static defaultProps = {
+            onLayoutCalled: emptyFunction
+        }
 
         onLayout = (event) => {
             const {height} = event.nativeEvent.layout;
