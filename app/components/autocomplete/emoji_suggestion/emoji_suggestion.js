@@ -20,7 +20,8 @@ const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
 export default class EmojiSuggestion extends Component {
     static propTypes = {
         actions: PropTypes.shape({
-            addReactionToLatestPost: PropTypes.func.isRequired
+            addReactionToLatestPost: PropTypes.func.isRequired,
+            autocompleteCustomEmojis: PropTypes.func.isRequired
         }).isRequired,
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
@@ -43,6 +44,12 @@ export default class EmojiSuggestion extends Component {
         dataSource: []
     };
 
+    constructor(props) {
+        super(props);
+
+        this.matchTerm = '';
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.isSearch) {
             return;
@@ -54,7 +61,6 @@ export default class EmojiSuggestion extends Component {
         if (!match || this.state.emojiComplete) {
             this.setState({
                 active: false,
-                matchTerm: null,
                 emojiComplete: false
             });
 
@@ -63,18 +69,17 @@ export default class EmojiSuggestion extends Component {
             return;
         }
 
-        const matchTerm = match[3];
+        const oldMatchTerm = this.matchTerm;
+        this.matchTerm = match[3];
 
-        const matchTermChanged = matchTerm !== this.state.matchTerm;
-        if (matchTermChanged) {
-            this.setState({
-                matchTerm
-            });
+        if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
+            this.props.actions.autocompleteCustomEmojis(this.matchTerm);
+            return;
         }
 
-        if (matchTermChanged) {
-            this.handleFuzzySearch(matchTerm, nextProps);
-        } else if (!matchTerm.length) {
+        if (this.props.emojis !== nextProps.emojis) {
+            this.handleFuzzySearch(this.matchTerm, nextProps);
+        } else if (!this.matchTerm.length) {
             const initialEmojis = [...nextProps.emojis];
             initialEmojis.splice(0, 300);
             const data = initialEmojis.sort();

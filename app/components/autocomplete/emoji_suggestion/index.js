@@ -6,6 +6,7 @@ import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
 
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
+import {autocompleteCustomEmojis} from 'mattermost-redux/actions/emojis';
 
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -50,7 +51,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            addReactionToLatestPost
+            addReactionToLatestPost,
+            autocompleteCustomEmojis
         }, dispatch)
     };
 }
