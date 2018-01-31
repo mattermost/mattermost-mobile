@@ -57,7 +57,7 @@ export function retryFileUpload(file, rootId) {
 
         const channelId = state.entities.channels.currentChannelId;
         const formData = new FormData();
-
+ 
         const fileData = {
             uri: file.localPath,
             name: file.name,
