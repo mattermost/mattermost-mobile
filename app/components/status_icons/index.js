@@ -1,6 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import ArchiveIcon from './archive_icon';
 import AwayAvatar from './away_avatar';
 import AwayIcon from './away_icon';
 import DndAvatar from './dnd_avatar';
@@ -11,6 +12,7 @@ import OnlineAvatar from './online_avatar';
 import OnlineIcon from './online_icon';
 
 export {
+    ArchiveIcon,
     AwayAvatar,
     AwayIcon,
     DndAvatar,

@@ -31,6 +31,7 @@ export default class ChannelItem extends PureComponent {
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         status: PropTypes.string,
+        teammateDeletedAt: PropTypes.number,
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
@@ -79,6 +80,7 @@ export default class ChannelItem extends PureComponent {
             isUnread,
             mentions,
             status,
+            teammateDeletedAt,
             theme,
             type
         } = this.props;
@@ -133,6 +135,7 @@ export default class ChannelItem extends PureComponent {
                 membersCount={displayName.split(',').length}
                 size={16}
                 status={status}
+                teammateDeletedAt={teammateDeletedAt}
                 theme={theme}
                 type={type}
             />
