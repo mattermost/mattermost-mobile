@@ -175,8 +175,8 @@ export default class Markdown extends PureComponent {
         if (!children || children.length === 0) {
             return null;
         }
-        const {theme} = this.props;
-        const style = getStyleSheet(theme);
+
+        const style = getStyleSheet(this.props.theme);
         const blockStyle = [style.block];
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
@@ -191,8 +191,7 @@ export default class Markdown extends PureComponent {
     }
 
     renderHeading = ({children, level}) => {
-        const {theme} = this.props;
-        let style = getStyleSheet(theme);
+        let style = getStyleSheet(this.props.theme);
         style = {
             ...style.block,
             ...this.props.blockStyles[`heading${level}`]

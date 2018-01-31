@@ -10,23 +10,13 @@ import {getCurrentUserId, getUser, makeGetProfilesInChannel} from 'mattermost-re
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {getChannelMembersForDm} from 'app/selectors/channel';
+
 import ChannelIntro from './channel_intro';
 
 function makeMapStateToProps() {
     const getChannel = makeGetChannel();
     const getProfilesInChannel = makeGetProfilesInChannel();
-
-    const getOtherUserIdForDm = createSelector(
-        (state, channel) => channel,
-        getCurrentUserId,
-        (channel, currentUserId) => {
-            if (!channel) {
-                return '';
-            }
-
-            return channel.name.split('__').find((m) => m !== currentUserId) || currentUserId;
-        }
-    );
 
     const getChannelMembers = createSelector(
         getCurrentUserId,
@@ -34,17 +24,6 @@ function makeMapStateToProps() {
         (currentUserId, profilesInChannel) => {
             const currentChannelMembers = profilesInChannel || [];
             return currentChannelMembers.filter((m) => m.id !== currentUserId);
-        }
-    );
-
-    const getChannelMembersForDm = createSelector(
-        (state, channel) => getUser(state, getOtherUserIdForDm(state, channel)),
-        (otherUser) => {
-            if (!otherUser) {
-                return [];
-            }
-
-            return [otherUser];
         }
     );
 

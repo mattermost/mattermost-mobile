@@ -1,12 +1,14 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import FormData from 'form-data';
 import {Platform} from 'react-native';
 import {uploadFile} from 'mattermost-redux/actions/files';
-import {parseClientIdsFromFormData} from 'mattermost-redux/utils/file_utils';
 
-import {buildFileUploadData, generateId} from 'app/utils/file';
+import {
+    buildFileUploadData,
+    encodeHeaderURIStringToUTF8,
+    generateId
+} from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
 
 export function handleUploadFiles(files, rootId) {
@@ -29,6 +31,7 @@ export function handleUploadFiles(files, rootId) {
                 extension: fileData.extension
             });
 
+            fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
             formData.append('files', fileData);
             formData.append('channel_id', channelId);
             formData.append('client_ids', clientId);
@@ -46,7 +49,8 @@ export function handleUploadFiles(files, rootId) {
             rootId
         });
 
-        await uploadFile(channelId, rootId, parseClientIdsFromFormData(formData), formData, formBoundary)(dispatch, getState);
+        const clientIdsArray = clientIds.map((c) => c.clientId);
+        await uploadFile(channelId, rootId, clientIdsArray, formData, formBoundary)(dispatch, getState);
     };
 }
 
@@ -63,6 +67,7 @@ export function retryFileUpload(file, rootId) {
             type: file.type
         };
 
+        fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
         formData.append('files', fileData);
         formData.append('channel_id', channelId);
         formData.append('client_ids', file.clientId);

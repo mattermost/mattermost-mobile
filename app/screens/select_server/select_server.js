@@ -19,7 +19,7 @@ import {
 import Button from 'react-native-button';
 import urlParse from 'url-parse';
 
-import {Client, Client4} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 
 import Config from 'assets/config';
 import ErrorText from 'app/components/error_text';
@@ -224,7 +224,6 @@ class SelectServer extends PureComponent {
         });
 
         Client4.setUrl(url);
-        Client.setUrl(url);
         handleServerUrlChanged(url);
 
         let cancel = false;

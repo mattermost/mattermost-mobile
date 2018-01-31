@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {Client, Client4} from 'mattermost-redux/client';
+import {Client4} from 'mattermost-redux/client';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 
@@ -15,7 +15,6 @@ import Root from './root';
 
 function mapStateToProps(state) {
     const locale = getCurrentLocale(state);
-    Client.setLocale(locale);
     Client4.setAcceptLanguage(locale);
 
     return {
