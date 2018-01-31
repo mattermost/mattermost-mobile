@@ -7,6 +7,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
+    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -114,9 +115,13 @@ export default class Markdown extends PureComponent {
             // If this text is displayed, it will be styled by the image component
             return <Text>{literal}</Text>;
         }
+        const style = {
+            ...StyleSheet.flatten(this.computeTextStyle(this.props.baseTextStyle, context)),
+            paddingBottom: 5 // ensures even spacing?
+        };
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
-        return <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>{literal}</Text>;
+        return <Text style={style}>{literal}</Text>;
     }
 
     renderCodeSpan = ({context, literal}) => {
@@ -180,7 +185,6 @@ export default class Markdown extends PureComponent {
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
-
         return (
             <View style={blockStyle}>
                 <Text>
@@ -303,10 +307,14 @@ export default class Markdown extends PureComponent {
             spacer = ' ';
         }
 
+        const parentStyles = this.computeTextStyle(this.props.baseTextStyle, context)
         const style = getStyleSheet(this.props.theme);
         const styles = [
             this.props.baseTextStyle,
-            style.editedIndicatorText
+            style.editedIndicatorText,
+            {
+                fontSize: StyleSheet.flatten(parentStyles).fontSize * 0.6
+            }
         ];
 
         return (
@@ -363,7 +371,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         editedIndicatorText: {
             color: editedColor,
-            fontSize: 14,
             opacity: editedOpacity
         }
     };
