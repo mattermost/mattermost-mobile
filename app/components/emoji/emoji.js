@@ -149,6 +149,16 @@ export default class Emoji extends React.PureComponent {
             }
         }
 
+        let marginTop = 0;
+        if (textStyle) {
+            // hack to get the vertical alignment looking better
+            if (fontSize > 16) {
+                marginTop -= 2;
+            } else if (fontSize <= 16) {
+                marginTop += 1;
+            }
+        }
+
         // Android can't change the size of an image after its first render, so
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
@@ -156,7 +166,7 @@ export default class Emoji extends React.PureComponent {
         return (
             <ImageComponent
                 key={key}
-                style={{width, height}}
+                style={{width, height, marginTop}}
                 source={source}
                 onError={this.onError}
             />
