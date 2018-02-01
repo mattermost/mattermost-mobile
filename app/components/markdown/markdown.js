@@ -191,17 +191,13 @@ export default class Markdown extends PureComponent {
     }
 
     renderHeading = ({children, level}) => {
-        let style = getStyleSheet(this.props.theme);
-        style = {
-            ...style.block,
-            ...this.props.blockStyles[`heading${level}`]
-        };
-        const textStyle = {
-            paddingBottom: StyleSheet.flatten(this.props.textStyles[`heading${level}`]).lineHeight * 0.3
-        };
+        const containerStyle = [
+            getStyleSheet(this.props.theme).block,
+            this.props.blockStyles[`heading${level}`]
+        ];
         const textStyle = this.props.blockStyles[`heading${level}Text`]
         return (
-            <View style={style}>
+            <View style={containerStyle}>
                 <Text style={textStyle}>
                     {children}
                 </Text>
