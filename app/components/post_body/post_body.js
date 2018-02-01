@@ -20,10 +20,9 @@ import OptionsContext from 'app/components/options_context';
 import PostBodyAdditionalContent from 'app/components/post_body_additional_content';
 
 import {emptyFunction} from 'app/utils/general';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
+import {getMarkdownTextStyles, getMarkdownBlockStyles, normalizeFontSizeByDevice} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import Reactions from 'app/components/reactions';
-import {normalizeFontSizeByDevice} from '../../utils/markdown';
 
 class PostBody extends PureComponent {
     static propTypes = {
