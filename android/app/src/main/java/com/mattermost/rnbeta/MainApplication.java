@@ -94,6 +94,13 @@ public class MainApplication extends NavigationApplication implements INotificat
   }
 
   @Override
+  public boolean clearHostOnActivityDestroy() {
+    // This solves the issue where the splash screen does not go away
+    // after the app is killed by the OS cause of memory or a long time in the background
+    return false;
+  }
+
+  @Override
   public IPushNotification getPushNotification(Context context, Bundle bundle, AppLifecycleFacade defaultFacade, AppLaunchHelper defaultAppLaunchHelper) {
     return new CustomPushNotification(
             context,
