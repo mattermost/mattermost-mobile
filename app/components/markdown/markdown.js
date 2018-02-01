@@ -199,6 +199,7 @@ export default class Markdown extends PureComponent {
         const textStyle = {
             paddingBottom: StyleSheet.flatten(this.props.textStyles[`heading${level}`]).lineHeight * 0.3
         };
+        const textStyle = this.props.blockStyles[`heading${level}Text`]
         return (
             <View style={style}>
                 <Text style={textStyle}>

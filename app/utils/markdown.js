@@ -36,30 +36,48 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(22)
         },
+        heading1Text: {
+            paddingBottom: normalizeFontSizeByDevice(6)
+        },
         heading2: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(22)
+        },
+        heading2Text: {
+            paddingBottom: normalizeFontSizeByDevice(6)
         },
         heading3: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(22)
         },
+        heading3Text: {
+            paddingBottom: normalizeFontSizeByDevice(6)
+        },
         heading4: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(22)
+        },
+        heading4Text: {
+            paddingBottom: normalizeFontSizeByDevice(6)
         },
         heading5: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(22)
         },
+        heading5Text: {
+            paddingBottom: normalizeFontSizeByDevice(6)
+        },
         heading6: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
             lineHeight: normalizeFontSizeByDevice(22)
+        },
+        heading6Text: {
+            paddingBottom: normalizeFontSizeByDevice(6)
         },
         code: {
             alignSelf: 'center',
