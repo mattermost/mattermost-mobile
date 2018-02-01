@@ -2052,7 +2052,7 @@
   "mobile.managed.jailbreak": "Jailbroken devices are not trusted by {vendor}, please exit the app.",
   "mobile.managed.secured_by": "Secured by {vendor}",
   "mobile.markdown.code.copy_code": "Copy Code",
-  "mobile.markdown.code.plusMoreLines": "+{count, number} more lines",
+  "mobile.markdown.code.plusMoreLines": "+{count, number} more {count, plural, one {line} other {lines}}",
   "mobile.markdown.image.error": "Image failed to load:",
   "mobile.markdown.image.too_large": "Image exceeds max dimensions of {maxWidth} by {maxHeight}:",
   "mobile.markdown.link.copy_url": "Copy URL",
