@@ -306,10 +306,7 @@ export default class Markdown extends PureComponent {
         const style = getStyleSheet(this.props.theme);
         const styles = [
             this.props.baseTextStyle,
-            style.editedIndicatorText,
-            {
-                fontSize: StyleSheet.flatten(parentStyles).fontSize * 0.6
-            }
+            style.editedIndicatorText
         ];
 
         return (
