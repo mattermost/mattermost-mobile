@@ -8,7 +8,8 @@ export function getCodeFont() {
     return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 }
 
-const scale = Dimensions.get('window').width / 320;
+const portraitWidth = Dimensions.get('window').width <= Dimensions.get('window').height ? Dimensions.get('window').width : Dimensions.get('window').height;
+const scale = portraitWidth / 320;
 
 export const normalizeFontSizeByDevice = (size) => {
     return Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
