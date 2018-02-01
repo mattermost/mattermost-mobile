@@ -17,7 +17,7 @@ import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 
 import {Client4} from 'mattermost-redux/client';
 
-const scaleEmojiBasedOnDevise = (size) => {
+const scaleEmojiBasedOnDevice = (size) => {
     if (Platform.OS === 'ios') {
         return size * 1.1; // slightly larger emojis look better on ios
     }
@@ -115,7 +115,7 @@ export default class Emoji extends React.PureComponent {
             token
         } = this.props;
         const {fontSize} = StyleSheet.flatten(textStyle);
-        const size = scaleEmojiBasedOnDevise(fontSize);
+        const size = scaleEmojiBasedOnDevice(fontSize);
 
         if (!this.state.imageUrl) {
             return <Text style={textStyle}>{literal}</Text>;
@@ -138,8 +138,8 @@ export default class Emoji extends React.PureComponent {
         let width = size;
         let height = size;
         let {originalHeight, originalWidth} = this.state;
-        originalHeight = scaleEmojiBasedOnDevise(originalHeight);
-        originalWidth = scaleEmojiBasedOnDevise(originalWidth);
+        originalHeight = scaleEmojiBasedOnDevice(originalHeight);
+        originalWidth = scaleEmojiBasedOnDevice(originalWidth);
         if (originalHeight && originalWidth) {
             if (originalWidth > originalHeight) {
                 height = (size * originalHeight) / originalWidth;
