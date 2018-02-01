@@ -37,8 +37,8 @@ export default class SharedApp extends PureComponent {
             isLandscape
         };
 
-        mattermostBucket.get('credentials', Config.AppGroupId).then((value) => {
-            this.credentials = value;
+        mattermostBucket.get('entities', Config.AppGroupId).then((value) => {
+            this.entities = value;
             this.setState({init: true});
         });
     }
@@ -72,6 +72,11 @@ export default class SharedApp extends PureComponent {
         }
     };
 
+    userIsLoggedIn = () => {
+        return Boolean(this.entities && this.entities.general && this.entities.general.credentials &&
+            this.entities.general.credentials.token && this.entities.general.credentials.url);
+    };
+
     render() {
         const {init, isLandscape} = this.state;
 
@@ -86,7 +91,8 @@ export default class SharedApp extends PureComponent {
             component: ExtensionPost,
             title: 'Mattermost',
             passProps: {
-                credentials: this.credentials,
+                authenticated: this.userIsLoggedIn(),
+                entities: this.entities,
                 onClose: this.onClose,
                 isLandscape,
                 theme
@@ -113,7 +119,7 @@ export default class SharedApp extends PureComponent {
                                 styles.container,
                                 {
                                     opacity: this.state.containerOpacity,
-                                    height: this.credentials ? 250 : 130,
+                                    height: this.userIsLoggedIn() ? 250 : 130,
                                     top: isLandscape ? 20 : 65
                                 }
                             ]}

@@ -12,10 +12,8 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import {intlShape} from 'react-intl';
 
-import {Client4} from 'mattermost-redux/client';
-import {General, Preferences} from 'mattermost-redux/constants';
-import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {General} from 'mattermost-redux/constants';
+import {getChannelsInTeam, getDirectChannels} from 'mattermost-redux/selectors/entities/channels';
 
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -26,8 +24,8 @@ import ExtensionNavBar from './extension_nav_bar';
 
 export default class ExtensionChannels extends PureComponent {
     static propTypes = {
+        entities: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
-        currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
@@ -98,16 +96,6 @@ export default class ExtensionChannels extends PureComponent {
         this.setState({sections});
     };
 
-    getGroupDisplayNameFromUserIds = (userIds, profiles) => {
-        const names = [];
-        userIds.forEach((id) => {
-            const profile = profiles.find((p) => p.id === id);
-            names.push(displayUsername(profile, Preferences.DISPLAY_PREFER_FULL_NAME));
-        });
-
-        return names.sort(this.sort).join(', ');
-    };
-
     goBack = () => {
         this.props.navigator.pop();
     };
@@ -116,64 +104,13 @@ export default class ExtensionChannels extends PureComponent {
 
     loadChannels = async () => {
         try {
-            const {currentUserId, teamId} = this.props;
-            const channelsMap = {};
+            const {entities, teamId} = this.props;
 
             // get the channels for the specified team
-            const myChannels = await Client4.getMyChannels(teamId);
-
-            // filter channels that are direct and group messages
-            const dms = myChannels.filter((channel) => {
-                return channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
-            });
-
-            const usersInDms = dms.filter((channel) => {
-                return channel.type === General.DM_CHANNEL;
-            }).map((channel) => {
-                return getUserIdFromChannelName(currentUserId, channel.name);
-            }).reduce((acc, teammateId) => {
-                if (!acc.includes(teammateId)) {
-                    acc.push(teammateId);
-                }
-
-                return acc;
-            }, []);
-
-            // get the user ids that belong to DMs & GMs
-            let dmProfiles;
-            if (usersInDms.length) {
-                try {
-                    dmProfiles = await Client4.getProfilesByIds(usersInDms);
-                } catch (e) {
-                    // do nothing
-                }
-            }
-
-            for (let i = 0; i < dms.length; i++) {
-                const channel = dms[i];
-                if (channel.type === General.DM_CHANNEL && dmProfiles) {
-                    const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-                    const profile = dmProfiles.find((p) => p.id === teammateId);
-                    channelsMap[channel.id] = displayUsername(profile, Preferences.DISPLAY_PREFER_FULL_NAME);
-                } else if (channel.type === General.GM_CHANNEL) {
-                    try {
-                        const members = await Client4.getChannelMembers(channel.id, 0, General.MAX_USERS_IN_GM);
-                        const userIds = members.filter((m) => m.user_id !== currentUserId).map((m) => m.user_id);
-                        const gmProfiles = await Client4.getProfilesByIds(userIds);
-                        channelsMap[channel.id] = this.getGroupDisplayNameFromUserIds(userIds, gmProfiles);
-                    } catch (e) {
-                        // do nothing
-                    }
-                }
-            }
-
-            const channels = myChannels.map((channel) => {
-                return {
-                    id: channel.id,
-                    display_name: channelsMap[channel.id] || channel.display_name,
-                    type: channel.type
-                };
-            });
+            const channelsInTeam = getChannelsInTeam({entities});
+            const channelIds = channelsInTeam[teamId] || [];
+            const direct = getDirectChannels({entities});
+            const channels = channelIds.map((id) => this.props.entities.channels.channels[id]).concat(direct);
 
             this.setState({
                 channels

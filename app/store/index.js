@@ -17,6 +17,9 @@ import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 import {promiseTimeout} from 'app/utils/promise_timeout';
 
+import mattermostBucket from 'app/mattermost_bucket';
+import Config from 'assets/config';
+
 import {messageRetention, shareExtensionData} from './middleware';
 import {transformSet} from './utils';
 
@@ -191,6 +194,10 @@ export default function configureAppStore(initialState) {
                         purging = false;
                         EventEmitter.emit(NavigationTypes.RESTART_APP);
                     }, 500);
+                }
+
+                if (state.entities) {
+                    mattermostBucket.set('entities', JSON.stringify(state.entities), Config.AppGroupId);
                 }
             });
 
