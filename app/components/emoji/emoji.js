@@ -159,8 +159,15 @@ export default class Emoji extends React.PureComponent {
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
 
         if (!imageUrl) {
+            let BlankComponent;
+            if (Platform.OS === 'android') {
+                BlankComponent = Image;
+            } else {
+                BlankComponent = View;
+            }
+
             return (
-                <View
+                <BlankComponent
                     key={key}
                     style={{width, height, marginTop}}
                 />
