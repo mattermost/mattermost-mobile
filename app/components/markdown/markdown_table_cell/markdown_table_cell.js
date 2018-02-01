@@ -10,13 +10,19 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class MarkdownTableCell extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node,
+        isHeading: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired
     };
 
     render() {
         const style = getStyleSheet(this.props.theme);
 
-        return <View style={style.cell}>{this.props.children}</View>;
+        const cellStyle = [style.cell];
+        if (this.props.isHeading) {
+            cellStyle.push(style.heading);
+        }
+
+        return <View style={cellStyle}>{this.props.children}</View>;
     }
 }
 
@@ -26,6 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRightWidth: 1,
             flex: 1,
+            justifyContent: 'flex-start',
             paddingHorizontal: 13,
             paddingVertical: 6
         }

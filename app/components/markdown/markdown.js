@@ -86,7 +86,7 @@ export default class Markdown extends PureComponent {
                 htmlBlock: this.renderHtml,
                 htmlInline: this.renderHtml,
 
-                table: MarkdownTable,
+                table: this.renderTable,
                 table_row: MarkdownTableRow,
                 table_cell: MarkdownTableCell,
 
@@ -291,6 +291,16 @@ export default class Markdown extends PureComponent {
         return rendered;
     }
 
+    renderTable = ({children}) => {
+        return (
+            <MarkdownTable
+                navigator={this.props.navigator}
+            >
+                {children}
+            </MarkdownTable>
+        );
+    }
+
     renderLink = ({children, href}) => {
         return (
             <MarkdownLink
@@ -344,7 +354,8 @@ export default class Markdown extends PureComponent {
                 ast.appendChild(node);
             }
         }
-        return <View>{this.renderer.render(ast)}</View>;
+
+        return this.renderer.render(ast);
     }
 }
 

@@ -10,23 +10,32 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class MarkdownTableRow extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node,
+        isLastRow: PropTypes.bool,
         theme: PropTypes.object.isRequired
     };
 
     render() {
         const style = getStyleSheet(this.props.theme);
 
-        return <View style={style.row}>{this.props.children}</View>;
+        const rowStyle = [style.row];
+        if (!this.props.isLastRow) {
+            rowStyle.push(style.rowBottomBorder);
+        }
+
+        return <View style={rowStyle}>{this.props.children}</View>;
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
+            justifyContent: 'flex-start'
+        },
+        rowBottomBorder: {
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 1
         }
     };
 });

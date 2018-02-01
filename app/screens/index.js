@@ -40,6 +40,7 @@ import Search from 'app/screens/search';
 import SelectServer from 'app/screens/select_server';
 import SelectTeam from 'app/screens/select_team';
 import Settings from 'app/screens/settings/general';
+import Table from 'app/screens/table';
 import Thread from 'app/screens/thread';
 import UserProfile from 'app/screens/user_profile';
 
@@ -95,6 +96,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('SelectTeam', () => wrapWithContextProvider(SelectTeam), store, Provider);
     Navigation.registerComponent('Settings', () => wrapWithContextProvider(Settings), store, Provider);
     Navigation.registerComponent('SSO', () => wrapWithContextProvider(SSO), store, Provider);
+    Navigation.registerComponent('Table', () => wrapWithContextProvider(Table), store, Provider);
     Navigation.registerComponent('Thread', () => wrapWithContextProvider(Thread), store, Provider);
     Navigation.registerComponent('UserProfile', () => wrapWithContextProvider(UserProfile), store, Provider);
 }
