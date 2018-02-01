@@ -176,5 +176,5 @@ const languages = {
 };
 
 export function getDisplayNameForLanguage(language) {
-    return languages[language.toLowerCase()] || '' || null;
+    return languages[language.toLowerCase()] || '';
 }
