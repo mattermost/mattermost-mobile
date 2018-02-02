@@ -35,3 +35,25 @@ export function alertErrorIfInvalidPermissions(result) {
 export function emptyFunction() {
     return;
 }
+
+export function throttle(fn, limit, ...args) {
+    let inThrottle;
+    let lastFunc;
+    let lastRan;
+
+    return () => {
+        if (inThrottle) {
+            clearTimeout(lastFunc);
+            lastFunc = setTimeout(() => {
+                if ((Date.now() - lastRan) >= limit) {
+                    Reflect.apply(fn, this, args);
+                    lastRan = Date.now();
+                }
+            }, limit - (Date.now() - lastRan));
+        } else {
+            Reflect.apply(fn, this, args);
+            lastRan = Date.now();
+            inThrottle = true;
+        }
+    };
+}

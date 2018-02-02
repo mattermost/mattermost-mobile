@@ -7,14 +7,14 @@ import {NativeModules, Platform} from 'react-native';
 const MattermostBucket = Platform.OS === 'ios' ? NativeModules.MattermostBucket : null;
 
 export default {
-    set: (key, value, groupName) => {
+    setPreference: (key, value, groupName) => {
         if (MattermostBucket) {
-            MattermostBucket.set(key, value, groupName);
+            MattermostBucket.setPreference(key, value, groupName);
         }
     },
-    get: async (key, groupName) => {
+    getPreference: async (key, groupName) => {
         if (MattermostBucket) {
-            const value = await MattermostBucket.get(key, groupName);
+            const value = await MattermostBucket.getPreference(key, groupName);
             if (value) {
                 try {
                     return JSON.parse(value);
@@ -26,9 +26,33 @@ export default {
 
         return null;
     },
-    remove: (key, groupName) => {
+    removePreference: (key, groupName) => {
         if (MattermostBucket) {
-            MattermostBucket.remove(key, groupName);
+            MattermostBucket.removePreference(key, groupName);
+        }
+    },
+    writeToFile: (fileName, content, groupName) => {
+        if (MattermostBucket) {
+            MattermostBucket.writeToFile(fileName, content, groupName);
+        }
+    },
+    readFromFile: async (fileName, groupName) => {
+        if (MattermostBucket) {
+            const value = await MattermostBucket.readFromFile(fileName, groupName);
+            if (value) {
+                try {
+                    return JSON.parse(value);
+                } catch (e) {
+                    return value;
+                }
+            }
+        }
+
+        return null;
+    },
+    removeFile: (fileName, groupName) => {
+        if (MattermostBucket) {
+            MattermostBucket.removeFile(fileName, groupName);
         }
     }
 };

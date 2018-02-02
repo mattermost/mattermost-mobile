@@ -40,6 +40,7 @@ import {
 import ExtensionChannels from './extension_channels';
 import ExtensionNavBar from './extension_nav_bar';
 import ExtensionTeams from './extension_teams';
+import {General} from 'mattermost-redux/constants/index';
 
 const ShareExtension = NativeModules.MattermostShare;
 const MAX_INPUT_HEIGHT = 95;
@@ -58,7 +59,8 @@ const extensionSvg = {
 
 export default class ExtensionPost extends PureComponent {
     static propTypes = {
-        credentials: PropTypes.object,
+        authenticated: PropTypes.bool.isRequired,
+        entities: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onClose: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
@@ -75,7 +77,7 @@ export default class ExtensionPost extends PureComponent {
         const isLandscape = width > height;
 
         this.state = {
-            currentUserId: null,
+            entities: props.entities,
             error: null,
             files: [],
             isLandscape,
@@ -97,9 +99,9 @@ export default class ExtensionPost extends PureComponent {
         this.focusInput();
     }
 
-    auth = async () => {
+    emmAuthenticationIfNeeded = async () => {
         try {
-            const emmSecured = await mattermostBucket.get('emm', Config.AppGroupId);
+            const emmSecured = await mattermostBucket.getPreference('emm', Config.AppGroupId);
             if (emmSecured) {
                 const {intl} = this.context;
                 await LocalAuth.authenticate({
@@ -132,7 +134,7 @@ export default class ExtensionPost extends PureComponent {
 
     goToChannels = wrapWithPreventDoubleTap(() => {
         const {navigator, theme} = this.props;
-        const {channel, currentUserId, team} = this.state;
+        const {channel, entities, team} = this.state;
 
         navigator.push({
             component: ExtensionChannels,
@@ -142,7 +144,7 @@ export default class ExtensionPost extends PureComponent {
             },
             passProps: {
                 currentChannelId: channel.id,
-                currentUserId,
+                entities,
                 onSelectChannel: this.selectChannel,
                 teamId: team.id,
                 theme,
@@ -164,6 +166,7 @@ export default class ExtensionPost extends PureComponent {
                 backgroundColor: theme.centerChannelBg
             },
             passProps: {
+                entities: this.state.entities,
                 currentTeamId: team.id,
                 onSelectTeam: this.selectTeam,
                 theme
@@ -180,12 +183,13 @@ export default class ExtensionPost extends PureComponent {
     };
 
     loadData = async () => {
-        const {credentials} = this.props;
-        if (credentials) {
+        const {entities} = this.state;
+        if (this.props.authenticated) {
             try {
-                const currentUserId = await mattermostBucket.get('currentUserId', Config.AppGroupId);
-                const channel = await mattermostBucket.get('selectedChannel', Config.AppGroupId);
-                const team = await mattermostBucket.get('selectedTeam', Config.AppGroupId);
+                const {credentials} = entities.general;
+                const {currentUserId} = entities.users;
+                const team = entities.teams.teams[entities.teams.currentTeamId];
+                const channel = entities.channels.channels[entities.channels.currentChannelId];
                 const items = await ShareExtension.data(Config.AppGroupId);
                 const text = [];
                 const urls = [];
@@ -231,7 +235,7 @@ export default class ExtensionPost extends PureComponent {
                 Client4.setUrl(credentials.url);
                 Client4.setToken(credentials.token);
                 Client4.setUserId(currentUserId);
-                this.setState({channel, currentUserId, files, team, value, totalSize});
+                this.setState({channel, files, team, value, totalSize});
             } catch (error) {
                 this.setState({error});
             }
@@ -253,7 +257,7 @@ export default class ExtensionPost extends PureComponent {
 
     renderBody = (styles) => {
         const {formatMessage} = this.context.intl;
-        const {credentials, theme} = this.props;
+        const {authenticated, theme} = this.props;
         const {error, sending, totalSize, value} = this.state;
 
         if (sending) {
@@ -283,7 +287,7 @@ export default class ExtensionPost extends PureComponent {
             );
         }
 
-        if (credentials && !error) {
+        if (authenticated && !error) {
             return (
                 <ScrollView
                     ref={this.getScrollViewRef}
@@ -329,7 +333,7 @@ export default class ExtensionPost extends PureComponent {
 
     renderChannelButton = (styles) => {
         const {formatMessage} = this.context.intl;
-        const {credentials, theme} = this.props;
+        const {authenticated, theme} = this.props;
         const {channel, sending} = this.state;
         const channelName = channel ? channel.display_name : '';
 
@@ -337,7 +341,7 @@ export default class ExtensionPost extends PureComponent {
             return null;
         }
 
-        if (!credentials) {
+        if (!authenticated) {
             return null;
         }
 
@@ -376,7 +380,6 @@ export default class ExtensionPost extends PureComponent {
 
     renderFiles = (styles) => {
         const {files} = this.state;
-
         return files.map((file, index) => {
             let component;
 
@@ -456,7 +459,7 @@ export default class ExtensionPost extends PureComponent {
 
     renderTeamButton = (styles) => {
         const {formatMessage} = this.context.intl;
-        const {credentials, theme} = this.props;
+        const {authenticated, theme} = this.props;
         const {sending, team} = this.state;
         const teamName = team ? team.display_name : '';
 
@@ -464,7 +467,7 @@ export default class ExtensionPost extends PureComponent {
             return null;
         }
 
-        if (!credentials) {
+        if (!authenticated) {
             return null;
         }
 
@@ -503,21 +506,35 @@ export default class ExtensionPost extends PureComponent {
 
     selectTeam = (team, channel) => {
         this.setState({channel, team});
+
+        // Update the channels for the team
+        Client4.getMyChannels(team.id).then((channels) => {
+            const defaultChannel = channels.find((c) => c.name === General.DEFAULT_CHANNEL && c.team_id === team.id);
+            this.updateChannelsInEntities(channels);
+            if (!channel) {
+                this.setState({channel: defaultChannel});
+            }
+        }).catch((error) => {
+            this.setState({error});
+        });
     };
 
     sendMessage = wrapWithPreventDoubleTap(async () => {
-        const {credentials, onClose} = this.props;
-        const {channel, currentUserId, files, value} = this.state;
+        const {authenticated, onClose} = this.props;
+        const {channel, entities, files, value} = this.state;
+        const {currentUserId} = entities.users;
 
         // If no text and no files do nothing
         if (!value && !files.length) {
             return;
         }
 
-        if (currentUserId && credentials) {
-            await this.auth();
+        if (currentUserId && authenticated) {
+            await this.emmAuthenticationIfNeeded();
 
             try {
+                // Check to see if the use still belongs to the channel
+                await Client4.getMyChannelMember(channel.id);
                 const post = {
                     user_id: currentUserId,
                     channel_id: channel.id,
@@ -541,11 +558,44 @@ export default class ExtensionPost extends PureComponent {
         }
     });
 
+    updateChannelsInEntities = (newChannels) => {
+        const {entities} = this.state;
+        const newEntities = {
+            ...entities,
+            channels: {
+                ...entities.channels,
+                channels: {...entities.channels.channels},
+                channelsInTeam: {...entities.channels.channelsInTeam}
+            }
+        };
+        const {channels, channelsInTeam} = newEntities.channels;
+
+        newChannels.forEach((c) => {
+            channels[c.id] = c;
+            const channelIdsInTeam = channelsInTeam[c.team_id];
+            if (channelIdsInTeam) {
+                if (!channelIdsInTeam.includes(c.id)) {
+                    channelsInTeam[c.team_id].push(c.id);
+                }
+            } else {
+                channelsInTeam[c.team_id] = [c.id];
+            }
+        });
+
+        this.setState({entities: newEntities});
+        mattermostBucket.writeToFile('entities', JSON.stringify(newEntities), Config.AppGroupId);
+    };
+
     render() {
-        const {credentials, theme} = this.props;
-        const {totalSize, sending} = this.state;
+        const {authenticated, theme} = this.props;
+        const {channel, totalSize, sending} = this.state;
         const {formatMessage} = this.context.intl;
         const styles = getStyleSheet(theme);
+
+        let postButtonText = formatMessage({id: 'mobile.share_extension.send', defaultMessage: 'Send'});
+        if (totalSize >= MAX_FILE_SIZE || sending || !channel) {
+            postButtonText = null;
+        }
 
         return (
             <View
@@ -553,11 +603,11 @@ export default class ExtensionPost extends PureComponent {
                 style={styles.container}
             >
                 <ExtensionNavBar
-                    authenticated={Boolean(credentials)}
+                    authenticated={authenticated}
                     leftButtonTitle={sending ? null : formatMessage({id: 'mobile.share_extension.cancel', defaultMessage: 'Cancel'})}
                     onLeftButtonPress={this.handleCancel}
                     onRightButtonPress={this.sendMessage}
-                    rightButtonTitle={(totalSize >= MAX_FILE_SIZE || sending) ? null : formatMessage({id: 'mobile.share_extension.send', defaultMessage: 'Send'})}
+                    rightButtonTitle={postButtonText}
                     theme={theme}
                 />
                 {this.renderBody(styles)}

@@ -199,7 +199,7 @@ export default class Mattermost {
         const intl = this.getIntl();
         if (isSecured) {
             try {
-                mattermostBucket.set('emm', vendor, LocalConfig.AppGroupId);
+                mattermostBucket.setPreference('emm', vendor, LocalConfig.AppGroupId);
                 await mattermostManaged.authenticate({
                     reason: intl.formatMessage({
                         id: 'mobile.managed.secured_by',

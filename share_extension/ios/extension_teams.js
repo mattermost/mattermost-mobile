@@ -7,8 +7,8 @@ import {ActivityIndicator, FlatList, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {intlShape} from 'react-intl';
 
-import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
+import {getChannelsInTeam} from 'mattermost-redux/selectors/entities/channels';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -18,6 +18,7 @@ import ExtensionTeamItem from './extension_team_item';
 export default class ExtensionTeams extends PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
+        entities: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onSelectTeam: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired
@@ -53,17 +54,24 @@ export default class ExtensionTeams extends PureComponent {
     loadTeams = async () => {
         try {
             const defaultChannels = {};
-            const teams = await Client4.getMyTeams();
-            const myMembers = await Client4.getMyTeamMembers();
+            const {teams, myMembers} = this.props.entities.teams;
             const myTeams = [];
+            const channelsInTeam = getChannelsInTeam({entities: this.props.entities});
 
-            for (let i = 0; i < teams.length; i++) {
-                const team = teams[i];
-                const belong = myMembers.find((member) => member.team_id === team.id);
-                if (belong) {
-                    const channels = await Client4.getMyChannels(team.id);
-                    defaultChannels[team.id] = channels.find((channel) => channel.name === General.DEFAULT_CHANNEL);
-                    myTeams.push(team);
+            for (const key in teams) {
+                if (teams.hasOwnProperty(key)) {
+                    const team = teams[key];
+                    const belong = myMembers[key];
+                    if (belong) {
+                        const channelIds = channelsInTeam[key];
+                        let channels;
+                        if (channelIds) {
+                            channels = channelIds.map((id) => this.props.entities.channels.channels[id]);
+                            defaultChannels[team.id] = channels.find((channel) => channel.name === General.DEFAULT_CHANNEL);
+                        }
+
+                        myTeams.push(team);
+                    }
                 }
             }
 

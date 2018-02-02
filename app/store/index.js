@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-import {AsyncStorage} from 'react-native';
+import {AsyncStorage, Platform} from 'react-native';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
 
@@ -13,9 +13,13 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
+import {throttle} from 'app/utils/general';
 import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 import {promiseTimeout} from 'app/utils/promise_timeout';
+
+import mattermostBucket from 'app/mattermost_bucket';
+import Config from 'assets/config';
 
 import {messageRetention, shareExtensionData} from './middleware';
 import {transformSet} from './utils';
@@ -129,6 +133,16 @@ export default function configureAppStore(initialState) {
             });
 
             let purging = false;
+
+            // for iOS write the entities to a shared file
+            if (Platform.OS === 'ios') {
+                store.subscribe(throttle(() => {
+                    const state = store.getState();
+                    if (state.entities) {
+                        mattermostBucket.writeToFile('entities', JSON.stringify(state.entities), Config.AppGroupId);
+                    }
+                }, 1000));
+            }
 
             // check to see if the logout request was successful
             store.subscribe(async () => {
