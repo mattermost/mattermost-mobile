@@ -23,6 +23,7 @@ import RNFetchBlob from 'react-native-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
+import {ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import {generateId} from 'app/utils/file';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
@@ -258,7 +259,10 @@ export default class ExtensionPost extends PureComponent {
     renderBody = (styles) => {
         const {formatMessage} = this.context.intl;
         const {authenticated, theme} = this.props;
-        const {error, sending, totalSize, value} = this.state;
+        const {entities, error, sending, totalSize, value} = this.state;
+        const {config} = entities.general;
+        const serverMaxFileSize = config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : ViewTypes.DEFAULT_SERVER_MAX_FILE_SIZE;
+        const maxSize = Math.min(MAX_FILE_SIZE, serverMaxFileSize);
 
         if (sending) {
             return (
@@ -274,14 +278,14 @@ export default class ExtensionPost extends PureComponent {
             );
         }
 
-        if (totalSize >= MAX_FILE_SIZE) {
+        if (totalSize >= maxSize) {
             return (
                 <View style={styles.unauthenticatedContainer}>
                     <Text style={styles.unauthenticated}>
                         {formatMessage({
                             id: 'mobile.extension.max_file_size',
                             defaultMessage: 'File attachments shared in Mattermost must be less than {size}.'
-                        }, {size: getFormattedFileSize({size: MAX_FILE_SIZE})})}
+                        }, {size: getFormattedFileSize({size: maxSize})})}
                     </Text>
                 </View>
             );
