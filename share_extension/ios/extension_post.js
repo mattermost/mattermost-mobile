@@ -560,7 +560,8 @@ export default class ExtensionPost extends PureComponent {
 
     updateChannelsInEntities = (newChannels) => {
         const {entities} = this.state;
-        const {channels, channelsInTeam} = entities.channels;
+        const newEntities = {...entities};
+        const {channels, channelsInTeam} = newEntities.channels;
 
         newChannels.forEach((c) => {
             channels[c.id] = c;
@@ -574,8 +575,8 @@ export default class ExtensionPost extends PureComponent {
             }
         });
 
-        this.setState({entities});
-        mattermostBucket.writeToFile('entities', JSON.stringify(entities), Config.AppGroupId);
+        this.setState({entities: newEntities});
+        mattermostBucket.writeToFile('entities', JSON.stringify(newEntities), Config.AppGroupId);
     };
 
     render() {
