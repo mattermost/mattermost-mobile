@@ -280,8 +280,8 @@ export default class ExtensionPost extends PureComponent {
                     <Text style={styles.unauthenticated}>
                         {formatMessage({
                             id: 'mobile.extension.max_file_size',
-                            defaultMessage: 'File attachments shared in Mattermost must be less than 20 Mb.'
-                        })}
+                            defaultMessage: 'File attachments shared in Mattermost must be less than {size}.'
+                        }, {size: getFormattedFileSize({size: MAX_FILE_SIZE})})}
                     </Text>
                 </View>
             );

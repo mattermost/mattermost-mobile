@@ -7,14 +7,18 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
+import {ViewTypes} from 'app/constants';
+
 import ExtensionPost from './extension_post';
 
 function mapStateToProps(state) {
-    const {token, url} = state.entities.general.credentials;
+    const {config, credentials} = state.entities.general;
+    const {token, url} = credentials;
 
     return {
         channelId: getCurrentChannelId(state),
         currentUserId: getCurrentUserId(state),
+        maxFileSize: config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : ViewTypes.DEFAULT_SERVER_MAX_FILE_SIZE,
         teamId: getCurrentTeamId(state),
         token,
         url
