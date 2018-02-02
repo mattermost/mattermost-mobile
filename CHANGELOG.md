@@ -1,5 +1,10 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.5.3 Release
+- Release Date: February 1, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+- Fixed a login issue when connecting to servers running a Data Retention policy 
+
 ## v1.5.2 Release
 - Release Date: January 12, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
