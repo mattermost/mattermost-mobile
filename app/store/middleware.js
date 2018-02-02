@@ -3,11 +3,7 @@
 
 import DeviceInfo from 'react-native-device-info';
 
-import {ChannelTypes, GeneralTypes, TeamTypes, UserTypes} from 'mattermost-redux/action_types';
-import {General} from 'mattermost-redux/constants';
-import {getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
-import {getUserIdFromChannelName, getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {UserTypes} from 'mattermost-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
@@ -314,92 +310,15 @@ function cleanupState(action, keepCurrent = false) {
     };
 }
 
-export function shareExtensionData(store) {
+export function shareExtensionData() {
     return (next) => (action) => {
         // allow other middleware to do their things
         const nextAction = next(action);
 
         switch (action.type) {
-        case 'persist/REHYDRATE': {
-            const {entities} = action.payload;
-            if (entities) {
-                if (entities.general && entities.general.credentials && entities.general.credentials.token) {
-                    mattermostBucket.set('credentials', JSON.stringify(entities.general.credentials), Config.AppGroupId);
-                }
-
-                if (entities.teams) {
-                    const {currentTeamId, teams} = entities.teams;
-                    if (currentTeamId) {
-                        const team = teams[currentTeamId];
-                        const teamToSave = {
-                            id: currentTeamId,
-                            name: team.name,
-                            display_name: team.display_name
-                        };
-                        mattermostBucket.set('selectedTeam', JSON.stringify(teamToSave), Config.AppGroupId);
-                    }
-                }
-
-                if (entities.users) {
-                    const {currentUserId} = entities.users;
-                    if (currentUserId) {
-                        mattermostBucket.set('currentUserId', currentUserId, Config.AppGroupId);
-                    }
-                }
-            }
-            break;
-        }
-        case GeneralTypes.RECEIVED_APP_CREDENTIALS:
-            mattermostBucket.set('credentials', JSON.stringify(action.data), Config.AppGroupId);
-            break;
-        case ChannelTypes.SELECT_CHANNEL: {
-            const state = store.getState();
-            const {channels} = state.entities.channels;
-            const {currentUserId, profiles, profilesInChannel} = state.entities.users;
-            const channel = {...channels[action.data]};
-            if (channel.type === General.DM_CHANNEL) {
-                const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-                channel.display_name = displayUsername(profiles[teammateId], getTeammateNameDisplaySetting(state));
-            } else if (channel.type === General.GM_CHANNEL) {
-                channel.display_name = getGroupDisplayNameFromUserIds(
-                    profilesInChannel[channel.id],
-                    profiles,
-                    currentUserId,
-                    getTeammateNameDisplaySetting(state)
-                );
-            }
-
-            const channelToSave = {
-                id: channel.id,
-                name: channel.name,
-                display_name: channel.display_name,
-                type: channel.type
-            };
-            mattermostBucket.set('selectedChannel', JSON.stringify(channelToSave), Config.AppGroupId);
-            break;
-        }
-        case 'BATCH_SELECT_TEAM': {
-            const teamData = action.payload.find((data) => data.type === TeamTypes.SELECT_TEAM);
-            if (teamData && teamData.data) {
-                const team = store.getState().entities.teams.teams[teamData.data];
-                const teamToSave = {
-                    id: team.id,
-                    name: team.name,
-                    display_name: team.display_name
-                };
-                mattermostBucket.set('selectedTeam', JSON.stringify(teamToSave), Config.AppGroupId);
-            }
-            break;
-        }
-        case UserTypes.RECEIVED_ME:
-            mattermostBucket.set('currentUserId', action.data.id, Config.AppGroupId);
-            break;
         case UserTypes.LOGOUT_SUCCESS:
-            mattermostBucket.remove('credentials', Config.AppGroupId);
-            mattermostBucket.remove('selectedChannel', Config.AppGroupId);
-            mattermostBucket.remove('selectedTeam', Config.AppGroupId);
-            mattermostBucket.remove('currentUserId', Config.AppGroupId);
-            mattermostBucket.remove('emm', Config.AppGroupId);
+            mattermostBucket.removePreference('emm', Config.AppGroupId);
+            mattermostBucket.removeFile('entities', Config.AppGroupId);
             break;
         }
         return nextAction;

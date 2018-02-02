@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MattermostBucket.h"
 
 @interface PerformRequests : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
 @property (nonatomic, strong) NSString *appGroupId;
@@ -18,7 +19,7 @@
 @property (nonatomic, strong) NSString *serverUrl;
 @property (nonatomic, strong) NSString *token;
 @property (nonatomic, strong) NSExtensionContext *extensionContext;
-@property NSUserDefaults *bucket;
+@property MattermostBucket *bucket;
 
 - (id) initWithPost:(NSDictionary *) post
           withFiles:(NSArray *) files

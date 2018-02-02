@@ -1,7 +1,6 @@
 #import "ShareViewController.h"
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
-#import "MattermostBucket.h"
 #import "PerformRequests.h"
 
 NSExtensionContext* extensionContext;

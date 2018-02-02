@@ -11,7 +11,6 @@
 #import "ShareViewController.h"
 
 @implementation PerformRequests
-MattermostBucket *mattermostBucket;
 
 - (id) initWithPost:(NSDictionary *) post
           withFiles:(NSArray *) files
@@ -26,17 +25,17 @@ MattermostBucket *mattermostBucket;
     self.requestId = requestId;
     self.extensionContext = context;
 
-    mattermostBucket = [[MattermostBucket alloc] init];
-    self.bucket = [mattermostBucket bucketByName: appGroupId];
+    self.bucket = [[MattermostBucket alloc] init];
     [self setCredentials];
   }
   return self;
 }
 
 -(void)setCredentials {
-  NSString *credentialsString = [self.bucket objectForKey:@"credentials"];
-  NSData *credentialsData = [credentialsString dataUsingEncoding:NSUTF8StringEncoding];
-  NSDictionary *credentials = [NSJSONSerialization JSONObjectWithData:credentialsData options:NSJSONReadingMutableContainers error:nil];
+  NSString *entitiesString = [self.bucket readFromFile:@"entities" appGroupId:self.appGroupId];
+  NSData *entitiesData = [entitiesString dataUsingEncoding:NSUTF8StringEncoding];
+  NSDictionary *entities = [NSJSONSerialization JSONObjectWithData:entitiesData options:NSJSONReadingMutableContainers error:nil];
+  NSDictionary *credentials = [[entities objectForKey:@"general"] objectForKey:@"credentials"];
   self.serverUrl = [credentials objectForKey:@"url"];
   self.token = [credentials objectForKey:@"token"];
 }
@@ -46,9 +45,9 @@ MattermostBucket *mattermostBucket;
     NSLog(@"ERROR %@", [error userInfo]);
     [self.extensionContext completeRequestReturningItems:nil
                                        completionHandler:nil];
+    NSLog(@"invalidating session %@", self.requestId);
+    [session finishTasksAndInvalidate];
   }
-  NSLog(@"invalidating session %@", self.requestId);
-  [session finishTasksAndInvalidate];
 }
 
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
@@ -123,8 +122,6 @@ MattermostBucket *mattermostBucket;
   NSString* postAsString = [[NSString alloc] initWithData:postData encoding:NSUTF8StringEncoding];
   
   NSURL *createUrl = [NSURL URLWithString:[self.serverUrl stringByAppendingString:@"/api/v4/posts"]];
-  NSURLSessionConfiguration* config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:[self.requestId stringByAppendingString:@"-post"]];
-  config.sharedContainerIdentifier = self.appGroupId;
   
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:createUrl cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:5.0];
   [request setHTTPMethod:@"POST"];
@@ -132,6 +129,8 @@ MattermostBucket *mattermostBucket;
   [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
   [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
   [request setHTTPBody:[postAsString dataUsingEncoding:NSUTF8StringEncoding]];
+  
+  NSURLSessionConfiguration* config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
   NSURLSession *createSession = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
   NSURLSessionDataTask *createTask = [createSession dataTaskWithRequest:request];
   NSLog(@"Executing post request");
