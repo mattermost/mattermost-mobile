@@ -99,7 +99,7 @@ export default class ExtensionPost extends PureComponent {
         this.focusInput();
     }
 
-    auth = async () => {
+    emmAuthenticationIfNeeded = async () => {
         try {
             const emmSecured = await mattermostBucket.getPreference('emm', Config.AppGroupId);
             if (emmSecured) {
@@ -530,7 +530,7 @@ export default class ExtensionPost extends PureComponent {
         }
 
         if (currentUserId && authenticated) {
-            await this.auth();
+            await this.emmAuthenticationIfNeeded();
 
             try {
                 // Check to see if the use still belongs to the channel
