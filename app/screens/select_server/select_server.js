@@ -131,14 +131,14 @@ class SelectServer extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor
             },
             passProps: {
-                closeAction: this.handleLoginOptions,
+                closeAction: () => this.handleLoginOptions(this.props),
                 upgradeType
             }
         });
     }
 
-    handleLoginOptions = () => {
-        const {config, intl, license, theme} = this.props;
+    handleLoginOptions = (props) => {
+        const {config, intl, license, theme} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
 
