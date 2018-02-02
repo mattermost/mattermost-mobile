@@ -560,7 +560,14 @@ export default class ExtensionPost extends PureComponent {
 
     updateChannelsInEntities = (newChannels) => {
         const {entities} = this.state;
-        const newEntities = {...entities};
+        const newEntities = {
+            ...entities,
+            channels: {
+                ...entities.channels,
+                channels: {...entities.channels.channels},
+                channelsInTeam: {...entities.channels.channelsInTeam}
+            }
+        };
         const {channels, channelsInTeam} = newEntities.channels;
 
         newChannels.forEach((c) => {
