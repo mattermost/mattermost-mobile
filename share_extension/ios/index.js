@@ -37,7 +37,7 @@ export default class SharedApp extends PureComponent {
             isLandscape
         };
 
-        mattermostBucket.get('entities', Config.AppGroupId).then((value) => {
+        mattermostBucket.readFromFile('entities', Config.AppGroupId).then((value) => {
             this.entities = value;
             this.setState({init: true});
         });

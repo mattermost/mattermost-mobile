@@ -11,7 +11,6 @@
 #import "ShareViewController.h"
 
 @implementation PerformRequests
-MattermostBucket *mattermostBucket;
 
 - (id) initWithPost:(NSDictionary *) post
           withFiles:(NSArray *) files
@@ -26,15 +25,14 @@ MattermostBucket *mattermostBucket;
     self.requestId = requestId;
     self.extensionContext = context;
 
-    mattermostBucket = [[MattermostBucket alloc] init];
-    self.bucket = [mattermostBucket bucketByName: appGroupId];
+    self.bucket = [[MattermostBucket alloc] init];
     [self setCredentials];
   }
   return self;
 }
 
 -(void)setCredentials {
-  NSString *entitiesString = [self.bucket objectForKey:@"entities"];
+  NSString *entitiesString = [self.bucket readFromFile:@"entities" appGroupId:self.appGroupId];
   NSData *entitiesData = [entitiesString dataUsingEncoding:NSUTF8StringEncoding];
   NSDictionary *entities = [NSJSONSerialization JSONObjectWithData:entitiesData options:NSJSONReadingMutableContainers error:nil];
   NSDictionary *credentials = [[entities objectForKey:@"general"] objectForKey:@"credentials"];

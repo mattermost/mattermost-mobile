@@ -101,7 +101,7 @@ export default class ExtensionPost extends PureComponent {
 
     auth = async () => {
         try {
-            const emmSecured = await mattermostBucket.get('emm', Config.AppGroupId);
+            const emmSecured = await mattermostBucket.getPreference('emm', Config.AppGroupId);
             if (emmSecured) {
                 const {intl} = this.context;
                 await LocalAuth.authenticate({
@@ -575,7 +575,7 @@ export default class ExtensionPost extends PureComponent {
         });
 
         this.setState({entities});
-        mattermostBucket.set('entities', JSON.stringify(entities), Config.AppGroupId);
+        mattermostBucket.writeToFile('entities', JSON.stringify(entities), Config.AppGroupId);
     };
 
     render() {
