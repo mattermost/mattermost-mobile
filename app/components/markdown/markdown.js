@@ -7,7 +7,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StyleSheet,
     Text,
     View
 } from 'react-native';
@@ -195,7 +194,7 @@ export default class Markdown extends PureComponent {
             getStyleSheet(this.props.theme).block,
             this.props.blockStyles[`heading${level}`]
         ];
-        const textStyle = this.props.blockStyles[`heading${level}Text`]
+        const textStyle = this.props.blockStyles[`heading${level}Text`];
         return (
             <View style={containerStyle}>
                 <Text style={textStyle}>
@@ -302,7 +301,6 @@ export default class Markdown extends PureComponent {
             spacer = ' ';
         }
 
-        const parentStyles = this.computeTextStyle(this.props.baseTextStyle, context);
         const style = getStyleSheet(this.props.theme);
         const styles = [
             this.props.baseTextStyle,
