@@ -30,7 +30,6 @@ export default class Markdown extends PureComponent {
     static propTypes = {
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
-        emojiSizes: PropTypes.object,
         isEdited: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
@@ -44,28 +43,6 @@ export default class Markdown extends PureComponent {
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
-        emojiSizes: {
-            ...Platform.select({
-                ios: {
-                    heading1: 25,
-                    heading2: 25,
-                    heading3: 25,
-                    heading4: 25,
-                    heading5: 25,
-                    heading6: 25,
-                    text: 20
-                },
-                android: {
-                    heading1: 60,
-                    heading2: 60,
-                    heading3: 60,
-                    heading4: 60,
-                    heading5: 60,
-                    heading6: 60,
-                    text: 45
-                }
-            })
-        },
         onLongPress: () => true
     };
 
@@ -136,9 +113,10 @@ export default class Markdown extends PureComponent {
             // If this text is displayed, it will be styled by the image component
             return <Text>{literal}</Text>;
         }
+        const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
-        return <Text style={this.computeTextStyle(this.props.baseTextStyle, context)}>{literal}</Text>;
+        return <Text style={style}>{literal}</Text>;
     }
 
     renderCodeSpan = ({context, literal}) => {
@@ -183,19 +161,10 @@ export default class Markdown extends PureComponent {
     }
 
     renderEmoji = ({context, emojiName, literal}) => {
-        let size;
-        const headingType = context.find((type) => type.startsWith('heading'));
-        if (headingType) {
-            size = this.props.emojiSizes[headingType];
-        } else {
-            size = this.props.emojiSizes.text;
-        }
-
         return (
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
-                size={size}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
@@ -211,7 +180,6 @@ export default class Markdown extends PureComponent {
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
-
         return (
             <View style={blockStyle}>
                 <Text>
@@ -222,11 +190,14 @@ export default class Markdown extends PureComponent {
     }
 
     renderHeading = ({children, level}) => {
-        const style = getStyleSheet(this.props.theme);
-
+        const containerStyle = [
+            getStyleSheet(this.props.theme).block,
+            this.props.blockStyles[`heading${level}`]
+        ];
+        const textStyle = this.props.blockStyles[`heading${level}Text`];
         return (
-            <View style={[style.block, this.props.blockStyles[`heading${level}`]]}>
-                <Text>
+            <View style={containerStyle}>
+                <Text style={textStyle}>
                     {children}
                 </Text>
             </View>
@@ -366,7 +337,6 @@ export default class Markdown extends PureComponent {
                 ast.appendChild(node);
             }
         }
-
         return <View>{this.renderer.render(ast)}</View>;
     }
 }
@@ -391,7 +361,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         editedIndicatorText: {
             color: editedColor,
-            fontSize: 14,
             opacity: editedOpacity
         }
     };
