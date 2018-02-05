@@ -41,6 +41,7 @@ export default class SearchBarAndroid extends PureComponent {
         inputHeight: PropTypes.number,
         inputBorderRadius: PropTypes.number,
         blurOnSubmit: PropTypes.bool,
+        showArrow: PropTypes.bool,
         value: PropTypes.string,
         containerStyle: CustomPropTypes.Style,
     };
@@ -52,6 +53,7 @@ export default class SearchBarAndroid extends PureComponent {
         blurOnSubmit: true,
         placeholder: 'Search',
         showCancelButton: true,
+        showArrow: true,
         placeholderTextColor: changeOpacity('#000', 0.5),
         containerStyle: {},
         onSearchButtonPress: () => true,
@@ -156,6 +158,7 @@ export default class SearchBarAndroid extends PureComponent {
             tintColorSearch,
             containerStyle,
             value,
+            showArrow,
         } = this.props;
         const {isFocused} = this.state;
 
@@ -192,7 +195,7 @@ export default class SearchBarAndroid extends PureComponent {
                         },
                     ]}
                 >
-                    {isFocused ?
+                    {isFocused && showArrow ?
                         <TouchableWithoutFeedback
                             onPress={this.onCancelButtonPress}
                             style={{paddingRight: 15}}

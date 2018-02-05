@@ -106,6 +106,13 @@ export default class Entry extends PureComponent {
     };
 
     listenForHydration = () => {
+        const {
+            actions: {
+                autoUpdateTimezone,
+            },
+            enableTimezone,
+            deviceTimezone
+        } = this.props;
         const {getState} = store;
         const state = getState();
 
@@ -115,6 +122,10 @@ export default class Entry extends PureComponent {
 
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
+
+            if (enableTimezone) {
+                autoUpdateTimezone(deviceTimezone);
+            }
 
             this.setAppCredentials();
             this.setStartupThemes();
