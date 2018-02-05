@@ -10,6 +10,9 @@ import {
     View
 } from 'react-native';
 
+import {Client4} from 'mattermost-redux/client';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -72,12 +75,14 @@ export default class EmojiSuggestion extends Component {
         const oldMatchTerm = this.matchTerm;
         this.matchTerm = match[3];
 
-        if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
+        const pre47 = !isMinimumServerVersion(Client4.getServerVersion(), 4, 7);
+
+        if (!pre47 && this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
             this.props.actions.autocompleteCustomEmojis(this.matchTerm);
             return;
         }
 
-        if (this.props.emojis !== nextProps.emojis) {
+        if (pre47 || this.props.emojis !== nextProps.emojis) {
             this.handleFuzzySearch(this.matchTerm, nextProps);
         } else if (!this.matchTerm.length) {
             const initialEmojis = [...nextProps.emojis];

@@ -7,6 +7,7 @@ import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis'
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {Client4} from 'mattermost-redux/client';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 
@@ -29,7 +30,8 @@ function mapStateToProps(state, ownProps) {
     } else {
         displayTextOnly = state.entities.emojis.nonExistentEmoji.has(emojiName) ||
             getConfig(state).EnableCustomEmoji !== 'true' ||
-            getCurrentUserId(state) === '';
+            getCurrentUserId(state) === '' ||
+            !isMinimumServerVersion(Client4.getServerVersion(), 4, 7);
     }
 
     return {
