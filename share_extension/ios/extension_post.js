@@ -23,9 +23,8 @@ import RNFetchBlob from 'react-native-fetch-blob';
 import {Client4} from 'mattermost-redux/client';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
-import {ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
-import {generateId} from 'app/utils/file';
+import {generateId, getAllowedServerMaxFileSize} from 'app/utils/file';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import Config from 'assets/config';
@@ -261,7 +260,7 @@ export default class ExtensionPost extends PureComponent {
         const {authenticated, theme} = this.props;
         const {entities, error, sending, totalSize, value} = this.state;
         const {config} = entities.general;
-        const serverMaxFileSize = config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : ViewTypes.DEFAULT_SERVER_MAX_FILE_SIZE;
+        const serverMaxFileSize = getAllowedServerMaxFileSize(config);
         const maxSize = Math.min(MAX_FILE_SIZE, serverMaxFileSize);
 
         if (sending) {
