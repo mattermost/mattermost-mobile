@@ -29,7 +29,10 @@ describe('Selectors.PostList', () => {
                         myPreferences: {}
                     },
                     users: {
-                        currentUserId: '1234'
+                        currentUserId: '1234',
+                        profiles: {
+                            1234: {id: '1234', username: 'user'}
+                        }
                     }
                 }
             };
@@ -84,6 +87,25 @@ describe('Selectors.PostList', () => {
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(removeDateLines(now), ['1001']);
+
+            // always show join/leave posts for the current user
+            state = {
+                ...state,
+                entities: {
+                    ...state.entities,
+                    posts: {
+                        ...state.entities.posts,
+                        posts: {
+                            ...state.entities.posts.posts,
+                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL, props: {username: 'user'}}
+                        }
+                    }
+                }
+            };
+
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
+
+            assert.deepEqual(removeDateLines(now), ['1002', '1001']);
         });
 
         it('new messages indicator', () => {
@@ -102,7 +124,10 @@ describe('Selectors.PostList', () => {
                         myPreferences: {}
                     },
                     users: {
-                        currentUserId: '1234'
+                        currentUserId: '1234',
+                        profiles: {
+                            1234: {id: '1234', username: 'user'}
+                        }
                     }
                 }
             };
@@ -149,7 +174,10 @@ describe('Selectors.PostList', () => {
                         }
                     },
                     users: {
-                        currentUserId: '1234'
+                        currentUserId: '1234',
+                        profiles: {
+                            1234: {id: '1234', username: 'user'}
+                        }
                     }
                 }
             };
