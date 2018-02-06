@@ -70,6 +70,7 @@
 		7FC200E81EBB65370099331B /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FC200DF1EBB65100099331B /* libReactNativeNavigation.a */; };
 		7FC649EE1FE983660074E4C7 /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 349FBA7338E74D9BBD709528 /* EvilIcons.ttf */; };
 		7FC649F01FE9B5D90074E4C7 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */; };
+		7FD8DEDE2029EDB7001AAC5E /* libRNTableView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FD8DEDA2029ECDF001AAC5E /* libRNTableView.a */; };
 		7FDB92B11F706F58006CDFD1 /* libRNImagePicker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDB92A71F706F45006CDFD1 /* libRNImagePicker.a */; };
 		7FEB10981F6101710039A015 /* BlurAppScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB10971F6101710039A015 /* BlurAppScreen.m */; };
 		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
@@ -531,6 +532,13 @@
 			remoteGlobalIDString = D8AFADBD1BEE6F3F00A4592D;
 			remoteInfo = ReactNativeNavigation;
 		};
+		7FD8DED92029ECDF001AAC5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7FD8DE972029ECDE001AAC5E /* RNTableView.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 873769951B7CD6E900F7C3C2;
+			remoteInfo = RNTableView;
+		};
 		7FDB92A61F706F45006CDFD1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7FDB92751F706F45006CDFD1 /* RNImagePicker.xcodeproj */;
@@ -678,6 +686,7 @@
 		7F6C47A41FE87E8C00F5A912 /* PerformRequests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformRequests.m; sourceTree = "<group>"; };
 		7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativePermissions.xcodeproj; path = "../node_modules/react-native-permissions/ios/ReactNativePermissions.xcodeproj"; sourceTree = "<group>"; };
 		7FC200BC1EBB65100099331B /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
+		7FD8DE972029ECDE001AAC5E /* RNTableView.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNTableView.xcodeproj; path = "../node_modules/react-native-tableview/RNTableView.xcodeproj"; sourceTree = "<group>"; };
 		7FDB92751F706F45006CDFD1 /* RNImagePicker.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNImagePicker.xcodeproj; path = "../node_modules/react-native-image-picker/ios/RNImagePicker.xcodeproj"; sourceTree = "<group>"; };
 		7FEB10961F6101710039A015 /* BlurAppScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BlurAppScreen.h; path = Mattermost/BlurAppScreen.h; sourceTree = "<group>"; };
 		7FEB10971F6101710039A015 /* BlurAppScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BlurAppScreen.m; path = Mattermost/BlurAppScreen.m; sourceTree = "<group>"; };
@@ -806,6 +815,7 @@
 				7FFE32EA1FD9CD050038C7A0 /* libReact.a in Frameworks */,
 				7FFE32E91FD9CCF40038C7A0 /* libRCTAnimation.a in Frameworks */,
 				7FFE32E81FD9CCDE0038C7A0 /* libRCTCameraRoll.a in Frameworks */,
+				7FD8DEDE2029EDB7001AAC5E /* libRNTableView.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1201,6 +1211,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		7FD8DE982029ECDE001AAC5E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7FD8DEDA2029ECDF001AAC5E /* libRNTableView.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		7FDB92761F706F45006CDFD1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1259,6 +1277,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				7FD8DE972029ECDE001AAC5E /* RNTableView.xcodeproj */,
 				7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */,
 				7FDB92751F706F45006CDFD1 /* RNImagePicker.xcodeproj */,
 				37ABD3971F4CE13B001FDE6B /* ART.xcodeproj */,
@@ -1591,6 +1610,10 @@
 				{
 					ProductGroup = 7FDF28C41E1F4B1F00DBBE56 /* Products */;
 					ProjectRef = 2CBE9C0FB56E4FDA96C30792 /* RNSVG.xcodeproj */;
+				},
+				{
+					ProductGroup = 7FD8DE982029ECDE001AAC5E /* Products */;
+					ProjectRef = 7FD8DE972029ECDE001AAC5E /* RNTableView.xcodeproj */;
 				},
 				{
 					ProductGroup = 7FDF28EE1E1F4B4E00DBBE56 /* Products */;
@@ -2022,6 +2045,13 @@
 			fileType = archive.ar;
 			path = libReactNativeNavigation.a;
 			remoteRef = 7FC200DE1EBB65100099331B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7FD8DEDA2029ECDF001AAC5E /* libRNTableView.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNTableView.a;
+			remoteRef = 7FD8DED92029ECDF001AAC5E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		7FDB92A71F706F45006CDFD1 /* libRNImagePicker.a */ = {
@@ -2530,6 +2560,7 @@
 					"$(SRCROOT)/../node_modules/react-native-video/ios",
 					"$(SRCROOT)/../node_modules/react-native-doc-viewer/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-safe-area/ios/RNSafeArea",
+					"$(SRCROOT)/../node_modules/react-native-tableview/**",
 				);
 				INFOPLIST_FILE = MattermostShare/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
@@ -2589,6 +2620,7 @@
 					"$(SRCROOT)/../node_modules/react-native-video/ios",
 					"$(SRCROOT)/../node_modules/react-native-doc-viewer/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-safe-area/ios/RNSafeArea",
+					"$(SRCROOT)/../node_modules/react-native-tableview/**",
 				);
 				INFOPLIST_FILE = MattermostShare/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
