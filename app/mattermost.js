@@ -49,7 +49,6 @@ import initialState from 'app/initial_state';
 import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import configureStore from 'app/store';
-import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import {deleteFileCache} from 'app/utils/file';
 import {init as initAnalytics} from 'app/utils/segment';
@@ -211,7 +210,6 @@ export default class Mattermost {
         const intl = this.getIntl();
         if (isSecured) {
             try {
-                mattermostBucket.setPreference('emm', vendor, Config.AppGroupId);
                 await mattermostManaged.authenticate({
                     reason: intl.formatMessage({
                         id: 'mobile.managed.secured_by',
