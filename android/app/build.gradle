@@ -107,7 +107,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 85
-        versionName "1.6.0"
+        versionName "1.7.0"
         multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "x86"
