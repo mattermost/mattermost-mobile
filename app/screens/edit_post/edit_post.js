@@ -160,7 +160,7 @@ export default class EditPost extends PureComponent {
         let displayError;
         if (error) {
             displayError = (
-                <View style={[style.errorContainer, {deviceWidth}]}>
+                <View style={[style.errorContainer, {width: deviceWidth}]}>
                     <View style={style.errorWrapper}>
                         <ErrorText error={error}/>
                     </View>
