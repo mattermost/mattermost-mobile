@@ -131,7 +131,7 @@ class SelectServer extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor
             },
             passProps: {
-                closeAction: this.handleLoginOptions,
+                closeAction: () => this.handleLoginOptions(this.props),
                 upgradeType
             }
         });
