@@ -1,5 +1,30 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.6.0 Release
+- Release Date: February 6, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### Android File Sharing
+- Share files and images from other applications as attached files in Mattermost 
+
+### Improvements
+- Added a right drawer to access settings, edit profile information, change online status and logout
+- Added support for opening a Direct Message channel with yourself
+
+### Bugs
+- Fixed a number of issues causing crashes on Android devices
+- Fixed an issue with auto capitalization on Android keyboards
+- Fixed an issue where the GitLab SSO login button sometimes didn't appear
+- Fixed an issue with link previews not appearing on some accounts
+- Fixed an issue where logging out of the app didn't clear the notification badge on the homescreen icon
+- Fixed an issue where interactive message buttons would not wrap to a new line
+- Fixed an issue where the keyboard would sometimes overlap the text input box
+- Fixed an issue where the Direct Message channel wouldn't open from the profile page
+- Fixed an issue where posts would sometimes overlap
+- Fixed an issue where the app sometimes hangs on logout
+
 ## v1.5.3 Release
 - Release Date: February 1, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
