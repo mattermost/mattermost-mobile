@@ -10,8 +10,7 @@
 - Share files and images from other applications as attached files in Mattermost 
 
 ### Improvements
-- Added a right drawer to access settings, logout and change online status
-- Added the ability to edit profile information
+- Added a right drawer to access settings, edit profile information, change online status and logout
 - Added support for opening a Direct Message channel with yourself
 
 ### Bugs
