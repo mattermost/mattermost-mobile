@@ -4,9 +4,9 @@
 import {Posts, Preferences} from 'mattermost-redux/constants';
 import {makeGetPostsForIds} from 'mattermost-redux/selectors/entities/posts';
 import {getBool} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {createIdsSelector} from 'mattermost-redux/utils/helpers';
-import {shouldFilterPost} from 'mattermost-redux/utils/post_utils';
+import {shouldFilterJoinLeavePost} from 'mattermost-redux/utils/post_utils';
 
 export const DATE_LINE = 'date-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
@@ -26,10 +26,10 @@ export function makePreparePostIdsForPostList() {
         (state, props) => getMyPosts(state, props.postIds),
         (state, props) => props.lastViewedAt,
         (state, props) => props.indicateNewMessages,
-        getCurrentUserId,
+        getCurrentUser,
         shouldShowJoinLeaveMessages,
-        (posts, lastViewedAt, indicateNewMessages, currentUserId, showJoinLeave) => {
-            if (posts.length === 0) {
+        (posts, lastViewedAt, indicateNewMessages, currentUser, showJoinLeave) => {
+            if (posts.length === 0 || !currentUser) {
                 return [];
             }
 
@@ -38,18 +38,16 @@ export function makePreparePostIdsForPostList() {
             let lastDate = null;
             let addedNewMessagesIndicator = false;
 
-            const filterOptions = {showJoinLeave};
-
             // Iterating through the posts from oldest to newest
             for (let i = posts.length - 1; i >= 0; i--) {
                 const post = posts[i];
 
-                if (post.state === Posts.POST_DELETED && post.user_id === currentUserId) {
+                if (post.state === Posts.POST_DELETED && post.user_id === currentUser.id) {
                     continue;
                 }
 
                 // Filter out join/leave messages if necessary
-                if (shouldFilterPost(post, filterOptions)) {
+                if (shouldFilterJoinLeavePost(post, showJoinLeave, currentUser.username)) {
                     continue;
                 }
 
@@ -63,7 +61,7 @@ export function makePreparePostIdsForPostList() {
                 }
 
                 // Only add the new messages line if a lastViewedAt time is set
-                const postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUserId;
+                const postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUser.id;
                 if (lastViewedAt !== null && !addedNewMessagesIndicator && postIsUnread && indicateNewMessages) {
                     out.push(START_OF_NEW_MESSAGES);
                     addedNewMessagesIndicator = true;
