@@ -75,6 +75,26 @@ export default function configureAppStore(initialState) {
         {whitelist: ['views']} // Only run this filter the views state (or any other entry that ends up being named views)
     );
 
+    const emojiBlackList = {nonExistentEmoji: true};
+    const emojiBlackListFilter = createTransform(
+        (inboundState) => {
+            const emojis = {};
+
+            for (const emojiKey of Object.keys(inboundState.emojis)) {
+                if (!emojiBlackList[emojiKey]) {
+                    emojis[emojiKey] = inboundState.emojis[emojiKey];
+                }
+            }
+
+            return {
+                ...inboundState,
+                emojis
+            };
+        },
+        null,
+        {whitelist: ['entities']} // Only run this filter on the entities state (or any other entry that ends up being named entities)
+    );
+
     const setTransformer = createTransform(
         (inboundState, key) => {
             if (key === 'entities') {
@@ -220,7 +240,8 @@ export default function configureAppStore(initialState) {
                 setTransformer,
                 viewsBlackListFilter,
                 typingBlackListFilter,
-                channelViewBlackListFilter
+                channelViewBlackListFilter,
+                emojiBlackListFilter
             ]
         }
     };
