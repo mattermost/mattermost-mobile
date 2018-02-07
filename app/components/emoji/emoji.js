@@ -29,6 +29,7 @@ export default class Emoji extends React.PureComponent {
         customEmojis: PropTypes.object,
         emojiName: PropTypes.string.isRequired,
         literal: PropTypes.string,
+        size: PropTypes.number,
         textStyle: CustomPropTypes.Style,
         token: PropTypes.string.isRequired
     };
@@ -114,8 +115,14 @@ export default class Emoji extends React.PureComponent {
             textStyle,
             token
         } = this.props;
-        const {fontSize} = StyleSheet.flatten(textStyle);
-        const size = scaleEmojiBasedOnDevice(fontSize);
+
+        let size = this.props.size;
+        let fontSize = size;
+        if (!size && textStyle) {
+            const flatten = StyleSheet.flatten(textStyle);
+            fontSize = flatten.fontSize;
+            size = scaleEmojiBasedOnDevice(fontSize);
+        }
 
         if (!this.state.imageUrl) {
             return <Text style={textStyle}>{literal}</Text>;

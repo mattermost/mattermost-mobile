@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Alert, Animated, CameraRoll, InteractionManager, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {CircularProgress} from 'react-native-circular-progress';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {intlShape} from 'react-intl';
 
@@ -380,7 +380,7 @@ export default class Downloader extends PureComponent {
             <View style={[styles.container, {height: containerHeight}]}>
                 <AnimatedView style={[styles.downloader, {top: this.state.downloaderTop}]}>
                     <View style={styles.progressCircleContent}>
-                        <AnimatedCircularProgress
+                        <CircularProgress
                             size={120}
                             fill={progress}
                             width={4}
@@ -390,7 +390,7 @@ export default class Downloader extends PureComponent {
                             style={styles.progressCircle}
                         >
                             {component}
-                        </AnimatedCircularProgress>
+                        </CircularProgress>
                     </View>
                 </AnimatedView>
             </View>
