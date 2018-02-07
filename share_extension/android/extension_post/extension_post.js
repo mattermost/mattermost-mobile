@@ -18,9 +18,10 @@ import {
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 import {Preferences} from 'mattermost-redux/constants';
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import PaperPlane from 'app/components/paper_plane';
 import mattermostManaged from 'app/mattermost_managed';
@@ -57,6 +58,7 @@ export default class ExtensionPost extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        maxFileSize: PropTypes.number.isRequired,
         navigation: PropTypes.object.isRequired,
         teamId: PropTypes.string.isRequired,
         token: PropTypes.string,
@@ -129,6 +131,7 @@ export default class ExtensionPost extends PureComponent {
             files: [],
             hasPermission: null,
             teamId: props.teamId,
+            totalSize: 0,
             value: ''
         };
     }
@@ -261,6 +264,7 @@ export default class ExtensionPost extends PureComponent {
         if (token && url) {
             const text = [];
             const files = [];
+            let totalSize = 0;
 
             this.props.navigation.setParams({
                 post: this.onPost
@@ -276,11 +280,14 @@ export default class ExtensionPost extends PureComponent {
                     const fullPath = item.value;
                     const filename = fullPath.replace(/^.*[\\/]/, '');
                     const extension = filename.split('.').pop();
+                    const fileSize = await RNFetchBlob.fs.stat(fullPath);
+                    totalSize += fileSize.size;
                     files.push({
                         extension,
                         filename,
                         fullPath,
                         mimeType: lookupMimeType(filename.toLowerCase()),
+                        size: getFormattedFileSize(fileSize),
                         type: item.type
                     });
                     break;
@@ -290,7 +297,7 @@ export default class ExtensionPost extends PureComponent {
 
             const value = text.join('\n');
 
-            this.setState({files, value, hasPermission: true});
+            this.setState({files, value, hasPermission: true, totalSize});
         }
     };
 
@@ -352,6 +359,20 @@ export default class ExtensionPost extends PureComponent {
                 onPress={this.goToChannels}
                 theme={defalultTheme}
             />
+        );
+    };
+
+    renderErrorMessage = (message) => {
+        return (
+            <View
+                style={styles.flex}
+            >
+                <View style={styles.unauthenticatedContainer}>
+                    <Text style={styles.unauthenticated}>
+                        {message}
+                    </Text>
+                </View>
+            </View>
         );
     };
 
@@ -425,7 +446,7 @@ export default class ExtensionPost extends PureComponent {
                         numberOfLines={1}
                         style={styles.filename}
                     >
-                        {file.filename}
+                        {`${file.size} - ${file.filename}`}
                     </Text>
                 </View>
             );
@@ -446,40 +467,33 @@ export default class ExtensionPost extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {token, url} = this.props;
-        const {hasPermission, files} = this.state;
+        const {maxFileSize, token, url} = this.props;
+        const {hasPermission, files, totalSize} = this.state;
 
-        if (hasPermission === false) {
-            return (
-                <View
-                    style={styles.flex}
-                >
-                    <View style={styles.unauthenticatedContainer}>
-                        <Text style={styles.unauthenticated}>
-                            {formatMessage({
-                                id: 'mobile.extension.permission',
-                                defaultMessage: 'Mattermost needs access to the device storage to share files.'
-                            })}
-                        </Text>
-                    </View>
-                </View>
-            );
-        } else if (files.length > 5) {
-            return (
-                <View
-                    style={styles.flex}
-                >
-                    <View style={styles.unauthenticatedContainer}>
-                        <Text style={styles.unauthenticated}>
-                            {formatMessage({
-                                id: 'mobile.extension.file_limit',
-                                defaultMessage: 'Sharing is limited to a maximum of 5 files.'
-                            })}
-                        </Text>
-                    </View>
-                </View>
-            );
-        } else if (token && url) {
+        if (token && url) {
+            if (hasPermission === false) {
+                const storage = formatMessage({
+                    id: 'mobile.extension.permission',
+                    defaultMessage: 'Mattermost needs access to the device storage to share files.'
+                });
+
+                return this.renderErrorMessage(storage);
+            } else if (files.length > 5) {
+                const fileCount = formatMessage({
+                    id: 'mobile.extension.file_limit',
+                    defaultMessage: 'Sharing is limited to a maximum of 5 files.'
+                });
+
+                return this.renderErrorMessage(fileCount);
+            } else if (totalSize > maxFileSize) {
+                const maxSize = formatMessage({
+                    id: 'mobile.extension.max_file_size',
+                    defaultMessage: 'File attachments shared in Mattermost must be less than {size}.'
+                }, {size: getFormattedFileSize({size: maxFileSize})});
+
+                return this.renderErrorMessage(maxSize);
+            }
+
             return (
                 <View style={styles.container}>
                     <View style={styles.wrapper}>
@@ -493,16 +507,12 @@ export default class ExtensionPost extends PureComponent {
             );
         }
 
-        return (
-            <View style={styles.unauthenticatedContainer}>
-                <Text style={styles.unauthenticated}>
-                    {formatMessage({
-                        id: 'mobile.extension.authentication_required',
-                        defaultMessage: 'Authentication required: Please first login using the app.'
-                    })}
-                </Text>
-            </View>
-        );
+        const loginNeeded = formatMessage({
+            id: 'mobile.extension.authentication_required',
+            defaultMessage: 'Authentication required: Please first login using the app.'
+        });
+
+        return this.renderErrorMessage(loginNeeded);
     }
 }
 

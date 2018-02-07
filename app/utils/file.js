@@ -6,6 +6,7 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {DeviceTypes} from 'app/constants/';
 
 const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
+const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
 export function generateId() {
     // Implementation taken from http://stackoverflow.com/a/2117523
@@ -78,4 +79,8 @@ export function buildFileUploadData(file) {
 
 export const encodeHeaderURIStringToUTF8 = (string) => {
     return encodeURIComponent(string) + '"; filename*="utf-8\'\'' + encodeURIComponent(string);
+};
+
+export const getAllowedServerMaxFileSize = (config) => {
+    return config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : DEFAULT_SERVER_MAX_FILE_SIZE;
 };

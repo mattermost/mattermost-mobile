@@ -2024,7 +2024,7 @@
   "mobile.error_handler.title": "Unexpected error occurred",
   "mobile.extension.authentication_required": "Authentication required: Please first login using the app.",
   "mobile.extension.file_limit": "Sharing is limited to a maximum of 5 files.",
-  "mobile.extension.max_file_size": "File attachments shared in Mattermost must be less than 20 Mb.",
+  "mobile.extension.max_file_size": "File attachments shared in Mattermost must be less than {size}.",
   "mobile.extension.permission": "Mattermost needs access to the device storage to share files.",
   "mobile.extension.posting": "Posting...",
   "mobile.extension.title": "Share in Mattermost",
