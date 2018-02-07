@@ -111,10 +111,17 @@ export default class ExtensionChannels extends PureComponent {
             const direct = getDirectChannels({entities});
             const channels = channelIds.map((id) => this.props.entities.channels.channels[id]).concat(direct);
 
-            this.publicChannelIcon = await Icon.getImageSource('globe', 16, this.props.theme.centerChannelColor);
-            this.privateChannelIcon = await Icon.getImageSource('lock', 16, this.props.theme.centerChannelColor);
-            this.dmChannelIcon = await Icon.getImageSource('user', 16, this.props.theme.centerChannelColor);
-            this.gmChannelIcon = await Icon.getImageSource('users', 16, this.props.theme.centerChannelColor);
+            const icons = await Promise.all([
+                Icon.getImageSource('globe', 16, this.props.theme.centerChannelColor),
+                Icon.getImageSource('lock', 16, this.props.theme.centerChannelColor),
+                Icon.getImageSource('user', 16, this.props.theme.centerChannelColor),
+                Icon.getImageSource('users', 16, this.props.theme.centerChannelColor)
+            ]);
+
+            this.publicChannelIcon = icons[0];
+            this.privateChannelIcon = icons[1];
+            this.dmChannelIcon = icons[2];
+            this.gmChannelIcon = icons[3];
 
             this.setState({
                 channels
