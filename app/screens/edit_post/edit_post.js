@@ -4,7 +4,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
-    Dimensions,
     Platform,
     View
 } from 'react-native';
@@ -23,6 +22,8 @@ export default class EditPost extends PureComponent {
             editPost: PropTypes.func.isRequired
         }),
         closeButton: PropTypes.object,
+        deviceHeight: PropTypes.number,
+        deviceWidth: PropTypes.number,
         editPostRequest: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         post: PropTypes.object.isRequired,
@@ -142,9 +143,8 @@ export default class EditPost extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {deviceHeight, deviceWidth, theme} = this.props;
         const {editing, message, error} = this.state;
-        const {height, width} = Dimensions.get('window');
 
         const style = getStyleSheet(theme);
 
@@ -160,7 +160,7 @@ export default class EditPost extends PureComponent {
         let displayError;
         if (error) {
             displayError = (
-                <View style={[style.errorContainer, {width}]}>
+                <View style={[style.errorContainer, {width: deviceWidth}]}>
                     <View style={style.errorWrapper}>
                         <ErrorText error={error}/>
                     </View>
@@ -168,12 +168,14 @@ export default class EditPost extends PureComponent {
             );
         }
 
+        const height = Platform.OS === 'android' ? (deviceHeight / 2) - 40 : (deviceHeight / 2);
+
         return (
             <View style={style.container}>
                 <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
-                    <View style={[style.inputContainer, {height: Platform.OS === 'android' ? (height / 2) - 20 : (height / 2)}]}>
+                    <View style={[style.inputContainer, {height}]}>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.messageRef}
                             value={message}
@@ -181,7 +183,8 @@ export default class EditPost extends PureComponent {
                             onChangeText={this.onPostChangeText}
                             multiline={true}
                             numberOfLines={10}
-                            style={[style.input, {height: height / 2}]}
+                            style={[style.input, {height}]}
+                            autoFocus={true}
                             autoCapitalize='none'
                             autoCorrect={false}
                             placeholder={{id: 'edit_post.editPost', defaultMessage: 'Edit the post...'}}

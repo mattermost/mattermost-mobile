@@ -173,10 +173,10 @@ class NotificationSettings extends PureComponent {
 
     saveNotificationProps = (notifyProps) => {
         const {currentUser} = this.props;
-        const {user_id} = notifyProps;
+        const {user_id: userId} = notifyProps;
         const previousProps = {
             ...getNotificationProps(currentUser),
-            user_id
+            user_id: userId
         };
 
         if (notifyProps.interval) {

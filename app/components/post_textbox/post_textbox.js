@@ -169,14 +169,6 @@ export default class PostTextbox extends PureComponent {
         return false;
     };
 
-    handleBlur = () => {
-        if (this.refs.input && Platform.OS === 'android') {
-            this.refs.input.setNativeProps({
-                autoScroll: false
-            });
-        }
-    };
-
     handleContentSizeChange = (event) => {
         let contentHeight = event.nativeEvent.contentSize.height;
         if (contentHeight < INITIAL_HEIGHT) {
@@ -193,14 +185,6 @@ export default class PostTextbox extends PureComponent {
     handleEndEditing = (e) => {
         if (e && e.nativeEvent) {
             this.changeDraft(e.nativeEvent.text || '');
-        }
-    };
-
-    handleFocus = () => {
-        if (this.refs.input && Platform.OS === 'android') {
-            this.refs.input.setNativeProps({
-                autoScroll: true
-            });
         }
     };
 
@@ -494,8 +478,6 @@ export default class PostTextbox extends PureComponent {
                             style={[style.input, {height: textInputHeight}]}
                             onContentSizeChange={this.handleContentSizeChange}
                             keyboardType={this.state.keyboardType}
-                            onFocus={this.handleFocus}
-                            onBlur={this.handleBlur}
                             onEndEditing={this.handleEndEditing}
                             disableFullscreenUI={true}
                         />

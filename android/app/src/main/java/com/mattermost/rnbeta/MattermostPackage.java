@@ -10,8 +10,6 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.bridge.JavaScriptModule;
 
-import com.mattermost.components.CustomTextInputManager;
-
 public class MattermostPackage implements ReactPackage {
     private final MainApplication mApplication;
 
@@ -29,8 +27,6 @@ public class MattermostPackage implements ReactPackage {
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Arrays.<ViewManager>asList(
-                new CustomTextInputManager()
-        );
+        return Arrays.<ViewManager>asList();
     }
 }

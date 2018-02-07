@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
 import RNFetchBlob from 'react-native-fetch-blob';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
 
 import {changeOpacity} from 'app/utils/theme';
@@ -252,7 +252,7 @@ export default class FileAttachmentDocument extends PureComponent {
         let fileAttachmentComponent;
         if (downloading) {
             fileAttachmentComponent = (
-                <AnimatedCircularProgress
+                <CircularProgress
                     size={wrapperHeight}
                     fill={progress}
                     width={4}
@@ -262,7 +262,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     style={style.circularProgress}
                 >
                     {this.renderProgress}
-                </AnimatedCircularProgress>
+                </CircularProgress>
             );
         } else {
             fileAttachmentComponent = (
