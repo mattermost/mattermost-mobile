@@ -12,7 +12,7 @@ OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell fin
 
 .yarninstall: package.json
 	@if ! [ $(shell which yarn 2> /dev/null) ]; then \
-		@echo "yarn is not installed https://yarnpkg.com"; \
+		echo "yarn is not installed https://yarnpkg.com"; \
 		exit 1; \
 	fi
 
@@ -112,20 +112,20 @@ check-device-ios:
 
 check-device-android:
 	@if ! [ $(ANDROID_HOME) ]; then \
-		@echo "ANDROID_HOME is not set"; \
-		@exit 1; \
+		echo "ANDROID_HOME is not set"; \
+		exit 1; \
 	fi
 	@if ! [ $(shell which adb 2> /dev/null) ]; then \
-		@echo "adb is not installed"; \
-		@exit 1; \
+		echo "adb is not installed"; \
+		exit 1; \
 	fi
 
 	@echo "Connect your Android device or open the emulator"
 	@adb wait-for-device
 
 	@if ! [ $(shell which watchman 2> /dev/null) ]; then \
-		@echo "watchman is not installed"; \
-		@exit 1; \
+		echo "watchman is not installed"; \
+		exit 1; \
 	fi
 
 prepare-android-build:
