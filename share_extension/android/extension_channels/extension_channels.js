@@ -17,7 +17,7 @@ import {Preferences} from 'mattermost-redux/constants';
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import ExtensionChannelItem from 'share_extension/common/extension_channel_item';
+import ExtensionChannelItem from './extension_channel_item';
 
 const defaultTheme = Preferences.THEMES.default;
 

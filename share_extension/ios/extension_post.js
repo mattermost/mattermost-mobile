@@ -21,6 +21,8 @@ import LocalAuth from 'react-native-local-auth';
 import RNFetchBlob from 'react-native-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
+import {General} from 'mattermost-redux/constants';
+import {getChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import mattermostBucket from 'app/mattermost_bucket';
@@ -40,7 +42,6 @@ import {
 import ExtensionChannels from './extension_channels';
 import ExtensionNavBar from './extension_nav_bar';
 import ExtensionTeams from './extension_teams';
-import {General} from 'mattermost-redux/constants/index';
 
 const ShareExtension = NativeModules.MattermostShare;
 const MAX_INPUT_HEIGHT = 95;
@@ -189,12 +190,16 @@ export default class ExtensionPost extends PureComponent {
                 const {credentials} = entities.general;
                 const {currentUserId} = entities.users;
                 const team = entities.teams.teams[entities.teams.currentTeamId];
-                const channel = entities.channels.channels[entities.channels.currentChannelId];
+                let channel = entities.channels.channels[entities.channels.currentChannelId];
                 const items = await ShareExtension.data(Config.AppGroupId);
                 const text = [];
                 const urls = [];
                 const files = [];
                 let totalSize = 0;
+
+                if (channel.type === General.GM_CHANNEL || channel.type === General.DM_CHANNEL) {
+                    channel = getChannel({entities}, channel.id);
+                }
 
                 for (let i = 0; i < items.length; i++) {
                     const item = items[i];
