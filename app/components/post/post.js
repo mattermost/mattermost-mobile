@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import {isToolTipShowing} from 'react-native-tooltip';
 
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
+import {isToolTipShowing} from 'app/components/tooltip';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
