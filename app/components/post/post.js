@@ -15,11 +15,11 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
-import {isToolTipShowing} from 'app/components/tooltip';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {getToolTipVisible} from 'app/utils/tooltip';
 
 import {Posts} from 'mattermost-redux/constants';
 import DelayedAction from 'mattermost-redux/utils/delayed_action';
@@ -265,7 +265,7 @@ class Post extends PureComponent {
             post
         } = this.props;
 
-        if (!isToolTipShowing) {
+        if (!getToolTipVisible()) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
                 preventDoubleTap(onPress, null, post);
             } else if (!isSearchResult && isPostEphemeral(post)) {
@@ -276,7 +276,7 @@ class Post extends PureComponent {
 
     handleReply = () => {
         const {post, onReply} = this.props;
-        if (!isToolTipShowing && onReply) {
+        if (!getToolTipVisible() && onReply) {
             return preventDoubleTap(onReply, null, post);
         }
 
@@ -322,13 +322,13 @@ class Post extends PureComponent {
     viewUserProfile = () => {
         const {isSearchResult} = this.props;
 
-        if (!isSearchResult && !isToolTipShowing) {
+        if (!isSearchResult && !getToolTipVisible()) {
             preventDoubleTap(this.goToUserProfile, this);
         }
     };
 
     toggleSelected = (selected) => {
-        if (!isToolTipShowing) {
+        if (!getToolTipVisible()) {
             this.setState({selected});
         }
     };

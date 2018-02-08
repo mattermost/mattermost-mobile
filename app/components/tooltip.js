@@ -5,26 +5,28 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import RNToolTip from 'react-native-tooltip';
 
-export let isToolTipShowing = false;
+import {setToolTipVisible} from 'app/utils/tooltip';
 
-export default class Tooltip extends PureComponent {
+export default class ToolTip extends PureComponent {
     static propTypes = {
         onHide: PropTypes.func,
         onShow: PropTypes.func
     };
 
+    static isToolTipVisible = false;
+
     handleHide = () => {
         if (this.props.onHide) {
             this.props.onHide();
         }
-        isToolTipShowing = false;
+        setToolTipVisible(false);
     };
 
     handleShow = () => {
         if (this.props.onShow) {
             this.props.onShow();
         }
-        isToolTipShowing = true;
+        setToolTipVisible();
     };
 
     render() {
