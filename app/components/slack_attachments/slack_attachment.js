@@ -17,6 +17,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import InteractiveAction from './interactive_action';
 
+const STATUS_COLORS = {
+    good: '#00c100',
+    warning: '#dede01',
+    danger: '#e40303'
+};
+
 export default class SlackAttachment extends PureComponent {
     static propTypes = {
         attachment: PropTypes.object.isRequired,
@@ -228,8 +234,12 @@ export default class SlackAttachment extends PureComponent {
         }
 
         let borderStyle;
-        if (attachment.color && attachment.color[0] === '#') {
-            borderStyle = {borderLeftColor: attachment.color};
+        if (attachment.color) {
+            if (attachment.color[0] === '#') {
+                borderStyle = {borderLeftColor: attachment.color};
+            } else if (STATUS_COLORS.hasOwnProperty(attachment.color)) {
+                borderStyle = {borderLeftColor: STATUS_COLORS[attachment.color]};
+            }
         }
 
         const author = [];
