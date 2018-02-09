@@ -13,8 +13,6 @@ export default class ToolTip extends PureComponent {
         onShow: PropTypes.func
     };
 
-    static isToolTipVisible = false;
-
     handleHide = () => {
         if (this.props.onHide) {
             this.props.onHide();
