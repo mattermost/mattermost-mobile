@@ -263,7 +263,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         replyIconContainer: {
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            height: 30,
+            minWidth: 40,
+            paddingVertical: 10
         },
         replyText: {
             fontSize: 15,
