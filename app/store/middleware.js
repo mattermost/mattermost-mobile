@@ -293,6 +293,7 @@ function cleanupState(action, keepCurrent = false) {
             users: payload.entities.users
         },
         views: {
+            announcement: payload.views.announcement,
             ...resetPayload.views,
             channel: {
                 ...resetPayload.views.channel,

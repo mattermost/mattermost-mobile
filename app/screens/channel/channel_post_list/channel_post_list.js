@@ -9,6 +9,7 @@ import {
     View
 } from 'react-native';
 
+import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
@@ -159,6 +160,7 @@ export default class ChannelPostList extends PureComponent {
         return (
             <View style={style.container}>
                 {component}
+                <AnnouncementBanner/>
                 <RetryBarIndicator/>
             </View>
         );

@@ -3,6 +3,7 @@
 
 import {combineReducers} from 'redux';
 
+import announcement from './announcement';
 import channel from './channel';
 import clientUpgrade from './client_upgrade';
 import extension from './extension';
@@ -17,6 +18,7 @@ import team from './team';
 import thread from './thread';
 
 export default combineReducers({
+    announcement,
     channel,
     clientUpgrade,
     extension,
