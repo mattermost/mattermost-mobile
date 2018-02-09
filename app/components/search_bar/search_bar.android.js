@@ -71,7 +71,7 @@ export default class SearchBarAndroid extends PureComponent {
         };
     }
     componentWillReceiveProps(nextProps) {
-        if (this.state.value.toLowerCase() !== nextProps.value.toLowerCase()) {
+        if (this.state.value !== nextProps.value) {
             this.setState({value: nextProps.value});
         }
     }
