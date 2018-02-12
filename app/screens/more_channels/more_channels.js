@@ -149,15 +149,19 @@ class MoreChannels extends PureComponent {
     };
 
     searchProfiles = (text) => {
-        const term = text;
+        const term = text.toLowerCase();
 
         if (term) {
-            const channels = this.filterChannels(this.state.channels, term.toLowerCase());
-            this.setState({channels, term, searching: true});
+            const channels = this.filterChannels(this.state.channels, term);
+            this.setState({
+                channels,
+                term: text,
+                searching: true
+            });
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchChannels(this.props.currentTeamId, term.toLowerCase());
+                this.props.actions.searchChannels(this.props.currentTeamId, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
