@@ -3,7 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import ToolTip from 'react-native-tooltip';
+
+import ToolTip from 'app/components/tooltip';
 
 export default class OptionsContext extends PureComponent {
     static propTypes = {
