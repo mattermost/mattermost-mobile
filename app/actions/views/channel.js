@@ -149,13 +149,15 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
         const time = Date.now();
 
-        let loadMorePostsVisible;
+        let loadMorePostsVisible = true;
         let received;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
             received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
 
-            loadMorePostsVisible = received.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+            if (received) {
+                loadMorePostsVisible = received.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+            }
         } else {
             const {lastConnectAt} = state.device.websocket;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
@@ -173,7 +175,9 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
             received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
 
-            loadMorePostsVisible = postsIds.length + received.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+            if (received) {
+                loadMorePostsVisible = postsIds.length + received.order.length >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+            }
         }
 
         if (received) {

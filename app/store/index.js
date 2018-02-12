@@ -16,7 +16,6 @@ import appReducer from 'app/reducers';
 import {throttle} from 'app/utils/general';
 import networkConnectionListener from 'app/utils/network';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
-import {promiseTimeout} from 'app/utils/promise_timeout';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import Config from 'assets/config';
@@ -132,13 +131,6 @@ export default function configureAppStore(initialState) {
                 throw new Error('Offline Action: effect must be a function.');
             } else if (!action.meta.offline.commit) {
                 throw new Error('Offline Action: commit action must be present.');
-            }
-
-            if (action.meta.offline.canTimeout) {
-                const defaultTimeout = 10000;
-                const timeout = action.meta.offline.timeout || defaultTimeout;
-
-                return promiseTimeout(effect(), timeout);
             }
 
             return effect();
