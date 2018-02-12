@@ -66,8 +66,14 @@ export default class SearchBarAndroid extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
+            value: props.value,
             isFocused: false
         };
+    }
+    componentWillReceiveProps(nextProps) {
+        if (this.state.value !== nextProps.value) {
+            this.setState({value: nextProps.value});
+        }
     }
 
     cancel = () => {
@@ -102,7 +108,9 @@ export default class SearchBarAndroid extends PureComponent {
     };
 
     onChangeText = (value) => {
-        this.props.onChangeText(value);
+        this.setState({value}, () => {
+            this.props.onChangeText(value);
+        });
     };
 
     onSelectionChange = (event) => {
@@ -196,7 +204,7 @@ export default class SearchBarAndroid extends PureComponent {
                     <TextInput
                         ref='input'
                         blurOnSubmit={blurOnSubmit}
-                        value={value}
+                        value={this.state.value}
                         autoCapitalize={autoCapitalize}
                         autoCorrect={false}
                         returnKeyType={returnKeyType || 'search'}

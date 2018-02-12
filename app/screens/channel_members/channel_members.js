@@ -253,14 +253,14 @@ class ChannelMembers extends PureComponent {
     };
 
     searchProfiles = (text) => {
-        const term = text.toLowerCase();
+        const term = text;
 
         if (term) {
             this.setState({searching: true, term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.props.actions.searchProfiles(term, {in_channel_id: this.props.currentChannel.id});
+                this.props.actions.searchProfiles(term.toLowerCase(), {in_channel_id: this.props.currentChannel.id});
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
