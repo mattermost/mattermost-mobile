@@ -153,7 +153,11 @@ class MoreChannels extends PureComponent {
 
         if (term) {
             const channels = this.filterChannels(this.state.channels, term);
-            this.setState({channels, term, searching: true});
+            this.setState({
+                channels,
+                term: text,
+                searching: true
+            });
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {

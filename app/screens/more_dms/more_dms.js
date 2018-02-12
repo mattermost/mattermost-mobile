@@ -162,14 +162,14 @@ class MoreDirectMessages extends PureComponent {
     };
 
     onSearch = (text) => {
-        const term = text.toLowerCase();
+        const term = text;
 
         if (term) {
             this.setState({searching: true, term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                this.searchProfiles(term);
+                this.searchProfiles(term.toLowerCase());
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();

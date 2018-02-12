@@ -205,7 +205,7 @@ class ChannelAddMembers extends PureComponent {
     };
 
     searchProfiles = (text) => {
-        const term = text.toLowerCase();
+        const term = text;
         const {actions, currentChannel, currentTeam} = this.props;
 
         if (term) {
@@ -213,7 +213,7 @@ class ChannelAddMembers extends PureComponent {
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
-                actions.searchProfiles(term, {not_in_channel_id: currentChannel.id, team_id: currentTeam.id});
+                actions.searchProfiles(term.toLowerCase(), {not_in_channel_id: currentChannel.id, team_id: currentTeam.id});
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
