@@ -277,6 +277,32 @@ function cleanupState(action, keepCurrent = false) {
         }
     });
 
+    // remove any pending posts that hasn't failed
+    if (payload.entities.posts && payload.entities.posts.pendingPostIds.length) {
+        const nextPendingPostIds = [...payload.entities.posts.pendingPostIds];
+        payload.entities.posts.pendingPostIds.forEach((id) => {
+            const posts = nextEntitites.posts.posts;
+            const post = posts[id];
+
+            if (post) {
+                const postsInChannel = [...nextEntitites.posts.postsInChannel[post.channel_id]] || [];
+                if (!post.failed) {
+                    Reflect.deleteProperty(posts, id);
+                    const index = postsInChannel.indexOf(id);
+                    if (index !== -1) {
+                        postsInChannel.splice(index, 1);
+                        nextEntitites.posts.postsInChannel[post.channel_id] = postsInChannel;
+                    }
+                    removePendingPost(nextPendingPostIds, id);
+                }
+            } else {
+                removePendingPost(nextPendingPostIds, id);
+            }
+        });
+
+        nextEntitites.posts.pendingPostIds = nextPendingPostIds;
+    }
+
     const nextState = {
         app: resetPayload.app,
         entities: {
@@ -323,4 +349,11 @@ export function shareExtensionData() {
         }
         return nextAction;
     };
+}
+
+function removePendingPost(pendingPostIds, id) {
+    const pendingIndex = pendingPostIds.indexOf(id);
+    if (pendingIndex !== -1) {
+        pendingPostIds.splice(pendingIndex, 1);
+    }
 }
