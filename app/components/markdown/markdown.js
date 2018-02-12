@@ -25,6 +25,7 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 import MarkdownTable from './markdown_table';
+import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow from './markdown_table_row';
 import MarkdownTableCell from './markdown_table_cell';
 import {addListItemIndices, pullOutImages} from './transform';
@@ -131,6 +132,21 @@ export default class Markdown extends PureComponent {
     }
 
     renderImage = ({linkDestination, reactChildren, context, src}) => {
+        if (context.indexOf('table') !== -1) {
+            // We have enough problems rendering images as is, so just render a link inside of a table
+            return (
+                <MarkdownTableImage
+                    linkDestination={linkDestination}
+                    onLongPress={this.props.onLongPress}
+                    source={src}
+                    textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.link]}
+                    navigator={this.props.navigator}
+                >
+                    {reactChildren}
+                </MarkdownTableImage>
+            );
+        }
+
         return (
             <MarkdownImage
                 linkDestination={linkDestination}

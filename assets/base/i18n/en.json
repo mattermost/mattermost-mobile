@@ -2141,6 +2141,8 @@
   "mobile.routes.selectTeam": "Select Team",
   "mobile.routes.settings": "Settings",
   "mobile.routes.sso": "Single Sign-On",
+  "mobile.routes.table": "Table",
+  "mobile.routes.tableImage": "Image",
   "mobile.routes.thread": "{channelName} Thread",
   "mobile.routes.thread_dm": "Direct Message Thread",
   "mobile.routes.user_profile": "Profile",

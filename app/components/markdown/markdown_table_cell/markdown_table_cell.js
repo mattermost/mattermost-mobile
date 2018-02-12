@@ -3,7 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -22,7 +22,13 @@ export default class MarkdownTableCell extends React.PureComponent {
             cellStyle.push(style.heading);
         }
 
-        return <View style={cellStyle}>{this.props.children}</View>;
+        return (
+            <View style={cellStyle}>
+                <Text>
+                    {this.props.children}
+                </Text>
+            </View>
+        );
     }
 }
 
