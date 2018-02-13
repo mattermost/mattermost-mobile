@@ -1,5 +1,14 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.6.1 Release
+- Release Date: February 13, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+- Fixed an issue preventing the app from going to the correct channel when opened from a push notification
+- Fixed an issue on Android devices where the app could sometimes freeze on the launch screen
+- Fixed an issue on Samsung devices causing extra letters to be insterted when typing to filter user lists
+
 ## v1.6.0 Release
 - Release Date: February 6, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
