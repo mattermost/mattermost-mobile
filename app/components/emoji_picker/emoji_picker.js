@@ -162,9 +162,15 @@ export default class EmojiPicker extends PureComponent {
     };
 
     changeSearchTerm = (text) => {
-        this.setState({
+        const nextState = {
             searchTerm: text
-        });
+        };
+
+        if (!text) {
+            nextState.currentSectionIndex = 0;
+        }
+
+        this.setState(nextState);
 
         clearTimeout(this.searchTermTimeout);
         const timeout = text ? 100 : 0;
@@ -181,6 +187,7 @@ export default class EmojiPicker extends PureComponent {
 
     cancelSearch = () => {
         this.setState({
+            currentSectionIndex: 0,
             filteredEmojis: [],
             searchTerm: ''
         });
