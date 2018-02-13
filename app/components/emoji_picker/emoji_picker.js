@@ -83,7 +83,7 @@ export default class EmojiPicker extends PureComponent {
             filteredEmojis: [],
             searchTerm: '',
             currentSectionIndex: 0,
-            missingPages: true
+            missingPages: isMinimumServerVersion(this.props.serverVersion, 4, 7)
         };
     }
 
@@ -248,7 +248,7 @@ export default class EmojiPicker extends PureComponent {
     };
 
     loadMoreCustomEmojis = async () => {
-        if (!this.props.customEmojisEnabled) {
+        if (!this.props.customEmojisEnabled || !isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
             return;
         }
 
@@ -338,9 +338,13 @@ export default class EmojiPicker extends PureComponent {
         );
     };
 
-    handleSectionIconPress = (index) => {
+    handleSectionIconPress = (index, isCustomSection = false) => {
         this.scrollToSectionTries = 0;
         this.scrollToSection(index);
+
+        if (isCustomSection && this.props.customEmojiPage === 0) {
+            this.loadMoreCustomEmojis();
+        }
     }
 
     renderSectionIcons = () => {
@@ -348,7 +352,7 @@ export default class EmojiPicker extends PureComponent {
         const styles = getStyleSheetFromTheme(theme);
 
         return this.state.emojis.map((section, index) => {
-            const onPress = () => this.handleSectionIconPress(index);
+            const onPress = () => this.handleSectionIconPress(index, section.key === 'custom');
 
             return (
                 <TouchableOpacity
