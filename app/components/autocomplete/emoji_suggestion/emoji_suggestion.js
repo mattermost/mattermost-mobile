@@ -10,7 +10,6 @@ import {
     View
 } from 'react-native';
 
-import {Client4} from 'mattermost-redux/client';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
@@ -34,7 +33,8 @@ export default class EmojiSuggestion extends Component {
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
         rootId: PropTypes.string,
-        value: PropTypes.string
+        value: PropTypes.string,
+        serverVersion: PropTypes.string
     };
 
     static defaultProps = {
@@ -73,16 +73,30 @@ export default class EmojiSuggestion extends Component {
         }
 
         const oldMatchTerm = this.matchTerm;
-        this.matchTerm = match[3];
+        this.matchTerm = match[3] || '';
 
-        const pre47 = !isMinimumServerVersion(Client4.getServerVersion(), 4, 7);
+        // If we're server version 4.7 or higher
+        if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
+            if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
+                this.props.actions.autocompleteCustomEmojis(this.matchTerm);
+                return;
+            }
 
-        if (!pre47 && this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
-            this.props.actions.autocompleteCustomEmojis(this.matchTerm);
+            if (this.props.emojis !== nextProps.emojis) {
+                this.handleFuzzySearch(this.matchTerm, nextProps);
+            } else if (!this.matchTerm.length) {
+                const initialEmojis = [...nextProps.emojis];
+                initialEmojis.splice(0, 300);
+                const data = initialEmojis.sort();
+
+                this.setEmojiData(data);
+            }
+
             return;
         }
 
-        if (pre47 || this.props.emojis !== nextProps.emojis) {
+        // If we're server version 4.6 or lower
+        if (this.matchTerm !== oldMatchTerm) {
             this.handleFuzzySearch(this.matchTerm, nextProps);
         } else if (!this.matchTerm.length) {
             const initialEmojis = [...nextProps.emojis];

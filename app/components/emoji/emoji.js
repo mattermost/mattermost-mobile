@@ -8,8 +8,7 @@ import {
     PixelRatio,
     Platform,
     StyleSheet,
-    Text,
-    View
+    Text
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -158,27 +157,20 @@ export default class Emoji extends React.PureComponent {
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
 
-        if (!imageUrl) {
-            let BlankComponent;
-            if (Platform.OS === 'android') {
-                BlankComponent = Image;
-            } else {
-                BlankComponent = View;
-            }
-
-            return (
-                <BlankComponent
-                    key={key}
-                    style={{width, height, marginTop}}
-                />
-            );
-        }
-
         let ImageComponent;
         if (Platform.OS === 'android') {
             ImageComponent = Image;
         } else {
             ImageComponent = FastImage;
+        }
+
+        if (!imageUrl) {
+            return (
+                <ImageComponent
+                    key={key}
+                    style={{width, height, marginTop}}
+                />
+            );
         }
 
         return (

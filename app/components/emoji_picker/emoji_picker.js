@@ -18,6 +18,8 @@ import DeviceInfo from 'react-native-device-info';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -44,6 +46,7 @@ export default class EmojiPicker extends PureComponent {
         theme: PropTypes.object.isRequired,
         customEmojisEnabled: PropTypes.bool.isRequired,
         customEmojiPage: PropTypes.number.isRequired,
+        serverVersion: PropTypes.string,
         actions: PropTypes.shape({
             getCustomEmojis: PropTypes.func.isRequired,
             incrementEmojiPickerPage: PropTypes.func.isRequired,
@@ -166,7 +169,9 @@ export default class EmojiPicker extends PureComponent {
         clearTimeout(this.searchTermTimeout);
         const timeout = text ? 100 : 0;
         this.searchTermTimeout = setTimeout(async () => {
-            await this.props.actions.searchCustomEmojis(text);
+            if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
+                await this.props.actions.searchCustomEmojis(text);
+            }
             const filteredEmojis = this.searchEmojis(text);
             this.setState({
                 filteredEmojis
@@ -363,8 +368,11 @@ export default class EmojiPicker extends PureComponent {
             return null;
         }
 
+        const {theme} = this.props;
+
+        const styles = getStyleSheetFromTheme(theme);
         return (
-            <View style={{flex: 1, alignItems: 'center'}}>
+            <View style={styles.loading}>
                 <ActivityIndicator/>
             </View>
         );
@@ -567,6 +575,10 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             flex: 1
+        },
+        loading: {
+            flex: 1,
+            alignItems: 'center'
         }
     };
 });

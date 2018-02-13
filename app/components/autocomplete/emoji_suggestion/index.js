@@ -44,7 +44,8 @@ function mapStateToProps(state) {
     return {
         fuse,
         emojis,
-        theme: getTheme(state)
+        theme: getTheme(state),
+        serverVersion: state.entities.general.serverVersion
     };
 }
 
