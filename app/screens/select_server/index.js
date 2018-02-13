@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getPing, resetPing} from 'mattermost-redux/actions/general';
+import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {loadConfigAndLicense} from 'app/actions/views/root';
@@ -37,7 +37,8 @@ function mapDispatchToProps(dispatch) {
             handleServerUrlChanged,
             loadConfigAndLicense,
             resetPing,
-            setLastUpgradeCheck
+            setLastUpgradeCheck,
+            setServerVersion
         }, dispatch)
     };
 }
