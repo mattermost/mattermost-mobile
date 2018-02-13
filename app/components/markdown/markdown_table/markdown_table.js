@@ -108,6 +108,7 @@ export default class MarkdownTable extends React.PureComponent {
                     onContentSizeChange={this.handleContentHeightChange}
                     style={style.container}
                     scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
                 >
                     {this.renderRows(false)}
                 </ScrollView>
