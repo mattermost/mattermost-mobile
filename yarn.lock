@@ -1702,9 +1702,9 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
 
-commonmark-react-renderer@hmhealey/commonmark-react-renderer#tables:
+commonmark-react-renderer@hmhealey/commonmark-react-renderer:
   version "4.3.3"
-  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/30c05832393d97009c1cb1081bf41e78a847c1ac"
+  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/86fa63f898802953842526c2030f3b63c5d1ae7a"
   dependencies:
     in-publish "^2.0.0"
     lodash.assign "^4.2.0"

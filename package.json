@@ -10,7 +10,7 @@
     "analytics-react-native": "1.2.0",
     "babel-polyfill": "6.26.0",
     "commonmark": "hmhealey/commonmark.js",
-    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer#tables",
+    "commonmark-react-renderer": "hmhealey/commonmark-react-renderer",
     "deep-equal": "1.0.1",
     "fuse.js": "^3.2.0",
     "intl": "1.2.5",
