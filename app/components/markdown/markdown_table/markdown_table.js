@@ -3,7 +3,7 @@
 
 import {PropTypes} from 'prop-types';
 import React from 'react';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     ScrollView,
     TouchableOpacity,
@@ -14,17 +14,17 @@ import LinearGradient from 'react-native-linear-gradient';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-// import mattermostManaged from 'app/mattermost_managed';
-
 const MAX_HEIGHT = 120;
 
-class MarkdownTable extends React.PureComponent {
+export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
-        onLongPress: PropTypes.func
+        theme: PropTypes.object.isRequired
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired
     };
 
     constructor(props) {
@@ -36,11 +36,11 @@ class MarkdownTable extends React.PureComponent {
     }
 
     handlePress = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'Table',
-            title: intl.formatMessage({
+            title: this.context.intl.formatMessage({
                 id: 'mobile.routes.table',
                 defaultMessage: 'Table'
             }),
@@ -57,30 +57,6 @@ class MarkdownTable extends React.PureComponent {
             }
         });
     });
-
-    handleLongPress = async () => {
-        if (!this.props.onLongPress) {
-            return;
-        }
-
-        // const {formatMessage} = this.props.intl;
-
-        // const config = await mattermostManaged.getLocalConfig();
-
-        // let action;
-        // if (config.copyAndPasteProtection !== 'true') {
-        //     action = {
-        //         text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
-        //         onPress: this.handleCopyCode
-        //     };
-        // }
-
-        // this.props.onLongPress(action);
-    }
-
-    // handleCopyCode = () => {
-    //     Clipboard.setString(this.props.content);
-    // }
 
     handleContentHeightChange = (contentWidth, contentHeight) => {
         this.setState({
@@ -127,10 +103,7 @@ class MarkdownTable extends React.PureComponent {
         }
 
         return (
-            <TouchableOpacity
-                onPress={this.handlePress}
-                onLongPress={this.handleLongPress}
-            >
+            <TouchableOpacity onPress={this.handlePress}>
                 <ScrollView
                     onContentSizeChange={this.handleContentHeightChange}
                     style={style.container}
@@ -170,5 +143,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         }
     };
 });
-
-export default injectIntl(MarkdownTable);

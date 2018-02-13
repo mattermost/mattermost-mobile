@@ -3,32 +3,32 @@
 
 import {PropTypes} from 'prop-types';
 import React from 'react';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 
-// import mattermostManaged from 'app/mattermost_managed';
-
-class MarkdownTableImage extends React.PureComponent {
+export default class MarkdownTableImage extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         source: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style.isRequired,
-        onLongPress: PropTypes.func.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         serverURL: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired
+    };
+
     handlePress = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'TableImage',
-            title: intl.formatMessage({
+            title: this.context.intl.formatMessage({
                 id: 'mobile.routes.tableImage',
                 defaultMessage: 'Image'
             }),
@@ -46,30 +46,6 @@ class MarkdownTableImage extends React.PureComponent {
         });
     });
 
-    handleLongPress = async () => {
-        if (!this.props.onLongPress) {
-            return;
-        }
-
-        // const {formatMessage} = this.props.intl;
-
-        // const config = await mattermostManaged.getLocalConfig();
-
-        // let action;
-        // if (config.copyAndPasteProtection !== 'true') {
-        //     action = {
-        //         text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
-        //         onPress: this.handleCopyCode
-        //     };
-        // }
-
-        // this.props.onLongPress(action);
-    }
-
-    // handleCopyCode = () => {
-    //     Clipboard.setString(this.props.content);
-    // }
-
     getImageSource = () => {
         let source = this.props.source;
 
@@ -84,7 +60,6 @@ class MarkdownTableImage extends React.PureComponent {
         return (
             <Text
                 onPress={this.handlePress}
-                onLongPress={this.handleLongPress}
                 style={this.props.textStyle}
             >
                 {this.props.children}
@@ -92,5 +67,3 @@ class MarkdownTableImage extends React.PureComponent {
         );
     }
 }
-
-export default injectIntl(MarkdownTableImage);

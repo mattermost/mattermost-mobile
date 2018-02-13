@@ -309,9 +309,7 @@ export default class Markdown extends PureComponent {
 
     renderTable = ({children}) => {
         return (
-            <MarkdownTable
-                navigator={this.props.navigator}
-            >
+            <MarkdownTable navigator={this.props.navigator}>
                 {children}
             </MarkdownTable>
         );
