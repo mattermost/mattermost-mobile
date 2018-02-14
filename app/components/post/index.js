@@ -5,13 +5,15 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
+import {General} from 'mattermost-redux/constants';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {canDeletePost, canEditPost, isPostFlagged} from 'mattermost-redux/utils/post_utils';
-import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
@@ -19,7 +21,7 @@ import {getDimensions} from 'app/selectors/device';
 
 import Post from './post';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state, ownProps) {//eslint-disable-line complexity
     const post = getPost(state, ownProps.postId);
 
     const {config, license} = state.entities.general;
@@ -27,7 +29,7 @@ function mapStateToProps(state, ownProps) {
     const myPreferences = getMyPreferences(state);
     const currentUserId = getCurrentUserId(state);
     const currentTeamId = getCurrentTeamId(state);
-    const currentChannelId = getCurrentChannelId(state);
+    const currentChannel = getCurrentChannel(state);
 
     let isFirstReply = true;
     let isLastReply = true;
@@ -56,14 +58,24 @@ function mapStateToProps(state, ownProps) {
 
     const {deviceWidth} = getDimensions(state);
 
+    const isAdmin = checkIsAdmin(roles);
+    const isChannelAdmin = checkIsChannelAdmin(roles);
+    const isSystemAdmin = checkIsSystemAdmin(roles);
+
     let canDelete = false;
     let canEdit = false;
     if (post) {
-        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin(roles), isSystemAdmin(roles));
-        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannel.id, currentUserId, post, isAdmin, isSystemAdmin);
+        canEdit = canEditPost(state, config, license, currentTeamId, currentChannel.id, currentUserId, post);
+    }
+
+    let channelIsReadOnly = false;
+    if (currentChannel.name === General.DEFAULT_CHANNEL) {
+        channelIsReadOnly = config.ExperimentalTownSquareIsReadOnly === 'true' && !(isAdmin && !isSystemAdmin && !isChannelAdmin);
     }
 
     return {
+        channelIsReadOnly,
         config,
         canDelete,
         canEdit,

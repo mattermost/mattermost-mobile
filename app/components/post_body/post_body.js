@@ -37,6 +37,7 @@ export default class PostBody extends PureComponent {
         }).isRequired,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
+        channelIsReadOnly: PropTypes.bool.isRequired,
         fileIds: PropTypes.array,
         hasBeenDeleted: PropTypes.bool,
         hasBeenEdited: PropTypes.bool,

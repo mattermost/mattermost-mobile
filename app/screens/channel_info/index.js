@@ -35,7 +35,7 @@ import {
 
 import ChannelInfo from './channel_info';
 
-function mapStateToProps(state) {
+function mapStateToProps(state) {//eslint-disable-line complexity
     const {config, license} = state.entities.general;
     const currentChannel = getCurrentChannel(state) || {};
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
@@ -54,6 +54,11 @@ function mapStateToProps(state) {
     if (currentChannel.type === General.DM_CHANNEL) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         status = getStatusForUserId(state, teammateId);
+    }
+
+    let canEditChannel = showManagementOptions(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles));
+    if (currentChannel.name === General.DEFAULT_CHANNEL) {
+        canEditChannel = (isAdmin(roles) || isSystemAdmin(roles) || isChannelAdmin(roles)) || config.ExperimentalTownSquareIsReadOnly !== 'true';
     }
 
     return {

@@ -39,6 +39,7 @@ export default class Post extends PureComponent {
             insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
         }).isRequired,
+        channelIsReadOnly: PropTypes.bool,
         config: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -70,6 +71,7 @@ export default class Post extends PureComponent {
     static defaultProps = {
         isSearchResult: false,
         showLongPost: false,
+        channelIsReadOnly: false,
     };
 
     static contextTypes = {
@@ -377,6 +379,7 @@ export default class Post extends PureComponent {
 
     render() {
         const {
+            channelIsReadOnly,
             commentedOnPost,
             highlight,
             isLastReply,
@@ -443,6 +446,7 @@ export default class Post extends PureComponent {
                                 canDelete={this.props.canDelete}
                                 canEdit={this.state.canEdit}
                                 highlight={highlight}
+                                channelIsReadOnly={channelIsReadOnly}
                                 isSearchResult={isSearchResult}
                                 navigator={this.props.navigator}
                                 onAddReaction={this.handleAddReaction}
