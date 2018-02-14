@@ -462,6 +462,20 @@
 			remoteGlobalIDString = 4681C02C1B05271A004D67D4;
 			remoteInfo = ToolTipMenuTests;
 		};
+		7F6FF6B4203499F400150948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = EBF21BDC1FC498900052F4D5;
+			remoteInfo = jsinspector;
+		};
+		7F6FF6B6203499F400150948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = EBF21BFA1FC4989A0052F4D5;
+			remoteInfo = "jsinspector-tvOS";
+		};
 		7F7D7F86201645D300D31155 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7F7D7F52201645D300D31155 /* ReactNativePermissions.xcodeproj */;
@@ -963,6 +977,8 @@
 				3DAD3EAB1DF850E9000B6D8A /* libcxxreact.a */,
 				3DAD3EAD1DF850E9000B6D8A /* libjschelpers.a */,
 				3DAD3EAF1DF850E9000B6D8A /* libjschelpers.a */,
+				7F6FF6B5203499F400150948 /* libjsinspector.a */,
+				7F6FF6B7203499F400150948 /* libjsinspector-tvOS.a */,
 				37DF8AF21F5F0D430079BF89 /* libthird-party.a */,
 				37DF8AF41F5F0D430079BF89 /* libthird-party.a */,
 				37DF8AF61F5F0D430079BF89 /* libdouble-conversion.a */,
@@ -1975,6 +1991,20 @@
 			fileType = wrapper.cfbundle;
 			path = ToolTipMenuTests.xctest;
 			remoteRef = 7F6877B11E7835E50094B63F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7F6FF6B5203499F400150948 /* libjsinspector.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libjsinspector.a;
+			remoteRef = 7F6FF6B4203499F400150948 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7F6FF6B7203499F400150948 /* libjsinspector-tvOS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libjsinspector-tvOS.a";
+			remoteRef = 7F6FF6B6203499F400150948 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		7F7D7F87201645D300D31155 /* libReactNativePermissions.a */ = {
