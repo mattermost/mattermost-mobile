@@ -68,6 +68,8 @@
 	<string>Upload Photos and Videos to your Mattermost instance or save them to your device</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Send voice messages to your Mattermost instance</string>
+	<key>NSAppleMusicUsageDescription</key>
+    <string>Let Mattermost access your Media files</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>
@@ -110,7 +112,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>kTCCServiceMediaLibrary</key>
-	<string>Let Mattermost access your Media files</string>
 </dict>
 </plist>
