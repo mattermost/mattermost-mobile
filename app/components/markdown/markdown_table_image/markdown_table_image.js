@@ -50,7 +50,7 @@ export default class MarkdownTableImage extends React.PureComponent {
         let source = this.props.source;
 
         if (source.startsWith('/')) {
-            source = this.props.serverURL + '/' + source;
+            source = `${this.props.serverURL}/${source}`;
         }
 
         return source;
