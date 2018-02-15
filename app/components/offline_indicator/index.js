@@ -15,12 +15,14 @@ function mapStateToProps(state) {
     const {websocket} = state.requests.general;
     const webSocketStatus = websocket.status;
     const isConnecting = websocket.error > 1;
+    const {config} = state.entities.general;
 
     return {
         isConnecting,
         isLandscape: isLandscape(state),
         isOnline: getConnection(state),
-        webSocketStatus
+        webSocketStatus,
+        config
     };
 }
 

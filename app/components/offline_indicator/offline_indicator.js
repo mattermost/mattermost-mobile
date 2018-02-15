@@ -42,7 +42,8 @@ export default class OfflineIndicator extends Component {
         isConnecting: PropTypes.bool,
         isLandscape: PropTypes.bool,
         isOnline: PropTypes.bool,
-        webSocketStatus: PropTypes.string
+        webSocketStatus: PropTypes.string,
+        config: PropTypes.object
     };
 
     static defaultProps: {
@@ -95,7 +96,7 @@ export default class OfflineIndicator extends Component {
             this.setState({network: CONNECTING}, () => {
                 if (result) {
                     this.props.actions.connection(true);
-                    this.props.actions.initWebSocket(Platform.OS);
+                    this.props.actions.initWebSocket(Platform.OS, this.props.config.WebsocketURL);
                 } else {
                     this.setState({network: OFFLINE});
                 }

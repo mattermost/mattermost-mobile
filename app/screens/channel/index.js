@@ -24,12 +24,14 @@ import Channel from './channel';
 
 function mapStateToProps(state) {
     const {myChannels: channelsRequest} = state.requests.channels;
+    const {config} = state.entities.general;
 
     return {
         channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
+        config
     };
 }
 
