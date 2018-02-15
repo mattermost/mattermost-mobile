@@ -5,14 +5,14 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    ActivityIndicator,
     FlatList,
     KeyboardAvoidingView,
     Platform,
     SectionList,
     Text,
     TouchableOpacity,
-    View,
-    ActivityIndicator
+    View
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -37,16 +37,16 @@ const EMOJIS_PER_PAGE = 200;
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
-        fuse: PropTypes.object.isRequired,
-        emojis: PropTypes.array.isRequired,
-        emojisBySection: PropTypes.array.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
-        onEmojiPress: PropTypes.func,
-        theme: PropTypes.object.isRequired,
         customEmojisEnabled: PropTypes.bool.isRequired,
         customEmojiPage: PropTypes.number.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
+        emojis: PropTypes.array.isRequired,
+        emojisBySection: PropTypes.array.isRequired,
+        fuse: PropTypes.object.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
+        onEmojiPress: PropTypes.func,
         serverVersion: PropTypes.string,
+        theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             getCustomEmojis: PropTypes.func.isRequired,
             incrementEmojiPickerPage: PropTypes.func.isRequired,
