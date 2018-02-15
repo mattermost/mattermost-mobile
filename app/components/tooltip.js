@@ -27,12 +27,25 @@ export default class ToolTip extends PureComponent {
         setToolTipVisible();
     };
 
+    hideMenu = () => {
+        if (this.refs.toolTip) {
+            this.refs.toolTip.hideMenu();
+        }
+    };
+
+    showMenu = () => {
+        if (this.refs.toolTip) {
+            this.refs.toolTip.showMenu();
+        }
+    };
+
     render() {
         return (
             <RNToolTip
                 {...this.props}
                 onHide={this.handleHide}
                 onShow={this.handleShow}
+                ref='toolTip'
             />
         );
     }
