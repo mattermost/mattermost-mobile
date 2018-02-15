@@ -10,6 +10,8 @@ import {
     View
 } from 'react-native';
 
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import Emoji from 'app/components/emoji';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -20,7 +22,8 @@ const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
 export default class EmojiSuggestion extends Component {
     static propTypes = {
         actions: PropTypes.shape({
-            addReactionToLatestPost: PropTypes.func.isRequired
+            addReactionToLatestPost: PropTypes.func.isRequired,
+            autocompleteCustomEmojis: PropTypes.func.isRequired
         }).isRequired,
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
@@ -30,7 +33,8 @@ export default class EmojiSuggestion extends Component {
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
         rootId: PropTypes.string,
-        value: PropTypes.string
+        value: PropTypes.string,
+        serverVersion: PropTypes.string
     };
 
     static defaultProps = {
@@ -43,6 +47,12 @@ export default class EmojiSuggestion extends Component {
         dataSource: []
     };
 
+    constructor(props) {
+        super(props);
+
+        this.matchTerm = '';
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.isSearch) {
             return;
@@ -54,7 +64,6 @@ export default class EmojiSuggestion extends Component {
         if (!match || this.state.emojiComplete) {
             this.setState({
                 active: false,
-                matchTerm: null,
                 emojiComplete: false
             });
 
@@ -63,18 +72,33 @@ export default class EmojiSuggestion extends Component {
             return;
         }
 
-        const matchTerm = match[3];
+        const oldMatchTerm = this.matchTerm;
+        this.matchTerm = match[3] || '';
 
-        const matchTermChanged = matchTerm !== this.state.matchTerm;
-        if (matchTermChanged) {
-            this.setState({
-                matchTerm
-            });
+        // If we're server version 4.7 or higher
+        if (isMinimumServerVersion(this.props.serverVersion, 4, 7)) {
+            if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
+                this.props.actions.autocompleteCustomEmojis(this.matchTerm);
+                return;
+            }
+
+            if (this.props.emojis !== nextProps.emojis) {
+                this.handleFuzzySearch(this.matchTerm, nextProps);
+            } else if (!this.matchTerm.length) {
+                const initialEmojis = [...nextProps.emojis];
+                initialEmojis.splice(0, 300);
+                const data = initialEmojis.sort();
+
+                this.setEmojiData(data);
+            }
+
+            return;
         }
 
-        if (matchTermChanged) {
-            this.handleFuzzySearch(matchTerm, nextProps);
-        } else if (!matchTerm.length) {
+        // If we're server version 4.6 or lower
+        if (this.matchTerm !== oldMatchTerm) {
+            this.handleFuzzySearch(this.matchTerm, nextProps);
+        } else if (!this.matchTerm.length) {
             const initialEmojis = [...nextProps.emojis];
             initialEmojis.splice(0, 300);
             const data = initialEmojis.sort();

@@ -40,7 +40,8 @@ class SelectServer extends PureComponent {
             handleServerUrlChanged: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
-            setLastUpgradeCheck: PropTypes.func.isRequired
+            setLastUpgradeCheck: PropTypes.func.isRequired,
+            setServerVersion: PropTypes.func.isRequired
         }).isRequired,
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
@@ -214,7 +215,8 @@ class SelectServer extends PureComponent {
         const {
             getPing,
             handleServerUrlChanged,
-            loadConfigAndLicense
+            loadConfigAndLicense,
+            setServerVersion
         } = this.props.actions;
 
         this.setState({
@@ -245,6 +247,7 @@ class SelectServer extends PureComponent {
 
             if (!result.error) {
                 loadConfigAndLicense();
+                setServerVersion(Client4.getServerVersion());
             }
 
             this.setState({
