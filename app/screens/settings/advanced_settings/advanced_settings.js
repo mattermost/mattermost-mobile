@@ -129,7 +129,6 @@ class AdvancedSettings extends PureComponent {
             <View>
                 <SettingsItem
                     defaultMessage='Throw JavaScript Exception'
-                    i18nId='mobile.advanced_settings.throw_javascript_exception'
                     iconName='md-flame'
                     iconType='ion'
                     onPress={Sentry.crash}
@@ -140,7 +139,6 @@ class AdvancedSettings extends PureComponent {
                 <View style={style.divider}/>
                 <SettingsItem
                     defaultMessage='Throw Native Exception'
-                    i18nId='mobile.advanced_settings.throw_native_exception'
                     iconName='md-nuclear'
                     iconType='ion'
                     onPress={Sentry.nativeCrash}

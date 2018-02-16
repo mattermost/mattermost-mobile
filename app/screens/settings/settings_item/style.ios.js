@@ -53,6 +53,9 @@ export default makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1
+        },
+        destructor: {
+            color: theme.errorTextColor
         }
     };
 });

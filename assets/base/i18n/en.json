@@ -1934,8 +1934,6 @@
   "mobile.advanced_settings.reset_button": "Reset",
   "mobile.advanced_settings.reset_message": "\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n",
   "mobile.advanced_settings.reset_title": "Reset Cache",
-  "mobile.advanced_settings.throw_javascript_exception": "Throw JavaScript Exception",
-  "mobile.advanced_settings.throw_nuclear_exception": "Throw Nuclear Exception",
   "mobile.advanced_settings.title": "Advanced Settings",
   "mobile.android.camera_permission_denied_description": "To take photos and videos with your camera, please change your permission settings.",
   "mobile.android.camera_permission_denied_title": "Camera access is required",
