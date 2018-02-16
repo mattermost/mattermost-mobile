@@ -80,6 +80,11 @@ apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 if (System.getenv("SENTRY_ENABLED") == "true") {
+    project.ext.sentryCli = [
+        logLevel: "debug",
+        flavorAware: true
+    ]
+
     apply from: "../../node_modules/react-native-sentry/sentry.gradle"
 }
 

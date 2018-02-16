@@ -96,6 +96,11 @@ export default class Mattermost {
     }
 
     errorHandler = (e, isFatal) => {
+        if (!e) {
+            // This method gets called for propTypes errors in dev mode without an exception
+            return;
+        }
+
         console.warn('Handling Javascript error ' + JSON.stringify(e)); // eslint-disable-line no-console
         captureException(e, LOGGER_JAVASCRIPT, this.store);
 
