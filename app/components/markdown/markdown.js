@@ -24,6 +24,10 @@ import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
+import MarkdownTable from './markdown_table';
+import MarkdownTableImage from './markdown_table_image';
+import MarkdownTableRow from './markdown_table_row';
+import MarkdownTableCell from './markdown_table_cell';
 import {addListItemIndices, pullOutImages} from './transform';
 
 export default class Markdown extends PureComponent {
@@ -83,6 +87,10 @@ export default class Markdown extends PureComponent {
                 htmlBlock: this.renderHtml,
                 htmlInline: this.renderHtml,
 
+                table: this.renderTable,
+                table_row: MarkdownTableRow,
+                table_cell: MarkdownTableCell,
+
                 editedIndicator: this.renderEditedIndicator
             },
             renderParagraphsInLists: true,
@@ -124,6 +132,21 @@ export default class Markdown extends PureComponent {
     }
 
     renderImage = ({linkDestination, reactChildren, context, src}) => {
+        if (context.indexOf('table') !== -1) {
+            // We have enough problems rendering images as is, so just render a link inside of a table
+            return (
+                <MarkdownTableImage
+                    linkDestination={linkDestination}
+                    onLongPress={this.props.onLongPress}
+                    source={src}
+                    textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.link]}
+                    navigator={this.props.navigator}
+                >
+                    {reactChildren}
+                </MarkdownTableImage>
+            );
+        }
+
         return (
             <MarkdownImage
                 linkDestination={linkDestination}
@@ -284,6 +307,14 @@ export default class Markdown extends PureComponent {
         return rendered;
     }
 
+    renderTable = ({children}) => {
+        return (
+            <MarkdownTable navigator={this.props.navigator}>
+                {children}
+            </MarkdownTable>
+        );
+    }
+
     renderLink = ({children, href}) => {
         return (
             <MarkdownLink
@@ -337,7 +368,8 @@ export default class Markdown extends PureComponent {
                 ast.appendChild(node);
             }
         }
-        return <View>{this.renderer.render(ast)}</View>;
+
+        return this.renderer.render(ast);
     }
 }
 

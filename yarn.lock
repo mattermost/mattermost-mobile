@@ -1708,9 +1708,9 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
 
-commonmark-react-renderer@hmhealey/commonmark-react-renderer#1f078d53b7993d30b2762dd7d78fdd21ee84dd21:
+commonmark-react-renderer@hmhealey/commonmark-react-renderer:
   version "4.3.3"
-  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/1f078d53b7993d30b2762dd7d78fdd21ee84dd21"
+  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/86fa63f898802953842526c2030f3b63c5d1ae7a"
   dependencies:
     in-publish "^2.0.0"
     lodash.assign "^4.2.0"
@@ -1718,9 +1718,9 @@ commonmark-react-renderer@hmhealey/commonmark-react-renderer#1f078d53b7993d30b27
     pascalcase "^0.1.1"
     xss-filters "^1.2.6"
 
-commonmark@hmhealey/commonmark.js#dda6d89198252d5fd4bb04c4cc0668766c22fd77:
+commonmark@hmhealey/commonmark.js:
   version "0.28.0"
-  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/dda6d89198252d5fd4bb04c4cc0668766c22fd77"
+  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/f7bc747151e6d856ceffa196044112e23d04e541"
   dependencies:
     entities "~ 1.1.1"
     mdurl "~ 1.0.1"
