@@ -513,7 +513,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     selectTeam = (team, channel) => {
-        this.setState({channel, team});
+        this.setState({channel, team, error: null});
 
         // Update the channels for the team
         Client4.getMyChannels(team.id).then((channels) => {
@@ -523,7 +523,18 @@ export default class ExtensionPost extends PureComponent {
                 this.setState({channel: defaultChannel});
             }
         }).catch((error) => {
-            this.setState({error});
+            const {entities} = this.props;
+            if (entities.channels.channelsInTeam[team.id]) {
+                const townSquare = Object.values(entities.channels.channels).find((c) => {
+                    return c.name === General.DEFAULT_CHANNEL && c.team_id === team.id;
+                });
+
+                if (!channel) {
+                    this.setState({channel: townSquare});
+                }
+            } else {
+                this.setState({error});
+            }
         });
     };
 
