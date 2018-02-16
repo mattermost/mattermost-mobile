@@ -50,7 +50,8 @@ class Channel extends PureComponent {
         currentTeamId: PropTypes.string,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        config: PropTypes.object
     };
 
     componentWillMount() {
@@ -152,7 +153,7 @@ class Channel extends PureComponent {
         } = actions;
 
         if (isConnected) {
-            initWebSocket(Platform.OS);
+            initWebSocket(Platform.OS, this.props.config.WebsocketURL);
             startPeriodicStatusUpdates();
         } else {
             closeWebSocket(true);
