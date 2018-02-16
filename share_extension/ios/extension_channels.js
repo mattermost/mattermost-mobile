@@ -95,11 +95,14 @@ export default class ExtensionChannels extends PureComponent {
         this.setState({sections});
     };
 
+    cancelSearch = () => {
+        this.setState({term: ''});
+        this.buildSections();
+    };
+
     goBack = () => {
         this.props.navigator.pop();
     };
-
-    keyExtractor = (item) => item.id;
 
     loadChannels = async () => {
         try {
@@ -191,9 +194,9 @@ export default class ExtensionChannels extends PureComponent {
                 headerTextColor={changeOpacity(theme.centerChannelColor, 0.6)}
                 style={styles.flex}
             >
-                <TableView.Section>
+                <TableView.Header>
                     <TableView.Cell>{this.renderSearchBar(styles)}</TableView.Cell>
-                </TableView.Section>
+                </TableView.Header>
                 {this.renderSections()}
             </TableView>
         );
@@ -217,6 +220,7 @@ export default class ExtensionChannels extends PureComponent {
                     tintColorDelete={changeOpacity(theme.centerChannelColor, 0.3)}
                     titleCancelColor={theme.linkColor}
                     onChangeText={this.handleSearch}
+                    onCancelButtonPress={this.cancelSearch}
                     value={this.state.term}
                 />
             </View>
@@ -314,7 +318,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            paddingBottom: 2
+            paddingBottom: 2,
+            paddingHorizontal: 5
         },
         searchBarInput: {
             backgroundColor: '#fff',
