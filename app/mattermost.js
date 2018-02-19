@@ -22,6 +22,7 @@ import semver from 'semver';
 import {General} from 'mattermost-redux/constants';
 import {setAppState, setDeviceToken, setServerVersion} from 'mattermost-redux/actions/general';
 import {markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {setSystemEmojis} from 'mattermost-redux/actions/emojis';
 import {logError} from 'mattermost-redux/actions/errors';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
@@ -56,6 +57,7 @@ import {init as initAnalytics} from 'app/utils/segment';
 import {captureException, initializeSentry, LOGGER_JAVASCRIPT, LOGGER_NATIVE} from 'app/utils/sentry';
 import tracker from 'app/utils/time_tracker';
 import {stripTrailingSlashes} from 'app/utils/url';
+import {EmojiIndicesByAlias} from 'app/utils/emojis';
 
 import LocalConfig from 'assets/config';
 
@@ -90,6 +92,7 @@ export default class Mattermost {
 
         setJSExceptionHandler(this.errorHandler, false);
         setNativeExceptionHandler(this.nativeErrorHandler, false);
+        setSystemEmojis(EmojiIndicesByAlias);
     }
 
     errorHandler = (e, isFatal) => {

@@ -92,6 +92,9 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
         },
         error: {
             color: theme.errorTextColor
+        },
+        table_header_row: {
+            fontWeight: '700'
         }
     };
 });

@@ -16,6 +16,7 @@ import search from './search';
 import selectServer from './select_server';
 import team from './team';
 import thread from './thread';
+import emoji from './emoji';
 
 export default combineReducers({
     announcement,
@@ -30,5 +31,6 @@ export default combineReducers({
     search,
     selectServer,
     team,
-    thread
+    thread,
+    emoji
 });

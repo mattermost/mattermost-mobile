@@ -43,7 +43,8 @@ class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
             favoriteChannel: PropTypes.func.isRequired,
-            unfavoriteChannel: PropTypes.func.isRequired
+            unfavoriteChannel: PropTypes.func.isRequired,
+            getCustomEmojisInText: PropTypes.func.isRequired
         })
     };
 
@@ -57,6 +58,7 @@ class ChannelInfo extends PureComponent {
 
     componentDidMount() {
         this.props.actions.getChannelStats(this.props.currentChannel.id);
+        this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
     }
 
     componentWillReceiveProps(nextProps) {

@@ -145,7 +145,7 @@ class MarkdownCodeBlock extends React.PureComponent {
                 <FormattedText
                     style={style.plusMoreLinesText}
                     id='mobile.markdown.code.plusMoreLines'
-                    defaultMessage='+{count, number} more lines'
+                    defaultMessage='+{count, number} more {count, plural, one {line} other {lines}}'
                     values={{
                         count: numberOfLines - MAX_LINES
                     }}

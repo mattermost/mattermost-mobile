@@ -338,6 +338,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -348,6 +349,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -383,6 +385,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -434,7 +437,8 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
-            assert.deepEqual(actual, expected);
+            assert.equal(astToString(actual), astToString(expected));
+            assert.deepStrictEqual(actual, expected);
         });
 
         it('paragraph with multiple images', () => {
@@ -487,6 +491,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -643,6 +648,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -684,6 +690,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -745,6 +752,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -844,6 +852,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -917,6 +926,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -1131,6 +1141,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -1397,6 +1408,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -1699,7 +1711,8 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
-            assert.deepEqual(actual, expected);
+            assert.equal(astToString(actual), astToString(expected));
+            assert.deepStrictEqual(actual, expected);
         });
 
         it('simple link', () => {
@@ -1743,6 +1756,7 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
 
@@ -1808,6 +1822,157 @@ describe('Components.Markdown.transform', () => {
             const actual = pullOutImages(input);
 
             assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
+            assert.deepStrictEqual(actual, expected);
+        });
+
+        it('table', () => {
+            const input = makeAst({
+                type: 'document',
+                children: [{
+                    type: 'table',
+                    children: [{
+                        type: 'table_row',
+                        isHeading: true,
+                        children: [{
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }]
+                        }, {
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'text',
+                                literal: 'This is '
+                            }, {
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }, {
+                                type: 'text',
+                                literal: ' in a sentence.'
+                            }]
+                        }]
+                    }, {
+                        type: 'table_row',
+                        isHeading: true,
+                        children: [{
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'text',
+                                literal: 'This is '
+                            }, {
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }, {
+                                type: 'text',
+                                literal: ' in a sentence.'
+                            }]
+                        }, {
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }]
+                        }]
+                    }]
+                }]
+            });
+            const expected = makeAst({
+                type: 'document',
+                children: [{
+                    type: 'table',
+                    children: [{
+                        type: 'table_row',
+                        isHeading: true,
+                        children: [{
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }]
+                        }, {
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'text',
+                                literal: 'This is '
+                            }, {
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }, {
+                                type: 'text',
+                                literal: ' in a sentence.'
+                            }]
+                        }]
+                    }, {
+                        type: 'table_row',
+                        isHeading: true,
+                        children: [{
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'text',
+                                literal: 'This is '
+                            }, {
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }, {
+                                type: 'text',
+                                literal: ' in a sentence.'
+                            }]
+                        }, {
+                            type: 'table_cell',
+                            isHeading: true,
+                            children: [{
+                                type: 'image',
+                                destination: 'http://example.com/image',
+                                children: [{
+                                    type: 'text',
+                                    literal: 'image1'
+                                }]
+                            }]
+                        }]
+                    }]
+                }]
+            });
+            const actual = pullOutImages(input);
+
+            assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
     });

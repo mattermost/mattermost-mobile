@@ -278,7 +278,7 @@ function cleanupState(action, keepCurrent = false) {
     });
 
     // remove any pending posts that hasn't failed
-    if (payload.entities.posts && payload.entities.posts.pendingPostIds.length) {
+    if (payload.entities.posts && payload.entities.posts.pendingPostIds && payload.entities.posts.pendingPostIds.length) {
         const nextPendingPostIds = [...payload.entities.posts.pendingPostIds];
         payload.entities.posts.pendingPostIds.forEach((id) => {
             const posts = nextEntitites.posts.posts;

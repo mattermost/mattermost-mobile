@@ -13,9 +13,6 @@ import {
 import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
-
-import {Client4} from 'mattermost-redux/client';
 
 const scaleEmojiBasedOnDevice = (size) => {
     if (Platform.OS === 'ios') {
@@ -26,8 +23,26 @@ const scaleEmojiBasedOnDevice = (size) => {
 
 export default class Emoji extends React.PureComponent {
     static propTypes = {
-        customEmojis: PropTypes.object,
+
+        /*
+         * Emoji text name.
+         */
         emojiName: PropTypes.string.isRequired,
+
+        /*
+         * Image URL for the emoji.
+         */
+        imageUrl: PropTypes.string.isRequired,
+
+        /*
+         * Set if this is a custom emoji.
+         */
+        isCustomEmoji: PropTypes.bool.isRequired,
+
+        /*
+         * Set to render only the text and no image.
+         */
+        displayTextOnly: PropTypes.bool,
         literal: PropTypes.string,
         size: PropTypes.number,
         textStyle: CustomPropTypes.Style,
@@ -36,14 +51,15 @@ export default class Emoji extends React.PureComponent {
 
     static defaultProps = {
         customEmojis: new Map(),
-        literal: ''
+        literal: '',
+        imageUrl: '',
+        isCustomEmoji: false
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            ...this.getImageUrl(props),
             originalWidth: 0,
             originalHeight: 0
         };
@@ -51,51 +67,27 @@ export default class Emoji extends React.PureComponent {
 
     componentWillMount() {
         this.mounted = true;
-        if (this.state.imageUrl && this.state.isCustomEmoji) {
-            this.updateImageHeight(this.state.imageUrl);
+        if (!this.props.displayTextOnly && this.props.imageUrl && this.props.isCustomEmoji) {
+            this.updateImageHeight(this.props.imageUrl);
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.customEmojis !== this.props.customEmojis || nextProps.emojiName !== this.props.emojiName) {
+        if (nextProps.emojiName !== this.props.emojiName) {
             this.setState({
-                ...this.getImageUrl(nextProps),
                 originalWidth: 0,
                 originalHeight: 0
             });
         }
-    }
 
-    componentWillUpdate(nextProps, nextState) {
-        if (nextState.imageUrl !== this.state.imageUrl && nextState.imageUrl && nextState.isCustomEmoji) {
-            this.updateImageHeight(nextState.imageUrl);
+        if (!nextProps.displayTextOnly && nextProps.imageUrl && nextProps.isCustomEmoji &&
+                nextProps.imageUrl !== this.props.imageUrl) {
+            this.updateImageHeight(nextProps.imageUrl);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
-    }
-
-    getImageUrl = (props = this.props) => {
-        const emojiName = props.emojiName;
-
-        let imageUrl = '';
-        let isCustomEmoji = false;
-        if (EmojiIndicesByAlias.has(emojiName)) {
-            const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
-
-            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
-        } else if (props.customEmojis.has(emojiName)) {
-            const emoji = props.customEmojis.get(emojiName);
-
-            imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
-            isCustomEmoji = true;
-        }
-
-        return {
-            imageUrl,
-            isCustomEmoji
-        };
     }
 
     updateImageHeight = (imageUrl) => {
@@ -113,7 +105,9 @@ export default class Emoji extends React.PureComponent {
         const {
             literal,
             textStyle,
-            token
+            token,
+            imageUrl,
+            displayTextOnly
         } = this.props;
 
         let size = this.props.size;
@@ -124,19 +118,12 @@ export default class Emoji extends React.PureComponent {
             size = scaleEmojiBasedOnDevice(fontSize);
         }
 
-        if (!this.state.imageUrl) {
+        if (displayTextOnly) {
             return <Text style={textStyle}>{literal}</Text>;
         }
 
-        let ImageComponent;
-        if (Platform.OS === 'android') {
-            ImageComponent = Image;
-        } else {
-            ImageComponent = FastImage;
-        }
-
         const source = {
-            uri: this.state.imageUrl,
+            uri: imageUrl,
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -169,6 +156,22 @@ export default class Emoji extends React.PureComponent {
         // Android can't change the size of an image after its first render, so
         // force a new image to be rendered when the size changes
         const key = Platform.OS === 'android' ? (height + '-' + width) : null;
+
+        let ImageComponent;
+        if (Platform.OS === 'android') {
+            ImageComponent = Image;
+        } else {
+            ImageComponent = FastImage;
+        }
+
+        if (!imageUrl) {
+            return (
+                <ImageComponent
+                    key={key}
+                    style={{width, height, marginTop}}
+                />
+            );
+        }
 
         return (
             <ImageComponent

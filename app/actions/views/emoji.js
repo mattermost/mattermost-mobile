@@ -32,3 +32,13 @@ export function addRecentEmoji(emoji) {
         emoji
     };
 }
+
+export function incrementEmojiPickerPage() {
+    return async (dispatch) => {
+        dispatch({
+            type: ViewTypes.INCREMENT_EMOJI_PICKER_PAGE
+        });
+
+        return {data: true};
+    };
+}

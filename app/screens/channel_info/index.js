@@ -11,6 +11,7 @@ import {
 } from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
 import {favoriteChannel, getChannelStats, deleteChannel, unfavoriteChannel} from 'mattermost-redux/actions/channels';
 import {General} from 'mattermost-redux/constants';
 import {
@@ -68,7 +69,8 @@ function mapDispatchToProps(dispatch) {
             getChannelStats,
             leaveChannel,
             favoriteChannel,
-            unfavoriteChannel
+            unfavoriteChannel,
+            getCustomEmojisInText
         }, dispatch)
     };
 }

@@ -71,7 +71,7 @@ export default function configureAppStore(initialState) {
             };
         },
         null,
-        {whitelist: ['views']} // Only run this filter the views state (or any other entry that ends up being named views)
+        {whitelist: ['views']} // Only run this filter on the views state (or any other entry that ends up being named views)
     );
 
     const emojiBlackList = {nonExistentEmoji: true};
