@@ -34,6 +34,7 @@ import NotificationSettingsMentions from 'app/screens/settings/notification_sett
 import NotificationSettingsMentionsKeywords from 'app/screens/settings/notification_settings_mentions_keywords';
 import NotificationSettingsMobile from 'app/screens/settings/notification_settings_mobile';
 import OptionsModal from 'app/screens/options_modal';
+import Permalink from 'app/screens/permalink';
 import Root from 'app/screens/root';
 import SSO from 'app/screens/sso';
 import Search from 'app/screens/search';
@@ -91,6 +92,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapWithContextProvider(NotificationSettingsMentionsKeywords), store, Provider);
     Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(NotificationSettingsMobile), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
+    Navigation.registerComponent('Permalink', () => wrapWithContextProvider(Permalink), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('Search', () => wrapWithContextProvider(Search), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);

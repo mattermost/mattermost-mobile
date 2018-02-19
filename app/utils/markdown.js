@@ -181,3 +181,7 @@ const languages = {
 export function getDisplayNameForLanguage(language) {
     return languages[language.toLowerCase()] || '';
 }
+
+export function escapeRegex(text) {
+    return text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}

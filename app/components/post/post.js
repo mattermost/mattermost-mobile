@@ -55,6 +55,7 @@ class Post extends PureComponent {
         license: PropTypes.object.isRequired,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object,
+        onPermalinkPress: PropTypes.func,
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
@@ -260,7 +261,6 @@ class Post extends PureComponent {
 
     handlePress = preventDoubleTap(() => {
         const {
-            isSearchResult,
             onPress,
             post,
         } = this.props;
@@ -268,7 +268,7 @@ class Post extends PureComponent {
         if (!getToolTipVisible()) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
                 onPress(post);
-            } else if (!isSearchResult && isPostEphemeral(post)) {
+            } else if (isPostEphemeral(post) || post.state === Posts.POST_DELETED) {
                 this.onRemovePost(post);
             }
         }
@@ -320,9 +320,7 @@ class Post extends PureComponent {
     };
 
     viewUserProfile = preventDoubleTap(() => {
-        const {isSearchResult} = this.props;
-
-        if (!isSearchResult && !getToolTipVisible()) {
+        if (!getToolTipVisible()) {
             this.goToUserProfile();
         }
     });
@@ -355,6 +353,7 @@ class Post extends PureComponent {
             highlight,
             isLastReply,
             isSearchResult,
+            onPermalinkPress,
             post,
             renderReplies,
             shouldRenderReplyButton,
@@ -412,6 +411,7 @@ class Post extends PureComponent {
                                 onCopyPermalink={this.handleCopyPermalink}
                                 onCopyText={this.handleCopyText}
                                 onFailedPostPress={this.handleFailedPostPress}
+                                onPermalinkPress={onPermalinkPress}
                                 onPostDelete={this.handlePostDelete}
                                 onPostEdit={this.handlePostEdit}
                                 onPress={this.handlePress}

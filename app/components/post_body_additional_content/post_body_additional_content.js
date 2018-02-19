@@ -37,6 +37,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         message: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
         openGraphData: PropTypes.object,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object.isRequired,
@@ -160,6 +161,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             baseTextStyle,
             blockStyles,
             navigator,
+            onPermalinkPress,
             textStyles,
             theme,
         } = this.props;
@@ -176,6 +178,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     textStyles={textStyles}
                     theme={theme}
                     onLongPress={this.props.onLongPress}
+                    onPermalinkPress={onPermalinkPress}
                 />
             );
         }

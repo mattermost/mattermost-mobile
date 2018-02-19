@@ -4,10 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
 import {refreshChannelWithRetry} from 'app/actions/views/channel';
 import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
-
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import PostList from './post_list';
 
@@ -32,6 +33,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             refreshChannelWithRetry,
+            selectFocusedPostId,
         }, dispatch),
     };
 }

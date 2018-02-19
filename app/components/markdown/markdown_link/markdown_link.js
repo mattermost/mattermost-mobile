@@ -12,36 +12,58 @@ import mattermostManaged from 'app/mattermost_managed';
 
 import Config from 'assets/config';
 
+import {escapeRegex} from 'app/utils/markdown';
+import {preventDoubleTap} from 'app/utils/tap';
 import {normalizeProtocol} from 'app/utils/url';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            loadChannelsByTeamName: PropTypes.func.isRequired
+        }).isRequired,
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
         onLongPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
+        serverURL: PropTypes.string.isRequired,
+        siteURL: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
         onLongPress: () => true,
+        onPermalinkPress: () => true,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    handlePress = () => {
-        const url = normalizeProtocol(this.props.href);
+    handlePress = preventDoubleTap(() => {
+        const {actions, href, onPermalinkPress, serverURL, siteURL} = this.props;
+        const url = normalizeProtocol(href);
 
         if (!url) {
             return;
         }
 
-        Linking.canOpenURL(url).then((supported) => {
-            if (supported) {
-                Linking.openURL(url);
-            }
-        });
-    };
+        const pattern = new RegExp('^' + escapeRegex(serverURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)');
+        const sitePattern = new RegExp('^' + escapeRegex(siteURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)');
+        const match = url.match(pattern) || url.match(sitePattern);
+
+        if (!match) {
+            Linking.canOpenURL(url).then((supported) => {
+                if (supported) {
+                    Linking.openURL(url);
+                }
+            });
+            return;
+        }
+
+        const teamName = match[1];
+        const postId = match[2];
+        actions.loadChannelsByTeamName(teamName);
+        onPermalinkPress(postId);
+    });
 
     parseLinkLiteral = (literal) => {
         let nextLiteral = literal;
@@ -54,7 +76,7 @@ export default class MarkdownLink extends PureComponent {
         const parsed = urlParse(nextLiteral, {});
 
         return parsed.href;
-    }
+    };
 
     parseChildren = () => {
         return Children.map(this.props.children, (child) => {

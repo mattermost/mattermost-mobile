@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Platform,
     ScrollView,
     Text,
     View,
@@ -47,17 +46,20 @@ class UserProfile extends PureComponent {
     }
 
     close = () => {
-        const {navigator} = this.props;
+        const {navigator, theme} = this.props;
 
-        navigator.popToRoot({
+        navigator.resetTo({
+            screen: 'Channel',
             animated: true,
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: theme.centerChannelBg,
+            }
         });
-
-        if (Platform.OS === 'android') {
-            navigator.dismissModal({
-                animationType: 'slide-down',
-            });
-        }
     };
 
     displaySendMessageOption = () => {

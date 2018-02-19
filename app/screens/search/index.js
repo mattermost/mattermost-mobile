@@ -4,19 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
-import {selectPost} from 'mattermost-redux/actions/posts';
+import {selectFocusedPostId, selectPost} from 'mattermost-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPosts} from 'mattermost-redux/actions/search';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {
-    handleSelectChannel,
-    loadThreadIfNecessary,
-    setChannelDisplayName,
-    setChannelLoading,
-} from 'app/actions/views/channel';
+import {loadThreadIfNecessary} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
 
@@ -44,15 +38,11 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             clearSearch,
             handleSearchDraftChanged,
-            handleSelectChannel,
             loadThreadIfNecessary,
-            markChannelAsRead,
-            markChannelAsViewed,
             removeSearchTerms,
+            selectFocusedPostId,
             searchPosts,
             selectPost,
-            setChannelDisplayName,
-            setChannelLoading,
         }, dispatch),
     };
 }

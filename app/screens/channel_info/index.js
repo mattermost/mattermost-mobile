@@ -13,6 +13,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
 import {favoriteChannel, getChannelStats, deleteChannel, unfavoriteChannel} from 'mattermost-redux/actions/channels';
+import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
 import {General} from 'mattermost-redux/constants';
 import {
     getCurrentChannel,
@@ -71,6 +72,7 @@ function mapDispatchToProps(dispatch) {
             favoriteChannel,
             unfavoriteChannel,
             getCustomEmojisInText,
+            selectFocusedPostId,
         }, dispatch),
     };
 }

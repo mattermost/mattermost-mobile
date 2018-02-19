@@ -3,10 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Keyboard,
-    InteractionManager,
     Platform,
     SectionList,
     Text,
@@ -26,7 +25,6 @@ import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
-import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -42,21 +40,19 @@ const MODIFIER_LABEL_HEIGHT = 58;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
 
-class Search extends PureComponent {
+export default class Search extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired,
-            markChannelAsViewed: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPosts: PropTypes.func.isRequired,
+            selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
-        intl: intlShape.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         postIds: PropTypes.array,
@@ -70,6 +66,10 @@ class Search extends PureComponent {
         recent: [],
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     constructor(props) {
         super(props);
 
@@ -77,9 +77,8 @@ class Search extends PureComponent {
         this.isX = DeviceInfo.getModel() === 'iPhone X';
         this.state = {
             channelName: '',
-            focusedChannelId: null,
-            focusedPostId: null,
-            preview: false,
+            showingPermalink: false,
+            isPermalink: false,
             value: '',
             managedConfig: {},
         };
@@ -160,6 +159,17 @@ class Search extends PureComponent {
         navigator.push(options);
     };
 
+    handleClosePermalink = () => {
+        const {actions} = this.props;
+        actions.selectFocusedPostId('');
+        this.setState({showingPermalink: false});
+    };
+
+    handlePermalinkPress = (postId) => {
+        this.setState({isPermalink: true});
+        this.showPermalinkView(postId);
+    };
+
     handleSelectionChange = (event) => {
         if (this.autocomplete) {
             this.autocomplete.getWrappedInstance().handleSelectionChange(event);
@@ -201,10 +211,6 @@ class Search extends PureComponent {
         return item.id || item;
     };
 
-    onFocus = () => {
-        this.scrollToTop();
-    };
-
     onNavigatorEvent = (event) => {
         if (event.id === 'backPress') {
             if (this.state.preview) {
@@ -218,11 +224,36 @@ class Search extends PureComponent {
     previewPost = (post) => {
         Keyboard.dismiss();
 
-        this.setState({
-            preview: true,
-            focusedChannelId: post.channel_id,
-            focusedPostId: post.id,
-        });
+        this.setState({isPermalink: false});
+        this.showPermalinkView(post.id);
+    };
+
+    showPermalinkView = (postId) => {
+        const {actions, navigator} = this.props;
+        const {isPermalink, showingPermalink} = this.state;
+
+        actions.selectFocusedPostId(postId);
+
+        if (!showingPermalink) {
+            const options = {
+                screen: 'Permalink',
+                animationType: 'none',
+                backButtonTitle: '',
+                navigatorStyle: {
+                    navBarHidden: true,
+                    screenBackgroundColor: changeOpacity('#000', 0.2),
+                    modalPresentationStyle: 'overCurrentContext'
+                },
+                passProps: {
+                    isPermalink,
+                    onClose: this.handleClosePermalink,
+                    onPermalinkPress: this.handlePermalinkPress
+                },
+            };
+
+            this.setState({showingPermalink: true});
+            navigator.showModal(options);
+        }
     };
 
     removeSearchTerms = preventDoubleTap((item) => {
@@ -290,6 +321,7 @@ class Search extends PureComponent {
                     previewPost={this.previewPost}
                     goToThread={this.goToThread}
                     navigator={this.props.navigator}
+                    onPermalinkPress={this.handlePermalinkPress}
                     managedConfig={managedConfig}
                 />
                 {separator}
@@ -440,60 +472,20 @@ class Search extends PureComponent {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);
+        Keyboard.dismiss();
     });
-
-    handleClosePreview = () => {
-        this.setState({
-            preview: false,
-            focusedChannelId: null,
-            focusedPostId: null,
-        });
-    };
-
-    handleJumpToChannel = (channelId, channelDisplayName) => {
-        if (channelId) {
-            const {actions, currentChannelId} = this.props;
-            const {
-                handleSelectChannel,
-                markChannelAsRead,
-                setChannelLoading,
-                setChannelDisplayName,
-                markChannelAsViewed,
-            } = actions;
-
-            setChannelLoading(channelId !== currentChannelId);
-            setChannelDisplayName(channelDisplayName);
-
-            InteractionManager.runAfterInteractions(() => {
-                handleSelectChannel(channelId);
-                requestAnimationFrame(() => {
-                    // mark the channel as viewed after all the frame has flushed
-                    markChannelAsRead(channelId, currentChannelId);
-                    if (channelId !== currentChannelId) {
-                        markChannelAsViewed(currentChannelId);
-                    }
-                });
-
-                this.props.navigator.dismissModal({animationType: 'slide-down'});
-            });
-        }
-    };
 
     render() {
         const {
-            intl,
             isLandscape,
-            navigator,
             postIds,
             recent,
             searchingStatus,
             theme,
         } = this.props;
 
-        const {
-            preview,
-            value,
-        } = this.state;
+        const {intl} = this.context;
+        const {value} = this.state;
         const style = getStyleFromTheme(theme);
         const sections = [{
             data: [{
@@ -522,7 +514,7 @@ class Search extends PureComponent {
             sections.push({
                 data: recent,
                 key: 'recent',
-                title: intl.formatMessage({id: 'mobile.search.recentTitle', defaultMessage: 'Recent Searches'}),
+                title: intl.formatMessage({id: 'mobile.search.recent_title', defaultMessage: 'Recent Searches'}),
                 renderItem: this.renderRecentItem,
                 keyExtractor: this.keyRecentExtractor,
                 ItemSeparatorComponent: this.renderRecentSeparator,
@@ -583,23 +575,6 @@ class Search extends PureComponent {
             });
         }
 
-        let previewComponent;
-        if (preview) {
-            const {focusedChannelId, focusedPostId} = this.state;
-
-            previewComponent = (
-                <SearchPreview
-                    ref='preview'
-                    channelId={focusedChannelId}
-                    focusedPostId={focusedPostId}
-                    navigator={navigator}
-                    onClose={this.handleClosePreview}
-                    onPress={this.handleJumpToChannel}
-                    theme={theme}
-                />
-            );
-        }
-
         const searchBarInput = {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
             color: theme.sidebarHeaderTextColor,
@@ -651,7 +626,6 @@ class Search extends PureComponent {
                         isSearch={true}
                         value={value}
                     />
-                    {previewComponent}
                 </View>
             </SafeAreaView>
         );
@@ -778,4 +752,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(Search);

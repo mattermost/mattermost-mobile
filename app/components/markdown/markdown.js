@@ -38,6 +38,7 @@ export default class Markdown extends PureComponent {
         isSearchResult: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
@@ -320,6 +321,7 @@ export default class Markdown extends PureComponent {
             <MarkdownLink
                 href={href}
                 onLongPress={this.props.onLongPress}
+                onPermalinkPress={this.props.onPermalinkPress}
             >
                 {children}
             </MarkdownLink>

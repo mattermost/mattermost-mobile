@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
@@ -22,9 +22,19 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
 
-class ChannelInfo extends PureComponent {
+export default class ChannelInfo extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
+        actions: PropTypes.shape({
+            closeDMChannel: PropTypes.func.isRequired,
+            closeGMChannel: PropTypes.func.isRequired,
+            deleteChannel: PropTypes.func.isRequired,
+            getChannelStats: PropTypes.func.isRequired,
+            leaveChannel: PropTypes.func.isRequired,
+            favoriteChannel: PropTypes.func.isRequired,
+            unfavoriteChannel: PropTypes.func.isRequired,
+            getCustomEmojisInText: PropTypes.func.isRequired,
+            selectFocusedPostId: PropTypes.func.isRequired,
+        }),
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -36,23 +46,17 @@ class ChannelInfo extends PureComponent {
         isFavorite: PropTypes.bool.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
         canEditChannel: PropTypes.bool.isRequired,
-        actions: PropTypes.shape({
-            closeDMChannel: PropTypes.func.isRequired,
-            closeGMChannel: PropTypes.func.isRequired,
-            deleteChannel: PropTypes.func.isRequired,
-            getChannelStats: PropTypes.func.isRequired,
-            leaveChannel: PropTypes.func.isRequired,
-            favoriteChannel: PropTypes.func.isRequired,
-            unfavoriteChannel: PropTypes.func.isRequired,
-            getCustomEmojisInText: PropTypes.func.isRequired,
-        }),
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            isFavorite: this.props.isFavorite,
+            isFavorite: props.isFavorite,
         };
     }
 
@@ -82,7 +86,8 @@ class ChannelInfo extends PureComponent {
     };
 
     goToChannelAddMembers = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
         navigator.push({
             backButtonTitle: '',
             screen: 'ChannelAddMembers',
@@ -98,7 +103,8 @@ class ChannelInfo extends PureComponent {
     });
 
     goToChannelMembers = preventDoubleTap(() => {
-        const {canManageUsers, intl, navigator, theme} = this.props;
+        const {intl} = this.context;
+        const {canManageUsers, navigator, theme} = this.props;
         const id = canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers';
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
 
@@ -117,7 +123,8 @@ class ChannelInfo extends PureComponent {
     });
 
     handleChannelEdit = preventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
         const id = 'mobile.channel_info.edit';
         const defaultMessage = 'Edit Channel';
 
@@ -144,7 +151,7 @@ class ChannelInfo extends PureComponent {
     };
 
     handleDeleteOrLeave = preventDoubleTap((eventType) => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === General.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
@@ -173,7 +180,7 @@ class ChannelInfo extends PureComponent {
                 const result = await this.props.actions.deleteChannel(channel.id);
                 if (result.error) {
                     alertErrorWithFallback(
-                        this.props.intl,
+                        this.context.intl,
                         result.error,
                         {
                             id: 'mobile.channel_info.delete_failed',
@@ -232,6 +239,45 @@ class ChannelInfo extends PureComponent {
         const toggleFavorite = isFavorite ? unfavoriteChannel : favoriteChannel;
         this.setState({isFavorite: !isFavorite});
         toggleFavorite(currentChannel.id);
+    };
+
+    handleClosePermalink = () => {
+        const {actions} = this.props;
+        actions.selectFocusedPostId('');
+        this.setState({showingPermalink: false});
+    };
+
+    handlePermalinkPress = (postId) => {
+        this.setState({isPermalink: true});
+        this.showPermalinkView(postId);
+    };
+
+    showPermalinkView = (postId) => {
+        const {actions, navigator} = this.props;
+        const {isPermalink, showingPermalink} = this.state;
+
+        actions.selectFocusedPostId(postId);
+
+        if (!showingPermalink) {
+            const options = {
+                screen: 'Permalink',
+                animationType: 'none',
+                backButtonTitle: '',
+                navigatorStyle: {
+                    navBarHidden: true,
+                    screenBackgroundColor: changeOpacity('#000', 0.2),
+                    modalPresentationStyle: 'overCurrentContext'
+                },
+                passProps: {
+                    isPermalink,
+                    onClose: this.handleClosePermalink,
+                    onPermalinkPress: this.handlePermalinkPress
+                }
+            };
+
+            this.setState({showingPermalink: true});
+            navigator.showModal(options);
+        }
     };
 
     renderViewOrManageMembersRow = () => {
@@ -301,6 +347,7 @@ class ChannelInfo extends PureComponent {
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
                         navigator={navigator}
+                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
                         status={status}
                         theme={theme}
@@ -443,5 +490,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(ChannelInfo);

@@ -12,6 +12,7 @@ export default class SearchResultPost extends PureComponent {
         goToThread: PropTypes.func.isRequired,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
+        onPermalinkPress: PropTypes.func.isRequired,
         postId: PropTypes.string.isRequired,
         previewPost: PropTypes.func.isRequired,
     };
@@ -26,6 +27,7 @@ export default class SearchResultPost extends PureComponent {
             postComponentProps.onReply = this.props.goToThread;
             postComponentProps.shouldRenderReplyButton = true;
             postComponentProps.managedConfig = this.props.managedConfig;
+            postComponentProps.onPermalinkPress = this.props.onPermalinkPress;
         }
 
         return (
