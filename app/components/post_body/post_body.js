@@ -296,7 +296,12 @@ class PostBody extends PureComponent {
                             isReplyPost={isReplyPost}
                         />
                         {this.renderFileAttachments()}
-                        {hasReactions && <Reactions postId={postId}/>}
+                        {hasReactions &&
+                        <Reactions
+                            postId={postId}
+                            onAddReaction={this.props.onAddReaction}
+                        />
+                        }
                     </OptionsContext>
                 );
             }
