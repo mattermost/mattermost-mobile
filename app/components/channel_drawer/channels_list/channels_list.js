@@ -106,7 +106,11 @@ class ChannelsList extends React.PureComponent {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
             color: theme.sidebarHeaderTextColor,
             fontSize: 15,
-            lineHeight: 66
+            ...Platform.select({
+                android: {
+                    marginBottom: -5
+                }
+            })
         };
 
         const title = (
@@ -116,7 +120,7 @@ class ChannelsList extends React.PureComponent {
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
-                    inputHeight={33}
+                    inputHeight={34}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}

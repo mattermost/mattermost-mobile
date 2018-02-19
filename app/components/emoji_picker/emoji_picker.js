@@ -441,6 +441,17 @@ export default class EmojiPicker extends PureComponent {
             keyboardOffset = 52;
         }
 
+        const searchBarInput = {
+            backgroundColor: theme.centerChannelBg,
+            color: theme.centerChannelColor,
+            fontSize: 13,
+            ...Platform.select({
+                android: {
+                    marginBottom: -3
+                }
+            })
+        };
+
         return (
             <SafeAreaView excludeHeader={true}>
                 <KeyboardAvoidingView
@@ -455,11 +466,7 @@ export default class EmojiPicker extends PureComponent {
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
                             inputHeight={33}
-                            inputStyle={{
-                                backgroundColor: theme.centerChannelBg,
-                                color: theme.centerChannelColor,
-                                fontSize: 13
-                            }}
+                            inputStyle={searchBarInput}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
