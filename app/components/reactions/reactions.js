@@ -20,7 +20,9 @@ export default class Reactions extends PureComponent {
         highlightedReactions: PropTypes.array.isRequired,
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
+        canAddReaction: PropTypes.bool,
+        canRemoveReaction: PropTypes.bool.isRequired
     }
 
     componentDidMount() {
@@ -30,9 +32,9 @@ export default class Reactions extends PureComponent {
 
     handleReactionPress = (emoji, remove) => {
         const {actions, postId} = this.props;
-        if (remove) {
+        if (remove && this.props.canRemoveReaction) {
             actions.removeReaction(postId, emoji);
-        } else {
+        } else if (!remove && this.props.canAddReaction) {
             actions.addReaction(postId, emoji);
         }
     }
