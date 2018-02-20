@@ -17,7 +17,7 @@ import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
-import {preventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap, wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
 
@@ -184,7 +184,7 @@ class Post extends PureComponent {
         this.props.actions.addReaction(post.id, emoji);
     }
 
-    handleAddReaction = () => {
+    handleAddReaction = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, post, theme} = this.props;
 
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
@@ -206,7 +206,7 @@ class Post extends PureComponent {
                     }
                 });
             });
-    }
+    });
 
     handleFailedPostPress = () => {
         const options = {
