@@ -8,7 +8,6 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -34,18 +33,6 @@ export default class TeamsListItem extends React.PureComponent {
         } = this.props;
         const styles = getStyleSheet(theme);
 
-        let current;
-        if (team.id === currentTeamId) {
-            current = (
-                <View style={styles.checkmarkContainer}>
-                    <IonIcon
-                        name='md-checkmark'
-                        style={styles.checkmark}
-                    />
-                </View>
-            );
-        }
-
         const icon = (
             <View style={styles.iconContainer}>
                 <Text style={styles.icon}>
@@ -54,10 +41,18 @@ export default class TeamsListItem extends React.PureComponent {
             </View>
         );
 
+        const wrapperStyle = [styles.wrapper];
+        if (team.id === currentTeamId) {
+            wrapperStyle.push({
+                width: '90%'
+            });
+        }
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
+                style={styles.wrapper}
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
@@ -69,7 +64,6 @@ export default class TeamsListItem extends React.PureComponent {
                         >
                             {team.display_name}
                         </Text>
-                        {current}
                     </View>
                 </View>
             </TouchableHighlight>
@@ -79,6 +73,10 @@ export default class TeamsListItem extends React.PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        wrapper: {
+            height: 45,
+            width: '100%'
+        },
         container: {
             flex: 1,
             flexDirection: 'row',
