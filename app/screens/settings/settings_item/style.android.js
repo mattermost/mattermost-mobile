@@ -48,6 +48,9 @@ export default makeStyleSheetFromTheme((theme) => {
         arrowContainer: {
             justifyContent: 'center',
             paddingRight: 15
+        },
+        destructor: {
+            color: theme.errorTextColor
         }
     };
 });

@@ -12,6 +12,7 @@ import {
     Text,
     View
 } from 'react-native';
+import {Sentry} from 'react-native-sentry';
 
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
@@ -20,6 +21,8 @@ import StatusBar from 'app/components/status_bar';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import Config from 'assets/config';
 
 class AdvancedSettings extends PureComponent {
     static propTypes = {
@@ -114,6 +117,40 @@ class AdvancedSettings extends PureComponent {
         return component;
     };
 
+    renderSentryDebugOptions = () => {
+        if (!Config.ShowSentryDebugOptions) {
+            return null;
+        }
+
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View>
+                <SettingsItem
+                    defaultMessage='Throw JavaScript Exception'
+                    iconName='md-flame'
+                    iconType='ion'
+                    onPress={Sentry.crash}
+                    separator={false}
+                    showArrow={false}
+                    theme={theme}
+                />
+                <View style={style.divider}/>
+                <SettingsItem
+                    defaultMessage='Throw Native Exception'
+                    iconName='md-nuclear'
+                    iconType='ion'
+                    onPress={Sentry.nativeCrash}
+                    separator={false}
+                    showArrow={false}
+                    theme={theme}
+                />
+                <View style={style.divider}/>
+            </View>
+        );
+    }
+
     render() {
         const {theme} = this.props;
         const style = getStyleSheet(theme);
@@ -149,6 +186,7 @@ class AdvancedSettings extends PureComponent {
                         theme={theme}
                     />
                     <View style={style.divider}/>
+                    {this.renderSentryDebugOptions()}
                 </ScrollView>
             </View>
         );
