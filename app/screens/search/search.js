@@ -603,8 +603,7 @@ class Search extends PureComponent {
         const searchBarInput = {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
             color: theme.sidebarHeaderTextColor,
-            fontSize: 15,
-            lineHeight: 66
+            fontSize: 15
         };
 
         return (

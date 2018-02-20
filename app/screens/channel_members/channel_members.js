@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     InteractionManager,
+    Platform,
     View
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
@@ -285,6 +286,17 @@ class ChannelMembers extends PureComponent {
             );
         }
 
+        const searchBarInput = {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            ...Platform.select({
+                android: {
+                    marginBottom: -5
+                }
+            })
+        };
+
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -297,12 +309,7 @@ class ChannelMembers extends PureComponent {
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={33}
-                        inputStyle={{
-                            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                            color: theme.centerChannelColor,
-                            fontSize: 15,
-                            lineHeight: 66
-                        }}
+                        inputStyle={searchBarInput}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}

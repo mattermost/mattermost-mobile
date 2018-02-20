@@ -221,9 +221,7 @@ export default class SearchBarAndroid extends PureComponent {
                         disableFullscreenUI={true}
                         style={[
                             styles.searchBarInput,
-                            inputNoBackground,
-                            {height: this.props.inputHeight},
-                            isFocused ? {paddingBottom: (this.props.inputHeight - 17) / 2} : styles.searchBarBlurredInput
+                            inputNoBackground
                         ]}
                     />
                     {isFocused && value ?
