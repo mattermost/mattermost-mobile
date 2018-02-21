@@ -10,11 +10,11 @@ export default class MarkdownList extends PureComponent {
         children: PropTypes.node.isRequired,
         ordered: PropTypes.bool.isRequired,
         start: PropTypes.number,
-        tight: PropTypes.bool
+        tight: PropTypes.bool,
     };
 
     static defaultProps = {
-        start: 1
+        start: 1,
     };
 
     render() {
@@ -28,7 +28,7 @@ export default class MarkdownList extends PureComponent {
             return React.cloneElement(child, {
                 bulletWidth,
                 ordered: this.props.ordered,
-                tight: this.props.tight
+                tight: this.props.tight,
             });
         });
 
@@ -42,6 +42,6 @@ export default class MarkdownList extends PureComponent {
 
 const style = StyleSheet.create({
     indent: {
-        marginRight: 20
-    }
+        marginRight: 20,
+    },
 });

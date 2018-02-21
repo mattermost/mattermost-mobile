@@ -10,7 +10,7 @@ import {
     Platform,
     ScrollView,
     Text,
-    View
+    View,
 } from 'react-native';
 import {Sentry} from 'react-native-sentry';
 
@@ -27,15 +27,15 @@ import Config from 'assets/config';
 class AdvancedSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            purgeOfflineStore: PropTypes.func.isRequired
+            purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     state = {
         cacheSize: null,
-        cacheSizedFetched: false
+        cacheSizedFetched: false,
     };
 
     componentDidMount() {
@@ -50,10 +50,10 @@ class AdvancedSettings extends PureComponent {
             intl.formatMessage({id: 'mobile.advanced_settings.reset_message', defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
             [{
                 text: intl.formatMessage({id: 'mobile.advanced_settings.reset_button', defaultMessage: 'Reset'}),
-                onPress: () => actions.purgeOfflineStore()
+                onPress: () => actions.purgeOfflineStore(),
             }, {
                 text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                onPress: () => true
+                onPress: () => true,
             }]
         );
     });
@@ -66,11 +66,11 @@ class AdvancedSettings extends PureComponent {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.advanced_settings.delete_file_cache',
-                    defaultMessage: 'Delete File Cache'
+                    defaultMessage: 'Delete File Cache',
                 }),
                 intl.formatMessage({
                     id: 'mobile.advanced_settings.delete_file_cache_message',
-                    defaultMessage: '\nThis will delete all the files stored in the cache. Are you sure you want to delete them?\n'
+                    defaultMessage: '\nThis will delete all the files stored in the cache. Are you sure you want to delete them?\n',
                 }),
                 [{
                     text: intl.formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
@@ -79,10 +79,10 @@ class AdvancedSettings extends PureComponent {
                             await deleteFileCache();
                             this.setState({cacheSize: 0, cacheSizedFetched: true});
                         });
-                    }
+                    },
                 }, {
                     text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                    onPress: () => true
+                    onPress: () => true,
                 }]
             );
         }
@@ -197,26 +197,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
-                    paddingTop: 35
-                }
-            })
+                    paddingTop: 35,
+                },
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1
+            height: 1,
         },
         cacheSize: {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 14,
-            lineHeight: 43
-        }
+            lineHeight: 43,
+        },
     };
 });
 

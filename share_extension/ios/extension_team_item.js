@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
@@ -17,7 +17,7 @@ export default class TeamsListItem extends React.PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         onSelectTeam: PropTypes.func.isRequired,
         team: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
@@ -29,7 +29,7 @@ export default class TeamsListItem extends React.PureComponent {
         const {
             currentTeamId,
             team,
-            theme
+            theme,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -44,7 +44,7 @@ export default class TeamsListItem extends React.PureComponent {
         const wrapperStyle = [styles.wrapper];
         if (team.id === currentTeamId) {
             wrapperStyle.push({
-                width: '90%'
+                width: '90%',
             });
         }
 
@@ -75,19 +75,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         wrapper: {
             height: 45,
-            width: '100%'
+            width: '100%',
         },
         container: {
             flex: 1,
             flexDirection: 'row',
             height: 45,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         item: {
             alignItems: 'center',
             height: 45,
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         text: {
             color: theme.centerChannelColor,
@@ -95,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 16,
             fontWeight: '600',
             lineHeight: 16,
-            paddingRight: 5
+            paddingRight: 5,
         },
         iconContainer: {
             alignItems: 'center',
@@ -104,20 +104,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 30,
             justifyContent: 'center',
             width: 30,
-            marginRight: 10
+            marginRight: 10,
         },
         icon: {
             color: theme.sidebarText,
             fontFamily: 'OpenSans',
             fontSize: 15,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         checkmarkContainer: {
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
         },
         checkmark: {
             color: theme.linkColor,
-            fontSize: 16
-        }
+            fontSize: 16,
+        },
     };
 });

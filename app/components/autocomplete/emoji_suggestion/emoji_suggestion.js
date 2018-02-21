@@ -7,7 +7,7 @@ import {
     FlatList,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
@@ -23,7 +23,7 @@ export default class EmojiSuggestion extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             addReactionToLatestPost: PropTypes.func.isRequired,
-            autocompleteCustomEmojis: PropTypes.func.isRequired
+            autocompleteCustomEmojis: PropTypes.func.isRequired,
         }).isRequired,
         cursorPosition: PropTypes.number,
         emojis: PropTypes.array.isRequired,
@@ -34,17 +34,17 @@ export default class EmojiSuggestion extends Component {
         onResultCountChange: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         value: PropTypes.string,
-        serverVersion: PropTypes.string
+        serverVersion: PropTypes.string,
     };
 
     static defaultProps = {
         defaultChannel: {},
-        value: ''
+        value: '',
     };
 
     state = {
         active: false,
-        dataSource: []
+        dataSource: [],
     };
 
     constructor(props) {
@@ -64,7 +64,7 @@ export default class EmojiSuggestion extends Component {
         if (!match || this.state.emojiComplete) {
             this.setState({
                 active: false,
-                emojiComplete: false
+                emojiComplete: false,
             });
 
             this.props.onResultCountChange(0);
@@ -118,7 +118,7 @@ export default class EmojiSuggestion extends Component {
     setEmojiData = (data) => {
         this.setState({
             active: data.length > 0,
-            dataSource: data
+            dataSource: data,
         });
 
         this.props.onResultCountChange(data.length);
@@ -143,7 +143,7 @@ export default class EmojiSuggestion extends Component {
 
         this.setState({
             active: false,
-            emojiComplete: true
+            emojiComplete: true,
         });
     };
 
@@ -198,22 +198,22 @@ export default class EmojiSuggestion extends Component {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         emoji: {
-            marginRight: 5
+            marginRight: 5,
         },
         emojiName: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         listView: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         row: {
             height: 40,
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        },
     };
 });

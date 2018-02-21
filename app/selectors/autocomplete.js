@@ -7,7 +7,7 @@ import {General} from 'mattermost-redux/constants';
 import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
 import {
     getCurrentUser, getCurrentUserId, getProfilesInCurrentChannel,
-    getProfilesNotInCurrentChannel, getProfilesInCurrentTeam
+    getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
 } from 'mattermost-redux/selectors/entities/users';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {sortByUsername} from 'mattermost-redux/utils/user_utils';

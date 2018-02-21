@@ -14,8 +14,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
-            handlePostDraftChanged
-        }, dispatch)
+            handlePostDraftChanged,
+        }, dispatch),
     };
 }
 

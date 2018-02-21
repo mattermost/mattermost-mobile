@@ -18,15 +18,15 @@ function mapStateToProps(state, ownProps) {
         ...getDimensions(state),
         editPostRequest,
         post: ownProps.post,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            editPost
-        }, dispatch)
+            editPost,
+        }, dispatch),
     };
 }
 

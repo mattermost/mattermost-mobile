@@ -18,6 +18,6 @@ function emojiPickerCustomPage(state = 0, action) {
 }
 
 export default combineReducers({
-    emojiPickerCustomPage
+    emojiPickerCustomPage,
 });
 

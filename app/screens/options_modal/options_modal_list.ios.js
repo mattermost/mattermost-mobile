@@ -7,7 +7,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import IconFont from 'react-native-vector-icons/FontAwesome';
 
@@ -20,8 +20,8 @@ export default class OptionsModalList extends PureComponent {
         onCancelPress: PropTypes.func,
         title: PropTypes.oneOfType([
             PropTypes.string,
-            PropTypes.object
-        ])
+            PropTypes.object,
+        ]),
     };
 
     renderOptions = () => {
@@ -84,7 +84,7 @@ export default class OptionsModalList extends PureComponent {
 
         return [
             title,
-            ...options
+            ...options,
         ];
     };
 
@@ -119,41 +119,41 @@ const style = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 15
+        padding: 15,
     },
     optionBorder: {
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0, 0, 0, 0.1)'
+        borderBottomColor: 'rgba(0, 0, 0, 0.1)',
     },
     optionCancelText: {
         color: '#CC3239',
         flex: 1,
         fontSize: 20,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     optionContainer: {
         alignSelf: 'stretch',
         backgroundColor: 'white',
         borderRadius: 12,
         marginBottom: 20,
-        marginHorizontal: 20
+        marginHorizontal: 20,
     },
     optionIcon: {
-        color: '#4E8ACC'
+        color: '#4E8ACC',
     },
     optionText: {
         color: '#4E8ACC',
         flex: 1,
-        fontSize: 20
+        fontSize: 20,
     },
     optionTitleText: {
         color: '#7f8180',
         flex: 1,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     wrapper: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'flex-end'
-    }
+        justifyContent: 'flex-end',
+    },
 });

@@ -8,7 +8,7 @@ import {
     PixelRatio,
     Platform,
     StyleSheet,
-    Text
+    Text,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -46,14 +46,14 @@ export default class Emoji extends React.PureComponent {
         literal: PropTypes.string,
         size: PropTypes.number,
         textStyle: CustomPropTypes.Style,
-        token: PropTypes.string.isRequired
+        token: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
         customEmojis: new Map(),
         literal: '',
         imageUrl: '',
-        isCustomEmoji: false
+        isCustomEmoji: false,
     };
 
     constructor(props) {
@@ -61,7 +61,7 @@ export default class Emoji extends React.PureComponent {
 
         this.state = {
             originalWidth: 0,
-            originalHeight: 0
+            originalHeight: 0,
         };
     }
 
@@ -76,7 +76,7 @@ export default class Emoji extends React.PureComponent {
         if (nextProps.emojiName !== this.props.emojiName) {
             this.setState({
                 originalWidth: 0,
-                originalHeight: 0
+                originalHeight: 0,
             });
         }
 
@@ -95,7 +95,7 @@ export default class Emoji extends React.PureComponent {
             if (this.mounted) {
                 this.setState({
                     originalWidth,
-                    originalHeight
+                    originalHeight,
                 });
             }
         });
@@ -107,7 +107,7 @@ export default class Emoji extends React.PureComponent {
             textStyle,
             token,
             imageUrl,
-            displayTextOnly
+            displayTextOnly,
         } = this.props;
 
         let size = this.props.size;
@@ -125,8 +125,8 @@ export default class Emoji extends React.PureComponent {
         const source = {
             uri: imageUrl,
             headers: {
-                Authorization: `Bearer ${token}`
-            }
+                Authorization: `Bearer ${token}`,
+            },
         };
 
         let width = size;

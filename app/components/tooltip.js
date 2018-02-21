@@ -10,7 +10,7 @@ import {setToolTipVisible} from 'app/utils/tooltip';
 export default class ToolTip extends PureComponent {
     static propTypes = {
         onHide: PropTypes.func,
-        onShow: PropTypes.func
+        onShow: PropTypes.func,
     };
 
     handleHide = () => {

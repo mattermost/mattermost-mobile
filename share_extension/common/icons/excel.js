@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {View} from 'react-native';
 import Svg, {
     G,
-    Path
+    Path,
 } from 'react-native-svg';
 
 function ExcelSvg({height, width}) {
@@ -49,7 +49,7 @@ function ExcelSvg({height, width}) {
 
 ExcelSvg.propTypes = {
     height: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired
+    width: PropTypes.number.isRequired,
 };
 
 export default ExcelSvg;

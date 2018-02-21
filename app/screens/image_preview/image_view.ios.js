@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {
     Animated,
     ScrollView,
-    StyleSheet
+    StyleSheet,
 } from 'react-native';
 
 const {Image: AnimatedImage} = Animated;
@@ -16,7 +16,7 @@ export default class ImageView extends PureComponent {
         showsHorizontalScrollIndicator: PropTypes.bool,
         showsVerticalScrollIndicator: PropTypes.bool,
         wrapperHeight: PropTypes.number.isRequired,
-        wrapperWidth: PropTypes.number.isRequired
+        wrapperWidth: PropTypes.number.isRequired,
     }
 
     static defaultProps = {
@@ -24,7 +24,7 @@ export default class ImageView extends PureComponent {
         minimumZoomScale: 1,
         onZoom: () => true,
         showsHorizontalScrollIndicator: false,
-        showsVerticalScrollIndicator: false
+        showsVerticalScrollIndicator: false,
     }
 
     attachScrollView = (c) => {
@@ -46,7 +46,7 @@ export default class ImageView extends PureComponent {
 
         this.scrollResponder.scrollResponderZoomTo({
             ...rect,
-            animated: true
+            animated: true,
         });
     }
 
@@ -93,6 +93,6 @@ const style = StyleSheet.create({
     content: {
         alignItems: 'center',
         flex: 1,
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
 });

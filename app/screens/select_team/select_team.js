@@ -10,7 +10,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -31,7 +31,7 @@ export default class SelectTeam extends PureComponent {
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired
+            markChannelAsRead: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
@@ -39,7 +39,7 @@ export default class SelectTeam extends PureComponent {
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     constructor(props) {
@@ -48,7 +48,7 @@ export default class SelectTeam extends PureComponent {
 
         this.state = {
             joining: false,
-            teams: null
+            teams: null,
         };
     }
 
@@ -77,7 +77,7 @@ export default class SelectTeam extends PureComponent {
         } else {
             const teams = [{
                 id: 'mobile.select_team.no_teams',
-                defaultMessage: 'There are no available teams for you to join.'
+                defaultMessage: 'There are no available teams for you to join.',
             }];
             this.setState({teams});
         }
@@ -85,7 +85,7 @@ export default class SelectTeam extends PureComponent {
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down'
+            animationType: 'slide-down',
         });
     };
 
@@ -99,8 +99,8 @@ export default class SelectTeam extends PureComponent {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     };
 
@@ -125,7 +125,7 @@ export default class SelectTeam extends PureComponent {
         const {
             joinTeam,
             handleTeamChange,
-            markChannelAsRead
+            markChannelAsRead,
         } = this.props.actions;
 
         if (currentChannelId) {
@@ -238,34 +238,34 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1
+            flex: 1,
         },
         headingContainer: {
             alignItems: 'center',
             flexDirection: 'row',
             marginHorizontal: 16,
-            marginTop: 20
+            marginTop: 20,
         },
         headingWrapper: {
-            marginRight: 15
+            marginRight: 15,
         },
         heading: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 13
+            fontSize: 13,
         },
         line: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             width: '100%',
-            height: StyleSheet.hairlineWidth
+            height: StyleSheet.hairlineWidth,
         },
         teamWrapper: {
-            marginTop: 20
+            marginTop: 20,
         },
         teamContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            marginHorizontal: 16
+            marginHorizontal: 16,
         },
         teamIconContainer: {
             alignItems: 'center',
@@ -273,30 +273,30 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             height: 40,
             justifyContent: 'center',
-            width: 40
+            width: 40,
         },
         noTeam: {
             color: theme.centerChannelColor,
-            fontSize: 14
+            fontSize: 14,
         },
         teamIcon: {
             color: theme.buttonColor,
             fontFamily: 'OpenSans',
             fontSize: 18,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         teamNameContainer: {
             flex: 1,
             flexDirection: 'column',
-            marginLeft: 10
+            marginLeft: 10,
         },
         teamName: {
             color: theme.centerChannelColor,
-            fontSize: 18
+            fontSize: 18,
         },
         teamUrl: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 12
-        }
+            fontSize: 12,
+        },
     };
 });

@@ -8,7 +8,7 @@ import {
     Linking,
     Platform,
     ScrollView,
-    View
+    View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
@@ -24,7 +24,7 @@ class Settings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearErrors: PropTypes.func.isRequired,
-            purgeOfflineStore: PropTypes.func.isRequired
+            purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -34,7 +34,7 @@ class Settings extends PureComponent {
         intl: intlShape.isRequired,
         joinableTeams: PropTypes.object.isRequired,
         navigator: PropTypes.object,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     constructor(props) {
@@ -56,7 +56,7 @@ class Settings extends PureComponent {
             `Current Team Id: ${currentTeamId}`,
             `Server Version: ${config.Version} (Build ${config.BuildNumber})`,
             `App Version: ${DeviceInfo.getVersion()} (Build ${DeviceInfo.getBuildNumber()})`,
-            `App Platform: ${Platform.OS}`
+            `App Platform: ${Platform.OS}`,
         ];
         if (errors.length) {
             const errorArray = errors.map((e) => {
@@ -68,7 +68,7 @@ class Settings extends PureComponent {
             contents = contents.concat([
                 '',
                 'Errors:',
-                errorArray
+                errorArray,
             ]);
         }
         return contents.join('\n');
@@ -84,8 +84,8 @@ class Settings extends PureComponent {
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
-            }
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+            },
         });
     });
 
@@ -100,8 +100,8 @@ class Settings extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -116,8 +116,8 @@ class Settings extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -132,8 +132,8 @@ class Settings extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -149,12 +149,12 @@ class Settings extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 currentUrl,
-                theme
-            }
+                theme,
+            },
         });
     });
 
@@ -170,11 +170,11 @@ class Settings extends PureComponent {
                 navBarHidden: false,
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor
+                navBarButtonColor: theme.sidebarHeaderTextColor,
             },
             passProps: {
-                userCheckedForUpgrade: true
-            }
+                userCheckedForUpgrade: true,
+            },
         });
     });
 
@@ -182,7 +182,7 @@ class Settings extends PureComponent {
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-settings') {
                 this.props.navigator.dismissModal({
-                    animationType: 'slide-down'
+                    animationType: 'slide-down',
                 });
             }
         }
@@ -318,20 +318,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
-                    paddingTop: 35
-                }
-            })
+                    paddingTop: 35,
+                },
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1
-        }
+            height: 1,
+        },
     };
 });
 

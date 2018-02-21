@@ -7,7 +7,7 @@ import {
     Dimensions,
     StyleSheet,
     View,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import FormattedText from 'app/components/formatted_text';
@@ -25,22 +25,22 @@ const style = StyleSheet.create({
         borderColor: '#fff',
         borderWidth: 1,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     closeButtonContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 5
+        marginTop: 5,
     },
     closeButtonText: {
-        color: '#fff'
+        color: '#fff',
     },
     container: {
         paddingTop: 15,
         paddingBottom: 15,
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 75
+        minHeight: 75,
     },
     wrapper: {
         position: 'absolute',
@@ -49,17 +49,17 @@ const style = StyleSheet.create({
         width: deviceWidth,
         overflow: 'hidden',
         backgroundColor: 'rgba(255, 116, 92, 1)',
-        zIndex: 99999
-    }
+        zIndex: 99999,
+    },
 });
 
 export default class ErrorList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             dismissError: PropTypes.func.isRequired,
-            clearErrors: PropTypes.func.isRequired
+            clearErrors: PropTypes.func.isRequired,
         }).isRequired,
-        errors: PropTypes.array.isRequired
+        errors: PropTypes.array.isRequired,
     }
 
     renderErrorsList() {

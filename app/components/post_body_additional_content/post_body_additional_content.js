@@ -10,7 +10,7 @@ import {
     Platform,
     StyleSheet,
     TouchableWithoutFeedback,
-    View
+    View,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import youTubeVideoId from 'youtube-video-id';
@@ -42,11 +42,11 @@ export default class PostBodyAdditionalContent extends PureComponent {
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         textStyles: PropTypes.object,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        onLongPress: emptyFunction
+        onLongPress: emptyFunction,
     };
 
     constructor(props) {
@@ -54,7 +54,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         this.state = {
             linkLoadError: false,
-            linkLoaded: false
+            linkLoaded: false,
         };
 
         this.mounted = false;
@@ -73,7 +73,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (nextProps.message !== this.props.message) {
             this.setState({
                 linkLoadError: false,
-                linkLoaded: false
+                linkLoaded: false,
             }, () => {
                 this.getImageSize();
             });
@@ -161,7 +161,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             blockStyles,
             navigator,
             textStyles,
-            theme
+            theme,
         } = this.props;
         const {attachments} = postProps;
 
@@ -245,7 +245,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 YouTubeStandaloneAndroid.playVideo({
                     apiKey: config.GoogleDeveloperKey,
                     videoId,
-                    autoplay: true
+                    autoplay: true,
                 });
             } else {
                 Linking.openURL(link);
@@ -287,12 +287,12 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         marginBottom: 6,
-        marginTop: 10
+        marginTop: 10,
     },
     image: {
         alignItems: 'center',
         borderRadius: 3,
         justifyContent: 'center',
-        marginVertical: 1
-    }
+        marginVertical: 1,
+    },
 });

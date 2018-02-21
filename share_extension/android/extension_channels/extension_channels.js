@@ -9,7 +9,7 @@ import {
     ActivityIndicator,
     SectionList,
     Text,
-    View
+    View,
 } from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
@@ -26,25 +26,25 @@ export default class ExtensionTeam extends PureComponent {
         directChannels: PropTypes.array,
         navigation: PropTypes.object.isRequired,
         privateChannels: PropTypes.array,
-        publicChannels: PropTypes.array
+        publicChannels: PropTypes.array,
     };
 
     static defaultProps = {
         directChannels: [],
         privateChannels: [],
-        publicChannels: []
+        publicChannels: [],
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     static navigationOptions = ({navigation}) => ({
-        title: navigation.state.params.title
+        title: navigation.state.params.title,
     });
 
     state = {
-        sections: null
+        sections: null,
     };
 
     componentWillMount() {
@@ -56,7 +56,7 @@ export default class ExtensionTeam extends PureComponent {
         let {
             directChannels: directFiltered,
             privateChannels: privateFiletered,
-            publicChannels: publicFiltered
+            publicChannels: publicFiltered,
         } = this.props;
 
         if (term) {
@@ -69,7 +69,7 @@ export default class ExtensionTeam extends PureComponent {
             sections.push({
                 id: 'sidebar.channels',
                 defaultMessage: 'PUBLIC CHANNELS',
-                data: publicFiltered
+                data: publicFiltered,
             });
         }
 
@@ -77,7 +77,7 @@ export default class ExtensionTeam extends PureComponent {
             sections.push({
                 id: 'sidebar.pg',
                 defaultMessage: 'PRIVATE CHANNELS',
-                data: privateFiletered
+                data: privateFiletered,
             });
         }
 
@@ -85,7 +85,7 @@ export default class ExtensionTeam extends PureComponent {
             sections.push({
                 id: 'sidebar.direct',
                 defaultMessage: 'DIRECT MESSAGES',
-                data: directFiltered
+                data: directFiltered,
             });
         }
 
@@ -198,7 +198,7 @@ export default class ExtensionTeam extends PureComponent {
         const styles = getStyleSheet(defaultTheme);
         const {
             defaultMessage,
-            id
+            id,
         } = section;
 
         return (
@@ -226,44 +226,44 @@ export default class ExtensionTeam extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1
+            height: 1,
         },
         loadingContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         searchContainer: {
-            paddingBottom: 2
+            paddingBottom: 2,
         },
         searchBarInput: {
             backgroundColor: '#fff',
             color: theme.centerChannelColor,
-            fontSize: 15
+            fontSize: 15,
         },
         titleContainer: {
-            height: 30
+            height: 30,
         },
         title: {
             color: theme.centerChannelColor,
             fontSize: 15,
             height: 30,
             textAlignVertical: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         errorContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         error: {
             color: theme.errorTextColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });

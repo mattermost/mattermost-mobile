@@ -14,7 +14,7 @@ import SSO from './sso';
 function mapStateToProps(state) {
     return {
         ...state.views.selectServer,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -23,8 +23,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getSession,
             handleSuccessfulLogin,
-            setStoreFromLocalData
-        }, dispatch)
+            setStoreFromLocalData,
+        }, dispatch),
     };
 }
 

@@ -14,7 +14,7 @@ export function getNotificationProps(user) {
         email: 'true',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
-        push_status: 'online'
+        push_status: 'online',
     };
 
     if (!user || !user.first_name) {

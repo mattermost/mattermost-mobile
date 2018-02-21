@@ -8,7 +8,7 @@ import {
     ScrollView,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -87,24 +87,24 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const options = [{
             label: intl.formatMessage({
                 id: 'user.settings.notifications.allActivity',
-                defaultMessage: 'For all activity'
+                defaultMessage: 'For all activity',
             }),
             value: 'all',
-            checked: this.state.push === 'all'
+            checked: this.state.push === 'all',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.notifications.onlyMentions',
-                defaultMessage: 'Only for mentions and direct messages'
+                defaultMessage: 'Only for mentions and direct messages',
             }),
             value: 'mention',
-            checked: this.state.push === 'mention'
+            checked: this.state.push === 'mention',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.notifications.never',
-                defaultMessage: 'Never'
+                defaultMessage: 'Never',
             }),
             value: 'none',
-            checked: this.state.push === 'none'
+            checked: this.state.push === 'none',
         }];
 
         return (
@@ -181,24 +181,24 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const options = [{
             label: intl.formatMessage({
                 id: 'user.settings.push_notification.online',
-                defaultMessage: 'Online, away or offline'
+                defaultMessage: 'Online, away or offline',
             }),
             value: 'online',
-            checked: this.state.push_status === 'online'
+            checked: this.state.push_status === 'online',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.push_notification.away',
-                defaultMessage: 'Away or offline'
+                defaultMessage: 'Away or offline',
             }),
             value: 'away',
-            checked: this.state.push_status === 'away'
+            checked: this.state.push_status === 'away',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.push_notification.offline',
-                defaultMessage: 'Offline'
+                defaultMessage: 'Offline',
             }),
             value: 'offline',
-            checked: this.state.push_status === 'offline'
+            checked: this.state.push_status === 'offline',
         }];
 
         return (
@@ -263,17 +263,17 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const soundsArray = [{
             label: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.default_sound',
-                defaultMessage: 'Default ({sound})'
+                defaultMessage: 'Default ({sound})',
             }, {sound: defaultSound}),
             value: defaultUri,
-            checked: selectedUri === null
+            checked: selectedUri === null,
         }, {
             label: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.no_sound',
-                defaultMessage: 'None'
+                defaultMessage: 'None',
             }),
             value: 'none',
-            checked: selectedUri === 'none'
+            checked: selectedUri === 'none',
         }];
 
         if (sounds && sounds.length) {
@@ -281,7 +281,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 return {
                     label: s.name,
                     value: s.uri,
-                    checked: s.uri === selectedUri
+                    checked: s.uri === selectedUri,
                 };
             });
             soundsArray.push(...filteredSounds);
@@ -478,7 +478,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                     id='mobile.notification_settings_mobile.default_sound'
                     defaultMessage='Default ({sound})'
                     values={{
-                        sound: defaultSound
+                        sound: defaultSound,
                     }}
                 />
             );
@@ -580,7 +580,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             selectedUri = this.sound;
             sound = intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.no_sound',
-                defaultMessage: 'None'
+                defaultMessage: 'None',
             });
         } else {
             selectedUri = this.sound;
@@ -598,12 +598,12 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         PushNotifications.localNotification({
             message: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.test_push',
-                defaultMessage: 'This is a test push notification'
+                defaultMessage: 'This is a test push notification',
             }),
             userInfo: {
                 localNotification: true,
-                localTest: true
-            }
+                localTest: true,
+            },
         });
     };
 
@@ -661,75 +661,75 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 12,
-            height: 40
+            height: 40,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
-            width: '100%'
+            width: '100%',
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingVertical: 0
+            paddingVertical: 0,
         },
         modalOverlay: {
             backgroundColor: changeOpacity('#000000', 0.6),
             alignItems: 'center',
-            flex: 1
+            flex: 1,
         },
         modal: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
             marginTop: 20,
-            width: '95%'
+            width: '95%',
         },
         modalBody: {
             maxHeight: '80%',
-            paddingHorizontal: 24
+            paddingHorizontal: 24,
         },
         modalTitleContainer: {
             marginBottom: 30,
-            marginTop: 20
+            marginTop: 20,
         },
         modalTitle: {
             color: theme.centerChannelColor,
-            fontSize: 19
+            fontSize: 19,
         },
         modalOptionDisabled: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17
+            fontSize: 17,
         },
         modalFooter: {
             alignItems: 'flex-end',
             height: 58,
             marginTop: 40,
-            width: '100%'
+            width: '100%',
         },
         modalFooterContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            paddingRight: 24
+            paddingRight: 24,
         },
         modalFooterOptionContainer: {
             alignItems: 'center',
             height: 40,
             justifyContent: 'center',
             paddingHorizontal: 10,
-            paddingVertical: 5
+            paddingVertical: 5,
         },
         modalFooterOption: {
             color: theme.linkColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });
 

@@ -15,22 +15,22 @@ export default class ChannelLink extends React.PureComponent {
         channelsByName: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired
-        }).isRequired
+            setChannelDisplayName: PropTypes.func.isRequired,
+        }).isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            channel: this.getChannelFromChannelName(props)
+            channel: this.getChannelFromChannelName(props),
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.channelName !== this.props.channelName || nextProps.channelsByName !== this.props.channelsByName) {
             this.setState({
-                channel: this.getChannelFromChannelName(nextProps)
+                channel: this.getChannelFromChannelName(nextProps),
             });
         }
     }

@@ -12,7 +12,7 @@ import ChannelLink from './channel_link';
 
 function mapStateToProps(state) {
     return {
-        channelsByName: getChannelsNameMapInCurrentTeam(state)
+        channelsByName: getChannelsNameMapInCurrentTeam(state),
     };
 }
 
@@ -20,8 +20,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleSelectChannel,
-            setChannelDisplayName
-        }, dispatch)
+            setChannelDisplayName,
+        }, dispatch),
     };
 }
 

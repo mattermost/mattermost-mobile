@@ -9,7 +9,7 @@ import {
     Platform,
     StyleSheet,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import IonIcon from 'react-native-vector-icons/Ionicons';
@@ -30,19 +30,19 @@ const {
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
     IOSX_TOP_PORTRAIT,
-    STATUS_BAR_HEIGHT
+    STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
 export default class OfflineIndicator extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             connection: PropTypes.func.isRequired,
-            initWebSocket: PropTypes.func.isRequired
+            initWebSocket: PropTypes.func.isRequired,
         }).isRequired,
         isConnecting: PropTypes.bool,
         isLandscape: PropTypes.bool,
         isOnline: PropTypes.bool,
-        webSocketStatus: PropTypes.string
+        webSocketStatus: PropTypes.string,
     };
 
     static defaultProps: {
@@ -58,7 +58,7 @@ export default class OfflineIndicator extends Component {
         this.state = {
             network: null,
             navBar,
-            top: new Animated.Value(navBar - HEIGHT)
+            top: new Animated.Value(navBar - HEIGHT),
         };
 
         this.backgroundColor = new Animated.Value(0);
@@ -109,16 +109,16 @@ export default class OfflineIndicator extends Component {
             Animated.timing(
                 this.backgroundColor, {
                     toValue: 1,
-                    duration: 100
+                    duration: 100,
                 }
             ),
             Animated.timing(
                 this.state.top, {
                     toValue: (this.state.navBar - HEIGHT),
                     duration: 300,
-                    delay: 500
+                    delay: 500,
                 }
-            )
+            ),
         ]).start(() => {
             this.backgroundColor.setValue(0);
             this.setState({network: null});
@@ -164,7 +164,7 @@ export default class OfflineIndicator extends Component {
         Animated.timing(
             this.state.top, {
                 toValue: this.state.navBar,
-                duration: 300
+                duration: 300,
             }
         ).start();
     };
@@ -176,7 +176,7 @@ export default class OfflineIndicator extends Component {
 
         const background = this.backgroundColor.interpolate({
             inputRange: [0, 1],
-            outputRange: ['#939393', '#629a41']
+            outputRange: ['#939393', '#629a41'],
         });
 
         let i18nId;
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
         height: HEIGHT,
         width: '100%',
         zIndex: 9,
-        position: 'absolute'
+        position: 'absolute',
     },
     wrapper: {
         alignItems: 'center',
@@ -255,24 +255,24 @@ const styles = StyleSheet.create({
         height: HEIGHT,
         flexDirection: 'row',
         paddingLeft: 12,
-        paddingRight: 5
+        paddingRight: 5,
     },
     message: {
         color: '#FFFFFF',
         fontSize: 14,
         fontWeight: '600',
-        flex: 1
+        flex: 1,
     },
     actionButton: {
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#FFFFFF'
+        borderColor: '#FFFFFF',
     },
     actionContainer: {
         alignItems: 'flex-end',
         height: 24,
         justifyContent: 'center',
         paddingRight: 10,
-        width: 60
-    }
+        width: 60,
+    },
 });

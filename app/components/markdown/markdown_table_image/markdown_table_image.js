@@ -16,11 +16,11 @@ export default class MarkdownTableImage extends React.PureComponent {
         textStyle: CustomPropTypes.Style.isRequired,
         navigator: PropTypes.object.isRequired,
         serverURL: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     handlePress = wrapWithPreventDoubleTap(() => {
@@ -30,19 +30,19 @@ export default class MarkdownTableImage extends React.PureComponent {
             screen: 'TableImage',
             title: this.context.intl.formatMessage({
                 id: 'mobile.routes.tableImage',
-                defaultMessage: 'Image'
+                defaultMessage: 'Image',
             }),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                imageSource: this.getImageSource()
+                imageSource: this.getImageSource(),
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 

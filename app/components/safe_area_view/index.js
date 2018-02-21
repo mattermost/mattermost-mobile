@@ -9,7 +9,7 @@ import SafeAreaView from './safe_area_view';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

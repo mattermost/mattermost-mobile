@@ -18,7 +18,7 @@ export default class SlackAttachments extends PureComponent {
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func.isRequired,
         theme: PropTypes.object,
-        textStyles: PropTypes.object
+        textStyles: PropTypes.object,
     };
 
     render() {

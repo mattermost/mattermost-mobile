@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import {
     Platform,
     Text,
-    View
+    View,
 } from 'react-native';
 
 import AtMention from 'app/components/at_mention';
@@ -41,13 +41,13 @@ export default class Markdown extends PureComponent {
         onPostPress: PropTypes.func,
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
-        value: PropTypes.string.isRequired
+        value: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
-        onLongPress: () => true
+        onLongPress: () => true,
     };
 
     constructor(props) {
@@ -91,17 +91,17 @@ export default class Markdown extends PureComponent {
                 table_row: MarkdownTableRow,
                 table_cell: MarkdownTableCell,
 
-                editedIndicator: this.renderEditedIndicator
+                editedIndicator: this.renderEditedIndicator,
             },
             renderParagraphsInLists: true,
-            getExtraPropsForNode: this.getExtraPropsForNode
+            getExtraPropsForNode: this.getExtraPropsForNode,
         });
     }
 
     getExtraPropsForNode = (node) => {
         const extraProps = {
             continue: node.continue,
-            index: node.index
+            index: node.index,
         };
 
         if (node.type === 'image') {
@@ -215,7 +215,7 @@ export default class Markdown extends PureComponent {
     renderHeading = ({children, level}) => {
         const containerStyle = [
             getStyleSheet(this.props.theme).block,
-            this.props.blockStyles[`heading${level}`]
+            this.props.blockStyles[`heading${level}`],
         ];
         const textStyle = this.props.blockStyles[`heading${level}Text`];
         return (
@@ -335,7 +335,7 @@ export default class Markdown extends PureComponent {
         const style = getStyleSheet(this.props.theme);
         const styles = [
             this.props.baseTextStyle,
-            style.editedIndicatorText
+            style.editedIndicatorText,
         ];
 
         return (
@@ -378,22 +378,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     // so we calculate the resulting colour manually
     const editedOpacity = Platform.select({
         ios: 0.3,
-        android: 1.0
+        android: 1.0,
     });
     const editedColor = Platform.select({
         ios: theme.centerChannelColor,
-        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3)
+        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
     });
 
     return {
         block: {
             alignItems: 'flex-start',
             flexDirection: 'row',
-            flexWrap: 'wrap'
+            flexWrap: 'wrap',
         },
         editedIndicatorText: {
             color: editedColor,
-            opacity: editedOpacity
-        }
+            opacity: editedOpacity,
+        },
     };
 });

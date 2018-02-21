@@ -44,7 +44,7 @@ function mapStateToProps(state, ownProps) {
         files: currentDraft.files,
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
-        value: currentDraft.draft
+        value: currentDraft.draft,
     };
 }
 
@@ -62,8 +62,8 @@ function mapDispatchToProps(dispatch) {
             handleUploadFiles,
             userTyping,
             handlePostDraftSelectionChanged,
-            handleCommentDraftSelectionChanged
-        }, dispatch)
+            handleCommentDraftSelectionChanged,
+        }, dispatch),
     };
 }
 

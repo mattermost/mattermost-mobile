@@ -26,7 +26,7 @@ function mapStateToProps(state) {
         latestVersion,
         license,
         minVersion,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -38,8 +38,8 @@ function mapDispatchToProps(dispatch) {
             loadConfigAndLicense,
             resetPing,
             setLastUpgradeCheck,
-            setServerVersion
-        }, dispatch)
+            setServerVersion,
+        }, dispatch),
     };
 }
 

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     ActivityIndicator,
     Text,
-    View
+    View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {intlShape} from 'react-intl';
@@ -29,15 +29,15 @@ export default class ExtensionChannels extends PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        title: PropTypes.string.isRequired
+        title: PropTypes.string.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     state = {
-        sections: null
+        sections: null,
     };
 
     componentWillMount() {
@@ -72,7 +72,7 @@ export default class ExtensionChannels extends PureComponent {
             sections.push({
                 id: 'sidebar.channels',
                 defaultMessage: 'PUBLIC CHANNELS',
-                data: publicChannels.sort(this.sortDisplayName)
+                data: publicChannels.sort(this.sortDisplayName),
             });
         }
 
@@ -80,7 +80,7 @@ export default class ExtensionChannels extends PureComponent {
             sections.push({
                 id: 'sidebar.pg',
                 defaultMessage: 'PRIVATE CHANNELS',
-                data: privateChannels.sort(this.sortDisplayName)
+                data: privateChannels.sort(this.sortDisplayName),
             });
         }
 
@@ -88,7 +88,7 @@ export default class ExtensionChannels extends PureComponent {
             sections.push({
                 id: 'sidebar.direct',
                 defaultMessage: 'DIRECT MESSAGES',
-                data: directChannels.sort(this.sortDisplayName)
+                data: directChannels.sort(this.sortDisplayName),
             });
         }
 
@@ -118,7 +118,7 @@ export default class ExtensionChannels extends PureComponent {
                 Icon.getImageSource('globe', 16, this.props.theme.centerChannelColor),
                 Icon.getImageSource('lock', 16, this.props.theme.centerChannelColor),
                 Icon.getImageSource('user', 16, this.props.theme.centerChannelColor),
-                Icon.getImageSource('users', 16, this.props.theme.centerChannelColor)
+                Icon.getImageSource('users', 16, this.props.theme.centerChannelColor),
             ]);
 
             this.publicChannelIcon = icons[0];
@@ -127,7 +127,7 @@ export default class ExtensionChannels extends PureComponent {
             this.gmChannelIcon = icons[3];
 
             this.setState({
-                channels
+                channels,
             }, () => {
                 this.buildSections();
             });
@@ -302,48 +302,48 @@ export default class ExtensionChannels extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         separatorContainer: {
-            paddingLeft: 35
+            paddingLeft: 35,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1
+            height: 1,
         },
         loadingContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         searchContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             paddingBottom: 2,
-            paddingHorizontal: 5
+            paddingHorizontal: 5,
         },
         searchBarInput: {
             backgroundColor: '#fff',
             color: theme.centerChannelColor,
-            fontSize: 15
+            fontSize: 15,
         },
         titleContainer: {
-            height: 30
+            height: 30,
         },
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 15,
             lineHeight: 30,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         errorContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         error: {
             color: theme.errorTextColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });

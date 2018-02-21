@@ -9,7 +9,7 @@ export default class PaperClipIcon extends Component {
     static propTypes = {
         width: PropTypes.number.isRequired,
         height: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
     };
 
     setNativeProps = (nativeProps) => {

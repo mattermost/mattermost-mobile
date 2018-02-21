@@ -10,7 +10,7 @@ export default class RadioButtonGroup extends PureComponent {
     static propTypes = {
         options: PropTypes.array,
         name: PropTypes.string.isRequired,
-        onSelect: PropTypes.func
+        onSelect: PropTypes.func,
     };
 
     static defaultProps: {
@@ -27,7 +27,7 @@ export default class RadioButtonGroup extends PureComponent {
             this.props.options.forEach((option) => {
                 const {
                     value,
-                    checked
+                    checked,
                 } = option;
 
                 if (!this.state.selected && checked) {
@@ -50,7 +50,7 @@ export default class RadioButtonGroup extends PureComponent {
     onChange = (value) => {
         const {onSelect} = this.props;
         this.setState({
-            selected: value
+            selected: value,
         }, () => {
             if (onSelect) {
                 onSelect(value);

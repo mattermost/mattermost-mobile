@@ -24,7 +24,7 @@ function mapStateToProps(state) {
         loadMoreRequestStatus: state.requests.users.getProfilesNotInChannel.status,
         addChannelMemberRequestStatus: state.requests.channels.addChannelMember,
         searchRequestStatus: state.requests.users.searchProfiles.status,
-        addChannelMemberStatus: state.requests.channels.addChannelMember.status
+        addChannelMemberStatus: state.requests.channels.addChannelMember.status,
     };
 }
 
@@ -34,8 +34,8 @@ function mapDispatchToProps(dispatch) {
             getTeamStats,
             getProfilesNotInChannel,
             handleAddChannelMembers,
-            searchProfiles
-        }, dispatch)
+            searchProfiles,
+        }, dispatch),
     };
 }
 

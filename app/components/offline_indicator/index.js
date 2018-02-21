@@ -20,7 +20,7 @@ function mapStateToProps(state) {
         isConnecting,
         isLandscape: isLandscape(state),
         isOnline: getConnection(state),
-        webSocketStatus
+        webSocketStatus,
     };
 }
 
@@ -28,8 +28,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             connection,
-            initWebSocket
-        }, dispatch)
+            initWebSocket,
+        }, dispatch),
     };
 }
 

@@ -9,7 +9,7 @@ import {
     StatusBar,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -25,13 +25,13 @@ import TeamsListItem from './teams_list_item';
 const {ANDROID_TOP_PORTRAIT} = ViewTypes;
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
-    waitForInteraction: true
+    waitForInteraction: true,
 };
 
 class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleTeamChange: PropTypes.func.isRequired
+            handleTeamChange: PropTypes.func.isRequired,
         }).isRequired,
         canJoinOtherTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
@@ -40,7 +40,7 @@ class TeamsList extends PureComponent {
         intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         teamIds: PropTypes.array.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -77,18 +77,18 @@ class TeamsList extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             navigatorButtons: {
                 leftButtons: [{
                     id: 'close-teams',
-                    icon: this.closeButton
-                }]
+                    icon: this.closeButton,
+                }],
             },
             passProps: {
                 currentUrl,
-                theme
-            }
+                theme,
+            },
         });
     });
 
@@ -153,10 +153,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.sidebarBg,
-            flex: 1
+            flex: 1,
         },
         statusBar: {
-            backgroundColor: theme.sidebarHeaderBg
+            backgroundColor: theme.sidebarHeaderBg,
         },
         headerContainer: {
             alignItems: 'center',
@@ -166,19 +166,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
                 android: {
-                    height: ANDROID_TOP_PORTRAIT
+                    height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44
-                }
-            })
+                    height: 44,
+                },
+            }),
         },
         header: {
             color: theme.sidebarHeaderTextColor,
             flex: 1,
             fontSize: 17,
             textAlign: 'center',
-            fontWeight: '600'
+            fontWeight: '600',
         },
         moreActionContainer: {
             alignItems: 'center',
@@ -186,17 +186,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 50,
             ...Platform.select({
                 android: {
-                    height: ANDROID_TOP_PORTRAIT
+                    height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44
-                }
-            })
+                    height: 44,
+                },
+            }),
         },
         moreAction: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 30
-        }
+            fontSize: 30,
+        },
     };
 });
 

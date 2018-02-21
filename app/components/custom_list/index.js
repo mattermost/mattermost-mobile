@@ -26,7 +26,7 @@ export default class CustomList extends PureComponent {
         onRowSelect: PropTypes.func,
         renderRow: PropTypes.func.isRequired,
         createSections: PropTypes.func,
-        showNoResults: PropTypes.bool
+        showNoResults: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -40,7 +40,7 @@ export default class CustomList extends PureComponent {
         selectable: false,
         createSections: () => true,
         showSections: true,
-        showNoResults: true
+        showNoResults: true,
     };
 
     constructor(props) {
@@ -64,7 +64,7 @@ export default class CustomList extends PureComponent {
             const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(mergedData) : this.state.dataSource.cloneWithRows(mergedData);
             this.setState({
                 data: mergedData,
-                dataSource
+                dataSource,
             });
         }
     }
@@ -72,7 +72,7 @@ export default class CustomList extends PureComponent {
     buildDataSource = (props) => {
         const ds = new ListView.DataSource({
             rowHasChanged: (r1, r2) => r1 !== r2,
-            sectionHeaderHasChanged: (s1, s2) => s1 !== s2
+            sectionHeaderHasChanged: (s1, s2) => s1 !== s2,
         });
         let newData = props.data;
         if (props.showSections) {
@@ -81,7 +81,7 @@ export default class CustomList extends PureComponent {
         const dataSource = props.showSections ? ds.cloneWithRowsAndSections(newData) : ds.cloneWithRows(newData);
         return {
             data: newData,
-            dataSource
+            dataSource,
         };
     };
 
@@ -97,7 +97,7 @@ export default class CustomList extends PureComponent {
         const dataSource = this.state.dataSource.cloneWithRowsAndSections(mergedData);
         this.setState({
             data: mergedData,
-            dataSource
+            dataSource,
         }, () => this.props.onRowSelect(id));
     };
 
@@ -118,7 +118,7 @@ export default class CustomList extends PureComponent {
             item,
             selected: item.selected,
             selectable: this.props.selectable,
-            onPress: this.props.onRowPress
+            onPress: this.props.onRowPress,
         };
 
         if ('disableSelect' in item) {
@@ -181,7 +181,7 @@ export default class CustomList extends PureComponent {
             searching,
             showNoResults,
             showSections,
-            theme
+            theme,
         } = this.props;
         const {dataSource} = this.state;
         const style = getStyleFromTheme(theme);
@@ -245,45 +245,45 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             ...Platform.select({
                 android: {
-                    marginBottom: 20
-                }
-            })
+                    marginBottom: 20,
+                },
+            }),
         },
         loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6)
+            color: changeOpacity(theme.centerChannelColor, 0.6),
         },
         searching: {
             backgroundColor: theme.centerChannelBg,
             height: '100%',
             position: 'absolute',
-            width: '100%'
+            width: '100%',
         },
         sectionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
             paddingLeft: 10,
-            paddingVertical: 2
+            paddingVertical: 2,
         },
         sectionWrapper: {
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         sectionText: {
             fontWeight: '600',
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         separator: {
             height: 1,
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         noResultContainer: {
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         noResultText: {
             fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
 });

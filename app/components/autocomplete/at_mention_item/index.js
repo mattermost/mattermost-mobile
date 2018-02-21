@@ -16,7 +16,7 @@ function mapStateToProps(state, ownProps) {
         firstName: user.first_name,
         lastName: user.last_name,
         username: user.username,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

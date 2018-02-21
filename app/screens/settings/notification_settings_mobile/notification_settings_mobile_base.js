@@ -17,7 +17,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         navigator: PropTypes.object,
         notificationPreferences: PropTypes.object,
         onBack: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -31,7 +31,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
             ...this.getNotificationPreferences(props),
             showMobilePushModal: false,
             showMobilePushStatusModal: false,
-            showMobileSoundsModal: false
+            showMobileSoundsModal: false,
         };
         this.push = this.state.push;
         this.pushStatus = this.state.push_status;
@@ -51,7 +51,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
                 shouldBlink,
                 shouldVibrate,
                 selectedUri,
-                sounds
+                sounds,
             } = props.notificationPreferences;
 
             const defSound = sounds.find((s) => s.uri === defaultUri);
@@ -70,7 +70,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
                 shouldVibrate,
                 shouldBlink,
                 selectedUri,
-                sound
+                sound,
             };
         }
 
@@ -105,7 +105,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
             first_name: firstName,
             mention_keys: mentionKeys,
             push,
-            push_status: pushStatus
+            push_status: pushStatus,
         } = this.state;
 
         this.props.onBack({
@@ -118,7 +118,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
-            user_id: this.props.currentUser.id
+            user_id: this.props.currentUser.id,
         });
     };
 }

@@ -7,7 +7,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -19,13 +19,13 @@ export default class Reactions extends PureComponent {
         actions: PropTypes.shape({
             addReaction: PropTypes.func.isRequired,
             getReactionsForPost: PropTypes.func.isRequired,
-            removeReaction: PropTypes.func.isRequired
+            removeReaction: PropTypes.func.isRequired,
         }).isRequired,
         highlightedReactions: PropTypes.array.isRequired,
         onAddReaction: PropTypes.func.isRequired,
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     }
 
     componentDidMount() {
@@ -89,14 +89,14 @@ const style = StyleSheet.create({
     reactions: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        alignItems: 'flex-start'
-    }
+        alignItems: 'flex-start',
+    },
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         more: {
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         reaction: {
             alignItems: 'center',
@@ -107,7 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 6,
             marginVertical: 5,
             paddingVertical: 2,
-            paddingHorizontal: 6
-        }
+            paddingHorizontal: 6,
+        },
     };
 });

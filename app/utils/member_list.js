@@ -3,7 +3,7 @@
 
 export const loadingText = {
     id: 'mobile.loading_members',
-    defaultMessage: 'Loading Members...'
+    defaultMessage: 'Loading Members...',
 };
 
 export function createMembersSections(data) {

@@ -20,15 +20,15 @@ function mapStateToProps(state, ownProps) {
     return {
         theme: getTheme(state),
         status,
-        user
+        user,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getStatusForId: getStatusesByIdsBatchedDebounced
-        }, dispatch)
+            getStatusForId: getStatusesByIdsBatchedDebounced,
+        }, dispatch),
     };
 }
 

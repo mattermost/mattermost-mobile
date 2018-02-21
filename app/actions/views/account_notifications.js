@@ -19,7 +19,7 @@ export function handleUpdateUserNotifyProps(notifyProps) {
                 user_id: userId,
                 category: Preferences.CATEGORY_NOTIFICATIONS,
                 name: Preferences.EMAIL_INTERVAL,
-                value: interval
+                value: interval,
             }];
 
             savePreferences(currentUserId, emailInterval)(dispatch, getState);

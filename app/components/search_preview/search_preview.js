@@ -7,7 +7,7 @@ import {
     Platform,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -22,17 +22,17 @@ Animatable.initializeRegistryWithDefinitions({
     growOut: {
         from: {
             opacity: 1,
-            scale: 1
+            scale: 1,
         },
         0.5: {
             opacity: 1,
-            scale: 3
+            scale: 3,
         },
         to: {
             opacity: 0,
-            scale: 5
-        }
-    }
+            scale: 5,
+        },
+    },
 });
 
 export default class SearchPreview extends PureComponent {
@@ -40,7 +40,7 @@ export default class SearchPreview extends PureComponent {
         actions: PropTypes.shape({
             getPostsAfter: PropTypes.func.isRequired,
             getPostsBefore: PropTypes.func.isRequired,
-            getPostThread: PropTypes.func.isRequired
+            getPostThread: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelName: PropTypes.string,
@@ -50,11 +50,11 @@ export default class SearchPreview extends PureComponent {
         onClose: PropTypes.func,
         onPress: PropTypes.func,
         postIds: PropTypes.array,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        postIds: []
+        postIds: [],
     };
 
     constructor(props) {
@@ -68,7 +68,7 @@ export default class SearchPreview extends PureComponent {
 
         this.state = {
             show,
-            error: false
+            error: false,
         };
     }
 
@@ -106,7 +106,7 @@ export default class SearchPreview extends PureComponent {
         const result = await Promise.all([
             actions.getPostThread(focusedPostId, false),
             actions.getPostsBefore(channelId, focusedPostId, 0, 5),
-            actions.getPostsAfter(channelId, focusedPostId, 0, 5)
+            actions.getPostsAfter(channelId, focusedPostId, 0, 5),
         ]);
 
         const error = result.some((res) => Boolean(res.error));
@@ -125,7 +125,7 @@ export default class SearchPreview extends PureComponent {
             focusedPostId,
             navigator,
             postIds,
-            theme
+            theme,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -218,7 +218,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             top: 0,
             left: 0,
             zIndex: 10,
-            width: '100%'
+            width: '100%',
         },
         wrapper: {
             flex: 1,
@@ -227,12 +227,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             opacity: 0,
             ...Platform.select({
                 android: {
-                    marginTop: 10
+                    marginTop: 10,
                 },
                 ios: {
-                    marginTop: 20
-                }
-            })
+                    marginTop: 20,
+                },
+            }),
         },
         header: {
             alignItems: 'center',
@@ -244,27 +244,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 44,
             paddingRight: 16,
-            width: '100%'
+            width: '100%',
         },
         close: {
             justifyContent: 'center',
             height: 44,
             width: 40,
-            paddingLeft: 7
+            paddingLeft: 7,
         },
         titleContainer: {
             alignItems: 'center',
             flex: 1,
-            paddingRight: 40
+            paddingRight: 40,
         },
         title: {
             color: theme.centerChannelColor,
             fontSize: 17,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         postList: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1
+            flex: 1,
         },
         footer: {
             alignItems: 'center',
@@ -275,13 +275,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 44,
             paddingRight: 16,
-            width: '100%'
+            width: '100%',
         },
         jump: {
             color: theme.buttonColor,
             fontSize: 16,
             fontWeight: '600',
-            textAlignVertical: 'center'
-        }
+            textAlignVertical: 'center',
+        },
     };
 });

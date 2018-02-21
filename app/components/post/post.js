@@ -7,7 +7,7 @@ import {
     Alert,
     Clipboard,
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -36,7 +36,7 @@ class Post extends PureComponent {
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
-            removePost: PropTypes.func.isRequired
+            removePost: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
@@ -61,11 +61,11 @@ class Post extends PureComponent {
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         onReply: PropTypes.func,
-        isFlagged: PropTypes.bool
+        isFlagged: PropTypes.bool,
     };
 
     static defaultProps = {
-        isSearchResult: false
+        isSearchResult: false,
     };
 
     constructor(props) {
@@ -76,12 +76,12 @@ class Post extends PureComponent {
         if (post) {
             this.state = {
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles)),
             };
         } else {
             this.state = {
                 canEdit: false,
-                canDelete: false
+                canDelete: false,
             };
         }
     }
@@ -96,7 +96,7 @@ class Post extends PureComponent {
 
             this.setState({
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles)),
             });
         }
     }
@@ -113,14 +113,14 @@ class Post extends PureComponent {
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId: post.user_id
+                userId: post.user_id,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     };
 
@@ -143,7 +143,7 @@ class Post extends PureComponent {
             formatMessage({id: 'mobile.post.delete_question', defaultMessage: 'Are you sure you want to delete this post?'}),
             [{
                 text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
-                style: 'cancel'
+                style: 'cancel',
             }, {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
@@ -153,7 +153,7 @@ class Post extends PureComponent {
                     if (post.user_id === currentUserId) {
                         actions.removePost(post);
                     }
-                }
+                },
             }]
         );
     };
@@ -169,12 +169,12 @@ class Post extends PureComponent {
                     navBarTextColor: theme.sidebarHeaderTextColor,
                     navBarBackgroundColor: theme.sidebarHeaderBg,
                     navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
+                    screenBackgroundColor: theme.centerChannelBg,
                 },
                 passProps: {
                     post,
-                    closeButton: source
-                }
+                    closeButton: source,
+                },
             });
         });
     };
@@ -197,13 +197,13 @@ class Post extends PureComponent {
                         navBarTextColor: theme.sidebarHeaderTextColor,
                         navBarBackgroundColor: theme.sidebarHeaderBg,
                         navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg
+                        screenBackgroundColor: theme.centerChannelBg,
                     },
                     passProps: {
                         post,
                         closeButton: source,
-                        onEmojiPress: this.handleAddReactionToPost
-                    }
+                        onEmojiPress: this.handleAddReactionToPost,
+                    },
                 });
             });
     });
@@ -212,7 +212,7 @@ class Post extends PureComponent {
         const options = {
             title: {
                 id: 'mobile.post.failed_title',
-                defaultMessage: 'Unable to send your message:'
+                defaultMessage: 'Unable to send your message:',
             },
             items: [{
                 action: () => {
@@ -223,8 +223,8 @@ class Post extends PureComponent {
                 },
                 text: {
                     id: 'mobile.post.failed_retry',
-                    defaultMessage: 'Try Again'
-                }
+                    defaultMessage: 'Try Again',
+                },
             }, {
                 action: () => {
                     EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
@@ -232,12 +232,12 @@ class Post extends PureComponent {
                 },
                 text: {
                     id: 'mobile.post.failed_delete',
-                    defaultMessage: 'Delete Message'
+                    defaultMessage: 'Delete Message',
                 },
                 textStyle: {
-                    color: '#CC3239'
-                }
-            }]
+                    color: '#CC3239',
+                },
+            }],
         };
 
         this.props.navigator.showModal({
@@ -246,15 +246,15 @@ class Post extends PureComponent {
             animationType: 'none',
             passProps: {
                 items: options.items,
-                title: options.title
+                title: options.title,
             },
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext'
-            }
+                modalPresentationStyle: 'overCurrentContext',
+            },
         });
     };
 
@@ -262,7 +262,7 @@ class Post extends PureComponent {
         const {
             isSearchResult,
             onPress,
-            post
+            post,
         } = this.props;
 
         if (!getToolTipVisible()) {
@@ -298,7 +298,7 @@ class Post extends PureComponent {
             commentedOnPost,
             isFirstReply,
             isLastReply,
-            theme
+            theme,
         } = this.props;
 
         if (!this.isReplyPost()) {
@@ -361,7 +361,7 @@ class Post extends PureComponent {
             showFullDate,
             theme,
             managedConfig,
-            isFlagged
+            isFlagged,
         } = this.props;
 
         if (!post) {
@@ -434,48 +434,48 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         pendingPost: {
-            opacity: 0.5
+            opacity: 0.5,
         },
         rightColumn: {
             flex: 1,
             flexDirection: 'column',
-            marginRight: 12
+            marginRight: 12,
         },
         rightColumnPadding: {
-            paddingBottom: 3
+            paddingBottom: 3,
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
-            flex: 1
+            flex: 1,
         },
         profilePictureContainer: {
             marginBottom: 10,
             marginRight: 10,
             marginLeft: 12,
-            marginTop: 10
+            marginTop: 10,
         },
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
             marginRight: 10,
             width: 3,
-            flexBasis: 3
+            flexBasis: 3,
         },
         replyBarFirst: {
-            paddingTop: 10
+            paddingTop: 10,
         },
         replyBarLast: {
-            paddingBottom: 10
+            paddingBottom: 10,
         },
         selected: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         highlight: {
-            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5)
-        }
+            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5),
+        },
     };
 });
 

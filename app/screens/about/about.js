@@ -8,7 +8,7 @@ import {
     ScrollView,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
@@ -26,7 +26,7 @@ export default class About extends PureComponent {
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -139,7 +139,7 @@ export default class About extends PureComponent {
                             defaultMessage='Licensed to: {company}'
                             style={style.info}
                             values={{
-                                company: license.Company
+                                company: license.Company,
                             }}
                         />
                     </View>
@@ -155,7 +155,7 @@ export default class About extends PureComponent {
                     defaultMessage='Server Version: {version}'
                     style={style.info}
                     values={{
-                        version: config.Version
+                        version: config.Version,
                     }}
                 />
             );
@@ -167,7 +167,7 @@ export default class About extends PureComponent {
                     style={style.info}
                     values={{
                         version: config.Version,
-                        number: config.BuildNumber
+                        number: config.BuildNumber,
                     }}
                 />
             );
@@ -201,7 +201,7 @@ export default class About extends PureComponent {
                             style={style.info}
                             values={{
                                 version: DeviceInfo.getVersion(),
-                                number: DeviceInfo.getBuildNumber()
+                                number: DeviceInfo.getBuildNumber(),
                             }}
                         />
                         {serverVersion}
@@ -210,7 +210,7 @@ export default class About extends PureComponent {
                             defaultMessage='Database: {type}'
                             style={style.info}
                             values={{
-                                type: config.SQLDriverName
+                                type: config.SQLDriverName,
                             }}
                         />
                         {licensee}
@@ -221,7 +221,7 @@ export default class About extends PureComponent {
                                 defaultMessage='{site} is powered by Mattermost'
                                 style={style.footerText}
                                 values={{
-                                    site: this.props.config.SiteName
+                                    site: this.props.config.SiteName,
                                 }}
                             />
                         }
@@ -230,7 +230,7 @@ export default class About extends PureComponent {
                             defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
                             style={style.footerText}
                             values={{
-                                currentYear: new Date().getFullYear()
+                                currentYear: new Date().getFullYear(),
                             }}
                         />
                         <View style={style.noticeContainer}>
@@ -255,7 +255,7 @@ export default class About extends PureComponent {
                                                 style={[style.noticeLink, {marginLeft: 5}]}
                                                 onPress={this.handleMobileNotice}
                                             />
-                                        )
+                                        ),
                                     }}
                                 />
                             </View>
@@ -303,85 +303,85 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         wrapper: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingBottom: 30
+            paddingBottom: 30,
         },
         logoContainer: {
             alignItems: 'center',
             flex: 1,
             height: 200,
-            paddingVertical: 40
+            paddingVertical: 40,
         },
         infoContainer: {
             flex: 1,
             flexDirection: 'column',
-            paddingHorizontal: 20
+            paddingHorizontal: 20,
         },
         titleContainer: {
             flex: 1,
             flexDirection: 'row',
-            marginBottom: 20
+            marginBottom: 20,
         },
         title: {
             fontSize: 22,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         subtitle: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 19,
-            marginBottom: 15
+            marginBottom: 15,
         },
         learnContainer: {
             flex: 1,
             flexDirection: 'column',
-            marginVertical: 20
+            marginVertical: 20,
         },
         learn: {
             color: theme.centerChannelColor,
-            fontSize: 16
+            fontSize: 16,
         },
         learnLink: {
             color: theme.linkColor,
-            fontSize: 16
+            fontSize: 16,
         },
         info: {
             color: theme.centerChannelColor,
             fontSize: 16,
-            lineHeight: 19
+            lineHeight: 19,
         },
         licenseContainer: {
             flex: 1,
             flexDirection: 'row',
-            marginTop: 20
+            marginTop: 20,
         },
         noticeContainer: {
             flex: 1,
-            flexDirection: 'column'
+            flexDirection: 'column',
         },
         noticeLink: {
             color: theme.linkColor,
             fontSize: 11,
-            lineHeight: 13
+            lineHeight: 13,
         },
         hashContainer: {
             flex: 1,
-            flexDirection: 'column'
+            flexDirection: 'column',
         },
         footerGroup: {
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         footerText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 11,
             lineHeight: 13,
-            marginBottom: 10
-        }
+            marginBottom: 10,
+        },
     };
 });

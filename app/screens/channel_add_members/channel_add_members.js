@@ -8,7 +8,7 @@ import {
     Alert,
     InteractionManager,
     Platform,
-    View
+    View,
 } from 'react-native';
 
 import Loading from 'app/components/loading';
@@ -39,14 +39,14 @@ class ChannelAddMembers extends PureComponent {
             getTeamStats: PropTypes.func.isRequired,
             getProfilesNotInChannel: PropTypes.func.isRequired,
             handleAddChannelMembers: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired
-        })
+            searchProfiles: PropTypes.func.isRequired,
+        }),
     };
 
     addButton = {
         disabled: true,
         id: 'add-members',
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props) {
@@ -62,13 +62,13 @@ class ChannelAddMembers extends PureComponent {
             searching: false,
             selectedMembers: {},
             showNoResults: false,
-            term: ''
+            term: '',
         };
         this.addButton.title = props.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'});
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
-            rightButtons: [this.addButton]
+            rightButtons: [this.addButton],
         });
     }
 
@@ -130,7 +130,7 @@ class ChannelAddMembers extends PureComponent {
             searching: false,
             term: '',
             page: 0,
-            profiles: markSelectedProfiles(this.props.membersNotInChannel, this.state.selectedMembers)
+            profiles: markSelectedProfiles(this.props.membersNotInChannel, this.state.selectedMembers),
         });
     };
 
@@ -140,13 +140,13 @@ class ChannelAddMembers extends PureComponent {
 
     emitAdding = (loading) => {
         this.props.navigator.setButtons({
-            rightButtons: [{...this.addButton, disabled: loading}]
+            rightButtons: [{...this.addButton, disabled: loading}],
         });
     };
 
     emitCanAddMembers = (enabled) => {
         this.props.navigator.setButtons({
-            rightButtons: [{...this.addButton, disabled: !enabled}]
+            rightButtons: [{...this.addButton, disabled: !enabled}],
         });
     };
 
@@ -175,7 +175,7 @@ class ChannelAddMembers extends PureComponent {
         }
         this.setState({
             profiles: markSelectedProfiles(this.state.profiles, selectedMembers),
-            selectedMembers
+            selectedMembers,
         });
     };
 
@@ -188,7 +188,7 @@ class ChannelAddMembers extends PureComponent {
             actions.getProfilesNotInChannel(currentTeam.id, currentChannel.id, page, General.PROFILE_CHUNK_SIZE).then(({data}) => {
                 if (data && data.length) {
                     this.setState({
-                        page
+                        page,
                     });
                 } else {
                     this.setState({next: false});
@@ -245,9 +245,9 @@ class ChannelAddMembers extends PureComponent {
             fontSize: 15,
             ...Platform.select({
                 android: {
-                    marginBottom: -5
-                }
-            })
+                    marginBottom: -5,
+                },
+            }),
         };
 
         return (
@@ -296,8 +296,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        },
     };
 });
 

@@ -7,7 +7,7 @@ import {ScrollView, StyleSheet} from 'react-native';
 
 export default class Table extends React.PureComponent {
     static propTypes = {
-        renderRows: PropTypes.func.isRequired
+        renderRows: PropTypes.func.isRequired,
     };
 
     render() {
@@ -24,9 +24,9 @@ export default class Table extends React.PureComponent {
 
 const style = StyleSheet.create({
     scrollContainer: {
-        flex: 1
+        flex: 1,
     },
     container: {
-        flexDirection: 'row'
-    }
+        flexDirection: 'row',
+    },
 });

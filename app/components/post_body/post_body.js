@@ -7,7 +7,7 @@ import {
     Platform,
     TouchableHighlight,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -28,7 +28,7 @@ class PostBody extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             flagPost: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired
+            unflagPost: PropTypes.func.isRequired,
         }).isRequired,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
@@ -58,7 +58,7 @@ class PostBody extends PureComponent {
         postProps: PropTypes.object,
         renderReplyBar: PropTypes.func,
         theme: PropTypes.object,
-        toggleSelected: PropTypes.func
+        toggleSelected: PropTypes.func,
     };
 
     static defaultProps = {
@@ -71,7 +71,7 @@ class PostBody extends PureComponent {
         onPostEdit: emptyFunction,
         onPress: emptyFunction,
         renderReplyBar: emptyFunction,
-        toggleSelected: emptyFunction
+        toggleSelected: emptyFunction,
     };
 
     handleHideUnderlay = () => {
@@ -111,7 +111,7 @@ class PostBody extends PureComponent {
             navigator,
             onPress,
             postId,
-            toggleSelected
+            toggleSelected,
         } = this.props;
 
         let attachments;
@@ -158,7 +158,7 @@ class PostBody extends PureComponent {
             postProps,
             renderReplyBar,
             theme,
-            toggleSelected
+            toggleSelected,
         } = this.props;
         const {formatMessage} = intl;
         const actions = [];
@@ -172,26 +172,26 @@ class PostBody extends PureComponent {
         if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
             actions.push({
                 text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                onPress: this.props.onAddReaction
+                onPress: this.props.onAddReaction,
             });
 
             if (managedConfig.copyAndPasteProtection !== 'true') {
                 actions.push({
                     text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
                     onPress: this.props.onCopyText,
-                    copyPost: true
+                    copyPost: true,
                 });
             }
 
             if (isFlagged) {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                    onPress: this.unflagPost
+                    onPress: this.unflagPost,
                 });
             } else {
                 actions.push({
                     text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                    onPress: this.flagPost
+                    onPress: this.flagPost,
                 });
             }
 
@@ -205,7 +205,7 @@ class PostBody extends PureComponent {
 
             actions.push({
                 text: formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'}),
-                onPress: this.props.onCopyPermalink
+                onPress: this.props.onCopyPermalink,
             });
         }
 
@@ -337,18 +337,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         message: {
             color: theme.centerChannelColor,
             fontSize: normalizeFontSizeByDevice(13),
-            lineHeight: normalizeFontSizeByDevice(16)
+            lineHeight: normalizeFontSizeByDevice(16),
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
-            flex: 1
+            flex: 1,
         },
         pendingPost: {
-            opacity: 0.5
+            opacity: 0.5,
         },
         systemMessage: {
-            opacity: 0.6
-        }
+            opacity: 0.6,
+        },
     };
 });
 

@@ -18,7 +18,7 @@ function mapStateToProps(state) {
         forceUpgrade,
         latestVersion,
         minVersion,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -26,8 +26,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             logError,
-            setLastUpgradeCheck
-        }, dispatch)
+            setLastUpgradeCheck,
+        }, dispatch),
     };
 }
 
