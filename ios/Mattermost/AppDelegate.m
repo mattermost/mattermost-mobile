@@ -19,6 +19,7 @@
 #import "Orientation.h"
 #import "RCCManager.h"
 #import "RNNotifications.h"
+#import "SessionManager.h"
 
 @implementation AppDelegate
 
@@ -76,6 +77,11 @@
 - (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo completionHandler:(void (^)())completionHandler
 {
   [RNNotifications handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo completionHandler:completionHandler];
+}
+
+-(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
+  [SessionManager sharedSession].savedCompletionHandler = completionHandler;
+  [[SessionManager sharedSession] createSessionForRequestRequest:identifier];
 }
 
 @end
