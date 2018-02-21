@@ -30,6 +30,7 @@ export default class ChannelInfo extends PureComponent {
             deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
+            loadChannelsByTeamName: PropTypes.func.isRequired,
             favoriteChannel: PropTypes.func.isRequired,
             unfavoriteChannel: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
@@ -244,21 +245,20 @@ export default class ChannelInfo extends PureComponent {
     handleClosePermalink = () => {
         const {actions} = this.props;
         actions.selectFocusedPostId('');
-        this.setState({showingPermalink: false});
+        this.showingPermalink = false;
     };
 
-    handlePermalinkPress = (postId) => {
-        this.setState({isPermalink: true});
+    handlePermalinkPress = (postId, teamName) => {
+        this.props.actions.loadChannelsByTeamName(teamName);
         this.showPermalinkView(postId);
     };
 
     showPermalinkView = (postId) => {
         const {actions, navigator} = this.props;
-        const {isPermalink, showingPermalink} = this.state;
 
         actions.selectFocusedPostId(postId);
 
-        if (!showingPermalink) {
+        if (!this.showingPermalink) {
             const options = {
                 screen: 'Permalink',
                 animationType: 'none',
@@ -269,13 +269,13 @@ export default class ChannelInfo extends PureComponent {
                     modalPresentationStyle: 'overCurrentContext'
                 },
                 passProps: {
-                    isPermalink,
+                    isPermalink: true,
                     onClose: this.handleClosePermalink,
                     onPermalinkPress: this.handlePermalinkPress
                 }
             };
 
-            this.setState({showingPermalink: true});
+            this.showingPermalink = true;
             navigator.showModal(options);
         }
     };

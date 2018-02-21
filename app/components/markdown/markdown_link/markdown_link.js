@@ -18,9 +18,6 @@ import {normalizeProtocol} from 'app/utils/url';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            loadChannelsByTeamName: PropTypes.func.isRequired
-        }).isRequired,
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
         onLongPress: PropTypes.func,
@@ -39,7 +36,7 @@ export default class MarkdownLink extends PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {actions, href, onPermalinkPress, serverURL, siteURL} = this.props;
+        const {href, onPermalinkPress, serverURL, siteURL} = this.props;
         const url = normalizeProtocol(href);
 
         if (!url) {
@@ -61,8 +58,7 @@ export default class MarkdownLink extends PureComponent {
 
         const teamName = match[1];
         const postId = match[2];
-        actions.loadChannelsByTeamName(teamName);
-        onPermalinkPress(postId);
+        onPermalinkPress(postId, teamName);
     });
 
     parseLinkLiteral = (literal) => {

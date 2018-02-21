@@ -10,7 +10,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
-import {loadThreadIfNecessary} from 'app/actions/views/channel';
+import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
 
@@ -38,6 +38,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             clearSearch,
             handleSearchDraftChanged,
+            loadChannelsByTeamName,
             loadThreadIfNecessary,
             removeSearchTerms,
             selectFocusedPostId,

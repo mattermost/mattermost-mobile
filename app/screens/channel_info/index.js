@@ -8,6 +8,7 @@ import {
     closeDMChannel,
     closeGMChannel,
     leaveChannel,
+    loadChannelsByTeamName,
 } from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -69,6 +70,7 @@ function mapDispatchToProps(dispatch) {
             deleteChannel,
             getChannelStats,
             leaveChannel,
+            loadChannelsByTeamName,
             favoriteChannel,
             unfavoriteChannel,
             getCustomEmojisInText,

@@ -82,26 +82,28 @@ export default class Permalink extends PureComponent {
         intl: intlShape.isRequired
     };
 
-    constructor(props, context) {
+    constructor(props) {
         super(props);
 
         const {postIds, channelName} = props;
-        let show = false;
+        let loading = false;
 
         if (postIds && postIds.length >= 10) {
-            show = true;
-        }
-
-        if (!show) {
-            this.loadPosts(props, context);
+            loading = true;
         }
 
         this.state = {
             title: channelName,
-            show,
+            loading,
             error: '',
             retry: false
         };
+    }
+
+    componentWillMount() {
+        if (!this.state.loading) {
+            this.loadPosts(this.props);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -110,13 +112,12 @@ export default class Permalink extends PureComponent {
         }
 
         if (this.props.focusedPostId !== nextProps.focusedPostId) {
-            this.setState({show: false}, () => {
-                if (nextProps.postIds && nextProps.postIds.length < 10) {
-                    this.loadPosts(nextProps);
-                } else {
-                    this.setState({show: true});
-                }
-            });
+            this.setState({loading: false});
+            if (nextProps.postIds && nextProps.postIds.length < 10) {
+                this.loadPosts(nextProps);
+            } else {
+                this.setState({loading: true});
+            }
         }
     }
 
@@ -174,42 +175,38 @@ export default class Permalink extends PureComponent {
                 markChannelAsViewed
             } = actions;
 
-            if (this.refs.view) {
-                this.refs.view.zoomOut().then(() => {
-                    actions.selectPost('');
+            actions.selectPost('');
 
-                    if (onClose) {
-                        onClose();
-                    }
-
-                    navigator.resetTo({
-                        screen: 'Channel',
-                        animated: true,
-                        animationType: 'fade',
-                        navigatorStyle: {
-                            navBarHidden: true,
-                            statusBarHidden: false,
-                            statusBarHideWithNavBar: false,
-                            screenBackgroundColor: theme.centerChannelBg
-                        }
-                    });
-
-                    if (channelTeamId && currentTeamId !== channelTeamId) {
-                        handleTeamChange(channelTeamId, false);
-                    }
-
-                    setChannelLoading(channelId !== currentChannelId);
-                    setChannelDisplayName(channelDisplayName);
-                    handleSelectChannel(channelId);
-
-                    InteractionManager.runAfterInteractions(async () => {
-                        markChannelAsRead(channelId, currentChannelId);
-                        if (channelId !== currentChannelId) {
-                            markChannelAsViewed(currentChannelId);
-                        }
-                    });
-                });
+            if (onClose) {
+                onClose();
             }
+
+            navigator.resetTo({
+                screen: 'Channel',
+                animated: true,
+                animationType: 'fade',
+                navigatorStyle: {
+                    navBarHidden: true,
+                    statusBarHidden: false,
+                    statusBarHideWithNavBar: false,
+                    screenBackgroundColor: theme.centerChannelBg
+                }
+            });
+
+            if (channelTeamId && currentTeamId !== channelTeamId) {
+                handleTeamChange(channelTeamId, false);
+            }
+
+            setChannelLoading(channelId !== currentChannelId);
+            setChannelDisplayName(channelDisplayName);
+            handleSelectChannel(channelId);
+
+            InteractionManager.runAfterInteractions(async () => {
+                markChannelAsRead(channelId, currentChannelId);
+                if (channelId !== currentChannelId) {
+                    markChannelAsViewed(currentChannelId);
+                }
+            });
         }
     };
 
@@ -223,8 +220,8 @@ export default class Permalink extends PureComponent {
         }
     };
 
-    loadPosts = async (props, context) => {
-        const {intl} = this.context || context;
+    loadPosts = async (props) => {
+        const {intl} = this.context;
         const {actions, channelId, currentUserId, focusedPostId, isPermalink, postIds} = props;
         const {formatMessage} = intl;
         let focusChannelId = channelId;
@@ -242,10 +239,10 @@ export default class Permalink extends PureComponent {
                         defaultMessage: 'No Results Found'
                     })
                 });
-                return;
+            } else {
+                this.setState({error: post.error.message, retry: true});
             }
 
-            this.setState({error: post.error.message, retry: true});
             return;
         }
 
@@ -264,11 +261,11 @@ export default class Permalink extends PureComponent {
             actions.getPostsAfter(focusChannelId, focusedPostId, 0, 10)
         ]);
 
-        this.setState({show: true});
+        this.setState({loading: true});
     };
 
     retry = () => {
-        this.setState({show: false, error: null, retry: false});
+        this.setState({loading: false, error: null, retry: false});
         this.loadPosts(this.props);
     };
 
@@ -281,7 +278,7 @@ export default class Permalink extends PureComponent {
             postIds,
             theme
         } = this.props;
-        const {error, retry, show, title} = this.state;
+        const {error, retry, loading, title} = this.state;
         const style = getStyleSheet(theme);
 
         let postList;
@@ -300,7 +297,7 @@ export default class Permalink extends PureComponent {
                     </Text>
                 </View>
             );
-        } else if (show) {
+        } else if (loading) {
             postList = (
                 <PostList
                     highlightPostId={focusedPostId}
@@ -364,7 +361,7 @@ export default class Permalink extends PureComponent {
                         <View style={[style.postList, error ? style.bottom : null]}>
                             {postList}
                         </View>
-                        {!error && show &&
+                        {!error && loading &&
                         <TouchableOpacity
                             style={[style.footer, style.bottom]}
                             onPress={this.handlePress}

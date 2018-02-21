@@ -45,6 +45,7 @@ export default class Search extends PureComponent {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
+            loadChannelsByTeamName: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPosts: PropTypes.func.isRequired,
@@ -77,8 +78,6 @@ export default class Search extends PureComponent {
         this.isX = DeviceInfo.getModel() === 'iPhone X';
         this.state = {
             channelName: '',
-            showingPermalink: false,
-            isPermalink: false,
             value: '',
             managedConfig: {},
         };
@@ -162,12 +161,12 @@ export default class Search extends PureComponent {
     handleClosePermalink = () => {
         const {actions} = this.props;
         actions.selectFocusedPostId('');
-        this.setState({showingPermalink: false});
+        this.showingPermalink = false;
     };
 
-    handlePermalinkPress = (postId) => {
-        this.setState({isPermalink: true});
-        this.showPermalinkView(postId);
+    handlePermalinkPress = (postId, teamName) => {
+        this.props.actions.loadChannelsByTeamName(teamName);
+        this.showPermalinkView(postId, true);
     };
 
     handleSelectionChange = (event) => {
@@ -224,17 +223,15 @@ export default class Search extends PureComponent {
     previewPost = (post) => {
         Keyboard.dismiss();
 
-        this.setState({isPermalink: false});
-        this.showPermalinkView(post.id);
+        this.showPermalinkView(post.id, false);
     };
 
-    showPermalinkView = (postId) => {
+    showPermalinkView = (postId, isPermalink) => {
         const {actions, navigator} = this.props;
-        const {isPermalink, showingPermalink} = this.state;
 
         actions.selectFocusedPostId(postId);
 
-        if (!showingPermalink) {
+        if (!this.showingPermalink) {
             const options = {
                 screen: 'Permalink',
                 animationType: 'none',
@@ -251,7 +248,7 @@ export default class Search extends PureComponent {
                 },
             };
 
-            this.setState({showingPermalink: true});
+            this.showingPermalink = true;
             navigator.showModal(options);
         }
     };
