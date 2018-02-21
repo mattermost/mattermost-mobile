@@ -105,6 +105,8 @@
   },
   "scripts": {
     "test": "NODE_ENV=test nyc --reporter=text mocha --exit --opts test/mocha.opts",
+    "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
+    "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
     "postinstall": "make post-install"
   },
   "rnpm": {
