@@ -21,7 +21,7 @@ function wrapWithContextProvider(Comp, excludeEvents = true) {
 }
 
 function lazyLoad(name, store, provider, excludeEvents = true) {
-    return wrapWithContextProvider(require(name).default, excludeEvents, store, provider);
+    return wrapWithContextProvider(require(name).default, excludeEvents, store, provider); //eslint-disable-line global-require
 }
 
 export function registerScreens(store, Provider) {
