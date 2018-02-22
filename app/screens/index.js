@@ -20,7 +20,7 @@ function wrapWithContextProvider(Comp, excludeEvents = true) {
     };
 }
 
-function lazyLoad(name, excludeEvents = true, store, provider) {
+function lazyLoad(name, store, provider, excludeEvents = true) {
     return wrapWithContextProvider(require(name).default, excludeEvents, store, provider);
 }
 
@@ -28,7 +28,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => lazyLoad('app/screens/about', store, Provider));
     Navigation.registerComponent('AddReaction', () => lazyLoad('app/screens/add_reaction', store, Provider));
     Navigation.registerComponent('AdvancedSettings', () => lazyLoad('app/screens/settings/advanced_settings', store, Provider));
-    Navigation.registerComponent('Channel', () => lazyLoad('app/screens/channel', false, store, Provider));
+    Navigation.registerComponent('Channel', () => lazyLoad('app/screens/channel', store, Provider, false));
     Navigation.registerComponent('ChannelAddMembers', () => lazyLoad('app/screens/channel_add_members', store, Provider));
     Navigation.registerComponent('ChannelInfo', () => lazyLoad('app/screens/channel_info', store, Provider));
     Navigation.registerComponent('ChannelMembers', () => lazyLoad('app/screens/channel_members', store, Provider));
