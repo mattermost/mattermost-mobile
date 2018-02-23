@@ -24,7 +24,7 @@ function mapStateToProps(state) {
         isLandscape: isLandscape(state),
         isTablet: isTablet(state),
         teamsCount: getMyTeamsCount(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -38,8 +38,8 @@ function mapDispatchToProps(dispatch) {
             makeDirectChannel,
             markChannelAsRead,
             setChannelDisplayName,
-            setChannelLoading
-        }, dispatch)
+            setChannelLoading,
+        }, dispatch),
     };
 }
 

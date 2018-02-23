@@ -17,7 +17,7 @@ function makeMapStateToProps() {
 
         return {
             displayName: channel.display_name,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }

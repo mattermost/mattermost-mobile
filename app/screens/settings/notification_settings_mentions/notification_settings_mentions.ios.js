@@ -5,7 +5,7 @@ import React from 'react';
 import {
     ScrollView,
     Text,
-    View
+    View,
 } from 'react-native';
 import {injectIntl} from 'react-intl';
 
@@ -31,12 +31,12 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 keywords: this.state.mention_keys,
-                onBack: this.updateMentionKeys
-            }
+                onBack: this.updateMentionKeys,
+            },
         });
     };
 
@@ -213,26 +213,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 12,
-            height: 40
+            height: 40,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             flex: 1,
             height: 1,
-            marginLeft: 15
+            marginLeft: 15,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingVertical: 35
-        }
+            paddingVertical: 35,
+        },
     };
 });
 

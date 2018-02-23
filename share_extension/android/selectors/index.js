@@ -12,7 +12,7 @@ import {
     getMyPreferences,
     getTeammateNameDisplaySetting,
     getVisibleTeammate,
-    getVisibleGroupIds
+    getVisibleGroupIds,
 } from 'mattermost-redux/selectors/entities/preferences';
 
 import {
@@ -21,7 +21,7 @@ import {
     getGroupDisplayNameFromUserIds,
     getUserIdFromChannelName,
     isAutoClosed,
-    sortChannelsByDisplayName
+    sortChannelsByDisplayName,
 } from 'mattermost-redux/utils/channel_utils';
 import {createIdsSelector} from 'mattermost-redux/utils/helpers';
 
@@ -141,7 +141,7 @@ function completeDirectGroupInfo(currentUserId, profiles, profilesInChannel, tea
 
     if (profilesIds) {
         return Object.assign(gm, {
-            display_name: getGroupDisplayNameFromUserIds(profilesIds, profiles, currentUserId, teammateNameDisplay)
+            display_name: getGroupDisplayNameFromUserIds(profilesIds, profiles, currentUserId, teammateNameDisplay),
         });
     }
 
@@ -156,7 +156,7 @@ function completeDirectGroupInfo(currentUserId, profiles, profilesInChannel, tea
     });
     if (usernames.length === userIds.length) {
         return Object.assign(gm, {
-            display_name: getGroupDisplayNameFromUserIds(userIds, profiles, currentUserId, teammateNameDisplay)
+            display_name: getGroupDisplayNameFromUserIds(userIds, profiles, currentUserId, teammateNameDisplay),
         });
     }
 

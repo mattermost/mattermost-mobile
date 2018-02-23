@@ -49,7 +49,7 @@ function makeMapStateToProps() {
             link,
             openGraphData: getOpenGraphMetadataForUrl(state, link),
             showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true',
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }

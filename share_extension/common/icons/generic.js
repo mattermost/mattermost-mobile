@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {View} from 'react-native';
 import Svg, {
     G,
-    Path
+    Path,
 } from 'react-native-svg';
 
 function GenericSvg({height, width}) {
@@ -52,7 +52,7 @@ function GenericSvg({height, width}) {
 
 GenericSvg.propTypes = {
     height: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired
+    width: PropTypes.number.isRequired,
 };
 
 export default GenericSvg;

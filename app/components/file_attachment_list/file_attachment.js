@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -23,12 +23,12 @@ export default class FileAttachment extends PureComponent {
         file: PropTypes.object.isRequired,
         onInfoPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         onInfoPress: () => true,
-        onPreviewPress: () => true
+        onPreviewPress: () => true,
     };
 
     handlePreviewPress = () => {
@@ -117,43 +117,43 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         downloadIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
-            marginRight: 5
+            marginRight: 5,
         },
         fileDownloadContainer: {
             flexDirection: 'row',
-            marginTop: 3
+            marginTop: 3,
         },
         fileInfo: {
             marginLeft: 2,
             fontSize: 14,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         fileInfoContainer: {
             flex: 1,
             paddingHorizontal: 8,
             paddingVertical: 5,
             borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         fileName: {
             flexDirection: 'column',
             flexWrap: 'wrap',
             marginLeft: 2,
             fontSize: 14,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         fileWrapper: {
             flex: 1,
             flexDirection: 'row',
             marginTop: 10,
             borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         circularProgress: {
             width: '100%',
             height: '100%',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         circularProgressContent: {
             position: 'absolute',
@@ -162,7 +162,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             top: 0,
             left: 0,
             alignItems: 'center',
-            justifyContent: 'center'
-        }
+            justifyContent: 'center',
+        },
     };
 });

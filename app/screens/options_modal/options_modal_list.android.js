@@ -7,7 +7,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import IconFont from 'react-native-vector-icons/FontAwesome';
 
@@ -17,7 +17,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 export default class OptionsModalList extends PureComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
-        onCancelPress: PropTypes.func
+        onCancelPress: PropTypes.func,
     };
 
     renderOptions = () => {
@@ -70,7 +70,7 @@ export default class OptionsModalList extends PureComponent {
 
         return [
             ...options,
-            cancel
+            cancel,
         ];
     };
 
@@ -91,29 +91,29 @@ const style = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 15
+        padding: 15,
     },
     optionBorder: {
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0, 0, 0, 0.1)'
+        borderBottomColor: 'rgba(0, 0, 0, 0.1)',
     },
     optionContainer: {
         alignSelf: 'stretch',
         backgroundColor: 'white',
         borderRadius: 2,
-        marginHorizontal: 30
+        marginHorizontal: 30,
     },
     optionIcon: {
-        color: '#7f8180'
+        color: '#7f8180',
     },
     optionText: {
         color: '#000',
         flex: 1,
-        fontSize: 16
+        fontSize: 16,
     },
     wrapper: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
 });

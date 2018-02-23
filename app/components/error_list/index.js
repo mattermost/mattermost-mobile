@@ -11,7 +11,7 @@ import ErrorList from './error_list';
 
 function mapStateToProps(state) {
     return {
-        errors: getDisplayableErrors(state)
+        errors: getDisplayableErrors(state),
     };
 }
 
@@ -19,8 +19,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             dismissError,
-            clearErrors
-        }, dispatch)
+            clearErrors,
+        }, dispatch),
     };
 }
 

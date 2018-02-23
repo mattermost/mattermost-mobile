@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     StyleSheet,
-    View
+    View,
 } from 'react-native';
 
 import EmojiPicker from 'app/components/emoji_picker';
@@ -17,15 +17,15 @@ export default class AddReaction extends PureComponent {
         closeButton: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onEmojiPress: PropTypes.func,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        onEmojiPress: emptyFunction
+        onEmojiPress: emptyFunction,
     };
 
     leftButton = {
-        id: 'close-edit-post'
+        id: 'close-edit-post',
     };
 
     constructor(props) {
@@ -33,7 +33,7 @@ export default class AddReaction extends PureComponent {
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
-            leftButtons: [{...this.leftButton, icon: props.closeButton}]
+            leftButtons: [{...this.leftButton, icon: props.closeButton}],
         });
     }
 
@@ -45,7 +45,7 @@ export default class AddReaction extends PureComponent {
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down'
+            animationType: 'slide-down',
         });
     };
 
@@ -75,6 +75,6 @@ export default class AddReaction extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1
-    }
+        flex: 1,
+    },
 });

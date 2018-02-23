@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -20,7 +20,7 @@ export default class SpecialMentionItem extends PureComponent {
         id: PropTypes.string.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        values: PropTypes.object
+        values: PropTypes.object,
     };
 
     completeMention = () => {
@@ -34,7 +34,7 @@ export default class SpecialMentionItem extends PureComponent {
             id,
             completeHandle,
             theme,
-            values
+            values,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -70,31 +70,31 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
             marginHorizontal: 8,
             width: 20,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         rowIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 14
+            fontSize: 14,
         },
         rowUsername: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         rowFullname: {
             color: theme.centerChannelColor,
             flex: 1,
-            opacity: 0.6
+            opacity: 0.6,
         },
         textWrapper: {
             flex: 1,
             flexWrap: 'wrap',
-            paddingRight: 8
-        }
+            paddingRight: 8,
+        },
     };
 });

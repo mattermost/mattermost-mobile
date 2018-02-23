@@ -11,7 +11,7 @@ export default class MarkdownTableCell extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node,
         isHeading: PropTypes.bool.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {
@@ -40,7 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'flex-start',
             paddingHorizontal: 13,
-            paddingVertical: 6
-        }
+            paddingVertical: 6,
+        },
     };
 });

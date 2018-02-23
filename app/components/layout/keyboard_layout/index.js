@@ -12,7 +12,7 @@ import KeyboardLayout from './keyboard_layout';
 function mapStateToProps(state) {
     return {
         statusBarHeight: getStatusBarHeight(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

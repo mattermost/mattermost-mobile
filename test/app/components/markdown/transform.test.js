@@ -6,7 +6,7 @@ import {Node, Parser} from 'commonmark';
 
 import {
     addListItemIndices,
-    pullOutImages
+    pullOutImages,
 } from 'app/components/markdown/transform';
 
 describe('Components.Markdown.transform', () => {
@@ -26,20 +26,20 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'one'
-                            }]
-                        }]
+                                literal: 'one',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         children: [{
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -54,9 +54,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'one'
-                            }]
-                        }]
+                                literal: 'one',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 2,
@@ -64,11 +64,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const actual = addListItemIndices(input);
 
@@ -91,20 +91,20 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'one'
-                            }]
-                        }]
+                                literal: 'one',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         children: [{
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -121,9 +121,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'one'
-                            }]
-                        }]
+                                literal: 'one',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 8,
@@ -131,11 +131,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const actual = addListItemIndices(input);
 
@@ -166,9 +166,9 @@ describe('Components.Markdown.transform', () => {
                                     type: 'pargraph',
                                     children: [{
                                         type: 'text',
-                                        literal: 'one'
-                                    }]
-                                }]
+                                        literal: 'one',
+                                    }],
+                                }],
                             }, {
                                 type: 'item',
                                 children: [{
@@ -180,32 +180,32 @@ describe('Components.Markdown.transform', () => {
                                             type: 'pargraph',
                                             children: [{
                                                 type: 'text',
-                                                literal: 'one'
-                                            }]
-                                        }]
+                                                literal: 'one',
+                                            }],
+                                        }],
                                     }, {
                                         type: 'item',
                                         children: [{
                                             type: 'pargraph',
                                             children: [{
                                                 type: 'text',
-                                                literal: 'two'
-                                            }]
-                                        }]
-                                    }]
-                                }]
-                            }]
-                        }]
+                                                literal: 'two',
+                                            }],
+                                        }],
+                                    }],
+                                }],
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         children: [{
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'list',
                     listTight: true,
@@ -215,20 +215,20 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'one'
-                            }]
-                        }]
+                                literal: 'one',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         children: [{
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -254,9 +254,9 @@ describe('Components.Markdown.transform', () => {
                                     type: 'pargraph',
                                     children: [{
                                         type: 'text',
-                                        literal: 'one'
-                                    }]
-                                }]
+                                        literal: 'one',
+                                    }],
+                                }],
                             }, {
                                 type: 'item',
                                 index: 4,
@@ -270,9 +270,9 @@ describe('Components.Markdown.transform', () => {
                                             type: 'pargraph',
                                             children: [{
                                                 type: 'text',
-                                                literal: 'one'
-                                            }]
-                                        }]
+                                                literal: 'one',
+                                            }],
+                                        }],
                                     }, {
                                         type: 'item',
                                         index: 2,
@@ -280,13 +280,13 @@ describe('Components.Markdown.transform', () => {
                                             type: 'pargraph',
                                             children: [{
                                                 type: 'text',
-                                                literal: 'two'
-                                            }]
-                                        }]
-                                    }]
-                                }]
-                            }]
-                        }]
+                                                literal: 'two',
+                                            }],
+                                        }],
+                                    }],
+                                }],
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 8,
@@ -294,10 +294,10 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'list',
                     listTight: true,
@@ -308,9 +308,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'one'
-                            }]
-                        }]
+                                literal: 'one',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 2,
@@ -318,11 +318,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'pargraph',
                             children: [{
                                 type: 'text',
-                                literal: 'two'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'two',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const actual = addListItemIndices(input);
 
@@ -363,24 +363,24 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image'
-                        }]
-                    }]
-                }]
+                            literal: 'an image',
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
                 children: [{
                     type: 'paragraph',
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
-                }]
+                        literal: 'an image',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -396,19 +396,19 @@ describe('Components.Markdown.transform', () => {
                     type: 'paragraph',
                     children: [{
                         type: 'text',
-                        literal: 'This is text with '
+                        literal: 'This is text with ',
                     }, {
                         type: 'image',
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image'
-                        }]
+                            literal: 'an image',
+                        }],
                     }, {
                         type: 'text',
-                        literal: ' in it'
-                    }]
-                }]
+                        literal: ' in it',
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -416,23 +416,23 @@ describe('Components.Markdown.transform', () => {
                     type: 'paragraph',
                     children: [{
                         type: 'text',
-                        literal: 'This is text with '
-                    }]
+                        literal: 'This is text with ',
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'paragraph',
                     continue: true,
                     children: [{
                         type: 'text',
-                        literal: 'in it' // Note that we remove the preceding whitespace
-                    }]
-                }]
+                        literal: 'in it', // Note that we remove the preceding whitespace
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -451,42 +451,42 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image'
-                        }]
+                            literal: 'an image',
+                        }],
                     }, {
                         type: 'image',
                         destination: 'http://example.com/image2',
                         children: [{
                             type: 'text',
-                            literal: 'another image'
-                        }]
-                    }]
-                }]
+                            literal: 'another image',
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
                 children: [{
                     type: 'paragraph',
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'paragraph',
                     continue: true,
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image2',
                     children: [{
                         type: 'text',
-                        literal: 'another image'
-                    }]
-                }]
+                        literal: 'another image',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -503,15 +503,15 @@ describe('Components.Markdown.transform', () => {
                     level: 1,
                     children: [{
                         type: 'text',
-                        literal: 'This is the start 1'
+                        literal: 'This is the start 1',
                     }, {
                         type: 'image',
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image 1'
-                        }]
-                    }]
+                            literal: 'an image 1',
+                        }],
+                    }],
                 }, {
                     type: 'heading',
                     level: 4,
@@ -520,29 +520,29 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image 2'
-                        }]
+                            literal: 'an image 2',
+                        }],
                     }, {
                         type: 'text',
-                        literal: 'This is the end 2'
-                    }]
+                        literal: 'This is the end 2',
+                    }],
                 }, {
                     type: 'heading',
                     level: 2,
                     children: [{
                         type: 'text',
-                        literal: 'This is the start 3'
+                        literal: 'This is the start 3',
                     }, {
                         type: 'image',
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image 3'
-                        }]
+                            literal: 'an image 3',
+                        }],
                     }, {
                         type: 'text',
-                        literal: 'This is the end 3'
-                    }]
+                        literal: 'This is the end 3',
+                    }],
                 }, {
                     type: 'heading',
                     level: 3,
@@ -551,17 +551,17 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image 4a'
-                        }]
+                            literal: 'an image 4a',
+                        }],
                     }, {
                         type: 'image',
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'an image 4b'
-                        }]
-                    }]
-                }]
+                            literal: 'an image 4b',
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -570,80 +570,80 @@ describe('Components.Markdown.transform', () => {
                     level: 1,
                     children: [{
                         type: 'text',
-                        literal: 'This is the start 1'
-                    }]
+                        literal: 'This is the start 1',
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image 1'
-                    }]
+                        literal: 'an image 1',
+                    }],
                 }, {
                     type: 'heading',
                     level: 4,
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image 2'
-                    }]
+                        literal: 'an image 2',
+                    }],
                 }, {
                     type: 'heading',
                     level: 4,
                     continue: true,
                     children: [{
                         type: 'text',
-                        literal: 'This is the end 2'
-                    }]
+                        literal: 'This is the end 2',
+                    }],
                 }, {
                     type: 'heading',
                     level: 2,
                     children: [{
                         type: 'text',
-                        literal: 'This is the start 3'
-                    }]
+                        literal: 'This is the start 3',
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image 3'
-                    }]
+                        literal: 'an image 3',
+                    }],
                 }, {
                     type: 'heading',
                     level: 2,
                     continue: true,
                     children: [{
                         type: 'text',
-                        literal: 'This is the end 3'
-                    }]
+                        literal: 'This is the end 3',
+                    }],
                 }, {
                     type: 'heading',
                     level: 3,
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image 4a'
-                    }]
+                        literal: 'an image 4a',
+                    }],
                 }, {
                     type: 'heading',
                     level: 3,
                     continue: true,
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image 4b'
-                    }]
-                }]
+                        literal: 'an image 4b',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -664,11 +664,11 @@ describe('Components.Markdown.transform', () => {
                             destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
-                                literal: 'an image'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'an image',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -676,16 +676,16 @@ describe('Components.Markdown.transform', () => {
                     type: 'block_quote',
                     children: [{
                         type: 'paragraph',
-                        children: []
-                    }]
+                        children: [],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
-                }]
+                        literal: 'an image',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -703,20 +703,20 @@ describe('Components.Markdown.transform', () => {
                         type: 'paragraph',
                         children: [{
                             type: 'text',
-                            literal: 'This is '
+                            literal: 'This is ',
                         }, {
                             type: 'image',
                             destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
-                                literal: 'an image'
-                            }]
+                                literal: 'an image',
+                            }],
                         }, {
                             type: 'text',
-                            literal: ' in a sentence'
-                        }]
-                    }]
-                }]
+                            literal: ' in a sentence',
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -726,16 +726,16 @@ describe('Components.Markdown.transform', () => {
                         type: 'paragraph',
                         children: [{
                             type: 'text',
-                            literal: 'This is '
-                        }]
-                    }]
+                            literal: 'This is ',
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'block_quote',
                     continue: true,
@@ -744,10 +744,10 @@ describe('Components.Markdown.transform', () => {
                         continue: true,
                         children: [{
                             type: 'text',
-                            literal: 'in a sentence'
-                        }]
-                    }]
-                }]
+                            literal: 'in a sentence',
+                        }],
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -770,9 +770,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 2,
@@ -783,10 +783,10 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'an image'
-                                }]
-                            }]
-                        }]
+                                    literal: 'an image',
+                                }],
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 3,
@@ -794,11 +794,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is moretext'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'This is moretext',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -813,24 +813,24 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 2,
                         children: [{
                             type: 'paragraph',
-                            children: []
-                        }]
-                    }]
+                            children: [],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'bullet',
@@ -843,11 +843,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is moretext'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'This is moretext',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -870,9 +870,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 8,
@@ -883,12 +883,12 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'an image'
-                                }]
-                            }]
-                        }]
-                    }]
-                }]
+                                    literal: 'an image',
+                                }],
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -903,25 +903,25 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 8,
                         children: [{
                             type: 'paragraph',
-                            children: []
-                        }]
-                    }]
+                            children: [],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
-                }]
+                        literal: 'an image',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -944,9 +944,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 8,
@@ -954,26 +954,26 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
+                                literal: 'This is text',
                             }, {
                                 type: 'image',
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'an image'
-                                }]
+                                    literal: 'an image',
+                                }],
                             }, {
                                 type: 'image',
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'an image'
-                                }]
+                                    literal: 'an image',
+                                }],
                             }, {
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 9,
@@ -981,15 +981,15 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
+                                literal: 'This is text',
+                            }],
                         }, {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 10,
@@ -1000,10 +1000,10 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'an image'
-                                }]
-                            }]
-                        }]
+                                    literal: 'an image',
+                                }],
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 11,
@@ -1011,11 +1011,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'This is text',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -1030,9 +1030,9 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 8,
@@ -1040,17 +1040,17 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
-                    }]
+                                literal: 'This is text',
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1062,16 +1062,16 @@ describe('Components.Markdown.transform', () => {
                         continue: true,
                         children: [{
                             type: 'paragraph',
-                            continue: true
-                        }]
-                    }]
+                            continue: true,
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1086,9 +1086,9 @@ describe('Components.Markdown.transform', () => {
                             continue: true,
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 9,
@@ -1096,30 +1096,30 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
+                                literal: 'This is text',
+                            }],
                         }, {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
+                                literal: 'This is text',
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 10,
                         children: [{
                             type: 'paragraph',
-                            children: []
-                        }]
-                    }]
+                            children: [],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1132,11 +1132,11 @@ describe('Components.Markdown.transform', () => {
                             type: 'paragraph',
                             children: [{
                                 type: 'text',
-                                literal: 'This is text'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'This is text',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -1166,16 +1166,16 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'text',
-                                        literal: 'This is text'
+                                        literal: 'This is text',
                                     }, {
                                         type: 'image',
                                         destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
-                                            literal: 'an image'
-                                        }]
-                                    }]
-                                }]
+                                            literal: 'an image',
+                                        }],
+                                    }],
+                                }],
                             }, {
                                 type: 'item',
                                 index: 4,
@@ -1186,15 +1186,15 @@ describe('Components.Markdown.transform', () => {
                                         destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
-                                            literal: 'an image'
-                                        }]
+                                            literal: 'an image',
+                                        }],
                                     }, {
                                         type: 'text',
-                                        literal: 'This is text'
-                                    }]
-                                }]
-                            }]
-                        }]
+                                        literal: 'This is text',
+                                    }],
+                                }],
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 2,
@@ -1212,13 +1212,13 @@ describe('Components.Markdown.transform', () => {
                                         destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
-                                            literal: 'an image'
-                                        }]
+                                            literal: 'an image',
+                                        }],
                                     }, {
                                         type: 'text',
-                                        literal: 'This is text'
-                                    }]
-                                }]
+                                        literal: 'This is text',
+                                    }],
+                                }],
                             }, {
                                 type: 'item',
                                 index: 2,
@@ -1226,20 +1226,20 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'text',
-                                        literal: 'This is text'
+                                        literal: 'This is text',
                                     }, {
                                         type: 'image',
                                         destination: 'http://example.com/image',
                                         children: [{
                                             type: 'text',
-                                            literal: 'an image'
-                                        }]
-                                    }]
-                                }]
-                            }]
-                        }]
-                    }]
-                }]
+                                            literal: 'an image',
+                                        }],
+                                    }],
+                                }],
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -1261,19 +1261,19 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'text',
-                                        literal: 'This is text'
-                                    }]
-                                }]
-                            }]
-                        }]
-                    }]
+                                        literal: 'This is text',
+                                    }],
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1293,18 +1293,18 @@ describe('Components.Markdown.transform', () => {
                                 index: 4,
                                 children: [{
                                     type: 'paragraph',
-                                    children: []
-                                }]
-                            }]
-                        }]
-                    }]
+                                    children: [],
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1328,11 +1328,11 @@ describe('Components.Markdown.transform', () => {
                                     continue: true,
                                     children: [{
                                         type: 'text',
-                                        literal: 'This is text'
-                                    }]
-                                }]
-                            }]
-                        }]
+                                        literal: 'This is text',
+                                    }],
+                                }],
+                            }],
+                        }],
                     }, {
                         type: 'item',
                         index: 2,
@@ -1345,18 +1345,18 @@ describe('Components.Markdown.transform', () => {
                                 index: 1,
                                 children: [{
                                     type: 'paragraph',
-                                    children: []
-                                }]
-                            }]
-                        }]
-                    }]
+                                    children: [],
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1380,9 +1380,9 @@ describe('Components.Markdown.transform', () => {
                                     continue: true,
                                     children: [{
                                         type: 'text',
-                                        literal: 'This is text'
-                                    }]
-                                }]
+                                        literal: 'This is text',
+                                    }],
+                                }],
                             }, {
                                 type: 'item',
                                 index: 2,
@@ -1390,20 +1390,20 @@ describe('Components.Markdown.transform', () => {
                                     type: 'paragraph',
                                     children: [{
                                         type: 'text',
-                                        literal: 'This is text'
-                                    }]
-                                }]
-                            }]
-                        }]
-                    }]
+                                        literal: 'This is text',
+                                    }],
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
-                }]
+                        literal: 'an image',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -1429,9 +1429,9 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/abc',
                                 children: [{
                                     type: 'text',
-                                    literal: 'abc'
-                                }]
-                            }]
+                                    literal: 'abc',
+                                }],
+                            }],
                         }, {
                             type: 'list',
                             listType: 'numbered',
@@ -1446,10 +1446,10 @@ describe('Components.Markdown.transform', () => {
                                         destination: 'http://example.com/def',
                                         children: [{
                                             type: 'text',
-                                            literal: 'def'
-                                        }]
-                                    }]
-                                }]
+                                            literal: 'def',
+                                        }],
+                                    }],
+                                }],
                             }, {
                                 type: 'item',
                                 index: 2,
@@ -1460,14 +1460,14 @@ describe('Components.Markdown.transform', () => {
                                         destination: 'http://example.com/ghi',
                                         children: [{
                                             type: 'text',
-                                            literal: 'ghi'
-                                        }]
-                                    }]
-                                }]
-                            }]
-                        }]
+                                            literal: 'ghi',
+                                        }],
+                                    }],
+                                }],
+                            }],
+                        }],
 
-                    }]
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1482,11 +1482,11 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/jkl',
                                 children: [{
                                     type: 'text',
-                                    literal: 'jkl'
-                                }]
-                            }]
-                        }]
-                    }]
+                                    literal: 'jkl',
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'block_quote',
                     children: [{
@@ -1496,21 +1496,21 @@ describe('Components.Markdown.transform', () => {
                             destination: 'http://example.com/mno',
                             children: [{
                                 type: 'text',
-                                literal: 'mno'
-                            }]
+                                literal: 'mno',
+                            }],
                         }, {
-                            type: 'softbreak'
+                            type: 'softbreak',
                         }, {
                             type: 'image',
                             destination: 'http://example.com/pqr',
                             children: [{
                                 type: 'text',
-                                literal: 'pqr'
-                            }]
-                        }]
-                    }]
+                                literal: 'pqr',
+                            }],
+                        }],
+                    }],
                 }, {
-                    type: 'thematic_break'
+                    type: 'thematic_break',
                 }, {
                     type: 'heading',
                     level: 1,
@@ -1519,16 +1519,16 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'vw'
-                        }]
+                            literal: 'vw',
+                        }],
                     }, {
                         type: 'image',
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'x'
-                        }]
-                    }]
+                            literal: 'x',
+                        }],
+                    }],
                 }, {
                     type: 'paragraph',
                     children: [{
@@ -1536,10 +1536,10 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com/image',
                         children: [{
                             type: 'text',
-                            literal: 'yz'
-                        }]
-                    }]
-                }]
+                            literal: 'yz',
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -1552,16 +1552,16 @@ describe('Components.Markdown.transform', () => {
                         index: 1,
                         children: [{
                             type: 'paragraph',
-                            children: []
-                        }]
-                    }]
+                            children: [],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/abc',
                     children: [{
                         type: 'text',
-                        literal: 'abc'
-                    }]
+                        literal: 'abc',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'bulleted',
@@ -1580,18 +1580,18 @@ describe('Components.Markdown.transform', () => {
                                 index: 1,
                                 children: [{
                                     type: 'paragraph',
-                                    children: []
-                                }]
-                            }]
-                        }]
-                    }]
+                                    children: [],
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/def',
                     children: [{
                         type: 'text',
-                        literal: 'def'
-                    }]
+                        literal: 'def',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'bulleted',
@@ -1611,18 +1611,18 @@ describe('Components.Markdown.transform', () => {
                                 index: 2,
                                 children: [{
                                     type: 'paragraph',
-                                    children: []
-                                }]
-                            }]
-                        }]
-                    }]
+                                    children: [],
+                                }],
+                            }],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/ghi',
                     children: [{
                         type: 'text',
-                        literal: 'ghi'
-                    }]
+                        literal: 'ghi',
+                    }],
                 }, {
                     type: 'list',
                     listType: 'ordered',
@@ -1632,29 +1632,29 @@ describe('Components.Markdown.transform', () => {
                         index: 3,
                         children: [{
                             type: 'paragraph',
-                            children: []
-                        }]
-                    }]
+                            children: [],
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/jkl',
                     children: [{
                         type: 'text',
-                        literal: 'jkl'
-                    }]
+                        literal: 'jkl',
+                    }],
                 }, {
                     type: 'block_quote',
                     children: [{
                         type: 'paragraph',
-                        children: []
-                    }]
+                        children: [],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/mno',
                     children: [{
                         type: 'text',
-                        literal: 'mno'
-                    }]
+                        literal: 'mno',
+                    }],
                 }, {
                     type: 'block_quote',
                     continue: true,
@@ -1662,51 +1662,51 @@ describe('Components.Markdown.transform', () => {
                         type: 'paragraph',
                         continue: true,
                         children: [{
-                            type: 'softbreak'
-                        }]
-                    }]
+                            type: 'softbreak',
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/pqr',
                     children: [{
                         type: 'text',
-                        literal: 'pqr'
-                    }]
+                        literal: 'pqr',
+                    }],
                 }, {
-                    type: 'thematic_break'
+                    type: 'thematic_break',
                 }, {
                     type: 'heading',
                     level: 1,
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'vw'
-                    }]
+                        literal: 'vw',
+                    }],
                 }, {
                     type: 'heading',
                     level: 1,
-                    continue: true
+                    continue: true,
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'x'
-                    }]
+                        literal: 'x',
+                    }],
                 }, {
                     type: 'paragraph',
-                    children: []
+                    children: [],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     children: [{
                         type: 'text',
-                        literal: 'yz'
-                    }]
-                }]
+                        literal: 'yz',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -1728,11 +1728,11 @@ describe('Components.Markdown.transform', () => {
                             destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
-                                literal: 'an image'
-                            }]
-                        }]
-                    }]
-                }]
+                                literal: 'an image',
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -1741,17 +1741,17 @@ describe('Components.Markdown.transform', () => {
                     children: [{
                         type: 'link',
                         destination: 'http://example.com',
-                        children: []
-                    }]
+                        children: [],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     linkDestination: 'http://example.com',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
-                }]
+                        literal: 'an image',
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -1770,20 +1770,20 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com',
                         children: [{
                             type: 'text',
-                            literal: 'This is '
+                            literal: 'This is ',
                         }, {
                             type: 'image',
                             destination: 'http://example.com/image',
                             children: [{
                                 type: 'text',
-                                literal: 'an image'
-                            }]
+                                literal: 'an image',
+                            }],
                         }, {
                             type: 'text',
-                            literal: ' in a sentence.'
-                        }]
-                    }]
-                }]
+                            literal: ' in a sentence.',
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -1794,17 +1794,17 @@ describe('Components.Markdown.transform', () => {
                         destination: 'http://example.com',
                         children: [{
                             type: 'text',
-                            literal: 'This is '
-                        }]
-                    }]
+                            literal: 'This is ',
+                        }],
+                    }],
                 }, {
                     type: 'image',
                     destination: 'http://example.com/image',
                     linkDestination: 'http://example.com',
                     children: [{
                         type: 'text',
-                        literal: 'an image'
-                    }]
+                        literal: 'an image',
+                    }],
                 }, {
                     type: 'paragraph',
                     continue: true,
@@ -1814,10 +1814,10 @@ describe('Components.Markdown.transform', () => {
                         continue: true,
                         children: [{
                             type: 'text',
-                            literal: 'in a sentence.'
-                        }]
-                    }]
-                }]
+                            literal: 'in a sentence.',
+                        }],
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 
@@ -1842,27 +1842,27 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
-                            }]
+                                    literal: 'image1',
+                                }],
+                            }],
                         }, {
                             type: 'table_cell',
                             isHeading: true,
                             children: [{
                                 type: 'text',
-                                literal: 'This is '
+                                literal: 'This is ',
                             }, {
                                 type: 'image',
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
+                                    literal: 'image1',
+                                }],
                             }, {
                                 type: 'text',
-                                literal: ' in a sentence.'
-                            }]
-                        }]
+                                literal: ' in a sentence.',
+                            }],
+                        }],
                     }, {
                         type: 'table_row',
                         isHeading: true,
@@ -1871,18 +1871,18 @@ describe('Components.Markdown.transform', () => {
                             isHeading: true,
                             children: [{
                                 type: 'text',
-                                literal: 'This is '
+                                literal: 'This is ',
                             }, {
                                 type: 'image',
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
+                                    literal: 'image1',
+                                }],
                             }, {
                                 type: 'text',
-                                literal: ' in a sentence.'
-                            }]
+                                literal: ' in a sentence.',
+                            }],
                         }, {
                             type: 'table_cell',
                             isHeading: true,
@@ -1891,12 +1891,12 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
-                            }]
-                        }]
-                    }]
-                }]
+                                    literal: 'image1',
+                                }],
+                            }],
+                        }],
+                    }],
+                }],
             });
             const expected = makeAst({
                 type: 'document',
@@ -1913,27 +1913,27 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
-                            }]
+                                    literal: 'image1',
+                                }],
+                            }],
                         }, {
                             type: 'table_cell',
                             isHeading: true,
                             children: [{
                                 type: 'text',
-                                literal: 'This is '
+                                literal: 'This is ',
                             }, {
                                 type: 'image',
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
+                                    literal: 'image1',
+                                }],
                             }, {
                                 type: 'text',
-                                literal: ' in a sentence.'
-                            }]
-                        }]
+                                literal: ' in a sentence.',
+                            }],
+                        }],
                     }, {
                         type: 'table_row',
                         isHeading: true,
@@ -1942,18 +1942,18 @@ describe('Components.Markdown.transform', () => {
                             isHeading: true,
                             children: [{
                                 type: 'text',
-                                literal: 'This is '
+                                literal: 'This is ',
                             }, {
                                 type: 'image',
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
+                                    literal: 'image1',
+                                }],
                             }, {
                                 type: 'text',
-                                literal: ' in a sentence.'
-                            }]
+                                literal: ' in a sentence.',
+                            }],
                         }, {
                             type: 'table_cell',
                             isHeading: true,
@@ -1962,12 +1962,12 @@ describe('Components.Markdown.transform', () => {
                                 destination: 'http://example.com/image',
                                 children: [{
                                     type: 'text',
-                                    literal: 'image1'
-                                }]
-                            }]
-                        }]
-                    }]
-                }]
+                                    literal: 'image1',
+                                }],
+                            }],
+                        }],
+                    }],
+                }],
             });
             const actual = pullOutImages(input);
 

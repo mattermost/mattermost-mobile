@@ -22,15 +22,15 @@ function mapStateToProps(state) {
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
         teamIds: getMySortedTeamIds(state, locale),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleTeamChange
-        }, dispatch)
+            handleTeamChange,
+        }, dispatch),
     };
 }
 

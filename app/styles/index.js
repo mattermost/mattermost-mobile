@@ -12,21 +12,21 @@ export const GlobalStyles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white'
+        backgroundColor: 'white',
     },
     signupContainer: {
         paddingRight: 15,
-        paddingLeft: 15
+        paddingLeft: 15,
     },
     pagePush: {
-        height: 50
+        height: 50,
     },
     header: {
         textAlign: 'center',
         marginTop: 15,
         marginBottom: 15,
         fontSize: 32,
-        fontWeight: '600'
+        fontWeight: '600',
     },
     subheader: {
         textAlign: 'center',
@@ -34,7 +34,7 @@ export const GlobalStyles = StyleSheet.create({
         fontWeight: '300',
         color: '#777',
         marginBottom: 15,
-        lineHeight: 22
+        lineHeight: 22,
     },
     signupButton: {
         borderRadius: 3,
@@ -43,18 +43,18 @@ export const GlobalStyles = StyleSheet.create({
         alignItems: 'center',
         alignSelf: 'stretch',
         marginTop: 10,
-        padding: 15
+        padding: 15,
     },
     signupButtonText: {
         textAlign: 'center',
         color: '#2389D7',
-        fontSize: 17
+        fontSize: 17,
     },
     buttonListItemText: {
         textAlign: 'left',
         fontSize: 18,
         fontWeight: '400',
-        color: '#777'
+        color: '#777',
     },
     buttonListItem: {
         alignSelf: 'stretch',
@@ -65,24 +65,24 @@ export const GlobalStyles = StyleSheet.create({
         backgroundColor: '#fafafa',
         borderWidth: 1,
         borderRadius: 3,
-        borderColor: '#d5d5d5'
+        borderColor: '#d5d5d5',
     },
     button: {
         margin: 3,
         paddingTop: 10,
         paddingBottom: 10,
         paddingLeft: 15,
-        paddingRight: 15
+        paddingRight: 15,
     },
 
     buttonText: {
         color: '#5890FF',
-        fontSize: 18
+        fontSize: 18,
     },
 
     label: {
         fontSize: 20,
-        fontWeight: '400'
+        fontWeight: '400',
     },
 
     errorLabel: {
@@ -90,14 +90,14 @@ export const GlobalStyles = StyleSheet.create({
         marginTop: 15,
         marginBottom: 15,
         fontSize: 12,
-        textAlign: 'left'
+        textAlign: 'left',
     },
 
     switchUp: {
         padding: 0,
         backgroundColor: 'green',
         paddingBottom: 50,
-        alignItems: 'center'
+        alignItems: 'center',
     },
 
     inputBox: {
@@ -109,6 +109,6 @@ export const GlobalStyles = StyleSheet.create({
         marginBottom: 5,
         paddingLeft: 10,
         alignSelf: 'stretch',
-        borderRadius: 3
-    }
+        borderRadius: 3,
+    },
 });

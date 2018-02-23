@@ -12,12 +12,12 @@ export default class OptionsContext extends PureComponent {
         cancelText: PropTypes.string,
         children: PropTypes.node.isRequired,
         onPress: PropTypes.func.isRequired,
-        toggleSelected: PropTypes.func.isRequired
+        toggleSelected: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
         actions: [],
-        cancelText: 'Cancel'
+        cancelText: 'Cancel',
     };
 
     show = (additionalAction) => {
@@ -32,7 +32,7 @@ export default class OptionsContext extends PureComponent {
             const actionsText = nextActions.map((a) => a.text);
             RNBottomSheet.showBottomSheetWithOptions({
                 options: [...actionsText, cancelText],
-                cancelButtonIndex: nextActions.length
+                cancelButtonIndex: nextActions.length,
             }, (value) => {
                 if (value !== nextActions.length) {
                     const selectedOption = nextActions[value];

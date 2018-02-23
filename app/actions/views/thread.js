@@ -8,7 +8,7 @@ export function handleCommentDraftChanged(rootId, draft) {
         dispatch({
             type: ViewTypes.COMMENT_DRAFT_CHANGED,
             rootId,
-            draft
+            draft,
         }, getState);
     };
 }
@@ -17,6 +17,6 @@ export function handleCommentDraftSelectionChanged(rootId, cursorPosition) {
     return {
         type: ViewTypes.COMMENT_DRAFT_SELECTION_CHANGED,
         rootId,
-        cursorPosition
+        cursorPosition,
     };
 }

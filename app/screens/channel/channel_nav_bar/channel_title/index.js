@@ -14,7 +14,7 @@ function mapStateToProps(state) {
     return {
         currentChannelName: currentChannel ? currentChannel.display_name : '',
         displayName: state.views.channel.displayName,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

@@ -13,24 +13,24 @@ export default class ClockDisplayBase extends PureComponent {
         militaryTime: PropTypes.string.isRequired,
         userId: PropTypes.string.isRequired,
         actions: PropTypes.shape({
-            savePreferences: PropTypes.func.isRequired
-        }).isRequired
+            savePreferences: PropTypes.func.isRequired,
+        }).isRequired,
     };
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            newMilitaryTime: props.militaryTime
+            newMilitaryTime: props.militaryTime,
         };
     }
 
     setMilitaryTime = (value) => {
         this.setState({
-            newMilitaryTime: value
+            newMilitaryTime: value,
         });
 
         this.saveClockDisplayPreference(value);
@@ -43,7 +43,7 @@ export default class ClockDisplayBase extends PureComponent {
             user_id: userId,
             category: Preferences.CATEGORY_DISPLAY_SETTINGS,
             name: 'use_military_time',
-            value: newMilitaryTime
+            value: newMilitaryTime,
         };
 
         savePreferences(userId, [timePreference]);

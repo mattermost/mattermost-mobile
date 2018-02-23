@@ -11,11 +11,11 @@ export function handleServerUrlChanged(serverUrl) {
         dispatch(batchActions([
             {type: GeneralTypes.CLIENT_CONFIG_RESET},
             {type: GeneralTypes.CLIENT_LICENSE_RESET},
-            {type: ViewTypes.SERVER_URL_CHANGED, serverUrl}
+            {type: ViewTypes.SERVER_URL_CHANGED, serverUrl},
         ]), getState);
     };
 }
 
 export default {
-    handleServerUrlChanged
+    handleServerUrlChanged,
 };

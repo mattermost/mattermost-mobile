@@ -9,7 +9,7 @@ import StatusBar from './status_bar';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

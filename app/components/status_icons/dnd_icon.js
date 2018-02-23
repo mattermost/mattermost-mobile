@@ -5,13 +5,13 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View} from 'react-native';
 import Svg, {
-    Path
+    Path,
 } from 'react-native-svg';
 export default class DndIcon extends PureComponent {
     static propTypes = {
         width: PropTypes.number.isRequired,
         height: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
     };
 
     render() {

@@ -8,7 +8,7 @@ import {
     TextInput,
     StyleSheet,
     View,
-    TouchableWithoutFeedback
+    TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -42,7 +42,7 @@ export default class SearchBarAndroid extends PureComponent {
         inputBorderRadius: PropTypes.number,
         blurOnSubmit: PropTypes.bool,
         value: PropTypes.string,
-        containerStyle: CustomPropTypes.Style
+        containerStyle: CustomPropTypes.Style,
     };
 
     static defaultProps = {
@@ -60,14 +60,14 @@ export default class SearchBarAndroid extends PureComponent {
         onFocus: () => true,
         onBlur: () => true,
         onSelectionChange: () => true,
-        value: ''
+        value: '',
     };
 
     constructor(props) {
         super(props);
         this.state = {
             value: props.value,
-            isFocused: false
+            isFocused: false,
         };
     }
     componentWillReceiveProps(nextProps) {
@@ -96,7 +96,7 @@ export default class SearchBarAndroid extends PureComponent {
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(() => {
             this.setState({
-                isFocused: false
+                isFocused: false,
             }, () => {
                 this.props.onCancelButtonPress();
             });
@@ -149,12 +149,12 @@ export default class SearchBarAndroid extends PureComponent {
             tintColorDelete,
             tintColorSearch,
             containerStyle,
-            value
+            value,
         } = this.props;
         const {isFocused} = this.state;
 
         const inputNoBackground = {
-            ...inputStyle
+            ...inputStyle,
         };
         Reflect.deleteProperty(inputNoBackground, 'backgroundColor');
 
@@ -171,7 +171,7 @@ export default class SearchBarAndroid extends PureComponent {
                     styles.container,
                     containerStyle,
                     {height: inputHeight},
-                    backgroundColor && {backgroundColor}
+                    backgroundColor && {backgroundColor},
                 ]}
             >
                 <View
@@ -180,8 +180,8 @@ export default class SearchBarAndroid extends PureComponent {
                         {
                             backgroundColor: inputColor,
                             height: inputHeight,
-                            paddingLeft: 7
-                        }
+                            paddingLeft: 7,
+                        },
                     ]}
                 >
                     {isFocused ?
@@ -221,7 +221,7 @@ export default class SearchBarAndroid extends PureComponent {
                         disableFullscreenUI={true}
                         style={[
                             styles.searchBarInput,
-                            inputNoBackground
+                            inputNoBackground,
                         ]}
                     />
                     {isFocused && value ?
@@ -245,21 +245,21 @@ const styles = StyleSheet.create({
         backgroundColor: 'grey',
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     searchBar: {
         flex: 1,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     searchBarInput: {
         flex: 1,
         fontWeight: 'normal',
         textAlignVertical: 'center',
         fontSize: 15,
-        includeFontPadding: true
+        includeFontPadding: true,
     },
     searchBarBlurredInput: {
-        padding: 0
-    }
+        padding: 0,
+    },
 });

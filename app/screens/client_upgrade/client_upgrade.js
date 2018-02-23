@@ -9,7 +9,7 @@ import {
     Linking,
     ScrollView,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
@@ -24,7 +24,7 @@ export default class ClientUpgrade extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
-            setLastUpgradeCheck: PropTypes.func.isRequired
+            setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
         currentVersion: PropTypes.string,
         closeAction: PropTypes.func,
@@ -34,11 +34,11 @@ export default class ClientUpgrade extends PureComponent {
         latestVersion: PropTypes.string,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
-        upgradeType: PropTypes.string
+        upgradeType: PropTypes.string,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -46,7 +46,7 @@ export default class ClientUpgrade extends PureComponent {
 
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         this.state = {
-            upgradeType: UpgradeTypes.NO_UPGRADE
+            upgradeType: UpgradeTypes.NO_UPGRADE,
         };
     }
 
@@ -77,7 +77,7 @@ export default class ClientUpgrade extends PureComponent {
         }
 
         this.setState({
-            upgradeType
+            upgradeType,
         });
 
         actions.setLastUpgradeCheck();
@@ -105,11 +105,11 @@ export default class ClientUpgrade extends PureComponent {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
-                    defaultMessage: 'Upgrade Error'
+                    defaultMessage: 'Upgrade Error',
                 }),
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.message',
-                    defaultMessage: 'An error occurred while trying to open the download link.'
+                    defaultMessage: 'An error occurred while trying to open the download link.',
                 })
             );
 
@@ -121,7 +121,7 @@ export default class ClientUpgrade extends PureComponent {
         if (event.type === 'NavBarButtonPress') {
             if (event.id === 'close-upgrade') {
                 this.props.navigator.dismissModal({
-                    animationType: 'slide-down'
+                    animationType: 'slide-down',
                 });
             }
         }
@@ -215,7 +215,7 @@ export default class ClientUpgrade extends PureComponent {
                     defaultMessage='Lastest Version: {version}'
                     style={styles.messageSubtitle}
                     values={{
-                        version: latestVersion
+                        version: latestVersion,
                     }}
                 />
                 <FormattedText
@@ -223,7 +223,7 @@ export default class ClientUpgrade extends PureComponent {
                     defaultMessage='Your Version: {version}'
                     style={styles.messageSubtitle}
                     values={{
-                        version: currentVersion
+                        version: currentVersion,
                     }}
                 />
                 {upgradeType !== UpgradeTypes.NO_UPGRADE &&
@@ -283,12 +283,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         image: {
             marginTop: 75,
             width: 76,
-            height: 75
+            height: 75,
         },
         messageButton: {
             marginBottom: 15,
@@ -296,31 +296,31 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             alignItems: 'center',
             justifyContent: 'center',
-            borderColor: theme.buttonBg
+            borderColor: theme.buttonBg,
         },
         messageButtonText: {
             paddingVertical: 10,
             paddingHorizontal: 20,
             fontWeight: '600',
-            color: theme.buttonBg
+            color: theme.buttonBg,
         },
         messageContainer: {
             marginTop: 25,
             flex: 1,
             alignSelf: 'stretch',
-            alignItems: 'center'
+            alignItems: 'center',
         },
         messageCloseButton: {
             marginBottom: 15,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         messageSubtitle: {
             fontSize: 16,
             marginBottom: 20,
             color: theme.centerChannelColor,
             textAlign: 'center',
-            paddingHorizontal: 30
+            paddingHorizontal: 30,
         },
         messageTitle: {
             fontSize: 24,
@@ -328,15 +328,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             color: theme.centerChannelColor,
             textAlign: 'center',
-            paddingHorizontal: 30
+            paddingHorizontal: 30,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         scrollViewContent: {
             paddingBottom: 20,
-            alignItems: 'center'
-        }
+            alignItems: 'center',
+        },
     };
 });

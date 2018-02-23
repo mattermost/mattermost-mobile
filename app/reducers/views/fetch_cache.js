@@ -8,7 +8,7 @@ export default function fetchCache(state = {}, action) {
     case ViewTypes.ADD_FILE_TO_FETCH_CACHE:
         return {
             ...state,
-            [action.url]: true
+            [action.url]: true,
         };
     default:
         return state;

@@ -21,7 +21,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         currentChannelId: getCurrentChannelId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
-        locale
+        locale,
     };
 }
 

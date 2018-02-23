@@ -21,15 +21,15 @@ function mapStateToProps(state) {
         bannerDismissed: config.BannerText === announcement,
         bannerEnabled: config.EnableBanner === 'true' && license.IsLicensed === 'true',
         bannerText: config.BannerText,
-        bannerTextColor: config.BannerTextColor
+        bannerTextColor: config.BannerTextColor,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            dismissBanner
-        }, dispatch)
+            dismissBanner,
+        }, dispatch),
     };
 }
 

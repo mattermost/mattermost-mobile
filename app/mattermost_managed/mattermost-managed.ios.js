@@ -61,5 +61,5 @@ export default {
 
         return JailMonkey.trustFall();
     },
-    quitApp: MattermostManaged.quitApp
+    quitApp: MattermostManaged.quitApp,
 };

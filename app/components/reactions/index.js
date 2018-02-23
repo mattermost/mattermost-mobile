@@ -37,7 +37,7 @@ function makeMapStateToProps() {
         return {
             highlightedReactions,
             reactions: reactionsByName,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }
@@ -47,8 +47,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             addReaction,
             getReactionsForPost,
-            removeReaction
-        }, dispatch)
+            removeReaction,
+        }, dispatch),
     };
 }
 

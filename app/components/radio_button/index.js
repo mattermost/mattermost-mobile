@@ -6,7 +6,7 @@ import RadioButtonGroup from './radio_button_group';
 
 export {
     RadioButton,
-    RadioButtonGroup
+    RadioButtonGroup,
 };
 
 export default RadioButtonGroup;

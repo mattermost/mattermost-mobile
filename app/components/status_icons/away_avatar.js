@@ -7,14 +7,14 @@ import {View} from 'react-native';
 import Svg, {
     Circle,
     G,
-    Path
+    Path,
 } from 'react-native-svg';
 
 export default class AwayAvatar extends PureComponent {
     static propTypes = {
         width: PropTypes.number.isRequired,
         height: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
     };
 
     render() {

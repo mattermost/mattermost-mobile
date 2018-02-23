@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    View
+    View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -19,7 +19,7 @@ export default class ChannelLoader extends PureComponent {
     static propTypes = {
         channelIsLoading: PropTypes.bool.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     buildSections(key, style, top) {
@@ -36,7 +36,7 @@ export default class ChannelLoader extends PureComponent {
                         colors={[
                             changeOpacity('#e5e5e4', GRADIENT_START),
                             changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
-                            changeOpacity('#e5e5e4', GRADIENT_END)
+                            changeOpacity('#e5e5e4', GRADIENT_END),
                         ]}
                         locations={[0.1, 0.3, 0.7]}
                         style={[style.messageText, {width: 106}]}
@@ -47,7 +47,7 @@ export default class ChannelLoader extends PureComponent {
                         colors={[
                             changeOpacity('#e5e5e4', GRADIENT_START),
                             changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
-                            changeOpacity('#e5e5e4', GRADIENT_END)
+                            changeOpacity('#e5e5e4', GRADIENT_END),
                         ]}
                         locations={[0.1, 0.3, 0.7]}
                         style={[style.messageText, {alignSelf: 'stretch'}]}
@@ -58,7 +58,7 @@ export default class ChannelLoader extends PureComponent {
                         colors={[
                             changeOpacity('#e5e5e4', GRADIENT_START),
                             changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
-                            changeOpacity('#e5e5e4', GRADIENT_END)
+                            changeOpacity('#e5e5e4', GRADIENT_END),
                         ]}
                         locations={[0.1, 0.3, 0.7]}
                         style={[style.messageText, {alignSelf: 'stretch'}]}
@@ -93,35 +93,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'absolute',
             ...Platform.select({
                 android: {
-                    top: 0
+                    top: 0,
                 },
                 ios: {
-                    top: 15
-                }
-            })
+                    top: 15,
+                },
+            }),
         },
         avatar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderRadius: 16,
             height: 32,
-            width: 32
+            width: 32,
         },
         messageText: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 10,
-            marginBottom: 10
+            marginBottom: 10,
         },
         section: {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             paddingLeft: 12,
             paddingRight: 20,
-            marginVertical: 10
+            marginVertical: 10,
         },
         sectionMessage: {
             marginLeft: 12,
-            flex: 1
-        }
+            flex: 1,
+        },
     };
 });
 

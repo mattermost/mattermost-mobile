@@ -9,7 +9,7 @@ import ChannelsList from './channels_list';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

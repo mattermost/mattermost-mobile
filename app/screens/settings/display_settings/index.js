@@ -9,7 +9,7 @@ import DisplaySettings from './display_settings';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

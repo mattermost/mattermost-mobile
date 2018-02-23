@@ -12,5 +12,5 @@ export {
     ListTypes,
     NavigationTypes,
     PermissionTypes,
-    ViewTypes
+    ViewTypes,
 };

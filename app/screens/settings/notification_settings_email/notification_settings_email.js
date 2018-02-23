@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import {
     ScrollView,
-    View
+    View,
 } from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
@@ -27,7 +27,7 @@ export default class NotificationSettingsEmail extends PureComponent {
         myPreferences: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -69,7 +69,7 @@ export default class NotificationSettingsEmail extends PureComponent {
 
         this.setState({
             email,
-            interval
+            interval,
         });
     };
 
@@ -85,14 +85,14 @@ export default class NotificationSettingsEmail extends PureComponent {
 
         return {
             ...notifyProps,
-            interval
+            interval,
         };
     };
 
     saveUserNotifyProps = () => {
         this.props.onBack({
             ...this.state,
-            user_id: this.props.currentUser.id
+            user_id: this.props.currentUser.id,
         });
     };
 
@@ -225,31 +225,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 12,
-            height: 40
+            height: 40,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             flex: 1,
             height: 1,
-            marginLeft: 15
+            marginLeft: 15,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingVertical: 35
+            paddingVertical: 35,
         },
         disabled: {
             color: theme.centerChannelColor,
             fontSize: 15,
             paddingHorizontal: 15,
-            paddingVertical: 10
-        }
+            paddingVertical: 10,
+        },
     };
 });

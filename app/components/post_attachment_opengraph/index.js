@@ -11,8 +11,8 @@ import PostAttachmentOpenGraph from './post_attachment_opengraph';
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getOpenGraphMetadata
-        }, dispatch)
+            getOpenGraphMetadata,
+        }, dispatch),
     };
 }
 

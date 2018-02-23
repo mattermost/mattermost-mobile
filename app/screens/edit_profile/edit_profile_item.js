@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     View,
     Text,
-    TextInput
+    TextInput,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -18,18 +18,18 @@ export default class AccountSettingsItem extends PureComponent {
         field: PropTypes.string.isRequired,
         format: PropTypes.shape({
             id: PropTypes.string.isRequired,
-            defaultMessage: PropTypes.string.isRequired
+            defaultMessage: PropTypes.string.isRequired,
         }),
         helpText: PropTypes.string,
         optional: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         updateValue: PropTypes.func.isRequired,
-        value: PropTypes.string.isRequired
+        value: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
         optional: false,
-        disabled: false
+        disabled: false,
     };
 
     onChangeText = (value) => {
@@ -44,7 +44,7 @@ export default class AccountSettingsItem extends PureComponent {
             helpText,
             optional,
             disabled,
-            value
+            value,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -94,36 +94,36 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 14,
             height: 40,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         disabled: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         title: {
             fontSize: 14,
             color: theme.centerChannelColor,
-            marginLeft: 15
+            marginLeft: 15,
         },
         titleContainer15: {
             flexDirection: 'row',
-            marginTop: 15
+            marginTop: 15,
         },
         optional: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 14,
-            marginLeft: 5
+            marginLeft: 5,
         },
         helpText: {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginHorizontal: 15,
-            marginVertical: 10
-        }
+            marginVertical: 10,
+        },
     };
 });

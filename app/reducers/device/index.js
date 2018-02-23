@@ -16,5 +16,5 @@ export default combineReducers({
     isTablet,
     orientation,
     statusBarHeight,
-    websocket
+    websocket,
 });

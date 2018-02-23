@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Platform,
-    View
+    View,
 } from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -43,14 +43,14 @@ class Channel extends PureComponent {
             closeWebSocket: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
-            stopPeriodicStatusUpdates: PropTypes.func.isRequired
+            stopPeriodicStatusUpdates: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
         channelsRequestFailed: PropTypes.bool,
         currentTeamId: PropTypes.string,
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     componentWillMount() {
@@ -74,7 +74,7 @@ class Channel extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
             this.props.navigator.setStyle({
-                screenBackgroundColor: nextProps.theme.centerChannelBg
+                screenBackgroundColor: nextProps.theme.centerChannelBg,
             });
         }
 
@@ -130,8 +130,8 @@ class Channel extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         };
 
         if (Platform.OS === 'android') {
@@ -148,7 +148,7 @@ class Channel extends PureComponent {
             connection,
             initWebSocket,
             startPeriodicStatusUpdates,
-            stopPeriodicStatusUpdates
+            stopPeriodicStatusUpdates,
         } = actions;
 
         if (isConnected) {
@@ -169,7 +169,7 @@ class Channel extends PureComponent {
         const {
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
-            selectInitialChannel
+            selectInitialChannel,
         } = this.props.actions;
 
         loadChannelsIfNecessary(teamId).then(() => {
@@ -202,7 +202,7 @@ class Channel extends PureComponent {
             currentChannelId,
             intl,
             navigator,
-            theme
+            theme,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -265,12 +265,12 @@ class Channel extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         postList: {
-            flex: 1
+            flex: 1,
         },
         loading: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1
-        }
+            flex: 1,
+        },
     };
 });
 

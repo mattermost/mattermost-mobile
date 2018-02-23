@@ -8,7 +8,7 @@ import {
     Image,
     ScrollView,
     StyleSheet,
-    Text
+    Text,
 } from 'react-native';
 import Button from 'react-native-button';
 import Orientation from 'react-native-orientation';
@@ -29,7 +29,7 @@ class LoginOptions extends PureComponent {
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     componentWillMount() {
@@ -51,8 +51,8 @@ class LoginOptions extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     };
 
@@ -67,11 +67,11 @@ class LoginOptions extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                ssoType
-            }
+                ssoType,
+            },
         });
     };
 
@@ -86,7 +86,7 @@ class LoginOptions extends PureComponent {
         if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
             const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
             const additionalStyle = {
-                backgroundColor
+                backgroundColor,
             };
 
             if (config.hasOwnProperty('EmailLoginButtonBorderColor')) {
@@ -120,7 +120,7 @@ class LoginOptions extends PureComponent {
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
             const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
             const additionalStyle = {
-                backgroundColor
+                backgroundColor,
             };
 
             if (config.hasOwnProperty('LDAPLoginButtonBorderColor')) {
@@ -196,7 +196,7 @@ class LoginOptions extends PureComponent {
             const backgroundColor = config.SamlLoginButtonColor || '#34a28b';
 
             const additionalStyle = {
-                backgroundColor
+                backgroundColor,
             };
 
             if (config.SAMLLoginButtonBorderColor) {
@@ -263,15 +263,15 @@ class LoginOptions extends PureComponent {
 const style = StyleSheet.create({
     container: {
         backgroundColor: '#FFFFFF',
-        flex: 1
+        flex: 1,
     },
     innerContainer: {
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
         paddingHorizontal: 15,
-        paddingVertical: 50
-    }
+        paddingVertical: 50,
+    },
 });
 
 export default injectIntl(LoginOptions);

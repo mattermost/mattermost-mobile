@@ -13,7 +13,7 @@ export default class SearchResultPost extends PureComponent {
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
-        previewPost: PropTypes.func.isRequired
+        previewPost: PropTypes.func.isRequired,
     };
 
     render() {

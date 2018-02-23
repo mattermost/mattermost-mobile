@@ -18,15 +18,15 @@ function mapStateToProps(state) {
     return {
         userId: currentUserId,
         theme: getTheme(state),
-        militaryTime
+        militaryTime,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            savePreferences
-        }, dispatch)
+            savePreferences,
+        }, dispatch),
     };
 }
 

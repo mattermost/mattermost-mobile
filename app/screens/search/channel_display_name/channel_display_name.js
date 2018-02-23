@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class ChannelDisplayName extends PureComponent {
     static propTypes = {
         displayName: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {
@@ -30,7 +30,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             fontWeight: '600',
             marginTop: 5,
-            paddingHorizontal: 16
-        }
+            paddingHorizontal: 16,
+        },
     };
 });
