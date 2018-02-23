@@ -13,7 +13,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -43,17 +43,17 @@ const DRAG_HORIZONTAL_THRESHOLD = 50; // Make sure that it's not a sloppy horizo
 const HEADER_HEIGHT = 64;
 const STATUSBAR_HEIGHT = Platform.select({
     ios: 0,
-    android: 20
+    android: 20,
 });
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
-    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm']
+    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
 });
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            addFileToFetchCache: PropTypes.func.isRequired
+            addFileToFetchCache: PropTypes.func.isRequired,
         }),
         canDownloadFiles: PropTypes.bool.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -63,11 +63,11 @@ export default class ImagePreview extends PureComponent {
         files: PropTypes.array.isRequired,
         navigator: PropTypes.object,
         statusBarHeight: PropTypes.number,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -86,7 +86,7 @@ export default class ImagePreview extends PureComponent {
             pagingEnabled: true,
             showFileInfo: true,
             wrapperViewOpacity: new Animated.Value(0),
-            limitOpacity: new Animated.Value(0)
+            limitOpacity: new Animated.Value(0),
         };
     }
 
@@ -95,10 +95,10 @@ export default class ImagePreview extends PureComponent {
             onMoveShouldSetPanResponderCapture: this.mainViewMoveShouldSetPanResponderCapture,
             onPanResponderMove: Animated.event([null, {
                 dx: 0,
-                dy: this.state.drag.y
+                dy: this.state.drag.y,
             }]),
             onPanResponderRelease: this.mainViewPanResponderRelease,
-            onPanResponderTerminate: this.mainViewPanResponderRelease
+            onPanResponderTerminate: this.mainViewPanResponderRelease,
         });
     }
 
@@ -106,7 +106,7 @@ export default class ImagePreview extends PureComponent {
         InteractionManager.runAfterInteractions(() => {
             Animated.timing(this.state.wrapperViewOpacity, {
                 toValue: 1,
-                duration: 100
+                duration: 100,
             }).start();
         });
     }
@@ -194,13 +194,13 @@ export default class ImagePreview extends PureComponent {
     handleScroll = () => {
         Animated.timing(this.state.limitOpacity, {
             toValue: 1,
-            duration: 100
+            duration: 100,
         }).start();
     };
 
     handleVideoSeek = (seeking) => {
         this.setState({
-            isZooming: !seeking
+            isZooming: !seeking,
         });
     };
 
@@ -208,7 +208,7 @@ export default class ImagePreview extends PureComponent {
         if (zooming !== this.state.isZooming) {
             this.setHeaderAndFileInfoVisible(!zooming);
             this.setState({
-                isZooming: zooming
+                isZooming: zooming,
             });
         }
     };
@@ -234,7 +234,7 @@ export default class ImagePreview extends PureComponent {
         } else {
             this.setHeaderAndFileInfoVisible(true);
             Animated.spring(this.state.drag, {
-                toValue: {x: 0, y: 0}
+                toValue: {x: 0, y: 0},
             }).start();
         }
     };
@@ -249,7 +249,7 @@ export default class ImagePreview extends PureComponent {
 
     setHeaderAndFileInfoVisible = (show) => {
         this.setState({
-            showFileInfo: show
+            showFileInfo: show,
         });
 
         if (Platform.OS === 'ios') {
@@ -260,7 +260,7 @@ export default class ImagePreview extends PureComponent {
 
         Animated.timing(this.state.footerOpacity, {
             toValue: opacity,
-            duration: 300
+            duration: 300,
         }).start();
     };
 
@@ -270,18 +270,18 @@ export default class ImagePreview extends PureComponent {
         Alert.alert(
             intl.formatMessage({
                 id: 'mobile.image_preview.deleted_post_title',
-                defaultMessage: 'Post Deleted'
+                defaultMessage: 'Post Deleted',
             }),
             intl.formatMessage({
                 id: 'mobile.image_preview.deleted_post_message',
-                defaultMessage: 'This post and its files have been deleted. The previewer will now be closed.'
+                defaultMessage: 'This post and its files have been deleted. The previewer will now be closed.',
             }),
             [{
                 text: intl.formatMessage({
                     id: 'mobile.server_upgrade.button',
-                    defaultMessage: 'OK'
+                    defaultMessage: 'OK',
                 }),
-                onPress: this.close
+                onPress: this.close,
             }]
         );
     };
@@ -290,7 +290,7 @@ export default class ImagePreview extends PureComponent {
         EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
 
         this.setState({
-            showDownloader: true
+            showDownloader: true,
         });
     };
 
@@ -327,7 +327,7 @@ export default class ImagePreview extends PureComponent {
             if (canOpenSettings) {
                 grantOption = {
                     text: formatMessage({id: 'mobile.android.permission_denied_retry', defaultMessage: 'Set permission'}),
-                    onPress: () => Permissions.openSettings()
+                    onPress: () => Permissions.openSettings(),
                 };
             }
 
@@ -335,11 +335,11 @@ export default class ImagePreview extends PureComponent {
                 formatMessage({id: 'mobile.android.photos_permission_denied_title', defaultMessage: 'Photo library access is required'}),
                 formatMessage({
                     id: 'mobile.ios.photos_permission_denied_description',
-                    defaultMessage: 'To save images and videos to your library, please change your permission settings.'
+                    defaultMessage: 'To save images and videos to your library, please change your permission settings.',
                 }),
                 [
                     grantOption,
-                    {text: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})}
+                    {text: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})},
                 ]
             );
             return;
@@ -354,8 +354,8 @@ export default class ImagePreview extends PureComponent {
                     action: this.saveVideo,
                     text: {
                         id: 'mobile.image_preview.save_video',
-                        defaultMessage: 'Save Video'
-                    }
+                        defaultMessage: 'Save Video',
+                    },
                 });
             } else {
                 this.showVideoDownloadRequiredAlert();
@@ -365,15 +365,15 @@ export default class ImagePreview extends PureComponent {
                 action: this.showDownloader,
                 text: {
                     id: 'mobile.image_preview.save',
-                    defaultMessage: 'Save Image'
-                }
+                    defaultMessage: 'Save Image',
+                },
             });
         }
 
         const options = {
             title: file.name,
             items,
-            onCancelPress: () => this.setHeaderAndFileInfoVisible(true)
+            onCancelPress: () => this.setHeaderAndFileInfoVisible(true),
         };
 
         if (items.length) {
@@ -384,15 +384,15 @@ export default class ImagePreview extends PureComponent {
                 title: '',
                 animationType: 'none',
                 passProps: {
-                    ...options
+                    ...options,
                 },
                 navigatorStyle: {
                     navBarHidden: true,
                     statusBarHidden: false,
                     statusBarHideWithNavBar: false,
                     screenBackgroundColor: 'transparent',
-                    modalPresentationStyle: 'overCurrentContext'
-                }
+                    modalPresentationStyle: 'overCurrentContext',
+                },
             });
         }
     };
@@ -403,17 +403,17 @@ export default class ImagePreview extends PureComponent {
         Alert.alert(
             intl.formatMessage({
                 id: 'mobile.video.save_error_title',
-                defaultMessage: 'Save Video Error'
+                defaultMessage: 'Save Video Error',
             }),
             intl.formatMessage({
                 id: 'mobile.video.save_error_message',
-                defaultMessage: 'To save the video file you need to download it first.'
+                defaultMessage: 'To save the video file you need to download it first.',
             }),
             [{
                 text: intl.formatMessage({
                     id: 'mobile.server_upgrade.button',
-                    defaultMessage: 'OK'
-                })
+                    defaultMessage: 'OK',
+                }),
             }]
         );
     };
@@ -631,25 +631,25 @@ export default class ImagePreview extends PureComponent {
 const style = StyleSheet.create({
     wrapper: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
     scrollView: {
         flex: 1,
-        backgroundColor: '#000'
+        backgroundColor: '#000',
     },
     scrollViewContent: {
-        backgroundColor: '#000'
+        backgroundColor: '#000',
     },
     pageWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-        flex: 1
+        flex: 1,
     },
     headerContainer: {
         position: 'absolute',
         top: 0,
         height: HEADER_HEIGHT,
-        zIndex: 2
+        zIndex: 2,
     },
     header: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -657,32 +657,32 @@ const style = StyleSheet.create({
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100%'
+        width: '100%',
     },
     headerControls: {
         alignItems: 'center',
         justifyContent: 'space-around',
         flexDirection: 'row',
-        marginTop: 18
+        marginTop: 18,
     },
     headerIcon: {
         height: 44,
         width: 48,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     title: {
         flex: 1,
         marginHorizontal: 10,
         color: 'white',
         fontSize: 15,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     footerContainer: {
         position: 'absolute',
         bottom: 0,
         height: 64,
-        zIndex: 2
+        zIndex: 2,
     },
     footer: {
         position: 'absolute',
@@ -692,11 +692,11 @@ const style = StyleSheet.create({
         height: 64,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
-        paddingBottom: 5
+        paddingBottom: 5,
     },
     filename: {
         color: 'white',
         fontSize: 14,
-        marginBottom: 10
-    }
+        marginBottom: 10,
+    },
 });

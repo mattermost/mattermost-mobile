@@ -13,11 +13,11 @@ export default class KeyboardLayout extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
         statusBarHeight: PropTypes.number,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        keyboardVerticalOffset: 0
+        keyboardVerticalOffset: 0,
     };
 
     constructor(props) {
@@ -25,7 +25,7 @@ export default class KeyboardLayout extends PureComponent {
         this.subscriptions = [];
         this.count = 0;
         this.state = {
-            bottom: new Animated.Value(0)
+            bottom: new Animated.Value(0),
         };
     }
 
@@ -33,7 +33,7 @@ export default class KeyboardLayout extends PureComponent {
         if (Platform.OS === 'ios') {
             this.subscriptions = [
                 Keyboard.addListener('keyboardWillChangeFrame', this.onKeyboardChange),
-                Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide)
+                Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide),
             ];
         }
     }
@@ -46,7 +46,7 @@ export default class KeyboardLayout extends PureComponent {
         const {duration} = e;
         Animated.timing(this.state.bottom, {
             toValue: 0,
-            duration
+            duration,
         }).start();
     };
 
@@ -60,7 +60,7 @@ export default class KeyboardLayout extends PureComponent {
         const {height} = endCoordinates;
         Animated.timing(this.state.bottom, {
             toValue: height,
-            duration
+            duration,
         }).start();
     };
 
@@ -94,7 +94,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         keyboardLayout: {
             position: 'relative',
             backgroundColor: theme.centerChannelBg,
-            flex: 1
-        }
+            flex: 1,
+        },
     };
 });

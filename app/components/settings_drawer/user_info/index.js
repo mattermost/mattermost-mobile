@@ -9,7 +9,7 @@ import UserInfo from './user_info';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

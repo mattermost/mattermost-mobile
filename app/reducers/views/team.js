@@ -41,7 +41,7 @@ function lastChannelForTeam(state = {}, action) {
 
         return {
             ...state,
-            [action.teamId]: channelIds
+            [action.teamId]: channelIds,
         };
     }
     default:
@@ -51,5 +51,5 @@ function lastChannelForTeam(state = {}, action) {
 
 export default combineReducers({
     lastTeamId,
-    lastChannelForTeam
+    lastChannelForTeam,
 });

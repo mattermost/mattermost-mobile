@@ -11,7 +11,7 @@ export default class Drawer extends BaseDrawer {
         ...BaseDrawer.propTypes,
         onRequestClose: PropTypes.func.isRequired,
         bottomPanOffset: PropTypes.number,
-        topPanOffset: PropTypes.number
+        topPanOffset: PropTypes.number,
     };
 
     constructor(props) {

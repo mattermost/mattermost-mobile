@@ -9,7 +9,7 @@ import Markdown from './markdown';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

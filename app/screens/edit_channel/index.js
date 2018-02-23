@@ -24,15 +24,15 @@ function mapStateToProps(state) {
         updateChannelRequest,
         theme: getTheme(state),
         deviceWidth,
-        deviceHeight
+        deviceHeight,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            patchChannel
-        }, dispatch)
+            patchChannel,
+        }, dispatch),
     };
 }
 

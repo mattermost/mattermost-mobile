@@ -7,7 +7,7 @@ import {
     InteractionManager,
     Platform,
     StyleSheet,
-    FlatList
+    FlatList,
 } from 'react-native';
 
 import ChannelIntro from 'app/components/channel_intro';
@@ -32,7 +32,7 @@ const DATE_HEADER_HEIGHT = 28;
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            refreshChannelWithRetry: PropTypes.func.isRequired
+            refreshChannelWithRetry: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
@@ -50,11 +50,11 @@ export default class PostList extends PureComponent {
         renderReplies: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        loadMore: () => true
+        loadMore: () => true,
     };
 
     newMessagesIndex = -1;
@@ -64,7 +64,7 @@ export default class PostList extends PureComponent {
 
     state = {
         managedConfig: {},
-        scrollToMessage: false
+        scrollToMessage: false,
     };
 
     componentWillMount() {
@@ -129,7 +129,7 @@ export default class PostList extends PureComponent {
                     this.newMessagesIndex = -1;
                     this.moreNewMessages = false;
                     this.setState({
-                        scrollToMessage: false
+                        scrollToMessage: false,
                     });
                 }
             });
@@ -143,7 +143,7 @@ export default class PostList extends PureComponent {
         }
 
         this.setState({
-            managedConfig: nextConfig
+            managedConfig: nextConfig,
         });
     };
 
@@ -156,7 +156,7 @@ export default class PostList extends PureComponent {
         const {
             actions,
             channelId,
-            onRefresh
+            onRefresh,
         } = this.props;
 
         if (channelId) {
@@ -173,7 +173,7 @@ export default class PostList extends PureComponent {
         if (this.props.postIds.length === Object.values(this.itemMeasurements).length) {
             if (this.newMessagesIndex !== -1 && !this.newMessageScrolledTo) {
                 this.setState({
-                    scrollToMessage: true
+                    scrollToMessage: true,
                 });
             }
         }
@@ -227,7 +227,7 @@ export default class PostList extends PureComponent {
             navigator,
             onPostPress,
             renderReplies,
-            shouldRenderReplyButton
+            shouldRenderReplyButton,
         } = this.props;
         const {managedConfig} = this.state;
 
@@ -280,7 +280,7 @@ export default class PostList extends PureComponent {
     onLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({
-            postListHeight: height
+            postListHeight: height,
         });
     }
 
@@ -290,11 +290,11 @@ export default class PostList extends PureComponent {
             highlightPostId,
             loadMore,
             postIds,
-            showLoadMore
+            showLoadMore,
         } = this.props;
 
         const refreshControl = {
-            refreshing: false
+            refreshing: false,
         };
 
         if (channelId) {
@@ -324,6 +324,6 @@ export default class PostList extends PureComponent {
 
 const styles = StyleSheet.create({
     postListContent: {
-        paddingTop: 5
-    }
+        paddingTop: 5,
+    },
 });

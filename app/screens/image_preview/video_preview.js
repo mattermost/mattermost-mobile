@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     StyleSheet,
-    View
+    View,
 } from 'react-native';
 import Video from 'react-native-video';
 import RNFetchBlob from 'react-native-fetch-blob';
@@ -28,11 +28,11 @@ export default class VideoPreview extends PureComponent {
         file: PropTypes.object.isRequired,
         onFullScreen: PropTypes.func.isRequired,
         onSeeking: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -46,7 +46,7 @@ export default class VideoPreview extends PureComponent {
             currentTime: 0,
             duration: 0,
             path: null,
-            showDownloader: true
+            showDownloader: true,
         };
     }
 
@@ -100,17 +100,17 @@ export default class VideoPreview extends PureComponent {
         Alert.alert(
             intl.formatMessage({
                 id: 'mobile.video_playback.failed_title',
-                defaultMessage: 'Video playback failed'
+                defaultMessage: 'Video playback failed',
             }),
             intl.formatMessage({
                 id: 'mobile.video_playback.failed_description',
-                defaultMessage: 'An error occurred while trying to play the video.\n'
+                defaultMessage: 'An error occurred while trying to play the video.\n',
             }),
             [{
                 text: intl.formatMessage({
                     id: 'mobile.server_upgrade.button',
-                    defaultMessage: 'OK'
-                })
+                    defaultMessage: 'OK',
+                }),
             }]
         );
     };
@@ -134,7 +134,7 @@ export default class VideoPreview extends PureComponent {
     onPaused = () => {
         this.setState({
             paused: !this.state.paused,
-            playerState: this.state.paused ? PLAYER_STATE.PLAYING : PLAYER_STATE.PAUSED
+            playerState: this.state.paused ? PLAYER_STATE.PLAYING : PLAYER_STATE.PAUSED,
         });
     };
 
@@ -170,7 +170,7 @@ export default class VideoPreview extends PureComponent {
             deviceWidth,
             file,
             onSeeking,
-            theme
+            theme,
         } = this.props;
 
         const {currentTime, duration, isFullScreen, isLoading, path, paused, playerState, showDownloader} = this.state;
@@ -226,7 +226,7 @@ export default class VideoPreview extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
     },
     mediaPlayer: {
         position: 'absolute',
@@ -234,6 +234,6 @@ const styles = StyleSheet.create({
         left: 0,
         bottom: 0,
         right: 0,
-        backgroundColor: 'black'
-    }
+        backgroundColor: 'black',
+    },
 });

@@ -14,14 +14,14 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         keywords: PropTypes.string,
         navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            keywords: props.keywords
+            keywords: props.keywords,
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -106,33 +106,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            paddingTop: 35
+            paddingTop: 35,
         },
         inputContainer: {
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 15,
             height: 150,
             paddingHorizontal: 15,
-            paddingVertical: 10
+            paddingVertical: 10,
         },
         helpContainer: {
             marginTop: 10,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         help: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
-            fontSize: 13
-        }
+            fontSize: 13,
+        },
     };
 });

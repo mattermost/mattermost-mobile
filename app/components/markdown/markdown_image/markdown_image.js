@@ -12,7 +12,7 @@ import {
     StyleSheet,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -33,11 +33,11 @@ export default class MarkdownImage extends React.Component {
         onLongPress: PropTypes.func,
         serverURL: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
-        errorTextStyle: CustomPropTypes.Style
+        errorTextStyle: CustomPropTypes.Style,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -47,7 +47,7 @@ export default class MarkdownImage extends React.Component {
             width: 0,
             height: 0,
             maxWidth: Math.MAX_INT,
-            failed: false
+            failed: false,
         };
 
         this.mounted = false;
@@ -66,7 +66,7 @@ export default class MarkdownImage extends React.Component {
             this.setState({
                 width: 0,
                 height: 0,
-                failed: false
+                failed: false,
             });
 
             // getSource also depends on serverURL, but that shouldn't change while this is mounted
@@ -99,7 +99,7 @@ export default class MarkdownImage extends React.Component {
 
         this.setState({
             width,
-            height
+            height,
         });
     };
 
@@ -109,7 +109,7 @@ export default class MarkdownImage extends React.Component {
         }
 
         this.setState({
-            failed: true
+            failed: true,
         });
     };
 
@@ -119,7 +119,7 @@ export default class MarkdownImage extends React.Component {
         }
 
         this.setState({
-            maxWidth: event.nativeEvent.layout.width
+            maxWidth: event.nativeEvent.layout.width,
         });
     };
 
@@ -142,7 +142,7 @@ export default class MarkdownImage extends React.Component {
         if (config.copyAndPasteProtection !== 'true') {
             action = {
                 text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
-                onPress: this.handleLinkCopy
+                onPress: this.handleLinkCopy,
             };
         }
 
@@ -169,7 +169,7 @@ export default class MarkdownImage extends React.Component {
                             defaultMessage='Image exceeds max dimensions of {maxWidth} by {maxHeight}:'
                             values={{
                                 maxWidth: ANDROID_MAX_WIDTH,
-                                maxHeight: ANDROID_MAX_HEIGHT
+                                maxHeight: ANDROID_MAX_HEIGHT,
                             }}
                         />
                         {' '}
@@ -235,9 +235,9 @@ export default class MarkdownImage extends React.Component {
 
 const style = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
     },
     image: {
-        marginVertical: 5
-    }
+        marginVertical: 5,
+    },
 });

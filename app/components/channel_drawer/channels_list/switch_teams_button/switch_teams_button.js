@@ -6,7 +6,7 @@ import React from 'react';
 import {
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
@@ -22,7 +22,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
         onShowTeams: PropTypes.func.isRequired,
         mentionCount: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     showTeams = wrapWithPreventDoubleTap(() => {
@@ -36,7 +36,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
             mentionCount,
             searching,
             teamsCount,
-            theme
+            theme,
         } = this.props;
 
         if (!currentTeamId) {
@@ -94,18 +94,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             marginLeft: 6,
             marginRight: 5,
-            paddingHorizontal: 6
+            paddingHorizontal: 6,
         },
         switcherDivider: {
             backgroundColor: theme.sidebarHeaderBg,
             height: 15,
             marginHorizontal: 6,
-            width: 1
+            width: 1,
         },
         switcherTeam: {
             color: theme.sidebarHeaderBg,
             fontFamily: 'OpenSans',
-            fontSize: 14
+            fontSize: 14,
         },
         badge: {
             backgroundColor: theme.mentionBj,
@@ -116,11 +116,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 3,
             position: 'absolute',
             left: -5,
-            top: -5
+            top: -5,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10
-        }
+            fontSize: 10,
+        },
     };
 });

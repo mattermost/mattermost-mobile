@@ -40,7 +40,7 @@ function makeMapStateToProps() {
             status: channel.status,
             teammateDeletedAt,
             theme: getTheme(state),
-            type: channel.type
+            type: channel.type,
         };
     };
 }

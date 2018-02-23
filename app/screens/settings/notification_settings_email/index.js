@@ -12,7 +12,7 @@ function mapStateToProps(state) {
     return {
         config: getConfig(state),
         myPreferences: getMyPreferences(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

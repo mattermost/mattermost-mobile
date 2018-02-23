@@ -12,19 +12,19 @@ const statusToIcon = {
     away: AwayIcon,
     dnd: DndIcon,
     offline: OfflineIcon,
-    online: OnlineIcon
+    online: OnlineIcon,
 };
 
 export default class UserStatus extends PureComponent {
     static propTypes = {
         size: PropTypes.number,
         status: PropTypes.string,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         size: 14,
-        status: General.OFFLINE
+        status: General.OFFLINE,
     };
 
     render() {

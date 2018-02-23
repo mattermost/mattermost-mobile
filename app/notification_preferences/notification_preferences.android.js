@@ -8,7 +8,7 @@ const {NotificationPreferences} = NativeModules;
 const defaultPreferences = {
     sounds: [],
     shouldBlink: false,
-    shouldVibrate: true
+    shouldVibrate: true,
 };
 
 export default {
@@ -34,5 +34,5 @@ export default {
     setNotificationSound: NotificationPreferences.setNotificationSound,
     setShouldVibrate: NotificationPreferences.setShouldVibrate,
     setShouldBlink: NotificationPreferences.setShouldBlink,
-    play: NotificationPreferences.previewSound
+    play: NotificationPreferences.previewSound,
 };

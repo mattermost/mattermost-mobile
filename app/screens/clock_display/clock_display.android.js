@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {
     TouchableOpacity,
     Modal,
-    View
+    View,
 } from 'react-native';
 
 import StatusBar from 'app/components/status_bar';
@@ -18,19 +18,19 @@ export default class ClockDisplay extends ClockDisplayBase {
     static propTypes = {
         showModal: PropTypes.bool.isRequired,
         militaryTime: PropTypes.bool.isRequired,
-        onClose: PropTypes.func.isRequired
+        onClose: PropTypes.func.isRequired,
     };
 
     setMilitaryTime = (value) => {
         this.setState({
-            newMilitaryTime: value
+            newMilitaryTime: value,
         });
     };
 
     closeModal = () => {
         const {militaryTime, onClose} = this.props;
         this.setState({
-            newMilitaryTime: militaryTime
+            newMilitaryTime: militaryTime,
         });
 
         onClose();
@@ -51,17 +51,17 @@ export default class ClockDisplay extends ClockDisplayBase {
         const options = [{
             label: intl.formatMessage({
                 id: 'user.settings.display.normalClock',
-                defaultMessage: '12-hour clock (example: 4:00 PM)'
+                defaultMessage: '12-hour clock (example: 4:00 PM)',
             }),
             value: 'false',
-            checked: newMilitaryTime === 'false'
+            checked: newMilitaryTime === 'false',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.display.militaryClock',
-                defaultMessage: '24-hour clock (example: 16:00)'
+                defaultMessage: '24-hour clock (example: 16:00)',
             }),
             value: 'true',
-            checked: newMilitaryTime === 'true'
+            checked: newMilitaryTime === 'true',
         }];
 
         return (
@@ -143,69 +143,69 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            flex: 1
+            flex: 1,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
-            width: '100%'
+            width: '100%',
         },
         modalOverlay: {
             backgroundColor: changeOpacity('#000000', 0.6),
             alignItems: 'center',
-            flex: 1
+            flex: 1,
         },
         modal: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
             marginTop: 20,
-            width: '95%'
+            width: '95%',
         },
         modalBody: {
-            paddingHorizontal: 24
+            paddingHorizontal: 24,
         },
         modalTitleContainer: {
             marginBottom: 30,
-            marginTop: 20
+            marginTop: 20,
         },
         modalTitle: {
             color: theme.centerChannelColor,
-            fontSize: 19
+            fontSize: 19,
         },
         modalHelpText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 13,
-            marginTop: 20
+            marginTop: 20,
         },
         modalFooter: {
             alignItems: 'flex-end',
             height: 58,
             marginTop: 40,
-            width: '100%'
+            width: '100%',
         },
         modalFooterContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            paddingRight: 24
+            paddingRight: 24,
         },
         modalFooterOptionContainer: {
             alignItems: 'center',
             height: 40,
             justifyContent: 'center',
             paddingHorizontal: 10,
-            paddingVertical: 5
+            paddingVertical: 5,
         },
         modalFooterOption: {
             color: theme.linkColor,
-            fontSize: 14
+            fontSize: 14,
         },
         modalFooterButtonSpacer: {
-            marginRight: 10
-        }
+            marginRight: 10,
+        },
     };
 });

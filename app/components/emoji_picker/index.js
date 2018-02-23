@@ -22,60 +22,60 @@ const categoryToI18n = {
     activity: {
         id: 'mobile.emoji_picker.activity',
         defaultMessage: 'ACTIVITY',
-        icon: 'futbol-o'
+        icon: 'futbol-o',
     },
     custom: {
         id: 'mobile.emoji_picker.custom',
         defaultMessage: 'CUSTOM',
-        icon: 'at'
+        icon: 'at',
     },
     flags: {
         id: 'mobile.emoji_picker.flags',
         defaultMessage: 'FLAGS',
-        icon: 'flag-o'
+        icon: 'flag-o',
     },
     foods: {
         id: 'mobile.emoji_picker.foods',
         defaultMessage: 'FOODS',
-        icon: 'cutlery'
+        icon: 'cutlery',
     },
     nature: {
         id: 'mobile.emoji_picker.nature',
         defaultMessage: 'NATURE',
-        icon: 'leaf'
+        icon: 'leaf',
     },
     objects: {
         id: 'mobile.emoji_picker.objects',
         defaultMessage: 'OBJECTS',
-        icon: 'lightbulb-o'
+        icon: 'lightbulb-o',
     },
     people: {
         id: 'mobile.emoji_picker.people',
         defaultMessage: 'PEOPLE',
-        icon: 'smile-o'
+        icon: 'smile-o',
     },
     places: {
         id: 'mobile.emoji_picker.places',
         defaultMessage: 'PLACES',
-        icon: 'plane'
+        icon: 'plane',
     },
     recent: {
         id: 'mobile.emoji_picker.recent',
         defaultMessage: 'RECENTLY USED',
-        icon: 'clock-o'
+        icon: 'clock-o',
     },
     symbols: {
         id: 'mobile.emoji_picker.symbols',
         defaultMessage: 'SYMBOLS',
-        icon: 'heart-o'
-    }
+        icon: 'heart-o',
+    },
 };
 
 function fillEmoji(indice) {
     const emoji = Emojis[indice];
     return {
         name: emoji.aliases[0],
-        aliases: emoji.aliases
+        aliases: emoji.aliases,
     };
 }
 
@@ -89,7 +89,7 @@ const getEmojisBySection = createSelector(
             const section = {
                 ...categoryToI18n[category],
                 key: category,
-                data: items
+                data: items,
             };
 
             return section;
@@ -99,14 +99,14 @@ const getEmojisBySection = createSelector(
 
         for (const [key] of customEmojis) {
             customEmojiItems.push({
-                name: key
+                name: key,
             });
         }
 
         emoticons.push({
             ...categoryToI18n.custom,
             key: 'custom',
-            data: customEmojiItems
+            data: customEmojiItems,
         });
 
         if (recentEmojis.length) {
@@ -115,7 +115,7 @@ const getEmojisBySection = createSelector(
             emoticons.unshift({
                 ...categoryToI18n.recent,
                 key: 'recent',
-                data: items
+                data: items,
             });
         }
 
@@ -145,7 +145,7 @@ function mapStateToProps(state) {
         location: 0,
         distance: 100,
         minMatchCharLength: 2,
-        maxPatternLength: 32
+        maxPatternLength: 32,
     };
 
     const list = emojis.length ? emojis : [];
@@ -160,7 +160,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',
         customEmojiPage: state.views.emoji.emojiPickerCustomPage,
-        serverVersion: state.entities.general.serverVersion || Client4.getServerVersion()
+        serverVersion: state.entities.general.serverVersion || Client4.getServerVersion(),
     };
 }
 
@@ -169,8 +169,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getCustomEmojis,
             incrementEmojiPickerPage,
-            searchCustomEmojis
-        }, dispatch)
+            searchCustomEmojis,
+        }, dispatch),
     };
 }
 

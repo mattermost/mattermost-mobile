@@ -8,7 +8,7 @@ import {
     Animated,
     Linking,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import DeviceInfo from 'react-native-device-info';
@@ -27,7 +27,7 @@ export default class ClientUpgradeListener extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logError: PropTypes.func.isRequired,
-            setLastUpgradeCheck: PropTypes.func.isRequired
+            setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
         currentVersion: PropTypes.string,
         downloadLink: PropTypes.string,
@@ -37,11 +37,11 @@ export default class ClientUpgradeListener extends PureComponent {
         latestVersion: PropTypes.string,
         minVersion: PropTypes.string,
         navigator: PropTypes.object,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -54,7 +54,7 @@ export default class ClientUpgradeListener extends PureComponent {
         });
 
         this.state = {
-            top: new Animated.Value(-100)
+            top: new Animated.Value(-100),
         };
     }
 
@@ -108,7 +108,7 @@ export default class ClientUpgradeListener extends PureComponent {
         }
         Animated.timing(this.state.top, {
             toValue,
-            duration: 300
+            duration: 300,
         }).start();
     };
 
@@ -128,11 +128,11 @@ export default class ClientUpgradeListener extends PureComponent {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
-                    defaultMessage: 'Upgrade Error'
+                    defaultMessage: 'Upgrade Error',
                 }),
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.message',
-                    defaultMessage: 'An error occurred while trying to open the download link.'
+                    defaultMessage: 'An error occurred while trying to open the download link.',
                 })
             );
 
@@ -152,17 +152,17 @@ export default class ClientUpgradeListener extends PureComponent {
             navigatorStyle: {
                 navBarHidden: false,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
+                statusBarHideWithNavBar: false,
             },
             navigatorButtons: {
                 leftButtons: [{
                     id: 'close-upgrade',
-                    icon: this.closeButton
-                }]
+                    icon: this.closeButton,
+                }],
             },
             passProps: {
-                upgradeType: this.state.upgradeType
-            }
+                upgradeType: this.state.upgradeType,
+            },
         });
 
         this.toggleUpgradeMessage(false);
@@ -226,28 +226,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'space-around',
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-            borderTopWidth: 1
+            borderTopWidth: 1,
         },
         button: {
             color: theme.linkColor,
             fontSize: 13,
             paddingHorizontal: 5,
-            paddingVertical: 5
+            paddingVertical: 5,
         },
         container: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelBg, 0.8),
-            borderRadius: 5
+            borderRadius: 5,
         },
         message: {
             flex: 1,
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
         },
         messageText: {
             fontSize: 16,
             color: changeOpacity(theme.centerChannelColor, 0.8),
-            fontWeight: '600'
+            fontWeight: '600',
         },
         wrapper: {
             position: 'absolute',
@@ -262,10 +262,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             shadowColor: theme.centerChannelColor,
             shadowOffset: {
                 width: 0,
-                height: 3
+                height: 3,
             },
             shadowOpacity: 0.2,
-            shadowRadius: 2
-        }
+            shadowRadius: 2,
+        },
     };
 });

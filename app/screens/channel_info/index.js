@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {
     closeDMChannel,
     closeGMChannel,
-    leaveChannel
+    leaveChannel,
 } from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -18,7 +18,7 @@ import {
     getCurrentChannel,
     getCurrentChannelStats,
     getSortedFavoriteChannelIds,
-    canManageChannelMembers
+    canManageChannelMembers,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getUserIdFromChannelName, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
@@ -56,7 +56,7 @@ function mapStateToProps(state) {
         isFavorite,
         status,
         theme: getTheme(state),
-        canManageUsers
+        canManageUsers,
     };
 }
 
@@ -70,8 +70,8 @@ function mapDispatchToProps(dispatch) {
             leaveChannel,
             favoriteChannel,
             unfavoriteChannel,
-            getCustomEmojisInText
-        }, dispatch)
+            getCustomEmojisInText,
+        }, dispatch),
     };
 }
 

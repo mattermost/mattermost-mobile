@@ -13,7 +13,7 @@ import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 function mapStateToProps(state) {
     return {
         currentUser: getCurrentUser(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -21,8 +21,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             logout,
-            setStatus
-        }, dispatch)
+            setStatus,
+        }, dispatch),
     };
 }
 

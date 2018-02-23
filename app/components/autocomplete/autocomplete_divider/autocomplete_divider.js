@@ -9,7 +9,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 export default class AutocompleteDivider extends PureComponent {
     static propTypes = {
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {
@@ -26,7 +26,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         divider: {
             height: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2)
-        }
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+        },
     };
 });

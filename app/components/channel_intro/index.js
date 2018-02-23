@@ -51,7 +51,7 @@ function makeMapStateToProps() {
             currentChannel,
             currentChannelMembers,
             isLoadingPosts: (!postsInChannel || postsInChannel.length === 0) && getPostsRequestStatus === RequestStatus.STARTED,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }

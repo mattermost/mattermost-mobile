@@ -12,11 +12,11 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class UserInfo extends PureComponent {
     static propTypes = {
         status: PropTypes.string,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        status: General.OFFLINE
+        status: General.OFFLINE,
     };
 
     render() {
@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             fontSize: 17,
             textAlignVertical: 'center',
-            includeFontPadding: false
-        }
+            includeFontPadding: false,
+        },
     };
 });

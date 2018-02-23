@@ -8,10 +8,10 @@ export const Children = PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([
 export const Style = PropTypes.oneOfType([
     PropTypes.object, // inline style
     PropTypes.number, // style sheet entry
-    PropTypes.array
+    PropTypes.array,
 ]);
 
 export default {
     Children,
-    Style
+    Style,
 };

@@ -27,7 +27,7 @@ function mapStateToProps(state) {
         teamsRequest: state.requests.teams.getMyTeams,
         teams: Object.values(getJoinableTeams(state)).sort(sortTeams),
         currentChannelId: getCurrentChannelId(state),
-        joinTeamRequest: state.requests.teams.joinTeam
+        joinTeamRequest: state.requests.teams.joinTeam,
     };
 }
 
@@ -37,8 +37,8 @@ function mapDispatchToProps(dispatch) {
             handleTeamChange,
             joinTeam,
             logout,
-            markChannelAsRead
-        }, dispatch)
+            markChannelAsRead,
+        }, dispatch),
     };
 }
 

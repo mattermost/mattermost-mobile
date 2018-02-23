@@ -7,7 +7,7 @@ import {
     ActivityIndicator,
     TouchableOpacity,
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -20,7 +20,7 @@ export default class LoadMorePosts extends PureComponent {
         loading: PropTypes.bool.isRequired,
         loadMore: PropTypes.func,
         theme: PropTypes.object.isRequired,
-        style: ViewPropTypes.style
+        style: ViewPropTypes.style,
     };
 
     loadMore = () => {
@@ -70,12 +70,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center',
             height: 28,
-            marginVertical: 10
+            marginVertical: 10,
         },
         text: {
             fontSize: 14,
             fontWeight: '600',
-            color: theme.linkColor
-        }
+            color: theme.linkColor,
+        },
     };
 });

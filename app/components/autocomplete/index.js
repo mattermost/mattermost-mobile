@@ -13,7 +13,7 @@ function mapStateToProps(state) {
     const {deviceHeight} = getDimensions(state);
     return {
         deviceHeight,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

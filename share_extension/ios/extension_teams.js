@@ -22,17 +22,17 @@ export default class ExtensionTeams extends PureComponent {
         entities: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onSelectTeam: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     state = {
         defaultChannels: null,
         error: null,
-        myTeams: null
+        myTeams: null,
     };
 
     componentWillMount() {
@@ -76,7 +76,7 @@ export default class ExtensionTeams extends PureComponent {
 
             this.setState({
                 defaultChannels,
-                myTeams: myTeams.sort(this.sortDisplayName)
+                myTeams: myTeams.sort(this.sortDisplayName),
             });
         } catch (error) {
             this.setState({error});
@@ -173,47 +173,47 @@ export default class ExtensionTeams extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         separatorContainer: {
-            paddingLeft: 60
+            paddingLeft: 60,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1
+            height: 1,
         },
         loadingContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         searchContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            paddingBottom: 2
+            paddingBottom: 2,
         },
         searchBarInput: {
             backgroundColor: '#fff',
             color: theme.centerChannelColor,
-            fontSize: 15
+            fontSize: 15,
         },
         titleContainer: {
-            height: 30
+            height: 30,
         },
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 15,
             lineHeight: 30,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         errorContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         error: {
             color: theme.errorTextColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });

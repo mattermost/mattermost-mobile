@@ -11,7 +11,7 @@ import MarkdownTableImage from './markdown_table_image';
 function mapStateToProps(state) {
     return {
         serverURL: getCurrentUrl(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

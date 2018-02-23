@@ -13,7 +13,7 @@ import {
     Text,
     TextInput,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video';
@@ -37,7 +37,7 @@ import {
     GenericSvg,
     PdfSvg,
     PptSvg,
-    ZipSvg
+    ZipSvg,
 } from 'share_extension/common/icons';
 
 import ExtensionChannels from './extension_channels';
@@ -56,7 +56,7 @@ const extensionSvg = {
     pptx: PptSvg,
     xls: ExcelSvg,
     xlsx: ExcelSvg,
-    zip: ZipSvg
+    zip: ZipSvg,
 };
 
 export default class ExtensionPost extends PureComponent {
@@ -65,11 +65,11 @@ export default class ExtensionPost extends PureComponent {
         entities: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onClose: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props, context) {
@@ -88,7 +88,7 @@ export default class ExtensionPost extends PureComponent {
             isLandscape,
             exceededSize: 0,
             value: '',
-            sending: false
+            sending: false,
         };
     }
 
@@ -112,10 +112,10 @@ export default class ExtensionPost extends PureComponent {
                 await LocalAuth.authenticate({
                     reason: intl.formatMessage({
                         id: 'mobile.managed.secured_by',
-                        defaultMessage: 'Secured by {vendor}'
+                        defaultMessage: 'Secured by {vendor}',
                     }, {emmSecured}),
                     fallbackToPasscode: true,
-                    suppressEnterPassword: true
+                    suppressEnterPassword: true,
                 });
             }
         } catch (error) {
@@ -145,7 +145,7 @@ export default class ExtensionPost extends PureComponent {
             component: ExtensionChannels,
             wrapperStyle: {
                 borderRadius: 10,
-                backgroundColor: theme.centerChannelBg
+                backgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 currentChannelId: channel.id,
@@ -153,8 +153,8 @@ export default class ExtensionPost extends PureComponent {
                 onSelectChannel: this.selectChannel,
                 teamId: team.id,
                 theme,
-                title: team.display_name
-            }
+                title: team.display_name,
+            },
         });
     });
 
@@ -168,14 +168,14 @@ export default class ExtensionPost extends PureComponent {
             title: formatMessage({id: 'quick_switch_modal.teams', defaultMessage: 'Teams'}),
             wrapperStyle: {
                 borderRadius: 10,
-                backgroundColor: theme.centerChannelBg
+                backgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 entities: this.state.entities,
                 currentTeamId: team.id,
                 onSelectTeam: this.selectTeam,
-                theme
-            }
+                theme,
+            },
         });
     });
 
@@ -239,7 +239,7 @@ export default class ExtensionPost extends PureComponent {
                             fullPath,
                             mimeType: lookupMimeType(filename.toLowerCase()),
                             size: getFormattedFileSize(fileSize),
-                            type: item.type
+                            type: item.type,
                         });
                         break;
                     }
@@ -294,7 +294,7 @@ export default class ExtensionPost extends PureComponent {
                     <Text style={styles.sendingText}>
                         {formatMessage({
                             id: 'mobile.extension.posting',
-                            defaultMessage: 'Posting...'
+                            defaultMessage: 'Posting...',
                         })}
                     </Text>
                 </View>
@@ -307,7 +307,7 @@ export default class ExtensionPost extends PureComponent {
                     <Text style={styles.unauthenticated}>
                         {formatMessage({
                             id: 'mobile.extension.max_file_size',
-                            defaultMessage: 'File attachments shared in Mattermost must be less than {size}.'
+                            defaultMessage: 'File attachments shared in Mattermost must be less than {size}.',
                         }, {size: getFormattedFileSize({size: maxSize})})}
                     </Text>
                 </View>
@@ -351,7 +351,7 @@ export default class ExtensionPost extends PureComponent {
                 <Text style={styles.unauthenticated}>
                     {formatMessage({
                         id: 'mobile.extension.authentication_required',
-                        defaultMessage: 'Authentication required: Please first login using the app.'
+                        defaultMessage: 'Authentication required: Please first login using the app.',
                     })}
                 </Text>
             </View>
@@ -576,14 +576,14 @@ export default class ExtensionPost extends PureComponent {
                 const post = {
                     user_id: currentUserId,
                     channel_id: channel.id,
-                    message: value
+                    message: value,
                 };
 
                 const data = {
                     files,
                     post,
                     requestId: generateId().replace(/-/g, ''),
-                    useBackgroundUpload: this.useBackgroundUpload
+                    useBackgroundUpload: this.useBackgroundUpload,
                 };
 
                 this.setState({sending: true});
@@ -604,8 +604,8 @@ export default class ExtensionPost extends PureComponent {
             channels: {
                 ...entities.channels,
                 channels: {...entities.channels.channels},
-                channelsInTeam: {...entities.channels.channelsInTeam}
-            }
+                channelsInTeam: {...entities.channels.channelsInTeam},
+            },
         };
         const {channels, channelsInTeam} = newEntities.channels;
 
@@ -660,71 +660,71 @@ export default class ExtensionPost extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         container: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 17,
             marginBottom: 5,
-            width: '100%'
+            width: '100%',
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
             marginVertical: 5,
-            width: '100%'
+            width: '100%',
         },
         scrollView: {
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         buttonContainer: {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderTopWidth: 1,
             height: 45,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         buttonWrapper: {
             alignItems: 'center',
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         buttonLabelContainer: {
-            flex: 1
+            flex: 1,
         },
         buttonLabel: {
             fontSize: 17,
-            lineHeight: 45
+            lineHeight: 45,
         },
         buttonValueContainer: {
             justifyContent: 'flex-end',
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         buttonValue: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             alignSelf: 'flex-end',
             fontSize: 17,
-            lineHeight: 45
+            lineHeight: 45,
         },
         arrowContainer: {
             height: 45,
             justifyContent: 'center',
             marginLeft: 15,
-            top: 2
+            top: 2,
         },
         unauthenticatedContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         unauthenticated: {
             color: theme.errorTextColor,
-            fontSize: 14
+            fontSize: 14,
         },
         fileContainer: {
             alignItems: 'center',
@@ -735,12 +735,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 48,
             marginBottom: 10,
-            width: '100%'
+            width: '100%',
         },
         filename: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 13,
-            flex: 1
+            flex: 1,
         },
         otherContainer: {
             borderBottomLeftRadius: 4,
@@ -748,31 +748,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 48,
             marginRight: 10,
             paddingVertical: 10,
-            width: 38
+            width: 38,
         },
         otherWrapper: {
             borderRightWidth: 1,
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
-            flex: 1
+            flex: 1,
         },
         fileIcon: {
             alignItems: 'center',
             justifyContent: 'center',
-            flex: 1
+            flex: 1,
         },
         imageContainer: {
             borderBottomLeftRadius: 4,
             borderTopLeftRadius: 4,
             height: 48,
             marginRight: 10,
-            width: 38
+            width: 38,
         },
         image: {
             alignItems: 'center',
             height: 48,
             justifyContent: 'center',
             overflow: 'hidden',
-            width: 38
+            width: 38,
         },
         video: {
             backgroundColor: theme.centerChannelBg,
@@ -780,18 +780,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 48,
             justifyContent: 'center',
             overflow: 'hidden',
-            width: 38
+            width: 38,
         },
         sendingContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         sendingText: {
             color: theme.centerChannelColor,
             fontSize: 16,
-            paddingTop: 10
-        }
+            paddingTop: 10,
+        },
     };
 });

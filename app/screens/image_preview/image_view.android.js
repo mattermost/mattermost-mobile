@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {
     Animated,
     View,
-    PanResponder
+    PanResponder,
 } from 'react-native';
 
 const {Image: AnimatedImage} = Animated;
@@ -25,7 +25,7 @@ function calcCenter(x1, y1, x2, y2) {
 
     return {
         x: middle(x1, x2),
-        y: middle(y1, y2)
+        y: middle(y1, y2),
     };
 }
 
@@ -42,7 +42,7 @@ function calcOffsetByZoom(width, height, imageWidth, imageHeight, zoom) {
     const yDiff = (imageHeight * zoom) - height;
     return {
         left: -xDiff / 2,
-        top: -yDiff / 2
+        top: -yDiff / 2,
     };
 }
 
@@ -56,11 +56,11 @@ export default class ImageView extends Component {
         onZoom: PropTypes.func,
         style: PropTypes.object.isRequired,
         wrapperHeight: PropTypes.number.isRequired,
-        wrapperWidth: PropTypes.number.isRequired
+        wrapperWidth: PropTypes.number.isRequired,
     };
 
     static defaultProps = {
-        onZoom: () => false
+        onZoom: () => false,
     };
 
     constructor(props) {
@@ -88,7 +88,7 @@ export default class ImageView extends Component {
             top: 0,
             left: 0,
             height: props.wrapperHeight,
-            width: props.wrapperWidth
+            width: props.wrapperWidth,
         };
     }
 
@@ -130,13 +130,13 @@ export default class ImageView extends Component {
                 this.props.onZoom(this.state.zoom > 1);
                 this.setState({
                     isZooming: false,
-                    isMoving: false
+                    isMoving: false,
                 });
             },
             onPanResponderTerminate: () => {
                 return;
             },
-            onShouldBlockNativeResponder: () => false
+            onShouldBlockNativeResponder: () => false,
         });
     }
 
@@ -144,7 +144,7 @@ export default class ImageView extends Component {
         if (nextProps.wrapperWidth !== this.state.width || nextProps.wrapperHeight !== this.state.height) {
             this.setState({
                 height: nextProps.wrapperHeight,
-                width: nextProps.wrapperWidth
+                width: nextProps.wrapperWidth,
             });
         }
     }
@@ -162,7 +162,7 @@ export default class ImageView extends Component {
             initialY: this.state.height / 2,
             initialZoom: zoomScale,
             initialTopWithoutZoom: this.state.top - offsetByZoom.top,
-            initialLeftWithoutZoom: this.state.left - offsetByZoom.left
+            initialLeftWithoutZoom: this.state.left - offsetByZoom.left,
         });
         this.props.onZoom(true);
     }
@@ -185,7 +185,7 @@ export default class ImageView extends Component {
             this.setState({
                 zoom,
                 left: left > 0 ? 0 : maxOffset(left, this.state.width, this.props.wrapperWidth * zoom),
-                top: top > 0 ? 0 : maxOffset(top, this.state.height, this.props.wrapperHeight * zoom)
+                top: top > 0 ? 0 : maxOffset(top, this.state.height, this.props.wrapperHeight * zoom),
             });
         } else {
             const offsetByZoom = calcOffsetByZoom(this.state.width, this.state.height,
@@ -199,7 +199,7 @@ export default class ImageView extends Component {
                 initialLeft: this.state.left,
                 initialZoom: this.state.zoom,
                 initialTopWithoutZoom: this.state.top - offsetByZoom.top,
-                initialLeftWithoutZoom: this.state.left - offsetByZoom.left
+                initialLeftWithoutZoom: this.state.left - offsetByZoom.left,
             });
         }
     }
@@ -211,7 +211,7 @@ export default class ImageView extends Component {
 
             this.setState({
                 left: left > 0 ? 0 : maxOffset(left, this.state.width, this.props.wrapperWidth * this.state.zoom),
-                top: top > 0 ? 0 : maxOffset(top, this.state.height, this.props.wrapperHeight * this.state.zoom)
+                top: top > 0 ? 0 : maxOffset(top, this.state.height, this.props.wrapperHeight * this.state.zoom),
             });
         } else {
             this.setState({
@@ -219,7 +219,7 @@ export default class ImageView extends Component {
                 initialX: x,
                 initialY: y,
                 initialTop: this.state.top,
-                initialLeft: this.state.left
+                initialLeft: this.state.left,
             });
         }
     }
@@ -241,7 +241,7 @@ export default class ImageView extends Component {
             layoutKnown: true,
             width: this.props.wrapperWidth,
             height: this.props.wrapperHeight,
-            offsetTop
+            offsetTop,
         });
     }
 
@@ -271,7 +271,7 @@ export default class ImageView extends Component {
                     this.props.onZoom(this.state.zoom > 1);
                     this.setState({
                         isZooming: false,
-                        isMoving: false
+                        isMoving: false,
                     });
                 }}
                 style={{
@@ -279,7 +279,7 @@ export default class ImageView extends Component {
                     top: this.state.offsetTop + this.state.top,
                     left: this.state.offsetLeft + this.state.left,
                     width: this.state.width * this.state.zoom,
-                    height: this.state.height * this.state.zoom
+                    height: this.state.height * this.state.zoom,
                 }}
             >
                 <AnimatedImage

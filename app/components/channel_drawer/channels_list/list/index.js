@@ -9,7 +9,7 @@ import {
     getSortedFavoriteChannelIds,
     getSortedPublicChannelIds,
     getSortedPrivateChannelIds,
-    getSortedDirectChannelIds
+    getSortedDirectChannelIds,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getTheme, getFavoritesPreferences} from 'mattermost-redux/selectors/entities/preferences';
@@ -34,7 +34,7 @@ function mapStateToProps(state) {
         publicChannelIds,
         privateChannelIds,
         directChannelIds,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

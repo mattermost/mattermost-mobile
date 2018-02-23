@@ -22,7 +22,7 @@ export function handleTeamChange(teamId, selectChannel = true) {
 
         const actions = [
             setChannelDisplayName(''),
-            {type: TeamTypes.SELECT_TEAM, data: teamId}
+            {type: TeamTypes.SELECT_TEAM, data: teamId},
         ];
 
         if (selectChannel) {
@@ -55,5 +55,5 @@ export function selectFirstAvailableTeam() {
 
 export default {
     handleTeamChange,
-    selectFirstAvailableTeam
+    selectFirstAvailableTeam,
 };

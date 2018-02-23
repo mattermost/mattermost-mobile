@@ -23,12 +23,12 @@ export default class SettingsItem extends PureComponent {
         rightComponent: PropTypes.node,
         separator: PropTypes.bool,
         showArrow: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         isDestructor: false,
-        separator: true
+        separator: true,
     };
 
     renderText = () => {
@@ -37,7 +37,7 @@ export default class SettingsItem extends PureComponent {
             defaultMessage,
             i18nId,
             isDestructor,
-            theme
+            theme,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -73,7 +73,7 @@ export default class SettingsItem extends PureComponent {
             rightComponent,
             separator,
             showArrow,
-            theme
+            theme,
         } = this.props;
         const style = getStyleSheet(theme);
 

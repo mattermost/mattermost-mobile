@@ -18,15 +18,15 @@ export default class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func
+        onLongPress: PropTypes.func,
     };
 
     static defaultProps = {
-        onLongPress: () => true
+        onLongPress: () => true,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     handlePress = () => {
@@ -67,12 +67,12 @@ export default class MarkdownLink extends PureComponent {
 
             const nextProps = {
                 literal: this.parseLinkLiteral(literal),
-                ...otherProps
+                ...otherProps,
             };
 
             return {
                 props: nextProps,
-                ...otherChildProps
+                ...otherChildProps,
             };
         });
     }
@@ -86,7 +86,7 @@ export default class MarkdownLink extends PureComponent {
         if (config.copyAndPasteProtection !== 'true') {
             action = {
                 text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
-                onPress: this.handleCopyURL
+                onPress: this.handleCopyURL,
             };
         }
 

@@ -11,15 +11,15 @@ import InteractiveAction from './interactive_action';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            doPostAction
-        }, dispatch)
+            doPostAction,
+        }, dispatch),
     };
 }
 

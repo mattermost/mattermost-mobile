@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     StyleSheet,
-    View
+    View,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -15,7 +15,7 @@ export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
         continue: PropTypes.bool,
         iconStyle: CustomPropTypes.Style,
-        children: CustomPropTypes.Children.isRequired
+        children: CustomPropTypes.Children.isRequired,
     };
 
     render() {
@@ -46,12 +46,12 @@ export default class MarkdownBlockQuote extends PureComponent {
 const style = StyleSheet.create({
     container: {
         alignItems: 'flex-start',
-        flexDirection: 'row'
+        flexDirection: 'row',
     },
     childContainer: {
-        flex: 1
+        flex: 1,
     },
     icon: {
-        width: 23
-    }
+        width: 23,
+    },
 });

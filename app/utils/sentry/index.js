@@ -99,8 +99,8 @@ function getUserContext(state) {
         username: '',
         extra: {
             locale: currentUser.locale,
-            roles: currentUser.roles
-        }
+            roles: currentUser.roles,
+        },
     };
 }
 
@@ -110,14 +110,14 @@ function getExtraContext(state) {
     const currentTeam = getCurrentTeam(state);
     if (currentTeam) {
         context.currentTeam = {
-            id: currentTeam.id
+            id: currentTeam.id,
         };
     }
 
     const currentTeamMember = getCurrentTeamMembership(state);
     if (currentTeamMember) {
         context.currentTeamMember = {
-            roles: currentTeamMember.roles
+            roles: currentTeamMember.roles,
         };
     }
 
@@ -125,14 +125,14 @@ function getExtraContext(state) {
     if (currentChannel) {
         context.currentChannel = {
             id: currentChannel.id,
-            type: currentChannel.type
+            type: currentChannel.type,
         };
     }
 
     const currentChannelMember = getMyCurrentChannelMembership(state);
     if (currentChannelMember) {
         context.currentChannelMember = {
-            roles: currentChannelMember.roles
+            roles: currentChannelMember.roles,
         };
     }
 
@@ -143,7 +143,7 @@ function getExtraContext(state) {
             BuildEnterpriseReady: config.BuildEnterpriseReady,
             BuildHash: config.BuildHash,
             BuildHashEnterprise: config.BuildHashEnterprise,
-            BuildNumber: config.BuildNumber
+            BuildNumber: config.BuildNumber,
         };
     }
 

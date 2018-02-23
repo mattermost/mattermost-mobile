@@ -9,7 +9,7 @@ import {
     PanResponder,
     Platform,
     View,
-    StyleSheet
+    StyleSheet,
 } from 'react-native';
 import {Client4} from 'mattermost-redux/client';
 
@@ -34,7 +34,7 @@ export default class Previewer extends Component {
         onZoom: PropTypes.func,
         shrink: PropTypes.bool,
         wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number
+        wrapperWidth: PropTypes.number,
     };
 
     static defaultProps = {
@@ -43,7 +43,7 @@ export default class Previewer extends Component {
         loading: false,
         onImageTap: () => true,
         onImageDoubleTap: () => true,
-        onZoom: () => true
+        onZoom: () => true,
     };
 
     constructor(props) {
@@ -55,7 +55,7 @@ export default class Previewer extends Component {
             opacity: new Animated.Value(0),
             requesting: true,
             retry: 0,
-            zooming: false
+            zooming: false,
         };
     }
 
@@ -77,7 +77,7 @@ export default class Previewer extends Component {
             onPanResponderTerminate: () => {
                 return;
             },
-            onShouldBlockNativeResponder: () => false
+            onShouldBlockNativeResponder: () => false,
         });
     }
 
@@ -96,7 +96,7 @@ export default class Previewer extends Component {
         ) {
             this.setState({
                 imageHeight: new Animated.Value(nextProps.imageHeight),
-                imageWidth: new Animated.Value(nextProps.imageWidth)
+                imageWidth: new Animated.Value(nextProps.imageWidth),
             });
         }
     }
@@ -119,15 +119,15 @@ export default class Previewer extends Component {
         const animations = [
             Animated.timing(this.state.imageWidth, {
                 toValue: width,
-                duration
-            })
+                duration,
+            }),
         ];
 
         if (Platform.OS === 'android') {
             animations.push(
                 Animated.timing(this.state.imageHeight, {
                     toValue: height,
-                    duration
+                    duration,
                 })
             );
         }
@@ -166,7 +166,7 @@ export default class Previewer extends Component {
                 this.setState((prevState) => {
                     return {
                         retry: (prevState.retry + 1),
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
                     };
                 });
             }, 300);
@@ -175,12 +175,12 @@ export default class Previewer extends Component {
 
     handleLoad = () => {
         this.setState({
-            requesting: false
+            requesting: false,
         });
 
         Animated.timing(this.state.opacity, {
             toValue: 1,
-            duration: 300
+            duration: 300,
         }).start(() => {
             this.props.addFileToFetchCache(this.handleGetImageURL());
         });
@@ -188,7 +188,7 @@ export default class Previewer extends Component {
 
     handleLoadStart = () => {
         this.setState({
-            requesting: true
+            requesting: true,
         });
     };
 
@@ -212,7 +212,7 @@ export default class Previewer extends Component {
         }
 
         this.setState({
-            isZooming: zoom
+            isZooming: zoom,
         });
 
         this.props.onZoom(zoom);
@@ -231,7 +231,7 @@ export default class Previewer extends Component {
             imageHeight,
             imageWidth,
             wrapperHeight,
-            wrapperWidth
+            wrapperWidth,
         } = this.props;
 
         let source = {};
@@ -251,13 +251,13 @@ export default class Previewer extends Component {
         const imageComponentLoaders = {
             onError: (isInFetchCache) ? null : this.handleLoadError,
             onLoadStart: isInFetchCache ? null : this.handleLoadStart,
-            onLoad: isInFetchCache ? null : this.handleLoad
+            onLoad: isInFetchCache ? null : this.handleLoad,
         };
 
         const opacity = isInFetchCache ? 1 : this.state.opacity;
         const containerStyle = Platform.select({
             android: {height: imageHeight, width: this.state.imageWidth, backgroundColor: '#000'},
-            ios: {flex: 1, backgroundColor: '#000'}
+            ios: {flex: 1, backgroundColor: '#000'},
         });
 
         return (
@@ -295,13 +295,13 @@ export default class Previewer extends Component {
 const style = StyleSheet.create({
     fileImageWrapper: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     loaderContainer: {
         position: 'absolute',
         height: '100%',
         width: '100%',
         alignItems: 'center',
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
 });

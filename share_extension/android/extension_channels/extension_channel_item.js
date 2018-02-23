@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     TouchableHighlight,
     Text,
-    View
+    View,
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
@@ -19,7 +19,7 @@ const channelTypes = {
     D: DirectChannel,
     G: GroupChannel,
     O: PublicChannel,
-    P: PrivateChannel
+    P: PrivateChannel,
 };
 
 export default class ExtensionChannelItem extends PureComponent {
@@ -27,7 +27,7 @@ export default class ExtensionChannelItem extends PureComponent {
         channel: PropTypes.object.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
@@ -41,7 +41,7 @@ export default class ExtensionChannelItem extends PureComponent {
         const {
             channel,
             currentChannelId,
-            theme
+            theme,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -91,29 +91,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             height: 45,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         item: {
             alignItems: 'center',
             height: 45,
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         text: {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 16,
-            paddingRight: 5
+            paddingRight: 5,
         },
         iconContainer: {
-            marginRight: 5
+            marginRight: 5,
         },
         checkmarkContainer: {
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
         },
         checkmark: {
             color: theme.linkColor,
-            fontSize: 16
-        }
+            fontSize: 16,
+        },
     };
 });

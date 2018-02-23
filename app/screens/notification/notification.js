@@ -10,7 +10,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -29,7 +29,7 @@ const IMAGE_SIZE = 33;
 export default class Notification extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            loadFromPushNotification: PropTypes.func.isRequired
+            loadFromPushNotification: PropTypes.func.isRequired,
         }).isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
@@ -38,7 +38,7 @@ export default class Notification extends PureComponent {
         teammateNameDisplay: PropTypes.string,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
-        user: PropTypes.object
+        user: PropTypes.object,
     };
 
     notificationTapped = () => {
@@ -55,7 +55,7 @@ export default class Notification extends PureComponent {
                 }
 
                 navigator.popToRoot({
-                    animated: false
+                    animated: false,
                 });
             }
         });
@@ -214,27 +214,27 @@ const style = StyleSheet.create({
         paddingHorizontal: 10,
         ...Platform.select({
             android: {
-                height: 68
+                height: 68,
             },
             ios: {
-                height: 88
-            }
-        })
+                height: 88,
+            },
+        }),
     },
     iconContainer: {
         ...Platform.select({
             android: {
-                paddingTop: 17
+                paddingTop: 17,
             },
             ios: {
-                paddingTop: 37
-            }
-        })
+                paddingTop: 37,
+            },
+        }),
     },
     icon: {
         borderRadius: (IMAGE_SIZE / 2),
         height: IMAGE_SIZE,
-        width: IMAGE_SIZE
+        width: IMAGE_SIZE,
     },
     textContainer: {
         flex: 1,
@@ -245,25 +245,25 @@ const style = StyleSheet.create({
         ...Platform.select({
             android: {
                 marginTop: 17,
-                height: 50
+                height: 50,
             },
             ios: {
-                paddingTop: 37
-            }
-        })
+                paddingTop: 37,
+            },
+        }),
     },
     title: {
         color: '#FFFFFF',
         fontSize: 14,
-        fontWeight: '600'
+        fontWeight: '600',
     },
     channelName: {
         alignSelf: 'stretch',
         alignItems: 'flex-start',
-        flex: 1
+        flex: 1,
     },
     message: {
         color: '#FFFFFF',
-        fontSize: 14
-    }
+        fontSize: 14,
+    },
 });

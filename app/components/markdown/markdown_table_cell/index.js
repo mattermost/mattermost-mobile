@@ -9,7 +9,7 @@ import MarkdownTableCell from './markdown_table_cell';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -17,7 +17,7 @@ export default class SlashSuggestionItem extends PureComponent {
         hint: PropTypes.string,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        trigger: PropTypes.string
+        trigger: PropTypes.string,
     };
 
     completeSuggestion = () => {
@@ -31,7 +31,7 @@ export default class SlashSuggestionItem extends PureComponent {
             description,
             hint,
             theme,
-            trigger
+            trigger,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -60,24 +60,24 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderLeftWidth: 1,
             borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         rowDisplayName: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         rowName: {
             color: theme.centerChannelColor,
-            opacity: 0.6
+            opacity: 0.6,
         },
         suggestionDescription: {
             fontSize: 11,
-            color: changeOpacity(theme.centerChannelColor, 0.6)
+            color: changeOpacity(theme.centerChannelColor, 0.6),
         },
         suggestionName: {
             fontSize: 13,
             color: theme.centerChannelColor,
-            marginBottom: 5
-        }
+            marginBottom: 5,
+        },
     };
 });

@@ -8,7 +8,7 @@ import {
     Alert,
     Platform,
     ScrollView,
-    View
+    View,
 } from 'react-native';
 
 import StatusBar from 'app/components/status_bar';
@@ -44,15 +44,15 @@ class ChannelInfo extends PureComponent {
             leaveChannel: PropTypes.func.isRequired,
             favoriteChannel: PropTypes.func.isRequired,
             unfavoriteChannel: PropTypes.func.isRequired,
-            getCustomEmojisInText: PropTypes.func.isRequired
-        })
+            getCustomEmojisInText: PropTypes.func.isRequired,
+        }),
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            isFavorite: this.props.isFavorite
+            isFavorite: this.props.isFavorite,
         };
     }
 
@@ -92,8 +92,8 @@ class ChannelInfo extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -111,8 +111,8 @@ class ChannelInfo extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -130,8 +130,8 @@ class ChannelInfo extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -156,7 +156,7 @@ class ChannelInfo extends PureComponent {
             title = {id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'};
             message = {
                 id: 'mobile.channel_info.alertMessageLeaveChannel',
-                defaultMessage: 'Are you sure you want to leave the {term} {name}?'
+                defaultMessage: 'Are you sure you want to leave the {term} {name}?',
             };
             onPressAction = () => {
                 this.props.actions.leaveChannel(channel, true).then(() => {
@@ -167,7 +167,7 @@ class ChannelInfo extends PureComponent {
             title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Delete {term}'};
             message = {
                 id: 'mobile.channel_info.alertMessageDeleteChannel',
-                defaultMessage: 'Are you sure you want to delete the {term} {name}?'
+                defaultMessage: 'Are you sure you want to delete the {term} {name}?',
             };
             onPressAction = async () => {
                 const result = await this.props.actions.deleteChannel(channel.id);
@@ -177,10 +177,10 @@ class ChannelInfo extends PureComponent {
                         result.error,
                         {
                             id: 'mobile.channel_info.delete_failed',
-                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again."
+                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again.",
                         },
                         {
-                            displayName: channel.display_name
+                            displayName: channel.display_name,
                         }
                     );
                 } else {
@@ -195,14 +195,14 @@ class ChannelInfo extends PureComponent {
                 message,
                 {
                     term: term.toLowerCase(),
-                    name: channel.display_name
+                    name: channel.display_name,
                 }
             ),
             [{
-                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
+                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                onPress: onPressAction
+                onPress: onPressAction,
             }],
         );
     });
@@ -269,7 +269,7 @@ class ChannelInfo extends PureComponent {
             canEditChannel,
             navigator,
             status,
-            theme
+            theme,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -416,31 +416,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         footer: {
             marginTop: 40,
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         rowsContainer: {
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         separator: {
             marginHorizontal: 15,
             height: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
-        }
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
     };
 });
 

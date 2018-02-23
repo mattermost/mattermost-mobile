@@ -13,7 +13,7 @@ function mapStateToProps(state) {
     return {
         config,
         license,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

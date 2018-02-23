@@ -18,7 +18,7 @@ function makeMapStateToProps() {
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
-            filesForPostRequest: state.requests.files.getFilesForPost
+            filesForPostRequest: state.requests.files.getFilesForPost,
         };
     };
 }
@@ -27,8 +27,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             addFileToFetchCache,
-            loadFilesForPostIfNecessary
-        }, dispatch)
+            loadFilesForPostIfNecessary,
+        }, dispatch),
     };
 }
 

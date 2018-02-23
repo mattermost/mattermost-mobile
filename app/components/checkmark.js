@@ -9,7 +9,7 @@ export default class CheckMark extends PureComponent {
     static propTypes = {
         width: PropTypes.number.isRequired,
         height: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
     };
 
     render() {

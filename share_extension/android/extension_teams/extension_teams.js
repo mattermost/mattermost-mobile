@@ -8,7 +8,7 @@ import {NavigationActions} from 'react-navigation';
 import {
     ActivityIndicator,
     FlatList,
-    View
+    View,
 } from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
@@ -23,26 +23,26 @@ export default class ExtensionTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             extensionSelectTeamId: PropTypes.func.isRequired,
-            getTeamChannels: PropTypes.func.isRequired
+            getTeamChannels: PropTypes.func.isRequired,
         }).isRequired,
         navigation: PropTypes.object.isRequired,
-        teamIds: PropTypes.array
+        teamIds: PropTypes.array,
     };
 
     static defaultProps = {
-        teamIds: []
+        teamIds: [],
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     static navigationOptions = ({navigation}) => ({
-        title: navigation.state.params.title
+        title: navigation.state.params.title,
     });
 
     state = {
-        loading: false
+        loading: false,
     };
 
     handleSelectTeam = async (teamId) => {
@@ -116,11 +116,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         loadingContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1
-        }
+            height: 1,
+        },
     };
 });

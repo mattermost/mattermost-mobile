@@ -8,5 +8,5 @@ import version from './version';
 
 export default combineReducers({
     build,
-    version
+    version,
 });

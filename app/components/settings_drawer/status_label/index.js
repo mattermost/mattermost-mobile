@@ -11,7 +11,7 @@ import StatusLabel from './status_label';
 function mapStateToProps(state, ownProps) {
     return {
         status: getStatusForUserId(state, ownProps.userId),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

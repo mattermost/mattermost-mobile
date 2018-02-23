@@ -15,5 +15,5 @@ function selectedTeamId(state = '', action) {
 }
 
 export default combineReducers({
-    selectedTeamId
+    selectedTeamId,
 });

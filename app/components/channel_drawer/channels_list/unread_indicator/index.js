@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     TouchableWithoutFeedback,
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
@@ -18,11 +18,11 @@ export default class UnreadIndicator extends PureComponent {
         show: PropTypes.bool,
         style: ViewPropTypes.style,
         onPress: PropTypes.func,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        onPress: () => true
+        onPress: () => true,
     };
 
     render() {
@@ -65,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'absolute',
             borderRadius: 15,
             marginHorizontal: 15,
-            height: 25
+            height: 25,
         },
         indicatorText: {
             backgroundColor: 'transparent',
@@ -74,11 +74,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 2,
             paddingHorizontal: 4,
             textAlign: 'center',
-            textAlignVertical: 'center'
+            textAlignVertical: 'center',
         },
         arrow: {
             position: 'relative',
-            bottom: -1
-        }
+            bottom: -1,
+        },
     };
 });

@@ -14,7 +14,7 @@ import EditProfile from './edit_profile';
 function mapStateToProps(state) {
     return {
         config: getConfig(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -22,8 +22,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleUploadProfileImage,
-            updateUser
-        }, dispatch)
+            updateUser,
+        }, dispatch),
     };
 }
 

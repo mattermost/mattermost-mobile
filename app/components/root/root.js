@@ -19,7 +19,7 @@ export default class Root extends PureComponent {
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string,
         locale: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     componentDidMount() {
@@ -49,8 +49,8 @@ export default class Root extends PureComponent {
                 autoDismissTimerSec: 5,
                 dismissWithSwipe: true,
                 passProps: {
-                    notification
-                }
+                    notification,
+                },
             });
         }
     };
@@ -66,16 +66,16 @@ export default class Root extends PureComponent {
                     title: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
                     id: 'logout',
                     buttonColor: theme.sidebarHeaderTextColor,
-                    showAsAction: 'always'
-                }]
+                    showAsAction: 'always',
+                }],
             };
         } else {
             navigatorButtons = {
                 leftButtons: [{
                     title: intl.formatMessage({id: 'sidebar_right_menu.logout', defaultMessage: 'Logout'}),
                     id: 'logout',
-                    buttonColor: theme.sidebarHeaderTextColor
-                }]
+                    buttonColor: theme.sidebarHeaderTextColor,
+                }],
             };
         }
 
@@ -88,14 +88,14 @@ export default class Root extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             navigatorButtons,
             passProps: {
                 currentUrl,
                 userWithoutTeams: true,
-                theme
-            }
+                theme,
+            },
         });
     };
 
@@ -107,7 +107,7 @@ export default class Root extends PureComponent {
         }
 
         navigator.popToRoot({
-            animated: false
+            animated: false,
         });
     };
 

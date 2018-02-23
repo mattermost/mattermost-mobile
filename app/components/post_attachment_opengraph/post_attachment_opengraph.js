@@ -10,7 +10,7 @@ import {
     PixelRatio,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import {getNearestPoint} from 'app/utils/opengraph';
@@ -24,12 +24,12 @@ const THUMBNAIL_SIZE = 75;
 export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            getOpenGraphMetadata: PropTypes.func.isRequired
+            getOpenGraphMetadata: PropTypes.func.isRequired,
         }).isRequired,
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
         openGraphData: PropTypes.object,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -37,7 +37,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         this.state = {
             imageLoaded: false,
-            hasLargeImage: false
+            hasLargeImage: false,
         };
     }
 
@@ -120,7 +120,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         const bestDimensions = {
             width: Dimensions.get('window').width - 88,
-            height: MAX_IMAGE_HEIGHT
+            height: MAX_IMAGE_HEIGHT,
         };
         const bestImage = getNearestPoint(bestDimensions, data.images, 'width', 'height');
         const imageUrl = bestImage.secure_url || bestImage.url;
@@ -149,7 +149,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         ...dimensions,
                         hasLargeImage: isLarge,
                         imageLoaded: true,
-                        imageUrl
+                        imageUrl,
                     });
                 }
             }, () => null);
@@ -233,37 +233,37 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderWidth: 1,
             marginTop: 10,
-            padding: 10
+            padding: 10,
         },
         flex: {
-            flex: 1
+            flex: 1,
         },
         wrapper: {
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         siteTitle: {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginBottom: 10
+            marginBottom: 10,
         },
         siteSubtitle: {
             fontSize: 14,
             color: theme.linkColor,
-            marginBottom: 10
+            marginBottom: 10,
         },
         siteDescription: {
             fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.7),
-            marginBottom: 10
+            marginBottom: 10,
         },
         image: {
-            borderRadius: 3
+            borderRadius: 3,
         },
         thumbnail: {
             flex: 1,
             alignItems: 'flex-end',
-            justifyContent: 'flex-start'
-        }
+            justifyContent: 'flex-start',
+        },
     };
 });

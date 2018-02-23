@@ -12,7 +12,7 @@ import {
     SectionList,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -50,16 +50,16 @@ export default class EmojiPicker extends PureComponent {
         actions: PropTypes.shape({
             getCustomEmojis: PropTypes.func.isRequired,
             incrementEmojiPickerPage: PropTypes.func.isRequired,
-            searchCustomEmojis: PropTypes.func.isRequired
-        }).isRequired
+            searchCustomEmojis: PropTypes.func.isRequired,
+        }).isRequired,
     };
 
     static defaultProps = {
-        onEmojiPress: emptyFunction
+        onEmojiPress: emptyFunction,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -69,7 +69,7 @@ export default class EmojiPicker extends PureComponent {
             getItemHeight: () => {
                 return EMOJI_SIZE + (EMOJI_GUTTER * 2);
             },
-            getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT
+            getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
 
         const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
@@ -83,7 +83,7 @@ export default class EmojiPicker extends PureComponent {
             filteredEmojis: [],
             searchTerm: '',
             currentSectionIndex: 0,
-            missingPages: isMinimumServerVersion(this.props.serverVersion, 4, 7)
+            missingPages: isMinimumServerVersion(this.props.serverVersion, 4, 7),
         };
     }
 
@@ -104,7 +104,7 @@ export default class EmojiPicker extends PureComponent {
         if (rebuildEmojis) {
             const emojis = this.renderableEmojis(this.props.emojisBySection, nextProps.deviceWidth);
             this.setState({
-                emojis
+                emojis,
             });
         }
     }
@@ -116,7 +116,7 @@ export default class EmojiPicker extends PureComponent {
             const data = [];
             let row = {
                 key: `${section.key}-0`,
-                items: []
+                items: [],
             };
 
             section.data.forEach((emoji, index) => {
@@ -124,7 +124,7 @@ export default class EmojiPicker extends PureComponent {
                     data.push(row);
                     row = {
                         key: `${section.key}-${index}`,
-                        items: []
+                        items: [],
                     };
                 }
 
@@ -143,7 +143,7 @@ export default class EmojiPicker extends PureComponent {
 
             return {
                 ...section,
-                data
+                data,
             };
         });
 
@@ -163,7 +163,7 @@ export default class EmojiPicker extends PureComponent {
 
     changeSearchTerm = (text) => {
         const nextState = {
-            searchTerm: text
+            searchTerm: text,
         };
 
         if (!text) {
@@ -180,7 +180,7 @@ export default class EmojiPicker extends PureComponent {
             }
             const filteredEmojis = this.searchEmojis(text);
             this.setState({
-                filteredEmojis
+                filteredEmojis,
             });
         }, timeout);
     };
@@ -189,7 +189,7 @@ export default class EmojiPicker extends PureComponent {
         this.setState({
             currentSectionIndex: 0,
             filteredEmojis: [],
-            searchTerm: ''
+            searchTerm: '',
         });
     };
 
@@ -285,7 +285,7 @@ export default class EmojiPicker extends PureComponent {
 
         if (nextIndex !== this.state.currentSectionIndex) {
             this.setState({
-                currentSectionIndex: nextIndex
+                currentSectionIndex: nextIndex,
             });
         }
     };
@@ -293,7 +293,7 @@ export default class EmojiPicker extends PureComponent {
     onMomentumScrollEnd = () => {
         if (this.state.jumpToSection) {
             this.setState({
-                jumpToSection: false
+                jumpToSection: false,
             });
         }
     };
@@ -301,12 +301,12 @@ export default class EmojiPicker extends PureComponent {
     scrollToSection = (index) => {
         this.setState({
             jumpToSection: true,
-            currentSectionIndex: index
+            currentSectionIndex: index,
         }, () => {
             this.sectionList.scrollToLocation({
                 sectionIndex: index,
                 itemIndex: 0,
-                viewOffset: 25
+                viewOffset: 25,
             });
         });
     };
@@ -447,9 +447,9 @@ export default class EmojiPicker extends PureComponent {
             fontSize: 13,
             ...Platform.select({
                 android: {
-                    marginBottom: -3
-                }
-            })
+                    marginBottom: -3,
+                },
+            }),
         };
 
         return (
@@ -499,7 +499,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),
             borderTopWidth: 1,
             flexDirection: 'row',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
         },
         bottomContentWrapper: {
             position: 'absolute',
@@ -507,43 +507,43 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             left: 0,
             right: 0,
             height: 35,
-            width: '100%'
+            width: '100%',
         },
         columnStyle: {
             alignSelf: 'stretch',
             flexDirection: 'row',
             marginVertical: EMOJI_GUTTER,
-            justifyContent: 'flex-start'
+            justifyContent: 'flex-start',
         },
         container: {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
-            flex: 1
+            flex: 1,
         },
         emoji: {
             width: EMOJI_SIZE,
             height: EMOJI_SIZE,
             marginHorizontal: EMOJI_GUTTER,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         emojiLeft: {
-            marginLeft: 0
+            marginLeft: 0,
         },
         emojiRight: {
-            marginRight: 0
+            marginRight: 0,
         },
         flatList: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
-            alignSelf: 'stretch'
+            alignSelf: 'stretch',
         },
         flatListEmoji: {
-            marginRight: 5
+            marginRight: 5,
         },
         flatListEmojiName: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         flatListRow: {
             height: 40,
@@ -556,47 +556,47 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderLeftWidth: 1,
             borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         listView: {
             backgroundColor: theme.centerChannelBg,
-            marginBottom: 35
+            marginBottom: 35,
         },
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            paddingVertical: 5
+            paddingVertical: 5,
         },
         section: {
-            alignItems: 'center'
+            alignItems: 'center',
         },
         sectionIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.3)
+            color: changeOpacity(theme.centerChannelColor, 0.3),
         },
         sectionIconContainer: {
             flex: 1,
             height: 35,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         sectionIconHighlight: {
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         sectionTitle: {
             color: changeOpacity(theme.centerChannelColor, 0.2),
             fontSize: 15,
-            fontWeight: '700'
+            fontWeight: '700',
         },
         sectionTitleContainer: {
             height: SECTION_HEADER_HEIGHT,
             justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
-            flex: 1
+            flex: 1,
         },
         loading: {
             flex: 1,
-            alignItems: 'center'
-        }
+            alignItems: 'center',
+        },
     };
 });

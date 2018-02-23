@@ -10,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     TouchableWithoutFeedback,
-    View
+    View,
 } from 'react-native';
 import Button from 'react-native-button';
 
@@ -29,11 +29,11 @@ export default class Mfa extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object,
         actions: PropTypes.shape({
-            login: PropTypes.func.isRequired
+            login: PropTypes.func.isRequired,
         }).isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired
+        loginRequest: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -41,7 +41,7 @@ export default class Mfa extends PureComponent {
 
         this.state = {
             token: '',
-            error: null
+            error: null,
         };
     }
 
@@ -72,7 +72,7 @@ export default class Mfa extends PureComponent {
     handleInput = (token) => {
         this.setState({
             token,
-            error: null
+            error: null,
         });
     };
 
@@ -91,9 +91,9 @@ export default class Mfa extends PureComponent {
                 error: {
                     intl: {
                         id: 'login_mfa.tokenReq',
-                        defaultMessage: 'Please enter an MFA token'
-                    }
-                }
+                        defaultMessage: 'Please enter an MFA token',
+                    },
+                },
             });
             return;
         }

@@ -8,7 +8,7 @@ import {
     StyleSheet,
     ToastAndroid,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import {intlShape} from 'react-intl';
@@ -28,18 +28,18 @@ export default class Downloader extends PureComponent {
         onDownloadCancel: PropTypes.func,
         onDownloadStart: PropTypes.func,
         onDownloadSuccess: PropTypes.func,
-        show: PropTypes.bool
+        show: PropTypes.bool,
     };
 
     static defaultProps = {
         onCancelPress: emptyFunction,
         onDownloadStart: emptyFunction,
         onDownloadSuccess: emptyFunction,
-        show: false
+        show: false,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     checkForPermissions = async () => {
@@ -48,7 +48,7 @@ export default class Downloader extends PureComponent {
             const {intl} = this.context;
             const description = intl.formatMessage({
                 id: 'mobile.downloader.android_permission',
-                defaultMessage: 'We need access to the downloads folder to save files.'
+                defaultMessage: 'We need access to the downloads folder to save files.',
             });
 
             const permissionRequest = await PermissionsAndroid.request(EXTERNAL_STORAGE_PERMISSION, description);
@@ -71,15 +71,15 @@ export default class Downloader extends PureComponent {
         try {
             const started = intl.formatMessage({
                 id: 'mobile.downloader.android_started',
-                defaultMessage: 'Download started'
+                defaultMessage: 'Download started',
             });
             const title = intl.formatMessage({
                 id: 'mobile.downloader.android_success',
-                defaultMessage: 'download successful'
+                defaultMessage: 'download successful',
             });
             const complete = intl.formatMessage({
                 id: 'mobile.downloader.android_complete',
-                defaultMessage: 'Download complete'
+                defaultMessage: 'Download complete',
             });
 
             ToastAndroid.show(started, ToastAndroid.SHORT);
@@ -96,10 +96,10 @@ export default class Downloader extends PureComponent {
                     title: `${file.name} ${title}`,
                     mime: file.mime_type,
                     description: file.name,
-                    mediaScannable: true
-                }
+                    mediaScannable: true,
+                },
             }).fetch('GET', imageUrl, {
-                Authorization: `Bearer ${Client4.token}`
+                Authorization: `Bearer ${Client4.token}`,
             });
 
             await task;
@@ -109,7 +109,7 @@ export default class Downloader extends PureComponent {
         } catch (error) {
             const failed = intl.formatMessage({
                 id: 'mobile.downloader.android_failed',
-                defaultMessage: 'Download failed'
+                defaultMessage: 'Download failed',
             });
 
             ToastAndroid.show(failed, ToastAndroid.SHORT);
@@ -140,18 +140,18 @@ export default class Downloader extends PureComponent {
 const styles = StyleSheet.create({
     downloadButton: {
         flex: 1,
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     downloadButtonText: {
         color: 'white',
         fontSize: 15,
-        paddingLeft: 15
+        paddingLeft: 15,
     },
     wrapper: {
         position: 'absolute',
         backgroundColor: '#575757',
         top: HEADER_HEIGHT,
         right: 0,
-        width: 150
-    }
+        width: 150,
+    },
 });

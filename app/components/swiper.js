@@ -8,7 +8,7 @@ import {
     ScrollView,
     ViewPagerAndroid,
     Platform,
-    StyleSheet, InteractionManager
+    StyleSheet, InteractionManager,
 } from 'react-native';
 
 export default class Swiper extends PureComponent {
@@ -21,16 +21,16 @@ export default class Swiper extends PureComponent {
         onIndexChanged: PropTypes.func,
         paginationStyle: PropTypes.oneOfType([
             PropTypes.object,
-            PropTypes.number
+            PropTypes.number,
         ]),
         scrollEnabled: PropTypes.bool,
         showsPagination: PropTypes.bool,
         style: PropTypes.oneOfType([
             PropTypes.object,
-            PropTypes.number
+            PropTypes.number,
         ]),
         width: PropTypes.number,
-        onScrollBegin: PropTypes.func
+        onScrollBegin: PropTypes.func,
     };
 
     static defaultProps = {
@@ -39,7 +39,7 @@ export default class Swiper extends PureComponent {
         onIndexChanged: () => null,
         scrollEnabled: true,
         showsPagination: true,
-        onScrollBegin: () => true
+        onScrollBegin: () => true,
     };
 
     constructor(props) {
@@ -64,7 +64,7 @@ export default class Swiper extends PureComponent {
 
         return {
             index,
-            total: React.Children.count(props.children)
+            total: React.Children.count(props.children),
         };
     };
 
@@ -129,7 +129,7 @@ export default class Swiper extends PureComponent {
     renderScrollView = (pages) => {
         const {
             keyboardShouldPersistTaps,
-            scrollEnabled
+            scrollEnabled,
         } = this.props;
 
         if (Platform.OS === 'ios') {
@@ -178,7 +178,7 @@ export default class Swiper extends PureComponent {
             <View
                 style={[
                     styles.dotStyle,
-                    {backgroundColor: this.props.activeDotColor || '#007aff'}
+                    {backgroundColor: this.props.activeDotColor || '#007aff'},
                 ]}
             />
         );
@@ -186,7 +186,7 @@ export default class Swiper extends PureComponent {
             <View
                 style={[
                     styles.dotStyle,
-                    {backgroundColor: this.props.dotColor || 'rgba(0,0,0,.2)'}
+                    {backgroundColor: this.props.dotColor || 'rgba(0,0,0,.2)'},
                 ]}
             />
         );
@@ -224,8 +224,8 @@ export default class Swiper extends PureComponent {
             setImmediate(() => {
                 this.onScrollEnd({
                     nativeEvent: {
-                        position: index
-                    }
+                        position: index,
+                    },
                 });
             });
         }
@@ -246,7 +246,7 @@ export default class Swiper extends PureComponent {
     render() {
         const {
             children,
-            width
+            width,
         } = this.props;
 
         const pages = React.Children.map(children, (page, i) => {
@@ -277,17 +277,17 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: 'transparent',
         position: 'relative',
-        flex: 1
+        flex: 1,
     },
     wrapperIOS: {
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
     },
     wrapperAndroid: {
         backgroundColor: 'transparent',
-        flex: 1
+        flex: 1,
     },
     slide: {
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
     },
     pagination: {
         position: 'absolute',
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'transparent',
-        marginBottom: 13
+        marginBottom: 13,
     },
     dotStyle: {
         width: 8,
@@ -308,6 +308,6 @@ const styles = StyleSheet.create({
         marginLeft: 4,
         marginRight: 4,
         marginTop: 3,
-        marginBottom: 3
-    }
+        marginBottom: 3,
+    },
 });

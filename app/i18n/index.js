@@ -48,7 +48,7 @@ const TRANSLATIONS = {
     tr,
     ru,
     'zh-CN': zhCN,
-    'zh-TW': zhTW
+    'zh-TW': zhTW,
 };
 
 addLocaleData(deLocaleData);

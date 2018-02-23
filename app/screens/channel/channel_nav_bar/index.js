@@ -11,7 +11,7 @@ import ChannelNavBar from './channel_nav_bar';
 function mapStateToProps(state) {
     return {
         isLandscape: isLandscape(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

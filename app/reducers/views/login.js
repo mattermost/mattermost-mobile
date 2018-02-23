@@ -29,5 +29,5 @@ function password(state = '', action) {
 
 export default combineReducers({
     loginId,
-    password
+    password,
 });

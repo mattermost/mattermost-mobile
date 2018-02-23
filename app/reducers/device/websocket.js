@@ -7,7 +7,7 @@ function getInitialState() {
     return {
         connected: false,
         lastConnectAt: 0,
-        lastDisconnectAt: 0
+        lastDisconnectAt: 0,
     };
 }
 
@@ -16,13 +16,13 @@ export default function(state = getInitialState(), action) {
         return {
             ...state,
             connected: true,
-            lastConnectAt: new Date().getTime()
+            lastConnectAt: new Date().getTime(),
         };
     } else if (state.connected && (action.type === GeneralTypes.WEBSOCKET_FAILURE || action.type === GeneralTypes.WEBSOCKET_CLOSED)) {
         return {
             ...state,
             connected: false,
-            lastDisconnectAt: new Date().getTime()
+            lastDisconnectAt: new Date().getTime(),
         };
     }
 
