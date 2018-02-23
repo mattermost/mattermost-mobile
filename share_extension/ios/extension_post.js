@@ -24,6 +24,7 @@ import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import {generateId, getAllowedServerMaxFileSize} from 'app/utils/file';
@@ -76,13 +77,16 @@ export default class ExtensionPost extends PureComponent {
 
         const {height, width} = Dimensions.get('window');
         const isLandscape = width > height;
+        const entities = props.entities;
+
+        this.useBackgroundUpload = props.authenticated ? isMinimumServerVersion(entities.general.serverVersion, 4, 8) : false;
 
         this.state = {
-            entities: props.entities,
+            entities,
             error: null,
             files: [],
             isLandscape,
-            totalSize: 0,
+            exceededSize: 0,
             value: '',
             sending: false,
         };
@@ -185,17 +189,21 @@ export default class ExtensionPost extends PureComponent {
 
     loadData = async () => {
         const {entities} = this.state;
+
         if (this.props.authenticated) {
             try {
-                const {credentials} = entities.general;
+                const {config, credentials} = entities.general;
                 const {currentUserId} = entities.users;
                 const team = entities.teams.teams[entities.teams.currentTeamId];
                 let channel = entities.channels.channels[entities.channels.currentChannelId];
                 const items = await ShareExtension.data(Config.AppGroupId);
+                const serverMaxFileSize = getAllowedServerMaxFileSize(config);
+                const maxSize = Math.min(MAX_FILE_SIZE, serverMaxFileSize);
                 const text = [];
                 const urls = [];
                 const files = [];
                 let totalSize = 0;
+                let exceededSize = false;
 
                 if (channel.type === General.GM_CHANNEL || channel.type === General.DM_CHANNEL) {
                     channel = getChannel({entities}, channel.id);
@@ -217,7 +225,13 @@ export default class ExtensionPost extends PureComponent {
                         const filename = fullPath.replace(/^.*[\\/]/, '');
                         const extension = filename.split('.').pop();
 
-                        totalSize += fileSize.size;
+                        if (this.useBackgroundUpload) {
+                            if (!exceededSize) {
+                                exceededSize = fileSize.size >= maxSize;
+                            }
+                        } else {
+                            totalSize += fileSize.size;
+                        }
                         files.push({
                             extension,
                             filename,
@@ -240,7 +254,12 @@ export default class ExtensionPost extends PureComponent {
                 Client4.setUrl(credentials.url);
                 Client4.setToken(credentials.token);
                 Client4.setUserId(currentUserId);
-                this.setState({channel, files, team, value, totalSize});
+
+                if (!this.useBackgroundUpload) {
+                    exceededSize = totalSize >= maxSize;
+                }
+
+                this.setState({channel, files, team, value, exceededSize});
             } catch (error) {
                 this.setState({error});
             }
@@ -263,7 +282,7 @@ export default class ExtensionPost extends PureComponent {
     renderBody = (styles) => {
         const {formatMessage} = this.context.intl;
         const {authenticated, theme} = this.props;
-        const {entities, error, sending, totalSize, value} = this.state;
+        const {entities, error, sending, exceededSize, value} = this.state;
         const {config} = entities.general;
         const serverMaxFileSize = getAllowedServerMaxFileSize(config);
         const maxSize = Math.min(MAX_FILE_SIZE, serverMaxFileSize);
@@ -282,7 +301,7 @@ export default class ExtensionPost extends PureComponent {
             );
         }
 
-        if (totalSize >= maxSize) {
+        if (exceededSize) {
             return (
                 <View style={styles.unauthenticatedContainer}>
                     <Text style={styles.unauthenticated}>
@@ -563,7 +582,8 @@ export default class ExtensionPost extends PureComponent {
                 const data = {
                     files,
                     post,
-                    requestId: generateId(),
+                    requestId: generateId().replace(/-/g, ''),
+                    useBackgroundUpload: this.useBackgroundUpload,
                 };
 
                 this.setState({sending: true});
