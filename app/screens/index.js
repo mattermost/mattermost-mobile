@@ -4,7 +4,6 @@
 import React from 'react';
 import {Navigation} from 'react-native-navigation';
 
-
 import IntlWrapper from 'app/components/root';
 
 function wrapWithContextProvider(Comp, excludeEvents = true) {
