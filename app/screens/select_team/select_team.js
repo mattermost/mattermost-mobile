@@ -28,6 +28,7 @@ const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            getTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
@@ -53,7 +54,9 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentDidMount() {
-        this.buildData(this.props);
+        this.props.actions.getTeams().then(() => {
+            this.buildData(this.props);
+        });
     }
 
     componentWillReceiveProps(nextProps) {
