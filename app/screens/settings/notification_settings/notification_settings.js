@@ -23,7 +23,7 @@ import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
 import {getNotificationProps} from 'app/utils/notify_props';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 class NotificationSettings extends PureComponent {
@@ -64,9 +64,9 @@ class NotificationSettings extends PureComponent {
         }
     }
 
-    handlePress = (action) => {
-        preventDoubleTap(action, this);
-    };
+    handlePress = wrapWithPreventDoubleTap((action) => {
+        action();
+    });
 
     goToNotificationSettingsEmail = () => {
         if (Platform.OS === 'ios') {

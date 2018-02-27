@@ -20,7 +20,7 @@ import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {ListTypes} from 'app/constants';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
@@ -171,7 +171,7 @@ export default class SelectTeam extends PureComponent {
         return (
             <View style={styles.teamWrapper}>
                 <TouchableOpacity
-                    onPress={() => preventDoubleTap(this.onSelectTeam, this, item)}
+                    onPress={wrapWithPreventDoubleTap(() => this.onSelectTeam(item))}
                 >
                     <View style={styles.teamContainer}>
                         <View style={styles.teamIconContainer}>

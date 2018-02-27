@@ -11,7 +11,7 @@ import {
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import FileAttachment from './file_attachment';
 
 export default class FileAttachmentList extends Component {
@@ -69,11 +69,11 @@ export default class FileAttachmentList extends Component {
         this.props.onPress();
     };
 
-    handlePreviewPress = (file) => {
+    handlePreviewPress = wrapWithPreventDoubleTap((file) => {
         this.props.hideOptionsContext();
         Keyboard.dismiss();
-        preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
-    };
+        this.goToImagePreview(this.props.postId, file.id);
+    });
 
     handlePressIn = () => {
         this.props.toggleSelected(true);

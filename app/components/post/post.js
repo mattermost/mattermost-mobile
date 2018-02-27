@@ -17,7 +17,7 @@ import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
-import {preventDoubleTap, wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
 
@@ -258,7 +258,7 @@ class Post extends PureComponent {
         });
     };
 
-    handlePress = () => {
+    handlePress = wrapWithPreventDoubleTap(() => {
         const {
             isSearchResult,
             onPress,
@@ -267,21 +267,21 @@ class Post extends PureComponent {
 
         if (!getToolTipVisible()) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
-                preventDoubleTap(onPress, null, post);
+                onPress(post);
             } else if (!isSearchResult && isPostEphemeral(post)) {
-                preventDoubleTap(this.onRemovePost, this, post);
+                this.onRemovePost(post);
             }
         }
-    };
+    });
 
-    handleReply = () => {
+    handleReply = wrapWithPreventDoubleTap(() => {
         const {post, onReply} = this.props;
         if (!getToolTipVisible() && onReply) {
-            return preventDoubleTap(onReply, null, post);
+            return onReply(post);
         }
 
         return this.handlePress();
-    };
+    });
 
     onRemovePost = (post) => {
         const {removePost} = this.props.actions;
@@ -319,13 +319,13 @@ class Post extends PureComponent {
         return <View style={replyBarStyle}/>;
     };
 
-    viewUserProfile = () => {
+    viewUserProfile = wrapWithPreventDoubleTap(() => {
         const {isSearchResult} = this.props;
 
         if (!isSearchResult && !getToolTipVisible()) {
-            preventDoubleTap(this.goToUserProfile, this);
+            this.goToUserProfile();
         }
-    };
+    });
 
     toggleSelected = (selected) => {
         if (!getToolTipVisible()) {

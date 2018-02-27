@@ -17,7 +17,7 @@ import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
-import {preventDoubleTap} from 'app/utils/tap';
+import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 
 import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
@@ -40,7 +40,7 @@ class LoginOptions extends PureComponent {
         Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
-    goToLogin = () => {
+    goToLogin = wrapWithPreventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'Login',
@@ -54,7 +54,7 @@ class LoginOptions extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
         });
-    };
+    });
 
     goToSSO = (ssoType) => {
         const {intl, navigator, theme} = this.props;
@@ -98,7 +98,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='email'
-                    onPress={() => preventDoubleTap(this.goToLogin, this)}
+                    onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <FormattedText
@@ -149,7 +149,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='ldap'
-                    onPress={() => preventDoubleTap(this.goToLogin, this)}
+                    onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     {buttonText}
@@ -169,7 +169,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='gitlab'
-                    onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.GITLAB)}
+                    onPress={wrapWithPreventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
                 >
                     <Image
@@ -208,7 +208,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='saml'
-                    onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.SAML)}
+                    onPress={wrapWithPreventDoubleTap(() => this.goToSSO(ViewTypes.SAML))}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <Text
