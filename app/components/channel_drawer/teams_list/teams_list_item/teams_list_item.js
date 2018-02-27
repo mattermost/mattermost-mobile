@@ -27,7 +27,7 @@ export default class TeamsListItem extends React.PureComponent {
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        lastTeamIconUpdate: PropTypes.number
+        lastTeamIconUpdate: PropTypes.number,
     };
 
     selectTeam = wrapWithPreventDoubleTap(() => {
@@ -43,7 +43,7 @@ export default class TeamsListItem extends React.PureComponent {
             name,
             teamId,
             theme,
-            lastTeamIconUpdate
+            lastTeamIconUpdate,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -138,12 +138,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             height: 40,
             width: 40,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         teamIconImage: {
             borderRadius: 2,
             height: 40,
-            width: 40
+            width: 40,
         },
         teamIcon: {
             color: theme.sidebarBg,

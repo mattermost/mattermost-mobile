@@ -118,7 +118,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 30,
             width: 30,
             marginRight: 10,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         teamIconImage: {
             borderRadius: 2,

@@ -26,7 +26,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
         mentionCount: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
-        lastTeamIconUpdate: PropTypes.number
+        lastTeamIconUpdate: PropTypes.number,
     };
 
     showTeams = wrapWithPreventDoubleTap(() => {
@@ -41,7 +41,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
             searching,
             teamsCount,
             theme,
-            lastTeamIconUpdate
+            lastTeamIconUpdate,
         } = this.props;
 
         if (!currentTeamId) {
@@ -115,28 +115,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             marginLeft: 6,
             marginRight: 6,
-            paddingHorizontal: 3
+            paddingHorizontal: 3,
         },
         switcherArrow: {
             color: theme.sidebarHeaderBg,
-            marginRight: 3
+            marginRight: 3,
         },
         switcherTeamIconContainer: {
             marginLeft: 3,
             width: 26,
             height: 26,
             justifyContent: 'center',
-            alignItems: 'stretch'
+            alignItems: 'stretch',
         },
         switcherTeamIconImage: {
             flex: 1,
-            borderRadius: 2
+            borderRadius: 2,
         },
         switcherTeamIconText: {
             fontFamily: 'OpenSans',
             color: theme.sidebarHeaderBg,
             fontSize: 14,
-            textAlign: 'center'
+            textAlign: 'center',
         },
         badge: {
             backgroundColor: theme.mentionBj,

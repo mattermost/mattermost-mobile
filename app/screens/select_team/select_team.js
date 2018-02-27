@@ -291,12 +291,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             height: 40,
             width: 40,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         teamIconImage: {
             borderRadius: 2,
             height: 30,
-            width: 30
+            width: 30,
         },
         teamIcon: {
             color: theme.buttonColor,
@@ -306,7 +306,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         noTeam: {
             color: theme.centerChannelColor,
-            fontSize: 14
+            fontSize: 14,
         },
         teamNameContainer: {
             flex: 1,
