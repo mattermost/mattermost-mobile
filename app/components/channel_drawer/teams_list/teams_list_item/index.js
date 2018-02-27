@@ -21,6 +21,7 @@ function makeMapStateToProps() {
             currentTeamId: getCurrentTeamId(state),
             currentUrl: removeProtocol(getCurrentUrl(state)),
             displayName: team.display_name,
+            lastTeamIconUpdate: team.last_team_icon_update,
             mentionCount: getMentionCount(state, ownProps.teamId),
             name: team.name,
             theme: getTheme(state),

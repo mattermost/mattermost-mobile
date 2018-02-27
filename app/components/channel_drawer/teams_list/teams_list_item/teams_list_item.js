@@ -5,6 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
+    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
@@ -13,6 +14,8 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import Badge from 'app/components/badge';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {Client4} from 'mattermost-redux/client';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
@@ -24,6 +27,7 @@ export default class TeamsListItem extends React.PureComponent {
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        lastTeamIconUpdate: PropTypes.number
     };
 
     selectTeam = wrapWithPreventDoubleTap(() => {
@@ -39,6 +43,7 @@ export default class TeamsListItem extends React.PureComponent {
             name,
             teamId,
             theme,
+            lastTeamIconUpdate
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -64,6 +69,25 @@ export default class TeamsListItem extends React.PureComponent {
             />
         );
 
+        let teamIconContainer;
+        if (lastTeamIconUpdate) {
+            const teamIconUrl = Client4.getTeamIconUrl(teamId, lastTeamIconUpdate);
+            teamIconContainer = (
+                <Image
+                    source={{uri: teamIconUrl}}
+                    style={styles.teamIconImage}
+                />
+            );
+        } else {
+            teamIconContainer = (
+                <View style={styles.teamIconContainer}>
+                    <Text style={styles.teamIcon}>
+                        {displayName.substr(0, 2).toUpperCase()}
+                    </Text>
+                </View>
+            );
+        }
+
         return (
             <View style={styles.teamWrapper}>
                 <TouchableHighlight
@@ -71,11 +95,7 @@ export default class TeamsListItem extends React.PureComponent {
                     onPress={this.selectTeam}
                 >
                     <View style={styles.teamContainer}>
-                        <View style={styles.teamIconContainer}>
-                            <Text style={styles.teamIcon}>
-                                {displayName.substr(0, 2).toUpperCase()}
-                            </Text>
-                        </View>
+                        {teamIconContainer}
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -117,8 +137,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.sidebarText,
             borderRadius: 2,
             height: 40,
-            justifyContent: 'center',
             width: 40,
+            justifyContent: 'center'
+        },
+        teamIconImage: {
+            borderRadius: 2,
+            height: 40,
+            width: 40
         },
         teamIcon: {
             color: theme.sidebarBg,

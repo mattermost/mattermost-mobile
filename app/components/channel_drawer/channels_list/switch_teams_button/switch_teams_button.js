@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {
     Text,
+    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
@@ -13,6 +14,8 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Badge from 'app/components/badge';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {Client4} from 'mattermost-redux/client';
 
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
@@ -23,6 +26,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
         mentionCount: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        lastTeamIconUpdate: PropTypes.number
     };
 
     showTeams = wrapWithPreventDoubleTap(() => {
@@ -37,6 +41,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
             searching,
             teamsCount,
             theme,
+            lastTeamIconUpdate
         } = this.props;
 
         if (!currentTeamId) {
@@ -59,6 +64,23 @@ export default class SwitchTeamsButton extends React.PureComponent {
             />
         );
 
+        let teamIconContent;
+        if (lastTeamIconUpdate) {
+            const teamIconUrl = Client4.getTeamIconUrl(currentTeamId, lastTeamIconUpdate);
+            teamIconContent = (
+                <Image
+                    source={{uri: teamIconUrl}}
+                    style={styles.switcherTeamIconImage}
+                />
+            );
+        } else {
+            teamIconContent = (
+                <Text style={styles.switcherTeamIconText}>
+                    {displayName.substr(0, 2).toUpperCase()}
+                </Text>
+            );
+        }
+
         return (
             <View>
                 <TouchableHighlight
@@ -69,12 +91,11 @@ export default class SwitchTeamsButton extends React.PureComponent {
                         <AwesomeIcon
                             name='chevron-left'
                             size={12}
-                            color={theme.sidebarHeaderBg}
+                            style={styles.switcherArrow}
                         />
-                        <View style={styles.switcherDivider}/>
-                        <Text style={styles.switcherTeam}>
-                            {displayName.substr(0, 2).toUpperCase()}
-                        </Text>
+                        <View style={styles.switcherTeamIconContainer}>
+                            {teamIconContent}
+                        </View>
                     </View>
                 </TouchableHighlight>
                 {badge}
@@ -86,26 +107,36 @@ export default class SwitchTeamsButton extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         switcherContainer: {
-            alignItems: 'center',
             backgroundColor: theme.sidebarHeaderTextColor,
-            borderRadius: 2,
             flexDirection: 'row',
-            height: 32,
+            alignItems: 'center',
             justifyContent: 'center',
+            height: 32,
+            borderRadius: 2,
             marginLeft: 6,
-            marginRight: 5,
-            paddingHorizontal: 6,
+            marginRight: 6,
+            paddingHorizontal: 3
         },
-        switcherDivider: {
-            backgroundColor: theme.sidebarHeaderBg,
-            height: 15,
-            marginHorizontal: 6,
-            width: 1,
-        },
-        switcherTeam: {
+        switcherArrow: {
             color: theme.sidebarHeaderBg,
+            marginRight: 3
+        },
+        switcherTeamIconContainer: {
+            marginLeft: 3,
+            width: 26,
+            height: 26,
+            justifyContent: 'center',
+            alignItems: 'stretch'
+        },
+        switcherTeamIconImage: {
+            flex: 1,
+            borderRadius: 2
+        },
+        switcherTeamIconText: {
             fontFamily: 'OpenSans',
+            color: theme.sidebarHeaderBg,
             fontSize: 14,
+            textAlign: 'center'
         },
         badge: {
             backgroundColor: theme.mentionBj,

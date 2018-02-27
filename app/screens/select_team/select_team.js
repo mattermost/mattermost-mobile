@@ -9,6 +9,7 @@ import {
     InteractionManager,
     StyleSheet,
     Text,
+    Image,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -22,6 +23,8 @@ import StatusBar from 'app/components/status_bar';
 import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+
+import {Client4} from 'mattermost-redux/client';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -168,17 +171,32 @@ export default class SelectTeam extends PureComponent {
             );
         }
 
+        let teamIconContainer;
+        if (item.last_team_icon_update) {
+            const teamIconUrl = Client4.getTeamIconUrl(item.id, item.last_team_icon_update);
+            teamIconContainer = (
+                <Image
+                    source={{uri: teamIconUrl}}
+                    style={styles.teamIconImage}
+                />
+            );
+        } else {
+            teamIconContainer = (
+                <View style={styles.teamIconContainer}>
+                    <Text style={styles.teamIcon}>
+                        {item.display_name.substr(0, 2).toUpperCase()}
+                    </Text>
+                </View>
+            );
+        }
+
         return (
             <View style={styles.teamWrapper}>
                 <TouchableOpacity
                     onPress={() => preventDoubleTap(this.onSelectTeam, this, item)}
                 >
                     <View style={styles.teamContainer}>
-                        <View style={styles.teamIconContainer}>
-                            <Text style={styles.teamIcon}>
-                                {item.display_name.substr(0, 2).toUpperCase()}
-                            </Text>
-                        </View>
+                        {teamIconContainer}
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -272,18 +290,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.buttonBg,
             borderRadius: 2,
             height: 40,
-            justifyContent: 'center',
             width: 40,
+            justifyContent: 'center'
         },
-        noTeam: {
-            color: theme.centerChannelColor,
-            fontSize: 14,
+        teamIconImage: {
+            borderRadius: 2,
+            height: 30,
+            width: 30
         },
         teamIcon: {
             color: theme.buttonColor,
             fontFamily: 'OpenSans',
             fontSize: 18,
             fontWeight: '600',
+        },
+        noTeam: {
+            color: theme.centerChannelColor,
+            fontSize: 14
         },
         teamNameContainer: {
             flex: 1,

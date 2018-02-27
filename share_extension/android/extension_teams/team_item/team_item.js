@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
+    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
@@ -12,6 +13,8 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {Client4} from 'mattermost-redux/client';
 
 export default class TeamItem extends PureComponent {
     static propTypes = {
@@ -46,13 +49,24 @@ export default class TeamItem extends PureComponent {
             );
         }
 
-        const icon = (
-            <View style={styles.iconContainer}>
-                <Text style={styles.icon}>
-                    {team.display_name.substr(0, 2).toUpperCase()}
-                </Text>
-            </View>
-        );
+        let teamIconContainer;
+        if (team.last_team_icon_update) {
+            const teamIconUrl = Client4.getTeamIconUrl(team.id, team.last_team_icon_update);
+            teamIconContainer = (
+                <Image
+                    source={{uri: teamIconUrl}}
+                    style={styles.teamIconImage}
+                />
+            );
+        } else {
+            teamIconContainer = (
+                <View style={styles.teamIconContainer}>
+                    <Text style={styles.teamIcon}>
+                        {team.display_name.substr(0, 2).toUpperCase()}
+                    </Text>
+                </View>
+            );
+        }
 
         return (
             <TouchableHighlight
@@ -61,7 +75,7 @@ export default class TeamItem extends PureComponent {
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
-                        {icon}
+                        {teamIconContainer}
                         <Text
                             style={[styles.text]}
                             ellipsizeMode='tail'
@@ -97,16 +111,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 16,
             paddingRight: 5,
         },
-        iconContainer: {
+        teamIconContainer: {
             alignItems: 'center',
             backgroundColor: theme.linkColor,
             borderRadius: 2,
             height: 30,
-            justifyContent: 'center',
+            width: 30,
+            marginRight: 10,
+            justifyContent: 'center'
+        },
+        teamIconImage: {
+            borderRadius: 2,
+            height: 30,
             width: 30,
             marginRight: 10,
         },
-        icon: {
+        teamIcon: {
             color: theme.sidebarText,
             fontFamily: 'OpenSans',
             fontSize: 15,

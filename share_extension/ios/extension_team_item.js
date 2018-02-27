@@ -5,12 +5,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
+    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
 
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import {Client4} from 'mattermost-redux/client';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
@@ -33,19 +36,30 @@ export default class TeamsListItem extends React.PureComponent {
         } = this.props;
         const styles = getStyleSheet(theme);
 
-        const icon = (
-            <View style={styles.iconContainer}>
-                <Text style={styles.icon}>
-                    {team.display_name.substr(0, 2).toUpperCase()}
-                </Text>
-            </View>
-        );
-
         const wrapperStyle = [styles.wrapper];
         if (team.id === currentTeamId) {
             wrapperStyle.push({
                 width: '90%',
             });
+        }
+
+        let teamIconContainer;
+        if (team.last_team_icon_update) {
+            const teamIconUrl = Client4.getTeamIconUrl(team.id, team.last_team_icon_update);
+            teamIconContainer = (
+                <Image
+                    source={{uri: teamIconUrl}}
+                    style={styles.teamIconImage}
+                />
+            );
+        } else {
+            teamIconContainer = (
+                <View style={styles.teamIconContainer}>
+                    <Text style={styles.teamIcon}>
+                        {team.display_name.substr(0, 2).toUpperCase()}
+                    </Text>
+                </View>
+            );
         }
 
         return (
@@ -56,7 +70,7 @@ export default class TeamsListItem extends React.PureComponent {
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
-                        {icon}
+                        {teamIconContainer}
                         <Text
                             style={[styles.text]}
                             ellipsizeMode='tail'
@@ -97,16 +111,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 16,
             paddingRight: 5,
         },
-        iconContainer: {
+        teamIconContainer: {
             alignItems: 'center',
             backgroundColor: theme.linkColor,
             borderRadius: 2,
             height: 30,
-            justifyContent: 'center',
+            width: 30,
+            marginRight: 10,
+            justifyContent: 'center'
+        },
+        teamIconImage: {
+            borderRadius: 2,
+            height: 30,
             width: 30,
             marginRight: 10,
         },
-        icon: {
+        teamIcon: {
             color: theme.sidebarText,
             fontFamily: 'OpenSans',
             fontSize: 15,
