@@ -19,6 +19,8 @@ import {getTheme, getFavoritesPreferences} from 'mattermost-redux/selectors/enti
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
+import localConfig from 'assets/config.json';
+
 import List from './list';
 
 const townHallFilter = createSelector(
@@ -46,7 +48,7 @@ function mapStateToProps(state) {
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
 
-    const hideTownHall = !isAdmin && !isSystemAdmin && config.ExperimentalTownSquareIsReadOnly === 'true';
+    const hideTownHall = !isAdmin && !isSystemAdmin && localConfig.ExperimentalHideReadOnlyTownSquare === true;
 
     const publicChannelIds = townHallFilter(state, hideTownHall);
 

@@ -394,16 +394,13 @@ export default class PostTextbox extends PureComponent {
     };
 
     render() {
-        if (this.props.disablePostToChannel) {
-            return null;
-        }
-
         const {intl} = this.context;
         const {
             canUploadFiles,
             channelId,
             channelIsLoading,
             deactivatedChannel,
+            disablePostToChannel,
             files,
             navigator,
             rootId,
@@ -428,7 +425,9 @@ export default class PostTextbox extends PureComponent {
         const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
-        if (rootId) {
+        if (disablePostToChannel) {
+            placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'}
+        } else if (rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
         } else {
             placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
@@ -469,7 +468,7 @@ export default class PostTextbox extends PureComponent {
                     rootId={rootId}
                 />
                 <View style={style.inputWrapper}>
-                    {attachmentButton}
+                    {!disablePostToChannel && attachmentButton}
                     <View style={inputContainerStyle}>
                         <TextInput
                             ref='input'
@@ -487,6 +486,7 @@ export default class PostTextbox extends PureComponent {
                             keyboardType={this.state.keyboardType}
                             onEndEditing={this.handleEndEditing}
                             disableFullscreenUI={true}
+                            editable={!disablePostToChannel}
                         />
                         {this.renderSendButton()}
                     </View>
