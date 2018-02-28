@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
@@ -14,7 +13,7 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Client4} from 'mattermost-redux/client';
+import TeamIcon from 'app/components/team_icon';
 
 export default class TeamItem extends PureComponent {
     static propTypes = {
@@ -49,25 +48,6 @@ export default class TeamItem extends PureComponent {
             );
         }
 
-        let teamIconContainer;
-        if (team.last_team_icon_update) {
-            const teamIconUrl = Client4.getTeamIconUrl(team.id, team.last_team_icon_update);
-            teamIconContainer = (
-                <Image
-                    source={{uri: teamIconUrl}}
-                    style={styles.teamIconImage}
-                />
-            );
-        } else {
-            teamIconContainer = (
-                <View style={styles.teamIconContainer}>
-                    <Text style={styles.teamIcon}>
-                        {team.display_name.substr(0, 2).toUpperCase()}
-                    </Text>
-                </View>
-            );
-        }
-
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
@@ -75,7 +55,14 @@ export default class TeamItem extends PureComponent {
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
-                        {teamIconContainer}
+                        <TeamIcon
+                            teamId={team.id}
+                            displayName={team.display_name}
+                            lastTeamIconUpdate={team.last_team_icon_update}
+                            theme={theme}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <Text
                             style={[styles.text]}
                             ellipsizeMode='tail'
@@ -112,25 +99,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 5,
         },
         teamIconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.linkColor,
-            borderRadius: 2,
-            height: 30,
-            width: 30,
-            marginRight: 10,
-            justifyContent: 'center',
-        },
-        teamIconImage: {
-            borderRadius: 2,
-            height: 30,
-            width: 30,
             marginRight: 10,
         },
-        teamIcon: {
-            color: theme.sidebarText,
-            fontFamily: 'OpenSans',
+        teamIconText: {
             fontSize: 15,
-            fontWeight: '600',
         },
         checkmarkContainer: {
             alignItems: 'flex-end',

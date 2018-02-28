@@ -4,8 +4,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    Text,
-    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
@@ -15,7 +13,7 @@ import Badge from 'app/components/badge';
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {Client4} from 'mattermost-redux/client';
+import TeamIcon from 'app/components/team_icon';
 
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
@@ -64,23 +62,6 @@ export default class SwitchTeamsButton extends React.PureComponent {
             />
         );
 
-        let teamIconContent;
-        if (lastTeamIconUpdate) {
-            const teamIconUrl = Client4.getTeamIconUrl(currentTeamId, lastTeamIconUpdate);
-            teamIconContent = (
-                <Image
-                    source={{uri: teamIconUrl}}
-                    style={styles.switcherTeamIconImage}
-                />
-            );
-        } else {
-            teamIconContent = (
-                <Text style={styles.switcherTeamIconText}>
-                    {displayName.substr(0, 2).toUpperCase()}
-                </Text>
-            );
-        }
-
         return (
             <View>
                 <TouchableHighlight
@@ -93,9 +74,14 @@ export default class SwitchTeamsButton extends React.PureComponent {
                             size={12}
                             style={styles.switcherArrow}
                         />
-                        <View style={styles.switcherTeamIconContainer}>
-                            {teamIconContent}
-                        </View>
+                        <TeamIcon
+                            teamId={currentTeamId}
+                            displayName={displayName}
+                            lastTeamIconUpdate={lastTeamIconUpdate}
+                            theme={theme}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                     </View>
                 </TouchableHighlight>
                 {badge}
@@ -121,22 +107,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.sidebarHeaderBg,
             marginRight: 3,
         },
-        switcherTeamIconContainer: {
-            marginLeft: 3,
+        teamIconContainer: {
             width: 26,
             height: 26,
-            justifyContent: 'center',
-            alignItems: 'stretch',
+            marginLeft: 3,
         },
-        switcherTeamIconImage: {
-            flex: 1,
-            borderRadius: 2,
-        },
-        switcherTeamIconText: {
-            fontFamily: 'OpenSans',
-            color: theme.sidebarHeaderBg,
+        teamIconText: {
             fontSize: 14,
-            textAlign: 'center',
         },
         badge: {
             backgroundColor: theme.mentionBj,

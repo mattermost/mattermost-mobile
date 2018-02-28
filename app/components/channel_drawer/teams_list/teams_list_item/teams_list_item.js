@@ -5,17 +5,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    Image,
     TouchableHighlight,
     View,
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
+import TeamIcon from 'app/components/team_icon';
+
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {Client4} from 'mattermost-redux/client';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
@@ -69,25 +68,6 @@ export default class TeamsListItem extends React.PureComponent {
             />
         );
 
-        let teamIconContainer;
-        if (lastTeamIconUpdate) {
-            const teamIconUrl = Client4.getTeamIconUrl(teamId, lastTeamIconUpdate);
-            teamIconContainer = (
-                <Image
-                    source={{uri: teamIconUrl}}
-                    style={styles.teamIconImage}
-                />
-            );
-        } else {
-            teamIconContainer = (
-                <View style={styles.teamIconContainer}>
-                    <Text style={styles.teamIcon}>
-                        {displayName.substr(0, 2).toUpperCase()}
-                    </Text>
-                </View>
-            );
-        }
-
         return (
             <View style={styles.teamWrapper}>
                 <TouchableHighlight
@@ -95,7 +75,14 @@ export default class TeamsListItem extends React.PureComponent {
                     onPress={this.selectTeam}
                 >
                     <View style={styles.teamContainer}>
-                        {teamIconContainer}
+                        <TeamIcon
+                            teamId={teamId}
+                            displayName={displayName}
+                            lastTeamIconUpdate={lastTeamIconUpdate}
+                            theme={theme}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -132,25 +119,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             marginHorizontal: 16,
         },
-        teamIconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.sidebarText,
-            borderRadius: 2,
-            height: 40,
-            width: 40,
-            justifyContent: 'center',
-        },
-        teamIconImage: {
-            borderRadius: 2,
-            height: 40,
-            width: 40,
-        },
-        teamIcon: {
-            color: theme.sidebarBg,
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: '600',
-        },
         teamNameContainer: {
             flex: 1,
             flexDirection: 'column',
@@ -158,6 +126,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         teamName: {
             color: theme.sidebarText,
+            fontSize: 18,
+        },
+        teamIconContainer: {
+            width: 40,
+            height: 40,
+        },
+        teamIconText: {
             fontSize: 18,
         },
         teamUrl: {
