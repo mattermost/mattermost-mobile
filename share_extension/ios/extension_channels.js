@@ -221,6 +221,7 @@ export default class ExtensionChannels extends PureComponent {
                     titleCancelColor={theme.linkColor}
                     onChangeText={this.handleSearch}
                     onCancelButtonPress={this.cancelSearch}
+                    autoCapitalize='none'
                     value={this.state.term}
                 />
             </View>

@@ -270,6 +270,7 @@ class ChannelAddMembers extends PureComponent {
                         onChangeText={this.searchProfiles}
                         onSearchButtonPress={this.searchProfiles}
                         onCancelButtonPress={this.cancelSearch}
+                        autoCapitalize='none'
                         value={term}
                     />
                 </View>

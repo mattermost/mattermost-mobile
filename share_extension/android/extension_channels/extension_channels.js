@@ -187,6 +187,7 @@ export default class ExtensionTeam extends PureComponent {
                     tintColorDelete={changeOpacity(defaultTheme.centerChannelColor, 0.3)}
                     titleCancelColor={defaultTheme.centerChannelColor}
                     onChangeText={this.handleSearch}
+                    autoCapitalize='none'
                     value={this.state.term}
                 />
             </View>
