@@ -15,6 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getGroupDisplayNameFromUserIds} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername, filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
 
+import CustomFlatList from 'app/components/custom_flat_list';
 import CustomSectionList from 'app/components/custom_section_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
 import Loading from 'app/components/loading';
@@ -96,13 +97,21 @@ class MoreDirectMessages extends PureComponent {
             this.setState({profiles, showNoResults: true});
         } else if (this.state.searching &&
             nextProps.searchRequest.status === RequestStatus.SUCCESS) {
-            let results = filterProfilesMatchingTerm(nextProps.profiles, this.state.term);
+            const exactMatches = [];
+            let results = filterProfilesMatchingTerm(nextProps.profiles, this.state.term).filter((p) => {
+                if (p.username === this.state.term || p.username.startsWith(this.state.term)) {
+                    exactMatches.push(p);
+                    return false;
+                }
+
+                return true;
+            });
 
             if (this.state.selectedCount > 0) {
                 results = this.removeCurrentUserFromProfiles(results);
             }
 
-            this.setState({profiles: results, showNoResults: true});
+            this.setState({profiles: [...exactMatches, ...results], showNoResults: true});
         }
     }
 
@@ -466,6 +475,39 @@ class MoreDirectMessages extends PureComponent {
             }),
         };
 
+        let listComponent;
+        if (term.length) {
+            listComponent = (
+                <CustomFlatList
+                    theme={theme}
+                    items={this.state.profiles}
+                    renderItem={this.renderItem}
+                    showNoResults={showNoResults}
+                    extraData={this.state.selectedIds}
+                    onRowPress={this.handleSelectUser}
+                    loading={isLoading}
+                    loadingText={loadingText}
+                />
+            );
+        } else {
+            listComponent = (
+                <CustomSectionList
+                    theme={theme}
+                    items={this.state.profiles}
+                    renderItem={this.renderItem}
+                    showNoResults={showNoResults}
+                    sectionKeyExtractor={this.sectionKeyExtractor}
+                    compareItems={this.compareItems}
+                    extraData={this.state.selectedIds}
+                    onListEndReached={this.loadMoreProfiles}
+                    listScrollRenderAheadDistance={50}
+                    onRowPress={this.handleSelectUser}
+                    loading={isLoading}
+                    loadingText={loadingText}
+                />
+            );
+        }
+
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -484,6 +526,7 @@ class MoreDirectMessages extends PureComponent {
                         onChangeText={this.onSearch}
                         onSearchButtonPress={this.onSearch}
                         onCancelButtonPress={this.cancelSearch}
+                        autoCapitalize='none'
                         value={term}
                     />
                     <SelectedUsers
@@ -495,20 +538,7 @@ class MoreDirectMessages extends PureComponent {
                         onRemove={this.handleRemoveUser}
                     />
                 </View>
-                <CustomSectionList
-                    theme={theme}
-                    items={this.state.profiles}
-                    renderItem={this.renderItem}
-                    showNoResults={showNoResults}
-                    sectionKeyExtractor={this.sectionKeyExtractor}
-                    compareItems={this.compareItems}
-                    extraData={this.state.selectedIds}
-                    onListEndReached={this.loadMoreProfiles}
-                    listScrollRenderAheadDistance={50}
-                    onRowPress={this.handleSelectUser}
-                    loading={isLoading}
-                    loadingText={loadingText}
-                />
+                {listComponent}
             </View>
         );
     }
