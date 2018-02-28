@@ -101,9 +101,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         teamIconContainer: {
             marginRight: 10,
         },
-        teamIconText: {
-            fontSize: 15,
-        },
         checkmarkContainer: {
             alignItems: 'flex-end',
         },
