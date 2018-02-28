@@ -14,7 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {isValidUrl} from 'app/utils/url';
 
@@ -74,7 +74,7 @@ class Settings extends PureComponent {
         return contents.join('\n');
     };
 
-    goToAbout = wrapWithPreventDoubleTap(() => {
+    goToAbout = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'About',
@@ -89,7 +89,7 @@ class Settings extends PureComponent {
         });
     });
 
-    goToNotifications = wrapWithPreventDoubleTap(() => {
+    goToNotifications = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'NotificationSettings',
@@ -105,7 +105,7 @@ class Settings extends PureComponent {
         });
     });
 
-    goToDisplaySettings = wrapWithPreventDoubleTap(() => {
+    goToDisplaySettings = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'DisplaySettings',
@@ -121,7 +121,7 @@ class Settings extends PureComponent {
         });
     });
 
-    goToAdvancedSettings = wrapWithPreventDoubleTap(() => {
+    goToAdvancedSettings = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'AdvancedSettings',
@@ -137,7 +137,7 @@ class Settings extends PureComponent {
         });
     });
 
-    goToSelectTeam = wrapWithPreventDoubleTap(() => {
+    goToSelectTeam = preventDoubleTap(() => {
         const {currentUrl, intl, navigator, theme} = this.props;
 
         navigator.push({
@@ -158,7 +158,7 @@ class Settings extends PureComponent {
         });
     });
 
-    goToClientUpgrade = wrapWithPreventDoubleTap(() => {
+    goToClientUpgrade = preventDoubleTap(() => {
         const {intl, theme} = this.props;
 
         this.props.navigator.push({
@@ -188,7 +188,7 @@ class Settings extends PureComponent {
         }
     };
 
-    openErrorEmail = wrapWithPreventDoubleTap(() => {
+    openErrorEmail = preventDoubleTap(() => {
         const {config} = this.props;
         const recipient = config.SupportEmail;
         const subject = `Problem with ${config.SiteName} React Native app`;
@@ -202,7 +202,7 @@ class Settings extends PureComponent {
         });
     });
 
-    openHelp = wrapWithPreventDoubleTap(() => {
+    openHelp = preventDoubleTap(() => {
         const {config} = this.props;
         const link = config.HelpLink ? config.HelpLink.toLowerCase() : '';
 

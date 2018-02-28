@@ -17,7 +17,7 @@ import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {GlobalStyles} from 'app/styles';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
@@ -40,7 +40,7 @@ class LoginOptions extends PureComponent {
         Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
-    goToLogin = wrapWithPreventDoubleTap(() => {
+    goToLogin = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'Login',
@@ -169,7 +169,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='gitlab'
-                    onPress={wrapWithPreventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
                 >
                     <Image
@@ -208,7 +208,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='saml'
-                    onPress={wrapWithPreventDoubleTap(() => this.goToSSO(ViewTypes.SAML))}
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.SAML))}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <Text

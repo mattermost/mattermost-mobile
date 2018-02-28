@@ -21,7 +21,7 @@ import SafeAreaView from 'app/components/safe_area_view';
 import Drawer from 'app/components/drawer';
 import UserStatus from 'app/components/user_status';
 import {NavigationTypes} from 'app/constants';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import DrawerItem from './drawer_item';
@@ -135,7 +135,7 @@ export default class SettingsDrawer extends PureComponent {
         }
     };
 
-    handleSetStatus = wrapWithPreventDoubleTap(() => {
+    handleSetStatus = preventDoubleTap(() => {
         const items = [{
             action: () => this.setStatus(General.ONLINE),
             text: {
@@ -179,7 +179,7 @@ export default class SettingsDrawer extends PureComponent {
         });
     });
 
-    goToEditProfile = wrapWithPreventDoubleTap(() => {
+    goToEditProfile = preventDoubleTap(() => {
         const {currentUser, navigator, theme} = this.props;
         const {formatMessage} = this.context.intl;
 
@@ -208,7 +208,7 @@ export default class SettingsDrawer extends PureComponent {
         });
     });
 
-    goToSettings = wrapWithPreventDoubleTap(() => {
+    goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
         const {navigator, theme} = this.props;
 
@@ -234,7 +234,7 @@ export default class SettingsDrawer extends PureComponent {
         });
     });
 
-    logout = wrapWithPreventDoubleTap(() => {
+    logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
         this.closeSettingsDrawer();
         InteractionManager.runAfterInteractions(logout);

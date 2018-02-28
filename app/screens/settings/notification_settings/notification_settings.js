@@ -23,7 +23,7 @@ import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
 import {getNotificationProps} from 'app/utils/notify_props';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 class NotificationSettings extends PureComponent {
@@ -64,7 +64,7 @@ class NotificationSettings extends PureComponent {
         }
     }
 
-    handlePress = wrapWithPreventDoubleTap((action) => {
+    handlePress = preventDoubleTap((action) => {
         action();
     });
 

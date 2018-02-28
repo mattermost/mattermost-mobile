@@ -17,7 +17,7 @@ import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
 
@@ -184,7 +184,7 @@ class Post extends PureComponent {
         this.props.actions.addReaction(post.id, emoji);
     }
 
-    handleAddReaction = wrapWithPreventDoubleTap(() => {
+    handleAddReaction = preventDoubleTap(() => {
         const {intl, navigator, post, theme} = this.props;
 
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
@@ -258,7 +258,7 @@ class Post extends PureComponent {
         });
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         const {
             isSearchResult,
             onPress,
@@ -274,7 +274,7 @@ class Post extends PureComponent {
         }
     });
 
-    handleReply = wrapWithPreventDoubleTap(() => {
+    handleReply = preventDoubleTap(() => {
         const {post, onReply} = this.props;
         if (!getToolTipVisible() && onReply) {
             return onReply(post);
@@ -319,7 +319,7 @@ class Post extends PureComponent {
         return <View style={replyBarStyle}/>;
     };
 
-    viewUserProfile = wrapWithPreventDoubleTap(() => {
+    viewUserProfile = preventDoubleTap(() => {
         const {isSearchResult} = this.props;
 
         if (!isSearchResult && !getToolTipVisible()) {

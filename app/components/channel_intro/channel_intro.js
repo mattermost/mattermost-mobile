@@ -14,7 +14,7 @@ import {injectIntl, intlShape} from 'react-intl';
 
 import Loading from 'app/components/loading';
 import ProfilePicture from 'app/components/profile_picture';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 class ChannelIntro extends PureComponent {
@@ -69,7 +69,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={wrapWithPreventDoubleTap(() => this.goToUserProfile(member.id))}
+                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
                 style={style.profile}
             >
                 <ProfilePicture
@@ -89,7 +89,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member, index) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={wrapWithPreventDoubleTap(() => this.goToUserProfile(member.id))}
+                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
             >
                 <Text style={style.displayName}>
                     {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}

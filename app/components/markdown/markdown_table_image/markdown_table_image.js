@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 
 export default class MarkdownTableImage extends React.PureComponent {
     static propTypes = {
@@ -23,7 +23,7 @@ export default class MarkdownTableImage extends React.PureComponent {
         intl: intlShape.isRequired,
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
 
         navigator.push({

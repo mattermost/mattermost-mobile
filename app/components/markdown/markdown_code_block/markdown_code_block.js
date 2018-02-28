@@ -15,7 +15,7 @@ import {
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -36,7 +36,7 @@ class MarkdownCodeBlock extends React.PureComponent {
         language: '',
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         const languageDisplayName = getDisplayNameForLanguage(this.props.language);

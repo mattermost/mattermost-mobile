@@ -19,7 +19,7 @@ import {debounce} from 'mattermost-redux/actions/helpers';
 import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
 import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
 import {ListTypes} from 'app/constants';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
 const VIEWABILITY_CONFIG = {
@@ -148,7 +148,7 @@ export default class List extends PureComponent {
         return sections;
     };
 
-    goToCreatePrivateChannel = wrapWithPreventDoubleTap(() => {
+    goToCreatePrivateChannel = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 
@@ -171,7 +171,7 @@ export default class List extends PureComponent {
         });
     });
 
-    goToDirectMessages = wrapWithPreventDoubleTap(() => {
+    goToDirectMessages = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 
@@ -196,7 +196,7 @@ export default class List extends PureComponent {
         });
     });
 
-    goToMoreChannels = wrapWithPreventDoubleTap(() => {
+    goToMoreChannels = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 

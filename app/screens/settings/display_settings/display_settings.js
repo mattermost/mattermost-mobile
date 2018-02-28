@@ -11,7 +11,7 @@ import {
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ClockDisplay from 'app/screens/clock_display';
@@ -30,7 +30,7 @@ export default class DisplaySettings extends PureComponent {
         showClockDisplaySettings: false,
     };
 
-    goToClockDisplaySettings = wrapWithPreventDoubleTap(() => {
+    goToClockDisplaySettings = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 

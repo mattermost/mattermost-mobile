@@ -19,7 +19,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import logo from 'assets/images/logo.png';
 
@@ -84,7 +84,7 @@ export default class Mfa extends PureComponent {
         this.textInput.refs.wrappedInstance.blur();
     };
 
-    submit = wrapWithPreventDoubleTap(() => {
+    submit = preventDoubleTap(() => {
         Keyboard.dismiss();
         if (!this.state.token) {
             this.setState({

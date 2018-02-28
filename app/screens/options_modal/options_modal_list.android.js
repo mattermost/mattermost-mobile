@@ -12,7 +12,7 @@ import {
 import IconFont from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 
 export default class OptionsModalList extends PureComponent {
     static propTypes = {
@@ -20,7 +20,7 @@ export default class OptionsModalList extends PureComponent {
         onCancelPress: PropTypes.func,
     };
 
-    handleCancelPress = wrapWithPreventDoubleTap(() => {
+    handleCancelPress = preventDoubleTap(() => {
         if (this.props.onCancelPress) {
             this.props.onCancelPress();
         }
@@ -45,7 +45,7 @@ export default class OptionsModalList extends PureComponent {
             return (
                 <TouchableOpacity
                     key={index}
-                    onPress={wrapWithPreventDoubleTap(item.action)}
+                    onPress={preventDoubleTap(item.action)}
                     style={[style.option, style.optionBorder]}
                 >
                     {textComponent}

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import StatusBar from 'app/components/status_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
@@ -81,7 +81,7 @@ class ChannelInfo extends PureComponent {
         }
     };
 
-    goToChannelAddMembers = wrapWithPreventDoubleTap(() => {
+    goToChannelAddMembers = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             backButtonTitle: '',
@@ -97,7 +97,7 @@ class ChannelInfo extends PureComponent {
         });
     });
 
-    goToChannelMembers = wrapWithPreventDoubleTap(() => {
+    goToChannelMembers = preventDoubleTap(() => {
         const {canManageUsers, intl, navigator, theme} = this.props;
         const id = canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers';
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
@@ -116,7 +116,7 @@ class ChannelInfo extends PureComponent {
         });
     });
 
-    handleChannelEdit = wrapWithPreventDoubleTap(() => {
+    handleChannelEdit = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         const id = 'mobile.channel_info.edit';
         const defaultMessage = 'Edit Channel';
@@ -143,7 +143,7 @@ class ChannelInfo extends PureComponent {
         this.handleDeleteOrLeave('delete');
     };
 
-    handleDeleteOrLeave = wrapWithPreventDoubleTap((eventType) => {
+    handleDeleteOrLeave = preventDoubleTap((eventType) => {
         const {formatMessage} = this.props.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === General.OPEN_CHANNEL ?
@@ -207,7 +207,7 @@ class ChannelInfo extends PureComponent {
         );
     });
 
-    handleClose = wrapWithPreventDoubleTap(() => {
+    handleClose = preventDoubleTap(() => {
         const {currentChannel, isCurrent, isFavorite} = this.props;
         const channel = Object.assign({}, currentChannel, {isCurrent}, {isFavorite});
         const {closeDMChannel, closeGMChannel} = this.props.actions;
