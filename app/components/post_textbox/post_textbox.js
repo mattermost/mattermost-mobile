@@ -426,7 +426,7 @@ export default class PostTextbox extends PureComponent {
 
         let placeholder;
         if (disablePostToChannel) {
-            placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'}
+            placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'};
         } else if (rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
         } else {

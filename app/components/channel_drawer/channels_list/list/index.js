@@ -53,7 +53,7 @@ function mapStateToProps(state) {
         const hideTownHall = !isAdmin && !isSystemAdmin;
         publicChannelIds = townHallFilter(state, hideTownHall);
     } else {
-        publicChannelIds = getSortedPublicChannelIds(state)
+        publicChannelIds = getSortedPublicChannelIds(state);
     }
 
     return {
