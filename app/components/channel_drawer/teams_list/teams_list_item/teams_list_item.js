@@ -26,7 +26,6 @@ export default class TeamsListItem extends React.PureComponent {
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        lastTeamIconUpdate: PropTypes.number,
     };
 
     selectTeam = wrapWithPreventDoubleTap(() => {
@@ -42,7 +41,6 @@ export default class TeamsListItem extends React.PureComponent {
             name,
             teamId,
             theme,
-            lastTeamIconUpdate,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -77,9 +75,6 @@ export default class TeamsListItem extends React.PureComponent {
                     <View style={styles.teamContainer}>
                         <TeamIcon
                             teamId={teamId}
-                            displayName={displayName}
-                            lastTeamIconUpdate={lastTeamIconUpdate}
-                            theme={theme}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
                         />

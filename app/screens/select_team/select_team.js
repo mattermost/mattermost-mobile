@@ -178,9 +178,6 @@ export default class SelectTeam extends PureComponent {
                     <View style={styles.teamContainer}>
                         <TeamIcon
                             teamId={item.id}
-                            displayName={item.display_name}
-                            lastTeamIconUpdate={item.last_team_icon_update}
-                            theme={theme}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
                         />

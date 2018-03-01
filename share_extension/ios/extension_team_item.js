@@ -52,9 +52,6 @@ export default class TeamsListItem extends React.PureComponent {
                     <View style={styles.item}>
                         <TeamIcon
                             teamId={team.id}
-                            displayName={team.display_name}
-                            lastTeamIconUpdate={team.last_team_icon_update}
-                            theme={theme}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
                         />

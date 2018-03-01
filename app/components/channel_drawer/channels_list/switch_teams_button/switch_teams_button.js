@@ -18,13 +18,11 @@ import TeamIcon from 'app/components/team_icon';
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string,
-        displayName: PropTypes.string,
         searching: PropTypes.bool.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         mentionCount: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
-        lastTeamIconUpdate: PropTypes.number,
     };
 
     showTeams = wrapWithPreventDoubleTap(() => {
@@ -34,12 +32,10 @@ export default class SwitchTeamsButton extends React.PureComponent {
     render() {
         const {
             currentTeamId,
-            displayName,
             mentionCount,
             searching,
             teamsCount,
             theme,
-            lastTeamIconUpdate,
         } = this.props;
 
         if (!currentTeamId) {
@@ -76,9 +72,6 @@ export default class SwitchTeamsButton extends React.PureComponent {
                         />
                         <TeamIcon
                             teamId={currentTeamId}
-                            displayName={displayName}
-                            lastTeamIconUpdate={lastTeamIconUpdate}
-                            theme={theme}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
                         />

@@ -16,20 +16,25 @@ import {Client4} from 'mattermost-redux/client';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
-        teamId: PropTypes.string.isRequired,
-        displayName: PropTypes.string.isRequired,
-        lastTeamIconUpdate: PropTypes.number,
-        theme: PropTypes.object.isRequired,
+        teamId: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
         styleContainer: PropTypes.any,
         styleText: PropTypes.any,
         styleImage: PropTypes.any,
+        team: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired,
     };
+
+    state = {
+        imageError: false,
+    };
+
+    componentWillReceiveProps() {
+        this.setState({imageError: false});
+    }
 
     render() {
         const {
-            teamId,
-            displayName,
-            lastTeamIconUpdate,
+            team,
             theme,
             styleContainer,
             styleText,
@@ -39,19 +44,19 @@ export default class TeamIcon extends React.PureComponent {
         const styles = getStyleSheet(theme);
 
         let teamIconContent;
-
-        if (lastTeamIconUpdate) {
-            const teamIconUrl = Client4.getTeamIconUrl(teamId, lastTeamIconUpdate);
+        if (team.last_team_icon_update && !this.state.imageError) {
+            const teamIconUrl = Client4.getTeamIconUrl(team.id, team.last_team_icon_update);
             teamIconContent = (
                 <Image
                     style={[styles.image, styleImage]}
                     source={{uri: teamIconUrl}}
+                    onError={() => this.setState({imageError: true})}
                 />
             );
         } else {
             teamIconContent = (
                 <Text style={[styles.text, styleText]}>
-                    {displayName.substr(0, 2).toUpperCase()}
+                    {team.display_name.substr(0, 2).toUpperCase()}
                 </Text>
             );
         }
