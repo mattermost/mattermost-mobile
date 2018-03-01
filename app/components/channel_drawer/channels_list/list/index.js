@@ -48,9 +48,13 @@ function mapStateToProps(state) {
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
 
-    const hideTownHall = !isAdmin && !isSystemAdmin && localConfig.ExperimentalHideReadOnlyTownSquare === true;
-
-    const publicChannelIds = townHallFilter(state, hideTownHall);
+    let publicChannelIds;
+    if (localConfig.ExperimentalHideReadOnlyTownSquare === true) {
+        const hideTownHall = !isAdmin && !isSystemAdmin;
+        publicChannelIds = townHallFilter(state, hideTownHall);
+    } else {
+        publicChannelIds = getSortedPublicChannelIds(state)
+    }
 
     return {
         canCreatePrivateChannels: showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin),
