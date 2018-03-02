@@ -13,7 +13,7 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import Badge from 'app/components/badge';
 import TeamIcon from 'app/components/team_icon';
 
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamsListItem extends React.PureComponent {
@@ -28,7 +28,7 @@ export default class TeamsListItem extends React.PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    selectTeam = wrapWithPreventDoubleTap(() => {
+    selectTeam = preventDoubleTap(() => {
         this.props.selectTeam(this.props.teamId);
     });
 

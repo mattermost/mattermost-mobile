@@ -19,7 +19,7 @@ import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Config from 'assets/config';
@@ -42,7 +42,7 @@ class AdvancedSettings extends PureComponent {
         this.getDownloadCacheSize();
     }
 
-    clearOfflineCache = wrapWithPreventDoubleTap(() => {
+    clearOfflineCache = preventDoubleTap(() => {
         const {actions, intl} = this.props;
 
         Alert.alert(
@@ -58,7 +58,7 @@ class AdvancedSettings extends PureComponent {
         );
     });
 
-    clearDownloadCache = wrapWithPreventDoubleTap(() => {
+    clearDownloadCache = preventDoubleTap(() => {
         const {intl} = this.props;
         const {cacheSize} = this.state;
 

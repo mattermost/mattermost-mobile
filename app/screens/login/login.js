@@ -24,7 +24,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 
 import logo from 'assets/images/logo.png';
@@ -134,7 +134,7 @@ class Login extends PureComponent {
         Keyboard.dismiss();
     };
 
-    preSignIn = wrapWithPreventDoubleTap(() => {
+    preSignIn = preventDoubleTap(() => {
         this.setState({error: null, isLoading: true});
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {

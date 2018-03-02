@@ -10,7 +10,7 @@ import {
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import Badge from 'app/components/badge';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import TeamIcon from 'app/components/team_icon';
@@ -25,7 +25,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    showTeams = wrapWithPreventDoubleTap(() => {
+    showTeams = preventDoubleTap(() => {
         this.props.onShowTeams();
     });
 

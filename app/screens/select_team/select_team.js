@@ -173,7 +173,7 @@ export default class SelectTeam extends PureComponent {
         return (
             <View style={styles.teamWrapper}>
                 <TouchableOpacity
-                    onPress={() => preventDoubleTap(this.onSelectTeam, this, item)}
+                    onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
                     <View style={styles.teamContainer}>
                         <TeamIcon

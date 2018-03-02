@@ -21,7 +21,7 @@ import OfflineIndicator from 'app/components/offline_indicator';
 import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostTextbox from 'app/components/post_textbox';
 import networkConnectionListener from 'app/utils/network';
@@ -119,7 +119,7 @@ class Channel extends PureComponent {
         }
     };
 
-    goToChannelInfo = wrapWithPreventDoubleTap(() => {
+    goToChannelInfo = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         const options = {
             screen: 'ChannelInfo',

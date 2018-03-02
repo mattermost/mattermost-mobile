@@ -16,7 +16,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Badge from 'app/components/badge';
 import PushNotifications from 'app/push_notifications';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
@@ -75,7 +75,7 @@ class ChannelDrawerButton extends PureComponent {
         this.setState({opacity: value > 0 ? 0.1 : 1});
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         this.props.openDrawer();
     });
 

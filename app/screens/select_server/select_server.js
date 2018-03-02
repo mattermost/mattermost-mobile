@@ -26,7 +26,7 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {UpgradeTypes} from 'app/constants/view';
 import checkUpgradeType from 'app/utils/client_upgrade';
@@ -183,7 +183,7 @@ class SelectServer extends PureComponent {
         this.setState({url});
     };
 
-    onClick = wrapWithPreventDoubleTap(async () => {
+    onClick = preventDoubleTap(async () => {
         const preUrl = urlParse(this.state.url, true);
         const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
 

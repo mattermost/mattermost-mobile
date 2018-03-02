@@ -14,7 +14,7 @@ import {intlShape} from 'react-intl';
 
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const {View: AnimatedView} = Animated;
@@ -40,7 +40,7 @@ export default class ChannelItem extends PureComponent {
         intl: intlShape,
     };
 
-    onPress = wrapWithPreventDoubleTap(() => {
+    onPress = preventDoubleTap(() => {
         const {channelId, currentChannelId, displayName, fake, onSelectChannel, type} = this.props;
         requestAnimationFrame(() => {
             onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
