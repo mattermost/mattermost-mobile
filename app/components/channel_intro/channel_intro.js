@@ -69,7 +69,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
+                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
                 style={style.profile}
             >
                 <ProfilePicture
@@ -89,7 +89,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member, index) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
+                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
             >
                 <Text style={style.displayName}>
                     {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}

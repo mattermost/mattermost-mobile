@@ -20,8 +20,14 @@ export default class OptionsModalList extends PureComponent {
         onCancelPress: PropTypes.func,
     };
 
+    handleCancelPress = preventDoubleTap(() => {
+        if (this.props.onCancelPress) {
+            this.props.onCancelPress();
+        }
+    });
+
     renderOptions = () => {
-        const {items, onCancelPress} = this.props;
+        const {items} = this.props;
 
         const options = items.map((item, index) => {
             let textComponent;
@@ -39,7 +45,7 @@ export default class OptionsModalList extends PureComponent {
             return (
                 <TouchableOpacity
                     key={index}
-                    onPress={() => preventDoubleTap(item.action, this)}
+                    onPress={preventDoubleTap(item.action)}
                     style={[style.option, style.optionBorder]}
                 >
                     {textComponent}
@@ -57,7 +63,7 @@ export default class OptionsModalList extends PureComponent {
         const cancel = (
             <TouchableOpacity
                 key={items.length}
-                onPress={() => preventDoubleTap(onCancelPress, this)}
+                onPress={this.handleCancelPress}
                 style={style.option}
             >
                 <FormattedText

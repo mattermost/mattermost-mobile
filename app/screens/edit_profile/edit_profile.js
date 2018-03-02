@@ -14,7 +14,7 @@ import StatusBar from 'app/components/status_bar/index';
 import ProfilePicture from 'app/components/profile_picture/index';
 import AttachmentButton from 'app/components/attachment_button';
 import {emptyFunction} from 'app/utils/general';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import EditProfileItem from './edit_profile_item';
@@ -142,7 +142,7 @@ export default class EditProfile extends PureComponent {
         }
     };
 
-    submitUser = wrapWithPreventDoubleTap(async () => {
+    submitUser = preventDoubleTap(async () => {
         this.emitCanUpdateAccount(false);
         this.setState({error: null, updating: true});
 

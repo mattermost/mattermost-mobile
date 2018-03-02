@@ -64,9 +64,9 @@ class NotificationSettings extends PureComponent {
         }
     }
 
-    handlePress = (action) => {
-        preventDoubleTap(action, this);
-    };
+    handlePress = preventDoubleTap((action) => {
+        action();
+    });
 
     goToNotificationSettingsEmail = () => {
         if (Platform.OS === 'ios') {

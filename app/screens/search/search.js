@@ -29,7 +29,7 @@ import SearchBar from 'app/components/search_bar';
 import SearchPreview from 'app/components/search_preview';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDisplayName from './channel_display_name';
@@ -126,7 +126,7 @@ class Search extends PureComponent {
         this.autocomplete = c;
     };
 
-    cancelSearch = wrapWithPreventDoubleTap(() => {
+    cancelSearch = preventDoubleTap(() => {
         const {navigator} = this.props;
         this.handleTextChanged('', true);
         navigator.dismissModal({animationType: 'slide-down'});
@@ -225,7 +225,7 @@ class Search extends PureComponent {
         });
     };
 
-    removeSearchTerms = wrapWithPreventDoubleTap((item) => {
+    removeSearchTerms = preventDoubleTap((item) => {
         const {actions, currentTeamId} = this.props;
         actions.removeSearchTerms(currentTeamId, item.terms);
     });
@@ -413,11 +413,11 @@ class Search extends PureComponent {
         actions.searchPosts(currentTeamId, terms.trim(), isOrSearch);
     };
 
-    handleSearchButtonPress = wrapWithPreventDoubleTap((text) => {
+    handleSearchButtonPress = preventDoubleTap((text) => {
         this.search(text);
     });
 
-    setModifierValue = wrapWithPreventDoubleTap((modifier) => {
+    setModifierValue = preventDoubleTap((modifier) => {
         const {value} = this.state;
         let newValue = '';
 
@@ -436,7 +436,7 @@ class Search extends PureComponent {
         }
     });
 
-    setRecentValue = wrapWithPreventDoubleTap((recent) => {
+    setRecentValue = preventDoubleTap((recent) => {
         const {terms, isOrSearch} = recent;
         this.handleTextChanged(terms);
         this.search(terms, isOrSearch);

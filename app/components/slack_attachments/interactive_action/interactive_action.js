@@ -6,7 +6,7 @@ import {Text} from 'react-native';
 import PropTypes from 'prop-types';
 import Button from 'react-native-button';
 
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class InteractiveAction extends PureComponent {
@@ -20,7 +20,7 @@ export default class InteractiveAction extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    handleActionPress = wrapWithPreventDoubleTap(() => {
+    handleActionPress = preventDoubleTap(() => {
         const {actions, id, postId} = this.props;
         actions.doPostAction(postId, id);
     });

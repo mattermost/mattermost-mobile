@@ -69,11 +69,11 @@ export default class FileAttachmentList extends Component {
         this.props.onPress();
     };
 
-    handlePreviewPress = (file) => {
+    handlePreviewPress = preventDoubleTap((file) => {
         this.props.hideOptionsContext();
         Keyboard.dismiss();
-        preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
-    };
+        this.goToImagePreview(this.props.postId, file.id);
+    });
 
     handlePressIn = () => {
         this.props.toggleSelected(true);

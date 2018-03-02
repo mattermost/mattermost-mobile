@@ -16,7 +16,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
 import {ListTypes, ViewTypes} from 'app/constants';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
@@ -64,7 +64,7 @@ class TeamsList extends PureComponent {
         });
     };
 
-    goToSelectTeam = wrapWithPreventDoubleTap(() => {
+    goToSelectTeam = preventDoubleTap(() => {
         const {currentUrl, intl, navigator, theme} = this.props;
 
         navigator.showModal({
