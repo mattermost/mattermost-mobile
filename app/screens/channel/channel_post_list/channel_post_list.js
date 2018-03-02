@@ -71,7 +71,7 @@ export default class ChannelPostList extends PureComponent {
     }
 
     componentDidMount() {
-        InteractionManager.runAfterInteractions(() => this.setState({loading: false})); 
+        InteractionManager.runAfterInteractions(() => this.setState({loading: false}));
     }
 
     getVisiblePostIds = (props) => {
