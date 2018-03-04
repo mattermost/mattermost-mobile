@@ -32,7 +32,7 @@ export default class SlackAttachments extends PureComponent {
             onPermalinkPress,
             postId,
             theme,
-            textStyles
+            textStyles,
         } = this.props;
         const content = [];
 

@@ -16,7 +16,7 @@ import {
     handleSelectChannel,
     loadThreadIfNecessary,
     setChannelDisplayName,
-    setChannelLoading
+    setChannelLoading,
 } from 'app/actions/views/channel';
 import {handleTeamChange} from 'app/actions/views/select_team';
 
@@ -35,7 +35,7 @@ function makeMapStateToProps() {
         if (channel && channel.id) {
             postIds = getPostIdsAroundPost(state, currentFocusedPostId, channel.id, {
                 postsBeforeCount: 10,
-                postsAfterCount: 10
+                postsAfterCount: 10,
             });
         }
 
@@ -48,7 +48,7 @@ function makeMapStateToProps() {
             focusedPostId: currentFocusedPostId,
             myMembers: getMyChannelMemberships(state),
             postIds,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }
@@ -68,8 +68,8 @@ function mapDispatchToProps(dispatch) {
             markChannelAsViewed,
             selectPost,
             setChannelDisplayName,
-            setChannelLoading
-        }, dispatch)
+            setChannelLoading,
+        }, dispatch),
     };
 }
 

@@ -239,12 +239,12 @@ export default class Search extends PureComponent {
                 navigatorStyle: {
                     navBarHidden: true,
                     screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext'
+                    modalPresentationStyle: 'overCurrentContext',
                 },
                 passProps: {
                     isPermalink,
                     onClose: this.handleClosePermalink,
-                    onPermalinkPress: this.handlePermalinkPress
+                    onPermalinkPress: this.handlePermalinkPress,
                 },
             };
 

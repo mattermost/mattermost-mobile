@@ -10,7 +10,7 @@ import MarkdownLink from './markdown_link';
 function mapStateToProps(state) {
     return {
         serverURL: getCurrentUrl(state),
-        siteURL: getConfig(state).SiteURL
+        siteURL: getConfig(state).SiteURL,
     };
 }
 

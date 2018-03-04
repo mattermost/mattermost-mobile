@@ -58,7 +58,7 @@ class UserProfile extends PureComponent {
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: theme.centerChannelBg,
-            }
+            },
         });
     };
 

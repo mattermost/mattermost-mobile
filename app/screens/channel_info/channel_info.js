@@ -50,7 +50,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -266,13 +266,13 @@ export default class ChannelInfo extends PureComponent {
                 navigatorStyle: {
                     navBarHidden: true,
                     screenBackgroundColor: changeOpacity('#000', 0.2),
-                    modalPresentationStyle: 'overCurrentContext'
+                    modalPresentationStyle: 'overCurrentContext',
                 },
                 passProps: {
                     isPermalink: true,
                     onClose: this.handleClosePermalink,
-                    onPermalinkPress: this.handlePermalinkPress
-                }
+                    onPermalinkPress: this.handlePermalinkPress,
+                },
             };
 
             this.showingPermalink = true;

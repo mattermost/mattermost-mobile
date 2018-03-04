@@ -7,7 +7,7 @@ import {
     InteractionManager,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
@@ -27,17 +27,17 @@ Animatable.initializeRegistryWithDefinitions({
     growOut: {
         from: {
             opacity: 1,
-            scale: 1
+            scale: 1,
         },
         0.5: {
             opacity: 1,
-            scale: 3
+            scale: 3,
         },
         to: {
             opacity: 0,
-            scale: 5
-        }
-    }
+            scale: 5,
+        },
+    },
 });
 
 export default class Permalink extends PureComponent {
@@ -55,7 +55,7 @@ export default class Permalink extends PureComponent {
             markChannelAsViewed: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired
+            setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         channelName: PropTypes.string,
@@ -70,16 +70,16 @@ export default class Permalink extends PureComponent {
         onPermalinkPress: PropTypes.func,
         onPress: PropTypes.func,
         postIds: PropTypes.array,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         onPress: () => true,
-        postIds: []
+        postIds: [],
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -96,7 +96,7 @@ export default class Permalink extends PureComponent {
             title: channelName,
             loading,
             error: '',
-            retry: false
+            retry: false,
         };
     }
 
@@ -137,12 +137,12 @@ export default class Permalink extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 channelId,
-                rootId
-            }
+                rootId,
+            },
         };
 
         navigator.push(options);
@@ -172,7 +172,7 @@ export default class Permalink extends PureComponent {
                 markChannelAsRead,
                 setChannelLoading,
                 setChannelDisplayName,
-                markChannelAsViewed
+                markChannelAsViewed,
             } = actions;
 
             actions.selectPost('');
@@ -189,8 +189,8 @@ export default class Permalink extends PureComponent {
                     navBarHidden: true,
                     statusBarHidden: false,
                     statusBarHideWithNavBar: false,
-                    screenBackgroundColor: theme.centerChannelBg
-                }
+                    screenBackgroundColor: theme.centerChannelBg,
+                },
             });
 
             if (channelTeamId && currentTeamId !== channelTeamId) {
@@ -232,12 +232,12 @@ export default class Permalink extends PureComponent {
                 this.setState({
                     error: formatMessage({
                         id: 'permalink.error.access',
-                        defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.'
+                        defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
                     }),
                     title: formatMessage({
                         id: 'mobile.search.no_results',
-                        defaultMessage: 'No Results Found'
-                    })
+                        defaultMessage: 'No Results Found',
+                    }),
                 });
             } else {
                 this.setState({error: post.error.message, retry: true});
@@ -258,7 +258,7 @@ export default class Permalink extends PureComponent {
 
         await Promise.all([
             actions.getPostsBefore(focusChannelId, focusedPostId, 0, 10),
-            actions.getPostsAfter(focusChannelId, focusedPostId, 0, 10)
+            actions.getPostsAfter(focusChannelId, focusedPostId, 0, 10),
         ]);
 
         this.setState({loading: true});
@@ -276,7 +276,7 @@ export default class Permalink extends PureComponent {
             navigator,
             onPermalinkPress,
             postIds,
-            theme
+            theme,
         } = this.props;
         const {error, retry, loading, title} = this.state;
         const style = getStyleSheet(theme);
@@ -384,12 +384,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            marginTop: 20
+            marginTop: 20,
         },
         wrapper: {
             flex: 1,
             margin: 10,
-            opacity: 0
+            opacity: 0,
         },
         header: {
             alignItems: 'center',
@@ -401,31 +401,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 44,
             paddingRight: 16,
-            width: '100%'
+            width: '100%',
         },
         close: {
             justifyContent: 'center',
             height: 44,
             width: 40,
-            paddingLeft: 7
+            paddingLeft: 7,
         },
         titleContainer: {
             alignItems: 'center',
             flex: 1,
-            paddingRight: 40
+            paddingRight: 40,
         },
         title: {
             color: theme.centerChannelColor,
             fontSize: 17,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         postList: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1
+            flex: 1,
         },
         bottom: {
             borderBottomLeftRadius: 6,
-            borderBottomRightRadius: 6
+            borderBottomRightRadius: 6,
         },
         footer: {
             alignItems: 'center',
@@ -434,22 +434,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 43,
             paddingRight: 16,
-            width: '100%'
+            width: '100%',
         },
         jump: {
             color: theme.buttonColor,
             fontSize: 15,
             fontWeight: '600',
-            textAlignVertical: 'center'
+            textAlignVertical: 'center',
         },
         errorContainer: {
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 15
+            padding: 15,
         },
         errorText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
-            fontSize: 15
-        }
+            fontSize: 15,
+        },
     };
 });
