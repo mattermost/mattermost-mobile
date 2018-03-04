@@ -50,6 +50,10 @@ const messages = {
 
 export default class EditChannel extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            patchChannel: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired,
+        }),
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -58,9 +62,6 @@ export default class EditChannel extends PureComponent {
         currentTeamUrl: PropTypes.string.isRequired,
         updateChannelRequest: PropTypes.object.isRequired,
         closeButton: PropTypes.object,
-        actions: PropTypes.shape({
-            patchChannel: PropTypes.func.isRequired,
-        }),
     };
 
     static contextTypes = {
@@ -137,6 +138,13 @@ export default class EditChannel extends PureComponent {
     }
 
     close = () => {
+        const {channel: {type}} = this.props;
+        const isDirect = type === General.DM_CHANNEL || type === General.GM_CHANNEL;
+
+        if (!isDirect) {
+            this.props.actions.setChannelDisplayName(this.state.displayName);
+        }
+
         this.props.navigator.pop({animated: true});
     };
 
