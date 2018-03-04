@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Clipboard,
+    Platform,
     View,
     ViewPropTypes,
 } from 'react-native';
@@ -108,7 +109,7 @@ class Post extends PureComponent {
 
     goToUserProfile = () => {
         const {intl, navigator, post, theme} = this.props;
-        navigator.push({
+        const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
@@ -122,7 +123,13 @@ class Post extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg,
             },
-        });
+        };
+
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     autofillUserMention = (username) => {

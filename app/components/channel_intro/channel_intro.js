@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     Text,
     TouchableOpacity,
     View,
@@ -30,8 +31,7 @@ class ChannelIntro extends PureComponent {
 
     goToUserProfile = (userId) => {
         const {intl, navigator, theme} = this.props;
-
-        navigator.push({
+        const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
@@ -45,7 +45,13 @@ class ChannelIntro extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg,
             },
-        });
+        };
+
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     getDisplayName = (member) => {

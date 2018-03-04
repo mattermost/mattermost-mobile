@@ -20,7 +20,7 @@ import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 Animatable.initializeRegistryWithDefinitions({
@@ -121,7 +121,7 @@ export default class Permalink extends PureComponent {
         }
     }
 
-    goToThread = wrapWithPreventDoubleTap((post) => {
+    goToThread = preventDoubleTap((post) => {
         const {actions, navigator, theme} = this.props;
         const channelId = post.channel_id;
         const rootId = (post.root_id || post.id);
