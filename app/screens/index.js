@@ -22,6 +22,7 @@ import EditChannel from 'app/screens/edit_channel';
 import EditPost from 'app/screens/edit_post';
 import EditProfile from 'app/screens/edit_profile';
 import ImagePreview from 'app/screens/image_preview';
+import TextPreview from 'app/screens/text_preview';
 import Login from 'app/screens/login';
 import LoginOptions from 'app/screens/login_options';
 import Mfa from 'app/screens/mfa';
@@ -79,6 +80,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(EditProfile), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(ImagePreview), store, Provider);
+    Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(TextPreview), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(Login), store, Provider);
     Navigation.registerComponent('LoginOptions', () => wrapWithContextProvider(LoginOptions), store, Provider);
     Navigation.registerComponent('MFA', () => wrapWithContextProvider(Mfa), store, Provider);
