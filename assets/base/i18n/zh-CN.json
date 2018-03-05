@@ -1572,7 +1572,7 @@
   "error.oauth_missing_code.office365": "对于 {link} 请确认您的微软组管理员已开启 Mattermost 应用。",
   "error.oauth_missing_code.office365.link": "Office 365",
   "error.oauth_missing_code.title": "Mattermost 需要您的帮忙",
-  "error_bar.apiv3_enabled": "API version 3 is deprecated and scheduled for removal. <a href=\"https://api.mattermost.com/#tag/APIv3-Deprecation\" target=\"_blank\">Learn how to migrate to APIv4</a>.",
+  "error_bar.apiv3_enabled": "API 版本 3 已淘汰并在未来移除。<a href=\"https://api.mattermost.com/#tag/APIv3-Deprecation\" target=\"_blank\">了解如何移植到 APIv4</a>。",
   "error_bar.expired": "企业版授权已过期，一些功能已停用。<a href='{link}' target='_blank'>请更新授权</a>。",
   "error_bar.expiring": "企业版授权将于 {date} 过期。<a href='{link}' target='_blank'>请更新授权</a>。",
   "error_bar.past_grace": "企业版授权已过期，一些功能已停用。请联系您的系统管理员了解详情。",

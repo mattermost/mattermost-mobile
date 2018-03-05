@@ -501,7 +501,7 @@
   "admin.google.userTitle": "ユーザーAPIエンドポイント:",
   "admin.image.amazonS3BucketDescription": "AWSでのS3バケットの名前を指定します。",
   "admin.image.amazonS3BucketExample": "例: \"mattermost-media\"",
-  "admin.image.amazonS3BucketTitle": "Amazon S3バケット:",
+  "admin.image.amazonS3BucketTitle": "Amazon S3バケット名:",
   "admin.image.amazonS3EndpointDescription": "S3と互換性のあるストレージプロバイダーのホスト名です。デフォルトは`s3.amazonaws.com`です。",
   "admin.image.amazonS3EndpointExample": "例: \"s3.amazonaws.com\"",
   "admin.image.amazonS3EndpointTitle": "Amazon S3 エンドポイント:",
