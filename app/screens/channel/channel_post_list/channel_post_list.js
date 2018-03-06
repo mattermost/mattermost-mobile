@@ -138,8 +138,13 @@ export default class ChannelPostList extends PureComponent {
             loading
         } = this.state;
 
+        if (loading) {
+            return null;
+        }
+        
         let component;
-        if (loading || (!postIds.length && channelRefreshingFailed)) {
+        
+        if (!postIds.length && channelRefreshingFailed) {
             component = (
                 <PostListRetry
                     retry={this.loadPostsRetry}
