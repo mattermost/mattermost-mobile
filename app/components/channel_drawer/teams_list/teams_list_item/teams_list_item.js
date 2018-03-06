@@ -11,6 +11,8 @@ import {
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
+import TeamIcon from 'app/components/team_icon';
+
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -71,11 +73,11 @@ export default class TeamsListItem extends React.PureComponent {
                     onPress={this.selectTeam}
                 >
                     <View style={styles.teamContainer}>
-                        <View style={styles.teamIconContainer}>
-                            <Text style={styles.teamIcon}>
-                                {displayName.substr(0, 2).toUpperCase()}
-                            </Text>
-                        </View>
+                        <TeamIcon
+                            teamId={teamId}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -112,20 +114,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             marginHorizontal: 16,
         },
-        teamIconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.sidebarText,
-            borderRadius: 2,
-            height: 40,
-            justifyContent: 'center',
-            width: 40,
-        },
-        teamIcon: {
-            color: theme.sidebarBg,
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: '600',
-        },
         teamNameContainer: {
             flex: 1,
             flexDirection: 'column',
@@ -133,6 +121,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         teamName: {
             color: theme.sidebarText,
+            fontSize: 18,
+        },
+        teamIconContainer: {
+            width: 40,
+            height: 40,
+        },
+        teamIconText: {
             fontSize: 18,
         },
         teamUrl: {
