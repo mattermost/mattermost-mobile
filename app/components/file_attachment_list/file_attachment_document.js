@@ -107,9 +107,15 @@ export default class FileAttachmentDocument extends PureComponent {
                 path,
             };
 
+            const mime = file.mime_type.split(';')[0];
+            let openDocument = this.openDocument;
+            if (mime === 'text/plain') {
+                openDocument = this.previewTextFile;
+            }
+
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
-                this.openDocument(file, 0);
+                openDocument(file, 0);
             } else {
                 this.setState({downloading: true});
                 this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
@@ -126,7 +132,7 @@ export default class FileAttachmentDocument extends PureComponent {
                         progress: 100,
                     }, () => {
                         // need to wait a bit for the progress circle UI to update to the give progress
-                        this.openDocument(file);
+                        openDocument(file, 0);
                     });
                 }
             }
@@ -153,6 +159,36 @@ export default class FileAttachmentDocument extends PureComponent {
         } else {
             this.downloadAndPreviewFile(file);
         }
+    };
+
+    previewTextFile = (file, delay = 2000) => {
+        const {navigator, theme} = this.props;
+
+        setTimeout(async () => {
+            const prefix = Platform.OS === 'android' ? 'file:/' : '';
+            const path = `${DOCUMENTS_PATH}/${file.name}`;
+            try {
+                const content = await RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
+                navigator.push({
+                    screen: 'TextPreview',
+                    title: file.name,
+                    animated: true,
+                    backButtonTitle: '',
+                    passProps: {
+                        content,
+                    },
+                    navigatorStyle: {
+                        navBarTextColor: theme.sidebarHeaderTextColor,
+                        navBarBackgroundColor: theme.sidebarHeaderBg,
+                        navBarButtonColor: theme.sidebarHeaderTextColor,
+                        screenBackgroundColor: theme.centerChannelBg,
+                    },
+                });
+                this.setState({downloading: false, progress: 0});
+            } catch (error) {
+                RNFetchBlob.fs.unlink(path);
+            }
+        }, delay);
     };
 
     openDocument = (file, delay = 2000) => {
