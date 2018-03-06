@@ -19,6 +19,7 @@ import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const BOT_NAME = 'BOT';
+const AUTO_RESPONDER_NAME = 'AUTO RESPONDER';
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
@@ -31,6 +32,7 @@ export default class PostHeader extends PureComponent {
         isPendingOrFailedPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        fromAutoResponder: PropTypes.bool,
         militaryTime: PropTypes.bool,
         onPress: PropTypes.func,
         onUsernamePress: PropTypes.func,
@@ -60,6 +62,7 @@ export default class PostHeader extends PureComponent {
             enablePostUsernameOverride,
             fromWebHook,
             isSystemMessage,
+            fromAutoResponder,
             overrideUsername,
         } = this.props;
 
@@ -70,12 +73,28 @@ export default class PostHeader extends PureComponent {
             }
 
             return (
-                <View style={style.botContainer}>
+                <View style={style.indicatorContainer}>
                     <Text style={style.displayName}>
                         {name}
                     </Text>
                     <Text style={style.bot}>
                         {BOT_NAME}
+                    </Text>
+                </View>
+            );
+        } else if (fromAutoResponder) {
+            let name = this.props.displayName;
+            if (overrideUsername && enablePostUsernameOverride) {
+                name = overrideUsername;
+            }
+
+            return (
+                <View style={style.indicatorContainer}>
+                    <Text style={style.displayName}>
+                        {name}
+                    </Text>
+                    <Text style={style.autoResponder}>
+                        {AUTO_RESPONDER_NAME}
                     </Text>
                 </View>
             );
@@ -275,12 +294,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 3,
             color: theme.linkColor,
         },
-        botContainer: {
+        indicatorContainer: {
             flexDirection: 'row',
         },
         bot: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderRadius: 2,
+            color: theme.centerChannelColor,
+            fontSize: 10,
+            fontWeight: '600',
+            marginRight: 5,
+            paddingVertical: 2,
+            paddingHorizontal: 4,
+        },
+        autoResponder: {
+            alignSelf: 'center',
+            backgroundColor: theme.awayIndicator,
             borderRadius: 2,
             color: theme.centerChannelColor,
             fontSize: 10,

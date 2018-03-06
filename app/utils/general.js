@@ -3,6 +3,17 @@
 
 import {Alert} from 'react-native';
 
+export function fromAutoResponder(post) {
+    return Boolean(post.type && (post.type === 'system_auto_response'));
+}
+
+export function toTitleCase(str) {
+    function doTitleCase(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }
+    return str.replace(/\w\S*/g, doTitleCase);
+}
+
 export function alertErrorWithFallback(intl, error, fallback, values) {
     let msg = error.message;
     if (!msg || msg === 'Network request failed') {

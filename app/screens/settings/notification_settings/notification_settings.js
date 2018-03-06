@@ -38,6 +38,7 @@ class NotificationSettings extends PureComponent {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
+        currentUserStatus: PropTypes.string.isRequired,
     };
 
     state = {
@@ -67,6 +68,29 @@ class NotificationSettings extends PureComponent {
     handlePress = preventDoubleTap((action) => {
         action();
     });
+
+    goToNotificationSettingsAutoResponder = () => {
+        const {currentUser, intl, navigator, theme} = this.props;
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsAutoResponder',
+            title: intl.formatMessage({
+                id: 'mobile.notification_settings.auto_responder',
+                defaultMessage: 'Auto Responder',
+            }),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentUser,
+                onBack: this.saveAutoResponder,
+            },
+        });
+    };
 
     goToNotificationSettingsEmail = () => {
         if (Platform.OS === 'ios') {
@@ -184,6 +208,40 @@ class NotificationSettings extends PureComponent {
         }
 
         if (!deepEqual(previousProps, notifyProps)) {
+            this.props.actions.handleUpdateUserNotifyProps(notifyProps);
+        }
+    };
+
+    /**
+     * shouldSaveAutoResponder
+     *
+     * Necessary in order to properly update the notifyProps when
+     * enabling/disabling the Auto Responder.
+     *
+     * Reason being, on mobile when the AutoResponder is disabled on the server
+     * for some reason the update does not get received on mobile, it does for web
+     */
+    shouldSaveAutoResponder = (notifyProps) => {
+        const {currentUserStatus} = this.props;
+        const {auto_reply_active: autoReplyActive} = notifyProps;
+
+        const enabling = currentUserStatus !== 'ooo' && autoReplyActive === 'true';
+        const disabling = currentUserStatus === 'ooo' && autoReplyActive === 'false';
+
+        return enabling || disabling;
+    };
+
+    saveAutoResponder = (notifyProps) => {
+        const {intl} = this.props;
+
+        if (!notifyProps.auto_reply_message || notifyProps.auto_reply_message === '') {
+            notifyProps.auto_reply_message = intl.formatMessage({
+                id: 'mobile.notification_settings.auto_responder.default_message',
+                defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
+            });
+        }
+
+        if (this.shouldSaveAutoResponder(notifyProps)) {
             this.props.actions.handleUpdateUserNotifyProps(notifyProps);
         }
     };
@@ -375,6 +433,16 @@ class NotificationSettings extends PureComponent {
                         iconName='ios-mail'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToNotificationSettingsEmail)}
+                        separator={true}
+                        showArrow={showArrow}
+                        theme={theme}
+                    />
+                    <SettingsItem
+                        defaultMessage='Out Of Office: Auto Responder'
+                        i18nId='mobile.notification_settings.ooo_auto_responder'
+                        iconName='airplanemode-active'
+                        iconType='material'
+                        onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
                         separator={false}
                         showArrow={showArrow}
                         theme={theme}

@@ -16,6 +16,7 @@ export default class PostProfilePicture extends PureComponent {
         enablePostIconOverride: PropTypes.bool,
         fromWebHook: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        fromAutoResponder: PropTypes.bool,
         overrideIconUrl: PropTypes.string,
         onViewUserProfile: PropTypes.func,
         theme: PropTypes.object,
@@ -31,11 +32,22 @@ export default class PostProfilePicture extends PureComponent {
             enablePostIconOverride,
             fromWebHook,
             isSystemMessage,
+            fromAutoResponder,
             onViewUserProfile,
             overrideIconUrl,
             theme,
             userId,
         } = this.props;
+
+        if (fromAutoResponder) {
+            return (
+                <ProfilePicture
+                    userId={userId}
+                    size={PROFILE_PICTURE_SIZE}
+                    showStatus={false}
+                />
+            );
+        }
 
         if (isSystemMessage) {
             return (

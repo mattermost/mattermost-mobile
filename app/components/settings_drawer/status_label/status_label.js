@@ -40,6 +40,11 @@ export default class UserInfo extends PureComponent {
             break;
         }
 
+        if (status === 'ooo') {
+            i18nId = 'status_dropdown.set_ooo';
+            defaultMessage = 'Out Of Office';
+        }
+
         return (
             <FormattedText
                 id={i18nId}

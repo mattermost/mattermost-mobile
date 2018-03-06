@@ -8,11 +8,15 @@ import {logout, setStatus} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import SettingsDrawer from './settings_drawer';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 
 function mapStateToProps(state) {
+    const currentUser = getCurrentUser(state);
+    const status = getStatusForUserId(state, currentUser.id);
+
     return {
-        currentUser: getCurrentUser(state),
+        currentUser,
+        status,
         theme: getTheme(state),
     };
 }
