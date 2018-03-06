@@ -13,7 +13,6 @@ function mapStateToProps(state) {
 
     return {
         currentTeamId: team.id,
-        displayName: team.display_name,
         mentionCount: getChannelDrawerBadgeCount(state),
         teamsCount: getMyTeamsCount(state),
         theme: getTheme(state),
