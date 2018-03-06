@@ -214,12 +214,13 @@ export default class ChannelDrawer extends Component {
         } = actions;
 
         tracker.channelSwitch = Date.now();
-        setChannelLoading(channel.id !== currentChannelId);
-        setChannelDisplayName(channel.display_name);
 
         this.closeChannelDrawer();
 
         InteractionManager.runAfterInteractions(() => {
+            setChannelLoading(channel.id !== currentChannelId);
+            setChannelDisplayName(channel.display_name);
+            
             handleSelectChannel(channel.id);
             requestAnimationFrame(() => {
                 // mark the channel as viewed after all the frame has flushed
