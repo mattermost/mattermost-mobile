@@ -132,7 +132,7 @@ export default class FileAttachmentDocument extends PureComponent {
                         progress: 100,
                     }, () => {
                         // need to wait a bit for the progress circle UI to update to the give progress
-                        openDocument(file, 0);
+                        openDocument(file);
                     });
                 }
             }
