@@ -24,6 +24,7 @@ export default class FileAttachment extends PureComponent {
         onInfoPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
     };
 
     static defaultProps = {
@@ -61,7 +62,7 @@ export default class FileAttachment extends PureComponent {
     }
 
     render() {
-        const {file, onInfoPress, theme} = this.props;
+        const {file, onInfoPress, theme, navigator} = this.props;
         const style = getStyleSheet(theme);
 
         let mime = file.mime_type;
@@ -86,6 +87,7 @@ export default class FileAttachment extends PureComponent {
                 <FileAttachmentDocument
                     file={file}
                     theme={theme}
+                    navigator={navigator}
                 />
             );
         } else {

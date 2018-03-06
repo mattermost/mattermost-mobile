@@ -34,6 +34,7 @@ export const SUPPORTED_DOCS_FORMAT = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/xml',
     'text/csv',
+    'text/plain',
 ];
 
 export default class FileAttachmentDocument extends PureComponent {
@@ -42,6 +43,7 @@ export default class FileAttachmentDocument extends PureComponent {
         iconWidth: PropTypes.number,
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        navigator: PropTypes.object,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
     };
