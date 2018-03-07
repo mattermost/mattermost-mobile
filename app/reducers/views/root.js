@@ -25,5 +25,5 @@ function purge(state = false, action) {
 
 export default combineReducers({
     hydrationComplete,
-    purge
+    purge,
 });

@@ -14,7 +14,7 @@ export function executeCommand(message, channelId, rootId) {
             channel_id: channelId,
             team_id: teamId,
             root_id: rootId,
-            parent_id: rootId
+            parent_id: rootId,
         };
 
         let msg = message;

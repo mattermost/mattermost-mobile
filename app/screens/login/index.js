@@ -20,7 +20,7 @@ function mapStateToProps(state) {
         loginRequest,
         config,
         license,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -29,8 +29,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             ...LoginActions,
             checkMfa,
-            login
-        }, dispatch)
+            login,
+        }, dispatch),
     };
 }
 

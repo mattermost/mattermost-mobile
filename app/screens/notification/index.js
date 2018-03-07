@@ -33,15 +33,15 @@ function mapStateToProps(state, ownProps) {
         deviceWidth,
         user,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            loadFromPushNotification
-        }, dispatch)
+            loadFromPushNotification,
+        }, dispatch),
     };
 }
 

@@ -27,7 +27,7 @@ export default class SearchBarIos extends PureComponent {
         placeholder: PropTypes.string,
         cancelTitle: PropTypes.oneOfType([
             PropTypes.string,
-            PropTypes.object
+            PropTypes.object,
         ]),
         returnKeyType: PropTypes.string,
         keyboardType: PropTypes.string,
@@ -35,7 +35,7 @@ export default class SearchBarIos extends PureComponent {
         inputHeight: PropTypes.number,
         inputBorderRadius: PropTypes.number,
         blurOnSubmit: PropTypes.bool,
-        value: PropTypes.string
+        value: PropTypes.string,
     };
 
     static defaultProps = {
@@ -45,7 +45,7 @@ export default class SearchBarIos extends PureComponent {
         onFocus: () => true,
         onBlur: () => true,
         onSelectionChange: () => true,
-        blurOnSubmit: true
+        blurOnSubmit: true,
     };
 
     cancel = () => {

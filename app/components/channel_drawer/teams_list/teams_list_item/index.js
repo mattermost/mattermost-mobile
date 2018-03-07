@@ -23,7 +23,7 @@ function makeMapStateToProps() {
             displayName: team.display_name,
             mentionCount: getMentionCount(state, ownProps.teamId),
             name: team.name,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }

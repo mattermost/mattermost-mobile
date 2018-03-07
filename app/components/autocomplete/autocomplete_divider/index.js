@@ -9,7 +9,7 @@ import AutocompleteDivider from './autocomplete_divider';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

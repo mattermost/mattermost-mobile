@@ -35,6 +35,6 @@ export default function networkConnectionListener(onChange) {
     const removeEventListener = () => NetInfo.isConnected.removeEventListener('connectionChange', connectionChanged); // eslint-disable-line
 
     return {
-        removeEventListener
+        removeEventListener,
     };
 }

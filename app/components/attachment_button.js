@@ -4,7 +4,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Platform,
     StyleSheet,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-picker';
@@ -22,11 +22,11 @@ class AttachmentButton extends PureComponent {
         onShowFileMaxWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
-        wrapper: PropTypes.bool
+        wrapper: PropTypes.bool,
     };
 
     static defaultProps = {
-        maxFileCount: 5
+        maxFileCount: 5,
     };
 
     attachFileFromCamera = () => {
@@ -36,23 +36,23 @@ class AttachmentButton extends PureComponent {
             noData: true,
             storageOptions: {
                 cameraRoll: true,
-                waitUntilSaved: true
+                waitUntilSaved: true,
             },
             permissionDenied: {
                 title: formatMessage({
                     id: 'mobile.android.camera_permission_denied_title',
-                    defaultMessage: 'Camera access is required'
+                    defaultMessage: 'Camera access is required',
                 }),
                 text: formatMessage({
                     id: 'mobile.android.camera_permission_denied_description',
-                    defaultMessage: 'To take photos and videos with your camera, please change your permission settings.'
+                    defaultMessage: 'To take photos and videos with your camera, please change your permission settings.',
                 }),
                 reTryTitle: formatMessage({
                     id: 'mobile.android.permission_denied_retry',
-                    defaultMessage: 'Set Permission'
+                    defaultMessage: 'Set Permission',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})
-            }
+                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+            },
         };
 
         ImagePicker.launchCamera(options, (response) => {
@@ -72,18 +72,18 @@ class AttachmentButton extends PureComponent {
             permissionDenied: {
                 title: formatMessage({
                     id: 'mobile.android.photos_permission_denied_title',
-                    defaultMessage: 'Photo library access is required'
+                    defaultMessage: 'Photo library access is required',
                 }),
                 text: formatMessage({
                     id: 'mobile.android.photos_permission_denied_description',
-                    defaultMessage: 'To upload images from your library, please change your permission settings.'
+                    defaultMessage: 'To upload images from your library, please change your permission settings.',
                 }),
                 reTryTitle: formatMessage({
                     id: 'mobile.android.permission_denied_retry',
-                    defaultMessage: 'Set Permission'
+                    defaultMessage: 'Set Permission',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})
-            }
+                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+            },
         };
 
         if (Platform.OS === 'ios') {
@@ -108,18 +108,18 @@ class AttachmentButton extends PureComponent {
             permissionDenied: {
                 title: formatMessage({
                     id: 'mobile.android.videos_permission_denied_title',
-                    defaultMessage: 'Video library access is required'
+                    defaultMessage: 'Video library access is required',
                 }),
                 text: formatMessage({
                     id: 'mobile.android.videos_permission_denied_description',
-                    defaultMessage: 'To upload videos from your library, please change your permission settings.'
+                    defaultMessage: 'To upload videos from your library, please change your permission settings.',
                 }),
                 reTryTitle: formatMessage({
                     id: 'mobile.android.permission_denied_retry',
-                    defaultMessage: 'Set Permission'
+                    defaultMessage: 'Set Permission',
                 }),
-                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'})
-            }
+                okTitle: formatMessage({id: 'mobile.android.permission_denied_dismiss', defaultMessage: 'Dismiss'}),
+            },
         };
 
         ImagePicker.launchImageLibrary(options, (response) => {
@@ -137,7 +137,7 @@ class AttachmentButton extends PureComponent {
 
     handleFileAttachmentOption = (action) => {
         this.props.navigator.dismissModal({
-            animationType: 'none'
+            animationType: 'none',
         });
 
         // Have to wait to launch the library attachment action.
@@ -164,17 +164,17 @@ class AttachmentButton extends PureComponent {
                 action: () => this.handleFileAttachmentOption(this.attachFileFromCamera),
                 text: {
                     id: 'mobile.file_upload.camera',
-                    defaultMessage: 'Take Photo or Video'
+                    defaultMessage: 'Take Photo or Video',
                 },
-                icon: 'camera'
+                icon: 'camera',
             }, {
                 action: () => this.handleFileAttachmentOption(this.attachFileFromLibrary),
                 text: {
                     id: 'mobile.file_upload.library',
-                    defaultMessage: 'Photo Library'
+                    defaultMessage: 'Photo Library',
                 },
-                icon: 'photo'
-            }]
+                icon: 'photo',
+            }],
         };
 
         if (Platform.OS === 'android') {
@@ -182,9 +182,9 @@ class AttachmentButton extends PureComponent {
                 action: () => this.handleFileAttachmentOption(this.attachVideoFromLibraryAndroid),
                 text: {
                     id: 'mobile.file_upload.video',
-                    defaultMessage: 'Video Library'
+                    defaultMessage: 'Video Library',
                 },
-                icon: 'file-video-o'
+                icon: 'file-video-o',
             });
         }
 
@@ -193,15 +193,15 @@ class AttachmentButton extends PureComponent {
             title: '',
             animationType: 'none',
             passProps: {
-                items: options.items
+                items: options.items,
             },
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext'
-            }
+                modalPresentationStyle: 'overCurrentContext',
+            },
         });
     };
 
@@ -238,18 +238,18 @@ const style = StyleSheet.create({
     attachIcon: {
         marginTop: Platform.select({
             ios: 2,
-            android: 0
-        })
+            android: 0,
+        }),
     },
     buttonContainer: {
         height: Platform.select({
             ios: 34,
-            android: 36
+            android: 36,
         }),
         width: 45,
         alignItems: 'center',
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
 });
 
 export default injectIntl(AttachmentButton);

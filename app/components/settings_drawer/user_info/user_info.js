@@ -14,11 +14,11 @@ export default class UserInfo extends PureComponent {
     static propTypes = {
         user: PropTypes.object.isRequired,
         onPress: PropTypes.func,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        onPress: emptyFunction
+        onPress: emptyFunction,
     };
 
     render() {
@@ -66,20 +66,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             alignItems: 'center',
             padding: 15,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         wrapper: {
-            marginLeft: 10
+            marginLeft: 10,
         },
         username: {
             color: theme.centerChannelColor,
             marginVertical: 5,
             fontWeight: '600',
-            fontSize: 15
+            fontSize: 15,
         },
         fullName: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 15
-        }
+            fontSize: 15,
+        },
     };
 });

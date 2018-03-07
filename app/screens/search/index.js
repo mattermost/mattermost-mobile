@@ -15,7 +15,7 @@ import {
     handleSelectChannel,
     loadThreadIfNecessary,
     setChannelDisplayName,
-    setChannelLoading
+    setChannelLoading,
 } from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
@@ -35,7 +35,7 @@ function mapStateToProps(state) {
         postIds: state.entities.search.results,
         recent: recent[currentTeamId],
         searchingStatus: searchRequest.status,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -52,8 +52,8 @@ function mapDispatchToProps(dispatch) {
             searchPosts,
             selectPost,
             setChannelDisplayName,
-            setChannelLoading
-        }, dispatch)
+            setChannelLoading,
+        }, dispatch),
     };
 }
 

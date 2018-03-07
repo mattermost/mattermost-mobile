@@ -6,12 +6,14 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import Badge from 'app/components/badge';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import TeamIcon from 'app/components/team_icon';
+
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamsListItem extends React.PureComponent {
@@ -23,10 +25,10 @@ export default class TeamsListItem extends React.PureComponent {
         name: PropTypes.string.isRequired,
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
-    selectTeam = wrapWithPreventDoubleTap(() => {
+    selectTeam = preventDoubleTap(() => {
         this.props.selectTeam(this.props.teamId);
     });
 
@@ -38,7 +40,7 @@ export default class TeamsListItem extends React.PureComponent {
             mentionCount,
             name,
             teamId,
-            theme
+            theme,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -71,11 +73,11 @@ export default class TeamsListItem extends React.PureComponent {
                     onPress={this.selectTeam}
                 >
                     <View style={styles.teamContainer}>
-                        <View style={styles.teamIconContainer}>
-                            <Text style={styles.teamIcon}>
-                                {displayName.substr(0, 2).toUpperCase()}
-                            </Text>
-                        </View>
+                        <TeamIcon
+                            teamId={teamId}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -104,47 +106,40 @@ export default class TeamsListItem extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         teamWrapper: {
-            marginTop: 20
+            marginTop: 20,
         },
         teamContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            marginHorizontal: 16
-        },
-        teamIconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.sidebarText,
-            borderRadius: 2,
-            height: 40,
-            justifyContent: 'center',
-            width: 40
-        },
-        teamIcon: {
-            color: theme.sidebarBg,
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: '600'
+            marginHorizontal: 16,
         },
         teamNameContainer: {
             flex: 1,
             flexDirection: 'column',
-            marginLeft: 10
+            marginLeft: 10,
         },
         teamName: {
             color: theme.sidebarText,
-            fontSize: 18
+            fontSize: 18,
+        },
+        teamIconContainer: {
+            width: 40,
+            height: 40,
+        },
+        teamIconText: {
+            fontSize: 18,
         },
         teamUrl: {
             color: changeOpacity(theme.sidebarText, 0.5),
-            fontSize: 12
+            fontSize: 12,
         },
         checkmarkContainer: {
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
         },
         checkmark: {
             color: theme.sidebarText,
-            fontSize: 20
+            fontSize: 20,
         },
         badge: {
             backgroundColor: theme.mentionBj,
@@ -155,11 +150,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 3,
             position: 'absolute',
             left: 45,
-            top: -7.5
+            top: -7.5,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10
-        }
+            fontSize: 10,
+        },
     };
 });

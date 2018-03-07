@@ -4,7 +4,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -19,11 +19,11 @@ export default class CustomListRow extends React.PureComponent {
         enabled: PropTypes.bool,
         selectable: PropTypes.bool,
         selected: PropTypes.bool,
-        children: CustomPropTypes.Children
+        children: CustomPropTypes.Children,
     };
 
     static defaultProps = {
-        enabled: true
+        enabled: true,
     };
 
     render() {
@@ -62,11 +62,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 65,
             paddingHorizontal: 15,
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         displayName: {
             fontSize: 15,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         selector: {
             height: 28,
@@ -75,20 +75,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderColor: '#888',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         selectorContainer: {
             height: 50,
             paddingRight: 15,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         selectorDisabled: {
-            backgroundColor: '#888'
+            backgroundColor: '#888',
         },
         selectorFilled: {
             backgroundColor: '#378FD2',
-            borderWidth: 0
-        }
+            borderWidth: 0,
+        },
     };
 });

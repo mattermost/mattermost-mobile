@@ -9,13 +9,13 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -29,14 +29,14 @@ class MarkdownCodeBlock extends React.PureComponent {
         language: PropTypes.string,
         content: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style,
-        onLongPress: PropTypes.func.isRequired
+        onLongPress: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
-        language: ''
+        language: '',
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
 
         const languageDisplayName = getDisplayNameForLanguage(this.props.language);
@@ -45,16 +45,16 @@ class MarkdownCodeBlock extends React.PureComponent {
             title = intl.formatMessage(
                 {
                     id: 'mobile.routes.code',
-                    defaultMessage: '{language} Code'
+                    defaultMessage: '{language} Code',
                 },
                 {
-                    language: languageDisplayName
+                    language: languageDisplayName,
                 }
             );
         } else {
             title = intl.formatMessage({
                 id: 'mobile.routes.code.noLanguage',
-                defaultMessage: 'Code'
+                defaultMessage: 'Code',
             });
         }
 
@@ -64,14 +64,14 @@ class MarkdownCodeBlock extends React.PureComponent {
             animated: true,
             backButtonTitle: '',
             passProps: {
-                content: this.props.content
+                content: this.props.content,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -84,7 +84,7 @@ class MarkdownCodeBlock extends React.PureComponent {
         if (config.copyAndPasteProtection !== 'true') {
             action = {
                 text: formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'}),
-                onPress: this.handleCopyCode
+                onPress: this.handleCopyCode,
             };
         }
 
@@ -102,13 +102,13 @@ class MarkdownCodeBlock extends React.PureComponent {
         if (numberOfLines > MAX_LINES) {
             return {
                 content: lines.slice(0, MAX_LINES).join('\n'),
-                numberOfLines
+                numberOfLines,
             };
         }
 
         return {
             content,
-            numberOfLines
+            numberOfLines,
         };
     };
 
@@ -147,7 +147,7 @@ class MarkdownCodeBlock extends React.PureComponent {
                     id='mobile.markdown.code.plusMoreLines'
                     defaultMessage='+{count, number} more {count, plural, one {line} other {lines}}'
                     values={{
-                        count: numberOfLines - MAX_LINES
+                        count: numberOfLines - MAX_LINES,
                     }}
                 />
             );
@@ -185,7 +185,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.15),
             borderRadius: 3,
             borderWidth: StyleSheet.hairlineWidth,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         lineNumbers: {
             alignItems: 'center',
@@ -195,32 +195,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             justifyContent: 'flex-start',
             paddingVertical: 4,
-            width: 21
+            width: 21,
         },
         lineNumbersText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12,
-            lineHeight: 18
+            lineHeight: 18,
         },
         rightColumn: {
             flexDirection: 'column',
             flex: 1,
             paddingHorizontal: 6,
-            paddingVertical: 4
+            paddingVertical: 4,
         },
         code: {
             flexDirection: 'row',
-            overflow: 'scroll' // Doesn't actually cause a scrollbar, but stops text from wrapping
+            overflow: 'scroll', // Doesn't actually cause a scrollbar, but stops text from wrapping
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             fontSize: 12,
-            lineHeight: 18
+            lineHeight: 18,
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 11,
-            marginTop: 2
+            marginTop: 2,
         },
         language: {
             alignItems: 'center',
@@ -230,12 +230,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 6,
             position: 'absolute',
             right: 0,
-            top: 0
+            top: 0,
         },
         languageText: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 12
-        }
+            fontSize: 12,
+        },
     };
 });
 

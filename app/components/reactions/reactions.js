@@ -5,8 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     StyleSheet,
-    View
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Reaction from './reaction';
 
@@ -15,12 +19,13 @@ export default class Reactions extends PureComponent {
         actions: PropTypes.shape({
             addReaction: PropTypes.func.isRequired,
             getReactionsForPost: PropTypes.func.isRequired,
-            removeReaction: PropTypes.func.isRequired
+            removeReaction: PropTypes.func.isRequired,
         }).isRequired,
         highlightedReactions: PropTypes.array.isRequired,
+        onAddReaction: PropTypes.func.isRequired,
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     }
 
     componentDidMount() {
@@ -55,9 +60,26 @@ export default class Reactions extends PureComponent {
     }
 
     render() {
+        const {reactions} = this.props;
+        const styles = getStyleSheet(this.props.theme);
+
+        if (!reactions.size) {
+            return null;
+        }
+
+        const addMoreReactions = (
+            <TouchableOpacity
+                onPress={this.props.onAddReaction}
+                style={[styles.reaction]}
+            >
+                <Text style={styles.more}>{'+'}</Text>
+            </TouchableOpacity>
+        );
+
         return (
             <View style={style.reactions}>
                 {this.renderReactions()}
+                {addMoreReactions}
             </View>
         );
     }
@@ -67,6 +89,25 @@ const style = StyleSheet.create({
     reactions: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        alignItems: 'flex-start'
-    }
+        alignItems: 'flex-start',
+    },
+});
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        more: {
+            color: theme.linkColor,
+        },
+        reaction: {
+            alignItems: 'center',
+            borderRadius: 2,
+            borderColor: changeOpacity(theme.linkColor, 0.4),
+            borderWidth: 1,
+            flexDirection: 'row',
+            marginRight: 6,
+            marginVertical: 5,
+            paddingVertical: 2,
+            paddingHorizontal: 6,
+        },
+    };
 });

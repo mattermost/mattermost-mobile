@@ -24,7 +24,7 @@ function mapStateToProps(state) {
         currentUserId: state.entities.users.currentUserId,
         currentTeamId: state.entities.teams.currentTeamId,
         currentUrl: removeProtocol(getCurrentUrl(state)),
-        joinableTeams: getJoinableTeams(state)
+        joinableTeams: getJoinableTeams(state),
     };
 }
 
@@ -32,8 +32,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearErrors,
-            purgeOfflineStore
-        }, dispatch)
+            purgeOfflineStore,
+        }, dispatch),
     };
 }
 

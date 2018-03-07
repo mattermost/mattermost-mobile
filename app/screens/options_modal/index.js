@@ -9,7 +9,7 @@ import OptionsModal from './options_modal';
 
 function mapStateToProps(state) {
     return {
-        ...getDimensions(state)
+        ...getDimensions(state),
     };
 }
 

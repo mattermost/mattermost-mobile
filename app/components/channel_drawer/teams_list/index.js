@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeamId, getJoinableTeamIds, getMySortedTeamIds} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentTeamId, getMySortedTeamIds} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
@@ -18,19 +18,18 @@ function mapStateToProps(state) {
     const locale = getCurrentLocale(state);
 
     return {
-        canJoinOtherTeams: getJoinableTeamIds(state).length > 0,
         currentTeamId: getCurrentTeamId(state),
         currentUrl: removeProtocol(getCurrentUrl(state)),
         teamIds: getMySortedTeamIds(state, locale),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleTeamChange
-        }, dispatch)
+            handleTeamChange,
+        }, dispatch),
     };
 }
 

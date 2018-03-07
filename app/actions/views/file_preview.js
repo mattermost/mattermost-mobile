@@ -6,6 +6,6 @@ import {ViewTypes} from 'app/constants';
 export function addFileToFetchCache(url) {
     return {
         type: ViewTypes.ADD_FILE_TO_FETCH_CACHE,
-        url
+        url,
     };
 }

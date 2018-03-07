@@ -73,7 +73,7 @@ export function buildFileUploadData(file) {
         uri,
         name,
         type: mimeType,
-        extension
+        extension,
     };
 }
 

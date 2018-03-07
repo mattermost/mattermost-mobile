@@ -7,7 +7,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {
     Platform,
     InteractionManager,
-    View
+    View,
 } from 'react-native';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -37,17 +37,17 @@ class MoreChannels extends PureComponent {
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired
-        }).isRequired
+            setChannelDisplayName: PropTypes.func.isRequired,
+        }).isRequired,
     };
 
     leftButton = {
-        id: 'close-more-channels'
+        id: 'close-more-channels',
     };
 
     rightButton = {
         id: 'create-pub-channel',
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props) {
@@ -63,13 +63,13 @@ class MoreChannels extends PureComponent {
             next: true,
             searching: false,
             showNoResults: false,
-            term: ''
+            term: '',
         };
         this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         this.leftButton = {...this.leftButton, icon: props.closeButton};
 
         const buttons = {
-            leftButtons: [this.leftButton]
+            leftButtons: [this.leftButton],
         };
 
         if (props.canCreateChannels) {
@@ -132,7 +132,7 @@ class MoreChannels extends PureComponent {
 
     headerButtons = (canCreateChannels, enabled) => {
         const buttons = {
-            leftButtons: [this.leftButton]
+            leftButtons: [this.leftButton],
         };
 
         if (canCreateChannels) {
@@ -156,7 +156,7 @@ class MoreChannels extends PureComponent {
             this.setState({
                 channels,
                 term: text,
-                searching: true
+                searching: true,
             });
             clearTimeout(this.searchTimeoutId);
 
@@ -173,7 +173,7 @@ class MoreChannels extends PureComponent {
         this.setState({
             term: '',
             searching: false,
-            page: 0
+            page: 0,
         });
     };
 
@@ -188,7 +188,7 @@ class MoreChannels extends PureComponent {
             ).then(({data}) => {
                 if (data && data.length) {
                     this.setState({
-                        page
+                        page,
                     });
                 } else {
                     this.setState({next: false});
@@ -205,7 +205,7 @@ class MoreChannels extends PureComponent {
                 break;
             case 'create-pub-channel':
                 this.setState({
-                    createScreenVisible: true
+                    createScreenVisible: true,
                 }, this.onCreateChannel);
                 break;
             }
@@ -228,10 +228,10 @@ class MoreChannels extends PureComponent {
                 result.error,
                 {
                     id: 'mobile.join_channel.error',
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
                 },
                 {
-                    displayName: channel ? channel.display_name : ''
+                    displayName: channel ? channel.display_name : '',
                 }
             );
             this.emitCanCreateChannel(true);
@@ -264,11 +264,11 @@ class MoreChannels extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                channelType: General.OPEN_CHANNEL
-            }
+                channelType: General.OPEN_CHANNEL,
+            },
         });
     };
 
@@ -284,6 +284,17 @@ class MoreChannels extends PureComponent {
         if (adding) {
             content = (<Loading/>);
         } else {
+            const searchBarInput = {
+                backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+                color: theme.centerChannelColor,
+                fontSize: 15,
+                ...Platform.select({
+                    android: {
+                        marginBottom: -5,
+                    },
+                }),
+            };
+
             content = (
                 <View style={{flex: 1}}>
                     <View
@@ -295,12 +306,7 @@ class MoreChannels extends PureComponent {
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
                             inputHeight={33}
-                            inputStyle={{
-                                backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                                color: theme.centerChannelColor,
-                                fontSize: 15,
-                                lineHeight: 66
-                            }}
+                            inputStyle={searchBarInput}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -341,19 +347,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         navTitle: {
             ...Platform.select({
                 android: {
-                    fontSize: 18
+                    fontSize: 18,
                 },
                 ios: {
                     fontSize: 15,
-                    fontWeight: 'bold'
-                }
-            })
-        }
+                    fontWeight: 'bold',
+                },
+            }),
+        },
     };
 });
 

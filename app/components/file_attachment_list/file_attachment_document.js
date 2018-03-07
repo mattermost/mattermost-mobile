@@ -8,7 +8,7 @@ import {
     Platform,
     StyleSheet,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import OpenFile from 'react-native-doc-viewer';
 import RNFetchBlob from 'react-native-fetch-blob';
@@ -33,7 +33,7 @@ export const SUPPORTED_DOCS_FORMAT = [
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/xml',
-    'text/csv'
+    'text/csv',
 ];
 
 export default class FileAttachmentDocument extends PureComponent {
@@ -43,24 +43,24 @@ export default class FileAttachmentDocument extends PureComponent {
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number
+        wrapperWidth: PropTypes.number,
     };
 
     static defaultProps = {
         iconHeight: 65,
         iconWidth: 65,
         wrapperHeight: 100,
-        wrapperWidth: 100
+        wrapperWidth: 100,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     state = {
         didCancel: false,
         downloading: false,
-        progress: 0
+        progress: 0,
     };
 
     componentDidMount() {
@@ -102,7 +102,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 timeout: 10000,
                 indicator: true,
                 overwrite: true,
-                path
+                path,
             };
 
             const exist = await RNFetchBlob.fs.exists(path);
@@ -121,7 +121,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 await this.downloadTask;
                 if (this.mounted) {
                     this.setState({
-                        progress: 100
+                        progress: 100,
                     }, () => {
                         // need to wait a bit for the progress circle UI to update to the give progress
                         this.openDocument(file);
@@ -165,26 +165,26 @@ export default class FileAttachmentDocument extends PureComponent {
                     url: `${prefix}${path}`,
                     fileName: file.name,
                     fileType: file.extension,
-                    cache: false
+                    cache: false,
                 }], (error) => {
                     if (error) {
                         const {intl} = this.context;
                         Alert.alert(
                             intl.formatMessage({
                                 id: 'mobile.document_preview.failed_title',
-                                defaultMessage: 'Open Document failed'
+                                defaultMessage: 'Open Document failed',
                             }),
                             intl.formatMessage({
                                 id: 'mobile.document_preview.failed_description',
-                                defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n'
+                                defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
                             }, {
-                                fileType: file.extension.toUpperCase()
+                                fileType: file.extension.toUpperCase(),
                             }),
                             [{
                                 text: intl.formatMessage({
                                     id: 'mobile.server_upgrade.button',
-                                    defaultMessage: 'OK'
-                                })
+                                    defaultMessage: 'OK',
+                                }),
                             }]
                         );
                         RNFetchBlob.fs.unlink(path);
@@ -199,7 +199,7 @@ export default class FileAttachmentDocument extends PureComponent {
         if (this.mounted) {
             this.setState({
                 progress: 0,
-                didCancel: true
+                didCancel: true,
             }, () => {
                 // need to wait a bit for the progress circle UI to update to the give progress
                 setTimeout(() => this.setState({downloading: false}), 2000);
@@ -230,17 +230,17 @@ export default class FileAttachmentDocument extends PureComponent {
         Alert.alert(
             intl.formatMessage({
                 id: 'mobile.downloader.failed_title',
-                defaultMessage: 'Download failed'
+                defaultMessage: 'Download failed',
             }),
             intl.formatMessage({
                 id: 'mobile.downloader.failed_description',
-                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
+                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n',
             }),
             [{
                 text: intl.formatMessage({
                     id: 'mobile.server_upgrade.button',
-                    defaultMessage: 'OK'
-                })
+                    defaultMessage: 'OK',
+                }),
             }]
         );
     };
@@ -290,7 +290,7 @@ const style = StyleSheet.create({
         alignItems: 'center',
         height: '100%',
         justifyContent: 'center',
-        width: '100%'
+        width: '100%',
     },
     circularProgressContent: {
         alignItems: 'center',
@@ -298,6 +298,6 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         left: 0,
         position: 'absolute',
-        top: 0
-    }
+        top: 0,
+    },
 });

@@ -4,7 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    View
+    View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -21,7 +21,7 @@ function section(props) {
         headerDefaultMessage,
         headerId,
         headerValues,
-        theme
+        theme,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -61,33 +61,33 @@ section.propTypes = {
     headerDefaultMessage: PropTypes.string,
     headerId: PropTypes.string,
     headerValues: PropTypes.object,
-    theme: PropTypes.object.isRequired
+    theme: PropTypes.object.isRequired,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            marginBottom: 30
+            marginBottom: 30,
         },
         header: {
             marginHorizontal: 15,
             marginBottom: 10,
             fontSize: 13,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         items: {
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         footer: {
             marginHorizontal: 15,
             marginTop: 10,
             fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
 });
 

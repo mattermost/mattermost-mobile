@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -16,11 +16,11 @@ export default class ChannelButton extends PureComponent {
     static propTypes = {
         channel: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        onPress: PropTypes.func.isRequired
+        onPress: PropTypes.func.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     render() {
@@ -55,7 +55,7 @@ export default class ChannelButton extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         buttonContainer: {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -63,20 +63,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderTopWidth: 1,
             height: 70,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         buttonWrapper: {
             alignItems: 'flex-start',
-            flex: 1
+            flex: 1,
         },
         buttonLabel: {
             fontSize: 16,
             marginTop: 16,
-            marginBottom: 3
+            marginBottom: 3,
         },
         buttonValue: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });

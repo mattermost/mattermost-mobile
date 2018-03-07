@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     View,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -28,7 +28,7 @@ export default class FileAttachmentList extends Component {
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         toggleSelected: PropTypes.func.isRequired,
-        filesForPostRequest: PropTypes.object.isRequired
+        filesForPostRequest: PropTypes.object.isRequired,
     };
 
     componentDidMount() {
@@ -52,15 +52,15 @@ export default class FileAttachmentList extends Component {
             animationType: 'none',
             passProps: {
                 fileId,
-                postId
+                postId,
             },
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'black',
-                modalPresentationStyle: 'overCurrentContext'
-            }
+                modalPresentationStyle: 'overCurrentContext',
+            },
         });
     };
 
@@ -69,11 +69,11 @@ export default class FileAttachmentList extends Component {
         this.props.onPress();
     };
 
-    handlePreviewPress = (file) => {
+    handlePreviewPress = preventDoubleTap((file) => {
         this.props.hideOptionsContext();
         Keyboard.dismiss();
-        preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
-    };
+        this.goToImagePreview(this.props.postId, file.id);
+    });
 
     handlePressIn = () => {
         this.props.toggleSelected(true);

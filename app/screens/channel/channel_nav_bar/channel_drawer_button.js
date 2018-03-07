@@ -8,7 +8,7 @@ import {
     PanResponder,
     Platform,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -16,7 +16,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Badge from 'app/components/badge';
 import PushNotifications from 'app/push_notifications';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {getUnreadsInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
@@ -30,21 +30,21 @@ class ChannelDrawerButton extends PureComponent {
         messageCount: PropTypes.number,
         mentionCount: PropTypes.number,
         myTeamMembers: PropTypes.object,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     static defaultProps = {
         currentChannel: {},
         theme: {},
         messageCount: 0,
-        mentionCount: 0
+        mentionCount: 0,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            opacity: 1
+            opacity: 1,
         };
     }
 
@@ -54,7 +54,7 @@ class ChannelDrawerButton extends PureComponent {
             onMoveShouldSetPanResponder: () => true,
             onStartShouldSetResponderCapture: () => true,
             onMoveShouldSetResponderCapture: () => true,
-            onResponderMove: () => false
+            onResponderMove: () => false,
         });
     }
 
@@ -75,7 +75,7 @@ class ChannelDrawerButton extends PureComponent {
         this.setState({opacity: value > 0 ? 0.1 : 1});
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         this.props.openDrawer();
     });
 
@@ -85,7 +85,7 @@ class ChannelDrawerButton extends PureComponent {
             mentionCount,
             messageCount,
             myTeamMembers,
-            theme
+            theme,
         } = this.props;
         const style = getStyleFromTheme(theme);
 
@@ -145,14 +145,14 @@ class ChannelDrawerButton extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            width: 55
+            width: 55,
         },
         wrapper: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'column',
             justifyContent: 'center',
-            paddingHorizontal: 10
+            paddingHorizontal: 10,
         },
         badge: {
             backgroundColor: theme.mentionBj,
@@ -166,17 +166,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             right: 0,
             ...Platform.select({
                 android: {
-                    top: 10
+                    top: 10,
                 },
                 ios: {
-                    top: 5
-                }
-            })
+                    top: 5,
+                },
+            }),
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10
-        }
+            fontSize: 10,
+        },
     };
 });
 
@@ -185,7 +185,7 @@ function mapStateToProps(state) {
         currentTeamId: getCurrentTeamId(state),
         myTeamMembers: getTeamMemberships(state),
         theme: getTheme(state),
-        ...getUnreadsInCurrentTeam(state)
+        ...getUnreadsInCurrentTeam(state),
     };
 }
 

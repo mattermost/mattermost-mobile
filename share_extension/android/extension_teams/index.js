@@ -12,7 +12,7 @@ import ExtensionTeams from './extension_teams';
 
 function mapStateToProps(state) {
     return {
-        teamIds: getMySortedTeamIds(state)
+        teamIds: getMySortedTeamIds(state),
     };
 }
 
@@ -20,8 +20,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             extensionSelectTeamId,
-            getTeamChannels
-        }, dispatch)
+            getTeamChannels,
+        }, dispatch),
     };
 }
 

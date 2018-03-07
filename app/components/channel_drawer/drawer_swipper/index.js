@@ -12,7 +12,7 @@ import DraweSwiper from './drawer_swiper';
 function mapStateToProps(state) {
     return {
         ...getDimensions(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

@@ -17,15 +17,15 @@ function mapStateToProps(state) {
         currentUser: getCurrentUser(state),
         myPreferences: getMyPreferences(state),
         updateMeRequest: state.requests.users.updateMe,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleUpdateUserNotifyProps
-        }, dispatch)
+            handleUpdateUserNotifyProps,
+        }, dispatch),
     };
 }
 

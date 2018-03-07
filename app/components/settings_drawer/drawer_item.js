@@ -21,13 +21,13 @@ export default class DrawerItem extends PureComponent {
         leftComponent: PropTypes.node,
         onPress: PropTypes.func,
         separator: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         defaultMessage: '',
         isDestructor: false,
-        separator: true
+        separator: true,
     };
 
     render() {
@@ -42,7 +42,7 @@ export default class DrawerItem extends PureComponent {
             leftComponent,
             onPress,
             separator,
-            theme
+            theme,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -110,41 +110,41 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            height: 50
+            height: 50,
         },
         iconContainer: {
             width: 45,
             height: 50,
             alignItems: 'center',
             justifyContent: 'center',
-            marginLeft: 5
+            marginLeft: 5,
         },
         icon: {
             color: theme.linkColor,
-            fontSize: 22
+            fontSize: 22,
         },
         wrapper: {
-            flex: 1
+            flex: 1,
         },
         labelContainer: {
             alignItems: 'center',
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         centerLabel: {
             textAlign: 'center',
-            textAlignVertical: 'center'
+            textAlignVertical: 'center',
         },
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             flex: 1,
             fontSize: 17,
             textAlignVertical: 'center',
-            includeFontPadding: false
+            includeFontPadding: false,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1
-        }
+            height: 1,
+        },
     };
 });

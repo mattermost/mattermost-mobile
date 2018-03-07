@@ -4,7 +4,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
-    FlatList
+    FlatList,
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -19,7 +19,7 @@ const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 export default class SlashSuggestion extends Component {
     static propTypes = {
         actions: PropTypes.shape({
-            getAutocompleteCommands: PropTypes.func.isRequired
+            getAutocompleteCommands: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         commands: PropTypes.array,
@@ -28,19 +28,19 @@ export default class SlashSuggestion extends Component {
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
-        value: PropTypes.string
+        value: PropTypes.string,
     };
 
     static defaultProps = {
         defaultChannel: {},
-        value: ''
+        value: '',
     };
 
     state = {
         active: false,
         suggestionComplete: false,
         dataSource: [],
-        lastCommandRequest: 0
+        lastCommandRequest: 0,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -53,12 +53,12 @@ export default class SlashSuggestion extends Component {
             commands: nextCommands,
             commandsRequest: nextCommandsRequest,
             currentTeamId: nextTeamId,
-            value: nextValue
+            value: nextValue,
         } = nextProps;
 
         if (currentTeamId !== nextTeamId) {
             this.setState({
-                lastCommandRequest: 0
+                lastCommandRequest: 0,
             });
         }
 
@@ -68,7 +68,7 @@ export default class SlashSuggestion extends Component {
             this.setState({
                 active: false,
                 matchTerm: null,
-                suggestionComplete: false
+                suggestionComplete: false,
             });
             this.props.onResultCountChange(0);
             return;
@@ -79,7 +79,7 @@ export default class SlashSuggestion extends Component {
         if ((!nextCommands.length || dataIsStale) && nextCommandsRequest.status !== RequestStatus.STARTED) {
             this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
             this.setState({
-                lastCommandRequest: Date.now()
+                lastCommandRequest: Date.now(),
             });
         }
 
@@ -89,7 +89,7 @@ export default class SlashSuggestion extends Component {
 
         this.setState({
             active: data.length,
-            dataSource: data
+            dataSource: data,
         });
 
         this.props.onResultCountChange(data.length);
@@ -116,7 +116,7 @@ export default class SlashSuggestion extends Component {
 
         this.setState({
             active: false,
-            suggestionComplete: true
+            suggestionComplete: true,
         });
     };
 
@@ -161,7 +161,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        },
     };
 });

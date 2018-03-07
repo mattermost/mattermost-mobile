@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -18,13 +18,13 @@ export default class ChannelTitle extends PureComponent {
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
         onPress: PropTypes.func,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     static defaultProps = {
         currentChannel: {},
         displayName: null,
-        theme: {}
+        theme: {},
     };
 
     render() {
@@ -65,7 +65,7 @@ export default class ChannelTitle extends PureComponent {
 const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            flex: 1
+            flex: 1,
         },
         wrapper: {
             alignItems: 'center',
@@ -73,17 +73,17 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
             top: -1,
             flexDirection: 'row',
-            justifyContent: 'flex-start'
+            justifyContent: 'flex-start',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
-            marginHorizontal: 5
+            marginHorizontal: 5,
         },
         text: {
             color: theme.sidebarHeaderTextColor,
             fontSize: 18,
             fontWeight: 'bold',
-            textAlign: 'center'
-        }
+            textAlign: 'center',
+        },
     };
 });

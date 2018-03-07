@@ -32,5 +32,5 @@ export default combineReducers({
     selectServer,
     team,
     thread,
-    emoji
+    emoji,
 });

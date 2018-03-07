@@ -6,19 +6,21 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import TeamIcon from 'app/components/team_icon';
+
 export default class TeamItem extends PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
         onSelectTeam: PropTypes.func.isRequired,
         team: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     onPress = wrapWithPreventDoubleTap(() => {
@@ -30,7 +32,7 @@ export default class TeamItem extends PureComponent {
         const {
             currentTeamId,
             team,
-            theme
+            theme,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -46,14 +48,6 @@ export default class TeamItem extends PureComponent {
             );
         }
 
-        const icon = (
-            <View style={styles.iconContainer}>
-                <Text style={styles.icon}>
-                    {team.display_name.substr(0, 2).toUpperCase()}
-                </Text>
-            </View>
-        );
-
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
@@ -61,7 +55,11 @@ export default class TeamItem extends PureComponent {
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
-                        {icon}
+                        <TeamIcon
+                            teamId={team.id}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <Text
                             style={[styles.text]}
                             ellipsizeMode='tail'
@@ -83,41 +81,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             height: 45,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         item: {
             alignItems: 'center',
             height: 45,
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         text: {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 16,
-            paddingRight: 5
+            paddingRight: 5,
         },
-        iconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.linkColor,
-            borderRadius: 2,
-            height: 30,
-            justifyContent: 'center',
-            width: 30,
-            marginRight: 10
-        },
-        icon: {
-            color: theme.sidebarText,
-            fontFamily: 'OpenSans',
-            fontSize: 15,
-            fontWeight: '600'
+        teamIconContainer: {
+            marginRight: 10,
         },
         checkmarkContainer: {
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
         },
         checkmark: {
             color: theme.linkColor,
-            fontSize: 16
-        }
+            fontSize: 16,
+        },
     };
 });

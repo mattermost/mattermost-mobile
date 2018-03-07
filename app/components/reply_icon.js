@@ -4,14 +4,14 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import Svg, {
-    Path
+    Path,
 } from 'react-native-svg';
 
 export default class ReplyIcon extends PureComponent {
     static propTypes = {
         width: PropTypes.number.isRequired,
         height: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired
+        color: PropTypes.string.isRequired,
     };
 
     render() {

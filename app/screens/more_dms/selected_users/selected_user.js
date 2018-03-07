@@ -6,7 +6,7 @@ import React from 'react';
 import {
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -35,7 +35,7 @@ export default class SelectedUser extends React.PureComponent {
         /*
          * A handler function that will deselect a user when clicked on.
          */
-        onRemove: PropTypes.func.isRequired
+        onRemove: PropTypes.func.isRequired,
     };
 
     onRemove = () => {
@@ -76,14 +76,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginBottom: 2,
             marginRight: 10,
             marginTop: 10,
-            paddingLeft: 10
+            paddingLeft: 10,
         },
         remove: {
-            paddingHorizontal: 10
+            paddingHorizontal: 10,
         },
         text: {
             color: theme.centerChannelColor,
-            fontSize: 13
-        }
+            fontSize: 13,
+        },
     };
 });

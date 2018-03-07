@@ -1,11 +1,3 @@
-//
-//  PerformRequests.h
-//  MattermostShare
-//
-//  Created by Elias Nahum on 12/18/17.
-//  Copyright © 2017 Facebook. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 #import "MattermostBucket.h"
 

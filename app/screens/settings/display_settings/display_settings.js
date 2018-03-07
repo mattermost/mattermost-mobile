@@ -6,12 +6,12 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Platform,
-    View
+    View,
 } from 'react-native';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ClockDisplay from 'app/screens/clock_display';
@@ -19,18 +19,18 @@ import ClockDisplay from 'app/screens/clock_display';
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     state = {
-        showClockDisplaySettings: false
+        showClockDisplaySettings: false,
     };
 
-    goToClockDisplaySettings = wrapWithPreventDoubleTap(() => {
+    goToClockDisplaySettings = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 
@@ -44,8 +44,8 @@ export default class DisplaySettings extends PureComponent {
                     navBarTextColor: theme.sidebarHeaderTextColor,
                     navBarBackgroundColor: theme.sidebarHeaderBg,
                     navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
-                }
+                    screenBackgroundColor: theme.centerChannelBg,
+                },
             });
             return;
         }
@@ -99,20 +99,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             ...Platform.select({
                 ios: {
-                    paddingTop: 35
-                }
-            })
+                    paddingTop: 35,
+                },
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1
-        }
+            height: 1,
+        },
     };
 });

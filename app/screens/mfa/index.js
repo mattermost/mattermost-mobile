@@ -14,15 +14,15 @@ function mapStateToProps(state) {
     return {
         loginId,
         password,
-        loginRequest
+        loginRequest,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            login
-        }, dispatch)
+            login,
+        }, dispatch),
     };
 }
 

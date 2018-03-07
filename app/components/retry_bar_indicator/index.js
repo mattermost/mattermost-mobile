@@ -19,7 +19,7 @@ function mapStateToProps(state) {
     }
 
     return {
-        failed
+        failed,
     };
 }
 export default connect(mapStateToProps)(RetryBarIndicator);

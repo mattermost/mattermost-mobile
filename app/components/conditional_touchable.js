@@ -10,7 +10,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 export default class ConditionalTouchable extends React.PureComponent {
     static propTypes = {
         touchable: PropTypes.bool,
-        children: CustomPropTypes.Children.isRequired
+        children: CustomPropTypes.Children.isRequired,
     };
 
     render() {

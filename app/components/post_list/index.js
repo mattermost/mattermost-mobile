@@ -23,7 +23,7 @@ function makeMapStateToProps() {
             deviceHeight,
             measureCellLayout,
             postIds,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }
@@ -31,8 +31,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            refreshChannelWithRetry
-        }, dispatch)
+            refreshChannelWithRetry,
+        }, dispatch),
     };
 }
 

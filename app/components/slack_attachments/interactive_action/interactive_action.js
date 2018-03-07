@@ -6,21 +6,21 @@ import {Text} from 'react-native';
 import PropTypes from 'prop-types';
 import Button from 'react-native-button';
 
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class InteractiveAction extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            doPostAction: PropTypes.func.isRequired
+            doPostAction: PropTypes.func.isRequired,
         }).isRequired,
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         postId: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
-    handleActionPress = wrapWithPreventDoubleTap(() => {
+    handleActionPress = preventDoubleTap(() => {
         const {actions, id, postId} = this.props;
         actions.doPostAction(postId, id);
     });
@@ -50,12 +50,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 5,
             marginTop: 10,
             paddingHorizontal: 10,
-            paddingVertical: 7
+            paddingVertical: 7,
         },
         text: {
             color: theme.buttonColor,
             fontSize: 12,
-            fontWeight: '600'
-        }
+            fontWeight: '600',
+        },
     };
 });

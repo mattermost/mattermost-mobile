@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
 
 import FormattedDate from 'app/components/formatted_date';
@@ -15,7 +15,7 @@ export default class DateHeader extends PureComponent {
     static propTypes = {
         date: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        style: ViewPropTypes.style
+        style: ViewPropTypes.style,
     };
 
     render() {
@@ -46,21 +46,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
-            height: 28
+            height: 28,
         },
         dateContainer: {
-            marginHorizontal: 15
+            marginHorizontal: 15,
         },
         line: {
             flex: 1,
             height: 1,
             backgroundColor: theme.centerChannelColor,
-            opacity: 0.2
+            opacity: 0.2,
         },
         date: {
             color: theme.centerChannelColor,
             fontSize: 14,
-            fontWeight: '600'
-        }
+            fontWeight: '600',
+        },
     };
 });

@@ -26,7 +26,7 @@ export default class Downloader extends PureComponent {
         prompt: PropTypes.bool,
         show: PropTypes.bool,
         downloadPath: PropTypes.string,
-        saveToCameraRoll: PropTypes.bool
+        saveToCameraRoll: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -36,11 +36,11 @@ export default class Downloader extends PureComponent {
         prompt: false,
         show: false,
         force: false,
-        saveToCameraRoll: true
+        saveToCameraRoll: true,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -49,7 +49,7 @@ export default class Downloader extends PureComponent {
         this.state = {
             downloaderTop: new Animated.Value(props.deviceHeight),
             progress: 0,
-            started: false
+            started: false,
         };
     }
 
@@ -74,7 +74,7 @@ export default class Downloader extends PureComponent {
             this.toggleDownloader();
             this.setState({
                 didCancel: false,
-                progress: 0
+                progress: 0,
             });
         } else if (!nextProps.show && this.props.show) {
             this.toggleDownloader(false);
@@ -88,7 +88,7 @@ export default class Downloader extends PureComponent {
             this.setState({
                 didCancel: true,
                 progress: 0,
-                started: false
+                started: false,
             });
         }
         if (this.downloadTask) {
@@ -106,8 +106,8 @@ export default class Downloader extends PureComponent {
             Animated.spring(this.state.downloaderTop, {
                 toValue: top,
                 tension: 8,
-                friction: 5
-            })
+                friction: 5,
+            }),
         ]).start();
     };
 
@@ -222,12 +222,12 @@ export default class Downloader extends PureComponent {
             progress: 100,
             started: true,
             force: true,
-            isVideo: true
+            isVideo: true,
         });
         Animated.spring(this.state.downloaderTop, {
             toValue: top,
             tension: 8,
-            friction: 5
+            friction: 5,
         }).start(async () => {
             await CameraRoll.saveToCameraRoll(videoPath, 'video');
             this.props.onDownloadSuccess();
@@ -243,18 +243,18 @@ export default class Downloader extends PureComponent {
         Alert.alert(
             intl.formatMessage({
                 id: 'mobile.downloader.failed_title',
-                defaultMessage: 'Download failed'
+                defaultMessage: 'Download failed',
             }),
             intl.formatMessage({
                 id: 'mobile.downloader.failed_description',
-                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n'
+                defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n',
             }),
             [{
                 text: intl.formatMessage({
                     id: 'mobile.server_upgrade.button',
-                    defaultMessage: 'OK'
+                    defaultMessage: 'OK',
                 }),
-                onPress: () => this.downloadDidCancel()
+                onPress: () => this.downloadDidCancel(),
             }]
         );
     };
@@ -272,7 +272,7 @@ export default class Downloader extends PureComponent {
                 session: file.id,
                 timeout: 10000,
                 indicator: true,
-                overwrite: true
+                overwrite: true,
             };
 
             if (downloadPath && prompt) {
@@ -298,7 +298,7 @@ export default class Downloader extends PureComponent {
                 if (this.mounted) {
                     this.setState({
                         progress,
-                        started: true
+                        started: true,
                     });
                 }
             });
@@ -311,7 +311,7 @@ export default class Downloader extends PureComponent {
 
             if (this.mounted) {
                 this.setState({
-                    progress: 100
+                    progress: 100,
                 }, () => {
                     // need to wait a bit for the progress circle UI to update to the give progress
                     setTimeout(async () => {
@@ -352,7 +352,7 @@ export default class Downloader extends PureComponent {
         Animated.spring(this.state.downloaderTop, {
             toValue: top,
             tension: 8,
-            friction: 5
+            friction: 5,
         }).start(() => {
             if (show && !prompt) {
                 this.startDownload();
@@ -405,29 +405,29 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     bottomText: {
         color: 'white',
         fontSize: 16,
-        fontWeight: '600'
+        fontWeight: '600',
     },
     cancelButton: {
         height: 30,
         width: 60,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 5
+        marginTop: 5,
     },
     cancelText: {
         color: 'white',
-        fontSize: 12
+        fontSize: 12,
     },
     container: {
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100%'
+        width: '100%',
     },
     downloader: {
         alignItems: 'center',
@@ -435,10 +435,10 @@ const styles = StyleSheet.create({
         height: 220,
         width: 236,
         borderRadius: 8,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
     progressContainer: {
-        flex: 1
+        flex: 1,
     },
     progressContent: {
         position: 'absolute',
@@ -447,34 +447,34 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     progressCircle: {
         width: '100%',
         height: '100%',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     progressCircleContent: {
         width: 200,
         height: 200,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     progressCirclePercentage: {
         flex: 1,
         alignItems: 'center',
-        marginTop: 80
+        marginTop: 80,
     },
     progressText: {
         color: 'white',
-        fontSize: 18
+        fontSize: 18,
     },
     manualDownloadContainer: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     downloadTextContainer: {
-        marginTop: 5
-    }
+        marginTop: 5,
+    },
 });

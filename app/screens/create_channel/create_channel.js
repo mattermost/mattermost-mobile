@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Keyboard,
-    InteractionManager
+    InteractionManager,
 } from 'react-native';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -25,26 +25,26 @@ export default class CreateChannel extends PureComponent {
         channelType: PropTypes.string,
         closeButton: PropTypes.object,
         actions: PropTypes.shape({
-            handleCreateChannel: PropTypes.func.isRequired
-        })
+            handleCreateChannel: PropTypes.func.isRequired,
+        }),
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     static defaultProps = {
-        channelType: General.OPEN_CHANNEL
+        channelType: General.OPEN_CHANNEL,
     };
 
     leftButton = {
-        id: 'close-new-channel'
+        id: 'close-new-channel',
     };
 
     rightButton = {
         id: 'create-channel',
         disabled: true,
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props, context) {
@@ -55,7 +55,7 @@ export default class CreateChannel extends PureComponent {
             creating: false,
             displayName: '',
             purpose: '',
-            header: ''
+            header: '',
         };
 
         this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
@@ -65,7 +65,7 @@ export default class CreateChannel extends PureComponent {
         }
 
         const buttons = {
-            rightButtons: [this.rightButton]
+            rightButtons: [this.rightButton],
         };
 
         if (this.left) {
@@ -115,14 +115,14 @@ export default class CreateChannel extends PureComponent {
             this.props.navigator.pop({animated: true});
         } else {
             this.props.navigator.dismissModal({
-                animationType: 'slide-down'
+                animationType: 'slide-down',
             });
         }
     };
 
     emitCanCreateChannel = (enabled) => {
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}]
+            rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
         if (this.left) {
@@ -134,7 +134,7 @@ export default class CreateChannel extends PureComponent {
 
     emitCreating = (loading) => {
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: loading}]
+            rightButtons: [{...this.rightButton, disabled: loading}],
         };
 
         if (this.left) {
@@ -180,14 +180,14 @@ export default class CreateChannel extends PureComponent {
             navigator,
             theme,
             deviceWidth,
-            deviceHeight
+            deviceHeight,
         } = this.props;
         const {
             error,
             creating,
             displayName,
             purpose,
-            header
+            header,
         } = this.state;
 
         return (

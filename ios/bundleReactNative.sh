@@ -8,7 +8,7 @@ if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	./makeSentryProperties.sh
 
 	export SENTRY_PROPERTIES=sentry.properties
-	../node_modules/sentry-cli-binary/bin/sentry-cli react-native xcode ./react-native-xcode.sh
+	../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ./react-native-xcode.sh
 else
 	echo "Sentry native integration is not enabled"
 	./react-native-xcode.sh

@@ -37,7 +37,7 @@ function mapStateToProps(state, ownProps) {
         isPostEphemeral: isPostEphemeral(post),
         isSystemMessage: isSystemMessage(post),
         message: post.message,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -45,8 +45,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             flagPost,
-            unflagPost
-        }, dispatch)
+            unflagPost,
+        }, dispatch),
     };
 }
 

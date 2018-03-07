@@ -12,7 +12,7 @@ import NotificationSettingsMobile from './notification_settings_mobile';
 function mapStateToProps(state) {
     return {
         config: getConfig(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

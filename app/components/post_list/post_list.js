@@ -7,7 +7,7 @@ import {
     InteractionManager,
     Platform,
     StyleSheet,
-    FlatList
+    FlatList,
 } from 'react-native';
 
 import ChannelIntro from 'app/components/channel_intro';
@@ -21,8 +21,6 @@ import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
 import withLayout from './with_layout';
 
-const DateHeaderWithLayout = withLayout(DateHeader);
-const NewMessagesDividerWithLayout = withLayout(NewMessagesDivider);
 const PostWithLayout = withLayout(Post);
 
 const INITAL_BATCH_TO_RENDER = 15;
@@ -32,7 +30,7 @@ const DATE_HEADER_HEIGHT = 28;
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            refreshChannelWithRetry: PropTypes.func.isRequired
+            refreshChannelWithRetry: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
@@ -50,11 +48,11 @@ export default class PostList extends PureComponent {
         renderReplies: PropTypes.bool,
         showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        loadMore: () => true
+        loadMore: () => true,
     };
 
     newMessagesIndex = -1;
@@ -64,7 +62,7 @@ export default class PostList extends PureComponent {
 
     state = {
         managedConfig: {},
-        scrollToMessage: false
+        scrollToMessage: false,
     };
 
     componentWillMount() {
@@ -105,19 +103,35 @@ export default class PostList extends PureComponent {
     }
 
     getMeasurementOffset = (index) => {
-        const orderedKeys = Object.keys(this.itemMeasurements).sort().slice(0, index);
+        const orderedKeys = Object.keys(this.itemMeasurements).sort((a, b) => {
+            const numA = Number(a);
+            const numB = Number(b);
+
+            if (numA > numB) {
+                return 1;
+            } else if (numA < numB) {
+                return -1;
+            }
+
+            return 0;
+        }).slice(0, index);
+
         return orderedKeys.map((i) => this.itemMeasurements[i]).reduce((a, b) => a + b, 0);
     }
 
     scrollListToMessageOffset = () => {
         const index = this.moreNewMessages ? this.props.postIds.length - 1 : this.newMessagesIndex;
-        if (index !== -1) {
-            const offset = this.getMeasurementOffset(index);
 
+        if (index !== -1) {
+            let offset = this.getMeasurementOffset(index);
             const windowHeight = this.state.postListHeight;
-            if (index !== this.props.postIds.length - 1 && offset < windowHeight) {
-                return; // post is already in view, no need to scroll.
+
+            if (offset < windowHeight) {
+                return;
             }
+
+            const upperBound = offset + windowHeight;
+            offset = offset - ((upperBound - offset) / 2);
 
             InteractionManager.runAfterInteractions(() => {
                 if (this.refs.list) {
@@ -129,7 +143,7 @@ export default class PostList extends PureComponent {
                     this.newMessagesIndex = -1;
                     this.moreNewMessages = false;
                     this.setState({
-                        scrollToMessage: false
+                        scrollToMessage: false,
                     });
                 }
             });
@@ -143,7 +157,7 @@ export default class PostList extends PureComponent {
         }
 
         this.setState({
-            managedConfig: nextConfig
+            managedConfig: nextConfig,
         });
     };
 
@@ -156,7 +170,7 @@ export default class PostList extends PureComponent {
         const {
             actions,
             channelId,
-            onRefresh
+            onRefresh,
         } = this.props;
 
         if (channelId) {
@@ -173,7 +187,7 @@ export default class PostList extends PureComponent {
         if (this.props.postIds.length === Object.values(this.itemMeasurements).length) {
             if (this.newMessagesIndex !== -1 && !this.newMessageScrolledTo) {
                 this.setState({
-                    scrollToMessage: true
+                    scrollToMessage: true,
                 });
             }
         }
@@ -189,7 +203,7 @@ export default class PostList extends PureComponent {
 
             this.itemMeasurements[index] = NEW_MESSAGES_HEIGHT;
             return (
-                <NewMessagesDividerWithLayout
+                <NewMessagesDivider
                     index={index}
                     theme={this.props.theme}
                     moreMessages={this.moreNewMessages}
@@ -213,7 +227,7 @@ export default class PostList extends PureComponent {
     renderDateHeader = (date, index) => {
         this.itemMeasurements[index] = DATE_HEADER_HEIGHT;
         return (
-            <DateHeaderWithLayout
+            <DateHeader
                 date={date}
                 index={index}
             />
@@ -227,7 +241,7 @@ export default class PostList extends PureComponent {
             navigator,
             onPostPress,
             renderReplies,
-            shouldRenderReplyButton
+            shouldRenderReplyButton,
         } = this.props;
         const {managedConfig} = this.state;
 
@@ -280,7 +294,7 @@ export default class PostList extends PureComponent {
     onLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({
-            postListHeight: height
+            postListHeight: height,
         });
     }
 
@@ -290,11 +304,11 @@ export default class PostList extends PureComponent {
             highlightPostId,
             loadMore,
             postIds,
-            showLoadMore
+            showLoadMore,
         } = this.props;
 
         const refreshControl = {
-            refreshing: false
+            refreshing: false,
         };
 
         if (channelId) {
@@ -325,6 +339,6 @@ export default class PostList extends PureComponent {
 
 const styles = StyleSheet.create({
     postListContent: {
-        paddingTop: 5
-    }
+        paddingTop: 5,
+    },
 });
