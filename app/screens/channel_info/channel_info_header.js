@@ -23,6 +23,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
         navigator: PropTypes.object.isRequired,
+        onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -37,6 +38,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             header,
             memberCount,
             navigator,
+            onPermalinkPress,
             purpose,
             status,
             theme,
@@ -75,6 +77,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <Markdown
                             navigator={navigator}
+                            onPermalinkPress={onPermalinkPress}
                             baseTextStyle={style.detail}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
@@ -91,6 +94,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <Markdown
                             navigator={navigator}
+                            onPermalinkPress={onPermalinkPress}
                             baseTextStyle={style.detail}
                             textStyles={textStyles}
                             blockStyles={blockStyles}

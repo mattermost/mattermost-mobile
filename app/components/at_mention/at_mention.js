@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Text} from 'react-native';
+import {Clipboard, Platform, Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -49,8 +49,7 @@ export default class AtMention extends React.PureComponent {
     goToUserProfile = () => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
-
-        navigator.push({
+        const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
@@ -64,7 +63,13 @@ export default class AtMention extends React.PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor,
                 screenBackgroundColor: theme.centerChannelBg,
             },
-        });
+        };
+
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     getUserDetailsFromMentionName(props) {

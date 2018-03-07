@@ -20,7 +20,7 @@ import OptionsContext from 'app/components/options_context';
 import PostBodyAdditionalContent from 'app/components/post_body_additional_content';
 
 import {emptyFunction} from 'app/utils/general';
-import {getMarkdownTextStyles, getMarkdownBlockStyles, normalizeFontSizeByDevice} from 'app/utils/markdown';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import Reactions from 'app/components/reactions';
 
@@ -51,6 +51,7 @@ class PostBody extends PureComponent {
         onCopyPermalink: PropTypes.func,
         onCopyText: PropTypes.func,
         onFailedPostPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
         onPostDelete: PropTypes.func,
         onPostEdit: PropTypes.func,
         onPress: PropTypes.func,
@@ -151,6 +152,7 @@ class PostBody extends PureComponent {
             message,
             navigator,
             onFailedPostPress,
+            onPermalinkPress,
             onPostDelete,
             onPostEdit,
             onPress,
@@ -169,7 +171,7 @@ class PostBody extends PureComponent {
         const isPendingOrFailedPost = isPending || isFailed;
 
         // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost && !isSearchResult && !isSystemMessage && !isPostEphemeral) {
+        if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
             actions.push({
                 text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                 onPress: this.props.onAddReaction,
@@ -240,6 +242,7 @@ class PostBody extends PureComponent {
                             isSearchResult={isSearchResult}
                             navigator={navigator}
                             onLongPress={this.showOptionsContext}
+                            onPermalinkPress={onPermalinkPress}
                             onPostPress={onPress}
                             textStyles={textStyles}
                             value={message}
@@ -250,61 +253,36 @@ class PostBody extends PureComponent {
         }
 
         if (!hasBeenDeleted) {
-            if (isSearchResult) {
-                body = (
-                    <TouchableHighlight
-                        onHideUnderlay={this.handleHideUnderlay}
-                        onPress={onPress}
-                        onShowUnderlay={this.handleShowUnderlay}
-                        underlayColor='transparent'
-                    >
-                        <View>
-                            {messageComponent}
-                            <PostBodyAdditionalContent
-                                baseTextStyle={messageStyle}
-                                blockStyles={blockStyles}
-                                navigator={navigator}
-                                message={message}
-                                postId={postId}
-                                postProps={postProps}
-                                textStyles={textStyles}
-                                isReplyPost={isReplyPost}
-                            />
-                            {this.renderFileAttachments()}
-                        </View>
-                    </TouchableHighlight>
-                );
-            } else {
-                body = (
-                    <OptionsContext
-                        actions={actions}
-                        ref='options'
-                        onPress={onPress}
-                        toggleSelected={toggleSelected}
-                        cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
-                    >
-                        {messageComponent}
-                        <PostBodyAdditionalContent
-                            baseTextStyle={messageStyle}
-                            blockStyles={blockStyles}
-                            navigator={navigator}
-                            message={message}
-                            postId={postId}
-                            postProps={postProps}
-                            textStyles={textStyles}
-                            onLongPress={this.showOptionsContext}
-                            isReplyPost={isReplyPost}
-                        />
-                        {this.renderFileAttachments()}
-                        {hasReactions &&
-                        <Reactions
-                            postId={postId}
-                            onAddReaction={this.props.onAddReaction}
-                        />
-                        }
-                    </OptionsContext>
-                );
-            }
+            body = (
+                <OptionsContext
+                    actions={actions}
+                    ref='options'
+                    onPress={onPress}
+                    toggleSelected={toggleSelected}
+                    cancelText={formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'})}
+                >
+                    {messageComponent}
+                    <PostBodyAdditionalContent
+                        baseTextStyle={messageStyle}
+                        blockStyles={blockStyles}
+                        navigator={navigator}
+                        message={message}
+                        postId={postId}
+                        postProps={postProps}
+                        textStyles={textStyles}
+                        onLongPress={this.showOptionsContext}
+                        isReplyPost={isReplyPost}
+                        onPermalinkPress={onPermalinkPress}
+                    />
+                    {this.renderFileAttachments()}
+                    {!isSearchResult && hasReactions &&
+                    <Reactions
+                        postId={postId}
+                        onAddReaction={this.props.onAddReaction}
+                    />
+                    }
+                </OptionsContext>
+            );
         }
 
         return (
@@ -336,8 +314,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         message: {
             color: theme.centerChannelColor,
-            fontSize: normalizeFontSizeByDevice(13),
-            lineHeight: normalizeFontSizeByDevice(16),
+            fontSize: 15,
+            lineHeight: 20,
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',

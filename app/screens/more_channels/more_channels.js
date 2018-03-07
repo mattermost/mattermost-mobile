@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Platform,
     InteractionManager,
@@ -21,9 +21,8 @@ import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
-class MoreChannels extends PureComponent {
+export default class MoreChannels extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
@@ -41,6 +40,10 @@ class MoreChannels extends PureComponent {
         }).isRequired,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     leftButton = {
         id: 'close-more-channels',
     };
@@ -50,8 +53,8 @@ class MoreChannels extends PureComponent {
         showAsAction: 'always',
     };
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
 
         this.searchTimeoutId = 0;
 
@@ -65,7 +68,7 @@ class MoreChannels extends PureComponent {
             showNoResults: false,
             term: '',
         };
-        this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         this.leftButton = {...this.leftButton, icon: props.closeButton};
 
         const buttons = {
@@ -144,7 +147,7 @@ class MoreChannels extends PureComponent {
 
     filterChannels = (channels, term) => {
         return channels.filter((c) => {
-            return (c.name.toLowerCase().indexOf(term) !== -1 || c.display_name.toLowerCase().indexOf(term) !== -1);
+            return (c.name.toLowerCase().includes(term) || c.display_name.toLowerCase().includes(term));
         });
     };
 
@@ -152,10 +155,10 @@ class MoreChannels extends PureComponent {
         const term = text.toLowerCase();
 
         if (term) {
-            const channels = this.filterChannels(this.state.channels, term);
+            const channels = this.filterChannels(this.props.channels, term);
             this.setState({
                 channels,
-                term: text,
+                term,
                 searching: true,
             });
             clearTimeout(this.searchTimeoutId);
@@ -213,7 +216,8 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
-        const {actions, currentTeamId, currentUserId, intl} = this.props;
+        const {intl} = this.context;
+        const {actions, currentTeamId, currentUserId} = this.props;
         const {channels} = this.state;
 
         this.emitCanCreateChannel(false);
@@ -252,7 +256,8 @@ class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = () => {
-        const {intl, navigator, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'CreateChannel',
@@ -273,7 +278,8 @@ class MoreChannels extends PureComponent {
     };
 
     render() {
-        const {intl, requestStatus, theme} = this.props;
+        const {intl} = this.context;
+        const {requestStatus, theme} = this.props;
         const {adding, channels, searching, term} = this.state;
         const {formatMessage} = intl;
         const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
@@ -296,10 +302,8 @@ class MoreChannels extends PureComponent {
             };
 
             content = (
-                <View style={{flex: 1}}>
-                    <View
-                        style={{marginVertical: 5}}
-                    >
+                <View style={style.flex}>
+                    <View style={style.wrapper}>
                         <SearchBar
                             ref='search_bar'
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -345,6 +349,12 @@ class MoreChannels extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
+        wrapper: {
+            marginVertical: 5,
+        },
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
@@ -362,5 +372,3 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(MoreChannels);
