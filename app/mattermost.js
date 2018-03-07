@@ -79,7 +79,8 @@ export default class Mattermost {
 
         this.unsubscribeFromStore = this.store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
-        EventEmitter.on(General.CONFIG_CHANGED, this.handleServerConfigChanged);
+        EventEmitter.on(General.SERVER_VERSION_CHANGED, this.handleServerVersionChanged);
+        EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleLogout);
         EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetChannelDisplayName);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.restartApp);
@@ -225,7 +226,7 @@ export default class Mattermost {
         return true;
     };
 
-    handleServerConfigChanged = async (serverVersion) => {
+    handleServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = this.store;
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const intl = this.getIntl();
@@ -244,11 +245,20 @@ export default class Mattermost {
                 );
             } else if (state.entities.users && state.entities.users.currentUserId) {
                 setServerVersion(serverVersion)(dispatch, getState);
+
+                // Note that license and config changes are now emitted as websocket events, but
+                // we might be connected to an older server. Loading the configuration multiple
+                // times isn't a high overhead at present, so there's no harm in potentially
+                // repeating the load and handling for now.
                 const data = await loadConfigAndLicense()(dispatch, getState);
-                this.configureAnalytics(data.config);
+                this.handleConfigChanged(data.config);
             }
         }
     };
+
+    handleConfigChanged = (config) => {
+        this.configureAnalytics(config);
+    }
 
     handleManagedConfig = async (serverConfig) => {
         const {dispatch, getState} = this.store;
