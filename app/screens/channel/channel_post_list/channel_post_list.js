@@ -7,6 +7,7 @@ import {
     Platform,
     StyleSheet,
     View,
+    InteractionManager,
 } from 'react-native';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
@@ -45,6 +46,7 @@ export default class ChannelPostList extends PureComponent {
 
         this.state = {
             visiblePostIds: this.getVisiblePostIds(props),
+            loading: true,
         };
     }
 
@@ -66,6 +68,10 @@ export default class ChannelPostList extends PureComponent {
         if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
             this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
         }
+    }
+
+    componentDidMount() {
+        InteractionManager.runAfterInteractions(() => this.setState({loading: false}));
     }
 
     getVisiblePostIds = (props) => {
@@ -129,9 +135,15 @@ export default class ChannelPostList extends PureComponent {
 
         const {
             visiblePostIds,
+            loading,
         } = this.state;
 
+        if (loading) {
+            return null;
+        }
+
         let component;
+
         if (!postIds.length && channelRefreshingFailed) {
             component = (
                 <PostListRetry

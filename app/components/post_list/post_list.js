@@ -321,13 +321,14 @@ export default class PostList extends PureComponent {
                 ref='list'
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId, showLoadMore)}
-                initialNumToRender={INITAL_BATCH_TO_RENDER}
+                initialNumToRender={false}
                 maxToRenderPerBatch={INITAL_BATCH_TO_RENDER + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderFooter}
                 onEndReached={loadMore}
                 onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
+                removeClippedSubviews={Platform.OS === 'android'}
                 {...refreshControl}
                 renderItem={this.renderItem}
                 contentContainerStyle={styles.postListContent}
