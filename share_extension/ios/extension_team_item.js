@@ -12,6 +12,8 @@ import {
 import {wrapWithPreventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
+import TeamIcon from 'app/components/team_icon';
+
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
@@ -33,14 +35,6 @@ export default class TeamsListItem extends React.PureComponent {
         } = this.props;
         const styles = getStyleSheet(theme);
 
-        const icon = (
-            <View style={styles.iconContainer}>
-                <Text style={styles.icon}>
-                    {team.display_name.substr(0, 2).toUpperCase()}
-                </Text>
-            </View>
-        );
-
         const wrapperStyle = [styles.wrapper];
         if (team.id === currentTeamId) {
             wrapperStyle.push({
@@ -56,7 +50,11 @@ export default class TeamsListItem extends React.PureComponent {
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
-                        {icon}
+                        <TeamIcon
+                            teamId={team.id}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <Text
                             style={[styles.text]}
                             ellipsizeMode='tail'
@@ -97,20 +95,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 16,
             paddingRight: 5,
         },
-        iconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.linkColor,
-            borderRadius: 2,
-            height: 30,
-            justifyContent: 'center',
-            width: 30,
+        teamIconContainer: {
             marginRight: 10,
-        },
-        icon: {
-            color: theme.sidebarText,
-            fontFamily: 'OpenSans',
-            fontSize: 15,
-            fontWeight: '600',
         },
         checkmarkContainer: {
             alignItems: 'flex-end',

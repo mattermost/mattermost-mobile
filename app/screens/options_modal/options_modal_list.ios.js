@@ -25,8 +25,8 @@ export default class OptionsModalList extends PureComponent {
     };
 
     handleCancelPress = preventDoubleTap(() => {
-        if (this.onCancelPress) {
-            this.onCancelPress();
+        if (this.props.onCancelPress) {
+            this.props.onCancelPress();
         }
     });
 

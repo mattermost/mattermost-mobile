@@ -23,11 +23,14 @@ import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
+import TeamIcon from 'app/components/team_icon';
+
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            getTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
@@ -53,7 +56,9 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentDidMount() {
-        this.buildData(this.props);
+        this.props.actions.getTeams().then(() => {
+            this.buildData(this.props);
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -174,11 +179,11 @@ export default class SelectTeam extends PureComponent {
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
                     <View style={styles.teamContainer}>
-                        <View style={styles.teamIconContainer}>
-                            <Text style={styles.teamIcon}>
-                                {item.display_name.substr(0, 2).toUpperCase()}
-                            </Text>
-                        </View>
+                        <TeamIcon
+                            teamId={item.id}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -268,22 +273,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 16,
         },
         teamIconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.buttonBg,
-            borderRadius: 2,
-            height: 40,
-            justifyContent: 'center',
             width: 40,
+            height: 40,
+        },
+        teamIconText: {
+            fontSize: 18,
         },
         noTeam: {
             color: theme.centerChannelColor,
             fontSize: 14,
-        },
-        teamIcon: {
-            color: theme.buttonColor,
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: '600',
         },
         teamNameContainer: {
             flex: 1,

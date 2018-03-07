@@ -33,7 +33,6 @@ class TeamsList extends PureComponent {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
         }).isRequired,
-        canJoinOtherTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
@@ -106,25 +105,22 @@ class TeamsList extends PureComponent {
     };
 
     render() {
-        const {canJoinOtherTeams, teamIds, theme} = this.props;
+        const {teamIds, theme} = this.props;
         const styles = getStyleSheet(theme);
 
-        let moreAction;
-        if (canJoinOtherTeams) {
-            moreAction = (
-                <TouchableHighlight
-                    style={styles.moreActionContainer}
-                    onPress={this.goToSelectTeam}
-                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+        const moreAction = (
+            <TouchableHighlight
+                style={styles.moreActionContainer}
+                onPress={this.goToSelectTeam}
+                underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+            >
+                <Text
+                    style={styles.moreAction}
                 >
-                    <Text
-                        style={styles.moreAction}
-                    >
-                        {'+'}
-                    </Text>
-                </TouchableHighlight>
-            );
-        }
+                    {'+'}
+                </Text>
+            </TouchableHighlight>
+        );
 
         return (
             <View style={styles.container}>
