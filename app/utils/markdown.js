@@ -1,19 +1,12 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Dimensions, PixelRatio, Platform, StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export function getCodeFont() {
     return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 }
-
-const portraitWidth = Dimensions.get('window').width <= Dimensions.get('window').height ? Dimensions.get('window').width : Dimensions.get('window').height;
-const scale = portraitWidth / 320;
-
-export const normalizeFontSizeByDevice = (size) => {
-    return Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
-};
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
     const codeFont = getCodeFont();
@@ -32,52 +25,52 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
             color: theme.linkColor,
         },
         heading1: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22),
+            lineHeight: 25,
         },
         heading1Text: {
-            paddingBottom: normalizeFontSizeByDevice(6),
+            paddingBottom: 8,
         },
         heading2: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22),
+            lineHeight: 25,
         },
         heading2Text: {
-            paddingBottom: normalizeFontSizeByDevice(6),
+            paddingBottom: 8,
         },
         heading3: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22),
+            lineHeight: 25,
         },
         heading3Text: {
-            paddingBottom: normalizeFontSizeByDevice(6),
+            paddingBottom: 8,
         },
         heading4: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22),
+            lineHeight: 25,
         },
         heading4Text: {
-            paddingBottom: normalizeFontSizeByDevice(6),
+            paddingBottom: 8,
         },
         heading5: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22),
+            lineHeight: 25,
         },
         heading5Text: {
-            paddingBottom: normalizeFontSizeByDevice(6),
+            paddingBottom: 8,
         },
         heading6: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22),
+            lineHeight: 25,
         },
         heading6Text: {
-            paddingBottom: normalizeFontSizeByDevice(6),
+            paddingBottom: 8,
         },
         code: {
             alignSelf: 'center',
