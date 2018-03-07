@@ -56,7 +56,7 @@ export default class SelectedUsers extends React.PureComponent {
         /*
          * A handler function that will deselect a user when clicked on.
          */
-        onRemove: PropTypes.func.isRequired
+        onRemove: PropTypes.func.isRequired,
     };
 
     render() {
@@ -97,7 +97,7 @@ export default class SelectedUsers extends React.PureComponent {
                     style={style.message}
                     {...this.props.warnMessage}
                     values={{
-                        remaining: this.props.maxCount - users.length
+                        remaining: this.props.maxCount - users.length,
                     }}
                 />
             );
@@ -118,19 +118,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             marginLeft: 5,
-            marginBottom: 5
+            marginBottom: 5,
         },
         users: {
             alignItems: 'flex-start',
             flexDirection: 'row',
-            flexWrap: 'wrap'
+            flexWrap: 'wrap',
         },
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 12,
             marginRight: 5,
             marginTop: 10,
-            marginBottom: 2
-        }
+            marginBottom: 2,
+        },
     };
 });

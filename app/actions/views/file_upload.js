@@ -7,7 +7,7 @@ import {uploadFile} from 'mattermost-redux/actions/files';
 import {
     buildFileUploadData,
     encodeHeaderURIStringToUTF8,
-    generateId
+    generateId,
 } from 'app/utils/file';
 import {ViewTypes} from 'app/constants';
 
@@ -28,7 +28,7 @@ export function handleUploadFiles(files, rootId) {
                 localPath: fileData.uri,
                 name: fileData.name,
                 type: fileData.mimeType,
-                extension: fileData.extension
+                extension: fileData.extension,
             });
 
             fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
@@ -46,7 +46,7 @@ export function handleUploadFiles(files, rootId) {
             type: ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT,
             clientIds,
             channelId,
-            rootId
+            rootId,
         });
 
         const clientIdsArray = clientIds.map((c) => c.clientId);
@@ -64,7 +64,7 @@ export function retryFileUpload(file, rootId) {
         const fileData = {
             uri: file.localPath,
             name: file.name,
-            type: file.type
+            type: file.type,
         };
 
         fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
@@ -81,7 +81,7 @@ export function retryFileUpload(file, rootId) {
             type: ViewTypes.RETRY_UPLOAD_FILE_FOR_POST,
             clientId: file.clientId,
             channelId,
-            rootId
+            rootId,
         });
 
         await uploadFile(channelId, rootId, [file.clientId], formData, formBoundary)(dispatch, getState);
@@ -92,7 +92,7 @@ export function handleClearFiles(channelId, rootId) {
     return {
         type: ViewTypes.CLEAR_FILES_FOR_POST_DRAFT,
         channelId,
-        rootId
+        rootId,
     };
 }
 
@@ -100,7 +100,7 @@ export function handleClearFailedFiles(channelId, rootId) {
     return {
         type: ViewTypes.CLEAR_FAILED_FILES_FOR_POST_DRAFT,
         channelId,
-        rootId
+        rootId,
     };
 }
 
@@ -109,7 +109,7 @@ export function handleRemoveFile(clientId, channelId, rootId) {
         type: ViewTypes.REMOVE_FILE_FROM_POST_DRAFT,
         clientId,
         channelId,
-        rootId
+        rootId,
     };
 }
 
@@ -117,6 +117,6 @@ export function handleRemoveLastFile(channelId, rootId) {
     return {
         type: ViewTypes.REMOVE_LAST_FILE_FROM_POST_DRAFT,
         channelId,
-        rootId
+        rootId,
     };
 }

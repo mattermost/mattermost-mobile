@@ -8,13 +8,13 @@ import {
     Image,
     ScrollView,
     StyleSheet,
-    View
+    View,
 } from 'react-native';
 
 export default class TableImage extends React.PureComponent {
     static propTypes = {
         deviceWidth: PropTypes.number.isRequired,
-        imageSource: PropTypes.string.isRequired
+        imageSource: PropTypes.string.isRequired,
     };
 
     constructor(props) {
@@ -22,7 +22,7 @@ export default class TableImage extends React.PureComponent {
 
         this.state = {
             width: -1,
-            height: -1
+            height: -1,
         };
     }
 
@@ -34,7 +34,7 @@ export default class TableImage extends React.PureComponent {
         if (this.props.imageSource !== nextProps.imageSource) {
             this.setState({
                 width: -1,
-                height: -1
+                height: -1,
             });
 
             this.getImageSize(nextProps.imageSource);
@@ -45,7 +45,7 @@ export default class TableImage extends React.PureComponent {
         Image.getSize(imageSource, (width, height) => {
             this.setState({
                 width,
-                height
+                height,
             });
         });
     }
@@ -85,18 +85,18 @@ export default class TableImage extends React.PureComponent {
 
 const style = StyleSheet.create({
     scrollContainer: {
-        flex: 1
+        flex: 1,
     },
     container: {
         flex: 1,
-        flexDirection: 'column'
+        flexDirection: 'column',
     },
     image: {
-        resizeMode: 'contain'
+        resizeMode: 'contain',
     },
     loadingContainer: {
         alignItems: 'center',
         flex: 1,
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
 });

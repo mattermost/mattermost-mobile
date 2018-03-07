@@ -18,7 +18,7 @@ export function handleCreateChannel(displayName, purpose, header, type) {
             display_name: displayName,
             purpose,
             header,
-            type
+            type,
         };
 
         const {data} = await createChannel(channel, currentUserId)(dispatch, getState);

@@ -10,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     TouchableWithoutFeedback,
-    View
+    View,
 } from 'react-native';
 import Button from 'react-native-button';
 
@@ -19,7 +19,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {GlobalStyles} from 'app/styles';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 
 import logo from 'assets/images/logo.png';
 
@@ -29,11 +29,11 @@ export default class Mfa extends PureComponent {
     static propTypes = {
         navigator: PropTypes.object,
         actions: PropTypes.shape({
-            login: PropTypes.func.isRequired
+            login: PropTypes.func.isRequired,
         }).isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired
+        loginRequest: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -41,7 +41,7 @@ export default class Mfa extends PureComponent {
 
         this.state = {
             token: '',
-            error: null
+            error: null,
         };
     }
 
@@ -72,7 +72,7 @@ export default class Mfa extends PureComponent {
     handleInput = (token) => {
         this.setState({
             token,
-            error: null
+            error: null,
         });
     };
 
@@ -84,16 +84,16 @@ export default class Mfa extends PureComponent {
         this.textInput.refs.wrappedInstance.blur();
     };
 
-    submit = wrapWithPreventDoubleTap(() => {
+    submit = preventDoubleTap(() => {
         Keyboard.dismiss();
         if (!this.state.token) {
             this.setState({
                 error: {
                     intl: {
                         id: 'login_mfa.tokenReq',
-                        defaultMessage: 'Please enter an MFA token'
-                    }
-                }
+                        defaultMessage: 'Please enter an MFA token',
+                    },
+                },
             });
             return;
         }

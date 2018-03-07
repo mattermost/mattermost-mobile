@@ -34,7 +34,7 @@ function makeMapStateToProps() {
             isSystemMessage: isSystemMessage(post),
             overrideUsername: post.props && post.props.override_username,
             theme: getTheme(state),
-            username: user.username
+            username: user.username,
         };
     };
 }

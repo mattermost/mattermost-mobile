@@ -6,7 +6,8 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     InteractionManager,
-    View
+    Platform,
+    View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
@@ -37,14 +38,14 @@ class ChannelMembers extends PureComponent {
         actions: PropTypes.shape({
             getProfilesInChannel: PropTypes.func.isRequired,
             handleRemoveChannelMembers: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired
-        })
+            searchProfiles: PropTypes.func.isRequired,
+        }),
     };
 
     removeButton = {
         disabled: true,
         id: 'remove-members',
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props) {
@@ -60,14 +61,14 @@ class ChannelMembers extends PureComponent {
             searching: false,
             selectedMembers: {},
             showNoResults: false,
-            term: ''
+            term: '',
         };
         this.removeButton.title = props.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'});
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         if (props.canManageUsers) {
             props.navigator.setButtons({
-                rightButtons: [this.removeButton]
+                rightButtons: [this.removeButton],
             });
         }
     }
@@ -129,7 +130,7 @@ class ChannelMembers extends PureComponent {
             searching: false,
             term: '',
             page: 0,
-            profiles: markSelectedProfiles(this.props.currentChannelMembers, this.state.selectedMembers)
+            profiles: markSelectedProfiles(this.props.currentChannelMembers, this.state.selectedMembers),
         });
     };
 
@@ -140,7 +141,7 @@ class ChannelMembers extends PureComponent {
     emitCanRemoveMembers = (enabled) => {
         if (this.props.canManageUsers) {
             this.props.navigator.setButtons({
-                rightButtons: [{...this.removeButton, disabled: !enabled}]
+                rightButtons: [{...this.removeButton, disabled: !enabled}],
             });
         }
     };
@@ -150,7 +151,7 @@ class ChannelMembers extends PureComponent {
 
         if (this.props.canManageUsers) {
             this.props.navigator.setButtons({
-                rightButtons: [{...this.removeButton, disabled: loading}]
+                rightButtons: [{...this.removeButton, disabled: loading}],
             });
         }
     };
@@ -164,11 +165,11 @@ class ChannelMembers extends PureComponent {
             Alert.alert(
                 formatMessage({
                     id: 'mobile.routes.channel_members.action',
-                    defaultMessage: 'Remove Members'
+                    defaultMessage: 'Remove Members',
                 }),
                 formatMessage({
                     id: 'mobile.routes.channel_members.action_message',
-                    defaultMessage: 'You must select at least one member to remove from the channel.'
+                    defaultMessage: 'You must select at least one member to remove from the channel.',
                 })
             );
             return;
@@ -177,17 +178,17 @@ class ChannelMembers extends PureComponent {
         Alert.alert(
             formatMessage({
                 id: 'mobile.routes.channel_members.action',
-                defaultMessage: 'Remove Members'
+                defaultMessage: 'Remove Members',
             }),
             formatMessage({
                 id: 'mobile.routes.channel_members.action_message_confirm',
-                defaultMessage: 'Are you sure you want to remove the selected members from the channel?'
+                defaultMessage: 'Are you sure you want to remove the selected members from the channel?',
             }),
             [{
-                text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'})
+                text: formatMessage({id: 'mobile.channel_list.alertNo', defaultMessage: 'No'}),
             }, {
                 text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
-                onPress: () => this.removeMembers(membersToRemove)
+                onPress: () => this.removeMembers(membersToRemove),
             }]
         );
     };
@@ -201,7 +202,7 @@ class ChannelMembers extends PureComponent {
         }
         this.setState({
             profiles: markSelectedProfiles(this.state.profiles, selectedMembers),
-            selectedMembers
+            selectedMembers,
         });
     };
 
@@ -215,7 +216,7 @@ class ChannelMembers extends PureComponent {
                 ({data}) => {
                     if (data && data.length) {
                         this.setState({
-                            page
+                            page,
                         });
                     } else {
                         this.setState({next: false});
@@ -285,6 +286,17 @@ class ChannelMembers extends PureComponent {
             );
         }
 
+        const searchBarInput = {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            ...Platform.select({
+                android: {
+                    marginBottom: -5,
+                },
+            }),
+        };
+
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -297,12 +309,7 @@ class ChannelMembers extends PureComponent {
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={33}
-                        inputStyle={{
-                            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                            color: theme.centerChannelColor,
-                            fontSize: 15,
-                            lineHeight: 66
-                        }}
+                        inputStyle={searchBarInput}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -335,8 +342,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        },
     };
 });
 

@@ -12,7 +12,7 @@ import AtMention from './at_mention';
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        usersByUsername: getUsersByUsername(state)
+        usersByUsername: getUsersByUsername(state),
     };
 }
 

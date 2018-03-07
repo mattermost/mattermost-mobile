@@ -5,13 +5,13 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    StatusBar as NativeStatusBar
+    StatusBar as NativeStatusBar,
 } from 'react-native';
 import tinyColor from 'tinycolor2';
 
 export default class StatusBar extends PureComponent {
     static propTypes = {
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {

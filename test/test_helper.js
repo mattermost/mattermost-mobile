@@ -61,7 +61,7 @@ class TestHelper {
             email: this.fakeEmail(),
             allow_marketing: true,
             password: PASSWORD,
-            username: this.generateId()
+            username: this.generateId(),
         };
     };
 
@@ -78,7 +78,7 @@ class TestHelper {
             type: 'O',
             email: this.fakeEmail(),
             allowed_domains: '',
-            invite_id: inviteId
+            invite_id: inviteId,
         };
     };
 
@@ -89,7 +89,7 @@ class TestHelper {
             name,
             team_id: teamId,
             display_name: `Unit Test ${name}`,
-            type: 'O'
+            type: 'O',
         };
     };
 
@@ -98,14 +98,14 @@ class TestHelper {
             user_id: userId,
             channel_id: channelId,
             notify_props: {},
-            roles: 'system_user'
+            roles: 'system_user',
         };
     };
 
     fakePost = (channelId) => {
         return {
             channel_id: channelId,
-            message: `Unit Test ${this.generateId()}`
+            message: `Unit Test ${this.generateId()}`,
         };
     };
 
@@ -126,7 +126,7 @@ class TestHelper {
             user: this.basicUser,
             team: this.basicTeam,
             channel: this.basicChannel,
-            post: this.basicPost
+            post: this.basicPost,
         };
     };
 

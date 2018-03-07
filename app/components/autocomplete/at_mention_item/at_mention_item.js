@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import ProfilePicture from 'app/components/profile_picture';
@@ -19,7 +19,7 @@ export default class AtMentionItem extends PureComponent {
         onPress: PropTypes.func.isRequired,
         userId: PropTypes.string.isRequired,
         username: PropTypes.string,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     completeMention = () => {
@@ -33,7 +33,7 @@ export default class AtMentionItem extends PureComponent {
             lastName,
             userId,
             username,
-            theme
+            theme,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -67,21 +67,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
             marginHorizontal: 8,
             width: 20,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         rowUsername: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         rowFullname: {
             color: theme.centerChannelColor,
-            opacity: 0.6
-        }
+            opacity: 0.6,
+        },
     };
 });

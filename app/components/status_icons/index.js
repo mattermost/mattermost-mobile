@@ -20,5 +20,5 @@ export {
     OfflineAvatar,
     OfflineIcon,
     OnlineAvatar,
-    OnlineIcon
+    OnlineIcon,
 };

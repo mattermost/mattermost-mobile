@@ -16,7 +16,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class ChannelMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            searchChannels: PropTypes.func.isRequired
+            searchChannels: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
@@ -31,19 +31,19 @@ export default class ChannelMention extends PureComponent {
         publicChannels: PropTypes.array,
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        value: PropTypes.string
+        value: PropTypes.string,
     };
 
     static defaultProps = {
         isSearch: false,
-        value: ''
+        value: '',
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            sections: []
+            sections: [],
         };
     }
 
@@ -54,7 +54,7 @@ export default class ChannelMention extends PureComponent {
             // if the term changes but is null or the mention has been completed we render this component as null
             this.setState({
                 mentionComplete: false,
-                sections: []
+                sections: [],
             });
 
             this.props.onResultCountChange(0);
@@ -83,7 +83,7 @@ export default class ChannelMention extends PureComponent {
                         id: 'suggestion.search.public',
                         defaultMessage: 'Public Channels',
                         data: publicChannels,
-                        key: 'publicChannels'
+                        key: 'publicChannels',
                     });
                 }
 
@@ -92,7 +92,7 @@ export default class ChannelMention extends PureComponent {
                         id: 'suggestion.search.private',
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
-                        key: 'privateChannels'
+                        key: 'privateChannels',
                     });
                 }
             } else {
@@ -101,7 +101,7 @@ export default class ChannelMention extends PureComponent {
                         id: 'suggestion.mention.channels',
                         defaultMessage: 'My Channels',
                         data: myChannels,
-                        key: 'myChannels'
+                        key: 'myChannels',
                     });
                 }
 
@@ -110,13 +110,13 @@ export default class ChannelMention extends PureComponent {
                         id: 'suggestion.mention.morechannels',
                         defaultMessage: 'Other Channels',
                         data: otherChannels,
-                        key: 'otherChannels'
+                        key: 'otherChannels',
                     });
                 }
             }
 
             this.setState({
-                sections
+                sections,
             });
 
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
@@ -196,10 +196,10 @@ export default class ChannelMention extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         search: {
-            minHeight: 125
-        }
+            minHeight: 125,
+        },
     };
 });

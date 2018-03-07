@@ -16,7 +16,7 @@ class ErrorText extends PureComponent {
     static propTypes = {
         error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
         textStyle: CustomPropTypes.Style,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {
@@ -50,15 +50,15 @@ class ErrorText extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         errorLabel: {
-            color: (theme.errorTextColor || '#DA4A4A')
-        }
+            color: (theme.errorTextColor || '#DA4A4A'),
+        },
     };
 });
 
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

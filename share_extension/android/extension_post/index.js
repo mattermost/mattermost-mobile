@@ -21,7 +21,7 @@ function mapStateToProps(state) {
         maxFileSize: getAllowedServerMaxFileSize(config),
         teamId: getCurrentTeamId(state),
         token,
-        url
+        url,
     };
 }
 

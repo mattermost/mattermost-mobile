@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Platform,
     StyleSheet,
-    View
+    View,
 } from 'react-native';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
@@ -23,7 +23,7 @@ export default class ChannelPostList extends PureComponent {
             increasePostVisibility: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
-            refreshChannelWithRetry: PropTypes.func.isRequired
+            refreshChannelWithRetry: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
@@ -33,18 +33,18 @@ export default class ChannelPostList extends PureComponent {
         navigator: PropTypes.object,
         postIds: PropTypes.array.isRequired,
         postVisibility: PropTypes.number,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        postVisibility: 15
+        postVisibility: 15,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            visiblePostIds: this.getVisiblePostIds(props)
+            visiblePostIds: this.getVisiblePostIds(props),
         };
     }
 
@@ -58,7 +58,7 @@ export default class ChannelPostList extends PureComponent {
         }
 
         this.setState({
-            visiblePostIds
+            visiblePostIds,
         });
     }
 
@@ -87,12 +87,12 @@ export default class ChannelPostList extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 channelId,
-                rootId
-            }
+                rootId,
+            },
         };
 
         if (Platform.OS === 'android') {
@@ -124,11 +124,11 @@ export default class ChannelPostList extends PureComponent {
             loadMorePostsVisible,
             navigator,
             postIds,
-            theme
+            theme,
         } = this.props;
 
         const {
-            visiblePostIds
+            visiblePostIds,
         } = this.state;
 
         let component;
@@ -169,6 +169,6 @@ export default class ChannelPostList extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        flex: 1
-    }
+        flex: 1,
+    },
 });

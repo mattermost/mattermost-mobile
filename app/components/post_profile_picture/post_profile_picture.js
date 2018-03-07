@@ -20,11 +20,11 @@ export default class PostProfilePicture extends PureComponent {
         overrideIconUrl: PropTypes.string,
         onViewUserProfile: PropTypes.func,
         theme: PropTypes.object,
-        userId: PropTypes.string
+        userId: PropTypes.string,
     };
 
     static defaultProps = {
-        onViewUserProfile: emptyFunction
+        onViewUserProfile: emptyFunction,
     };
 
     render() {
@@ -35,7 +35,7 @@ export default class PostProfilePicture extends PureComponent {
             onViewUserProfile,
             overrideIconUrl,
             theme,
-            userId
+            userId,
         } = this.props;
 
         if (isSystemMessage) {
@@ -60,7 +60,7 @@ export default class PostProfilePicture extends PureComponent {
                         style={{
                             height: PROFILE_PICTURE_SIZE,
                             width: PROFILE_PICTURE_SIZE,
-                            borderRadius: PROFILE_PICTURE_SIZE / 2
+                            borderRadius: PROFILE_PICTURE_SIZE / 2,
                         }}
                     />
                 </View>

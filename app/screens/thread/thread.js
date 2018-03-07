@@ -18,7 +18,7 @@ import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 class Thread extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            selectPost: PropTypes.func.isRequired
+            selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelType: PropTypes.string.isRequired,
@@ -28,7 +28,7 @@ class Thread extends PureComponent {
         myMember: PropTypes.object.isRequired,
         rootId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        postIds: PropTypes.array.isRequired
+        postIds: PropTypes.array.isRequired,
     };
 
     state = {};
@@ -44,7 +44,7 @@ class Thread extends PureComponent {
         }
 
         this.props.navigator.setTitle({
-            title
+            title,
         });
     }
 
@@ -72,11 +72,11 @@ class Thread extends PureComponent {
 
         if (Platform.OS === 'ios') {
             navigator.pop({
-                animated: true
+                animated: true,
             });
         } else {
             navigator.dismissModal({
-                animationType: 'slide-down'
+                animationType: 'slide-down',
             });
         }
     };
@@ -88,7 +88,7 @@ class Thread extends PureComponent {
             navigator,
             postIds,
             rootId,
-            theme
+            theme,
         } = this.props;
         const style = getStyle(theme);
 
@@ -125,8 +125,8 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        },
     };
 });
 

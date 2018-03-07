@@ -7,7 +7,7 @@ import {
     Switch,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -72,19 +72,19 @@ channelInfoRow.propTypes = {
     detail: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number,
-        PropTypes.bool
+        PropTypes.bool,
     ]),
     icon: PropTypes.string.isRequired,
     iconColor: PropTypes.string,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
-    theme: PropTypes.object.isRequired
+    theme: PropTypes.object.isRequired,
 };
 
 channelInfoRow.defaultProps = {
     togglable: false,
-    shouldRender: true
+    shouldRender: true,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -93,25 +93,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             paddingHorizontal: 15,
             flexDirection: 'row',
-            alignItems: 'center'
+            alignItems: 'center',
         },
         detail: {
             marginHorizontal: 15,
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 15
+            fontSize: 15,
         },
         label: {
             flex: 1,
             marginLeft: 15,
             fontSize: 15,
-            paddingVertical: 15
+            paddingVertical: 15,
         },
         leftIcon: {
-            width: 17
+            width: 17,
         },
         rightIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
 });
 

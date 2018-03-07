@@ -16,7 +16,7 @@ function mapStateToProps(state) {
     }
 
     return {
-        refreshing
+        refreshing,
     };
 }
 

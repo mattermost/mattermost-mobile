@@ -13,7 +13,7 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {
     loadChannelsIfNecessary,
     loadProfilesAndTeamMembersForDMSidebar,
-    selectInitialChannel
+    selectInitialChannel,
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
@@ -29,7 +29,7 @@ function mapStateToProps(state) {
         channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -45,8 +45,8 @@ function mapDispatchToProps(dispatch) {
             closeWebSocket,
             recordLoadTime,
             startPeriodicStatusUpdates,
-            stopPeriodicStatusUpdates
-        }, dispatch)
+            stopPeriodicStatusUpdates,
+        }, dispatch),
     };
 }
 

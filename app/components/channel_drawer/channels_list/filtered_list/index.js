@@ -13,7 +13,7 @@ import {
     getChannelsWithUnreadSection,
     getCurrentChannel,
     getGroupChannels,
-    getOtherChannels
+    getOtherChannels,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
@@ -72,14 +72,14 @@ function getGroupDetails(currentUserId, userIdsInChannels, profiles, groupChanne
             email: [],
             fullname: [],
             nickname: [],
-            username: []
+            username: [],
         });
 
         groupMemberDetails[channel.id] = {
             email: members.email.join(','),
             fullname: members.fullname.join(','),
             nickname: members.nickname.join(','),
-            username: members.username.join(',')
+            username: members.username.join(','),
         };
 
         return groupMemberDetails;
@@ -119,7 +119,7 @@ function mapStateToProps(state) {
         searchOrder,
         pastDirectMessages: pastDirectMessages(state),
         restrictDms,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -129,8 +129,8 @@ function mapDispatchToProps(dispatch) {
             getProfilesInTeam,
             makeGroupMessageVisibleIfNecessary,
             searchChannels,
-            searchProfiles
-        }, dispatch)
+            searchProfiles,
+        }, dispatch),
     };
 }
 

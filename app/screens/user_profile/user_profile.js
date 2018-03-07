@@ -8,7 +8,7 @@ import {
     ScrollView,
     Text,
     View,
-    Linking
+    Linking,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
@@ -27,7 +27,7 @@ class UserProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired
+            setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentChannel: PropTypes.object.isRequired,
@@ -37,7 +37,7 @@ class UserProfile extends PureComponent {
         navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        user: PropTypes.object.isRequired
+        user: PropTypes.object.isRequired,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -50,12 +50,12 @@ class UserProfile extends PureComponent {
         const {navigator} = this.props;
 
         navigator.popToRoot({
-            animated: true
+            animated: true,
         });
 
         if (Platform.OS === 'android') {
             navigator.dismissModal({
-                animationType: 'slide-down'
+                animationType: 'slide-down',
             });
         }
     };
@@ -112,10 +112,10 @@ class UserProfile extends PureComponent {
                 result.error,
                 {
                     id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                 },
                 {
-                    displayName: userDisplayName
+                    displayName: userDisplayName,
                 }
             );
         } else {
@@ -213,43 +213,43 @@ class UserProfile extends PureComponent {
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            flex: 1
+            flex: 1,
         },
         content: {
             marginBottom: 25,
-            marginHorizontal: 15
+            marginHorizontal: 15,
         },
         displayName: {
             marginTop: 15,
             color: theme.centerChannelColor,
             fontSize: 17,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         header: {
             fontSize: 13,
             fontWeight: '600',
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 25,
-            marginBottom: 10
+            marginBottom: 10,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         text: {
             fontSize: 15,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         top: {
             padding: 25,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         username: {
             marginTop: 15,
             color: theme.centerChannelColor,
-            fontSize: 15
-        }
+            fontSize: 15,
+        },
     };
 });
 

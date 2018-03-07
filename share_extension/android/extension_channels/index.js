@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {
     getExtensionSortedDirectChannels,
     getExtensionSortedPrivateChannels,
-    getExtensionSortedPublicChannels
+    getExtensionSortedPublicChannels,
 } from 'share_extension/android/selectors';
 
 import ExtensionChannels from './extension_channels';
@@ -15,7 +15,7 @@ function mapStateToProps(state) {
     return {
         publicChannels: getExtensionSortedPublicChannels(state),
         privateChannels: getExtensionSortedPrivateChannels(state),
-        directChannels: getExtensionSortedDirectChannels(state)
+        directChannels: getExtensionSortedDirectChannels(state),
     };
 }
 

@@ -12,7 +12,7 @@ import {
     filterMembersInChannel,
     filterMembersNotInChannel,
     filterMembersInCurrentTeam,
-    getMatchTermForAtMention
+    getMatchTermForAtMention,
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -44,15 +44,15 @@ function mapStateToProps(state, ownProps) {
         inChannel,
         outChannel,
         requestStatus: state.requests.users.autocompleteUsers.status,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            autocompleteUsers
-        }, dispatch)
+            autocompleteUsers,
+        }, dispatch),
     };
 }
 

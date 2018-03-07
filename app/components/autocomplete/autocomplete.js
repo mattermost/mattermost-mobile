@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     Platform,
-    View
+    View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
@@ -24,11 +24,11 @@ export default class Autocomplete extends PureComponent {
         rootId: PropTypes.string,
         isSearch: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        value: PropTypes.string
+        value: PropTypes.string,
     };
 
     static defaultProps = {
-        isSearch: false
+        isSearch: false,
     };
 
     state = {
@@ -37,12 +37,12 @@ export default class Autocomplete extends PureComponent {
         channelMentionCount: 0,
         emojiCount: 0,
         commandCount: 0,
-        keyboardOffset: 0
+        keyboardOffset: 0,
     };
 
     handleSelectionChange = (event) => {
         this.setState({
-            cursorPosition: event.nativeEvent.selection.end
+            cursorPosition: event.nativeEvent.selection.end,
         });
     };
 
@@ -147,34 +147,34 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             left: 0,
             overflow: 'hidden',
             position: 'absolute',
-            right: 0
+            right: 0,
         },
         borders: {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 0
+            borderBottomWidth: 0,
         },
         bordersSearch: {
             borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         container: {
             bottom: 0,
-            maxHeight: 200
+            maxHeight: 200,
         },
         content: {
-            flex: 1
+            flex: 1,
         },
         searchContainer: {
             flex: 1,
             ...Platform.select({
                 android: {
-                    top: 46
+                    top: 46,
                 },
                 ios: {
-                    top: 44
-                }
-            })
-        }
+                    top: 44,
+                },
+            }),
+        },
     };
 });

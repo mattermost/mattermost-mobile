@@ -9,7 +9,7 @@ import NotificationSettingsMentions from './notification_settings_mentions';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

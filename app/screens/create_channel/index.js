@@ -19,15 +19,15 @@ function mapStateToProps(state) {
         createChannelRequest,
         theme: getTheme(state),
         deviceWidth,
-        deviceHeight
+        deviceHeight,
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleCreateChannel
-        }, dispatch)
+            handleCreateChannel,
+        }, dispatch),
     };
 }
 

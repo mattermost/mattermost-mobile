@@ -9,7 +9,7 @@ import TeamButton from './team_button';
 
 function mapStateToProps(state, ownProps) {
     return {
-        team: getTeam(state, ownProps.teamId)
+        team: getTeam(state, ownProps.teamId),
     };
 }
 

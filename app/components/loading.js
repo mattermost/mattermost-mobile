@@ -8,20 +8,20 @@ import {
     ActivityIndicator,
     StyleSheet,
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
 
 export default class Loading extends PureComponent {
     static propTypes = {
         size: PropTypes.string,
         color: PropTypes.string,
-        style: ViewPropTypes.style
+        style: ViewPropTypes.style,
     };
 
     static defaultProps = {
         size: 'large',
         color: 'grey',
-        style: {}
+        style: {},
     };
 
     render() {
@@ -42,10 +42,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
 
     loading: {
-        marginLeft: 3
-    }
+        marginLeft: 3,
+    },
 });

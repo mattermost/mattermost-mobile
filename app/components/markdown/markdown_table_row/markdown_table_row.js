@@ -11,7 +11,7 @@ export default class MarkdownTableRow extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node,
         isLastRow: PropTypes.bool,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {
@@ -31,11 +31,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         row: {
             flex: 1,
             flexDirection: 'row',
-            justifyContent: 'flex-start'
+            justifyContent: 'flex-start',
         },
         rowBottomBorder: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1
-        }
+            borderBottomWidth: 1,
+        },
     };
 });

@@ -9,7 +9,7 @@ export default makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            height: 45
+            height: 45,
         },
         iconContainer: {
             width: 29,
@@ -18,41 +18,44 @@ export default makeStyleSheetFromTheme((theme) => {
             borderRadius: 7,
             alignItems: 'center',
             justifyContent: 'center',
-            marginHorizontal: 15
+            marginHorizontal: 15,
         },
         icon: {
             color: theme.buttonColor,
             fontSize: 18,
-            marginTop: 2
+            marginTop: 2,
         },
         wrapper: {
-            flex: 1
+            flex: 1,
         },
         centerLabel: {
             textAlign: 'center',
-            textAlignVertical: 'center'
+            textAlignVertical: 'center',
         },
         labelContainer: {
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         label: {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 17,
-            lineHeight: 43
+            lineHeight: 43,
         },
         arrowContainer: {
             justifyContent: 'center',
-            paddingRight: 15
+            paddingRight: 15,
         },
         arrow: {
             color: changeOpacity(theme.centerChannelColor, 0.25),
-            fontSize: 18
+            fontSize: 18,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1
-        }
+            height: 1,
+        },
+        destructor: {
+            color: theme.errorTextColor,
+        },
     };
 });

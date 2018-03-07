@@ -22,7 +22,7 @@ function makeMapStateToProps() {
         return {
             channelName: channel ? channel.display_name : '',
             currentUserId: getCurrentUserId(state),
-            postIds
+            postIds,
         };
     };
 }
@@ -32,8 +32,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getPostsAfter,
             getPostsBefore,
-            getPostThread
-        }, dispatch)
+            getPostThread,
+        }, dispatch),
     };
 }
 

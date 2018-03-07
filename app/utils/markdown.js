@@ -20,100 +20,100 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
 
     return {
         emph: {
-            fontStyle: 'italic'
+            fontStyle: 'italic',
         },
         strong: {
-            fontWeight: 'bold'
+            fontWeight: 'bold',
         },
         del: {
-            textDecorationLine: 'line-through'
+            textDecorationLine: 'line-through',
         },
         link: {
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         heading1: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: normalizeFontSizeByDevice(22),
         },
         heading1Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: normalizeFontSizeByDevice(6),
         },
         heading2: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: normalizeFontSizeByDevice(22),
         },
         heading2Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: normalizeFontSizeByDevice(6),
         },
         heading3: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: normalizeFontSizeByDevice(22),
         },
         heading3Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: normalizeFontSizeByDevice(6),
         },
         heading4: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: normalizeFontSizeByDevice(22),
         },
         heading4Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: normalizeFontSizeByDevice(6),
         },
         heading5: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: normalizeFontSizeByDevice(22),
         },
         heading5Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: normalizeFontSizeByDevice(6),
         },
         heading6: {
             fontSize: normalizeFontSizeByDevice(16),
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: normalizeFontSizeByDevice(22),
         },
         heading6Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: normalizeFontSizeByDevice(6),
         },
         code: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
-            fontFamily: codeFont
+            fontFamily: codeFont,
         },
         codeBlock: {
-            fontFamily: codeFont
+            fontFamily: codeFont,
         },
         mention: {
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         error: {
-            color: theme.errorTextColor
+            color: theme.errorTextColor,
         },
         table_header_row: {
-            fontWeight: '700'
-        }
+            fontWeight: '700',
+        },
     };
 });
 
 export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
     return {
         adjacentParagraph: {
-            marginTop: 6
+            marginTop: 6,
         },
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
             height: StyleSheet.hairlineWidth,
             flex: 1,
-            marginVertical: 10
+            marginVertical: 10,
         },
         quoteBlockIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            padding: 5
-        }
+            padding: 5,
+        },
     };
 });
 
@@ -175,7 +175,7 @@ const languages = {
     vbscript: 'VBScript',
     verilog: 'Verilog',
     xml: 'XML',
-    yaml: 'YAML'
+    yaml: 'YAML',
 };
 
 export function getDisplayNameForLanguage(language) {

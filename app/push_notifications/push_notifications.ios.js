@@ -19,7 +19,7 @@ class PushNotification {
         NotificationsIOS.addEventListener('notificationReceivedForeground', (notification) => {
             const info = {
                 ...notification.getData(),
-                message: notification.getMessage()
+                message: notification.getMessage(),
             };
             this.handleNotification(info, true, false);
         });
@@ -27,7 +27,7 @@ class PushNotification {
         NotificationsIOS.addEventListener('notificationReceivedBackground', (notification) => {
             const info = {
                 ...notification.getData(),
-                message: notification.getMessage()
+                message: notification.getMessage(),
             };
             this.handleNotification(info, false, false);
         });
@@ -35,7 +35,7 @@ class PushNotification {
         NotificationsIOS.addEventListener('notificationOpened', (notification) => {
             const info = {
                 ...notification.getData(),
-                message: notification.getMessage()
+                message: notification.getMessage(),
             };
             this.handleNotification(info, false, true);
         });
@@ -45,13 +45,13 @@ class PushNotification {
             title: 'Reply',
             behavior: 'textInput',
             authenticationRequired: true,
-            identifier: REPLY_ACTION
+            identifier: REPLY_ACTION,
         }, this.handleReply);
 
         replyCategory = new NotificationCategory({
             identifier: CATEGORY,
             actions: [replyAction],
-            context: 'default'
+            context: 'default',
         });
     }
 
@@ -61,7 +61,7 @@ class PushNotification {
             foreground: foreground || (!userInteraction && AppState.currentState === 'active'),
             message: data.message,
             userInfo: data.userInfo,
-            userInteraction
+            userInteraction,
         };
 
         if (this.onNotification) {
@@ -114,7 +114,7 @@ class PushNotification {
                 fireDate: notification.date.toISOString(),
                 alertBody: notification.message,
                 alertAction: '',
-                userInfo: notification.userInfo
+                userInfo: notification.userInfo,
             };
 
             NotificationsIOS.localNotification(deviceNotification);

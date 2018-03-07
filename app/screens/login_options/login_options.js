@@ -8,7 +8,7 @@ import {
     Image,
     ScrollView,
     StyleSheet,
-    Text
+    Text,
 } from 'react-native';
 import Button from 'react-native-button';
 import Orientation from 'react-native-orientation';
@@ -29,7 +29,7 @@ class LoginOptions extends PureComponent {
         navigator: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     componentWillMount() {
@@ -40,7 +40,7 @@ class LoginOptions extends PureComponent {
         Orientation.removeOrientationListener(this.orientationDidChange);
     }
 
-    goToLogin = () => {
+    goToLogin = preventDoubleTap(() => {
         const {intl, navigator, theme} = this.props;
         navigator.push({
             screen: 'Login',
@@ -51,10 +51,10 @@ class LoginOptions extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
-    };
+    });
 
     goToSSO = (ssoType) => {
         const {intl, navigator, theme} = this.props;
@@ -67,11 +67,11 @@ class LoginOptions extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                ssoType
-            }
+                ssoType,
+            },
         });
     };
 
@@ -86,7 +86,7 @@ class LoginOptions extends PureComponent {
         if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
             const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
             const additionalStyle = {
-                backgroundColor
+                backgroundColor,
             };
 
             if (config.hasOwnProperty('EmailLoginButtonBorderColor')) {
@@ -98,7 +98,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='email'
-                    onPress={() => preventDoubleTap(this.goToLogin, this)}
+                    onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <FormattedText
@@ -120,7 +120,7 @@ class LoginOptions extends PureComponent {
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
             const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
             const additionalStyle = {
-                backgroundColor
+                backgroundColor,
             };
 
             if (config.hasOwnProperty('LDAPLoginButtonBorderColor')) {
@@ -149,7 +149,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='ldap'
-                    onPress={() => preventDoubleTap(this.goToLogin, this)}
+                    onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     {buttonText}
@@ -169,7 +169,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='gitlab'
-                    onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.GITLAB)}
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
                 >
                     <Image
@@ -196,7 +196,7 @@ class LoginOptions extends PureComponent {
             const backgroundColor = config.SamlLoginButtonColor || '#34a28b';
 
             const additionalStyle = {
-                backgroundColor
+                backgroundColor,
             };
 
             if (config.SAMLLoginButtonBorderColor) {
@@ -208,7 +208,7 @@ class LoginOptions extends PureComponent {
             return (
                 <Button
                     key='saml'
-                    onPress={() => preventDoubleTap(this.goToSSO, this, ViewTypes.SAML)}
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.SAML))}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
                     <Text
@@ -263,15 +263,15 @@ class LoginOptions extends PureComponent {
 const style = StyleSheet.create({
     container: {
         backgroundColor: '#FFFFFF',
-        flex: 1
+        flex: 1,
     },
     innerContainer: {
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
         paddingHorizontal: 15,
-        paddingVertical: 50
-    }
+        paddingVertical: 50,
+    },
 });
 
 export default injectIntl(LoginOptions);

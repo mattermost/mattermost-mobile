@@ -61,7 +61,7 @@ function mapStateToProps(state) {
         currentUserId: getCurrentUserId(state),
         currentTeamId: getCurrentTeamId(state),
         getRequest,
-        searchRequest
+        searchRequest,
     };
 }
 
@@ -73,8 +73,8 @@ function mapDispatchToProps(dispatch) {
             getProfiles,
             getProfilesInTeam,
             searchProfiles,
-            setChannelDisplayName
-        }, dispatch)
+            setChannelDisplayName,
+        }, dispatch),
     };
 }
 

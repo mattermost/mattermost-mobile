@@ -8,13 +8,13 @@ import {
     Platform,
     TouchableHighlight,
     Text,
-    View
+    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const {View: AnimatedView} = Animated;
@@ -33,14 +33,14 @@ export default class ChannelItem extends PureComponent {
         status: PropTypes.string,
         teammateDeletedAt: PropTypes.number,
         type: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
-    onPress = wrapWithPreventDoubleTap(() => {
+    onPress = preventDoubleTap(() => {
         const {channelId, currentChannelId, displayName, fake, onSelectChannel, type} = this.props;
         requestAnimationFrame(() => {
             onSelectChannel({id: channelId, display_name: displayName, fake, type}, currentChannelId);
@@ -58,11 +58,11 @@ export default class ChannelItem extends PureComponent {
                 previewView: this.previewRef,
                 previewActions: [{
                     id: 'action-mark-as-read',
-                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'})
+                    title: intl.formatMessage({id: 'mobile.channel.markAsRead', defaultMessage: 'Mark As Read'}),
                 }],
                 passProps: {
-                    channelId
-                }
+                    channelId,
+                },
             });
         }
     };
@@ -82,7 +82,7 @@ export default class ChannelItem extends PureComponent {
             status,
             teammateDeletedAt,
             theme,
-            type
+            type,
         } = this.props;
 
         const {intl} = this.context;
@@ -91,7 +91,7 @@ export default class ChannelItem extends PureComponent {
         if (isMyUser) {
             channelDisplayName = intl.formatMessage({
                 id: 'channel_header.directchannel.you',
-                defaultMessage: '{displayName} (you)'
+                defaultMessage: '{displayName} (you)',
             }, {displayname: displayName});
         }
 
@@ -173,22 +173,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
-            height: 44
+            height: 44,
         },
         borderActive: {
             backgroundColor: theme.sidebarTextActiveBorder,
-            width: 5
+            width: 5,
         },
         item: {
             alignItems: 'center',
             height: 44,
             flex: 1,
             flexDirection: 'row',
-            paddingLeft: 16
+            paddingLeft: 16,
         },
         itemActive: {
             backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
-            paddingLeft: 11
+            paddingLeft: 11,
         },
         text: {
             color: changeOpacity(theme.sidebarText, 0.4),
@@ -196,13 +196,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             fontWeight: '600',
             lineHeight: 16,
-            paddingRight: 40
+            paddingRight: 40,
         },
         textActive: {
-            color: theme.sidebarTextActiveColor
+            color: theme.sidebarTextActiveColor,
         },
         textUnread: {
-            color: theme.sidebarUnreadText
+            color: theme.sidebarUnreadText,
         },
         badge: {
             backgroundColor: theme.mentionBj,
@@ -211,11 +211,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             padding: 3,
             position: 'relative',
-            right: 16
+            right: 16,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10
-        }
+            fontSize: 10,
+        },
     };
 });

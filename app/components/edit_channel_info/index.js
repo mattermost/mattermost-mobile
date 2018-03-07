@@ -8,7 +8,7 @@ import {
     TouchableWithoutFeedback,
     View,
     Text,
-    findNodeHandle
+    findNodeHandle,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
@@ -47,11 +47,11 @@ export default class EditChannelInfo extends PureComponent {
         oldDisplayName: PropTypes.string,
         oldChannelURL: PropTypes.string,
         oldHeader: PropTypes.string,
-        oldPurpose: PropTypes.string
+        oldPurpose: PropTypes.string,
     };
 
     static defaultProps = {
-        editing: false
+        editing: false,
     };
 
     blur = () => {
@@ -96,7 +96,7 @@ export default class EditChannelInfo extends PureComponent {
             this.props.navigator.pop({animated: true});
         } else {
             this.props.navigator.dismissModal({
-                animationType: 'slide-down'
+                animationType: 'slide-down',
             });
         }
     };
@@ -110,7 +110,7 @@ export default class EditChannelInfo extends PureComponent {
             oldDisplayName,
             oldChannelURL,
             oldPurpose,
-            oldHeader
+            oldHeader,
         } = this.props;
 
         return displayName !== oldDisplayName || channelURL !== oldChannelURL ||
@@ -190,7 +190,7 @@ export default class EditChannelInfo extends PureComponent {
             displayName,
             channelURL,
             header,
-            purpose
+            purpose,
         } = this.props;
         const {error, saving} = this.props;
         const fullUrl = currentTeamUrl + '/channels';
@@ -213,7 +213,7 @@ export default class EditChannelInfo extends PureComponent {
         let displayError;
         if (error) {
             displayError = (
-                <View style={[style.errorContainer, {deviceWidth}]}>
+                <View style={[style.errorContainer, {width: deviceWidth}]}>
                     <View style={style.errorWrapper}>
                         <ErrorText error={error}/>
                     </View>
@@ -374,54 +374,54 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 10
+            paddingTop: 10,
         },
         errorContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         errorWrapper: {
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
         },
         inputContainer: {
             marginTop: 10,
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
         },
         input: {
             color: '#333',
             fontSize: 14,
             height: 40,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         titleContainer30: {
             flexDirection: 'row',
-            marginTop: 30
+            marginTop: 30,
         },
         titleContainer15: {
             flexDirection: 'row',
-            marginTop: 15
+            marginTop: 15,
         },
         title: {
             fontSize: 14,
             color: theme.centerChannelColor,
-            marginLeft: 15
+            marginLeft: 15,
         },
         optional: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 14,
-            marginLeft: 5
+            marginLeft: 5,
         },
         helpText: {
             fontSize: 14,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 10,
-            marginHorizontal: 15
-        }
+            marginHorizontal: 15,
+        },
     };
 });
 

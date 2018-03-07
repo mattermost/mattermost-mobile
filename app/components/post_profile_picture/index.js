@@ -20,7 +20,7 @@ function mapStateToProps(state, ownProps) {
         isSystemMessage: isSystemMessage(post),
         overrideIconUrl: post.props && post.props.override_icon_url,
         userId: post.user_id,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

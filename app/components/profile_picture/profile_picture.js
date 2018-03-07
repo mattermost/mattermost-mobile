@@ -15,7 +15,7 @@ import {Client4} from 'mattermost-redux/client';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
-    android: 2
+    android: 2,
 });
 
 export default class ProfilePicture extends PureComponent {
@@ -30,8 +30,8 @@ export default class ProfilePicture extends PureComponent {
         imageUri: PropTypes.string,
         theme: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            getStatusForId: PropTypes.func.isRequired
-        })
+            getStatusForId: PropTypes.func.isRequired,
+        }),
     };
 
     static defaultProps = {
@@ -39,7 +39,7 @@ export default class ProfilePicture extends PureComponent {
         size: 128,
         statusBorderWidth: 2,
         statusSize: 14,
-        edit: false
+        edit: false,
     };
 
     componentDidMount() {
@@ -68,7 +68,7 @@ export default class ProfilePicture extends PureComponent {
             statusStyle = {
                 width: this.props.statusSize,
                 height: this.props.statusSize,
-                backgroundColor: 'white'
+                backgroundColor: 'white',
             };
             statusIcon = (
                 <FontAwesomeIcon
@@ -113,10 +113,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         status: {
-            color: theme.centerChannelBg
-        }
+            color: theme.centerChannelBg,
+        },
     };
 });

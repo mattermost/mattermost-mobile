@@ -9,7 +9,7 @@ import {DeviceTypes} from 'app/constants';
 const {height, width} = Dimensions.get('window');
 const initialState = {
     deviceHeight: height,
-    deviceWidth: width
+    deviceWidth: width,
 };
 
 export default function dimension(state = initialState, action) {

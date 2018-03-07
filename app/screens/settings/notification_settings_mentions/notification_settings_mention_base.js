@@ -14,7 +14,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         intl: intlShape.isRequired,
         navigator: PropTypes.object,
         onBack: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -60,7 +60,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
             usernameMention: usernameMentionIndex > -1,
             mention_keys: mentionKeys.join(','),
             showKeywordsModal: false,
-            showReplyModal: false
+            showReplyModal: false,
         };
 
         this.keywords = newState.mention_keys;
@@ -71,19 +71,19 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
 
     toggleFirstNameMention = () => {
         this.setState({
-            first_name: (!(this.state.first_name === 'true')).toString()
+            first_name: (!(this.state.first_name === 'true')).toString(),
         });
     };
 
     toggleUsernameMention = () => {
         this.setState({
-            usernameMention: !this.state.usernameMention
+            usernameMention: !this.state.usernameMention,
         });
     };
 
     toggleChannelMentions = () => {
         this.setState({
-            channel: (!(this.state.channel === 'true')).toString()
+            channel: (!(this.state.channel === 'true')).toString(),
         });
     };
 
@@ -91,14 +91,14 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         this.goingBack = true;
         this.setState({
             mention_keys: text,
-            showKeywordsModal: false
+            showKeywordsModal: false,
         });
     };
 
     setReplyNotifications = (value) => {
         this.setState({
             comments: value,
-            showReplyModal: false
+            showReplyModal: false,
         });
     };
 
@@ -122,7 +122,7 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         this.props.onBack({
             ...notifyProps,
             mention_keys: mentionKeys,
-            user_id: this.props.currentUser.id
+            user_id: this.props.currentUser.id,
         });
     };
 }

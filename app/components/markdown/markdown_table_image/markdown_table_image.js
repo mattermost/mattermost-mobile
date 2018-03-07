@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 
 export default class MarkdownTableImage extends React.PureComponent {
     static propTypes = {
@@ -16,33 +16,33 @@ export default class MarkdownTableImage extends React.PureComponent {
         textStyle: CustomPropTypes.Style.isRequired,
         navigator: PropTypes.object.isRequired,
         serverURL: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'TableImage',
             title: this.context.intl.formatMessage({
                 id: 'mobile.routes.tableImage',
-                defaultMessage: 'Image'
+                defaultMessage: 'Image',
             }),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                imageSource: this.getImageSource()
+                imageSource: this.getImageSource(),
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 

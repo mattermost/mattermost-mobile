@@ -2,7 +2,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
-    Text
+    Text,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -13,11 +13,11 @@ const {View: AnimatedView} = Animated;
 export default class Typing extends PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
-        typing: PropTypes.array.isRequired
+        typing: PropTypes.array.isRequired,
     };
 
     state = {
-        typingHeight: new Animated.Value(0)
+        typingHeight: new Animated.Value(0),
     }
 
     componentWillReceiveProps(nextProps) {
@@ -33,7 +33,7 @@ export default class Typing extends PureComponent {
 
         Animated.timing(this.state.typingHeight, {
             toValue: height,
-            duration: 200
+            duration: 200,
         }).start();
     }
 
@@ -51,7 +51,7 @@ export default class Typing extends PureComponent {
                     id='msg_typing.isTyping'
                     defaultMessage='{user} is typing...'
                     values={{
-                        user: nextTyping[0]
+                        user: nextTyping[0],
                     }}
                 />
             );
@@ -63,7 +63,7 @@ export default class Typing extends PureComponent {
                     defaultMessage='{users} and {last} are typing...'
                     values={{
                         users: (nextTyping.join(', ')),
-                        last
+                        last,
                     }}
                 />
             );
@@ -96,7 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 11,
             marginBottom: 5,
             color: theme.centerChannelColor,
-            backgroundColor: 'transparent'
-        }
+            backgroundColor: 'transparent',
+        },
     };
 });

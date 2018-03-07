@@ -24,7 +24,7 @@ function makeMapStateToProps() {
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),
-            statusBarHeight: Platform.OS === 'ios' ? getStatusBarHeight(state) : STATUSBAR_HEIGHT
+            statusBarHeight: Platform.OS === 'ios' ? getStatusBarHeight(state) : STATUSBAR_HEIGHT,
         };
     };
 }
@@ -32,8 +32,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            addFileToFetchCache
-        }, dispatch)
+            addFileToFetchCache,
+        }, dispatch),
     };
 }
 

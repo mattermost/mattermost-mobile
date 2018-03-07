@@ -9,7 +9,7 @@ import {
     Platform,
     Text,
     View,
-    WebView
+    WebView,
 } from 'react-native';
 import CookieManager from 'react-native-cookies';
 
@@ -48,8 +48,8 @@ class SSO extends PureComponent {
         actions: PropTypes.shape({
             getSession: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
-            setStoreFromLocalData: PropTypes.func.isRequired
-        }).isRequired
+            setStoreFromLocalData: PropTypes.func.isRequired,
+        }).isRequired,
     };
 
     constructor(props) {
@@ -60,7 +60,7 @@ class SSO extends PureComponent {
             renderWebView: false,
             onMessage: props.ssoType === ViewTypes.GITLAB ? this.onMessage : null,
             jsCode: postMessageJS,
-            scalePagesToFit: false
+            scalePagesToFit: false,
         };
 
         switch (props.ssoType) {
@@ -90,11 +90,11 @@ class SSO extends PureComponent {
                 date: new Date(expiresAt),
                 message: intl.formatMessage({
                     id: 'mobile.session_expired',
-                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.'
+                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
                 }),
                 userInfo: {
-                    localNotification: true
-                }
+                    localNotification: true,
+                },
             });
         }
 
@@ -109,8 +109,8 @@ class SSO extends PureComponent {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent'
-            }
+                screenBackgroundColor: 'transparent',
+            },
         });
     };
 
@@ -121,7 +121,7 @@ class SSO extends PureComponent {
                 const {
                     id,
                     message,
-                    status_code: statusCode
+                    status_code: statusCode,
                 } = response;
                 if (id && message && statusCode !== 200) {
                     this.setState({error: message});
@@ -169,7 +169,7 @@ class SSO extends PureComponent {
                     const {
                         getSession,
                         handleSuccessfulLogin,
-                        setStoreFromLocalData
+                        setStoreFromLocalData,
                     } = this.props.actions;
 
                     Client4.setToken(token);
@@ -232,15 +232,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         errorContainer: {
             alignItems: 'center',
             flex: 1,
-            marginTop: 40
+            marginTop: 40,
         },
         errorText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 16,
             fontWeight: '400',
             lineHeight: 23,
-            paddingHorizontal: 30
-        }
+            paddingHorizontal: 30,
+        },
     };
 });
 
