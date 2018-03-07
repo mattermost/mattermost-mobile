@@ -17,12 +17,23 @@ export default class SlackAttachments extends PureComponent {
         postId: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func.isRequired,
+        onPermalinkPress: PropTypes.func,
         theme: PropTypes.object,
         textStyles: PropTypes.object,
     };
 
     render() {
-        const {attachments, baseTextStyle, blockStyles, navigator, onLongPress, postId, theme, textStyles} = this.props;
+        const {
+            attachments,
+            baseTextStyle,
+            blockStyles,
+            navigator,
+            onLongPress,
+            onPermalinkPress,
+            postId,
+            theme,
+            textStyles,
+        } = this.props;
         const content = [];
 
         attachments.forEach((attachment, i) => {
@@ -34,6 +45,7 @@ export default class SlackAttachments extends PureComponent {
                     key={'att_' + i}
                     navigator={navigator}
                     onLongPress={onLongPress}
+                    onPermalinkPress={onPermalinkPress}
                     postId={postId}
                     theme={theme}
                     textStyles={textStyles}

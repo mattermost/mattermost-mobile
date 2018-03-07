@@ -19,6 +19,7 @@ import {getTeamMembersByIds} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     getChannelByName,
@@ -37,6 +38,18 @@ const MAX_POST_TRIES = 3;
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch, getState) => {
         await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
+    };
+}
+
+export function loadChannelsByTeamName(teamName) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {currentTeamId} = state.entities.teams;
+        const team = getTeamByName(state, teamName);
+
+        if (team && team.id !== currentTeamId) {
+            await dispatch(fetchMyChannelsAndMembers(team.id));
+        }
     };
 }
 

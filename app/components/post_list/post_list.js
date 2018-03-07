@@ -4,10 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    FlatList,
     InteractionManager,
     Platform,
     StyleSheet,
-    FlatList,
 } from 'react-native';
 
 import ChannelIntro from 'app/components/channel_intro';
@@ -15,6 +15,7 @@ import Post from 'app/components/post';
 import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
+import {changeOpacity} from 'app/utils/theme';
 
 import DateHeader from './date_header';
 import LoadMorePosts from './load_more_posts';
@@ -30,7 +31,9 @@ const DATE_HEADER_HEIGHT = 28;
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
+            selectFocusedPostId: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
@@ -42,6 +45,7 @@ export default class PostList extends PureComponent {
         loadMore: PropTypes.func,
         measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
+        onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         postIds: PropTypes.array.isRequired,
@@ -94,13 +98,51 @@ export default class PostList extends PureComponent {
         mattermostManaged.removeEventListener(this.listenerId);
     }
 
+    handleClosePermalink = () => {
+        const {actions} = this.props;
+        actions.selectFocusedPostId('');
+        this.showingPermalink = false;
+    };
+
+    handlePermalinkPress = (postId, teamName) => {
+        this.props.actions.loadChannelsByTeamName(teamName);
+        this.showPermalinkView(postId);
+    };
+
+    showPermalinkView = (postId) => {
+        const {actions, navigator} = this.props;
+
+        actions.selectFocusedPostId(postId);
+
+        if (!this.showingPermalink) {
+            const options = {
+                screen: 'Permalink',
+                animationType: 'none',
+                backButtonTitle: '',
+                navigatorStyle: {
+                    navBarHidden: true,
+                    screenBackgroundColor: changeOpacity('#000', 0.2),
+                    modalPresentationStyle: 'overCurrentContext',
+                },
+                passProps: {
+                    isPermalink: true,
+                    onClose: this.handleClosePermalink,
+                    onPermalinkPress: this.handlePermalinkPress,
+                },
+            };
+
+            this.showingPermalink = true;
+            navigator.showModal(options);
+        }
+    };
+
     scrollToBottomOffset = () => {
         InteractionManager.runAfterInteractions(() => {
             if (this.refs.list) {
                 this.refs.list.scrollToOffset({offset: 0, animated: false});
             }
         });
-    }
+    };
 
     getMeasurementOffset = (index) => {
         const orderedKeys = Object.keys(this.itemMeasurements).sort((a, b) => {
@@ -117,13 +159,12 @@ export default class PostList extends PureComponent {
         }).slice(0, index);
 
         return orderedKeys.map((i) => this.itemMeasurements[i]).reduce((a, b) => a + b, 0);
-    }
+    };
 
     scrollListToMessageOffset = () => {
         const index = this.moreNewMessages ? this.props.postIds.length - 1 : this.newMessagesIndex;
-
         if (index !== -1) {
-            let offset = this.getMeasurementOffset(index);
+            let offset = this.getMeasurementOffset(index) - (3 * this.itemMeasurements[index]);
             const windowHeight = this.state.postListHeight;
 
             if (offset < windowHeight) {
@@ -148,7 +189,7 @@ export default class PostList extends PureComponent {
                 }
             });
         }
-    }
+    };
 
     setManagedConfig = async (config) => {
         let nextConfig = config;
@@ -191,7 +232,7 @@ export default class PostList extends PureComponent {
                 });
             }
         }
-    }
+    };
 
     renderItem = ({item, index}) => {
         if (item === START_OF_NEW_MESSAGES) {
@@ -260,6 +301,7 @@ export default class PostList extends PureComponent {
                 renderReplies={renderReplies}
                 isSearchResult={isSearchResult}
                 shouldRenderReplyButton={shouldRenderReplyButton}
+                onPermalinkPress={this.handlePermalinkPress}
                 onPress={onPostPress}
                 navigator={navigator}
                 managedConfig={managedConfig}
@@ -296,7 +338,7 @@ export default class PostList extends PureComponent {
         this.setState({
             postListHeight: height,
         });
-    }
+    };
 
     render() {
         const {

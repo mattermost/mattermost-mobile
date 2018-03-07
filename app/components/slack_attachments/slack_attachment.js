@@ -31,6 +31,7 @@ export default class SlackAttachment extends PureComponent {
         navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
         onLongPress: PropTypes.func.isRequired,
+        onPermalinkPress: PropTypes.func,
         theme: PropTypes.object,
         textStyles: PropTypes.object,
     };
@@ -103,6 +104,7 @@ export default class SlackAttachment extends PureComponent {
             baseTextStyle,
             blockStyles,
             navigator,
+            onPermalinkPress,
             textStyles,
         } = this.props;
         const fields = attachment.fields;
@@ -159,6 +161,7 @@ export default class SlackAttachment extends PureComponent {
                             value={(field.value || '')}
                             navigator={navigator}
                             onLongPress={this.props.onLongPress}
+                            onPermalinkPress={onPermalinkPress}
                         />
                     </View>
                 </View>
@@ -212,6 +215,7 @@ export default class SlackAttachment extends PureComponent {
             blockStyles,
             textStyles,
             navigator,
+            onPermalinkPress,
             theme,
         } = this.props;
 
@@ -228,6 +232,7 @@ export default class SlackAttachment extends PureComponent {
                         value={attachment.pretext}
                         navigator={navigator}
                         onLongPress={this.props.onLongPress}
+                        onPermalinkPress={onPermalinkPress}
                     />
                 </View>
             );
@@ -341,6 +346,7 @@ export default class SlackAttachment extends PureComponent {
                         value={this.state.text}
                         navigator={navigator}
                         onLongPress={this.props.onLongPress}
+                        onPermalinkPress={onPermalinkPress}
                     />
                     {moreLess}
                 </View>
