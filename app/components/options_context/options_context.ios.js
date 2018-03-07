@@ -54,7 +54,10 @@ export default class OptionsContext extends PureComponent {
     };
 
     hide = () => {
-        this.refs.toolTip.hideMenu();
+        if (this.refs.toolTip) {
+            this.refs.toolTip.hideMenu();
+        }
+
         this.setState({
             actions: this.props.actions,
         });
@@ -71,7 +74,9 @@ export default class OptionsContext extends PureComponent {
             actions: nextActions,
         });
 
-        this.refs.toolTip.showMenu();
+        if (this.refs.toolTip) {
+            this.refs.toolTip.showMenu();
+        }
     };
 
     handlePress = () => {
