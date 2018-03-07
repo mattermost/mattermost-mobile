@@ -80,7 +80,7 @@ export default class OptionsModal extends PureComponent {
         } = this.props;
 
         return (
-            <TouchableWithoutFeedback onPress={this.close}>
+            <TouchableWithoutFeedback onPress={this.handleCancel}>
                 <View style={style.wrapper}>
                     <AnimatedView style={{height: this.props.deviceHeight, left: 0, top: this.state.top, width: this.props.deviceWidth}}>
                         <OptionsModalList
