@@ -1774,7 +1774,7 @@ commonmark-react-renderer@hmhealey/commonmark-react-renderer:
 
 commonmark@hmhealey/commonmark.js:
   version "0.28.0"
-  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/f7bc747151e6d856ceffa196044112e23d04e541"
+  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/bcd754c640ed8192fa959f2416f183acf9e1cfaf"
   dependencies:
     entities "~ 1.1.1"
     mdurl "~ 1.0.1"
