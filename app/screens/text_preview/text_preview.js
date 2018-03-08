@@ -101,6 +101,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12,
             lineHeight: 18,
+            textAlign: 'right',
         },
         codeContainer: {
             flexGrow: 0,
