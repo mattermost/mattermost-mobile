@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import FileAttachmentList from 'app/components/file_attachment_list';
@@ -24,7 +24,7 @@ import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown'
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import Reactions from 'app/components/reactions';
 
-class PostBody extends PureComponent {
+export default class PostBody extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             flagPost: PropTypes.func.isRequired,
@@ -36,7 +36,6 @@ class PostBody extends PureComponent {
         hasBeenDeleted: PropTypes.bool,
         hasBeenEdited: PropTypes.bool,
         hasReactions: PropTypes.bool,
-        intl: intlShape.isRequired,
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
@@ -73,6 +72,10 @@ class PostBody extends PureComponent {
         onPress: emptyFunction,
         renderReplyBar: emptyFunction,
         toggleSelected: emptyFunction,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     handleHideUnderlay = () => {
@@ -134,6 +137,7 @@ class PostBody extends PureComponent {
     }
 
     render() { // eslint-disable-line complexity
+        const {formatMessage} = this.context.intl;
         const {
             canDelete,
             canEdit,
@@ -147,7 +151,6 @@ class PostBody extends PureComponent {
             isReplyPost,
             isSearchResult,
             isSystemMessage,
-            intl,
             managedConfig,
             message,
             navigator,
@@ -162,7 +165,6 @@ class PostBody extends PureComponent {
             theme,
             toggleSelected,
         } = this.props;
-        const {formatMessage} = intl;
         const actions = [];
         const style = getStyleSheet(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
@@ -329,5 +331,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(PostBody);
