@@ -285,6 +285,9 @@ export default class Post extends PureComponent {
             } else if (isPostEphemeral(post) || post.state === Posts.POST_DELETED) {
                 this.onRemovePost(post);
             }
+        } else if (this.refs.postBody) {
+            this.refs.postBody.getWrappedInstance().hideOptionsContext();
+            this.handleHideUnderlay();
         }
     });
 
