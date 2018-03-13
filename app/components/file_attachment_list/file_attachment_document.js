@@ -163,12 +163,12 @@ export default class FileAttachmentDocument extends PureComponent {
 
     previewTextFile = (file, delay = 2000) => {
         const {navigator, theme} = this.props;
-
+        const prefix = Platform.OS === 'android' ? 'file:/' : '';
+        const path = `${DOCUMENTS_PATH}/${file.name}`;
+        const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
         setTimeout(async () => {
-            const prefix = Platform.OS === 'android' ? 'file:/' : '';
-            const path = `${DOCUMENTS_PATH}/${file.name}`;
             try {
-                const content = await RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
+                const content = await readFile;
                 navigator.push({
                     screen: 'TextPreview',
                     title: file.name,
