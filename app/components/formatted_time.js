@@ -33,11 +33,13 @@ class FormattedTime extends React.PureComponent {
         const hour = militaryTime ? date.getHours() : (date.getHours() % 12 || 12);
         let minute = date.getMinutes();
         minute = minute >= 10 ? minute : ('0' + minute);
-        let formattedTime = '';
+        let time = '';
 
         if (!militaryTime) {
-            formattedTime = (date.getHours() >= 12 ? ' PM' : ' AM');
+            time = (date.getHours() >= 12 ? ' PM' : ' AM');
         }
+
+        const formattedTime = hour + ':' + minute + time;
 
         if (typeof children === 'function') {
             return children(formattedTime);
