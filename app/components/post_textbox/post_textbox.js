@@ -404,8 +404,8 @@ export default class PostTextbox extends PureComponent {
     };
 
     updateStatus = (status) => {
-        const {currentUserId} = this.props;
-        this.props.actions.setStatus({
+        const {actions, currentUserId} = this.props;
+        actions.setStatus({
             user_id: currentUserId,
             status,
         });

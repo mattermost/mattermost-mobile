@@ -367,10 +367,10 @@ export default class SettingsDrawer extends PureComponent {
     };
 
     setStatus = (status) => {
-        const {status: currentUserStatus} = this.props;
+        const {status: currentUserStatus, navigator} = this.props;
 
         if (currentUserStatus === General.OUT_OF_OFFICE) {
-            this.props.navigator.dismissModal({
+            navigator.dismissModal({
                 animationType: 'none',
             });
             this.closeSettingsDrawer();
