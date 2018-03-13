@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
+import {Posts} from 'mattermost-redux/constants';
 
 export function fromAutoResponder(post) {
-    return Boolean(post.type && (post.type === 'system_auto_response'));
+    return Boolean(post.type && (post.type === Posts.SYSTEM_AUTO_RESPONDER));
 }
 
 export function toTitleCase(str) {

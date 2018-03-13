@@ -40,7 +40,7 @@ export default class UserInfo extends PureComponent {
             break;
         }
 
-        if (status === 'ooo') {
+        if (status === General.OUT_OF_OFFICE) {
             i18nId = 'status_dropdown.set_ooo';
             defaultMessage = 'Out Of Office';
         }

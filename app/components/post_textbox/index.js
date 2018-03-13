@@ -40,7 +40,7 @@ function mapStateToProps(state, ownProps) {
 
     const currentUserId = getCurrentUserId(state);
     const status = getStatusForUserId(state, currentUserId);
-    const userIsOutOfOffice = status === 'ooo';
+    const userIsOutOfOffice = status === General.OUT_OF_OFFICE;
 
     return {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),

@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import {
     View,
 } from 'react-native';
+import {General} from 'mattermost-redux/constants';
 import {intlShape} from 'react-intl';
 
 import FormattedText from 'app/components/formatted_text';
@@ -45,7 +46,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         let autoReplyActive = 'false';
-        if (props.currentUserStatus === 'ooo' && notifyProps.auto_reply_active) {
+        if (props.currentUserStatus === General.OUT_OF_OFFICE && notifyProps.auto_reply_active) {
             autoReplyActive = 'true';
         }
 

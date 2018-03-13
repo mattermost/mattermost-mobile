@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import deepEqual from 'deep-equal';
 
-import {Preferences, RequestStatus} from 'mattermost-redux/constants';
+import {General, Preferences, RequestStatus} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import FormattedText from 'app/components/formatted_text';
@@ -225,8 +225,8 @@ class NotificationSettings extends PureComponent {
         const {currentUserStatus} = this.props;
         const {auto_reply_active: autoReplyActive} = notifyProps;
 
-        const enabling = currentUserStatus !== 'ooo' && autoReplyActive === 'true';
-        const disabling = currentUserStatus === 'ooo' && autoReplyActive === 'false';
+        const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoReplyActive === 'true';
+        const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoReplyActive === 'false';
 
         return enabling || disabling;
     };
