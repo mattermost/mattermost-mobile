@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {DirectChannel, GroupChannel, PublicChannel, PrivateChannel} from 'share_extension/common/icons/channel_type';
@@ -30,7 +30,7 @@ export default class ExtensionChannelItem extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    onPress = wrapWithPreventDoubleTap(() => {
+    onPress = preventDoubleTap(() => {
         const {channel, onSelectChannel} = this.props;
         requestAnimationFrame(() => {
             onSelectChannel(channel);
