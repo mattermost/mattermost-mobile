@@ -66,8 +66,10 @@ export default class ChannelPostList extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
-            this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
+        if (prevProps.channelId !== this.props.channelId) {
+            if (tracker.channelSwitch) {
+                this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
+            }
             InteractionManager.runAfterInteractions(() => {
                 this.setState({loading: false});
             });
