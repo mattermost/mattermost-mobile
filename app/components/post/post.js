@@ -7,10 +7,11 @@ import {
     Alert,
     Clipboard,
     Platform,
+    TouchableHighlight,
     View,
     ViewPropTypes,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import PostBody from 'app/components/post_body';
@@ -30,7 +31,7 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import Config from 'assets/config';
 
-class Post extends PureComponent {
+export default class Post extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReaction: PropTypes.func.isRequired,
@@ -44,7 +45,6 @@ class Post extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         highlight: PropTypes.bool,
-        intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object,
         postId: PropTypes.string.isRequired, // Used by container // eslint-disable-line no-unused-prop-types
@@ -68,6 +68,10 @@ class Post extends PureComponent {
 
     static defaultProps = {
         isSearchResult: false,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -108,7 +112,8 @@ class Post extends PureComponent {
     }
 
     goToUserProfile = () => {
-        const {intl, navigator, post, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, post, theme} = this.props;
         const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
@@ -143,7 +148,7 @@ class Post extends PureComponent {
     };
 
     handlePostDelete = () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
         const {actions, currentUserId, post} = this.props;
 
         Alert.alert(
@@ -167,7 +172,8 @@ class Post extends PureComponent {
     };
 
     handlePostEdit = () => {
-        const {intl, navigator, post, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, post, theme} = this.props;
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
             navigator.showModal({
                 screen: 'EditPost',
@@ -193,7 +199,8 @@ class Post extends PureComponent {
     }
 
     handleAddReaction = preventDoubleTap(() => {
-        const {intl, navigator, post, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, post, theme} = this.props;
 
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
             then((source) => {
@@ -278,6 +285,9 @@ class Post extends PureComponent {
             } else if (isPostEphemeral(post) || post.state === Posts.POST_DELETED) {
                 this.onRemovePost(post);
             }
+        } else if (this.refs.postBody) {
+            this.refs.postBody.getWrappedInstance().hideOptionsContext();
+            this.handleHideUnderlay();
         }
     });
 
@@ -352,7 +362,21 @@ class Post extends PureComponent {
         const permalink = `${currentTeamUrl}/pl/${postId}`;
 
         Clipboard.setString(permalink);
-    }
+    };
+
+    handleHideUnderlay = () => {
+        this.toggleSelected(false);
+    };
+
+    handleShowUnderlay = () => {
+        this.toggleSelected(true);
+    };
+
+    showOptionsContext = () => {
+        if (this.refs.postBody) {
+            this.refs.postBody.getWrappedInstance().showOptionsContext();
+        }
+    };
 
     render() {
         const {
@@ -386,12 +410,19 @@ class Post extends PureComponent {
 
         return (
             <View style={[style.container, this.props.style, highlighted, selected]}>
-                <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
+                <TouchableHighlight
+                    style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}
+                    onPress={this.handlePress}
+                    onHideUnderlay={this.handleHideUnderlay}
+                    onShowUnderlay={this.handleShowUnderlay}
+                    onLongPress={this.showOptionsContext}
+                    underlayColor='transparent'
+                >
                     <PostProfilePicture
                         onViewUserProfile={this.viewUserProfile}
                         postId={post.id}
                     />
-                </View>
+                </TouchableHighlight>
                 <View style={style.messageContainerWithReplyBar}>
                     {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
@@ -410,6 +441,7 @@ class Post extends PureComponent {
                         />
                         <View style={{maxWidth: postWidth}}>
                             <PostBody
+                                ref={'postBody'}
                                 canDelete={this.state.canDelete}
                                 canEdit={this.state.canEdit}
                                 isSearchResult={isSearchResult}
@@ -485,5 +517,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(Post);
