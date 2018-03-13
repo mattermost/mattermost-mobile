@@ -26,7 +26,7 @@ import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_
 import PaperPlane from 'app/components/paper_plane';
 import mattermostManaged from 'app/mattermost_managed';
 import {emptyFunction} from 'app/utils/general';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {
@@ -180,7 +180,7 @@ export default class ExtensionPost extends PureComponent {
         this.input = ref;
     };
 
-    goToChannels = wrapWithPreventDoubleTap(() => {
+    goToChannels = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
         const {navigation} = this.props;
         const navigateAction = NavigationActions.navigate({
@@ -197,7 +197,7 @@ export default class ExtensionPost extends PureComponent {
         navigation.dispatch(navigateAction);
     });
 
-    goToTeams = wrapWithPreventDoubleTap(() => {
+    goToTeams = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
         const {navigation} = this.props;
         const navigateAction = NavigationActions.navigate({

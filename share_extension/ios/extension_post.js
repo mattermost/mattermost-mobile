@@ -28,7 +28,7 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import {generateId, getAllowedServerMaxFileSize} from 'app/utils/file';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import Config from 'assets/config';
 
@@ -137,7 +137,7 @@ export default class ExtensionPost extends PureComponent {
         this.scrollView = ref;
     };
 
-    goToChannels = wrapWithPreventDoubleTap(() => {
+    goToChannels = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {channel, entities, team} = this.state;
 
@@ -158,7 +158,7 @@ export default class ExtensionPost extends PureComponent {
         });
     });
 
-    goToTeams = wrapWithPreventDoubleTap(() => {
+    goToTeams = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {formatMessage} = this.context.intl;
         const {team} = this.state;
@@ -179,7 +179,7 @@ export default class ExtensionPost extends PureComponent {
         });
     });
 
-    handleCancel = wrapWithPreventDoubleTap(() => {
+    handleCancel = preventDoubleTap(() => {
         this.props.onClose();
     });
 
@@ -557,7 +557,7 @@ export default class ExtensionPost extends PureComponent {
         });
     };
 
-    sendMessage = wrapWithPreventDoubleTap(async () => {
+    sendMessage = preventDoubleTap(async () => {
         const {authenticated, onClose} = this.props;
         const {channel, entities, files, value} = this.state;
         const {currentUserId} = entities.users;
