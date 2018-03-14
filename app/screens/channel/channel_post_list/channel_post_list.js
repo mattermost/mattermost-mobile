@@ -62,7 +62,9 @@ export default class ChannelPostList extends PureComponent {
         this.setState({
             visiblePostIds,
             loading: nextProps.channelId !== this.props.channelId,
-        });
+        }, () => InteractionManager.runAfterInteractions(() => {
+            this.setState({loading: false});
+        }));
     }
 
     componentDidUpdate(prevProps) {
@@ -70,9 +72,6 @@ export default class ChannelPostList extends PureComponent {
             if (tracker.channelSwitch) {
                 this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
             }
-            InteractionManager.runAfterInteractions(() => {
-                this.setState({loading: false});
-            });
         }
     }
 
