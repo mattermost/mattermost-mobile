@@ -84,7 +84,7 @@ export default class FileAttachmentList extends Component {
     };
 
     render() {
-        const {fileIds, files, isFailed} = this.props;
+        const {fileIds, files, isFailed, navigator} = this.props;
 
         let fileAttachments;
         if (!files.length && fileIds.length > 0) {
@@ -106,6 +106,7 @@ export default class FileAttachmentList extends Component {
                     onPressOut={this.handlePressOut}
                 >
                     <FileAttachment
+                        navigator={navigator}
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                         fetchCache={this.props.fetchCache}
                         file={file}
