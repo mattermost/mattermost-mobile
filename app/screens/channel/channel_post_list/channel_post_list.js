@@ -54,15 +54,15 @@ export default class ChannelPostList extends PureComponent {
         const {postIds: nextPostIds} = nextProps;
 
         let visiblePostIds = this.state.visiblePostIds;
-        let channelSwitch = prevProps.channelId !== this.props.channelId;
-        
+        const channelSwitch = nextProps.channelId !== this.props.channelId;
+
         if (nextPostIds !== this.props.postIds || nextProps.postVisibility !== this.props.postVisibility) {
             visiblePostIds = this.getVisiblePostIds(nextProps);
         }
 
         this.setState({
             visiblePostIds,
-            loading: nextProps.channelId !== this.props.channelId,
+            loading: channelSwitch
         }, () => InteractionManager.runAfterInteractions(() => {
             if (channelSwitch) {
                 this.setState({loading: false});
