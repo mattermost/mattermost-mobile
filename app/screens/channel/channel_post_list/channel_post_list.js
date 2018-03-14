@@ -62,7 +62,7 @@ export default class ChannelPostList extends PureComponent {
 
         this.setState({
             visiblePostIds,
-            loading: channelSwitch
+            loading: channelSwitch,
         }, () => InteractionManager.runAfterInteractions(() => {
             if (channelSwitch) {
                 this.setState({loading: false});
