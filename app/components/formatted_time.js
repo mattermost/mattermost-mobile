@@ -3,12 +3,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 class FormattedTime extends React.PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         value: PropTypes.any.isRequired,
         children: PropTypes.func,
         hour12: PropTypes.bool
@@ -16,16 +14,10 @@ class FormattedTime extends React.PureComponent {
 
     render() {
         const {
-            intl,
             value,
             children,
             hour12,
-            ...props
         } = this.props;
-
-        // Reflect.deleteProperty(props, 'format');
-
-        // const formattedTime = intl.formatDate(value, {...props, hour: 'numeric', minute: 'numeric'});
 
         const date = new Date(value);
         const militaryTime = !hour12;
@@ -49,4 +41,4 @@ class FormattedTime extends React.PureComponent {
     }
 }
 
-export default injectIntl(FormattedTime);
+export default FormattedTime;
