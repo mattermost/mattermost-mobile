@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
-class FormattedTime extends React.PureComponent {
+export default class FormattedTime extends React.PureComponent {
     static propTypes = {
         value: PropTypes.any.isRequired,
         children: PropTypes.func,
@@ -40,6 +40,3 @@ class FormattedTime extends React.PureComponent {
         return <Text>{formattedTime}</Text>;
     }
 }
-
-export default FormattedTime;
-
