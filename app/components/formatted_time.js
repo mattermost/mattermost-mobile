@@ -9,7 +9,7 @@ class FormattedTime extends React.PureComponent {
     static propTypes = {
         value: PropTypes.any.isRequired,
         children: PropTypes.func,
-        hour12: PropTypes.bool
+        hour12: PropTypes.bool,
     };
 
     render() {
