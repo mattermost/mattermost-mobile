@@ -12,7 +12,7 @@ import {
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import TeamIcon from 'app/components/team_icon';
+import TeamIcon from 'app/components/team_icon/team_icon';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
@@ -51,9 +51,11 @@ export default class TeamsListItem extends React.PureComponent {
                 <View style={styles.container}>
                     <View style={styles.item}>
                         <TeamIcon
-                            teamId={team.id}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
+                            teamId={team.id}
+                            team={team}
+                            theme={theme}
                         />
                         <Text
                             style={[styles.text]}
@@ -96,7 +98,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 5,
         },
         teamIconContainer: {
+            backgroundColor: theme.sidebarBg,
             marginRight: 10,
+        },
+        teamIconText: {
+            color: theme.sidebarText,
         },
         checkmarkContainer: {
             alignItems: 'flex-end',
