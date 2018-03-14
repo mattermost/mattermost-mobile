@@ -1849,6 +1849,7 @@
   "invite_member.send2": "Send Invitations",
   "invite_member.sending": " Sending",
   "invite_member.teamInviteLink": "You can also invite people using the {link}.",
+  "katex.error": "Couldn't compile your Latex code. Please review the syntax and try again.",
   "ldap_signup.find": "Find my teams",
   "ldap_signup.ldap": "Create team with AD/LDAP Account",
   "ldap_signup.length_error": "Name must be 3 or more characters up to a maximum of 15",
