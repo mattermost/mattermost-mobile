@@ -10,7 +10,7 @@ class FormattedDate extends React.PureComponent {
     static propTypes = {
         intl: intlShape.isRequired,
         value: PropTypes.any.isRequired,
-        // format: PropTypes.string,
+        format: PropTypes.string,
         children: PropTypes.func
     };
 
@@ -22,18 +22,9 @@ class FormattedDate extends React.PureComponent {
             ...props
         } = this.props;
 
-        // Reflect.deleteProperty(props, 'format');
+        Reflect.deleteProperty(props, 'format');
 
-        // const formattedDate = intl.formatDate(value, this.props);
-
-        const date = new Date(value);
-        let day = date.getDay();
-        let month = date.getMonth() + 1;
-        let year = date.getFullYear();
-        day = day < 10 ? ('0' + day) : day;
-        month = month < 10 ? ('0' + month) : month;
-
-        const formattedDate = day + '/' + month +'/' + year;
+        const formattedDate = intl.formatDate(value, this.props);
 
         if (typeof children === 'function') {
             return children(formattedDate);
