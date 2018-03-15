@@ -221,16 +221,16 @@ export default class ChannelDrawer extends Component {
             InteractionManager.runAfterInteractions(() => {
                 setChannelLoading(channel.id !== currentChannelId);
                 setChannelDisplayName(channel.display_name);
-    
+
                 handleSelectChannel(channel.id);
-                requestAnimationFrame(() => {
+                requestAnimationFrame(() => { //eslint-disable-line max-nested-callbacks
                     // mark the channel as viewed after all the frame has flushed
                     markChannelAsRead(channel.id, currentChannelId);
                     if (channel.id !== currentChannelId) {
                         markChannelAsViewed(currentChannelId);
                     }
                 });
-            });    
+            });
         });
     };
 
