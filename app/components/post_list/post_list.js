@@ -344,7 +344,7 @@ export default class PostList extends PureComponent {
         if (!this.onEndReachedCalledDuringMomentum) {
             this.props.loadMore();
             this.onEndReachedCalledDuringMomentum = true;
-          } 
+        }
     }
 
     onMomentumScrollBegin = () => {
@@ -355,7 +355,6 @@ export default class PostList extends PureComponent {
         const {
             channelId,
             highlightPostId,
-            loadMore,
             postIds,
             showLoadMore,
         } = this.props;
