@@ -105,8 +105,14 @@ export default class PostList extends PureComponent {
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId);
+        const {actions, onPermalinkPress} = this.props;
+
+        if (onPermalinkPress) {
+            onPermalinkPress(postId, true);
+        } else {
+            actions.loadChannelsByTeamName(teamName);
+            this.showPermalinkView(postId);
+        }
     };
 
     showPermalinkView = (postId) => {
@@ -119,6 +125,7 @@ export default class PostList extends PureComponent {
                 screen: 'Permalink',
                 animationType: 'none',
                 backButtonTitle: '',
+                overrideBackPress: true,
                 navigatorStyle: {
                     navBarHidden: true,
                     screenBackgroundColor: changeOpacity('#000', 0.2),
