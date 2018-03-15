@@ -215,20 +215,22 @@ export default class ChannelDrawer extends Component {
 
         tracker.channelSwitch = Date.now();
 
-        this.closeChannelDrawer();
-
         InteractionManager.runAfterInteractions(() => {
-            setChannelLoading(channel.id !== currentChannelId);
-            setChannelDisplayName(channel.display_name);
+            this.closeChannelDrawer();
 
-            handleSelectChannel(channel.id);
-            requestAnimationFrame(() => {
-                // mark the channel as viewed after all the frame has flushed
-                markChannelAsRead(channel.id, currentChannelId);
-                if (channel.id !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-            });
+            InteractionManager.runAfterInteractions(() => {
+                setChannelLoading(channel.id !== currentChannelId);
+                setChannelDisplayName(channel.display_name);
+    
+                handleSelectChannel(channel.id);
+                requestAnimationFrame(() => {
+                    // mark the channel as viewed after all the frame has flushed
+                    markChannelAsRead(channel.id, currentChannelId);
+                    if (channel.id !== currentChannelId) {
+                        markChannelAsViewed(currentChannelId);
+                    }
+                });
+            });    
         });
     };
 
