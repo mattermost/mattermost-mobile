@@ -24,7 +24,7 @@ import withLayout from './with_layout';
 
 const PostWithLayout = withLayout(Post);
 
-const INITAL_BATCH_TO_RENDER = 15;
+const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
 
