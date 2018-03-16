@@ -41,7 +41,7 @@ export default class MarkdownListItem extends PureComponent {
                         {bullet}
                     </Text>
                 </View>
-                <View>
+                <View style={style.contents}>
                     {this.props.children}
                 </View>
             </View>
@@ -50,12 +50,16 @@ export default class MarkdownListItem extends PureComponent {
 }
 
 const style = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
     bullet: {
         alignItems: 'flex-end',
         marginRight: 5,
     },
-    container: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
+    contents: {
+        flex: 1,
     },
 });
