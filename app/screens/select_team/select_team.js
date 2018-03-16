@@ -7,7 +7,6 @@ import {
     Alert,
     FlatList,
     InteractionManager,
-    StyleSheet,
     Text,
     TouchableOpacity,
     View,
@@ -261,7 +260,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         line: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             width: '100%',
-            height: StyleSheet.hairlineWidth,
+            height: 1,
         },
         teamWrapper: {
             marginTop: 20,
@@ -275,8 +274,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         teamIconContainer: {
             width: 40,
             height: 40,
+            backgroundColor: theme.sidebarBg,
         },
         teamIconText: {
+            color: theme.sidebarText,
             fontSize: 18,
         },
         noTeam: {
