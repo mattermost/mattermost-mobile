@@ -96,7 +96,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 5,
         },
         teamIconContainer: {
+            backgroundColor: theme.sidebarBg,
             marginRight: 10,
+        },
+        teamIconText: {
+            color: theme.sidebarText,
         },
         checkmarkContainer: {
             alignItems: 'flex-end',
