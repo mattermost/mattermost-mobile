@@ -5,10 +5,25 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {flagPost, unflagPost} from 'mattermost-redux/actions/posts';
-import {Posts} from 'mattermost-redux/constants';
+import {
+    General,
+    Posts,
+} from 'mattermost-redux/constants';
+import {
+    getCurrentChannel,
+    getMyCurrentChannelMembership,
+} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isEdited, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+
+import {canManageMembers} from 'mattermost-redux/utils/channel_utils';
+import {
+    isEdited,
+    isPostEphemeral,
+    isSystemMessage,
+} from 'mattermost-redux/utils/post_utils';
 
 import PostBody from './post_body';
 
@@ -26,7 +41,35 @@ function mapStateToProps(state, ownProps) {
         isPending = false;
     }
 
+    const isEphemeralPost = isPostEphemeral(post);
+    const isSystemPost = isSystemMessage(post);
+
+    const channel = getCurrentChannel(state);
+    const user = getCurrentUser(state);
+    const teamMember = getCurrentTeamMembership(state);
+    const channelMember = getMyCurrentChannelMembership(state);
+    const {config, license} = state.entities.general;
+
+    const isUserCanManageMembers = canManageMembers(channel, user, teamMember, channelMember, config, license);
+
+    let isPostAddChannelMember = false;
+    if (
+        (channel.type === General.PRIVATE_CHANNEL || channel.type === General.OPEN_CHANNEL) &&
+        isUserCanManageMembers &&
+        isEphemeralPost &&
+        post.props &&
+        post.props.add_channel_member
+    ) {
+        isPostAddChannelMember = true;
+    }
+
+    let addMemberProps = {};
+    if (post.props && post.props.add_channel_member) {
+        addMemberProps = post.props.add_channel_member;
+    }
+
     return {
+        addMemberProps,
         postProps: post.props || {},
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,
@@ -34,8 +77,9 @@ function mapStateToProps(state, ownProps) {
         hasReactions: post.has_reactions,
         isFailed,
         isPending,
-        isPostEphemeral: isPostEphemeral(post),
-        isSystemMessage: isSystemMessage(post),
+        isPostAddChannelMember,
+        isPostEphemeral: isEphemeralPost,
+        isSystemMessage: isSystemPost,
         message: post.message,
         theme: getTheme(state),
     };
