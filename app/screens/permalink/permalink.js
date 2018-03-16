@@ -86,11 +86,13 @@ export default class Permalink extends PureComponent {
         super(props);
 
         const {postIds, channelName} = props;
-        let loading = false;
+        let loading = true;
 
         if (postIds && postIds.length >= 10) {
-            loading = true;
+            loading = false;
         }
+
+        props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
         this.state = {
             title: channelName,
@@ -101,7 +103,7 @@ export default class Permalink extends PureComponent {
     }
 
     componentWillMount() {
-        if (!this.state.loading) {
+        if (this.state.loading) {
             this.loadPosts(this.props);
         }
     }
@@ -112,11 +114,11 @@ export default class Permalink extends PureComponent {
         }
 
         if (this.props.focusedPostId !== nextProps.focusedPostId) {
-            this.setState({loading: false});
+            this.setState({loading: true});
             if (nextProps.postIds && nextProps.postIds.length < 10) {
                 this.loadPosts(nextProps);
             } else {
-                this.setState({loading: true});
+                this.setState({loading: false});
             }
         }
     }
@@ -158,6 +160,16 @@ export default class Permalink extends PureComponent {
                 if (onClose) {
                     onClose();
                 }
+            });
+        }
+    };
+
+    handlePress = () => {
+        const {channelId, channelName} = this.props;
+
+        if (this.refs.view) {
+            this.refs.view.growOut().then(() => {
+                this.jumpToChannel(channelId, channelName);
             });
         }
     };
@@ -210,16 +222,6 @@ export default class Permalink extends PureComponent {
         }
     };
 
-    handlePress = () => {
-        const {channelId, channelName} = this.props;
-
-        if (this.refs.view) {
-            this.refs.view.growOut().then(() => {
-                this.jumpToChannel(channelId, channelName);
-            });
-        }
-    };
-
     loadPosts = async (props) => {
         const {intl} = this.context;
         const {actions, channelId, currentUserId, focusedPostId, isPermalink, postIds} = props;
@@ -261,11 +263,21 @@ export default class Permalink extends PureComponent {
             actions.getPostsAfter(focusChannelId, focusedPostId, 0, 10),
         ]);
 
-        this.setState({loading: true});
+        this.setState({loading: false});
+    };
+
+    onNavigatorEvent = (event) => {
+        switch (event.id) {
+        case 'backPress':
+            this.handleClose();
+            break;
+        default:
+            break;
+        }
     };
 
     retry = () => {
-        this.setState({loading: false, error: null, retry: false});
+        this.setState({loading: true, error: null, retry: false});
         this.loadPosts(this.props);
     };
 
@@ -298,6 +310,8 @@ export default class Permalink extends PureComponent {
                 </View>
             );
         } else if (loading) {
+            postList = <Loading/>;
+        } else {
             postList = (
                 <PostList
                     highlightPostId={focusedPostId}
@@ -313,8 +327,6 @@ export default class Permalink extends PureComponent {
                     navigator={navigator}
                 />
             );
-        } else {
-            postList = <Loading/>;
         }
 
         return (
@@ -361,7 +373,7 @@ export default class Permalink extends PureComponent {
                         <View style={[style.postList, error ? style.bottom : null]}>
                             {postList}
                         </View>
-                        {!error && loading &&
+                        {!error && !loading &&
                         <TouchableOpacity
                             style={[style.footer, style.bottom]}
                             onPress={this.handlePress}

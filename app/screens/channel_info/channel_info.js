@@ -263,6 +263,7 @@ export default class ChannelInfo extends PureComponent {
                 screen: 'Permalink',
                 animationType: 'none',
                 backButtonTitle: '',
+                overrideBackPress: true,
                 navigatorStyle: {
                     navBarHidden: true,
                     screenBackgroundColor: changeOpacity('#000', 0.2),
