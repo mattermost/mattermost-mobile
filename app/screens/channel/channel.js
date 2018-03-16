@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    AppState,
     Platform,
     View,
 } from 'react-native';
@@ -66,6 +67,10 @@ class Channel extends PureComponent {
     }
 
     componentDidMount() {
+        if (Platform.OS === 'android') {
+            AppState.addEventListener('change', this.handleAppStateChange);
+        }
+
         if (tracker.initialLoad) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
@@ -94,6 +99,10 @@ class Channel extends PureComponent {
 
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         this.networkListener.removeEventListener();
+
+        if (Platform.OS === 'android') {
+            AppState.removeEventListener('change', this.handleAppStateChange);
+        }
 
         closeWebSocket();
         stopPeriodicStatusUpdates();
@@ -140,6 +149,25 @@ class Channel extends PureComponent {
             navigator.push(options);
         }
     });
+
+    handleAppStateChange = async (appState) => {
+        const {actions} = this.props;
+        const {
+            closeWebSocket,
+            initWebSocket,
+            startPeriodicStatusUpdates,
+            stopPeriodicStatusUpdates,
+        } = actions;
+        const isActive = appState === 'active';
+
+        if (isActive) {
+            initWebSocket(Platform.OS);
+            startPeriodicStatusUpdates();
+        } else {
+            closeWebSocket(true);
+            stopPeriodicStatusUpdates();
+        }
+    };
 
     handleConnectionChange = (isConnected) => {
         const {actions} = this.props;
