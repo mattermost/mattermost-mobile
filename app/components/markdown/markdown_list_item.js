@@ -51,7 +51,6 @@ export default class MarkdownListItem extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        flex: 1,
         flexDirection: 'row',
         alignItems: 'flex-start',
     },
