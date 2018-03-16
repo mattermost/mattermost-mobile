@@ -47,8 +47,8 @@ export default class FileAttachmentIcon extends PureComponent {
     static defaultProps = {
         iconHeight: 60,
         iconWidth: 60,
-        wrapperHeight: 100,
-        wrapperWidth: 100,
+        wrapperHeight: 80,
+        wrapperWidth: 80,
     };
 
     getFileIconPath(file) {
@@ -63,7 +63,7 @@ export default class FileAttachmentIcon extends PureComponent {
         return (
             <View style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}>
                 <Image
-                    style={{height: iconHeight, width: iconWidth}}
+                    style={[styles.icon, {height: iconHeight, width: iconWidth}]}
                     source={source}
                     defaultSource={genericIcon}
                 />
@@ -77,5 +77,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#fff',
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 2,
+    },
+    icon: {
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 2,
     },
 });

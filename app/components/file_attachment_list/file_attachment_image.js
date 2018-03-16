@@ -45,16 +45,16 @@ export default class FileAttachmentImage extends PureComponent {
 
     static defaultProps = {
         fadeInOnLoad: false,
-        imageHeight: 100,
+        imageHeight: 80,
         imageSize: IMAGE_SIZE.Preview,
-        imageWidth: 100,
+        imageWidth: 80,
         loading: false,
         loadingBackgroundColor: '#fff',
         resizeMode: 'cover',
         resizeMethod: 'resize',
         wrapperBackgroundColor: '#fff',
-        wrapperHeigh: 100,
-        wrapperWidth: 100,
+        wrapperHeigh: 80,
+        wrapperWidth: 80,
     };
 
     state = {
@@ -163,9 +163,9 @@ export default class FileAttachmentImage extends PureComponent {
         let width = imageWidth;
         let imageStyle = {height, width};
         if (imageSize === IMAGE_SIZE.Preview) {
-            height = 100;
+            height = 80;
             width = this.calculateNeededWidth(file.height, file.width, height);
-            imageStyle = {height, width, position: 'absolute', top: 0, left: 0};
+            imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
         }
 
         return (
@@ -193,6 +193,8 @@ const style = StyleSheet.create({
     fileImageWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
+        borderBottomLeftRadius: 2,
+        borderTopLeftRadius: 2,
     },
     loaderContainer: {
         position: 'absolute',

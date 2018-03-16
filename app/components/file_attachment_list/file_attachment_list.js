@@ -5,7 +5,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Keyboard,
-    View,
+    ScrollView,
     TouchableOpacity,
 } from 'react-native';
 
@@ -17,6 +17,7 @@ import FileAttachment from './file_attachment';
 export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         fetchCache: PropTypes.object.isRequired,
         fileIds: PropTypes.array.isRequired,
         files: PropTypes.array.isRequired,
@@ -84,7 +85,7 @@ export default class FileAttachmentList extends Component {
     };
 
     render() {
-        const {fileIds, files, isFailed, navigator} = this.props;
+        const {deviceWidth, fileIds, files, isFailed, navigator} = this.props;
 
         let fileAttachments;
         if (!files.length && fileIds.length > 0) {
@@ -92,6 +93,7 @@ export default class FileAttachmentList extends Component {
                 <FileAttachment
                     key={id}
                     addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                    deviceWidth={deviceWidth}
                     fetchCache={this.props.fetchCache}
                     file={{loading: true}}
                     theme={this.props.theme}
@@ -106,6 +108,7 @@ export default class FileAttachmentList extends Component {
                     onPressOut={this.handlePressOut}
                 >
                     <FileAttachment
+                        deviceWidth={deviceWidth}
                         navigator={navigator}
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                         fetchCache={this.props.fetchCache}
@@ -119,9 +122,13 @@ export default class FileAttachmentList extends Component {
         }
 
         return (
-            <View style={[{flex: 1}, (isFailed && {opacity: 0.5})]}>
+            <ScrollView
+                horizontal={true}
+                scrollEnabled={fileIds.length > 1}
+                style={[{flex: 1}, (isFailed && {opacity: 0.5})]}
+            >
                 {fileAttachments}
-            </View>
+            </ScrollView>
         );
     }
 }
