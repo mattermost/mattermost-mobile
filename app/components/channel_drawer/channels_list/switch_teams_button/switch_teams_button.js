@@ -70,6 +70,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
                             size={12}
                             style={styles.switcherArrow}
                         />
+                        <View style={styles.switcherDivider}/>
                         <TeamIcon
                             teamId={currentTeamId}
                             styleContainer={styles.teamIconContainer}
@@ -99,6 +100,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         switcherArrow: {
             color: theme.sidebarHeaderBg,
             marginRight: 3,
+        },
+        switcherDivider: {
+            backgroundColor: theme.sidebarHeaderBg,
+            height: 15,
+            marginHorizontal: 6,
+            width: 1,
         },
         teamIconContainer: {
             width: 26,
