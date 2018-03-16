@@ -46,7 +46,7 @@ export default class FileAttachment extends PureComponent {
         }
 
         return (
-            <View style={{flex: 1, justifyContent: 'center'}}>
+            <View style={style.attachmentContainer}>
                 <Text
                     numberOfLines={4}
                     style={style.fileName}
@@ -120,6 +120,10 @@ export default class FileAttachment extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        attachmentContainer: {
+            flex: 1,
+            justifyContent: 'center',
+        },
         downloadIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
             marginRight: 5,

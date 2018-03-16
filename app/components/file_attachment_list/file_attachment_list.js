@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     ScrollView,
+    StyleSheet,
     TouchableOpacity,
 } from 'react-native';
 
@@ -125,10 +126,19 @@ export default class FileAttachmentList extends Component {
             <ScrollView
                 horizontal={true}
                 scrollEnabled={fileIds.length > 1}
-                style={[{flex: 1}, (isFailed && {opacity: 0.5})]}
+                style={[styles.flex, (isFailed && styles.failed)]}
             >
                 {fileAttachments}
             </ScrollView>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    failed: {
+        opacity: 0.5,
+    },
+});
