@@ -19,6 +19,7 @@ import FileAttachmentImage from './file_attachment_image';
 export default class FileAttachment extends PureComponent {
     static propTypes = {
         addFileToFetchCache: PropTypes.func.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object.isRequired,
         onInfoPress: PropTypes.func,
@@ -45,7 +46,7 @@ export default class FileAttachment extends PureComponent {
         }
 
         return (
-            <View>
+            <View style={style.attachmentContainer}>
                 <Text
                     numberOfLines={4}
                     style={style.fileName}
@@ -62,7 +63,7 @@ export default class FileAttachment extends PureComponent {
     }
 
     render() {
-        const {file, onInfoPress, theme, navigator} = this.props;
+        const {deviceWidth, file, onInfoPress, theme, navigator} = this.props;
         const style = getStyleSheet(theme);
 
         let mime = file.mime_type;
@@ -101,8 +102,10 @@ export default class FileAttachment extends PureComponent {
             );
         }
 
+        const width = deviceWidth * 0.72;
+
         return (
-            <View style={style.fileWrapper}>
+            <View style={[style.fileWrapper, {width}]}>
                 {fileAttachmentComponent}
                 <TouchableOpacity
                     onPress={onInfoPress}
@@ -117,6 +120,10 @@ export default class FileAttachment extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        attachmentContainer: {
+            flex: 1,
+            justifyContent: 'center',
+        },
         downloadIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
             marginRight: 5,
@@ -148,8 +155,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             marginTop: 10,
+            marginRight: 10,
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRadius: 2,
+            maxWidth: 350,
         },
         circularProgress: {
             width: '100%',

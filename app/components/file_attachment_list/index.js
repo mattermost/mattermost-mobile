@@ -5,9 +5,11 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
 import {addFileToFetchCache} from 'app/actions/views/file_preview';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getDimensions} from 'app/selectors/device';
 
 import FileAttachmentList from './file_attachment_list';
 
@@ -15,6 +17,7 @@ function makeMapStateToProps() {
     const getFilesForPost = makeGetFilesForPost();
     return function mapStateToProps(state, ownProps) {
         return {
+            ...getDimensions(state),
             fetchCache: state.views.fetchCache,
             files: getFilesForPost(state, ownProps.postId),
             theme: getTheme(state),

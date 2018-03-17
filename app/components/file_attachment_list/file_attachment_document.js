@@ -49,10 +49,10 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     static defaultProps = {
-        iconHeight: 65,
-        iconWidth: 65,
-        wrapperHeight: 100,
-        wrapperWidth: 100,
+        iconHeight: 50,
+        iconWidth: 50,
+        wrapperHeight: 80,
+        wrapperWidth: 80,
     };
 
     static contextTypes = {
