@@ -290,23 +290,21 @@ export default class PostBody extends PureComponent {
         return (
             <View style={style.messageContainerWithReplyBar}>
                 {renderReplyBar()}
-                <View style={{flex: 1, flexDirection: 'row'}}>
-                    <View style={{flex: 1}}>
-                        {body}
-                    </View>
-                    {isFailed &&
-                    <TouchableOpacity
-                        onPress={onFailedPostPress}
-                        style={{justifyContent: 'center', marginLeft: 12}}
-                    >
-                        <Icon
-                            name='ios-information-circle-outline'
-                            size={26}
-                            color={theme.errorTextColor}
-                        />
-                    </TouchableOpacity>
-                    }
+                <View style={style.messageContainer}>
+                    {body}
                 </View>
+                {isFailed &&
+                <TouchableOpacity
+                    onPress={onFailedPostPress}
+                    style={style.failedToSendIndicator}
+                >
+                    <Icon
+                        name='ios-information-circle-outline'
+                        size={26}
+                        color={theme.errorTextColor}
+                    />
+                </TouchableOpacity>
+                }
             </View>
         );
     }
@@ -322,6 +320,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         messageContainerWithReplyBar: {
             flexDirection: 'row',
             flex: 1,
+        },
+        messageContainer: {
+            flex: 1,
+        },
+        failedToSendIndicator: {
+            justifyContent: 'center',
+            marginLeft: 12,
         },
         pendingPost: {
             opacity: 0.5,
