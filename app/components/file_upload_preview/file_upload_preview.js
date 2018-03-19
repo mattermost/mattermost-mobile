@@ -53,6 +53,10 @@ export default class FileUploadPreview extends PureComponent {
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                         fetchCache={this.props.fetchCache}
                         file={file}
+                        imageHeight={100}
+                        imageWidth={100}
+                        wrapperHeight={100}
+                        wrapperWidth={100}
                     />
                 );
             } else {
@@ -60,6 +64,10 @@ export default class FileUploadPreview extends PureComponent {
                     <FileAttachmentIcon
                         file={file}
                         theme={this.props.theme}
+                        imageHeight={100}
+                        imageWidth={100}
+                        wrapperHeight={100}
+                        wrapperWidth={100}
                     />
                 );
             }
@@ -198,7 +206,7 @@ const style = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-        marginBottom: 12,
+        marginBottom: 10,
     },
     scrollViewContent: {
         alignItems: 'flex-end',
@@ -207,6 +215,6 @@ const style = StyleSheet.create({
     warning: {
         color: 'white',
         marginLeft: 14,
-        marginBottom: 12,
+        marginBottom: 10,
     },
 });
