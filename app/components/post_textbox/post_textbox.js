@@ -40,6 +40,7 @@ export default class PostTextbox extends PureComponent {
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool.isRequired,
+        checkMessageLength: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
         files: PropTypes.array,
@@ -102,7 +103,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     canSend = () => {
-        const {files, uploadFileRequestStatus} = this.props;
+        const {checkMessageLength, files, uploadFileRequestStatus} = this.props;
         const {value} = this.state;
         const valueLength = value.trim().length;
 
@@ -115,10 +116,18 @@ export default class PostTextbox extends PureComponent {
             });
 
             const loadingComplete = filesLoading.length === 0;
-            return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
+            if (checkMessageLength) {
+                return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
+            }
+
+            return uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
         }
 
-        return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
+        if (checkMessageLength) {
+            return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
+        }
+
+        return valueLength > 0;
     };
 
     changeDraft = (text) => {
@@ -137,9 +146,10 @@ export default class PostTextbox extends PureComponent {
 
     checkMessageLength = (value) => {
         const {intl} = this.context;
+        const {checkMessageLength} = this.props;
         const valueLength = value.trim().length;
 
-        if (valueLength > MAX_MESSAGE_LENGTH) {
+        if (valueLength > MAX_MESSAGE_LENGTH && checkMessageLength) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.message_length.title',

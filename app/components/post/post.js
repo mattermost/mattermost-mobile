@@ -60,6 +60,7 @@ export default class Post extends PureComponent {
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
+        showLongPost: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         onReply: PropTypes.func,
@@ -68,6 +69,7 @@ export default class Post extends PureComponent {
 
     static defaultProps = {
         isSearchResult: false,
+        showLongPost: false,
     };
 
     static contextTypes = {
@@ -277,12 +279,13 @@ export default class Post extends PureComponent {
         const {
             onPress,
             post,
+            showLongPost,
         } = this.props;
 
         if (!getToolTipVisible()) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
                 onPress(post);
-            } else if (isPostEphemeral(post) || post.state === Posts.POST_DELETED) {
+            } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED) && !showLongPost) {
                 this.onRemovePost(post);
             }
         } else if (this.refs.postBody) {
@@ -389,6 +392,7 @@ export default class Post extends PureComponent {
             renderReplies,
             shouldRenderReplyButton,
             showFullDate,
+            showLongPost,
             theme,
             managedConfig,
             isFlagged,
@@ -444,6 +448,7 @@ export default class Post extends PureComponent {
                                 ref={'postBody'}
                                 canDelete={this.state.canDelete}
                                 canEdit={this.state.canEdit}
+                                highlight={highlight}
                                 isSearchResult={isSearchResult}
                                 navigator={this.props.navigator}
                                 onAddReaction={this.handleAddReaction}
@@ -460,6 +465,7 @@ export default class Post extends PureComponent {
                                 managedConfig={managedConfig}
                                 isFlagged={isFlagged}
                                 isReplyPost={isReplyPost}
+                                showLongPost={showLongPost}
                             />
                         </View>
                     </View>
