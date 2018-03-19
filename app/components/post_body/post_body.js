@@ -35,7 +35,6 @@ export default class PostBody extends PureComponent {
             flagPost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
         }).isRequired,
-        addMemberProps: PropTypes.object,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
         fileIds: PropTypes.array,
@@ -343,7 +342,6 @@ export default class PostBody extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {
-            addMemberProps,
             hasBeenDeleted,
             hasBeenEdited,
             isFailed,
@@ -396,9 +394,9 @@ export default class PostBody extends PureComponent {
                             onPermalinkPress={onPermalinkPress}
                             onPostPress={onPress}
                             textStyles={textStyles}
-                            postId={addMemberProps.post_id}
-                            userIds={addMemberProps.user_ids}
-                            usernames={addMemberProps.usernames}
+                            postId={postProps.add_channel_member.post_id}
+                            userIds={postProps.add_channel_member.user_ids}
+                            usernames={postProps.add_channel_member.usernames}
                         />
                     </View>
                 </View>

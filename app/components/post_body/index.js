@@ -63,13 +63,7 @@ function mapStateToProps(state, ownProps) {
         isPostAddChannelMember = true;
     }
 
-    let addMemberProps = {};
-    if (post.props && post.props.add_channel_member) {
-        addMemberProps = post.props.add_channel_member;
-    }
-
     return {
-        addMemberProps,
         postProps: post.props || {},
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,

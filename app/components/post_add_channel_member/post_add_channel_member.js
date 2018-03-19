@@ -3,10 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-    defineMessages,
-    intlShape,
-} from 'react-intl';
+import {intlShape} from 'react-intl';
 
 import {Text} from 'react-native';
 
@@ -25,7 +22,7 @@ export default class PostAddChannelMember extends React.PureComponent {
             sendEphemeralPost: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
-        channelType: PropTypes.string.isRequired,
+        channelType: PropTypes.string,
         post: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
         userIds: PropTypes.array.isRequired,
@@ -60,15 +57,11 @@ export default class PostAddChannelMember extends React.PureComponent {
                 actions.addChannelMember(post.channel_id, userId);
 
                 if (post.root_id) {
-                    const holder = defineMessages({
-                        message: {
+                    const message = formatMessage(
+                        {
                             id: 'api.channel.add_member.added',
                             defaultMessage: '{addedUsername} added to the channel by {username}.',
                         },
-                    });
-
-                    const message = formatMessage(
-                        holder.message,
                         {
                             username: currentUser.username,
                             addedUsername: usernames[index],
