@@ -19,7 +19,7 @@ export default class PostAddChannelMember extends React.PureComponent {
         actions: PropTypes.shape({
             addChannelMember: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
-            sendEphemeralPost: PropTypes.func.isRequired,
+            sendAddToChannelEphemeralPost: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
         channelType: PropTypes.string,
@@ -65,10 +65,10 @@ export default class PostAddChannelMember extends React.PureComponent {
                         {
                             username: currentUser.username,
                             addedUsername: usernames[index],
-                        },
+                        }
                     );
 
-                    actions.sendEphemeralPost(currentUser, usernames[index], message, post.channel_id, post.root_id);
+                    actions.sendAddToChannelEphemeralPost(currentUser, usernames[index], message, post.channel_id, post.root_id);
                 }
             });
 
