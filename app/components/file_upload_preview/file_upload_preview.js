@@ -7,14 +7,15 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
-    TouchableOpacity,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
 import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
+
+import FileUploadRetry from './file_upload_retry';
+import FileUploadRemove from './file_upload_remove';
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
@@ -79,29 +80,18 @@ export default class FileUploadPreview extends PureComponent {
                     <View style={style.previewShadow}>
                         {filePreviewComponent}
                         {file.failed &&
-                        <TouchableOpacity
-                            style={style.failed}
-                            onPress={() => this.handleRetryFileUpload(file)}
-                        >
-                            <Icon
-                                name='md-refresh'
-                                size={50}
-                                color='#fff'
-                            />
-                        </TouchableOpacity>
+                        <FileUploadRetry
+                            file={file}
+                            onPress={this.handleRetryFileUpload}
+                        />
                         }
                     </View>
-                    <TouchableOpacity
-                        style={style.removeButtonWrapper}
-                        onPress={() => this.props.actions.handleRemoveFile(file.clientId, this.props.channelId, this.props.rootId)}
-                    >
-                        <Icon
-                            name='md-close'
-                            color='#fff'
-                            size={18}
-                            style={style.removeButtonIcon}
-                        />
-                    </TouchableOpacity>
+                    <FileUploadRemove
+                        channelId={this.props.channelId}
+                        clientId={file.clientId}
+                        onPress={this.props.actions.handleRemoveFile}
+                        rootId={this.props.rootId}
+                    />
                 </View>
             );
         });
@@ -151,14 +141,6 @@ const style = StyleSheet.create({
         position: 'absolute',
         width: '100%',
     },
-    failed: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        position: 'absolute',
-        height: '100%',
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     preview: {
         justifyContent: 'flex-end',
         height: 115,
@@ -180,29 +162,6 @@ const style = StyleSheet.create({
                 },
             },
         }),
-    },
-    removeButtonIcon: Platform.select({
-        ios: {
-            marginTop: 2,
-        },
-        android: {
-            marginLeft: 1,
-        },
-    }),
-    removeButtonWrapper: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'absolute',
-        overflow: 'hidden',
-        elevation: 11,
-        top: 7,
-        right: 7,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#000',
-        borderWidth: 1,
-        borderColor: '#fff',
     },
     scrollView: {
         flex: 1,
