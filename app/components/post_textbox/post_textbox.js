@@ -17,7 +17,6 @@ import Typing from './components/typing';
 
 const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
 const MAX_CONTENT_HEIGHT = 100;
-const MAX_MESSAGE_LENGTH = 4000;
 const MAX_FILE_COUNT = 5;
 const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;
 
@@ -40,10 +39,10 @@ export default class PostTextbox extends PureComponent {
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool.isRequired,
-        checkMessageLength: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
         files: PropTypes.array,
+        maxMessageLength: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -103,7 +102,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     canSend = () => {
-        const {checkMessageLength, files, uploadFileRequestStatus} = this.props;
+        const {files, maxMessageLength, uploadFileRequestStatus} = this.props;
         const {value} = this.state;
         const valueLength = value.trim().length;
 
@@ -116,18 +115,10 @@ export default class PostTextbox extends PureComponent {
             });
 
             const loadingComplete = filesLoading.length === 0;
-            if (checkMessageLength) {
-                return valueLength <= MAX_MESSAGE_LENGTH && uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
-            }
-
-            return uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
+            return valueLength <= maxMessageLength && uploadFileRequestStatus !== RequestStatus.STARTED && loadingComplete;
         }
 
-        if (checkMessageLength) {
-            return valueLength > 0 && valueLength <= MAX_MESSAGE_LENGTH;
-        }
-
-        return valueLength > 0;
+        return valueLength > 0 && valueLength <= maxMessageLength;
     };
 
     changeDraft = (text) => {
@@ -146,10 +137,10 @@ export default class PostTextbox extends PureComponent {
 
     checkMessageLength = (value) => {
         const {intl} = this.context;
-        const {checkMessageLength} = this.props;
+        const {maxMessageLength} = this.props;
         const valueLength = value.trim().length;
 
-        if (valueLength > MAX_MESSAGE_LENGTH && checkMessageLength) {
+        if (valueLength > maxMessageLength) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.message_length.title',
@@ -159,7 +150,7 @@ export default class PostTextbox extends PureComponent {
                     id: 'mobile.message_length.message',
                     defaultMessage: 'Your current message is too long. Current character count: {max}/{count}',
                 }, {
-                    max: MAX_MESSAGE_LENGTH,
+                    max: maxMessageLength,
                     count: valueLength,
                 })
             );
