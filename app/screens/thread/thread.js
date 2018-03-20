@@ -14,6 +14,7 @@ import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import DeletedPost from 'app/components/deleted_post';
 
 class Thread extends PureComponent {
     static propTypes = {
@@ -81,6 +82,19 @@ class Thread extends PureComponent {
         }
     };
 
+    hasRootPost = () => {
+        return this.props.postIds.includes(this.props.rootId);
+    }
+
+    renderFooter = () => {
+        if (!this.hasRootPost()) {
+            return (
+                <DeletedPost theme={this.props.theme}/>
+            );
+        }
+        return null;
+    }
+
     render() {
         const {
             channelId,
@@ -104,17 +118,19 @@ class Thread extends PureComponent {
                     keyboardVerticalOffset={65}
                 >
                     <PostList
+                        renderFooter={this.renderFooter}
                         indicateNewMessages={true}
                         postIds={postIds}
                         currentUserId={myMember.user_id}
                         lastViewedAt={this.state.lastViewedAt}
                         navigator={navigator}
                     />
+                    {this.hasRootPost() &&
                     <PostTextbox
                         rootId={rootId}
                         channelId={channelId}
                         navigator={navigator}
-                    />
+                    />}
                 </KeyboardLayout>
             </SafeAreaView>
         );

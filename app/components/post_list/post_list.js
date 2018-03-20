@@ -53,6 +53,7 @@ export default class PostList extends PureComponent {
         showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
         theme: PropTypes.object.isRequired,
+        renderFooter: PropTypes.func,
     };
 
     static defaultProps = {
@@ -319,6 +320,10 @@ export default class PostList extends PureComponent {
     };
 
     renderFooter = () => {
+        if (this.props.renderFooter) {
+            return this.props.renderFooter();
+        }
+
         if (!this.props.channelId) {
             return null;
         }

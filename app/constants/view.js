@@ -65,6 +65,8 @@ const ViewTypes = keyMirror({
     ANNOUNCEMENT_BANNER: null,
 
     INCREMENT_EMOJI_PICKER_PAGE: null,
+
+    PROFILE_PICTURE_SIZE: null,
 });
 
 export default {
@@ -81,4 +83,5 @@ export default {
     IOS_TOP_PORTRAIT: 64,
     IOSX_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
+    PROFILE_PICTURE_SIZE: 32,
 };
