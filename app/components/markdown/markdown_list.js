@@ -1,9 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View} from 'react-native';
+import React, {PureComponent} from 'react';
 
 export default class MarkdownList extends PureComponent {
     static propTypes = {
@@ -33,15 +32,9 @@ export default class MarkdownList extends PureComponent {
         });
 
         return (
-            <View style={style.indent}>
+            <React.Fragment>
                 {children}
-            </View>
+            </React.Fragment>
         );
     }
 }
-
-const style = StyleSheet.create({
-    indent: {
-        marginRight: 20,
-    },
-});
