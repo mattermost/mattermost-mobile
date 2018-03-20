@@ -25,9 +25,8 @@ import PostBodyAdditionalContent from 'app/components/post_body_additional_conte
 import {emptyFunction} from 'app/utils/general';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
 import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import Reactions from 'app/components/reactions';
-import {changeOpacity} from '../../utils/theme';
 
 export default class PostBody extends PureComponent {
     static propTypes = {
