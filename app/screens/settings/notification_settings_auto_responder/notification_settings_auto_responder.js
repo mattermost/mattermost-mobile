@@ -94,22 +94,12 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         } = this.state;
         const style = getStyleSheet(theme);
 
-        let autoResponderActiveLabel;
-        if (autoResponderActive === 'true') {
-            autoResponderActiveLabel = (
-                <FormattedText
-                    id='mobile.notification_settings.auto_responder.enabled'
-                    defaultMessage='Enabled'
-                />
-            );
-        } else {
-            autoResponderActiveLabel = (
-                <FormattedText
-                    id='mobile.notification_settings.auto_responder.disabled'
-                    defaultMessage='Disabled'
-                />
-            );
-        }
+        const autoResponderActiveLabel = (
+            <FormattedText
+                id='mobile.notification_settings.auto_responder.enabled'
+                defaultMessage='Enabled'
+            />
+        );
 
         return (
             <View style={style.container}>

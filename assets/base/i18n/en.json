@@ -2404,7 +2404,6 @@
   "mobile.notification_settings.auto_responder": "Auto Responder",
   "mobile.notification_settings.ooo_auto_responder": "Out Of Office: Auto Responder",
   "mobile.notification_settings.auto_responder.enabled": "Enabled",
-  "mobile.notification_settings.auto_responder.disabled": "Diabled",
   "mobile.notification_settings.auto_responder.message_title": "CUSTOM MESSAGE",
   "mobile.notification_settings.auto_responder.message_placeholder": "Message",
   "mobile.notification_settings.auto_responder.default_message": "Hello, I am out of office and unable to respond to messages.",

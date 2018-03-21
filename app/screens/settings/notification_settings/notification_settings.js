@@ -16,6 +16,8 @@ import deepEqual from 'deep-equal';
 
 import {General, Preferences, RequestStatus} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import {Client4} from 'mattermost-redux/client';
 
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
@@ -399,6 +401,25 @@ class NotificationSettings extends PureComponent {
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
 
+        const isAutoResponderEnabled = isMinimumServerVersion(Client4.getServerVersion(), 4, 9);
+        const showEmailSeparator = isAutoResponderEnabled;
+
+        let autoResponder;
+        if (isAutoResponderEnabled) {
+            autoResponder = (
+                <SettingsItem
+                    defaultMessage='Out Of Office: Auto Responder'
+                    i18nId='mobile.notification_settings.ooo_auto_responder'
+                    iconName='airplanemode-active'
+                    iconType='material'
+                    onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
+                    separator={false}
+                    showArrow={showArrow}
+                    theme={theme}
+                />
+            );
+        }
+
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -433,20 +454,11 @@ class NotificationSettings extends PureComponent {
                         iconName='ios-mail'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToNotificationSettingsEmail)}
-                        separator={true}
+                        separator={showEmailSeparator}
                         showArrow={showArrow}
                         theme={theme}
                     />
-                    <SettingsItem
-                        defaultMessage='Out Of Office: Auto Responder'
-                        i18nId='mobile.notification_settings.ooo_auto_responder'
-                        iconName='airplanemode-active'
-                        iconType='material'
-                        onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
-                        separator={false}
-                        showArrow={showArrow}
-                        theme={theme}
-                    />
+                    {autoResponder}
                     <View style={style.divider}/>
                 </ScrollView>
                 {this.renderEmailNotificationSettings(style)}
