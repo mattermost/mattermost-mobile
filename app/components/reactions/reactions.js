@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import addReaction from 'assets/images/icons/reaction.png';
+import addReactionIcon from 'assets/images/icons/reaction.png';
 
 import Reaction from './reaction';
 
@@ -79,7 +79,7 @@ export default class Reactions extends PureComponent {
                 style={[styles.reaction]}
             >
                 <Image
-                    source={addReaction}
+                    source={addReactionIcon}
                     style={styles.addReaction}
                 />
             </TouchableOpacity>
