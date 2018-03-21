@@ -8,7 +8,7 @@ import Svg, {
     Path,
 } from 'react-native-svg';
 
-export default class AwayStatus extends PureComponent {
+export default class AppIcon extends PureComponent {
     static propTypes = {
         width: PropTypes.number.isRequired,
         height: PropTypes.number.isRequired,
