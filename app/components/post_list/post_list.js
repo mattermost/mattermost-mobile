@@ -22,7 +22,7 @@ import withLayout from './with_layout';
 
 const PostWithLayout = withLayout(Post);
 
-const INITAL_BATCH_TO_RENDER = 15;
+const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
 
@@ -346,7 +346,7 @@ export default class PostList extends PureComponent {
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId)}
                 initialNumToRender={false}
-                maxToRenderPerBatch={INITAL_BATCH_TO_RENDER + 1}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
