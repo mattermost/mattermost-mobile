@@ -43,7 +43,7 @@ export default class PostProfilePicture extends PureComponent {
             return (
                 <ProfilePicture
                     userId={userId}
-                    size={PROFILE_PICTURE_SIZE}
+                    size={ViewTypes.PROFILE_PICTURE_SIZE}
                     showStatus={false}
                 />
             );
