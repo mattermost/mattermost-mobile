@@ -1,14 +1,16 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Platform,
     StyleSheet,
     View,
     InteractionManager,
 } from 'react-native';
+
+import {debounce} from 'mattermost-redux/actions/helpers';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import ChannelIntro from 'app/components/channel_intro';
@@ -116,12 +118,12 @@ export default class ChannelPostList extends PureComponent {
         }
     };
 
-    loadMorePosts = () => {
+    loadMorePosts = debounce(() => {
         if (this.props.loadMorePostsVisible) {
             const {actions, channelId} = this.props;
             actions.increasePostVisibility(channelId);
         }
-    };
+    }, 100);
 
     loadPostsRetry = () => {
         const {actions, channelId} = this.props;
