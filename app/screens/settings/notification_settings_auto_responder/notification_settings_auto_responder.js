@@ -45,15 +45,15 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
 
-        let autoReplyActive = 'false';
-        if (props.currentUserStatus === General.OUT_OF_OFFICE && notifyProps.auto_reply_active) {
-            autoReplyActive = 'true';
+        let autoResponderActive = 'false';
+        if (props.currentUserStatus === General.OUT_OF_OFFICE && notifyProps.auto_responder_active) {
+            autoResponderActive = 'true';
         }
 
         this.state = {
             ...notifyProps,
-            auto_reply_active: autoReplyActive,
-            auto_reply_message: notifyProps.auto_reply_message || autoResponderDefault,
+            auto_responder_active: autoResponderActive,
+            auto_responder_message: notifyProps.auto_responder_message || autoResponderDefault,
         };
     }
 
@@ -76,34 +76,34 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
 
     onAutoResponseToggle = (active) => {
         if (active) {
-            this.setState({auto_reply_active: 'true'});
+            this.setState({auto_responder_active: 'true'});
             return;
         }
-        this.setState({auto_reply_active: 'false'});
+        this.setState({auto_responder_active: 'false'});
     };
 
     onAutoResponseChangeText = (message) => {
-        return this.setState({auto_reply_message: message});
+        return this.setState({auto_responder_message: message});
     };
 
     render() {
         const {theme} = this.props;
         const {
-            auto_reply_active: autoReplyActive,
-            auto_reply_message: autoReplyMessage,
+            auto_responder_active: autoResponderActive,
+            auto_responder_message: autoResponderMessage,
         } = this.state;
         const style = getStyleSheet(theme);
 
-        let autoReplyActiveLabel;
-        if (autoReplyActive === 'true') {
-            autoReplyActiveLabel = (
+        let autoResponderActiveLabel;
+        if (autoResponderActive === 'true') {
+            autoResponderActiveLabel = (
                 <FormattedText
                     id='mobile.notification_settings.auto_responder.enabled'
                     defaultMessage='Enabled'
                 />
             );
         } else {
-            autoReplyActiveLabel = (
+            autoResponderActiveLabel = (
                 <FormattedText
                     id='mobile.notification_settings.auto_responder.disabled'
                     defaultMessage='Disabled'
@@ -120,14 +120,14 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                         theme={theme}
                     >
                         <SectionItem
-                            label={autoReplyActiveLabel}
+                            label={autoResponderActiveLabel}
                             action={this.onAutoResponseToggle}
                             actionType='toggle'
-                            selected={autoReplyActive === 'true'}
+                            selected={autoResponderActive === 'true'}
                             theme={theme}
                         />
                     </Section>
-                    {autoReplyActive === 'true' && (
+                    {autoResponderActive === 'true' && (
                         <Section
                             headerId='mobile.notification_settings.auto_responder.message_title'
                             headerDefaultMessage='CUSTOM MESSAGE'
@@ -139,7 +139,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                 <TextInputWithLocalizedPlaceholder
                                     autoFocus={true}
                                     ref={this.keywordsRef}
-                                    value={autoReplyMessage}
+                                    value={autoResponderMessage}
                                     blurOnSubmit={false}
                                     onChangeText={this.onAutoResponseChangeText}
                                     multiline={true}

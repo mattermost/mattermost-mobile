@@ -223,10 +223,10 @@ class NotificationSettings extends PureComponent {
      */
     shouldSaveAutoResponder = (notifyProps) => {
         const {currentUserStatus} = this.props;
-        const {auto_reply_active: autoReplyActive} = notifyProps;
+        const {auto_responder_active: autoResponderActive} = notifyProps;
 
-        const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoReplyActive === 'true';
-        const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoReplyActive === 'false';
+        const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
+        const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoResponderActive === 'false';
 
         return enabling || disabling;
     };
@@ -234,8 +234,8 @@ class NotificationSettings extends PureComponent {
     saveAutoResponder = (notifyProps) => {
         const {intl} = this.props;
 
-        if (!notifyProps.auto_reply_message || notifyProps.auto_reply_message === '') {
-            notifyProps.auto_reply_message = intl.formatMessage({
+        if (!notifyProps.auto_responder_message || notifyProps.auto_responder_message === '') {
+            notifyProps.auto_responder_message = intl.formatMessage({
                 id: 'mobile.notification_settings.auto_responder.default_message',
                 defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
             });
