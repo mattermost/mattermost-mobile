@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {IntlProvider} from 'react-intl';
 import {Platform} from 'react-native';
@@ -11,7 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 
-export default class Root extends PureComponent {
+export default class Root extends Component {
     static propTypes = {
         children: PropTypes.node,
         navigator: PropTypes.object,
@@ -22,7 +22,7 @@ export default class Root extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {
+    componentWillMount() {
         if (!this.props.excludeEvents) {
             EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
@@ -56,6 +56,11 @@ export default class Root extends PureComponent {
     };
 
     handleNoTeams = () => {
+        if (!this.refs.provider) {
+            setTimeout(this.handleNoTeams, 200);
+            return;
+        }
+
         const {currentUrl, navigator, theme} = this.props;
         const {intl} = this.refs.provider.getChildContext();
 
