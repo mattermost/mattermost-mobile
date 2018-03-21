@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
+import ChannelIntro from 'app/components/channel_intro';
+import LoadMorePosts from 'app/components/load_more_posts';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
@@ -126,6 +128,29 @@ export default class ChannelPostList extends PureComponent {
         actions.loadPostsIfNecessaryWithRetry(channelId);
     };
 
+    renderFooter = () => {
+        if (!this.props.channelId) {
+            return null;
+        }
+
+        if (this.props.loadMorePostsVisible) {
+            return (
+                <LoadMorePosts
+                    channelId={this.props.channelId}
+                    loadMore={this.loadMorePosts}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        return (
+            <ChannelIntro
+                channelId={this.props.channelId}
+                navigator={this.props.navigator}
+            />
+        );
+    };
+
     render() {
         const {
             actions,
@@ -133,7 +158,6 @@ export default class ChannelPostList extends PureComponent {
             channelRefreshingFailed,
             currentUserId,
             lastViewedAt,
-            loadMorePostsVisible,
             navigator,
             postIds,
             theme,
@@ -161,8 +185,7 @@ export default class ChannelPostList extends PureComponent {
             component = (
                 <PostList
                     postIds={visiblePostIds}
-                    loadMore={this.loadMorePosts}
-                    showLoadMore={loadMorePostsVisible}
+                    onEndReached={this.loadMorePosts}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
@@ -171,6 +194,7 @@ export default class ChannelPostList extends PureComponent {
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
                     navigator={navigator}
+                    renderFooter={this.renderFooter}
                 />
             );
         }
