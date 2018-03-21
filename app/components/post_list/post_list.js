@@ -36,6 +36,7 @@ export default class PostList extends PureComponent {
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         deviceHeight: PropTypes.number.isRequired,
+        extraData: PropTypes.any,
         highlightPostId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
         isSearchResult: PropTypes.bool,
@@ -344,7 +345,7 @@ export default class PostList extends PureComponent {
                 onLayout={this.onLayout}
                 ref='list'
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId)}
+                extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
                 initialNumToRender={false}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 inverted={true}

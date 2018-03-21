@@ -160,6 +160,7 @@ export default class ChannelPostList extends PureComponent {
             channelRefreshingFailed,
             currentUserId,
             lastViewedAt,
+            loadMorePostsVisible,
             navigator,
             postIds,
             theme,
@@ -187,6 +188,7 @@ export default class ChannelPostList extends PureComponent {
             component = (
                 <PostList
                     postIds={visiblePostIds}
+                    extraData={loadMorePostsVisible}
                     onEndReached={this.loadMorePosts}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
