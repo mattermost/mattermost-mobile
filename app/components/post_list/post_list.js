@@ -24,7 +24,7 @@ import withLayout from './with_layout';
 
 const PostWithLayout = withLayout(Post);
 
-const INITAL_BATCH_TO_RENDER = 15;
+const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
 
@@ -352,11 +352,21 @@ export default class PostList extends PureComponent {
         });
     };
 
+    onEndReached = () => {
+        if (!this.onEndReachedCalledDuringMomentum) {
+            this.props.loadMore();
+            this.onEndReachedCalledDuringMomentum = true;
+        }
+    }
+
+    onMomentumScrollBegin = () => {
+        this.onEndReachedCalledDuringMomentum = false;
+    }
+
     render() {
         const {
             channelId,
             highlightPostId,
-            loadMore,
             postIds,
             showLoadMore,
         } = this.props;
@@ -376,12 +386,13 @@ export default class PostList extends PureComponent {
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId, showLoadMore)}
                 initialNumToRender={false}
-                maxToRenderPerBatch={INITAL_BATCH_TO_RENDER + 1}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.renderFooter}
-                onEndReached={loadMore}
-                onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
+                onEndReached={this.onEndReached}
+                onMomentumScrollBegin={this.onMomentumScrollBegin}
+                onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 0.7}
                 removeClippedSubviews={Platform.OS === 'android'}
                 {...refreshControl}
                 renderItem={this.renderItem}
