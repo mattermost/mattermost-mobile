@@ -2,13 +2,16 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Alert,
     Platform,
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-picker';
+import Permissions from 'react-native-permissions';
 
+import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 
 class AttachmentButton extends PureComponent {
@@ -29,7 +32,7 @@ class AttachmentButton extends PureComponent {
         maxFileCount: 5,
     };
 
-    attachFileFromCamera = () => {
+    attachFileFromCamera = async () => {
         const {formatMessage} = this.props.intl;
         const options = {
             quality: 1.0,
@@ -55,13 +58,17 @@ class AttachmentButton extends PureComponent {
             },
         };
 
-        ImagePicker.launchCamera(options, (response) => {
-            if (response.error || response.didCancel) {
-                return;
-            }
+        const hasPhotoPermission = await this.hasPhotoPermission();
 
-            this.uploadFiles([response]);
-        });
+        if (hasPhotoPermission) {
+            ImagePicker.launchCamera(options, (response) => {
+                if (response.error || response.didCancel) {
+                    return;
+                }
+
+                this.uploadFiles([response]);
+            });
+        }
     };
 
     attachFileFromLibrary = () => {
@@ -129,6 +136,59 @@ class AttachmentButton extends PureComponent {
 
             this.uploadFiles([response]);
         });
+    };
+
+    hasPhotoPermission = async () => {
+        if (Platform.OS === 'ios') {
+            const {formatMessage} = this.props.intl;
+            let permissionRequest;
+            const hasPermissionToStorage = await Permissions.check('photo');
+
+            switch (hasPermissionToStorage) {
+            case PermissionTypes.UNDETERMINED:
+                permissionRequest = await Permissions.request('photo');
+                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                    return false;
+                }
+                break;
+            case PermissionTypes.DENIED: {
+                const canOpenSettings = await Permissions.canOpenSettings();
+                let grantOption = null;
+                if (canOpenSettings) {
+                    grantOption = {
+                        text: formatMessage({
+                            id: 'mobile.android.permission_denied_retry',
+                            defaultMessage: 'Set permission',
+                        }),
+                        onPress: () => Permissions.openSettings(),
+                    };
+                }
+
+                Alert.alert(
+                    formatMessage({
+                        id: 'mobile.android.photos_permission_denied_title',
+                        defaultMessage: 'Photo library access is required',
+                    }),
+                    formatMessage({
+                        id: 'mobile.android.photos_permission_denied_description',
+                        defaultMessage: 'To upload images from your library, please change your permission settings.',
+                    }),
+                    [
+                        grantOption,
+                        {
+                            text: formatMessage({
+                                id: 'mobile.android.permission_denied_dismiss',
+                                defaultMessage: 'Dismiss',
+                            }),
+                        },
+                    ]
+                );
+                return false;
+            }
+            }
+        }
+
+        return true;
     };
 
     uploadFiles = (images) => {
