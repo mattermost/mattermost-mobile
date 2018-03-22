@@ -22,7 +22,7 @@ export default class Root extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {
+    componentWillMount() {
         if (!this.props.excludeEvents) {
             EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
             EventEmitter.on(ViewTypes.NOTIFICATION_TAPPED, this.handleNotificationTapped);
@@ -56,6 +56,11 @@ export default class Root extends PureComponent {
     };
 
     handleNoTeams = () => {
+        if (!this.refs.provider) {
+            setTimeout(this.handleNoTeams, 200);
+            return;
+        }
+
         const {currentUrl, navigator, theme} = this.props;
         const {intl} = this.refs.provider.getChildContext();
 
