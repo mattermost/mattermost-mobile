@@ -18,7 +18,7 @@ import youTubeVideoId from 'youtube-video-id';
 import youtubePlayIcon from 'assets/images/icons/youtube-play-icon.png';
 
 import PostAttachmentOpenGraph from 'app/components/post_attachment_opengraph';
-import SlackAttachments from 'app/components/slack_attachments';
+import MessageAttachments from 'app/components/message_attachments';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
 import {isImageLink, isYoutubeLink} from 'app/utils/url';
@@ -109,7 +109,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
 
         const {isReplyPost, link, openGraphData, showLinkPreviews, theme} = this.props;
-        const attachments = this.getSlackAttachment();
+        const attachments = this.getMessageAttachment();
         if (attachments) {
             return attachments;
         }
@@ -154,7 +154,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
     };
 
-    getSlackAttachment = () => {
+    getMessageAttachment = () => {
         const {
             postId,
             postProps,
@@ -169,7 +169,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         if (attachments && attachments.length) {
             return (
-                <SlackAttachments
+                <MessageAttachments
                     attachments={attachments}
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}

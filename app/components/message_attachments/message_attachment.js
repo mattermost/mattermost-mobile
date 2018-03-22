@@ -23,7 +23,7 @@ const STATUS_COLORS = {
     danger: '#e40303',
 };
 
-export default class SlackAttachment extends PureComponent {
+export default class MessageAttachment extends PureComponent {
     static propTypes = {
         attachment: PropTypes.object.isRequired,
         baseTextStyle: CustomPropTypes.Style,
@@ -392,8 +392,12 @@ export default class SlackAttachment extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderBottomWidth: 1,
+            borderRightWidth: 1,
+            borderTopWidth: 1,
             marginTop: 5,
             padding: 10,
         },
