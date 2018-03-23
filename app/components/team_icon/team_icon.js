@@ -49,7 +49,7 @@ export default class TeamIcon extends React.PureComponent {
             teamIconContent = (
                 <Image
                     style={[styles.image, styleImage]}
-                    source={{uri: teamIconUrl}}
+                    source={{uri: teamIconUrl, headers: {Authorization: `Bearer ${Client4.getToken()}`}}}
                     onError={() => this.setState({imageError: true})}
                 />
             );

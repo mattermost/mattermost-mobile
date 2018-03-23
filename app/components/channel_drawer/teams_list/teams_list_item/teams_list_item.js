@@ -77,6 +77,7 @@ export default class TeamsListItem extends React.PureComponent {
                             teamId={teamId}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
+                            styleImage={styles.imageContainer}
                         />
                         <View style={styles.teamNameContainer}>
                             <Text
@@ -133,6 +134,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         teamUrl: {
             color: changeOpacity(theme.sidebarText, 0.5),
             fontSize: 12,
+        },
+        imageContainer: {
+            backgroundColor: theme.sidebarBg,
         },
         checkmarkContainer: {
             alignItems: 'flex-end',

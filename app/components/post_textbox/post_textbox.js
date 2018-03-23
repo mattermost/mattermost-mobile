@@ -171,16 +171,18 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleContentSizeChange = (event) => {
-        let contentHeight = event.nativeEvent.contentSize.height;
-        if (contentHeight < INITIAL_HEIGHT) {
-            contentHeight = INITIAL_HEIGHT;
-        } else if (Platform.OS === 'ios') {
-            contentHeight += 5;
-        }
+        if (Platform.OS === 'android') {
+            let contentHeight = event.nativeEvent.contentSize.height;
+            if (contentHeight < INITIAL_HEIGHT) {
+                contentHeight = INITIAL_HEIGHT;
+            } else if (Platform.OS === 'ios') {
+                contentHeight += 5;
+            }
 
-        this.setState({
-            contentHeight,
-        });
+            this.setState({
+                contentHeight,
+            });
+        }
     };
 
     handleEndEditing = (e) => {
@@ -476,7 +478,7 @@ export default class PostTextbox extends PureComponent {
                             numberOfLines={5}
                             blurOnSubmit={false}
                             underlineColorAndroid='transparent'
-                            style={[style.input, {height: textInputHeight}]}
+                            style={[style.input, Platform.OS === 'android' ? {height: textInputHeight} : {maxHeight: MAX_CONTENT_HEIGHT}]}
                             onContentSizeChange={this.handleContentSizeChange}
                             keyboardType={this.state.keyboardType}
                             onEndEditing={this.handleEndEditing}
