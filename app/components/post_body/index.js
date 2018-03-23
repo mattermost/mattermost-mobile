@@ -28,7 +28,7 @@ function mapStateToProps(state, ownProps) {
         canAddReaction = haveIChannelPermission(state, {
             team: teamId,
             channel: post.channel_id,
-            permission: Permissions.ADD_REACTION
+            permission: Permissions.ADD_REACTION,
         });
     }
 

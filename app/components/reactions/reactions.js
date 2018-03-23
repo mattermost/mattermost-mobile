@@ -27,7 +27,7 @@ export default class Reactions extends PureComponent {
         reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         canAddReaction: PropTypes.bool,
-        canRemoveReaction: PropTypes.bool.isRequired
+        canRemoveReaction: PropTypes.bool.isRequired,
     }
 
     componentDidMount() {

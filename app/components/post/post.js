@@ -83,7 +83,7 @@ export default class Post extends PureComponent {
             editDisable(config, license, currentUserId, post, this.editDisableAction);
         }
         this.state = {
-            canEdit: this.props.canEdit
+            canEdit: this.props.canEdit,
         };
     }
 
@@ -96,7 +96,7 @@ export default class Post extends PureComponent {
 
             editDisable(config, license, currentUserId, post, this.editDisableAction);
             this.setState({
-                canEdit: nextProps.canEdit
+                canEdit: nextProps.canEdit,
             });
         }
     }

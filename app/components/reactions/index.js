@@ -30,12 +30,12 @@ function makeMapStateToProps() {
             canAddReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: post.channel_id,
-                permission: Permissions.ADD_REACTION
+                permission: Permissions.ADD_REACTION,
             });
             canRemoveReaction = haveIChannelPermission(state, {
                 team: teamId,
                 channel: post.channel_id,
-                permission: Permissions.REMOVE_REACTION
+                permission: Permissions.REMOVE_REACTION,
             });
         }
 
