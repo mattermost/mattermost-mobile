@@ -988,9 +988,9 @@ babel-plugin-external-helpers@^6.22.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-module-resolver@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-module-resolver/-/babel-plugin-module-resolver-3.1.0.tgz#cf7868bd2c1818f855aede16141009b87dd1f95b"
+babel-plugin-module-resolver@3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-module-resolver/-/babel-plugin-module-resolver-3.1.1.tgz#881cf67e3d4b8400d5eaaefc1be44d2dc1fe404f"
   dependencies:
     find-babel-config "^1.1.0"
     glob "^7.1.2"
@@ -1743,10 +1743,6 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
-basic-auth-connect@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/basic-auth-connect/-/basic-auth-connect-1.0.0.tgz#fdb0b43962ca7b40456a7c2bb48fe173da2d2122"
-
 basic-auth@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/basic-auth/-/basic-auth-2.0.0.tgz#015db3f353e02e56377755f962742e8981e7bbba"
@@ -1841,7 +1837,7 @@ braces@^1.8.2:
     preserve "^0.2.0"
     repeat-element "^1.1.2"
 
-braces@^2.3.1:
+braces@^2.3.0, braces@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/braces/-/braces-2.3.1.tgz#7086c913b4e5a08dbe37ac0ee6a2500c4ba691bb"
   dependencies:
@@ -2997,7 +2993,7 @@ extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-extsprintf@1.3.0, extsprintf@^1.2.0:
+extsprintf@1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.3.0.tgz#96918440e3041a7a414f8c52e3c574eb3c3e1e05"
 
@@ -3400,6 +3396,13 @@ glob-parent@^2.0.0:
   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-2.0.0.tgz#81383d72db054fcccf5336daa902f182f6edbb28"
   dependencies:
     is-glob "^2.0.0"
+
+glob-parent@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-3.1.0.tgz#9e6af6299d8d3bd2bd40430832bd113df906c5ae"
+  dependencies:
+    is-glob "^3.1.0"
+    path-dirname "^1.0.0"
 
 glob-to-regexp@^0.4.0:
   version "0.4.0"
@@ -4722,7 +4725,6 @@ mattermost-redux@mattermost/mattermost-redux:
   resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/bd8142c4674cc489f2f0b92e80e06fc3b8d3c0a2"
   dependencies:
     deep-equal "1.0.1"
-    flow-copy-source "^1.2.2"
     form-data "2.3.1"
     harmony-reflect "1.5.1"
     isomorphic-fetch "2.2.1"
@@ -4923,7 +4925,7 @@ micromatch@^2.1.5, micromatch@^2.3.11:
     parse-glob "^3.0.4"
     regex-cache "^0.4.2"
 
-micromatch@^3.1.8:
+micromatch@^3.1.4, micromatch@^3.1.8:
   version "3.1.10"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-3.1.10.tgz#70859bc95c9840952f359a068a3fc49f9ecfac23"
   dependencies:
@@ -5096,23 +5098,6 @@ mute-stream@0.0.7:
 nan@^2.3.0:
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
-
-nanomatch@^1.2.9:
-  version "1.2.9"
-  resolved "https://registry.yarnpkg.com/nanomatch/-/nanomatch-1.2.9.tgz#879f7150cb2dab7a471259066c104eee6e0fa7c2"
-  dependencies:
-    arr-diff "^4.0.0"
-    array-unique "^0.3.2"
-    define-property "^2.0.2"
-    extend-shallow "^3.0.2"
-    fragment-cache "^0.2.1"
-    is-odd "^2.0.0"
-    is-windows "^1.0.2"
-    kind-of "^6.0.2"
-    object.pick "^1.3.0"
-    regex-not "^1.0.0"
-    snapdragon "^0.8.1"
-    to-regex "^3.0.1"
 
 nanomatch@^1.2.9:
   version "1.2.9"
@@ -5995,9 +5980,9 @@ react-native-cookies@3.2.0:
   dependencies:
     invariant "^2.1.0"
 
-react-native-device-info@0.21.2:
-  version "0.21.2"
-  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.21.2.tgz#82209bf529f5cae7eab1d6512b1cfb03e29ced30"
+react-native-device-info@0.21.3:
+  version "0.21.3"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.21.3.tgz#175a32ee35771e9ebad486e4a60428fecf50d2d1"
 
 react-native-dismiss-keyboard@1.0.0:
   version "1.0.0"
@@ -6102,9 +6087,9 @@ react-native-mock@0.3.1:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.412:
-  version "1.1.412"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.412.tgz#8ac91d1ece1bf65e9b180d6eadc28d162f620389"
+react-native-navigation@1.1.424:
+  version "1.1.424"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.424.tgz#c09d83fab98ad8d8a6fa60b5adf8e57c9309404d"
   dependencies:
     lodash "4.x.x"
 
@@ -6373,6 +6358,18 @@ readable-stream@^2.0.1, readable-stream@^2.1.5, readable-stream@^2.2.2:
     inherits "~2.0.3"
     isarray "~1.0.0"
     process-nextick-args "~1.0.6"
+    safe-buffer "~5.1.1"
+    string_decoder "~1.0.3"
+    util-deprecate "~1.0.1"
+
+readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4:
+  version "2.3.5"
+  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.5.tgz#b4f85003a938cbb6ecbce2a124fb1012bd1a838d"
+  dependencies:
+    core-util-is "~1.0.0"
+    inherits "~2.0.3"
+    isarray "~1.0.0"
+    process-nextick-args "~2.0.0"
     safe-buffer "~5.1.1"
     string_decoder "~1.0.3"
     util-deprecate "~1.0.1"
@@ -7172,9 +7169,9 @@ socketcluster-client@^5.3.1:
     sc-formatter "~3.0.0"
     ws "3.0.0"
 
-socketcluster-server@^10.1.1:
-  version "10.1.1"
-  resolved "https://registry.yarnpkg.com/socketcluster-server/-/socketcluster-server-10.1.1.tgz#aed5b5ebc14e44ba2042244e1b577322432a2f6d"
+socketcluster-server@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/socketcluster-server/-/socketcluster-server-11.0.0.tgz#44c350aec65ba30f474b12931f32d610d901f2ff"
   dependencies:
     async "2.3.0"
     base64id "1.0.0"
@@ -7204,9 +7201,9 @@ socketcluster-server@~6.3.0:
     uws "8.14.0"
     ws "3.1.0"
 
-socketcluster@11.0.0:
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/socketcluster/-/socketcluster-11.0.0.tgz#31d3d686ccf7fb5b7e4c6808bebf787e16d15c78"
+socketcluster@11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/socketcluster/-/socketcluster-11.1.0.tgz#e487b49711645fc61f9931c2db91cccfc5622585"
   dependencies:
     async "2.3.0"
     fs-extra "2.0.0"
@@ -7215,7 +7212,7 @@ socketcluster@11.0.0:
     sc-auth "^5.0.0"
     sc-broker-cluster "^6.1.3"
     sc-errors "^1.4.0"
-    socketcluster-server "^10.1.1"
+    socketcluster-server "^11.0.0"
     uid-number "0.0.6"
     uuid "3.2.1"
 
@@ -7764,6 +7761,10 @@ union-value@^1.0.0:
     is-extendable "^0.1.1"
     set-value "^0.4.3"
 
+universalify@^0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.1.tgz#fa71badd4437af4c148841e3b3b165f9e9e590b7"
+
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
@@ -7774,6 +7775,10 @@ unset-value@^1.0.0:
   dependencies:
     has-value "^0.3.1"
     isobject "^3.0.0"
+
+upath@^1.0.0:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/upath/-/upath-1.0.4.tgz#ee2321ba0a786c50973db043a50b7bcba822361d"
 
 urix@^0.1.0:
   version "0.1.0"
@@ -7812,17 +7817,13 @@ uuid@3.1.0, uuid@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
 
-uuid@3.2.1:
+uuid@3.2.1, uuid@^3.0.0:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.2.1.tgz#12c528bb9d58d0b9265d9a2f6f0fe8be17ff1f14"
 
 uuid@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
-
-uuid@^3.0.0:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.2.1.tgz#12c528bb9d58d0b9265d9a2f6f0fe8be17ff1f14"
 
 uws@8.14.0:
   version "8.14.0"

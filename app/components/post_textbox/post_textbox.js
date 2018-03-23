@@ -175,8 +175,6 @@ export default class PostTextbox extends PureComponent {
             let contentHeight = event.nativeEvent.contentSize.height;
             if (contentHeight < INITIAL_HEIGHT) {
                 contentHeight = INITIAL_HEIGHT;
-            } else if (Platform.OS === 'ios') {
-                contentHeight += 5;
             }
 
             this.setState({

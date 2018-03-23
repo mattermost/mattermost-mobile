@@ -25,7 +25,7 @@
     "react-native-button": "2.3.0",
     "react-native-circular-progress": "0.2.0",
     "react-native-cookies": "3.2.0",
-    "react-native-device-info": "0.21.2",
+    "react-native-device-info": "0.21.3",
     "react-native-doc-viewer": "2.7.3",
     "react-native-drawer": "2.5.0",
     "react-native-exception-handler": "2.7.1",
@@ -35,7 +35,7 @@
     "react-native-keyboard-aware-scroll-view": "0.5.0",
     "react-native-linear-gradient": "2.4.0",
     "react-native-local-auth": "enahum/react-native-local-auth.git",
-    "react-native-navigation": "1.1.412",
+    "react-native-navigation": "1.1.424",
     "react-native-notifications": "enahum/react-native-notifications.git",
     "react-native-orientation": "3.1.3",
     "react-native-passcode-status": "1.1.0",
@@ -68,7 +68,7 @@
   "devDependencies": {
     "babel-cli": "6.26.0",
     "babel-eslint": "8.2.2",
-    "babel-plugin-module-resolver": "3.1.0",
+    "babel-plugin-module-resolver": "3.1.1",
     "babel-plugin-transform-remove-console": "6.9.0",
     "babel-preset-env": "1.6.1",
     "babel-preset-es2015": "6.24.1",
@@ -100,7 +100,7 @@
     "react-test-renderer": "16.2.0",
     "remote-redux-devtools": "0.5.12",
     "remotedev-rn-debugger": "0.8.3",
-    "socketcluster": "11.0.0",
+    "socketcluster": "11.1.0",
     "underscore": "1.8.3"
   },
   "scripts": {
