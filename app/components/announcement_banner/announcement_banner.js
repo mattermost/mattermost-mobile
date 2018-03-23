@@ -8,7 +8,7 @@ import {
     Animated,
     StyleSheet,
     Text,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -18,22 +18,22 @@ const {View: AnimatedView} = Animated;
 export default class AnnouncementBanner extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            dismissBanner: PropTypes.func.isRequired
+            dismissBanner: PropTypes.func.isRequired,
         }).isRequired,
         allowDismissal: PropTypes.bool,
         bannerColor: PropTypes.string,
         bannerDismissed: PropTypes.bool,
         bannerEnabled: PropTypes.bool,
         bannerText: PropTypes.string,
-        bannerTextColor: PropTypes.string
+        bannerTextColor: PropTypes.string,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     state = {
-        bannerHeight: new Animated.Value(0)
+        bannerHeight: new Animated.Value(0),
     };
 
     componentWillMount() {
@@ -59,13 +59,13 @@ export default class AnnouncementBanner extends PureComponent {
     handlePress = () => {
         const {formatMessage} = this.context.intl;
         const options = [{
-            text: formatMessage({id: 'mobile.announcement_banner.ok', defaultMessage: 'OK'})
+            text: formatMessage({id: 'mobile.announcement_banner.ok', defaultMessage: 'OK'}),
         }];
 
         if (this.props.allowDismissal) {
             options.push({
                 text: formatMessage({id: 'mobile.announcement_banner.dismiss', defaultMessage: 'Dismiss'}),
-                onPress: this.handleDismiss
+                onPress: this.handleDismiss,
             });
         }
 
@@ -81,7 +81,7 @@ export default class AnnouncementBanner extends PureComponent {
         const value = show ? 38 : 0;
         Animated.timing(this.state.bannerHeight, {
             toValue: value,
-            duration: 350
+            duration: 350,
         }).start();
     };
 
@@ -90,11 +90,11 @@ export default class AnnouncementBanner extends PureComponent {
 
         const bannerStyle = {
             backgroundColor: this.props.bannerColor,
-            height: bannerHeight
+            height: bannerHeight,
         };
 
         const bannerTextStyle = {
-            color: this.props.bannerTextColor
+            color: this.props.bannerTextColor,
         };
 
         return (
@@ -129,16 +129,16 @@ const style = StyleSheet.create({
         position: 'absolute',
         top: 0,
         overflow: 'hidden',
-        width: '100%'
+        width: '100%',
     },
     wrapper: {
         alignItems: 'center',
         flex: 1,
-        flexDirection: 'row'
+        flexDirection: 'row',
     },
     bannerText: {
         flex: 1,
         fontSize: 14,
-        marginRight: 5
-    }
+        marginRight: 5,
+    },
 });

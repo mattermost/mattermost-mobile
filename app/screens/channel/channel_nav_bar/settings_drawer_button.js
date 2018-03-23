@@ -6,26 +6,26 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 class SettingDrawerButton extends PureComponent {
     static propTypes = {
         openDrawer: PropTypes.func.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     static defaultProps = {
-        theme: {}
+        theme: {},
     };
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         this.props.openDrawer();
     });
 
@@ -57,25 +57,25 @@ class SettingDrawerButton extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            width: 44
+            width: 44,
         },
         wrapper: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'column',
             justifyContent: 'center',
-            marginLeft: 8
+            marginLeft: 8,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10
-        }
+            fontSize: 10,
+        },
     };
 });
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

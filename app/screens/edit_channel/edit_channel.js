@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Keyboard,
-    InteractionManager
+    InteractionManager,
 } from 'react-native';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -20,36 +20,40 @@ import {cleanUpUrlable} from 'app/utils/url';
 const messages = {
     display_name_required: {
         id: 'mobile.rename_channel.display_name_required',
-        defaultMessage: 'Channel name is required'
+        defaultMessage: 'Channel name is required',
     },
     display_name_maxLength: {
         id: 'mobile.rename_channel.display_name_maxLength',
-        defaultMessage: 'Channel name must be less than {maxLength, number} characters'
+        defaultMessage: 'Channel name must be less than {maxLength, number} characters',
     },
     display_name_minLength: {
         id: 'mobile.rename_channel.display_name_minLength',
-        defaultMessage: 'Channel name must be {minLength, number} or more characters'
+        defaultMessage: 'Channel name must be {minLength, number} or more characters',
     },
     name_required: {
         id: 'mobile.rename_channel.name_required',
-        defaultMessage: 'URL is required'
+        defaultMessage: 'URL is required',
     },
     name_maxLength: {
         id: 'mobile.rename_channel.name_maxLength',
-        defaultMessage: 'URL must be less than {maxLength, number} characters'
+        defaultMessage: 'URL must be less than {maxLength, number} characters',
     },
     name_minLength: {
         id: 'mobile.rename_channel.name_minLength',
-        defaultMessage: 'URL must be {minLength, number} or more characters'
+        defaultMessage: 'URL must be {minLength, number} or more characters',
     },
     name_lowercase: {
         id: 'mobile.rename_channel.name_lowercase',
-        defaultMessage: 'URL be lowercase alphanumeric characters'
-    }
+        defaultMessage: 'URL be lowercase alphanumeric characters',
+    },
 };
 
 export default class EditChannel extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            patchChannel: PropTypes.func.isRequired,
+            setChannelDisplayName: PropTypes.func.isRequired,
+        }),
         navigator: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -58,19 +62,16 @@ export default class EditChannel extends PureComponent {
         currentTeamUrl: PropTypes.string.isRequired,
         updateChannelRequest: PropTypes.object.isRequired,
         closeButton: PropTypes.object,
-        actions: PropTypes.shape({
-            patchChannel: PropTypes.func.isRequired
-        })
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     rightButton = {
         id: 'edit-channel',
         disabled: true,
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props, context) {
@@ -80,8 +81,8 @@ export default class EditChannel extends PureComponent {
                 display_name: displayName,
                 header,
                 purpose,
-                name: channelURL
-            }
+                name: channelURL,
+            },
         } = props;
 
         this.state = {
@@ -90,13 +91,13 @@ export default class EditChannel extends PureComponent {
             displayName,
             channelURL,
             purpose,
-            header
+            header,
         };
 
         this.rightButton.title = context.intl.formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'});
 
         const buttons = {
-            rightButtons: [this.rightButton]
+            rightButtons: [this.rightButton],
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -137,12 +138,19 @@ export default class EditChannel extends PureComponent {
     }
 
     close = () => {
+        const {channel: {type}} = this.props;
+        const isDirect = type === General.DM_CHANNEL || type === General.GM_CHANNEL;
+
+        if (!isDirect) {
+            this.props.actions.setChannelDisplayName(this.state.displayName);
+        }
+
         this.props.navigator.pop({animated: true});
     };
 
     emitCanUpdateChannel = (enabled) => {
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}]
+            rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
         this.props.navigator.setButtons(buttons);
@@ -150,7 +158,7 @@ export default class EditChannel extends PureComponent {
 
     emitUpdating = (loading) => {
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: loading}]
+            rightButtons: [{...this.rightButton, disabled: loading}],
         };
 
         this.props.navigator.setButtons(buttons);
@@ -205,7 +213,7 @@ export default class EditChannel extends PureComponent {
             display_name: isDirect ? '' : displayName,
             name: channelURL,
             purpose,
-            header
+            header,
         };
 
         if (!isDirect) {
@@ -261,13 +269,13 @@ export default class EditChannel extends PureComponent {
                 name: oldChannelURL,
                 header: oldHeader,
                 purpose: oldPurpose,
-                type
+                type,
             },
             navigator,
             theme,
             currentTeamUrl,
             deviceWidth,
-            deviceHeight
+            deviceHeight,
         } = this.props;
         const {
             error,
@@ -275,7 +283,7 @@ export default class EditChannel extends PureComponent {
             displayName,
             channelURL,
             purpose,
-            header
+            header,
         } = this.state;
 
         return (

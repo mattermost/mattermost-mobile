@@ -20,21 +20,21 @@ class RadioButton extends PureComponent {
         value: PropTypes.string,
         checked: PropTypes.bool,
         disabled: PropTypes.bool,
-        onCheck: PropTypes.func
+        onCheck: PropTypes.func,
     };
 
     constructor(props) {
         super(props);
         this.state = {
             scaleValue: new Animated.Value(0),
-            opacityValue: new Animated.Value(0)
+            opacityValue: new Animated.Value(0),
         };
 
         this.responder = {
             onStartShouldSetResponder: () => true,
             onResponderGrant: this.highlight,
             onResponderRelease: this.handleResponderEnd,
-            onResponderTerminate: this.unHighlight
+            onResponderTerminate: this.unHighlight,
         };
     }
 
@@ -43,14 +43,14 @@ class RadioButton extends PureComponent {
             this.state.scaleValue,
             {
                 toValue: 1,
-                duration: 150
+                duration: 150,
             }
         ).start();
         Animated.timing(
             this.state.opacityValue,
             {
                 toValue: 0.1,
-                duration: 100
+                duration: 100,
             }
         ).start();
     };
@@ -60,13 +60,13 @@ class RadioButton extends PureComponent {
             this.state.scaleValue,
             {
                 toValue: 0.001,
-                duration: 1500
+                duration: 1500,
             }
         ).start();
         Animated.timing(
             this.state.opacityValue,
             {
-                toValue: 0
+                toValue: 0,
             }
         ).start();
     };
@@ -99,11 +99,11 @@ class RadioButton extends PureComponent {
                         styles.ripple,
                         {
                             transform: [
-                                {scale: scaleValue}
+                                {scale: scaleValue},
                             ],
                             opacity: opacityValue,
-                            backgroundColor: color
-                        }
+                            backgroundColor: color,
+                        },
                     ]}
                 />
                 <Icon
@@ -111,14 +111,14 @@ class RadioButton extends PureComponent {
                     size={24}
                     color={color}
                     style={{
-                        opacity
+                        opacity,
                     }}
                 />
                 <View style={styles.labelContainer}>
                     <Text
                         style={[
                             styles.label,
-                            {opacity: disabled ? DISABLED_OPACITY : DEFAULT_OPACITY}
+                            {opacity: disabled ? DISABLED_OPACITY : DEFAULT_OPACITY},
                         ]}
                     >
                         {this.props.label}
@@ -135,19 +135,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
-            marginBottom: 15
+            marginBottom: 15,
         },
         ripple: {
             position: 'absolute',
             width: 48,
             height: 48,
             borderRadius: 56,
-            top: 6
+            top: 6,
         },
         labelContainer: {
             flex: 1,
             flexDirection: 'row',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         label: {
             color: theme.centerChannelColor,
@@ -155,15 +155,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             marginLeft: 15,
             textAlignVertical: 'center',
-            includeFontPadding: false
-        }
+            includeFontPadding: false,
+        },
     };
 });
 
 function mapStateToProps(state, ownProps) {
     return {
         ...ownProps,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

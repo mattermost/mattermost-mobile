@@ -10,7 +10,7 @@ import {
     Platform,
     StyleSheet,
     TouchableWithoutFeedback,
-    View
+    View,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import youTubeVideoId from 'youtube-video-id';
@@ -18,7 +18,7 @@ import youTubeVideoId from 'youtube-video-id';
 import youtubePlayIcon from 'assets/images/icons/youtube-play-icon.png';
 
 import PostAttachmentOpenGraph from 'app/components/post_attachment_opengraph';
-import SlackAttachments from 'app/components/slack_attachments';
+import MessageAttachments from 'app/components/message_attachments';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
 import {isImageLink, isYoutubeLink} from 'app/utils/url';
@@ -37,16 +37,17 @@ export default class PostBodyAdditionalContent extends PureComponent {
         message: PropTypes.string.isRequired,
         navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
         openGraphData: PropTypes.object,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         textStyles: PropTypes.object,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        onLongPress: emptyFunction
+        onLongPress: emptyFunction,
     };
 
     constructor(props) {
@@ -54,7 +55,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         this.state = {
             linkLoadError: false,
-            linkLoaded: false
+            linkLoaded: false,
         };
 
         this.mounted = false;
@@ -73,7 +74,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (nextProps.message !== this.props.message) {
             this.setState({
                 linkLoadError: false,
-                linkLoaded: false
+                linkLoaded: false,
             }, () => {
                 this.getImageSize();
             });
@@ -108,7 +109,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
 
         const {isReplyPost, link, openGraphData, showLinkPreviews, theme} = this.props;
-        const attachments = this.getSlackAttachment();
+        const attachments = this.getMessageAttachment();
         if (attachments) {
             return attachments;
         }
@@ -153,21 +154,22 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
     };
 
-    getSlackAttachment = () => {
+    getMessageAttachment = () => {
         const {
             postId,
             postProps,
             baseTextStyle,
             blockStyles,
             navigator,
+            onPermalinkPress,
             textStyles,
-            theme
+            theme,
         } = this.props;
         const {attachments} = postProps;
 
         if (attachments && attachments.length) {
             return (
-                <SlackAttachments
+                <MessageAttachments
                     attachments={attachments}
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}
@@ -176,6 +178,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     textStyles={textStyles}
                     theme={theme}
                     onLongPress={this.props.onLongPress}
+                    onPermalinkPress={onPermalinkPress}
                 />
             );
         }
@@ -245,7 +248,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 YouTubeStandaloneAndroid.playVideo({
                     apiKey: config.GoogleDeveloperKey,
                     videoId,
-                    autoplay: true
+                    autoplay: true,
                 });
             } else {
                 Linking.openURL(link);
@@ -287,12 +290,12 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         marginBottom: 6,
-        marginTop: 10
+        marginTop: 10,
     },
     image: {
         alignItems: 'center',
         borderRadius: 3,
         justifyContent: 'center',
-        marginVertical: 1
-    }
+        marginVertical: 1,
+    },
 });

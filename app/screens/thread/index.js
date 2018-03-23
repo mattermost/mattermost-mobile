@@ -26,7 +26,7 @@ function makeMapStateToProps() {
             myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
             postIds: getPostIdsForThread(state, ownProps.rootId),
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }
@@ -34,8 +34,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            selectPost
-        }, dispatch)
+            selectPost,
+        }, dispatch),
     };
 }
 

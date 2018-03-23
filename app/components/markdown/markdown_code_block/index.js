@@ -9,7 +9,7 @@ import MarkdownCodeBlock from './markdown_code_block';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

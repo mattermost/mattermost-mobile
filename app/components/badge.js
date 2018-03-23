@@ -9,14 +9,14 @@ import {
     Text,
     TouchableWithoutFeedback,
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
 
 export default class Badge extends PureComponent {
     static defaultProps = {
         extraPaddingHorizontal: 10,
         minHeight: 0,
-        minWidth: 0
+        minWidth: 0,
     };
 
     static propTypes = {
@@ -26,7 +26,7 @@ export default class Badge extends PureComponent {
         countStyle: Text.propTypes.style,
         minHeight: PropTypes.number,
         minWidth: PropTypes.number,
-        onPress: PropTypes.func
+        onPress: PropTypes.func,
     };
 
     constructor(props) {
@@ -42,7 +42,7 @@ export default class Badge extends PureComponent {
             onMoveShouldSetPanResponder: () => true,
             onStartShouldSetResponderCapture: () => true,
             onMoveShouldSetResponderCapture: () => true,
-            onResponderMove: () => false
+            onResponderMove: () => false,
         });
     }
 
@@ -87,8 +87,8 @@ export default class Badge extends PureComponent {
                 style: {
                     width,
                     borderRadius,
-                    opacity: 1
-                }
+                    opacity: 1,
+                },
             });
             this.layoutReady = true;
         }
@@ -147,15 +147,15 @@ const styles = StyleSheet.create({
         paddingBottom: 3,
         position: 'absolute',
         right: 30,
-        top: 2
+        top: 2,
     },
     wrapper: {
         alignItems: 'center',
         flex: 1,
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     text: {
         fontSize: 14,
-        color: 'white'
-    }
+        color: 'white',
+    },
 });

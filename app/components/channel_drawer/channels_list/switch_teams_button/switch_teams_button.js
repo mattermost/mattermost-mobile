@@ -4,39 +4,38 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import Badge from 'app/components/badge';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import TeamIcon from 'app/components/team_icon';
 
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string,
-        displayName: PropTypes.string,
         searching: PropTypes.bool.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         mentionCount: PropTypes.number.isRequired,
         teamsCount: PropTypes.number.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
-    showTeams = wrapWithPreventDoubleTap(() => {
+    showTeams = preventDoubleTap(() => {
         this.props.onShowTeams();
     });
 
     render() {
         const {
             currentTeamId,
-            displayName,
             mentionCount,
             searching,
             teamsCount,
-            theme
+            theme,
         } = this.props;
 
         if (!currentTeamId) {
@@ -69,12 +68,14 @@ export default class SwitchTeamsButton extends React.PureComponent {
                         <AwesomeIcon
                             name='chevron-left'
                             size={12}
-                            color={theme.sidebarHeaderBg}
+                            style={styles.switcherArrow}
                         />
                         <View style={styles.switcherDivider}/>
-                        <Text style={styles.switcherTeam}>
-                            {displayName.substr(0, 2).toUpperCase()}
-                        </Text>
+                        <TeamIcon
+                            teamId={currentTeamId}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                     </View>
                 </TouchableHighlight>
                 {badge}
@@ -86,26 +87,33 @@ export default class SwitchTeamsButton extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         switcherContainer: {
-            alignItems: 'center',
             backgroundColor: theme.sidebarHeaderTextColor,
-            borderRadius: 2,
             flexDirection: 'row',
-            height: 32,
+            alignItems: 'center',
             justifyContent: 'center',
+            height: 32,
+            borderRadius: 2,
             marginLeft: 6,
-            marginRight: 5,
-            paddingHorizontal: 6
+            marginRight: 6,
+            paddingHorizontal: 3,
+        },
+        switcherArrow: {
+            color: theme.sidebarHeaderBg,
+            marginRight: 3,
         },
         switcherDivider: {
             backgroundColor: theme.sidebarHeaderBg,
             height: 15,
             marginHorizontal: 6,
-            width: 1
+            width: 1,
         },
-        switcherTeam: {
-            color: theme.sidebarHeaderBg,
-            fontFamily: 'OpenSans',
-            fontSize: 14
+        teamIconContainer: {
+            width: 26,
+            height: 26,
+            marginLeft: 3,
+        },
+        teamIconText: {
+            fontSize: 14,
         },
         badge: {
             backgroundColor: theme.mentionBj,
@@ -116,11 +124,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             padding: 3,
             position: 'absolute',
             left: -5,
-            top: -5
+            top: -5,
         },
         mention: {
             color: theme.mentionColor,
-            fontSize: 10
-        }
+            fontSize: 10,
+        },
     };
 });

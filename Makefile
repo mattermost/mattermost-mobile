@@ -47,7 +47,7 @@ pre-run: | .yarninstall .podinstall dist/assets ## Installs dependencies and ass
 
 check-style: .yarninstall ## Runs eslint
 	@echo Checking for style guide compliance
-	@node_modules/.bin/eslint --ext \".js\" --ignore-pattern node_modules --quiet .
+	@yarn run check
 
 clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleaning started

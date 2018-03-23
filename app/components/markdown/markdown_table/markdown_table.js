@@ -7,11 +7,11 @@ import {intlShape} from 'react-intl';
 import {
     ScrollView,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_HEIGHT = 120;
@@ -20,47 +20,47 @@ export default class MarkdownTable extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            contentCutOff: true
+            contentCutOff: true,
         };
     }
 
-    handlePress = wrapWithPreventDoubleTap(() => {
+    handlePress = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'Table',
             title: this.context.intl.formatMessage({
                 id: 'mobile.routes.table',
-                defaultMessage: 'Table'
+                defaultMessage: 'Table',
             }),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                renderRows: this.renderRows
+                renderRows: this.renderRows,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
     handleContentHeightChange = (contentWidth, contentHeight) => {
         this.setState({
-            contentCutOff: contentHeight >= MAX_HEIGHT
+            contentCutOff: contentHeight >= MAX_HEIGHT,
         });
     }
 
@@ -76,7 +76,7 @@ export default class MarkdownTable extends React.PureComponent {
         // since the container should be rendering that
         const rows = React.Children.toArray(this.props.children);
         rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
-            isLastRow: true
+            isLastRow: true,
         });
 
         return (
@@ -95,7 +95,7 @@ export default class MarkdownTable extends React.PureComponent {
                 <LinearGradient
                     colors={[
                         changeOpacity(this.props.theme.centerChannelColor, 0.0),
-                        changeOpacity(this.props.theme.centerChannelColor, 0.1)
+                        changeOpacity(this.props.theme.centerChannelColor, 0.1),
                     ]}
                     style={style.moreIndicator}
                 />
@@ -123,24 +123,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             borderBottomWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            maxHeight: MAX_HEIGHT
+            maxHeight: MAX_HEIGHT,
         },
         table: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderLeftWidth: 1, // The right border is drawn by the MarkdownTableCell component
             borderTopWidth: 1,
-            flex: 1
+            flex: 1,
         },
         tableBottomBorder: {
             borderBottomWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2)
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         moreIndicator: {
             bottom: 0,
             height: 20,
             position: 'absolute',
             right: 0,
-            width: '100%'
-        }
+            width: '100%',
+        },
     };
 });

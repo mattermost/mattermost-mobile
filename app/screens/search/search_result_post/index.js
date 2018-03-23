@@ -12,7 +12,7 @@ function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     return {
-        isDeleted: post && post.state === Posts.POST_DELETED
+        isDeleted: post && post.state === Posts.POST_DELETED,
     };
 }
 

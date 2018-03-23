@@ -7,7 +7,7 @@ import {
     Image,
     Linking,
     Text,
-    View
+    View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -20,10 +20,10 @@ import InteractiveAction from './interactive_action';
 const STATUS_COLORS = {
     good: '#00c100',
     warning: '#dede01',
-    danger: '#e40303'
+    danger: '#e40303',
 };
 
-export default class SlackAttachment extends PureComponent {
+export default class MessageAttachment extends PureComponent {
     static propTypes = {
         attachment: PropTypes.object.isRequired,
         baseTextStyle: CustomPropTypes.Style,
@@ -31,8 +31,9 @@ export default class SlackAttachment extends PureComponent {
         navigator: PropTypes.object.isRequired,
         postId: PropTypes.string.isRequired,
         onLongPress: PropTypes.func.isRequired,
+        onPermalinkPress: PropTypes.func,
         theme: PropTypes.object,
-        textStyles: PropTypes.object
+        textStyles: PropTypes.object,
     };
 
     constructor(props) {
@@ -93,7 +94,7 @@ export default class SlackAttachment extends PureComponent {
             collapsedText,
             uncollapsedText,
             text: shouldCollapse ? collapsedText : uncollapsedText,
-            collapsed: shouldCollapse
+            collapsed: shouldCollapse,
         };
     };
 
@@ -103,7 +104,8 @@ export default class SlackAttachment extends PureComponent {
             baseTextStyle,
             blockStyles,
             navigator,
-            textStyles
+            onPermalinkPress,
+            textStyles,
         } = this.props;
         const fields = attachment.fields;
         if (!fields || !fields.length) {
@@ -159,6 +161,7 @@ export default class SlackAttachment extends PureComponent {
                             value={(field.value || '')}
                             navigator={navigator}
                             onLongPress={this.props.onLongPress}
+                            onPermalinkPress={onPermalinkPress}
                         />
                     </View>
                 </View>
@@ -212,7 +215,8 @@ export default class SlackAttachment extends PureComponent {
             blockStyles,
             textStyles,
             navigator,
-            theme
+            onPermalinkPress,
+            theme,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -228,6 +232,7 @@ export default class SlackAttachment extends PureComponent {
                         value={attachment.pretext}
                         navigator={navigator}
                         onLongPress={this.props.onLongPress}
+                        onPermalinkPress={onPermalinkPress}
                     />
                 </View>
             );
@@ -341,6 +346,7 @@ export default class SlackAttachment extends PureComponent {
                         value={this.state.text}
                         navigator={navigator}
                         onLongPress={this.props.onLongPress}
+                        onPermalinkPress={onPermalinkPress}
                     />
                     {moreLess}
                 </View>
@@ -386,78 +392,82 @@ export default class SlackAttachment extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderWidth: 1,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderRightColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.15),
+            borderBottomWidth: 1,
+            borderRightWidth: 1,
+            borderTopWidth: 1,
             marginTop: 5,
-            padding: 10
+            padding: 10,
         },
         border: {
             borderLeftColor: changeOpacity(theme.linkColor, 0.6),
-            borderLeftWidth: 3
+            borderLeftWidth: 3,
         },
         author: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 11
+            fontSize: 11,
         },
         authorIcon: {
             height: 12,
             marginRight: 3,
-            width: 12
+            width: 12,
         },
         authorLink: {
-            color: changeOpacity(theme.linkColor, 0.5)
+            color: changeOpacity(theme.linkColor, 0.5),
         },
         title: {
             color: theme.centerChannelColor,
             fontWeight: '600',
-            marginBottom: 5
+            marginBottom: 5,
         },
         titleLink: {
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         topContent: {
-            paddingRight: 60
+            paddingRight: 60,
         },
         thumbContainer: {
             position: 'absolute',
             right: 10,
-            top: 10
+            top: 10,
         },
         thumb: {
             height: 45,
-            width: 45
+            width: 45,
         },
         moreLess: {
             color: theme.linkColor,
-            fontSize: 12
+            fontSize: 12,
         },
         headingContainer: {
             alignSelf: 'stretch',
             flexDirection: 'row',
             marginBottom: 5,
-            marginTop: 10
+            marginTop: 10,
         },
         heading: {
             color: theme.centerChannelColor,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         bodyContainer: {
-            flex: 1
+            flex: 1,
         },
         imageContainer: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderWidth: 1,
             borderRadius: 2,
-            marginTop: 5
+            marginTop: 5,
         },
         image: {
             flex: 1,
-            height: 50
+            height: 50,
         },
         actionsContainer: {
             flex: 1,
             flexDirection: 'row',
-            flexWrap: 'wrap'
-        }
+            flexWrap: 'wrap',
+        },
     };
 });

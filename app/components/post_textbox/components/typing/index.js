@@ -12,7 +12,7 @@ import Typing from './typing';
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        typing: getUsersTyping(state)
+        typing: getUsersTyping(state),
     };
 }
 

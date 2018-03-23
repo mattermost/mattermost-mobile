@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
-    View
+    View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -29,7 +29,7 @@ class ChannelsList extends React.PureComponent {
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -37,7 +37,7 @@ class ChannelsList extends React.PureComponent {
 
         this.state = {
             searching: false,
-            term: ''
+            term: '',
         };
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
@@ -77,7 +77,7 @@ class ChannelsList extends React.PureComponent {
             intl,
             navigator,
             onShowTeams,
-            theme
+            theme,
         } = this.props;
 
         const {searching, term} = this.state;
@@ -106,7 +106,11 @@ class ChannelsList extends React.PureComponent {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
             color: theme.sidebarHeaderTextColor,
             fontSize: 15,
-            lineHeight: 66
+            ...Platform.select({
+                android: {
+                    marginBottom: -5,
+                },
+            }),
         };
 
         const title = (
@@ -116,7 +120,7 @@ class ChannelsList extends React.PureComponent {
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
-                    inputHeight={33}
+                    inputHeight={34}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -157,10 +161,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.sidebarBg,
-            flex: 1
+            flex: 1,
         },
         statusBar: {
-            backgroundColor: theme.sidebarHeaderBg
+            backgroundColor: theme.sidebarHeaderBg,
         },
         headerContainer: {
             alignItems: 'center',
@@ -171,30 +175,30 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
                 android: {
-                    height: ANDROID_TOP_PORTRAIT
+                    height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44
-                }
-            })
+                    height: 44,
+                },
+            }),
         },
         header: {
             color: theme.sidebarHeaderTextColor,
             flex: 1,
             fontSize: 17,
             fontWeight: 'normal',
-            paddingLeft: 16
+            paddingLeft: 16,
         },
         switchContainer: {
             position: 'relative',
-            top: -1
+            top: -1,
         },
         titleContainer: { // These aren't used by this component, but they are passed down to the list component
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
             height: 48,
-            marginLeft: 16
+            marginLeft: 16,
         },
         title: {
             flex: 1,
@@ -203,40 +207,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             fontWeight: '400',
             letterSpacing: 0.8,
-            lineHeight: 18
+            lineHeight: 18,
         },
         searchContainer: {
             flex: 1,
             paddingRight: 10,
             ...Platform.select({
                 android: {
-                    marginBottom: 1
+                    marginBottom: 1,
                 },
                 ios: {
-                    marginBottom: 3
-                }
-            })
+                    marginBottom: 3,
+                },
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.sidebarText, 0.1),
-            height: 1
+            height: 1,
         },
         actionContainer: {
             alignItems: 'center',
             height: 48,
             justifyContent: 'center',
-            width: 50
+            width: 50,
         },
         action: {
             color: theme.sidebarText,
             fontSize: 20,
             fontWeight: '500',
-            lineHeight: 18
+            lineHeight: 18,
         },
         above: {
             backgroundColor: theme.mentionBj,
-            top: 9
-        }
+            top: 9,
+        },
     };
 });
 

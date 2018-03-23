@@ -7,10 +7,9 @@ import {
     Alert,
     FlatList,
     InteractionManager,
-    StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -23,15 +22,18 @@ import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
+import TeamIcon from 'app/components/team_icon';
+
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            getTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired
+            markChannelAsRead: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentUrl: PropTypes.string.isRequired,
@@ -39,7 +41,7 @@ export default class SelectTeam extends PureComponent {
         navigator: PropTypes.object,
         userWithoutTeams: PropTypes.bool,
         teams: PropTypes.array.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     constructor(props) {
@@ -48,12 +50,14 @@ export default class SelectTeam extends PureComponent {
 
         this.state = {
             joining: false,
-            teams: null
+            teams: null,
         };
     }
 
     componentDidMount() {
-        this.buildData(this.props);
+        this.props.actions.getTeams().then(() => {
+            this.buildData(this.props);
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -77,7 +81,7 @@ export default class SelectTeam extends PureComponent {
         } else {
             const teams = [{
                 id: 'mobile.select_team.no_teams',
-                defaultMessage: 'There are no available teams for you to join.'
+                defaultMessage: 'There are no available teams for you to join.',
             }];
             this.setState({teams});
         }
@@ -85,7 +89,7 @@ export default class SelectTeam extends PureComponent {
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down'
+            animationType: 'slide-down',
         });
     };
 
@@ -99,8 +103,8 @@ export default class SelectTeam extends PureComponent {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     };
 
@@ -125,7 +129,7 @@ export default class SelectTeam extends PureComponent {
         const {
             joinTeam,
             handleTeamChange,
-            markChannelAsRead
+            markChannelAsRead,
         } = this.props.actions;
 
         if (currentChannelId) {
@@ -171,14 +175,14 @@ export default class SelectTeam extends PureComponent {
         return (
             <View style={styles.teamWrapper}>
                 <TouchableOpacity
-                    onPress={() => preventDoubleTap(this.onSelectTeam, this, item)}
+                    onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
                     <View style={styles.teamContainer}>
-                        <View style={styles.teamIconContainer}>
-                            <Text style={styles.teamIcon}>
-                                {item.display_name.substr(0, 2).toUpperCase()}
-                            </Text>
-                        </View>
+                        <TeamIcon
+                            teamId={item.id}
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                        />
                         <View style={styles.teamNameContainer}>
                             <Text
                                 numberOfLines={1}
@@ -238,65 +242,60 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1
+            flex: 1,
         },
         headingContainer: {
             alignItems: 'center',
             flexDirection: 'row',
             marginHorizontal: 16,
-            marginTop: 20
+            marginTop: 20,
         },
         headingWrapper: {
-            marginRight: 15
+            marginRight: 15,
         },
         heading: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 13
+            fontSize: 13,
         },
         line: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             width: '100%',
-            height: StyleSheet.hairlineWidth
+            height: 1,
         },
         teamWrapper: {
-            marginTop: 20
+            marginTop: 20,
         },
         teamContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            marginHorizontal: 16
+            marginHorizontal: 16,
         },
         teamIconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.buttonBg,
-            borderRadius: 2,
+            width: 40,
             height: 40,
-            justifyContent: 'center',
-            width: 40
+            backgroundColor: theme.sidebarBg,
+        },
+        teamIconText: {
+            color: theme.sidebarText,
+            fontSize: 18,
         },
         noTeam: {
             color: theme.centerChannelColor,
-            fontSize: 14
-        },
-        teamIcon: {
-            color: theme.buttonColor,
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: '600'
+            fontSize: 14,
         },
         teamNameContainer: {
             flex: 1,
             flexDirection: 'column',
-            marginLeft: 10
+            marginLeft: 10,
         },
         teamName: {
             color: theme.centerChannelColor,
-            fontSize: 18
+            fontSize: 18,
         },
         teamUrl: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 12
-        }
+            fontSize: 12,
+        },
     };
 });

@@ -28,7 +28,7 @@ function mapStateToProps(state, ownProps) {
 
     const currentChannel = getCurrentChannel(state);
     let deactivatedChannel = false;
-    if (currentChannel.type === General.DM_CHANNEL) {
+    if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
         const teammate = getChannelMembersForDm(state, currentChannel);
         if (teammate.length && teammate[0].delete_at) {
             deactivatedChannel = true;
@@ -36,7 +36,7 @@ function mapStateToProps(state, ownProps) {
     }
 
     return {
-        channelId: ownProps.channelId || currentChannel.id,
+        channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
         currentUserId: getCurrentUserId(state),
@@ -44,7 +44,7 @@ function mapStateToProps(state, ownProps) {
         files: currentDraft.files,
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
-        value: currentDraft.draft
+        value: currentDraft.draft,
     };
 }
 
@@ -62,8 +62,8 @@ function mapDispatchToProps(dispatch) {
             handleUploadFiles,
             userTyping,
             handlePostDraftSelectionChanged,
-            handleCommentDraftSelectionChanged
-        }, dispatch)
+            handleCommentDraftSelectionChanged,
+        }, dispatch),
     };
 }
 

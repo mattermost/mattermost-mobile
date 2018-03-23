@@ -6,22 +6,23 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import TeamIcon from 'app/components/team_icon/team_icon';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
         currentTeamId: PropTypes.string.isRequired,
         onSelectTeam: PropTypes.func.isRequired,
         team: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
-    onPress = wrapWithPreventDoubleTap(() => {
+    onPress = preventDoubleTap(() => {
         const {onSelectTeam, team} = this.props;
         onSelectTeam(team);
     });
@@ -30,38 +31,32 @@ export default class TeamsListItem extends React.PureComponent {
         const {
             currentTeamId,
             team,
-            theme
+            theme,
         } = this.props;
         const styles = getStyleSheet(theme);
 
-        let current;
+        const wrapperStyle = [styles.wrapper];
         if (team.id === currentTeamId) {
-            current = (
-                <View style={styles.checkmarkContainer}>
-                    <IonIcon
-                        name='md-checkmark'
-                        style={styles.checkmark}
-                    />
-                </View>
-            );
+            wrapperStyle.push({
+                width: '90%',
+            });
         }
-
-        const icon = (
-            <View style={styles.iconContainer}>
-                <Text style={styles.icon}>
-                    {team.display_name.substr(0, 2).toUpperCase()}
-                </Text>
-            </View>
-        );
 
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
+                style={styles.wrapper}
             >
                 <View style={styles.container}>
                     <View style={styles.item}>
-                        {icon}
+                        <TeamIcon
+                            styleContainer={styles.teamIconContainer}
+                            styleText={styles.teamIconText}
+                            teamId={team.id}
+                            team={team}
+                            theme={theme}
+                        />
                         <Text
                             style={[styles.text]}
                             ellipsizeMode='tail'
@@ -69,7 +64,6 @@ export default class TeamsListItem extends React.PureComponent {
                         >
                             {team.display_name}
                         </Text>
-                        {current}
                     </View>
                 </View>
             </TouchableHighlight>
@@ -79,17 +73,21 @@ export default class TeamsListItem extends React.PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        wrapper: {
+            height: 45,
+            width: '100%',
+        },
         container: {
             flex: 1,
             flexDirection: 'row',
             height: 45,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         item: {
             alignItems: 'center',
             height: 45,
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         text: {
             color: theme.centerChannelColor,
@@ -97,29 +95,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 16,
             fontWeight: '600',
             lineHeight: 16,
-            paddingRight: 5
+            paddingRight: 5,
         },
-        iconContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.linkColor,
-            borderRadius: 2,
-            height: 30,
-            justifyContent: 'center',
-            width: 30,
-            marginRight: 10
+        teamIconContainer: {
+            backgroundColor: theme.sidebarBg,
+            marginRight: 10,
         },
-        icon: {
+        teamIconText: {
             color: theme.sidebarText,
-            fontFamily: 'OpenSans',
-            fontSize: 15,
-            fontWeight: '600'
         },
         checkmarkContainer: {
-            alignItems: 'flex-end'
+            alignItems: 'flex-end',
         },
         checkmark: {
             color: theme.linkColor,
-            fontSize: 16
-        }
+            fontSize: 16,
+        },
     };
 });

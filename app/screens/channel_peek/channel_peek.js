@@ -12,18 +12,18 @@ export default class ChannelPeek extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
-            markChannelAsRead: PropTypes.func.isRequired
+            markChannelAsRead: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
         lastViewedAt: PropTypes.number,
         navigator: PropTypes.object,
         postIds: PropTypes.array.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        postVisibility: 15
+        postVisibility: 15,
     };
 
     constructor(props) {
@@ -32,7 +32,7 @@ export default class ChannelPeek extends PureComponent {
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.actions.loadPostsIfNecessaryWithRetry(props.channelId);
         this.state = {
-            visiblePostIds: this.getVisiblePostIds(props)
+            visiblePostIds: this.getVisiblePostIds(props),
         };
     }
 
@@ -46,7 +46,7 @@ export default class ChannelPeek extends PureComponent {
         }
 
         this.setState({
-            visiblePostIds
+            visiblePostIds,
         });
     }
 
@@ -69,7 +69,7 @@ export default class ChannelPeek extends PureComponent {
             currentUserId,
             lastViewedAt,
             navigator,
-            theme
+            theme,
         } = this.props;
 
         const {visiblePostIds} = this.state;
@@ -79,7 +79,6 @@ export default class ChannelPeek extends PureComponent {
             <View style={style.container}>
                 <PostList
                     postIds={visiblePostIds}
-                    showLoadMore={false}
                     renderReplies={true}
                     indicateNewMessages={true}
                     currentUserId={currentUserId}
@@ -96,7 +95,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
-        }
+            backgroundColor: theme.centerChannelBg,
+        },
     };
 });

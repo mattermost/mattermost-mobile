@@ -3,9 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ActivityIndicator, FlatList, Text, View} from 'react-native';
+import {ActivityIndicator, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {intlShape} from 'react-intl';
+import TableView from 'react-native-tableview';
 
 import {General} from 'mattermost-redux/constants';
 import {getChannelsInTeam} from 'mattermost-redux/selectors/entities/channels';
@@ -21,17 +22,17 @@ export default class ExtensionTeams extends PureComponent {
         entities: PropTypes.object,
         navigator: PropTypes.object.isRequired,
         onSelectTeam: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     state = {
         defaultChannels: null,
         error: null,
-        myTeams: null
+        myTeams: null,
     };
 
     componentWillMount() {
@@ -48,8 +49,6 @@ export default class ExtensionTeams extends PureComponent {
         this.props.onSelectTeam(team, townSquare);
         this.goBack();
     };
-
-    keyExtractor = (item) => item.id;
 
     loadTeams = async () => {
         try {
@@ -77,7 +76,7 @@ export default class ExtensionTeams extends PureComponent {
 
             this.setState({
                 defaultChannels,
-                myTeams: myTeams.sort(this.sortDisplayName)
+                myTeams: myTeams.sort(this.sortDisplayName),
             });
         } catch (error) {
             this.setState({error});
@@ -85,6 +84,7 @@ export default class ExtensionTeams extends PureComponent {
     };
 
     renderBody = (styles) => {
+        const {theme} = this.props;
         const {error, myTeams} = this.state;
 
         if (error) {
@@ -106,43 +106,44 @@ export default class ExtensionTeams extends PureComponent {
         }
 
         return (
-            <FlatList
-                data={myTeams}
-                ItemSeparatorComponent={this.renderItemSeparator}
-                renderItem={this.renderItem}
-                keyExtractor={this.keyExtractor}
-                keyboardShouldPersistTaps='always'
-                keyboardDismissMode='on-drag'
-                initialNumToRender={10}
-                maxToRenderPerBatch={10}
-                scrollEventThrottle={100}
-                windowSize={5}
-            />
+            <TableView
+                tableViewStyle={TableView.Consts.Style.Plain}
+                tableViewCellStyle={TableView.Consts.CellStyle.Default}
+                separatorColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                tintColor={theme.linkColor}
+                detailFontSize={16}
+                detailTextColor={theme.centerChannelColor}
+                headerFontSize={15}
+                headerTextColor={changeOpacity(theme.centerChannelColor, 0.6)}
+                style={styles.flex}
+            >
+                <TableView.Section>
+                    {this.renderItems(myTeams)}
+                </TableView.Section>
+            </TableView>
         );
     };
 
-    renderItem = ({item}) => {
+    renderItems = (myTeams) => {
         const {currentTeamId, theme} = this.props;
 
-        return (
-            <ExtensionTeamItem
-                currentTeamId={currentTeamId}
-                onSelectTeam={this.handleSelectTeam}
-                team={item}
-                theme={theme}
-            />
-        );
-    };
-
-    renderItemSeparator = () => {
-        const {theme} = this.props;
-        const styles = getStyleSheet(theme);
-
-        return (
-            <View style={styles.separatorContainer}>
-                <View style={styles.separator}/>
-            </View>
-        );
+        return myTeams.map((team) => {
+            return (
+                <TableView.Cell
+                    key={team.id}
+                    selected={team.id === currentTeamId}
+                >
+                    <View>
+                        <ExtensionTeamItem
+                            currentTeamId={currentTeamId}
+                            onSelectTeam={this.handleSelectTeam}
+                            team={team}
+                            theme={theme}
+                        />
+                    </View>
+                </TableView.Cell>
+            );
+        });
     };
 
     sortDisplayName = (a, b) => {
@@ -172,47 +173,47 @@ export default class ExtensionTeams extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         separatorContainer: {
-            paddingLeft: 60
+            paddingLeft: 60,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1
+            height: 1,
         },
         loadingContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         searchContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            paddingBottom: 2
+            paddingBottom: 2,
         },
         searchBarInput: {
             backgroundColor: '#fff',
             color: theme.centerChannelColor,
-            fontSize: 15
+            fontSize: 15,
         },
         titleContainer: {
-            height: 30
+            height: 30,
         },
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 15,
             lineHeight: 30,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         errorContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         error: {
             color: theme.errorTextColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });

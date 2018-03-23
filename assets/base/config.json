@@ -39,5 +39,7 @@
     "MobileClientUpgradeAndroidApkLink": "https://about.mattermost.com/mattermost-android-app/",
     "MobileClientUpgradeIosIpaLink": "https://about.mattermost.com/mattermost-ios-app/",
 
-    "AppGroupId": "group.com.mattermost.rnbeta"
+    "AppGroupId": "group.com.mattermost.rnbeta",
+
+    "ShowSentryDebugOptions": false
 }

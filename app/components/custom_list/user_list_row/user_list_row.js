@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Text,
-    View
+    View,
 } from 'react-native';
 import ProfilePicture from 'app/components/profile_picture';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -22,11 +22,11 @@ export default class UserListRow extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
-        ...CustomListRow.propTypes
+        ...CustomListRow.propTypes,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     onPress = () => {
@@ -44,7 +44,7 @@ export default class UserListRow extends React.PureComponent {
             selected,
             teammateNameDisplay,
             theme,
-            user
+            user,
         } = this.props;
 
         const {id, username} = user;
@@ -54,7 +54,7 @@ export default class UserListRow extends React.PureComponent {
         if (isMyUser) {
             usernameDisplay = formatMessage({
                 id: 'mobile.more_dms.you',
-                defaultMessage: '(@{username} - you)'
+                defaultMessage: '(@{username} - you)',
             }, {username});
         }
 
@@ -99,24 +99,24 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 65,
             paddingHorizontal: 15,
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         displayName: {
             fontSize: 15,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         icon: {
             fontSize: 20,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         textContainer: {
             flexDirection: 'row',
-            marginLeft: 5
+            marginLeft: 5,
         },
         username: {
             marginLeft: 5,
             fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         selector: {
             height: 28,
@@ -125,20 +125,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderColor: '#888',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         selectorContainer: {
             height: 50,
             paddingRight: 15,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         selectorDisabled: {
-            backgroundColor: '#888'
+            backgroundColor: '#888',
         },
         selectorFilled: {
             backgroundColor: '#378FD2',
-            borderWidth: 0
-        }
+            borderWidth: 0,
+        },
     };
 });

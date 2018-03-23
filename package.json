@@ -42,7 +42,7 @@
     "react-native-permissions": "1.1.1",
     "react-native-safe-area": "0.2.3",
     "react-native-section-list-get-item-layout": "2.2.1",
-    "react-native-sentry": "0.15.1",
+    "react-native-sentry": "0.34.0",
     "react-native-slider": "0.11.0",
     "react-native-status-bar-size": "0.3.3",
     "react-native-svg": "6.1.3",
@@ -105,6 +105,8 @@
   },
   "scripts": {
     "test": "NODE_ENV=test nyc --reporter=text mocha --exit --opts test/mocha.opts",
+    "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
+    "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
     "postinstall": "make post-install"
   },
   "rnpm": {

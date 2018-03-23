@@ -8,7 +8,7 @@ import {
     SectionList,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -19,12 +19,12 @@ import {debounce} from 'mattermost-redux/actions/helpers';
 import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
 import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
 import {ListTypes} from 'app/constants';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
-    waitForInteraction: true
+    waitForInteraction: true,
 };
 
 export default class List extends PureComponent {
@@ -38,11 +38,11 @@ export default class List extends PureComponent {
         privateChannelIds: PropTypes.array.isRequired,
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        unreadChannelIds: PropTypes.array.isRequired
+        unreadChannelIds: PropTypes.array.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     constructor(props) {
@@ -51,7 +51,7 @@ export default class List extends PureComponent {
         this.state = {
             sections: this.buildSections(props),
             showIndicator: false,
-            width: 0
+            width: 0,
         };
 
         MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
@@ -66,7 +66,7 @@ export default class List extends PureComponent {
             favoriteChannelIds,
             publicChannelIds,
             privateChannelIds,
-            unreadChannelIds
+            unreadChannelIds,
         } = this.props;
 
         if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
@@ -93,7 +93,7 @@ export default class List extends PureComponent {
             favoriteChannelIds,
             publicChannelIds,
             privateChannelIds,
-            unreadChannelIds
+            unreadChannelIds,
         } = props;
         const sections = [];
 
@@ -104,7 +104,7 @@ export default class List extends PureComponent {
                 data: unreadChannelIds,
                 renderItem: this.renderUnreadItem,
                 topSeparator: false,
-                bottomSeparator: true
+                bottomSeparator: true,
             });
         }
 
@@ -114,7 +114,7 @@ export default class List extends PureComponent {
                 defaultMessage: 'FAVORITES',
                 data: favoriteChannelIds,
                 topSeparator: unreadChannelIds.length > 0,
-                bottomSeparator: true
+                bottomSeparator: true,
             });
         }
 
@@ -124,7 +124,7 @@ export default class List extends PureComponent {
             defaultMessage: 'PUBLIC CHANNELS',
             data: publicChannelIds,
             topSeparator: favoriteChannelIds.length > 0 || unreadChannelIds.length > 0,
-            bottomSeparator: publicChannelIds.length > 0
+            bottomSeparator: publicChannelIds.length > 0,
         });
 
         sections.push({
@@ -133,7 +133,7 @@ export default class List extends PureComponent {
             defaultMessage: 'PRIVATE CHANNELS',
             data: privateChannelIds,
             topSeparator: true,
-            bottomSeparator: privateChannelIds.length > 0
+            bottomSeparator: privateChannelIds.length > 0,
         });
 
         sections.push({
@@ -142,13 +142,13 @@ export default class List extends PureComponent {
             defaultMessage: 'DIRECT MESSAGES',
             data: directChannelIds,
             topSeparator: true,
-            bottomSeparator: directChannelIds.length > 0
+            bottomSeparator: directChannelIds.length > 0,
         });
 
         return sections;
     };
 
-    goToCreatePrivateChannel = wrapWithPreventDoubleTap(() => {
+    goToCreatePrivateChannel = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 
@@ -162,16 +162,16 @@ export default class List extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 channelType: General.PRIVATE_CHANNEL,
-                closeButton: this.closeButton
-            }
+                closeButton: this.closeButton,
+            },
         });
     });
 
-    goToDirectMessages = wrapWithPreventDoubleTap(() => {
+    goToDirectMessages = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 
@@ -185,18 +185,18 @@ export default class List extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             navigatorButtons: {
                 leftButtons: [{
                     id: 'close-dms',
-                    icon: this.closeButton
-                }]
-            }
+                    icon: this.closeButton,
+                }],
+            },
         });
     });
 
-    goToMoreChannels = wrapWithPreventDoubleTap(() => {
+    goToMoreChannels = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
 
@@ -210,11 +210,11 @@ export default class List extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                closeButton: this.closeButton
-            }
+                closeButton: this.closeButton,
+            },
         });
     });
 
@@ -282,7 +282,7 @@ export default class List extends PureComponent {
             bottomSeparator,
             defaultMessage,
             id,
-            topSeparator
+            topSeparator,
         } = section;
 
         return (
@@ -304,7 +304,7 @@ export default class List extends PureComponent {
             this.refs.list._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
                 x: 0,
                 y: 0,
-                animated: true
+                animated: true,
             });
         }
     };

@@ -16,12 +16,12 @@ export default class DrawerSwiper extends Component {
         onPageSelected: PropTypes.func,
         openDrawerOffset: PropTypes.number,
         showTeams: PropTypes.bool.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         onPageSelected: () => true,
-        openDrawerOffset: 0
+        openDrawerOffset: 0,
     };
 
     shouldComponentUpdate(nextProps) {
@@ -64,7 +64,7 @@ export default class DrawerSwiper extends Component {
             deviceWidth,
             openDrawerOffset,
             showTeams,
-            theme
+            theme,
         } = this.props;
 
         const initialPage = React.Children.count(children) - 1;
@@ -92,6 +92,6 @@ export default class DrawerSwiper extends Component {
 const style = StyleSheet.create({
     pagination: {
         bottom: 0,
-        position: 'absolute'
-    }
+        position: 'absolute',
+    },
 });

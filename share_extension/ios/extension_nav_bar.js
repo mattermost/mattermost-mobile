@@ -18,13 +18,13 @@ export default class ExtensionNavBar extends PureComponent {
         onRightButtonPress: PropTypes.func,
         rightButtonTitle: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        title: PropTypes.string
+        title: PropTypes.string,
     };
 
     static defaultProps = {
         backButton: false,
         onLeftButtonPress: emptyFunction,
-        title: 'Mattermost'
+        title: 'Mattermost',
     };
 
     renderLeftButton = (styles) => {
@@ -110,40 +110,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderBottomWidth: 1,
             flexDirection: 'row',
-            height: 45
+            height: 45,
         },
         backButtonContainer: {
             justifyContent: 'center',
             paddingHorizontal: 15,
-            width: '30%'
+            width: '30%',
         },
         titleContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         backButton: {
             color: theme.linkColor,
-            fontSize: 34
+            fontSize: 34,
         },
         leftButton: {
             color: theme.linkColor,
-            fontSize: 16
+            fontSize: 16,
         },
         title: {
             fontSize: 17,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         rightButtonContainer: {
             alignItems: 'flex-end',
             justifyContent: 'center',
             paddingHorizontal: 15,
-            width: '30%'
+            width: '30%',
         },
         rightButton: {
             color: theme.linkColor,
             fontSize: 16,
-            fontWeight: '600'
-        }
+            fontWeight: '600',
+        },
     };
 });

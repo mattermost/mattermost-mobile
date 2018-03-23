@@ -41,7 +41,7 @@ function mapStateToProps(state) {
         currentTeamId,
         channels,
         theme: getTheme(state),
-        requestStatus
+        requestStatus,
     };
 }
 
@@ -52,8 +52,8 @@ function mapDispatchToProps(dispatch) {
             joinChannel,
             getChannels,
             searchChannels,
-            setChannelDisplayName
-        }, dispatch)
+            setChannelDisplayName,
+        }, dispatch),
     };
 }
 

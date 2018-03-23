@@ -9,7 +9,7 @@ import DateHeader from './date_header';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

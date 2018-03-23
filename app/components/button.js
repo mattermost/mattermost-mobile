@@ -11,19 +11,19 @@ import {GlobalStyles} from 'app/styles';
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection: 'row'
+        flexDirection: 'row',
     },
 
     loading: {
-        marginLeft: 3
-    }
+        marginLeft: 3,
+    },
 });
 
 export default class Button extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
         loading: PropTypes.bool,
-        onPress: PropTypes.func.isRequired
+        onPress: PropTypes.func.isRequired,
     };
 
     onPress = () => {

@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    View
+    View,
 } from 'react-native';
 
 import ChanneIcon from 'app/components/channel_icon';
@@ -23,10 +23,11 @@ export default class ChannelInfoHeader extends React.PureComponent {
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
         navigator: PropTypes.object.isRequired,
+        onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        type: PropTypes.string.isRequired
+        type: PropTypes.string.isRequired,
     };
 
     render() {
@@ -37,10 +38,11 @@ export default class ChannelInfoHeader extends React.PureComponent {
             header,
             memberCount,
             navigator,
+            onPermalinkPress,
             purpose,
             status,
             theme,
-            type
+            type,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -75,6 +77,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <Markdown
                             navigator={navigator}
+                            onPermalinkPress={onPermalinkPress}
                             baseTextStyle={style.detail}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
@@ -91,6 +94,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <Markdown
                             navigator={navigator}
+                            onPermalinkPress={onPermalinkPress}
                             baseTextStyle={style.detail}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
@@ -104,7 +108,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             id='mobile.routes.channelInfo.createdBy'
                             defaultMessage='Created by {creator} on '
                             values={{
-                                creator
+                                creator,
                             }}
                         />
                         <FormattedDate
@@ -127,38 +131,38 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 40,
             padding: 15,
             borderBottomWidth: 1,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         channelName: {
             flex: 1,
             fontSize: 15,
             fontWeight: '600',
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         channelNameContainer: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingVertical: 10
+            paddingVertical: 10,
         },
         createdBy: {
             flexDirection: 'row',
             fontSize: 12,
             marginTop: 5,
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
         },
         detail: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         header: {
             fontSize: 13,
             marginBottom: 10,
             color: theme.centerChannelColor,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
         },
         section: {
-            marginTop: 15
-        }
+            marginTop: 15,
+        },
     };
 });

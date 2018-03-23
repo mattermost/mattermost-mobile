@@ -7,7 +7,7 @@ import {
     StyleSheet,
     View,
     Text,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -16,22 +16,22 @@ const style = StyleSheet.create({
         width: 25,
         height: 25,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     buttons: {
-        marginHorizontal: 15
+        marginHorizontal: 15,
     },
     container: {
         alignSelf: 'stretch',
         paddingHorizontal: 15,
         paddingVertical: 8,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     message: {
         flex: 1,
-        color: '#fff'
-    }
+        color: '#fff',
+    },
 });
 
 function GeneralError(props) {
@@ -66,7 +66,7 @@ function GeneralError(props) {
 
 GeneralError.propTypes = {
     dismiss: PropTypes.func.isRequired,
-    error: PropTypes.object.isRequired
+    error: PropTypes.object.isRequired,
 };
 
 export default GeneralError;

@@ -53,7 +53,7 @@ function mapStateToProps(state, ownProps) {
         isSystemMessage: isSystemMessage(post),
         message: post.message,
         theme: getTheme(state),
-        canAddReaction
+        canAddReaction,
     };
 }
 
@@ -61,9 +61,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             flagPost,
-            unflagPost
-        }, dispatch)
+            unflagPost,
+        }, dispatch),
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PostBody);
+export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(PostBody);

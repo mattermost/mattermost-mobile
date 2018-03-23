@@ -76,7 +76,7 @@ function mapStateToProps(state, ownProps) {
         commentedOnPost,
         license,
         theme: getTheme(state),
-        isFlagged: isPostFlagged(post.id, myPreferences)
+        isFlagged: isPostFlagged(post.id, myPreferences),
     };
 }
 
@@ -88,8 +88,8 @@ function mapDispatchToProps(dispatch) {
             deletePost,
             removePost,
             setPostTooltipVisible,
-            insertToDraft
-        }, dispatch)
+            insertToDraft,
+        }, dispatch),
     };
 }
 

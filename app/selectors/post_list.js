@@ -55,7 +55,7 @@ export function makePreparePostIdsForPostList() {
                 const postDate = new Date(post.create_at);
 
                 if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + postDate.toDateString());
+                    out.push(DATE_LINE + postDate.toString());
 
                     lastDate = postDate;
                 }

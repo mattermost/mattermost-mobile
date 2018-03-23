@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Platform,
-    View
+    View,
 } from 'react-native';
 
 import ErrorText from 'app/components/error_text';
@@ -19,7 +19,7 @@ import {RequestStatus} from 'mattermost-redux/constants';
 export default class EditPost extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            editPost: PropTypes.func.isRequired
+            editPost: PropTypes.func.isRequired,
         }),
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
@@ -27,20 +27,20 @@ export default class EditPost extends PureComponent {
         editPostRequest: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         post: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     leftButton = {
-        id: 'close-edit-post'
+        id: 'close-edit-post',
     };
 
     rightButton = {
         id: 'edit-post',
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props, context) {
@@ -52,7 +52,7 @@ export default class EditPost extends PureComponent {
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
         props.navigator.setButtons({
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
-            rightButtons: [this.rightButton]
+            rightButtons: [this.rightButton],
         });
     }
 
@@ -88,21 +88,21 @@ export default class EditPost extends PureComponent {
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down'
+            animationType: 'slide-down',
         });
     };
 
     emitCanEditPost = (enabled) => {
         this.props.navigator.setButtons({
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, disabled: !enabled}]
+            rightButtons: [{...this.rightButton, disabled: !enabled}],
         });
     };
 
     emitEditing = (loading) => {
         this.props.navigator.setButtons({
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, disabled: loading}]
+            rightButtons: [{...this.rightButton, disabled: loading}],
         });
     };
 
@@ -203,17 +203,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         errorContainer: {
-            paddingHorizontal: 10
+            paddingHorizontal: 10,
         },
         errorWrapper: {
-            alignItems: 'center'
+            alignItems: 'center',
         },
         inputContainer: {
             borderTopWidth: 1,
@@ -221,13 +221,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
             backgroundColor: theme.centerChannelBg,
-            marginTop: 2
+            marginTop: 2,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 14,
             padding: 15,
-            textAlignVertical: 'top'
-        }
+            textAlignVertical: 'top',
+        },
     };
 });

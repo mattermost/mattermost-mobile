@@ -25,7 +25,7 @@ const getClientUpgrade = createSelector(
             downloadLink,
             forceUpgrade: LocalConfig.EnableForceMobileClientUpgrade,
             latestVersion,
-            minVersion
+            minVersion,
         };
     }
 );

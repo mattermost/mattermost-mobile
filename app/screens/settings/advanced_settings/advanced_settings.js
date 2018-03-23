@@ -10,36 +10,39 @@ import {
     Platform,
     ScrollView,
     Text,
-    View
+    View,
 } from 'react-native';
+import {Sentry} from 'react-native-sentry';
 
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
 import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import Config from 'assets/config';
 
 class AdvancedSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            purgeOfflineStore: PropTypes.func.isRequired
+            purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     state = {
         cacheSize: null,
-        cacheSizedFetched: false
+        cacheSizedFetched: false,
     };
 
     componentDidMount() {
         this.getDownloadCacheSize();
     }
 
-    clearOfflineCache = wrapWithPreventDoubleTap(() => {
+    clearOfflineCache = preventDoubleTap(() => {
         const {actions, intl} = this.props;
 
         Alert.alert(
@@ -47,15 +50,15 @@ class AdvancedSettings extends PureComponent {
             intl.formatMessage({id: 'mobile.advanced_settings.reset_message', defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
             [{
                 text: intl.formatMessage({id: 'mobile.advanced_settings.reset_button', defaultMessage: 'Reset'}),
-                onPress: () => actions.purgeOfflineStore()
+                onPress: () => actions.purgeOfflineStore(),
             }, {
                 text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                onPress: () => true
+                onPress: () => true,
             }]
         );
     });
 
-    clearDownloadCache = wrapWithPreventDoubleTap(() => {
+    clearDownloadCache = preventDoubleTap(() => {
         const {intl} = this.props;
         const {cacheSize} = this.state;
 
@@ -63,11 +66,11 @@ class AdvancedSettings extends PureComponent {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.advanced_settings.delete_file_cache',
-                    defaultMessage: 'Delete File Cache'
+                    defaultMessage: 'Delete File Cache',
                 }),
                 intl.formatMessage({
                     id: 'mobile.advanced_settings.delete_file_cache_message',
-                    defaultMessage: '\nThis will delete all the files stored in the cache. Are you sure you want to delete them?\n'
+                    defaultMessage: '\nThis will delete all the files stored in the cache. Are you sure you want to delete them?\n',
                 }),
                 [{
                     text: intl.formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
@@ -76,10 +79,10 @@ class AdvancedSettings extends PureComponent {
                             await deleteFileCache();
                             this.setState({cacheSize: 0, cacheSizedFetched: true});
                         });
-                    }
+                    },
                 }, {
                     text: intl.formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                    onPress: () => true
+                    onPress: () => true,
                 }]
             );
         }
@@ -113,6 +116,40 @@ class AdvancedSettings extends PureComponent {
 
         return component;
     };
+
+    renderSentryDebugOptions = () => {
+        if (!Config.ShowSentryDebugOptions) {
+            return null;
+        }
+
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View>
+                <SettingsItem
+                    defaultMessage='Throw JavaScript Exception'
+                    iconName='md-flame'
+                    iconType='ion'
+                    onPress={Sentry.crash}
+                    separator={false}
+                    showArrow={false}
+                    theme={theme}
+                />
+                <View style={style.divider}/>
+                <SettingsItem
+                    defaultMessage='Throw Native Exception'
+                    iconName='md-nuclear'
+                    iconType='ion'
+                    onPress={Sentry.nativeCrash}
+                    separator={false}
+                    showArrow={false}
+                    theme={theme}
+                />
+                <View style={style.divider}/>
+            </View>
+        );
+    }
 
     render() {
         const {theme} = this.props;
@@ -149,6 +186,7 @@ class AdvancedSettings extends PureComponent {
                         theme={theme}
                     />
                     <View style={style.divider}/>
+                    {this.renderSentryDebugOptions()}
                 </ScrollView>
             </View>
         );
@@ -159,26 +197,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
-                    paddingTop: 35
-                }
-            })
+                    paddingTop: 35,
+                },
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1
+            height: 1,
         },
         cacheSize: {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 14,
-            lineHeight: 43
-        }
+            lineHeight: 43,
+        },
     };
 });
 

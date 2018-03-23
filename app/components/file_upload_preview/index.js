@@ -38,7 +38,7 @@ function mapStateToProps(state, ownProps) {
         deviceHeight,
         fetchCache: state.views.fetchCache,
         filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, ownProps.channelId, ownProps.rootId),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -47,8 +47,8 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             addFileToFetchCache,
             handleRemoveFile,
-            retryFileUpload
-        }, dispatch)
+            retryFileUpload,
+        }, dispatch),
     };
 }
 

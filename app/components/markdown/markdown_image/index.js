@@ -9,7 +9,7 @@ import MarkdownImage from './markdown_image';
 
 function mapStateToProps(state) {
     return {
-        serverURL: getCurrentUrl(state)
+        serverURL: getCurrentUrl(state),
     };
 }
 

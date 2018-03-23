@@ -8,7 +8,7 @@ import {
     Animated,
     View,
     Image,
-    StyleSheet
+    StyleSheet,
 } from 'react-native';
 
 import {Client4} from 'mattermost-redux/client';
@@ -20,7 +20,7 @@ const {View: AnimatedView} = Animated;
 const IMAGE_SIZE = {
     Fullsize: 'fullsize',
     Preview: 'preview',
-    Thumbnail: 'thumbnail'
+    Thumbnail: 'thumbnail',
 };
 
 export default class FileAttachmentImage extends PureComponent {
@@ -32,7 +32,7 @@ export default class FileAttachmentImage extends PureComponent {
         imageSize: PropTypes.oneOf([
             IMAGE_SIZE.Fullsize,
             IMAGE_SIZE.Preview,
-            IMAGE_SIZE.Thumbnail
+            IMAGE_SIZE.Thumbnail,
         ]),
         imageWidth: PropTypes.number,
         loadingBackgroundColor: PropTypes.string,
@@ -40,27 +40,27 @@ export default class FileAttachmentImage extends PureComponent {
         resizeMethod: PropTypes.string,
         wrapperBackgroundColor: PropTypes.string,
         wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number
+        wrapperWidth: PropTypes.number,
     };
 
     static defaultProps = {
         fadeInOnLoad: false,
-        imageHeight: 100,
+        imageHeight: 80,
         imageSize: IMAGE_SIZE.Preview,
-        imageWidth: 100,
+        imageWidth: 80,
         loading: false,
         loadingBackgroundColor: '#fff',
         resizeMode: 'cover',
         resizeMethod: 'resize',
         wrapperBackgroundColor: '#fff',
-        wrapperHeigh: 100,
-        wrapperWidth: 100
+        wrapperHeigh: 80,
+        wrapperWidth: 80,
     };
 
     state = {
         opacity: new Animated.Value(0),
         requesting: true,
-        retry: 0
+        retry: 0,
     };
 
     // Sometimes the request after a file upload errors out.
@@ -71,7 +71,7 @@ export default class FileAttachmentImage extends PureComponent {
             setTimeout(() => {
                 this.setState({
                     retry: (this.state.retry + 1),
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
                 });
             }, 300);
         }
@@ -79,12 +79,12 @@ export default class FileAttachmentImage extends PureComponent {
 
     handleLoad = () => {
         this.setState({
-            requesting: false
+            requesting: false,
         });
 
         Animated.timing(this.state.opacity, {
             toValue: 1,
-            duration: 300
+            duration: 300,
         }).start(() => {
             this.props.addFileToFetchCache(this.handleGetImageURL());
         });
@@ -92,7 +92,7 @@ export default class FileAttachmentImage extends PureComponent {
 
     handleLoadStart = () => {
         this.setState({
-            requesting: true
+            requesting: true,
         });
     };
 
@@ -137,7 +137,7 @@ export default class FileAttachmentImage extends PureComponent {
             resizeMode,
             wrapperBackgroundColor,
             wrapperHeight,
-            wrapperWidth
+            wrapperWidth,
         } = this.props;
 
         let source = {};
@@ -155,7 +155,7 @@ export default class FileAttachmentImage extends PureComponent {
         const imageComponentLoaders = {
             onError: isInFetchCache ? null : this.handleLoadError,
             onLoadStart: isInFetchCache ? null : this.handleLoadStart,
-            onLoad: isInFetchCache ? null : this.handleLoad
+            onLoad: isInFetchCache ? null : this.handleLoad,
         };
         const opacity = isInFetchCache ? 1 : this.state.opacity;
 
@@ -163,9 +163,9 @@ export default class FileAttachmentImage extends PureComponent {
         let width = imageWidth;
         let imageStyle = {height, width};
         if (imageSize === IMAGE_SIZE.Preview) {
-            height = 100;
+            height = 80;
             width = this.calculateNeededWidth(file.height, file.width, height);
-            imageStyle = {height, width, position: 'absolute', top: 0, left: 0};
+            imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
         }
 
         return (
@@ -192,13 +192,15 @@ export default class FileAttachmentImage extends PureComponent {
 const style = StyleSheet.create({
     fileImageWrapper: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        borderBottomLeftRadius: 2,
+        borderTopLeftRadius: 2,
     },
     loaderContainer: {
         position: 'absolute',
         height: '100%',
         width: '100%',
         alignItems: 'center',
-        justifyContent: 'center'
-    }
+        justifyContent: 'center',
+    },
 });

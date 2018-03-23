@@ -4,10 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {refreshChannelWithRetry} from 'app/actions/views/channel';
-import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
-
+import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+
+import {loadChannelsByTeamName, refreshChannelWithRetry} from 'app/actions/views/channel';
+import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 
 import PostList from './post_list';
 
@@ -23,7 +24,7 @@ function makeMapStateToProps() {
             deviceHeight,
             measureCellLayout,
             postIds,
-            theme: getTheme(state)
+            theme: getTheme(state),
         };
     };
 }
@@ -31,8 +32,10 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            refreshChannelWithRetry
-        }, dispatch)
+            loadChannelsByTeamName,
+            refreshChannelWithRetry,
+            selectFocusedPostId,
+        }, dispatch),
     };
 }
 

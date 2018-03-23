@@ -12,7 +12,7 @@ import {
     InteractionManager,
     Keyboard,
     NativeModules,
-    Platform
+    Platform,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {setJSExceptionHandler, setNativeExceptionHandler} from 'react-native-exception-handler';
@@ -33,13 +33,13 @@ import {
     calculateDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
-    setStatusBarHeight
+    setStatusBarHeight,
 } from 'app/actions/device';
 import {
     createPost,
     loadConfigAndLicense,
     loadFromPushNotification,
-    purgeOfflineStore
+    purgeOfflineStore,
 } from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {handleLoginIdChanged} from 'app/actions/views/login';
@@ -79,7 +79,8 @@ export default class Mattermost {
 
         this.unsubscribeFromStore = this.store.subscribe(this.listenForHydration);
         AppState.addEventListener('change', this.handleAppStateChange);
-        EventEmitter.on(General.CONFIG_CHANGED, this.handleServerConfigChanged);
+        EventEmitter.on(General.SERVER_VERSION_CHANGED, this.handleServerVersionChanged);
+        EventEmitter.on(General.CONFIG_CHANGED, this.handleConfigChanged);
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.handleLogout);
         EventEmitter.on(General.DEFAULT_CHANNEL, this.handleResetChannelDisplayName);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.restartApp);
@@ -96,6 +97,11 @@ export default class Mattermost {
     }
 
     errorHandler = (e, isFatal) => {
+        if (!e) {
+            // This method gets called for propTypes errors in dev mode without an exception
+            return;
+        }
+
         console.warn('Handling Javascript error ' + JSON.stringify(e)); // eslint-disable-line no-console
         captureException(e, LOGGER_JAVASCRIPT, this.store);
 
@@ -115,7 +121,7 @@ export default class Mattermost {
                     onPress: () => {
                         // purge the store
                         this.store.dispatch(purgeOfflineStore());
-                    }
+                    },
                 }],
                 {cancelable: false}
             );
@@ -153,7 +159,7 @@ export default class Mattermost {
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
             popInitialNotification: true,
-            requestPermissions: true
+            requestPermissions: true,
         });
         this.isConfigured = true;
     };
@@ -206,10 +212,10 @@ export default class Mattermost {
                 await mattermostManaged.authenticate({
                     reason: intl.formatMessage({
                         id: 'mobile.managed.secured_by',
-                        defaultMessage: 'Secured by {vendor}'
+                        defaultMessage: 'Secured by {vendor}',
                     }, {vendor}),
                     fallbackToPasscode: true,
-                    suppressEnterPassword: true
+                    suppressEnterPassword: true,
                 });
             } catch (err) {
                 mattermostManaged.quitApp();
@@ -220,7 +226,7 @@ export default class Mattermost {
         return true;
     };
 
-    handleServerConfigChanged = async (serverVersion) => {
+    handleServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = this.store;
         const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
         const intl = this.getIntl();
@@ -233,17 +239,26 @@ export default class Mattermost {
                     intl.formatMessage({id: 'mobile.server_upgrade.description', defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n'}),
                     [{
                         text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
-                        onPress: this.handleServerVersionUpgradeNeeded
+                        onPress: this.handleServerVersionUpgradeNeeded,
                     }],
                     {cancelable: false}
                 );
             } else if (state.entities.users && state.entities.users.currentUserId) {
                 setServerVersion(serverVersion)(dispatch, getState);
+
+                // Note that license and config changes are now emitted as websocket events, but
+                // we might be connected to an older server. Loading the configuration multiple
+                // times isn't a high overhead at present, so there's no harm in potentially
+                // repeating the load and handling for now.
                 const data = await loadConfigAndLicense()(dispatch, getState);
-                this.configureAnalytics(data.config);
+                this.handleConfigChanged(data.config);
             }
         }
     };
+
+    handleConfigChanged = (config) => {
+        this.configureAnalytics(config);
+    }
 
     handleManagedConfig = async (serverConfig) => {
         const {dispatch, getState} = this.store;
@@ -287,18 +302,18 @@ export default class Mattermost {
                         Alert.alert(
                             intl.formatMessage({
                                 id: 'mobile.managed.blocked_by',
-                                defaultMessage: 'Blocked by {vendor}'
+                                defaultMessage: 'Blocked by {vendor}',
                             }, {vendor}),
                             intl.formatMessage({
                                 id: 'mobile.managed.jailbreak',
-                                defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.'
+                                defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.',
                             }, {vendor}),
                             [{
                                 text: intl.formatMessage({id: 'mobile.managed.exit', defaultMessage: 'Exit'}),
                                 style: 'destructive',
                                 onPress: () => {
                                     mattermostManaged.quitApp();
-                                }
+                                },
                             }],
                             {cancelable: false}
                         );
@@ -477,7 +492,7 @@ export default class Mattermost {
         const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
         const notification = {
             data,
-            message
+            message,
         };
 
         if (userInfo) {
@@ -520,7 +535,7 @@ export default class Mattermost {
                 channel_id: data.channel_id,
                 root_id: rootId,
                 parent_id: rootId,
-                message: text
+                message: text,
             };
 
             if (!Client4.getUrl()) {
@@ -547,7 +562,7 @@ export default class Mattermost {
                 data,
                 text,
                 badge,
-                completed
+                completed,
             };
         }
     };
@@ -597,9 +612,9 @@ export default class Mattermost {
                 navigatorStyle: {
                     navBarHidden: true,
                     statusBarHidden: false,
-                    statusBarHideWithNavBar: false
-                }
-            }
+                    statusBarHideWithNavBar: false,
+                },
+            },
         });
     };
 
@@ -626,16 +641,16 @@ export default class Mattermost {
                         navBarHidden: true,
                         statusBarHidden: false,
                         statusBarHideWithNavBar: false,
-                        screenBackgroundColor: 'transparent'
-                    }
+                        screenBackgroundColor: 'transparent',
+                    },
                 },
                 passProps: {
-                    allowOtherServers: this.allowOtherServers
+                    allowOtherServers: this.allowOtherServers,
                 },
                 appStyle: {
-                    orientation: 'auto'
+                    orientation: 'auto',
                 },
-                animationType
+                animationType,
             });
 
             this.appStarted = true;

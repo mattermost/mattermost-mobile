@@ -9,29 +9,29 @@ export default makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            height: 68
+            height: 68,
         },
         iconContainer: {
             width: 42,
             height: 68,
             alignItems: 'center',
             justifyContent: 'center',
-            marginHorizontal: 15
+            marginHorizontal: 15,
         },
         icon: {
             color: theme.buttonBg,
-            fontSize: 25
+            fontSize: 25,
         },
         wrapper: {
-            flex: 1
+            flex: 1,
         },
         centerLabel: {
             textAlign: 'center',
-            textAlignVertical: 'center'
+            textAlignVertical: 'center',
         },
         labelContainer: {
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         label: {
             color: theme.centerChannelColor,
@@ -39,15 +39,18 @@ export default makeStyleSheetFromTheme((theme) => {
             fontSize: 17,
             textAlignVertical: 'center',
             includeFontPadding: false,
-            paddingRight: 15
+            paddingRight: 15,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1
+            height: 1,
         },
         arrowContainer: {
             justifyContent: 'center',
-            paddingRight: 15
-        }
+            paddingRight: 15,
+        },
+        destructor: {
+            color: theme.errorTextColor,
+        },
     };
 });

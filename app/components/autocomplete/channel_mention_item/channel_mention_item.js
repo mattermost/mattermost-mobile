@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -16,7 +16,7 @@ export default class ChannelMentionItem extends PureComponent {
         displayName: PropTypes.string,
         name: PropTypes.string,
         onPress: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     completeMention = () => {
@@ -29,7 +29,7 @@ export default class ChannelMentionItem extends PureComponent {
             channelId,
             displayName,
             name,
-            theme
+            theme,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -53,15 +53,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             padding: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         rowDisplayName: {
             fontSize: 13,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         rowName: {
             color: theme.centerChannelColor,
-            opacity: 0.6
-        }
+            opacity: 0.6,
+        },
     };
 });

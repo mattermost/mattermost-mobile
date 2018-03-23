@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {View} from 'react-native';
 import Svg, {
     G,
-    Path
+    Path,
 } from 'react-native-svg';
 
 function PptSvg({height, width}) {
@@ -49,7 +49,7 @@ function PptSvg({height, width}) {
 
 PptSvg.propTypes = {
     height: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired
+    width: PropTypes.number.isRequired,
 };
 
 export default PptSvg;

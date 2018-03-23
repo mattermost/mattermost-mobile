@@ -13,7 +13,7 @@ import {
     Text,
     TextInput,
     TouchableWithoutFeedback,
-    View
+    View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -24,7 +24,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 
 import logo from 'assets/images/logo.png';
@@ -42,21 +42,21 @@ class Login extends PureComponent {
             handleSuccessfulLogin: PropTypes.func.isRequired,
             getSession: PropTypes.func.isRequired,
             checkMfa: PropTypes.func.isRequired,
-            login: PropTypes.func.isRequired
+            login: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         checkMfaRequest: PropTypes.object.isRequired,
-        loginRequest: PropTypes.object.isRequired
+        loginRequest: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            error: null
+            error: null,
         };
     }
 
@@ -85,11 +85,11 @@ class Login extends PureComponent {
                 date: new Date(expiresAt),
                 message: intl.formatMessage({
                     id: 'mobile.session_expired',
-                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.'
+                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
                 }),
                 userInfo: {
-                    localNotification: true
-                }
+                    localNotification: true,
+                },
             });
         }
 
@@ -104,8 +104,8 @@ class Login extends PureComponent {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent'
-            }
+                screenBackgroundColor: 'transparent',
+            },
         });
     };
 
@@ -123,8 +123,8 @@ class Login extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     };
 
@@ -134,7 +134,7 @@ class Login extends PureComponent {
         Keyboard.dismiss();
     };
 
-    preSignIn = wrapWithPreventDoubleTap(() => {
+    preSignIn = preventDoubleTap(() => {
         this.setState({error: null, isLoading: true});
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {
@@ -160,11 +160,11 @@ class Login extends PureComponent {
                                 ldapUsername: this.props.config.LdapLoginFieldName ||
                                 this.props.intl.formatMessage({
                                     id: 'login.ldapUsernameLower',
-                                    defaultMessage: 'AD/LDAP username'
-                                })
-                            }
-                        }
-                    }
+                                    defaultMessage: 'AD/LDAP username',
+                                }),
+                            },
+                        },
+                    },
                 });
                 return;
             }
@@ -174,9 +174,9 @@ class Login extends PureComponent {
                     error: {
                         intl: {
                             id: 'login.noPassword',
-                            defaultMessage: 'Please enter your password'
-                        }
-                    }
+                            defaultMessage: 'Please enter your password',
+                        },
+                    },
                 });
                 return;
             }
@@ -258,8 +258,8 @@ class Login extends PureComponent {
             return {
                 intl: {
                     id: 'login.userNotFound',
-                    defaultMessage: "We couldn't find an account matching your login credentials."
-                }
+                    defaultMessage: "We couldn't find an account matching your login credentials.",
+                },
             };
         } else if (
             errorId === 'api.user.check_user_password.invalid.app_error' ||
@@ -268,8 +268,8 @@ class Login extends PureComponent {
             return {
                 intl: {
                     id: 'login.invalidPassword',
-                    defaultMessage: 'Your password is incorrect.'
-                }
+                    defaultMessage: 'Your password is incorrect.',
+                },
             };
         }
         return error.message;
@@ -399,15 +399,15 @@ class Login extends PureComponent {
 const style = StyleSheet.create({
     container: {
         backgroundColor: '#FFFFFF',
-        flex: 1
+        flex: 1,
     },
     innerContainer: {
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
         paddingHorizontal: 15,
-        paddingVertical: 50
-    }
+        paddingVertical: 50,
+    },
 });
 
 export default injectIntl(Login);

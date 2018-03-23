@@ -13,7 +13,7 @@ function handleCommentDraftChanged(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {draft: action.draft})
+        [action.rootId]: Object.assign({}, state[action.rootId], {draft: action.draft}),
     };
 }
 
@@ -27,8 +27,8 @@ function handleSetCommentDraft(state, action) {
         [action.rootId]: {
             draft: action.draft,
             cursorPosition: 0,
-            files: action.files
-        }
+            files: action.files,
+        },
     };
 }
 
@@ -40,8 +40,8 @@ function handleCommentDraftSelectionChange(state, action) {
     return {
         ...state,
         [action.rootId]: Object.assign({}, state[action.rootId], {
-            cursorPosition: action.cursorPosition
-        })
+            cursorPosition: action.cursorPosition,
+        }),
     };
 }
 
@@ -58,8 +58,8 @@ function handleReceivedPostSelected(state, action) {
             [action.data]: {
                 draft: '',
                 cursorPosition: 0,
-                files: []
-            }
+                files: [],
+            },
         };
     }
 
@@ -74,12 +74,12 @@ function handleSetTempUploadFilesForPostDraft(state, action) {
     const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
     const files = [
         ...state[action.rootId].files,
-        ...tempFiles
+        ...tempFiles,
     ];
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -93,7 +93,7 @@ function handleRetryUploadForPost(state, action) {
             return {
                 ...f,
                 loading: true,
-                failed: false
+                failed: false,
             };
         }
 
@@ -102,7 +102,7 @@ function handleRetryUploadForPost(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -117,7 +117,7 @@ function handleReceiveUploadFiles(state, action) {
         if (file) {
             return {
                 ...file,
-                localPath: tempFile.localPath
+                localPath: tempFile.localPath,
             };
         }
 
@@ -126,7 +126,7 @@ function handleReceiveUploadFiles(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -141,7 +141,7 @@ function handleUploadFilesFailure(state, action) {
             return {
                 ...tempFile,
                 loading: false,
-                failed: true
+                failed: true,
             };
         }
 
@@ -150,7 +150,7 @@ function handleUploadFilesFailure(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -161,7 +161,7 @@ function handleClearFilesForPostDraft(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files: []})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files: []}),
     };
 }
 
@@ -174,7 +174,7 @@ function handleRemoveFileFromPostDraft(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -188,7 +188,7 @@ function handleRemoveLastFromPostDraft(state, action) {
 
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -200,7 +200,7 @@ function handleRemoveFailedFilesFromPostDraft(state, action) {
     const files = state[action.rootId].files.filter((f) => !f.failed);
     return {
         ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files})
+        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
     };
 }
 
@@ -236,5 +236,5 @@ function drafts(state = {}, action) { // eslint-disable-line complexity
 }
 
 export default combineReducers({
-    drafts
+    drafts,
 });

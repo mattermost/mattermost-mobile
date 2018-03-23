@@ -17,7 +17,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class AtMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            autocompleteUsers: PropTypes.func.isRequired
+            autocompleteUsers: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
@@ -33,20 +33,20 @@ export default class AtMention extends PureComponent {
         requestStatus: PropTypes.string.isRequired,
         teamMembers: PropTypes.array,
         theme: PropTypes.object.isRequired,
-        value: PropTypes.string
+        value: PropTypes.string,
     };
 
     static defaultProps = {
         defaultChannel: {},
         isSearch: false,
-        value: ''
+        value: '',
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            sections: []
+            sections: [],
         };
     }
 
@@ -56,7 +56,7 @@ export default class AtMention extends PureComponent {
             // if the term changes but is null or the mention has been completed we render this component as null
             this.setState({
                 mentionComplete: false,
-                sections: []
+                sections: [],
             });
 
             this.props.onResultCountChange(0);
@@ -84,7 +84,7 @@ export default class AtMention extends PureComponent {
                     id: 'mobile.suggestion.members',
                     defaultMessage: 'Members',
                     data: teamMembers,
-                    key: 'teamMembers'
+                    key: 'teamMembers',
                 });
             } else {
                 if (inChannel.length) {
@@ -92,7 +92,7 @@ export default class AtMention extends PureComponent {
                         id: 'suggestion.mention.members',
                         defaultMessage: 'Channel Members',
                         data: inChannel,
-                        key: 'inChannel'
+                        key: 'inChannel',
                     });
                 }
 
@@ -102,7 +102,7 @@ export default class AtMention extends PureComponent {
                         defaultMessage: 'Special Mentions',
                         data: this.getSpecialMentions(),
                         key: 'special',
-                        renderItem: this.renderSpecialMentions
+                        renderItem: this.renderSpecialMentions,
                     });
                 }
 
@@ -111,13 +111,13 @@ export default class AtMention extends PureComponent {
                         id: 'suggestion.mention.nonmembers',
                         defaultMessage: 'Not in Channel',
                         data: outChannel,
-                        key: 'outChannel'
+                        key: 'outChannel',
                     });
                 }
             }
 
             this.setState({
-                sections
+                sections,
             });
 
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
@@ -134,16 +134,16 @@ export default class AtMention extends PureComponent {
             id: 'suggestion.mention.all',
             defaultMessage: 'Notifies everyone in the channel, use in {townsquare} to notify the whole team',
             values: {
-                townsquare: this.props.defaultChannel.display_name
-            }
+                townsquare: this.props.defaultChannel.display_name,
+            },
         }, {
             completeHandle: 'channel',
             id: 'suggestion.mention.channel',
-            defaultMessage: 'Notifies everyone in the channel'
+            defaultMessage: 'Notifies everyone in the channel',
         }, {
             completeHandle: 'here',
             id: 'suggestion.mention.here',
-            defaultMessage: 'Notifies everyone in the channel and online'
+            defaultMessage: 'Notifies everyone in the channel and online',
         }];
     };
 
@@ -232,10 +232,10 @@ export default class AtMention extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         search: {
-            minHeight: 125
-        }
+            minHeight: 125,
+        },
     };
 });

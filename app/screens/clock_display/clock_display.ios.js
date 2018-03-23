@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    View
+    View,
 } from 'react-native';
 
 import StatusBar from 'app/components/status_bar';
@@ -66,12 +66,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
-            paddingTop: 35
-        }
+            paddingTop: 35,
+        },
     };
 });

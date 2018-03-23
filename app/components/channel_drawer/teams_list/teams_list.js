@@ -9,14 +9,14 @@ import {
     StatusBar,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
 import {ListTypes, ViewTypes} from 'app/constants';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 
@@ -25,22 +25,21 @@ import TeamsListItem from './teams_list_item';
 const {ANDROID_TOP_PORTRAIT} = ViewTypes;
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
-    waitForInteraction: true
+    waitForInteraction: true,
 };
 
 class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleTeamChange: PropTypes.func.isRequired
+            handleTeamChange: PropTypes.func.isRequired,
         }).isRequired,
-        canJoinOtherTeams: PropTypes.bool.isRequired,
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         teamIds: PropTypes.array.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -64,7 +63,7 @@ class TeamsList extends PureComponent {
         });
     };
 
-    goToSelectTeam = wrapWithPreventDoubleTap(() => {
+    goToSelectTeam = preventDoubleTap(() => {
         const {currentUrl, intl, navigator, theme} = this.props;
 
         navigator.showModal({
@@ -77,18 +76,18 @@ class TeamsList extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             navigatorButtons: {
                 leftButtons: [{
                     id: 'close-teams',
-                    icon: this.closeButton
-                }]
+                    icon: this.closeButton,
+                }],
             },
             passProps: {
                 currentUrl,
-                theme
-            }
+                theme,
+            },
         });
     });
 
@@ -106,25 +105,22 @@ class TeamsList extends PureComponent {
     };
 
     render() {
-        const {canJoinOtherTeams, teamIds, theme} = this.props;
+        const {teamIds, theme} = this.props;
         const styles = getStyleSheet(theme);
 
-        let moreAction;
-        if (canJoinOtherTeams) {
-            moreAction = (
-                <TouchableHighlight
-                    style={styles.moreActionContainer}
-                    onPress={this.goToSelectTeam}
-                    underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+        const moreAction = (
+            <TouchableHighlight
+                style={styles.moreActionContainer}
+                onPress={this.goToSelectTeam}
+                underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
+            >
+                <Text
+                    style={styles.moreAction}
                 >
-                    <Text
-                        style={styles.moreAction}
-                    >
-                        {'+'}
-                    </Text>
-                </TouchableHighlight>
-            );
-        }
+                    {'+'}
+                </Text>
+            </TouchableHighlight>
+        );
 
         return (
             <View style={styles.container}>
@@ -153,10 +149,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.sidebarBg,
-            flex: 1
+            flex: 1,
         },
         statusBar: {
-            backgroundColor: theme.sidebarHeaderBg
+            backgroundColor: theme.sidebarHeaderBg,
         },
         headerContainer: {
             alignItems: 'center',
@@ -166,19 +162,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderBottomColor: changeOpacity(theme.sidebarHeaderTextColor, 0.10),
             ...Platform.select({
                 android: {
-                    height: ANDROID_TOP_PORTRAIT
+                    height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44
-                }
-            })
+                    height: 44,
+                },
+            }),
         },
         header: {
             color: theme.sidebarHeaderTextColor,
             flex: 1,
             fontSize: 17,
             textAlign: 'center',
-            fontWeight: '600'
+            fontWeight: '600',
         },
         moreActionContainer: {
             alignItems: 'center',
@@ -186,17 +182,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 50,
             ...Platform.select({
                 android: {
-                    height: ANDROID_TOP_PORTRAIT
+                    height: ANDROID_TOP_PORTRAIT,
                 },
                 ios: {
-                    height: 44
-                }
-            })
+                    height: 44,
+                },
+            }),
         },
         moreAction: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 30
-        }
+            fontSize: 30,
+        },
     };
 });
 

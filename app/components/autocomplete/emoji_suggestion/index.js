@@ -35,7 +35,7 @@ function mapStateToProps(state) {
         location: 0,
         distance: 100,
         minMatchCharLength: 2,
-        maxPatternLength: 32
+        maxPatternLength: 32,
     };
 
     const emojis = getEmojisByName(state);
@@ -46,7 +46,7 @@ function mapStateToProps(state) {
         fuse,
         emojis,
         theme: getTheme(state),
-        serverVersion: state.entities.general.serverVersion || Client4.getServerVersion()
+        serverVersion: state.entities.general.serverVersion || Client4.getServerVersion(),
     };
 }
 
@@ -54,8 +54,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             addReactionToLatestPost,
-            autocompleteCustomEmojis
-        }, dispatch)
+            autocompleteCustomEmojis,
+        }, dispatch),
     };
 }
 

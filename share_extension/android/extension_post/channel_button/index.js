@@ -9,7 +9,7 @@ import ChannelButton from './channel_button';
 
 function mapStateToProps(state, ownProps) {
     return {
-        channel: getChannel(state, ownProps.channelId)
+        channel: getChannel(state, ownProps.channelId),
     };
 }
 

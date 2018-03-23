@@ -7,7 +7,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 
 const emptyDraft = {
     draft: '',
-    files: []
+    files: [],
 };
 
 function getChannelDrafts(state) {
