@@ -7,9 +7,9 @@ import PropTypes from 'prop-types';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
-import SlackAttachment from './slack_attachment';
+import MessageAttachment from './message_attachment';
 
-export default class SlackAttachments extends PureComponent {
+export default class MessageAttachments extends PureComponent {
     static propTypes = {
         attachments: PropTypes.array.isRequired,
         baseTextStyle: CustomPropTypes.Style,
@@ -38,7 +38,7 @@ export default class SlackAttachments extends PureComponent {
 
         attachments.forEach((attachment, i) => {
             content.push(
-                <SlackAttachment
+                <MessageAttachment
                     attachment={attachment}
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}

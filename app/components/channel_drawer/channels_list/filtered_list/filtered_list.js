@@ -53,7 +53,6 @@ class FilteredList extends Component {
     };
 
     static defaultProps = {
-        currentTeam: {},
         currentChannel: {},
         pastDirectMessages: [],
     };

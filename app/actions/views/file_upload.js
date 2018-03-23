@@ -31,7 +31,7 @@ export function handleUploadFiles(files, rootId) {
                 extension: fileData.extension,
             });
 
-            fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
+            fileData.name = encodeHeaderURIStringToUTF8(fileData.name);
             formData.append('files', fileData);
             formData.append('channel_id', channelId);
             formData.append('client_ids', clientId);
@@ -60,14 +60,11 @@ export function retryFileUpload(file, rootId) {
 
         const channelId = state.entities.channels.currentChannelId;
         const formData = new FormData();
+        const fileData = buildFileUploadData(file);
 
-        const fileData = {
-            uri: file.localPath,
-            name: file.name,
-            type: file.type,
-        };
+        fileData.uri = file.localPath;
 
-        fileData.name = encodeHeaderURIStringToUTF8(file.fileName);
+        fileData.name = encodeHeaderURIStringToUTF8(fileData.name);
         formData.append('files', fileData);
         formData.append('channel_id', channelId);
         formData.append('client_ids', file.clientId);
