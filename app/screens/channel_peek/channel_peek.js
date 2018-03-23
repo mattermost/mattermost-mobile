@@ -79,7 +79,6 @@ export default class ChannelPeek extends PureComponent {
             <View style={style.container}>
                 <PostList
                     postIds={visiblePostIds}
-                    showLoadMore={false}
                     renderReplies={true}
                     indicateNewMessages={true}
                     currentUserId={currentUserId}

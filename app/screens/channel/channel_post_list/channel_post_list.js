@@ -1,8 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Platform,
     StyleSheet,
@@ -10,7 +10,11 @@ import {
     InteractionManager,
 } from 'react-native';
 
+import {debounce} from 'mattermost-redux/actions/helpers';
+
 import AnnouncementBanner from 'app/components/announcement_banner';
+import ChannelIntro from 'app/components/channel_intro';
+import LoadMorePosts from 'app/components/load_more_posts';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
@@ -114,16 +118,39 @@ export default class ChannelPostList extends PureComponent {
         }
     };
 
-    loadMorePosts = () => {
+    loadMorePosts = debounce(() => {
         if (this.props.loadMorePostsVisible) {
             const {actions, channelId} = this.props;
             actions.increasePostVisibility(channelId);
         }
-    };
+    }, 100);
 
     loadPostsRetry = () => {
         const {actions, channelId} = this.props;
         actions.loadPostsIfNecessaryWithRetry(channelId);
+    };
+
+    renderFooter = () => {
+        if (!this.props.channelId) {
+            return null;
+        }
+
+        if (this.props.loadMorePostsVisible) {
+            return (
+                <LoadMorePosts
+                    channelId={this.props.channelId}
+                    loadMore={this.loadMorePosts}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        return (
+            <ChannelIntro
+                channelId={this.props.channelId}
+                navigator={this.props.navigator}
+            />
+        );
     };
 
     render() {
@@ -161,8 +188,8 @@ export default class ChannelPostList extends PureComponent {
             component = (
                 <PostList
                     postIds={visiblePostIds}
-                    loadMore={this.loadMorePosts}
-                    showLoadMore={loadMorePostsVisible}
+                    extraData={loadMorePostsVisible}
+                    onEndReached={this.loadMorePosts}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
                     renderReplies={true}
@@ -171,6 +198,7 @@ export default class ChannelPostList extends PureComponent {
                     lastViewedAt={lastViewedAt}
                     channelId={channelId}
                     navigator={navigator}
+                    renderFooter={this.renderFooter}
                 />
             );
         }

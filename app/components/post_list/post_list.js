@@ -10,7 +10,6 @@ import {
     StyleSheet,
 } from 'react-native';
 
-import ChannelIntro from 'app/components/channel_intro';
 import Post from 'app/components/post';
 import {DATE_LINE, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
 import mattermostManaged from 'app/mattermost_managed';
@@ -18,13 +17,12 @@ import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
 
 import DateHeader from './date_header';
-import LoadMorePosts from './load_more_posts';
 import NewMessagesDivider from './new_messages_divider';
 import withLayout from './with_layout';
 
 const PostWithLayout = withLayout(Post);
 
-const INITAL_BATCH_TO_RENDER = 15;
+const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
 
@@ -38,22 +36,22 @@ export default class PostList extends PureComponent {
         channelId: PropTypes.string,
         currentUserId: PropTypes.string,
         deviceHeight: PropTypes.number.isRequired,
+        extraData: PropTypes.any,
         highlightPostId: PropTypes.string,
         indicateNewMessages: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
-        loadMore: PropTypes.func,
         measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
+        onEndReached: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         postIds: PropTypes.array.isRequired,
+        renderFooter: PropTypes.func,
         renderReplies: PropTypes.bool,
-        showLoadMore: PropTypes.bool,
         shouldRenderReplyButton: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        renderFooter: PropTypes.func,
     };
 
     static defaultProps = {
@@ -319,32 +317,6 @@ export default class PostList extends PureComponent {
         );
     };
 
-    renderFooter = () => {
-        if (this.props.renderFooter) {
-            return this.props.renderFooter();
-        }
-
-        if (!this.props.channelId) {
-            return null;
-        }
-
-        if (this.props.showLoadMore) {
-            return (
-                <LoadMorePosts
-                    channelId={this.props.channelId}
-                    theme={this.props.theme}
-                />
-            );
-        }
-
-        return (
-            <ChannelIntro
-                channelId={this.props.channelId}
-                navigator={this.props.navigator}
-            />
-        );
-    };
-
     onLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({
@@ -356,9 +328,8 @@ export default class PostList extends PureComponent {
         const {
             channelId,
             highlightPostId,
-            loadMore,
+            onEndReached,
             postIds,
-            showLoadMore,
         } = this.props;
 
         const refreshControl = {
@@ -374,13 +345,13 @@ export default class PostList extends PureComponent {
                 onLayout={this.onLayout}
                 ref='list'
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId, showLoadMore)}
+                extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
                 initialNumToRender={false}
-                maxToRenderPerBatch={INITAL_BATCH_TO_RENDER + 1}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}
-                ListFooterComponent={this.renderFooter}
-                onEndReached={loadMore}
+                ListFooterComponent={this.props.renderFooter}
+                onEndReached={onEndReached}
                 onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
                 removeClippedSubviews={Platform.OS === 'android'}
                 {...refreshControl}
