@@ -154,7 +154,7 @@ export default class LongPost extends PureComponent {
         return attachments;
     }
 
-    renderReactions = () => {
+    renderReactions = (style) => {
         const {hasReactions, postId, onAddReaction} = this.props;
 
         if (!hasReactions) {
@@ -162,11 +162,13 @@ export default class LongPost extends PureComponent {
         }
 
         return (
-            <Reactions
-                position='left'
-                postId={postId}
-                onAddReaction={onAddReaction}
-            />
+            <View style={style.reactions}>
+                <Reactions
+                    position='left'
+                    postId={postId}
+                    onAddReaction={onAddReaction}
+                />
+            </View>
         );
     };
 
@@ -188,7 +190,7 @@ export default class LongPost extends PureComponent {
             footer = (
                 <View style={style.footer}>
                     {this.renderFileAttachments(style)}
-                    {this.renderReactions()}
+                    {this.renderReactions(style)}
                 </View>
             );
         }
@@ -311,6 +313,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         attachments: {
             backgroundColor: theme.centerChannelBg,
             height: 105,
+            width: '100%',
+        },
+        reactions: {
+            height: 47,
             width: '100%',
         },
     };

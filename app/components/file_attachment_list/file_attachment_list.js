@@ -8,6 +8,7 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
+    View,
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -123,13 +124,15 @@ export default class FileAttachmentList extends Component {
         }
 
         return (
-            <ScrollView
-                horizontal={true}
-                scrollEnabled={fileIds.length > 1}
-                style={[styles.flex, (isFailed && styles.failed)]}
-            >
-                {fileAttachments}
-            </ScrollView>
+            <View style={styles.flex}>
+                <ScrollView
+                    horizontal={true}
+                    scrollEnabled={fileIds.length > 1}
+                    style={[styles.flex, (isFailed && styles.failed)]}
+                >
+                    {fileAttachments}
+                </ScrollView>
+            </View>
         );
     }
 }

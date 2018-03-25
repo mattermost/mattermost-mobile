@@ -7,6 +7,7 @@ import {
     Image,
     ScrollView,
     TouchableOpacity,
+    View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -102,13 +103,15 @@ export default class Reactions extends PureComponent {
         }
 
         return (
-            <ScrollView
-                alwaysBounceHorizontal={false}
-                horizontal={true}
-                overScrollMode='never'
-            >
-                {reactionElements}
-            </ScrollView>
+            <View style={styles.container}>
+                <ScrollView
+                    alwaysBounceHorizontal={false}
+                    horizontal={true}
+                    overScrollMode='never'
+                >
+                    {reactionElements}
+                </ScrollView>
+            </View>
         );
     }
 }
@@ -132,7 +135,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 30,
             marginRight: 6,
-            marginVertical: 5,
+            marginBottom: 5,
+            marginTop: 10,
             paddingVertical: 2,
             paddingHorizontal: 6,
             width: 40,
