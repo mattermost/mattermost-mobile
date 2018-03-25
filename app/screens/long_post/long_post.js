@@ -312,7 +312,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         attachments: {
             backgroundColor: theme.centerChannelBg,
-            height: 105,
+            height: 95,
             width: '100%',
         },
         reactions: {
