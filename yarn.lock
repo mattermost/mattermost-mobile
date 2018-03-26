@@ -4451,7 +4451,7 @@ map-visit@^1.0.0:
 
 mattermost-redux@mattermost/mattermost-redux:
   version "1.2.0"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/bd8142c4674cc489f2f0b92e80e06fc3b8d3c0a2"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/93ec26fca8ce7df6b11259e41c7e441bac4f4a07"
   dependencies:
     deep-equal "1.0.1"
     flow-copy-source "^1.2.2"
