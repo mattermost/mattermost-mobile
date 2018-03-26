@@ -34,7 +34,7 @@ export default class EditChannelInfo extends PureComponent {
         enableRightButton: PropTypes.func,
         saving: PropTypes.bool.isRequired,
         editing: PropTypes.bool,
-        error: PropTypes.string,
+        error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
         displayName: PropTypes.string,
         currentTeamUrl: PropTypes.string,
         channelURL: PropTypes.string,
