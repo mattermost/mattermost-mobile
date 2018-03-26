@@ -19,14 +19,13 @@
 - Increased the tappable area of various icons for improved usability
 - Announcement banners now display in the app
 - Added "+" button to add emoji reactions to a post
-- Support for team icons that will be avialable with Mattermost Server v4.9
 - Minor performance improvements for app launch time
 - Text files can now be viewed in the app
 - Support for email autolinking into the app
-- Attachments are now displayed in a horizontal scroll view to save screen space.
+- Attachments are now displayed in a horizontal scroll view to save screen space
 
 ### Bugs
-- Fixed an issue causing some devices to hang and the splash screen on app launch
+- Fixed an issue causing some devices to hang at the splash screen on app launch
 - Fixed an issue causing some letters to be hidden in the Android search input box
 - Fixed an issue causing some Direct Message channels to show date stamps below the most recent message
 - Fixed an issue where users weren't able to join open teams they've never been a member of
