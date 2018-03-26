@@ -346,6 +346,7 @@ export default class PostBody extends PureComponent {
             hasBeenEdited,
             isFailed,
             isPending,
+            isPostAddChannelMember,
             isSearchResult,
             isSystemMessage,
             message,
@@ -353,6 +354,7 @@ export default class PostBody extends PureComponent {
             onFailedPostPress,
             onPermalinkPress,
             onPress,
+            postProps,
             renderReplyBar,
             theme,
             toggleSelected,
@@ -387,7 +389,7 @@ export default class PostBody extends PureComponent {
         } else if (isPostAddChannelMember) {
             messageComponent = (
                 <View style={style.row}>
-                    <View style={[{flex: 1}, (isPendingOrFailedPost && style.pendingPost)]}>
+                    <View style={style.flex}>
                         <PostAddChannelMember
                             navigator={navigator}
                             onLongPress={this.showOptionsContext}

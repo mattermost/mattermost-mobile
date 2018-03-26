@@ -41,16 +41,13 @@ function mapStateToProps(state, ownProps) {
         isPending = false;
     }
 
-    const isEphemeralPost = isPostEphemeral(post);
-    const isSystemPost = isSystemMessage(post);
-
     const channel = getCurrentChannel(state);
     const user = getCurrentUser(state);
     const teamMember = getCurrentTeamMembership(state);
     const channelMember = getMyCurrentChannelMembership(state);
     const {config, license} = state.entities.general;
-
     const isUserCanManageMembers = canManageMembers(channel, user, teamMember, channelMember, config, license);
+    const isEphemeralPost = isPostEphemeral(post);
 
     let isPostAddChannelMember = false;
     if (
@@ -73,7 +70,7 @@ function mapStateToProps(state, ownProps) {
         isPending,
         isPostAddChannelMember,
         isPostEphemeral: isEphemeralPost,
-        isSystemMessage: isSystemPost,
+        isSystemMessage: isSystemMessage(post),
         message: post.message,
         theme: getTheme(state),
     };
