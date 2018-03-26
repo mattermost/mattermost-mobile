@@ -19,6 +19,7 @@ import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
+import PostAddChannelMember from 'app/components/post_add_channel_member';
 
 import PostBodyAdditionalContent from 'app/components/post_body_additional_content';
 
@@ -44,6 +45,7 @@ export default class PostBody extends PureComponent {
         isFailed: PropTypes.bool,
         isFlagged: PropTypes.bool,
         isPending: PropTypes.bool,
+        isPostAddChannelMember: PropTypes.bool,
         isPostEphemeral: PropTypes.bool,
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
@@ -344,6 +346,7 @@ export default class PostBody extends PureComponent {
             hasBeenEdited,
             isFailed,
             isPending,
+            isPostAddChannelMember,
             isSearchResult,
             isSystemMessage,
             message,
@@ -351,6 +354,7 @@ export default class PostBody extends PureComponent {
             onFailedPostPress,
             onPermalinkPress,
             onPress,
+            postProps,
             renderReplyBar,
             theme,
             toggleSelected,
@@ -382,6 +386,23 @@ export default class PostBody extends PureComponent {
                 </TouchableHighlight>
             );
             body = (<View>{messageComponent}</View>);
+        } else if (isPostAddChannelMember) {
+            messageComponent = (
+                <View style={style.row}>
+                    <View style={style.flex}>
+                        <PostAddChannelMember
+                            navigator={navigator}
+                            onLongPress={this.showOptionsContext}
+                            onPermalinkPress={onPermalinkPress}
+                            onPostPress={onPress}
+                            textStyles={textStyles}
+                            postId={postProps.add_channel_member.post_id}
+                            userIds={postProps.add_channel_member.user_ids}
+                            usernames={postProps.add_channel_member.usernames}
+                        />
+                    </View>
+                </View>
+            );
         } else if (message.length) {
             messageComponent = (
                 <View style={style.row}>
