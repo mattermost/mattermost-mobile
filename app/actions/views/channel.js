@@ -337,7 +337,7 @@ export function insertToDraft(value) {
         let draft;
         let cursorPosition;
         let action;
-        if (state.views.thread.drafts[threadId]) {
+        if (threadId && state.views.thread.drafts[threadId]) {
             const threadDraft = state.views.thread.drafts[threadId];
             draft = threadDraft.draft;
             cursorPosition = threadDraft.cursorPosition;

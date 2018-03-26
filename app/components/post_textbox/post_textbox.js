@@ -79,7 +79,7 @@ export default class PostTextbox extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.channelId !== this.props.channelId || nextProps.rootId !== this.props.rootId) {
+        if (nextProps.channelId !== this.props.channelId || nextProps.rootId !== this.props.rootId || nextProps.value !== this.state.value) {
             this.setState({value: nextProps.value});
         }
     }
