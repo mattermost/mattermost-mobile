@@ -25,6 +25,7 @@ import ImagePreview from 'app/screens/image_preview';
 import TextPreview from 'app/screens/text_preview';
 import Login from 'app/screens/login';
 import LoginOptions from 'app/screens/login_options';
+import LongPost from 'app/screens/long_post';
 import Mfa from 'app/screens/mfa';
 import MoreChannels from 'app/screens/more_channels';
 import MoreDirectMessages from 'app/screens/more_dms';
@@ -84,6 +85,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(TextPreview), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(Login), store, Provider);
     Navigation.registerComponent('LoginOptions', () => wrapWithContextProvider(LoginOptions), store, Provider);
+    Navigation.registerComponent('LongPost', () => wrapWithContextProvider(LongPost), store, Provider);
     Navigation.registerComponent('MFA', () => wrapWithContextProvider(Mfa), store, Provider);
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(MoreChannels), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);

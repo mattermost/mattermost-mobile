@@ -36,7 +36,7 @@ export default class Reaction extends PureComponent {
             >
                 <Emoji
                     emojiName={emojiName}
-                    size={15}
+                    size={20}
                     padding={5}
                 />
                 <Text style={styles.count}>{count}</Text>
@@ -60,8 +60,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.linkColor, 0.4),
             borderWidth: 1,
             flexDirection: 'row',
+            height: 30,
             marginRight: 6,
-            marginVertical: 5,
+            marginBottom: 5,
+            marginTop: 10,
             paddingVertical: 2,
             paddingHorizontal: 6,
         },
