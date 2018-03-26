@@ -101,7 +101,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         },
         muted: {
             marginTop: 1,
-            opacity: 0.5,
+            opacity: 0.6,
             marginLeft: 0,
         },
     };
