@@ -21,6 +21,7 @@ import {
     getCurrentChannelStats,
     getSortedFavoriteChannelIds,
     getMyCurrentChannelMembership,
+    isCurrentChannelReadOnly,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
@@ -56,10 +57,8 @@ function mapStateToProps(state) {//eslint-disable-line complexity
         status = getStatusForUserId(state, teammateId);
     }
 
-    let canEditChannel = showManagementOptions(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles));
-    if (currentChannel.name === General.DEFAULT_CHANNEL) {
-        canEditChannel = (isAdmin(roles) || isSystemAdmin(roles) || isChannelAdmin(roles)) || config.ExperimentalTownSquareIsReadOnly !== 'true';
-    }
+    const channelIsReadOnly = isCurrentChannelReadOnly(state);
+    const canEditChannel = !channelIsReadOnly && showManagementOptions(config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles));
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin(roles), isSystemAdmin(roles), isChannelAdmin(roles)),
