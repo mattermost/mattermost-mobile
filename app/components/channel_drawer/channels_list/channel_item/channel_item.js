@@ -31,6 +31,7 @@ export default class ChannelItem extends PureComponent {
         mentions: PropTypes.number.isRequired,
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
+        shouldHideChannel: PropTypes.bool,
         status: PropTypes.string,
         teammateDeletedAt: PropTypes.number,
         type: PropTypes.string.isRequired,
@@ -81,11 +82,16 @@ export default class ChannelItem extends PureComponent {
             isMyUser,
             isUnread,
             mentions,
+            shouldHideChannel,
             status,
             teammateDeletedAt,
             theme,
             type,
         } = this.props;
+
+        if (shouldHideChannel) {
+            return null;
+        }
 
         const {intl} = this.context;
 

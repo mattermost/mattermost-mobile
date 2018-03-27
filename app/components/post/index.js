@@ -5,8 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
-import {General} from 'mattermost-redux/constants';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -21,7 +20,7 @@ import {getDimensions} from 'app/selectors/device';
 
 import Post from './post';
 
-function mapStateToProps(state, ownProps) {//eslint-disable-line complexity
+function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
     const {config, license} = state.entities.general;
@@ -75,7 +74,7 @@ function mapStateToProps(state, ownProps) {//eslint-disable-line complexity
     }
 
     return {
-        channelIsReadOnly,
+        channelIsReadOnly: isCurrentChannelReadOnly(state),
         config,
         canDelete,
         canEdit,

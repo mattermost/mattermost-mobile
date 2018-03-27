@@ -39,9 +39,9 @@ export default class PostTextbox extends PureComponent {
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool.isRequired,
+        channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
-        disablePostToChannel: PropTypes.bool,
         files: PropTypes.array,
         maxMessageLength: PropTypes.number.isRequired,
         navigator: PropTypes.object,
@@ -52,7 +52,6 @@ export default class PostTextbox extends PureComponent {
     };
 
     static defaultProps = {
-        disablePostToChannel: false,
         files: [],
         rootId: '',
         value: '',
@@ -399,8 +398,8 @@ export default class PostTextbox extends PureComponent {
             canUploadFiles,
             channelId,
             channelIsLoading,
+            channelIsReadOnly,
             deactivatedChannel,
-            disablePostToChannel,
             files,
             navigator,
             rootId,
@@ -425,7 +424,7 @@ export default class PostTextbox extends PureComponent {
         const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
-        if (disablePostToChannel) {
+        if (channelIsReadOnly) {
             placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'};
         } else if (rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
@@ -468,7 +467,7 @@ export default class PostTextbox extends PureComponent {
                     rootId={rootId}
                 />
                 <View style={style.inputWrapper}>
-                    {!disablePostToChannel && attachmentButton}
+                    {!channelIsReadOnly && attachmentButton}
                     <View style={inputContainerStyle}>
                         <TextInput
                             ref='input'
@@ -486,7 +485,7 @@ export default class PostTextbox extends PureComponent {
                             keyboardType={this.state.keyboardType}
                             onEndEditing={this.handleEndEditing}
                             disableFullscreenUI={true}
-                            editable={!disablePostToChannel}
+                            editable={!channelIsReadOnly}
                         />
                         {this.renderSendButton()}
                     </View>

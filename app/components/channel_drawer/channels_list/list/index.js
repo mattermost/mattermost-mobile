@@ -2,11 +2,9 @@
 // See License.txt for license information.
 
 import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
 import {
-    getDefaultChannel,
     getSortedUnreadChannelIds,
     getSortedFavoriteChannelIds,
     getSortedPublicChannelIds,
@@ -19,22 +17,7 @@ import {getTheme, getFavoritesPreferences} from 'mattermost-redux/selectors/enti
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
-import localConfig from 'assets/config.json';
-
 import List from './list';
-
-const townHallFilter = createSelector(
-    (state, hideTownHall) => hideTownHall,
-    getDefaultChannel,
-    getSortedPublicChannelIds,
-    (hideTownHall, defaultChannel, publicChannelIds) => {
-        if (!hideTownHall) {
-            return publicChannelIds;
-        }
-
-        return publicChannelIds.filter((p) => p !== defaultChannel.id);
-    }
-);
 
 function mapStateToProps(state) {
     const {config, license} = state.entities.general;
@@ -44,17 +27,10 @@ function mapStateToProps(state) {
     const privateChannelIds = getSortedPrivateChannelIds(state);
     const directChannelIds = getSortedDirectChannelIds(state);
     const currentTeamId = getCurrentTeamId(state);
+    const publicChannelIds = getSortedPublicChannelIds(state);
 
     const isAdmin = checkIsAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
-
-    let publicChannelIds;
-    if (localConfig.ExperimentalHideReadOnlyTownSquare === true) {
-        const hideTownHall = !isAdmin && !isSystemAdmin;
-        publicChannelIds = townHallFilter(state, hideTownHall);
-    } else {
-        publicChannelIds = getSortedPublicChannelIds(state);
-    }
 
     return {
         canCreatePrivateChannels: showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin),

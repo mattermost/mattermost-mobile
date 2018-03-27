@@ -257,6 +257,7 @@ export default class List extends PureComponent {
         return (
             <ChannelItem
                 channelId={item}
+                isFavorite={this.props.favoriteChannelIds.includes(item)}
                 navigator={this.props.navigator}
                 onSelectChannel={this.onSelectChannel}
             />

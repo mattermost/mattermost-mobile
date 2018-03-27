@@ -6,11 +6,10 @@ import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {isAdmin, isChannelAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -26,7 +25,6 @@ import PostTextbox from './post_textbox';
 const MAX_MESSAGE_LENGTH = 4000;
 
 function mapStateToProps(state, ownProps) {
-    const {config} = state.entities.general;
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
     const config = getConfig(state);
 
@@ -39,19 +37,13 @@ function mapStateToProps(state, ownProps) {
         }
     }
 
-    let disablePostToChannel = false;
-    if (currentChannel.name === General.DEFAULT_CHANNEL) {
-        const roles = getCurrentUserRoles(state);
-        disablePostToChannel = config.ExperimentalTownSquareIsReadOnly === 'true' && !isAdmin(roles) && !isSystemAdmin(roles) && !isChannelAdmin(roles);
-    }
-
     return {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
+        channelIsReadOnly: isCurrentChannelReadOnly(state),
         currentUserId: getCurrentUserId(state),
         deactivatedChannel,
-        disablePostToChannel,
         files: currentDraft.files,
         maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH,
         theme: getTheme(state),

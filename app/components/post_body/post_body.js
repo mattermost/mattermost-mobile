@@ -116,7 +116,11 @@ export default class PostBody extends PureComponent {
         const {
             canEdit,
             canDelete,
+<<<<<<< HEAD
             canAddReaction,
+=======
+            channelIsReadOnly,
+>>>>>>> Refactor to use new read only channel selectors
             hasBeenDeleted,
             isPending,
             isFailed,
@@ -133,7 +137,11 @@ export default class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
+<<<<<<< HEAD
             if (canAddReaction) {
+=======
+            if (!channelIsReadOnly) {
+>>>>>>> Refactor to use new read only channel selectors
                 actions.push({
                     text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                     onPress: this.props.onAddReaction,
@@ -148,16 +156,18 @@ export default class PostBody extends PureComponent {
                 });
             }
 
-            if (isFlagged) {
-                actions.push({
-                    text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                    onPress: this.unflagPost,
-                });
-            } else {
-                actions.push({
-                    text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                    onPress: this.flagPost,
-                });
+            if (!channelIsReadOnly) {
+                if (isFlagged) {
+                    actions.push({
+                        text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
+                        onPress: this.unflagPost,
+                    });
+                } else {
+                    actions.push({
+                        text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
+                        onPress: this.flagPost,
+                    });
+                }
             }
 
             if (canEdit) {
