@@ -5968,9 +5968,9 @@ react-native-button@2.3.0:
   dependencies:
     prop-types "^15.5.10"
 
-react-native-circular-progress@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-circular-progress/-/react-native-circular-progress-0.2.0.tgz#b6ad5aa89e473cd796582dcdab4ba6e91ee9575b"
+react-native-circular-progress@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-circular-progress/-/react-native-circular-progress-0.1.0.tgz#046d182a4851f75742f56b1f05fdab28cac2d0ed"
   dependencies:
     art "^0.10.1"
     prop-types "^15.6.0"
@@ -5981,9 +5981,9 @@ react-native-cookies@3.2.0:
   dependencies:
     invariant "^2.1.0"
 
-react-native-device-info@0.21.3:
-  version "0.21.3"
-  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.21.3.tgz#175a32ee35771e9ebad486e4a60428fecf50d2d1"
+react-native-device-info@0.14.0:
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-0.14.0.tgz#b77d0368e197c7a6fc8de612f8272d3526847bd4"
 
 react-native-dismiss-keyboard@1.0.0:
   version "1.0.0"
@@ -6088,9 +6088,9 @@ react-native-mock@0.3.1:
     react-timer-mixin "^0.13.3"
     warning "^2.1.0"
 
-react-native-navigation@1.1.424:
-  version "1.1.424"
-  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.424.tgz#c09d83fab98ad8d8a6fa60b5adf8e57c9309404d"
+react-native-navigation@1.1.426:
+  version "1.1.426"
+  resolved "https://registry.yarnpkg.com/react-native-navigation/-/react-native-navigation-1.1.426.tgz#6b3d5cf40f76b20648a8784c9567c151eff4fc4e"
   dependencies:
     lodash "4.x.x"
 
@@ -6193,9 +6193,9 @@ react-native-youtube@1.1.0:
   dependencies:
     prop-types "^15.5.0"
 
-react-native@0.54.2:
-  version "0.54.2"
-  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.54.2.tgz#73786e7bf3f80b0b060ca0bfe5b192f9c2f253da"
+react-native@0.54.3:
+  version "0.54.3"
+  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.54.3.tgz#e32807ab7ddc70811418101b73a482639d09ccca"
   dependencies:
     absolute-path "^0.0.0"
     art "^0.10.0"
