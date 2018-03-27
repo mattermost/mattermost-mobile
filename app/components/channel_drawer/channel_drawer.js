@@ -10,12 +10,14 @@ import {
     Platform,
     StyleSheet,
     View,
+    Text,
+    DrawerLayoutAndroid
 } from 'react-native';
 
 import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import Drawer from 'app/components/drawer';
+import DrawerLayout from 'app/components/drawer_layout_polyfill'
 import SafeAreaView from 'app/components/safe_area_view';
 import {ViewTypes} from 'app/constants';
 import {alertErrorWithFallback} from 'app/utils/general';
@@ -98,7 +100,11 @@ export default class ChannelDrawer extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         const {currentTeamId, isLandscape, teamsCount} = this.props;
-        const {openDrawerOffset} = this.state;
+        const {openDrawerOffset, locked} = this.state;
+
+        if (nextState.locked !== locked) {
+            return true;
+        }
 
         if (nextState.openDrawerOffset !== openDrawerOffset) {
             return true;
@@ -116,8 +122,8 @@ export default class ChannelDrawer extends Component {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
+        if (this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
             return true;
         }
 
@@ -125,8 +131,8 @@ export default class ChannelDrawer extends Component {
     };
 
     closeChannelDrawer = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
+        if (this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
         }
     };
 
@@ -143,47 +149,6 @@ export default class ChannelDrawer extends Component {
         }
     };
 
-    handleDrawerCloseStart = () => {
-        if (!this.closeHandle) {
-            this.closeHandle = InteractionManager.createInteractionHandle();
-        }
-    };
-
-    handleDrawerOpen = () => {
-        if (this.state.openDrawerOffset !== 0) {
-            Keyboard.dismiss();
-        }
-
-        if (this.openHandle) {
-            InteractionManager.clearInteractionHandle(this.openHandle);
-            this.openHandle = null;
-        }
-    };
-
-    handleDrawerOpenStart = () => {
-        if (!this.openHandle) {
-            this.openHandle = InteractionManager.createInteractionHandle();
-        }
-    };
-
-    handleDrawerTween = (ratio) => {
-        const opacity = (ratio / 2);
-
-        EventEmitter.emit('drawer_opacity', opacity);
-
-        return {
-            mainOverlay: {
-                backgroundColor: this.props.theme.centerChannelBg,
-                elevation: 3,
-                opacity,
-            },
-            drawerOverlay: {
-                backgroundColor: ratio ? '#000' : '#FFF',
-                opacity: ratio ? (1 - ratio) / 2 : 1,
-            },
-        };
-    };
-
     handleUpdateTitle = (channel) => {
         let channelName = '';
         if (channel.display_name) {
@@ -195,8 +160,8 @@ export default class ChannelDrawer extends Component {
     openChannelDrawer = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer && !this.refs.drawer.isOpened()) {
-            this.refs.drawer.open();
+        if (this.refs.drawer) {
+            this.refs.drawer.openDrawer();
         }
     };
 
@@ -216,19 +181,23 @@ export default class ChannelDrawer extends Component {
         tracker.channelSwitch = Date.now();
 
         this.closeChannelDrawer();
+        setChannelLoading(channel.id !== currentChannelId);
+        setChannelDisplayName(channel.display_name);
+
+        handleSelectChannel(channel.id);
 
         InteractionManager.runAfterInteractions(() => {
-            setChannelLoading(channel.id !== currentChannelId);
-            setChannelDisplayName(channel.display_name);
 
-            handleSelectChannel(channel.id);
-            requestAnimationFrame(() => {
-                // mark the channel as viewed after all the frame has flushed
-                markChannelAsRead(channel.id, currentChannelId);
-                if (channel.id !== currentChannelId) {
-                    markChannelAsViewed(currentChannelId);
-                }
-            });
+            InteractionManager.runAfterInteractions(() => {
+                requestAnimationFrame(() => {
+    
+                    // mark the channel as viewed after all the frame has flushed
+                    markChannelAsRead(channel.id, currentChannelId);
+                    if (channel.id !== currentChannelId) {
+                        markChannelAsViewed(currentChannelId);
+                    }
+                });
+            });    
         });
     };
 
@@ -279,6 +248,12 @@ export default class ChannelDrawer extends Component {
 
     onPageSelected = (index) => {
         this.swiperIndex = index;
+        if (this.drawerSwiper && this.swiperIndex !== 1 && this.props.teamsCount > 1) {
+            this.setState({locked: true});
+            return;
+        }
+
+        this.setState({locked: false})
     };
 
     onSearchEnds = () => {
@@ -395,47 +370,24 @@ export default class ChannelDrawer extends Component {
         const androidTop = isLandscape ? ANDROID_TOP_LANDSCAPE : ANDROID_TOP_PORTRAIT;
         const iosTop = isLandscape ? IOS_TOP_LANDSCAPE : IOS_TOP_PORTRAIT;
 
+        // Use a polyfill on iOS and native DrawerLayoutAndroid on Android
+    
+        const Drawer = Platform.OS === 'android' ? DrawerLayoutAndroid : DrawerLayout;
+        const additionalProps = Platform.OS == 'android' ? {} : {useNativeAnimations: true};
+
         return (
             <Drawer
                 ref='drawer'
-                onOpenStart={this.handleDrawerOpenStart}
-                onOpen={this.handleDrawerOpen}
-                onClose={this.handleDrawerClose}
-                onCloseStart={this.handleDrawerCloseStart}
-                captureGestures='open'
-                type='static'
-                acceptTap={true}
-                acceptPanOnDrawer={false}
-                disabled={false}
-                content={this.renderContent()}
-                tapToClose={true}
-                openDrawerOffset={openDrawerOffset}
-                onRequestClose={this.closeChannelDrawer}
-                panOpenMask={0.2}
-                panCloseMask={openDrawerOffset}
-                panThreshold={0.25}
-                acceptPan={true}
-                negotiatePan={true}
-                useInteractionManager={false}
-                tweenDuration={100}
-                tweenHandler={this.handleDrawerTween}
-                elevation={-5}
-                bottomPanOffset={Platform.OS === 'ios' ? ANDROID_TOP_LANDSCAPE : IOS_TOP_PORTRAIT}
-                topPanOffset={Platform.OS === 'ios' ? iosTop : androidTop}
-                styles={{
-                    main: {
-                        shadowColor: '#000000',
-                        shadowOpacity: 0.4,
-                        shadowRadius: 12,
-                        shadowOffset: {
-                            width: -4,
-                            height: 0,
-                        },
-                    },
-                }}
+                drawerWidth={Platform.OS === 'android' ? 300 : 340}
+                drawerPosition={Drawer.positions.Left}
+                keyboardDismissMode='on-drag'
+                renderNavigationView={this.renderContent}
+                onDrawerClose={this.handleDrawerClose}
+                drawerLockMode={this.state.locked ? 'locked-open' : 'unlocked'}
+                {...additionalProps}
             >
-                {children}
-            </Drawer>
+            {children}
+          </Drawer>
         );
     }
 }

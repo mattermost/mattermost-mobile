@@ -11,12 +11,14 @@ import {
     Platform,
     ScrollView,
     View,
+    DrawerLayoutAndroid,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import DrawerLayout from 'app/components/drawer_layout_polyfill'
 import SafeAreaView from 'app/components/safe_area_view';
 import Drawer from 'app/components/drawer';
 import UserStatus from 'app/components/user_status';
@@ -71,8 +73,8 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
+        if (this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
             return true;
         }
 
@@ -82,56 +84,14 @@ export default class SettingsDrawer extends PureComponent {
     openSettingsDrawer = () => {
         this.props.blurPostTextBox();
 
-        if (this.refs.drawer && !this.refs.drawer.isOpened()) {
-            this.refs.drawer.open();
+        if (this.refs.drawer) {
+            this.refs.drawer.openDrawer();
         }
     };
 
     closeSettingsDrawer = () => {
-        if (this.refs.drawer && this.refs.drawer.isOpened()) {
-            this.refs.drawer.close();
-        }
-    };
-
-    handleDrawerTween = (ratio) => {
-        const opacity = (ratio / 2);
-
-        EventEmitter.emit('drawer_opacity', opacity);
-
-        return {
-            mainOverlay: {
-                backgroundColor: '#000',
-                elevation: 3,
-                opacity,
-            },
-        };
-    };
-
-    handleDrawerClose = () => {
-        if (this.closeHandle) {
-            InteractionManager.clearInteractionHandle(this.closeHandle);
-            this.closeHandle = null;
-        }
-    };
-
-    handleDrawerCloseStart = () => {
-        if (!this.closeHandle) {
-            this.closeHandle = InteractionManager.createInteractionHandle();
-        }
-    };
-
-    handleDrawerOpen = () => {
-        Keyboard.dismiss();
-
-        if (this.openHandle) {
-            InteractionManager.clearInteractionHandle(this.openHandle);
-            this.openHandle = null;
-        }
-    };
-
-    handleDrawerOpenStart = () => {
-        if (!this.openHandle) {
-            this.openHandle = InteractionManager.createInteractionHandle();
+        if (this.refs.drawer) {
+            this.refs.drawer.closeDrawer();
         }
     };
 
@@ -326,45 +286,18 @@ export default class SettingsDrawer extends PureComponent {
     render() {
         const {children} = this.props;
 
+        // Use a polyfill on iOS and native DrawerLayoutAndroid on Android
+        const Drawer = Platform.OS === 'android' ? DrawerLayoutAndroid : DrawerLayout;
+        const additionalProps = Platform.OS === 'android' ? {} : {useNativeAnimations: true};
+        
         return (
             <Drawer
                 ref='drawer'
-                onOpenStart={this.handleDrawerOpenStart}
-                onOpen={this.handleDrawerOpen}
-                onClose={this.handleDrawerClose}
-                onCloseStart={this.handleDrawerCloseStart}
-                side='right'
-                captureGestures='open'
-                type='overlay'
-                acceptTap={true}
-                acceptPanOnDrawer={false}
-                disabled={false}
-                content={this.renderContent()}
-                tapToClose={true}
-                openDrawerOffset={DRAWER_INITIAL_OFFSET}
-                onRequestClose={this.closeSettingsDrawer}
-                panOpenMask={0.05}
-                panCloseMask={DRAWER_INITIAL_OFFSET}
-                panThreshold={0.25}
-                acceptPan={true}
-                negotiatePan={true}
-                useInteractionManager={false}
-                tweenDuration={100}
-                tweenHandler={this.handleDrawerTween}
-                elevation={5}
-                bottomPanOffset={Platform.OS === 'ios' ? 46 : 64}
-                topPanOffset={Platform.OS === 'ios' ? 64 : 46}
-                styles={{
-                    main: {
-                        shadowColor: '#000000',
-                        shadowOpacity: 0.4,
-                        shadowRadius: 12,
-                        shadowOffset: {
-                            width: -4,
-                            height: 0,
-                        },
-                    },
-                }}
+                keyboardDismissMode='on-drag'
+                drawerWidth={Platform.OS === 'android' ? 300 : 340}
+                drawerPosition={Drawer.positions.Right}
+                renderNavigationView={this.renderContent}
+                {...additionalProps}
             >
                 {children}
             </Drawer>
