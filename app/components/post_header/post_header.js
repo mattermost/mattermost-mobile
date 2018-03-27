@@ -25,7 +25,7 @@ export default class PostHeader extends PureComponent {
         commentCount: PropTypes.number,
         commentedOnDisplayName: PropTypes.string,
         createAt: PropTypes.number.isRequired,
-        displayName: PropTypes.string.isRequired,
+        displayName: PropTypes.string,
         enablePostUsernameOverride: PropTypes.bool,
         fromWebHook: PropTypes.bool,
         isPendingOrFailedPost: PropTypes.bool,
@@ -39,7 +39,7 @@ export default class PostHeader extends PureComponent {
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        username: PropTypes.string.isRequired,
+        username: PropTypes.string,
         isFlagged: PropTypes.bool,
     };
 
@@ -50,7 +50,9 @@ export default class PostHeader extends PureComponent {
     };
 
     handleUsernamePress = () => {
-        this.props.onUsernamePress(this.props.username);
+        if (this.props.username) {
+            this.props.onUsernamePress(this.props.username);
+        }
     }
 
     getDisplayName = (style) => {

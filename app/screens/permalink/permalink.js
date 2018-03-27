@@ -399,6 +399,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 20,
         },
         wrapper: {
+            borderRadius: 6,
             flex: 1,
             margin: 10,
             opacity: 0,

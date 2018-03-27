@@ -4,13 +4,14 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
-    Text,
+    Image,
+    ScrollView,
     TouchableOpacity,
     View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import addReactionIcon from 'assets/images/icons/reaction.png';
 
 import Reaction from './reaction';
 
@@ -23,12 +24,17 @@ export default class Reactions extends PureComponent {
         }).isRequired,
         highlightedReactions: PropTypes.array.isRequired,
         onAddReaction: PropTypes.func.isRequired,
+        position: PropTypes.oneOf(['right', 'left']),
         postId: PropTypes.string.isRequired,
         reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         canAddReaction: PropTypes.bool,
         canRemoveReaction: PropTypes.bool.isRequired,
     }
+
+    static defaultProps = {
+        position: 'right',
+    };
 
     componentDidMount() {
         const {actions, postId} = this.props;
@@ -42,7 +48,7 @@ export default class Reactions extends PureComponent {
         } else if (!remove && this.props.canAddReaction) {
             actions.addReaction(postId, emoji);
         }
-    }
+    };
 
     renderReactions = () => {
         const {highlightedReactions, reactions, theme} = this.props;
@@ -59,10 +65,10 @@ export default class Reactions extends PureComponent {
                 />
             );
         });
-    }
+    };
 
     render() {
-        const {reactions} = this.props;
+        const {position, reactions} = this.props;
         const styles = getStyleSheet(this.props.theme);
 
         if (!reactions.size) {
@@ -71,45 +77,71 @@ export default class Reactions extends PureComponent {
 
         const addMoreReactions = (
             <TouchableOpacity
+                key='addReaction'
                 onPress={this.props.onAddReaction}
                 style={[styles.reaction]}
             >
-                <Text style={styles.more}>{'+'}</Text>
+                <Image
+                    source={addReactionIcon}
+                    style={styles.addReaction}
+                />
             </TouchableOpacity>
         );
 
+        const reactionElements = [];
+        switch (position) {
+        case 'right':
+            reactionElements.push(
+                this.renderReactions(),
+                addMoreReactions
+            );
+            break;
+        case 'left':
+            reactionElements.push(
+                addMoreReactions,
+                this.renderReactions()
+            );
+            break;
+        }
+
         return (
-            <View style={style.reactions}>
-                {this.renderReactions()}
-                {addMoreReactions}
+            <View style={styles.container}>
+                <ScrollView
+                    alwaysBounceHorizontal={false}
+                    horizontal={true}
+                    overScrollMode='never'
+                >
+                    {reactionElements}
+                </ScrollView>
             </View>
         );
     }
 }
 
-const style = StyleSheet.create({
-    reactions: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        alignItems: 'flex-start',
-    },
-});
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        more: {
-            color: theme.linkColor,
+        container: {
+            flex: 1,
+        },
+        addReaction: {
+            tintColor: changeOpacity(theme.centerChannelColor, 0.5),
+            width: 23,
+            height: 20,
         },
         reaction: {
             alignItems: 'center',
+            justifyContent: 'center',
             borderRadius: 2,
-            borderColor: changeOpacity(theme.linkColor, 0.4),
+            borderColor: changeOpacity(theme.centerChannelColor, 0.3),
             borderWidth: 1,
             flexDirection: 'row',
+            height: 30,
             marginRight: 6,
-            marginVertical: 5,
+            marginBottom: 5,
+            marginTop: 10,
             paddingVertical: 2,
             paddingHorizontal: 6,
+            width: 40,
         },
     };
 });

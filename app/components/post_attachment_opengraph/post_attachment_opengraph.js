@@ -7,7 +7,6 @@ import {
     Dimensions,
     Image,
     Linking,
-    PixelRatio,
     Text,
     TouchableOpacity,
     View,
@@ -16,10 +15,7 @@ import {
 import {getNearestPoint} from 'app/utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const LARGE_IMAGE_MIN_WIDTH = 150;
-const LARGE_IMAGE_MIN_RATIO = (16 / 9);
 const MAX_IMAGE_HEIGHT = 150;
-const THUMBNAIL_SIZE = 75;
 
 export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
@@ -37,7 +33,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         this.state = {
             imageLoaded: false,
-            hasLargeImage: false,
         };
     }
 
@@ -86,27 +81,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         return {width: maxWidth, height: maxHeight};
     };
 
-    calculateSmallImageDimensions = (width, height) => {
-        const {width: deviceWidth} = Dimensions.get('window');
-        const offset = deviceWidth - 170;
-
-        let ratio;
-        let maxWidth;
-        let maxHeight;
-
-        if (width >= height) {
-            ratio = width / height;
-            maxWidth = THUMBNAIL_SIZE;
-            maxHeight = PixelRatio.roundToNearestPixel(maxWidth / ratio);
-        } else {
-            ratio = height / width;
-            maxHeight = THUMBNAIL_SIZE;
-            maxWidth = PixelRatio.roundToNearestPixel(maxHeight / ratio);
-        }
-
-        return {width: maxWidth, height: maxHeight, offset};
-    };
-
     fetchData(url, openGraphData) {
         if (!openGraphData) {
             this.props.actions.getOpenGraphMetadata(url);
@@ -133,21 +107,11 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     getImageSize = (imageUrl) => {
         if (!this.state.imageLoaded) {
             Image.getSize(imageUrl, (width, height) => {
-                const {hasLargeImage} = this.state;
-                const imageRatio = width / height;
+                const dimensions = this.calculateLargeImageDimensions(width, height);
 
-                let isLarge = false;
-                let dimensions;
-                if (width >= LARGE_IMAGE_MIN_WIDTH && imageRatio >= LARGE_IMAGE_MIN_RATIO && !hasLargeImage) {
-                    isLarge = true;
-                    dimensions = this.calculateLargeImageDimensions(width, height);
-                } else {
-                    dimensions = this.calculateSmallImageDimensions(width, height);
-                }
                 if (this.mounted) {
                     this.setState({
                         ...dimensions,
-                        hasLargeImage: isLarge,
                         imageLoaded: true,
                         imageUrl,
                     });
@@ -162,14 +126,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     render() {
         const {isReplyPost, openGraphData, theme} = this.props;
-        const {hasLargeImage, height, imageLoaded, imageUrl, offset, width} = this.state;
+        const {height, imageLoaded, imageUrl, width} = this.state;
 
         if (!openGraphData || !openGraphData.description) {
             return null;
         }
 
         const style = getStyleSheet(theme);
-        const isThumbnail = !hasLargeImage && imageLoaded;
 
         return (
             <View style={style.container}>
@@ -184,7 +147,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                 </View>
                 <View style={style.wrapper}>
                     <TouchableOpacity
-                        style={isThumbnail ? {width: offset} : style.flex}
+                        style={style.flex}
                         onPress={this.goToLink}
                     >
                         <Text
@@ -195,15 +158,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                             {openGraphData.title}
                         </Text>
                     </TouchableOpacity>
-                    {isThumbnail &&
-                    <View style={style.thumbnail}>
-                        <Image
-                            style={[style.image, {width, height}]}
-                            source={{uri: imageUrl}}
-                            resizeMode='cover'
-                        />
-                    </View>
-                    }
                 </View>
                 <View style={style.flex}>
                     <Text
@@ -214,7 +168,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         {openGraphData.description}
                     </Text>
                 </View>
-                {hasLargeImage && imageLoaded &&
+                {imageLoaded &&
                 <Image
                     style={[style.image, {width, height}]}
                     source={{uri: imageUrl}}
@@ -259,11 +213,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         image: {
             borderRadius: 3,
-        },
-        thumbnail: {
-            flex: 1,
-            alignItems: 'flex-end',
-            justifyContent: 'flex-start',
         },
     };
 });

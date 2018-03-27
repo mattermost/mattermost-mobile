@@ -61,7 +61,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.mounted = false;
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.mounted = true;
         this.getImageSize();
     }
@@ -147,6 +147,11 @@ export default class PostBodyAdditionalContent extends PureComponent {
                         return;
                     }
 
+                    if (!width && !height) {
+                        this.setState({linkLoadError: true});
+                        return;
+                    }
+
                     const dimensions = this.calculateDimensions(width, height);
                     this.setState({...dimensions, linkLoaded: true});
                 }, () => null);
@@ -189,6 +194,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
     generateToggleableEmbed = (isImage, isYouTube) => {
         const {link} = this.props;
         const {width, height} = this.state;
+        const imgHeight = height || MAX_IMAGE_HEIGHT;
 
         if (link) {
             if (isYouTube) {
@@ -197,12 +203,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
                 return (
                     <TouchableWithoutFeedback
-                        style={styles.imageContainer}
+                        style={[styles.imageContainer, {height: imgHeight}]}
                         {...this.responder}
                         onPress={this.playYouTubeVideo}
                     >
                         <ImageBackground
-                            style={[styles.image, {width, height}]}
+                            style={[styles.image, {width, height: imgHeight}]}
                             source={{uri: imgUrl}}
                             resizeMode={'cover'}
                             onError={this.handleLinkLoadError}
@@ -220,9 +226,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
             if (isImage) {
                 return (
-                    <View style={styles.imageContainer}>
+                    <View style={[styles.imageContainer, {height: imgHeight}]}>
                         <Image
-                            style={[styles.image, {width, height}]}
+                            style={[styles.image, {width, height: imgHeight}]}
                             source={{uri: link}}
                             resizeMode={'cover'}
                             onError={this.handleLinkLoadError}
@@ -262,7 +268,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     render() {
         const {link, openGraphData, postProps} = this.props;
-        const {linkLoaded, linkLoadError} = this.state;
+        const {linkLoadError} = this.state;
         const {attachments} = postProps;
 
         if (!link && !attachments) {
@@ -275,12 +281,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         if (((isImage && !isOpenGraph) || isYouTube) && !linkLoadError) {
             const embed = this.generateToggleableEmbed(isImage, isYouTube);
-            if (embed && (linkLoaded || isYouTube)) {
+            if (embed) {
                 return embed;
             }
         }
 
-        return this.generateStaticEmbed(isYouTube, isImage);
+        return this.generateStaticEmbed(isYouTube, isImage && !linkLoadError);
     }
 }
 

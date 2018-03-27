@@ -53,7 +53,7 @@ export default class FileAttachmentImage extends PureComponent {
         resizeMode: 'cover',
         resizeMethod: 'resize',
         wrapperBackgroundColor: '#fff',
-        wrapperHeigh: 80,
+        wrapperHeight: 80,
         wrapperWidth: 80,
     };
 
@@ -163,7 +163,7 @@ export default class FileAttachmentImage extends PureComponent {
         let width = imageWidth;
         let imageStyle = {height, width};
         if (imageSize === IMAGE_SIZE.Preview) {
-            height = 80;
+            height = 100;
             width = this.calculateNeededWidth(file.height, file.width, height);
             imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
         }

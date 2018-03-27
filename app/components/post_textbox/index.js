@@ -5,10 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
-
 import {createPost} from 'mattermost-redux/actions/posts';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {canUploadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
+import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
@@ -23,8 +22,11 @@ import {getChannelMembersForDm} from 'app/selectors/channel';
 
 import PostTextbox from './post_textbox';
 
+const MAX_MESSAGE_LENGTH = 4000;
+
 function mapStateToProps(state, ownProps) {
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
+    const config = getConfig(state);
 
     const currentChannel = getCurrentChannel(state);
     let deactivatedChannel = false;
@@ -42,6 +44,7 @@ function mapStateToProps(state, ownProps) {
         currentUserId: getCurrentUserId(state),
         deactivatedChannel,
         files: currentDraft.files,
+        maxMessageLength: (config && config.MaxPostSize) || MAX_MESSAGE_LENGTH,
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
         value: currentDraft.draft,

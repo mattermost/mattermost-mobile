@@ -21,7 +21,7 @@ describe('Selectors.PostList', () => {
                 entities: {
                     posts: {
                         posts: {
-                            1001: {id: '1001', create_at: 0},
+                            1001: {id: '1001', create_at: 0, type: ''},
                             1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL},
                         },
                     },
@@ -115,9 +115,9 @@ describe('Selectors.PostList', () => {
                 entities: {
                     posts: {
                         posts: {
-                            1000: {id: '1000', create_at: 1000},
-                            1005: {id: '1005', create_at: 1005},
-                            1010: {id: '1010', create_at: 1010},
+                            1000: {id: '1000', create_at: 1000, type: ''},
+                            1005: {id: '1005', create_at: 1005, type: ''},
+                            1010: {id: '1010', create_at: 1010, type: ''},
                         },
                     },
                     preferences: {
@@ -152,11 +152,11 @@ describe('Selectors.PostList', () => {
 
             // Posts 7 hours apart so they should appear on multiple days
             const initialPosts = {
-                1001: {id: '1001', create_at: 1 * 60 * 60 * 1000},
-                1002: {id: '1002', create_at: (1 * 60 * 60 * 1000) + 5},
-                1003: {id: '1003', create_at: (1 * 60 * 60 * 1000) + 10},
-                1004: {id: '1004', create_at: 25 * 60 * 60 * 1000},
-                1005: {id: '1005', create_at: (25 * 60 * 60 * 1000) + 5},
+                1001: {id: '1001', create_at: 1 * 60 * 60 * 1000, type: ''},
+                1002: {id: '1002', create_at: (1 * 60 * 60 * 1000) + 5, type: ''},
+                1003: {id: '1003', create_at: (1 * 60 * 60 * 1000) + 10, type: ''},
+                1004: {id: '1004', create_at: 25 * 60 * 60 * 1000, type: ''},
+                1005: {id: '1005', create_at: (25 * 60 * 60 * 1000) + 5, type: ''},
                 1006: {id: '1006', create_at: (25 * 60 * 60 * 1000) + 10, type: Posts.POST_TYPES.JOIN_CHANNEL},
             };
             let state = {
