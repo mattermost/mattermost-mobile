@@ -22,7 +22,6 @@
 - Minor performance improvements for app launch time
 - Text files can now be viewed in the app
 - Support for email autolinking into the app
-- Attachments are now displayed in a horizontal scroll view to save screen space
 
 ### Bugs
 - Fixed an issue causing some devices to hang at the splash screen on app launch
@@ -32,7 +31,7 @@
 - Fixed an issue so double tapping buttons can no longer cause UI issues
 - Fixed an issue where changing the channel display name wasn't being updated in the UI appropriately
 - Fixed an issue where searhing for public channels sometimes showed no results
-- Fixed an issue where tapping off the post menu didn't close it
+- Fixed an issue where the post menu could remain open while scrolling in the post list
 - Fixed an issue where the system message to add users to a channel was missing the execution link
 - Fixed an issue where bulleted lists cut off text if nested deeper than two levels
 - Fixed an issue where logging into an account that is not on any team freezes the app
