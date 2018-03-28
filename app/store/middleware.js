@@ -190,6 +190,7 @@ function cleanupState(action, keepCurrent = false) {
         posts: {
             posts: {},
             postsInChannel: {},
+            postsInThread: {},
             reactions: {},
             openGraph: payload.entities.posts.openGraph,
             selectedPostId: payload.entities.posts.selectedPostId,
