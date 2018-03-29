@@ -322,18 +322,9 @@ export function handlePostDraftChanged(channelId, draft) {
     };
 }
 
-export function handlePostDraftSelectionChanged(channelId, cursorPosition) {
-    return {
-        type: ViewTypes.POST_DRAFT_SELECTION_CHANGED,
-        channelId,
-        cursorPosition,
-    };
-}
-
 export function insertToDraft(value) {
     return (dispatch, getState) => {
         const state = getState();
-        const channelId = getCurrentChannelId(state);
         const threadId = state.entities.posts.selectedPostId;
 
         const insertEvent = threadId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;

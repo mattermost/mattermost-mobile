@@ -30,7 +30,6 @@ export default class PostTextbox extends PureComponent {
             handleRemoveLastFile: PropTypes.func.isRequired,
             initUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired,
-            handlePostDraftSelectionChanged: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
@@ -194,7 +193,7 @@ export default class PostTextbox extends PureComponent {
     handlePostDraftSelectionChanged = (event) => {
         const cursorPosition = event.nativeEvent.selection.end;
         this.setState({
-            cursorPosition
+            cursorPosition,
         });
     };
 
@@ -244,7 +243,7 @@ export default class PostTextbox extends PureComponent {
 
     handleInsertTextToDraft = (text) => {
         const {cursorPosition, value} = this.state;
-        
+
         let completed;
         if (value.length === 0) {
             completed = text;
@@ -253,7 +252,7 @@ export default class PostTextbox extends PureComponent {
             const secondPart = value.substring(cursorPosition);
             completed = `${firstPart}${text}${secondPart}`;
         }
-        
+
         this.setState({
             value: completed,
         });

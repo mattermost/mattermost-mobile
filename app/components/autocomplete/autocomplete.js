@@ -40,12 +40,6 @@ export default class Autocomplete extends PureComponent {
         keyboardOffset: 0,
     };
 
-    handleSelectionChange = (event) => {
-        this.setState({
-            cursorPosition: event.nativeEvent.selection.end,
-        });
-    };
-
     handleAtMentionCountChange = (atMentionCount) => {
         this.setState({atMentionCount});
     };
