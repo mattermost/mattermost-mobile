@@ -82,5 +82,5 @@ export const encodeHeaderURIStringToUTF8 = (string) => {
 };
 
 export const getAllowedServerMaxFileSize = (config) => {
-    return config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : DEFAULT_SERVER_MAX_FILE_SIZE;
+    return config && config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : DEFAULT_SERVER_MAX_FILE_SIZE;
 };

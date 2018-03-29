@@ -73,8 +73,12 @@ export default class SharedApp extends PureComponent {
     };
 
     userIsLoggedIn = () => {
-        return Boolean(this.entities && this.entities.general && this.entities.general.credentials &&
-            this.entities.general.credentials.token && this.entities.general.credentials.url);
+        if (this.entities && this.entities.general && this.entities.general.credentials &&
+            this.entities.general.credentials.token && this.entities.general.credentials.url) {
+            return true;
+        }
+
+        return false;
     };
 
     render() {
