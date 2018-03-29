@@ -35,14 +35,17 @@ export default class ChannelInfo extends PureComponent {
             unfavoriteChannel: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
+            updateChannelNotifyProps: PropTypes.func.isRequired,
         }),
         canDeleteChannel: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
+        currentUserId: PropTypes.string,
         navigator: PropTypes.object,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isChannelMuted: PropTypes.bool.isRequired,
         isCurrent: PropTypes.bool.isRequired,
         isFavorite: PropTypes.bool.isRequired,
         canManageUsers: PropTypes.bool.isRequired,
@@ -58,6 +61,7 @@ export default class ChannelInfo extends PureComponent {
 
         this.state = {
             isFavorite: props.isFavorite,
+            isMuted: props.isChannelMuted,
         };
     }
 
@@ -71,10 +75,17 @@ export default class ChannelInfo extends PureComponent {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
-        const isFavorite = nextProps.isFavorite;
-        if (isFavorite !== this.state.isFavorite) {
-            this.setState({isFavorite});
+        let isFavorite = this.state.isFavorite;
+        if (isFavorite !== nextProps.isFavorite) {
+            isFavorite = nextProps.isFavorite;
         }
+
+        let isMuted = this.state.isMuted;
+        if (isMuted !== nextProps.isChannelMuted) {
+            isMuted = nextProps.isChannelMuted;
+        }
+
+        this.setState({isFavorite, isMuted});
     }
 
     close = () => {
@@ -253,6 +264,17 @@ export default class ChannelInfo extends PureComponent {
         this.showPermalinkView(postId);
     };
 
+    handleMuteChannel = () => {
+        const {actions, currentChannel, currentUserId, isChannelMuted} = this.props;
+        const {updateChannelNotifyProps} = actions;
+        const opts = {
+            mark_unread: isChannelMuted ? 'all' : 'mention',
+        };
+
+        this.setState({isMuted: !isChannelMuted});
+        updateChannelNotifyProps(currentUserId, currentChannel.id, opts);
+    };
+
     showPermalinkView = (postId) => {
         const {actions, navigator} = this.props;
 
@@ -362,6 +384,16 @@ export default class ChannelInfo extends PureComponent {
                             detail={this.state.isFavorite}
                             icon='star-o'
                             textId='mobile.routes.channelInfo.favorite'
+                            togglable={true}
+                            theme={theme}
+                        />
+                        <View style={style.separator}/>
+                        <ChannelInfoRow
+                            action={this.handleMuteChannel}
+                            defaultMessage='Mute channel'
+                            detail={this.state.isMuted}
+                            icon='bell-slash-o'
+                            textId='channel_notifications.muteChannel.settings'
                             togglable={true}
                             theme={theme}
                         />

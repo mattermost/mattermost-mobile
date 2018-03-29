@@ -17,6 +17,7 @@ export default class ChannelTitle extends PureComponent {
     static propTypes = {
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
+        isChannelMuted: PropTypes.bool,
         onPress: PropTypes.func,
         theme: PropTypes.object,
     };
@@ -28,7 +29,7 @@ export default class ChannelTitle extends PureComponent {
     };
 
     render() {
-        const {currentChannelName, displayName, onPress, theme} = this.props;
+        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
         const channelName = displayName || currentChannelName;
         const style = getStyle(theme);
         let icon;
@@ -38,6 +39,17 @@ export default class ChannelTitle extends PureComponent {
                     style={style.icon}
                     size={12}
                     name='chevron-down'
+                />
+            );
+        }
+
+        let mutedIcon;
+        if (isChannelMuted) {
+            mutedIcon = (
+                <Icon
+                    style={[style.icon, style.muted]}
+                    size={15}
+                    name='bell-slash-o'
                 />
             );
         }
@@ -56,6 +68,7 @@ export default class ChannelTitle extends PureComponent {
                         {channelName}
                     </Text>
                     {icon}
+                    {mutedIcon}
                 </View>
             </TouchableOpacity>
         );
@@ -74,6 +87,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            width: '90%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
@@ -84,6 +98,11 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             fontSize: 18,
             fontWeight: 'bold',
             textAlign: 'center',
+        },
+        muted: {
+            marginTop: 1,
+            opacity: 0.6,
+            marginLeft: 0,
         },
     };
 });
