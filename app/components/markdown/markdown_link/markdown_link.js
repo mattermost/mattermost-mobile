@@ -12,36 +12,54 @@ import mattermostManaged from 'app/mattermost_managed';
 
 import Config from 'assets/config';
 
+import {escapeRegex} from 'app/utils/markdown';
+import {preventDoubleTap} from 'app/utils/tap';
 import {normalizeProtocol} from 'app/utils/url';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
-        onLongPress: PropTypes.func
+        onLongPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
+        serverURL: PropTypes.string.isRequired,
+        siteURL: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
-        onLongPress: () => true
+        onLongPress: () => true,
+        onPermalinkPress: () => true,
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
-    handlePress = () => {
-        const url = normalizeProtocol(this.props.href);
+    handlePress = preventDoubleTap(() => {
+        const {href, onPermalinkPress, serverURL, siteURL} = this.props;
+        const url = normalizeProtocol(href);
 
         if (!url) {
             return;
         }
 
-        Linking.canOpenURL(url).then((supported) => {
-            if (supported) {
-                Linking.openURL(url);
-            }
-        });
-    };
+        const pattern = new RegExp('^' + escapeRegex(serverURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)');
+        const sitePattern = new RegExp('^' + escapeRegex(siteURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)');
+        const match = url.match(pattern) || url.match(sitePattern);
+
+        if (!match) {
+            Linking.canOpenURL(url).then((supported) => {
+                if (supported) {
+                    Linking.openURL(url);
+                }
+            });
+            return;
+        }
+
+        const teamName = match[1];
+        const postId = match[2];
+        onPermalinkPress(postId, teamName);
+    });
 
     parseLinkLiteral = (literal) => {
         let nextLiteral = literal;
@@ -54,7 +72,7 @@ export default class MarkdownLink extends PureComponent {
         const parsed = urlParse(nextLiteral, {});
 
         return parsed.href;
-    }
+    };
 
     parseChildren = () => {
         return Children.map(this.props.children, (child) => {
@@ -67,12 +85,12 @@ export default class MarkdownLink extends PureComponent {
 
             const nextProps = {
                 literal: this.parseLinkLiteral(literal),
-                ...otherProps
+                ...otherProps,
             };
 
             return {
                 props: nextProps,
-                ...otherChildProps
+                ...otherChildProps,
             };
         });
     }
@@ -86,7 +104,7 @@ export default class MarkdownLink extends PureComponent {
         if (config.copyAndPasteProtection !== 'true') {
             action = {
                 text: formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'}),
-                onPress: this.handleCopyURL
+                onPress: this.handleCopyURL,
             };
         }
 

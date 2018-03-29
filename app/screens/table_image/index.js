@@ -9,7 +9,7 @@ import TableImage from './table_image';
 
 function mapStateToProps(state) {
     return {
-        deviceWidth: getDimensions(state).deviceWidth
+        deviceWidth: getDimensions(state).deviceWidth,
     };
 }
 

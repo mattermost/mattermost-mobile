@@ -7,7 +7,7 @@ import {
     ScrollView,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import {injectIntl} from 'react-intl';
 
@@ -117,24 +117,24 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
         const options = [{
             label: intl.formatMessage({
                 id: 'mobile.account_notifications.threads_start_participate',
-                defaultMessage: 'Threads that I start or participate in'
+                defaultMessage: 'Threads that I start or participate in',
             }),
             value: 'any',
-            checked: this.state.comments === 'any'
+            checked: this.state.comments === 'any',
         }, {
             label: intl.formatMessage({
                 id: 'mobile.account_notifications.threads_start',
-                defaultMessage: 'Threads that I start'
+                defaultMessage: 'Threads that I start',
             }),
             value: 'root',
-            checked: this.state.comments === 'root'
+            checked: this.state.comments === 'root',
         }, {
             label: intl.formatMessage({
                 id: 'mobile.account_notifications.threads_mentions',
-                defaultMessage: 'Mentions in threads'
+                defaultMessage: 'Mentions in threads',
             }),
             value: 'never',
-            checked: this.state.comments === 'never'
+            checked: this.state.comments === 'never',
         }];
 
         return (
@@ -362,83 +362,83 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 12,
-            height: 40
+            height: 40,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
-            width: '100%'
+            width: '100%',
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         scrollViewContent: {
-            paddingVertical: 0
+            paddingVertical: 0,
         },
         modalOverlay: {
             backgroundColor: changeOpacity('#000000', 0.6),
             alignItems: 'center',
-            flex: 1
+            flex: 1,
         },
         modal: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
             marginTop: 20,
-            width: '95%'
+            width: '95%',
         },
         modalBody: {
-            paddingHorizontal: 24
+            paddingHorizontal: 24,
         },
         modalTitleContainer: {
             marginBottom: 30,
-            marginTop: 20
+            marginTop: 20,
         },
         modalTitle: {
             color: theme.centerChannelColor,
-            fontSize: 19
+            fontSize: 19,
         },
         modalOptionDisabled: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17
+            fontSize: 17,
         },
         modalInput: {
             color: theme.centerChannelColor,
-            fontSize: 19
+            fontSize: 19,
         },
         modalHelpText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 13,
-            marginTop: 20
+            marginTop: 20,
         },
         modalFooter: {
             alignItems: 'flex-end',
             height: 58,
             marginTop: 40,
-            width: '100%'
+            width: '100%',
         },
         modalFooterContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            paddingRight: 24
+            paddingRight: 24,
         },
         modalFooterOptionContainer: {
             alignItems: 'center',
             height: 40,
             justifyContent: 'center',
             paddingHorizontal: 10,
-            paddingVertical: 5
+            paddingVertical: 5,
         },
         modalFooterOption: {
             color: theme.linkColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });
 

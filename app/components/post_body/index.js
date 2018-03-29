@@ -5,10 +5,25 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {flagPost, unflagPost} from 'mattermost-redux/actions/posts';
-import {Posts} from 'mattermost-redux/constants';
+import {
+    General,
+    Posts,
+} from 'mattermost-redux/constants';
+import {
+    getCurrentChannel,
+    getMyCurrentChannelMembership,
+} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isEdited, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+
+import {canManageMembers} from 'mattermost-redux/utils/channel_utils';
+import {
+    isEdited,
+    isPostEphemeral,
+    isSystemMessage,
+} from 'mattermost-redux/utils/post_utils';
 
 import PostBody from './post_body';
 
@@ -26,6 +41,25 @@ function mapStateToProps(state, ownProps) {
         isPending = false;
     }
 
+    const channel = getCurrentChannel(state);
+    const user = getCurrentUser(state);
+    const teamMember = getCurrentTeamMembership(state);
+    const channelMember = getMyCurrentChannelMembership(state);
+    const {config, license} = state.entities.general;
+    const isUserCanManageMembers = canManageMembers(channel, user, teamMember, channelMember, config, license);
+    const isEphemeralPost = isPostEphemeral(post);
+
+    let isPostAddChannelMember = false;
+    if (
+        (channel.type === General.PRIVATE_CHANNEL || channel.type === General.OPEN_CHANNEL) &&
+        isUserCanManageMembers &&
+        isEphemeralPost &&
+        post.props &&
+        post.props.add_channel_member
+    ) {
+        isPostAddChannelMember = true;
+    }
+
     return {
         postProps: post.props || {},
         fileIds: post.file_ids,
@@ -34,10 +68,11 @@ function mapStateToProps(state, ownProps) {
         hasReactions: post.has_reactions,
         isFailed,
         isPending,
-        isPostEphemeral: isPostEphemeral(post),
+        isPostAddChannelMember,
+        isPostEphemeral: isEphemeralPost,
         isSystemMessage: isSystemMessage(post),
         message: post.message,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -45,9 +80,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             flagPost,
-            unflagPost
-        }, dispatch)
+            unflagPost,
+        }, dispatch),
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PostBody);
+export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(PostBody);

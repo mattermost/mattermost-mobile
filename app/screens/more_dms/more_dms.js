@@ -6,7 +6,8 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     InteractionManager,
-    View
+    Platform,
+    View,
 } from 'react-native';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -48,8 +49,8 @@ class MoreDirectMessages extends PureComponent {
             getProfiles: PropTypes.func.isRequired,
             getProfilesInTeam: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired
-        }).isRequired
+            setChannelDisplayName: PropTypes.func.isRequired,
+        }).isRequired,
     };
 
     constructor(props) {
@@ -68,7 +69,7 @@ class MoreDirectMessages extends PureComponent {
             loadingChannel: false,
             canSelect: true,
             selectedIds: {},
-            selectedCount: 0
+            selectedCount: 0,
         };
 
         props.navigator.setOnNavigatorEvent(this.onNavigatorEvent);
@@ -140,14 +141,14 @@ class MoreDirectMessages extends PureComponent {
                 id: START_BUTTON,
                 title: this.props.intl.formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
-                disabled: !startEnabled
-            }]
+                disabled: !startEnabled,
+            }],
         });
     };
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down'
+            animationType: 'slide-down',
         });
     };
 
@@ -190,7 +191,7 @@ class MoreDirectMessages extends PureComponent {
             searching: false,
             term: '',
             page: 0,
-            profiles: newProfiles
+            profiles: newProfiles,
         });
     };
 
@@ -221,7 +222,7 @@ class MoreDirectMessages extends PureComponent {
             this.getProfiles(page).then(({data}) => {
                 if (data && data.length) {
                     this.setState({
-                        page
+                        page,
                     });
                 } else {
                     this.setState({next: false});
@@ -243,7 +244,7 @@ class MoreDirectMessages extends PureComponent {
                 const {
                     profiles,
                     selectedCount,
-                    selectedIds
+                    selectedIds,
                 } = prevState;
 
                 const wasSelected = selectedIds[id];
@@ -269,7 +270,7 @@ class MoreDirectMessages extends PureComponent {
                 return {
                     profiles: newProfiles,
                     selectedIds: newSelectedIds,
-                    selectedCount: Object.keys(newSelectedIds).length
+                    selectedCount: Object.keys(newSelectedIds).length,
                 };
             });
         }
@@ -280,7 +281,7 @@ class MoreDirectMessages extends PureComponent {
             const {
                 profiles,
                 selectedCount,
-                selectedIds
+                selectedIds,
             } = prevState;
 
             const newSelectedIds = Object.assign({}, selectedIds);
@@ -295,7 +296,7 @@ class MoreDirectMessages extends PureComponent {
             return {
                 profiles: newProfiles,
                 selectedIds: newSelectedIds,
-                selectedCount: Object.keys(newSelectedIds).length
+                selectedCount: Object.keys(newSelectedIds).length,
             };
         });
     }
@@ -303,7 +304,7 @@ class MoreDirectMessages extends PureComponent {
     startConversation = async (selectedId) => {
         const {
             currentDisplayName,
-            actions
+            actions,
         } = this.props;
 
         if (this.state.loadingChannel) {
@@ -311,7 +312,7 @@ class MoreDirectMessages extends PureComponent {
         }
 
         this.setState({
-            loadingChannel: true
+            loadingChannel: true,
         });
 
         // Save the current channel display name in case it fails
@@ -334,7 +335,7 @@ class MoreDirectMessages extends PureComponent {
             });
         } else {
             this.setState({
-                loadingChannel: false
+                loadingChannel: false,
             });
 
             actions.setChannelDisplayName(currentChannelDisplayName);
@@ -347,7 +348,7 @@ class MoreDirectMessages extends PureComponent {
             allProfiles,
             currentUserId,
             intl,
-            teammateNameDisplay
+            teammateNameDisplay,
         } = this.props;
 
         const result = await actions.makeGroupChannel(ids);
@@ -361,7 +362,7 @@ class MoreDirectMessages extends PureComponent {
                 result.error,
                 {
                     id: 'mobile.open_gm.error',
-                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again."
+                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
                 }
             );
         }
@@ -373,7 +374,7 @@ class MoreDirectMessages extends PureComponent {
         const {
             actions,
             intl,
-            teammateNameDisplay
+            teammateNameDisplay,
         } = this.props;
 
         const user = this.state.profiles[id];
@@ -389,10 +390,10 @@ class MoreDirectMessages extends PureComponent {
                 result.error,
                 {
                     id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                 },
                 {
-                    displayName
+                    displayName,
                 }
             );
         }
@@ -432,12 +433,12 @@ class MoreDirectMessages extends PureComponent {
         const {
             getRequest,
             searchRequest,
-            theme
+            theme,
         } = this.props;
         const {
             loadingChannel,
             showNoResults,
-            term
+            term,
         } = this.state;
 
         const isLoading = (
@@ -454,6 +455,17 @@ class MoreDirectMessages extends PureComponent {
             );
         }
 
+        const searchBarInput = {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            ...Platform.select({
+                android: {
+                    marginBottom: -5,
+                },
+            }),
+        };
+
         return (
             <View style={style.container}>
                 <StatusBar/>
@@ -464,12 +476,7 @@ class MoreDirectMessages extends PureComponent {
                         cancelTitle={this.props.intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={33}
-                        inputStyle={{
-                            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                            color: theme.centerChannelColor,
-                            fontSize: 15,
-                            lineHeight: 66
-                        }}
+                        inputStyle={searchBarInput}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                         tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -511,11 +518,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         searchContainer: {
-            marginVertical: 5
-        }
+            marginVertical: 5,
+        },
     };
 });
 

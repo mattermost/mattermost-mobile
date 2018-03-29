@@ -7,7 +7,7 @@ import {
     Animated,
     StyleSheet,
     TouchableWithoutFeedback,
-    View
+    View,
 } from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -29,19 +29,19 @@ export default class OptionsModal extends PureComponent {
         onCancelPress: PropTypes.func,
         title: PropTypes.oneOfType([
             PropTypes.string,
-            PropTypes.object
-        ])
+            PropTypes.object,
+        ]),
     };
 
     static defaultProps = {
-        onCancelPress: emptyFunction
+        onCancelPress: emptyFunction,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            top: new Animated.Value(props.deviceHeight)
+            top: new Animated.Value(props.deviceHeight),
         };
     }
 
@@ -49,7 +49,7 @@ export default class OptionsModal extends PureComponent {
         EventEmitter.on(NavigationTypes.NAVIGATION_CLOSE_MODAL, this.close);
         Animated.timing(this.state.top, {
             toValue: 0,
-            duration: DURATION
+            duration: DURATION,
         }).start();
     }
 
@@ -65,10 +65,10 @@ export default class OptionsModal extends PureComponent {
     close = () => {
         Animated.timing(this.state.top, {
             toValue: this.props.deviceHeight,
-            duration: DURATION
+            duration: DURATION,
         }).start(() => {
             this.props.navigator.dismissModal({
-                animationType: 'none'
+                animationType: 'none',
             });
         });
     };
@@ -76,11 +76,11 @@ export default class OptionsModal extends PureComponent {
     render() {
         const {
             items,
-            title
+            title,
         } = this.props;
 
         return (
-            <TouchableWithoutFeedback onPress={this.close}>
+            <TouchableWithoutFeedback onPress={this.handleCancel}>
                 <View style={style.wrapper}>
                     <AnimatedView style={{height: this.props.deviceHeight, left: 0, top: this.state.top, width: this.props.deviceWidth}}>
                         <OptionsModalList
@@ -98,6 +98,6 @@ export default class OptionsModal extends PureComponent {
 const style = StyleSheet.create({
     wrapper: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        flex: 1
-    }
+        flex: 1,
+    },
 });

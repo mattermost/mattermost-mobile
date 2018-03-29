@@ -2,29 +2,32 @@
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
+import {Image} from 'react-native';
 import PropTypes from 'prop-types';
 
 import {General} from 'mattermost-redux/constants';
-
-import {AwayIcon, DndIcon, OfflineIcon, OnlineIcon} from 'app/components/status_icons';
+import away from 'assets/images/status/away.png';
+import dnd from 'assets/images/status/dnd.png';
+import offline from 'assets/images/status/offline.png';
+import online from 'assets/images/status/online.png';
 
 const statusToIcon = {
-    away: AwayIcon,
-    dnd: DndIcon,
-    offline: OfflineIcon,
-    online: OnlineIcon
+    away,
+    dnd,
+    offline,
+    online,
 };
 
 export default class UserStatus extends PureComponent {
     static propTypes = {
         size: PropTypes.number,
         status: PropTypes.string,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         size: 14,
-        status: General.OFFLINE
+        status: General.OFFLINE,
     };
 
     render() {
@@ -48,10 +51,9 @@ export default class UserStatus extends PureComponent {
         }
 
         return (
-            <Icon
-                height={size}
-                width={size}
-                color={iconColor}
+            <Image
+                source={Icon}
+                style={{height: size, width: size, tintColor: iconColor}}
             />
         );
     }

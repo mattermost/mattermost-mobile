@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -61,12 +61,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             height: 16,
             marginRight: 5,
-            width: 16
+            width: 16,
         },
         icon: {
             color: theme.centerChannelColor,
-            fontSize: 16
-        }
+            fontSize: 16,
+        },
     };
 });
 

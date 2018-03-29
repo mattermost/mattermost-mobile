@@ -7,7 +7,7 @@ import {
     Switch,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -24,31 +24,31 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.3)
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.3),
         },
         detail: {
             marginHorizontal: 15,
             color: 'rgba(0, 0, 0, 0.5)',
-            fontSize: 15
+            fontSize: 15,
         },
         label: {
             flex: 1,
             marginLeft: 15,
             fontSize: 15,
             paddingVertical: 15,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         leftIcon: {
             width: 17,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         rightIcon: {
             color: theme.centerChannelColor,
-            opacity: 0.7
+            opacity: 0.7,
         },
         wrapper: {
-            backgroundColor: '#ddd'
-        }
+            backgroundColor: '#ddd',
+        },
     };
 });
 
@@ -113,7 +113,7 @@ userProfileRow.propTypes = {
     detail: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number,
-        PropTypes.bool
+        PropTypes.bool,
     ]),
     icon: PropTypes.string.isRequired,
     iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
@@ -122,14 +122,14 @@ userProfileRow.propTypes = {
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
-    theme: PropTypes.object.isRequired
+    theme: PropTypes.object.isRequired,
 };
 
 userProfileRow.defaultProps = {
     iconColor: 'rgba(0, 0, 0, 0.7)',
     iconSize: 15,
     textColor: '#000',
-    togglable: false
+    togglable: false,
 };
 
 export default userProfileRow;

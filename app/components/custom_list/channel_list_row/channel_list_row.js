@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
@@ -17,7 +17,7 @@ export default class ChannelListRow extends React.PureComponent {
         id: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         channel: PropTypes.object.isRequired,
-        ...CustomListRow.propTypes
+        ...CustomListRow.propTypes,
     };
 
     onPress = () => {
@@ -70,25 +70,25 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         titleContainer: {
             alignItems: 'center',
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         displayName: {
             fontSize: 16,
             color: theme.centerChannelColor,
-            marginLeft: 5
+            marginLeft: 5,
         },
         icon: {
             fontSize: 16,
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         container: {
             flex: 1,
-            flexDirection: 'column'
+            flexDirection: 'column',
         },
         purpose: {
             marginTop: 7,
             fontSize: 13,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
 });

@@ -23,7 +23,7 @@ export function extensionSelectTeamId(teamId) {
     return async (dispatch, getState) => {
         dispatch({
             type: ViewTypes.EXTENSION_SELECTED_TEAM_ID,
-            data: teamId
+            data: teamId,
         }, getState);
     };
 }

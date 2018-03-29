@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    TouchableOpacity
+    TouchableOpacity,
 } from 'react-native';
 
 import Emoji from 'app/components/emoji';
@@ -17,7 +17,7 @@ export default class Reaction extends PureComponent {
         emojiName: PropTypes.string.isRequired,
         highlight: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     }
 
     handlePress = () => {
@@ -36,7 +36,7 @@ export default class Reaction extends PureComponent {
             >
                 <Emoji
                     emojiName={emojiName}
-                    size={15}
+                    size={20}
                     padding={5}
                 />
                 <Text style={styles.count}>{count}</Text>
@@ -49,10 +49,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         count: {
             color: theme.linkColor,
-            marginLeft: 6
+            marginLeft: 6,
         },
         highlight: {
-            backgroundColor: changeOpacity(theme.linkColor, 0.1)
+            backgroundColor: changeOpacity(theme.linkColor, 0.1),
         },
         reaction: {
             alignItems: 'center',
@@ -60,10 +60,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.linkColor, 0.4),
             borderWidth: 1,
             flexDirection: 'row',
+            height: 30,
             marginRight: 6,
-            marginVertical: 5,
+            marginBottom: 5,
+            marginTop: 10,
             paddingVertical: 2,
-            paddingHorizontal: 6
-        }
+            paddingHorizontal: 6,
+        },
     };
 });

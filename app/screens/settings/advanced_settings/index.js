@@ -11,15 +11,15 @@ import AdvancedSettings from './advanced_settings';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            purgeOfflineStore
-        }, dispatch)
+            purgeOfflineStore,
+        }, dispatch),
     };
 }
 

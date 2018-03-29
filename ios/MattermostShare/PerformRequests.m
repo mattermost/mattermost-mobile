@@ -1,14 +1,6 @@
-//
-//  PerformRequests.m
-//  MattermostShare
-//
-//  Created by Elias Nahum on 12/18/17.
-//  Copyright © 2017 Facebook. All rights reserved.
-//
-
 #import "PerformRequests.h"
 #import "MattermostBucket.h"
-#import "ShareViewController.h"
+#import "SessionManager.h"
 
 @implementation PerformRequests
 
@@ -141,7 +133,7 @@
 }
 
 - (void) cleanUpTempFiles {
-  NSURL *tmpDirectoryURL = [ShareViewController tempContainerURL:self.appGroupId];
+  NSURL *tmpDirectoryURL = [[SessionManager sharedSession] tempContainerURL:self.appGroupId];
   if (tmpDirectoryURL == nil) {
     return;
   }

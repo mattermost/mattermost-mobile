@@ -12,30 +12,30 @@ import ExtensionTeams from './extension_teams';
 const theme = Preferences.THEMES.default;
 const Navigation = stackNavigator({
     Post: {
-        screen: ExtensionPost
+        screen: ExtensionPost,
     },
     Teams: {
-        screen: ExtensionTeams
+        screen: ExtensionTeams,
     },
     Channels: {
-        screen: ExtensionChannels
-    }
+        screen: ExtensionChannels,
+    },
 }, {
     navigationOptions: {
         headerStyle: {
-            backgroundColor: theme.sidebarHeaderBg
+            backgroundColor: theme.sidebarHeaderBg,
         },
         headerTitleStyle: {
             marginHorizontal: 0,
             left: 0,
-            color: theme.sidebarHeaderTextColor
+            color: theme.sidebarHeaderTextColor,
         },
         headerBackTitleStyle: {
             color: theme.sidebarHeaderTextColor,
-            margin: 0
+            margin: 0,
         },
-        headerTintColor: theme.sidebarHeaderTextColor
-    }
+        headerTintColor: theme.sidebarHeaderTextColor,
+    },
 });
 
 export default Navigation;

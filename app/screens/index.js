@@ -22,8 +22,10 @@ import EditChannel from 'app/screens/edit_channel';
 import EditPost from 'app/screens/edit_post';
 import EditProfile from 'app/screens/edit_profile';
 import ImagePreview from 'app/screens/image_preview';
+import TextPreview from 'app/screens/text_preview';
 import Login from 'app/screens/login';
 import LoginOptions from 'app/screens/login_options';
+import LongPost from 'app/screens/long_post';
 import Mfa from 'app/screens/mfa';
 import MoreChannels from 'app/screens/more_channels';
 import MoreDirectMessages from 'app/screens/more_dms';
@@ -34,6 +36,7 @@ import NotificationSettingsMentions from 'app/screens/settings/notification_sett
 import NotificationSettingsMentionsKeywords from 'app/screens/settings/notification_settings_mentions_keywords';
 import NotificationSettingsMobile from 'app/screens/settings/notification_settings_mobile';
 import OptionsModal from 'app/screens/options_modal';
+import Permalink from 'app/screens/permalink';
 import Root from 'app/screens/root';
 import SSO from 'app/screens/sso';
 import Search from 'app/screens/search';
@@ -79,8 +82,10 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(EditProfile), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(ImagePreview), store, Provider);
+    Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(TextPreview), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(Login), store, Provider);
     Navigation.registerComponent('LoginOptions', () => wrapWithContextProvider(LoginOptions), store, Provider);
+    Navigation.registerComponent('LongPost', () => wrapWithContextProvider(LongPost), store, Provider);
     Navigation.registerComponent('MFA', () => wrapWithContextProvider(Mfa), store, Provider);
     Navigation.registerComponent('MoreChannels', () => wrapWithContextProvider(MoreChannels), store, Provider);
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(MoreDirectMessages), store, Provider);
@@ -91,6 +96,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapWithContextProvider(NotificationSettingsMentionsKeywords), store, Provider);
     Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(NotificationSettingsMobile), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
+    Navigation.registerComponent('Permalink', () => wrapWithContextProvider(Permalink), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('Search', () => wrapWithContextProvider(Search), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);

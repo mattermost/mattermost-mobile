@@ -6,5 +6,5 @@ export default {
     setNotificationSound: () => null,
     setShouldVibrate: () => null,
     setShouldBlink: () => null,
-    play: () => null
+    play: () => null,
 };

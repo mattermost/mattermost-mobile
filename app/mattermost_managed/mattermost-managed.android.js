@@ -62,5 +62,5 @@ export default {
 
         return JailMonkey.trustFall();
     },
-    quitApp: BackHandler.exitApp
+    quitApp: BackHandler.exitApp,
 };

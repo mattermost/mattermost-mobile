@@ -21,7 +21,7 @@ function mapStateToProps(state, ownProps) {
         currentUserId: getCurrentUserId(state),
         postIds: getPostIdsInChannel(state, channelId),
         lastViewedAt: getMyChannelMember(state, channelId).last_viewed_at,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -29,8 +29,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             loadPostsIfNecessaryWithRetry,
-            markChannelAsRead
-        }, dispatch)
+            markChannelAsRead,
+        }, dispatch),
     };
 }
 

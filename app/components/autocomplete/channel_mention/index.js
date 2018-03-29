@@ -12,7 +12,7 @@ import {
     filterOtherChannels,
     filterPublicChannels,
     filterPrivateChannels,
-    getMatchTermForChannelMention
+    getMatchTermForChannelMention,
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -44,15 +44,15 @@ function mapStateToProps(state, ownProps) {
         currentTeamId: getCurrentTeamId(state),
         matchTerm,
         requestStatus: state.requests.channels.getChannels.status,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            searchChannels
-        }, dispatch)
+            searchChannels,
+        }, dispatch),
     };
 }
 

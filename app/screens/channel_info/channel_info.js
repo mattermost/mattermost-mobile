@@ -3,16 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
     ScrollView,
-    View
+    View,
 } from 'react-native';
 
 import StatusBar from 'app/components/status_bar';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
@@ -22,37 +22,46 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
 
-class ChannelInfo extends PureComponent {
+export default class ChannelInfo extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        canDeleteChannel: PropTypes.bool.isRequired,
-        currentChannel: PropTypes.object.isRequired,
-        currentChannelCreatorName: PropTypes.string,
-        currentChannelMemberCount: PropTypes.number,
-        navigator: PropTypes.object,
-        status: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        isCurrent: PropTypes.bool.isRequired,
-        isFavorite: PropTypes.bool.isRequired,
-        canManageUsers: PropTypes.bool.isRequired,
-        canEditChannel: PropTypes.bool.isRequired,
         actions: PropTypes.shape({
             closeDMChannel: PropTypes.func.isRequired,
             closeGMChannel: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
+            loadChannelsByTeamName: PropTypes.func.isRequired,
             favoriteChannel: PropTypes.func.isRequired,
             unfavoriteChannel: PropTypes.func.isRequired,
-            getCustomEmojisInText: PropTypes.func.isRequired
-        })
+            getCustomEmojisInText: PropTypes.func.isRequired,
+            selectFocusedPostId: PropTypes.func.isRequired,
+            updateChannelNotifyProps: PropTypes.func.isRequired,
+        }),
+        canDeleteChannel: PropTypes.bool.isRequired,
+        currentChannel: PropTypes.object.isRequired,
+        currentChannelCreatorName: PropTypes.string,
+        currentChannelMemberCount: PropTypes.number,
+        currentUserId: PropTypes.string,
+        navigator: PropTypes.object,
+        status: PropTypes.string,
+        theme: PropTypes.object.isRequired,
+        isChannelMuted: PropTypes.bool.isRequired,
+        isCurrent: PropTypes.bool.isRequired,
+        isFavorite: PropTypes.bool.isRequired,
+        canManageUsers: PropTypes.bool.isRequired,
+        canEditChannel: PropTypes.bool.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            isFavorite: this.props.isFavorite
+            isFavorite: props.isFavorite,
+            isMuted: props.isChannelMuted,
         };
     }
 
@@ -66,10 +75,17 @@ class ChannelInfo extends PureComponent {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
         }
 
-        const isFavorite = nextProps.isFavorite;
-        if (isFavorite !== this.state.isFavorite) {
-            this.setState({isFavorite});
+        let isFavorite = this.state.isFavorite;
+        if (isFavorite !== nextProps.isFavorite) {
+            isFavorite = nextProps.isFavorite;
         }
+
+        let isMuted = this.state.isMuted;
+        if (isMuted !== nextProps.isChannelMuted) {
+            isMuted = nextProps.isChannelMuted;
+        }
+
+        this.setState({isFavorite, isMuted});
     }
 
     close = () => {
@@ -81,8 +97,9 @@ class ChannelInfo extends PureComponent {
         }
     };
 
-    goToChannelAddMembers = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+    goToChannelAddMembers = preventDoubleTap(() => {
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
         navigator.push({
             backButtonTitle: '',
             screen: 'ChannelAddMembers',
@@ -92,13 +109,14 @@ class ChannelInfo extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
-    goToChannelMembers = wrapWithPreventDoubleTap(() => {
-        const {canManageUsers, intl, navigator, theme} = this.props;
+    goToChannelMembers = preventDoubleTap(() => {
+        const {intl} = this.context;
+        const {canManageUsers, navigator, theme} = this.props;
         const id = canManageUsers ? 'channel_header.manageMembers' : 'channel_header.viewMembers';
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
 
@@ -111,13 +129,14 @@ class ChannelInfo extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
-    handleChannelEdit = wrapWithPreventDoubleTap(() => {
-        const {intl, navigator, theme} = this.props;
+    handleChannelEdit = preventDoubleTap(() => {
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
         const id = 'mobile.channel_info.edit';
         const defaultMessage = 'Edit Channel';
 
@@ -130,8 +149,8 @@ class ChannelInfo extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
+                screenBackgroundColor: theme.centerChannelBg,
+            },
         });
     });
 
@@ -143,8 +162,8 @@ class ChannelInfo extends PureComponent {
         this.handleDeleteOrLeave('delete');
     };
 
-    handleDeleteOrLeave = wrapWithPreventDoubleTap((eventType) => {
-        const {formatMessage} = this.props.intl;
+    handleDeleteOrLeave = preventDoubleTap((eventType) => {
+        const {formatMessage} = this.context.intl;
         const channel = this.props.currentChannel;
         const term = channel.type === General.OPEN_CHANNEL ?
             formatMessage({id: 'mobile.channel_info.publicChannel', defaultMessage: 'Public Channel'}) :
@@ -156,7 +175,7 @@ class ChannelInfo extends PureComponent {
             title = {id: 'mobile.channel_info.alertTitleLeaveChannel', defaultMessage: 'Leave {term}'};
             message = {
                 id: 'mobile.channel_info.alertMessageLeaveChannel',
-                defaultMessage: 'Are you sure you want to leave the {term} {name}?'
+                defaultMessage: 'Are you sure you want to leave the {term} {name}?',
             };
             onPressAction = () => {
                 this.props.actions.leaveChannel(channel, true).then(() => {
@@ -167,20 +186,20 @@ class ChannelInfo extends PureComponent {
             title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Delete {term}'};
             message = {
                 id: 'mobile.channel_info.alertMessageDeleteChannel',
-                defaultMessage: 'Are you sure you want to delete the {term} {name}?'
+                defaultMessage: 'Are you sure you want to delete the {term} {name}?',
             };
             onPressAction = async () => {
                 const result = await this.props.actions.deleteChannel(channel.id);
                 if (result.error) {
                     alertErrorWithFallback(
-                        this.props.intl,
+                        this.context.intl,
                         result.error,
                         {
                             id: 'mobile.channel_info.delete_failed',
-                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again."
+                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again.",
                         },
                         {
-                            displayName: channel.display_name
+                            displayName: channel.display_name,
                         }
                     );
                 } else {
@@ -195,19 +214,19 @@ class ChannelInfo extends PureComponent {
                 message,
                 {
                     term: term.toLowerCase(),
-                    name: channel.display_name
+                    name: channel.display_name,
                 }
             ),
             [{
-                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'})
+                text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
             }, {
                 text: formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                onPress: onPressAction
+                onPress: onPressAction,
             }],
         );
     });
 
-    handleClose = wrapWithPreventDoubleTap(() => {
+    handleClose = preventDoubleTap(() => {
         const {currentChannel, isCurrent, isFavorite} = this.props;
         const channel = Object.assign({}, currentChannel, {isCurrent}, {isFavorite});
         const {closeDMChannel, closeGMChannel} = this.props.actions;
@@ -232,6 +251,56 @@ class ChannelInfo extends PureComponent {
         const toggleFavorite = isFavorite ? unfavoriteChannel : favoriteChannel;
         this.setState({isFavorite: !isFavorite});
         toggleFavorite(currentChannel.id);
+    };
+
+    handleClosePermalink = () => {
+        const {actions} = this.props;
+        actions.selectFocusedPostId('');
+        this.showingPermalink = false;
+    };
+
+    handlePermalinkPress = (postId, teamName) => {
+        this.props.actions.loadChannelsByTeamName(teamName);
+        this.showPermalinkView(postId);
+    };
+
+    handleMuteChannel = () => {
+        const {actions, currentChannel, currentUserId, isChannelMuted} = this.props;
+        const {updateChannelNotifyProps} = actions;
+        const opts = {
+            mark_unread: isChannelMuted ? 'all' : 'mention',
+        };
+
+        this.setState({isMuted: !isChannelMuted});
+        updateChannelNotifyProps(currentUserId, currentChannel.id, opts);
+    };
+
+    showPermalinkView = (postId) => {
+        const {actions, navigator} = this.props;
+
+        actions.selectFocusedPostId(postId);
+
+        if (!this.showingPermalink) {
+            const options = {
+                screen: 'Permalink',
+                animationType: 'none',
+                backButtonTitle: '',
+                overrideBackPress: true,
+                navigatorStyle: {
+                    navBarHidden: true,
+                    screenBackgroundColor: changeOpacity('#000', 0.2),
+                    modalPresentationStyle: 'overCurrentContext',
+                },
+                passProps: {
+                    isPermalink: true,
+                    onClose: this.handleClosePermalink,
+                    onPermalinkPress: this.handlePermalinkPress,
+                },
+            };
+
+            this.showingPermalink = true;
+            navigator.showModal(options);
+        }
     };
 
     renderViewOrManageMembersRow = () => {
@@ -269,7 +338,7 @@ class ChannelInfo extends PureComponent {
             canEditChannel,
             navigator,
             status,
-            theme
+            theme,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -301,6 +370,7 @@ class ChannelInfo extends PureComponent {
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
                         navigator={navigator}
+                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
                         status={status}
                         theme={theme}
@@ -314,6 +384,16 @@ class ChannelInfo extends PureComponent {
                             detail={this.state.isFavorite}
                             icon='star-o'
                             textId='mobile.routes.channelInfo.favorite'
+                            togglable={true}
+                            theme={theme}
+                        />
+                        <View style={style.separator}/>
+                        <ChannelInfoRow
+                            action={this.handleMuteChannel}
+                            defaultMessage='Mute channel'
+                            detail={this.state.isMuted}
+                            icon='bell-slash-o'
+                            textId='channel_notifications.muteChannel.settings'
                             togglable={true}
                             theme={theme}
                         />
@@ -416,32 +496,30 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         footer: {
             marginTop: 40,
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1)
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         rowsContainer: {
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         separator: {
             marginHorizontal: 15,
             height: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
-        }
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
     };
 });
-
-export default injectIntl(ChannelInfo);

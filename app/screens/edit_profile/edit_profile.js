@@ -14,7 +14,7 @@ import StatusBar from 'app/components/status_bar/index';
 import ProfilePicture from 'app/components/profile_picture/index';
 import AttachmentButton from 'app/components/attachment_button';
 import {emptyFunction} from 'app/utils/general';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import EditProfileItem from './edit_profile_item';
@@ -22,50 +22,50 @@ import EditProfileItem from './edit_profile_item';
 const holders = {
     firstName: {
         id: 'user.settings.general.firstName',
-        defaultMessage: 'First Name'
+        defaultMessage: 'First Name',
     },
     lastName: {
         id: 'user.settings.general.lastName',
-        defaultMessage: 'Last Name'
+        defaultMessage: 'Last Name',
     },
     username: {
         id: 'user.settings.general.username',
-        defaultMessage: 'Username'
+        defaultMessage: 'Username',
     },
     nickname: {
         id: 'user.settings.general.nickname',
-        defaultMessage: 'Nickname'
+        defaultMessage: 'Nickname',
     },
     position: {
         id: 'user.settings.general.position',
-        defaultMessage: 'Position'
+        defaultMessage: 'Position',
     },
     email: {
         id: 'user.settings.general.email',
-        defaultMessage: 'Email'
-    }
+        defaultMessage: 'Email',
+    },
 };
 
 export default class EditProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleUploadProfileImage: PropTypes.func.isRequired,
-            updateUser: PropTypes.func.isRequired
+            updateUser: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     rightButton = {
         id: 'update-profile',
         disabled: true,
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
     constructor(props, context) {
@@ -73,7 +73,7 @@ export default class EditProfile extends PureComponent {
 
         const {email, first_name: firstName, last_name: lastName, nickname, position, username} = props.currentUser;
         const buttons = {
-            rightButtons: [this.rightButton]
+            rightButtons: [this.rightButton],
         };
 
         this.rightButton.title = context.intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
@@ -86,7 +86,7 @@ export default class EditProfile extends PureComponent {
             lastName,
             nickname,
             position,
-            username
+            username,
         };
     }
 
@@ -122,13 +122,13 @@ export default class EditProfile extends PureComponent {
 
     close = () => {
         this.props.navigator.dismissModal({
-            animationType: 'slide-down'
+            animationType: 'slide-down',
         });
     };
 
     emitCanUpdateAccount = (enabled) => {
         const buttons = {
-            rightButtons: [{...this.rightButton, disabled: !enabled}]
+            rightButtons: [{...this.rightButton, disabled: !enabled}],
         };
 
         this.props.navigator.setButtons(buttons);
@@ -142,7 +142,7 @@ export default class EditProfile extends PureComponent {
         }
     };
 
-    submitUser = wrapWithPreventDoubleTap(async () => {
+    submitUser = preventDoubleTap(async () => {
         this.emitCanUpdateAccount(false);
         this.setState({error: null, updating: true});
 
@@ -153,7 +153,7 @@ export default class EditProfile extends PureComponent {
             username,
             nickname,
             position,
-            email
+            email,
         } = this.state;
         const user = {
             first_name: firstName,
@@ -161,7 +161,7 @@ export default class EditProfile extends PureComponent {
             username,
             nickname,
             position,
-            email
+            email,
         };
 
         if (profileImage) {
@@ -224,7 +224,7 @@ export default class EditProfile extends PureComponent {
                 format={holders.firstName}
                 helpText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
-                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
+                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 updateValue={this.updateField}
                 theme={theme}
@@ -250,7 +250,7 @@ export default class EditProfile extends PureComponent {
                     format={holders.lastName}
                     helpText={formatMessage({
                         id: 'user.settings.general.field_handled_externally',
-                        defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
+                        defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                     })}
                     updateValue={this.updateField}
                     theme={theme}
@@ -273,7 +273,7 @@ export default class EditProfile extends PureComponent {
                 format={holders.username}
                 helpText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
-                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
+                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 updateValue={this.updateField}
                 theme={theme}
@@ -294,7 +294,7 @@ export default class EditProfile extends PureComponent {
             disabled = true;
             helpText = formatMessage({
                 id: 'user.settings.general.emailHelp1',
-                defaultMessage: 'Email is used for sign-in, notifications, and password reset. Email requires verification if changed.'
+                defaultMessage: 'Email is used for sign-in, notifications, and password reset. Email requires verification if changed.',
             });
         } else if (currentUser.auth_service !== '') {
             disabled = true;
@@ -303,31 +303,31 @@ export default class EditProfile extends PureComponent {
             case 'gitlab':
                 helpText = formatMessage({
                     id: 'user.settings.general.emailGitlabCantUpdate',
-                    defaultMessage: 'Login occurs through GitLab. Email cannot be updated. Email address used for notifications is {email}.'
+                    defaultMessage: 'Login occurs through GitLab. Email cannot be updated. Email address used for notifications is {email}.',
                 }, {email});
                 break;
             case 'google':
                 helpText = formatMessage({
                     id: 'user.settings.general.emailGoogleCantUpdate',
-                    defaultMessage: 'Login occurs through Google Apps. Email cannot be updated. Email address used for notifications is {email}.'
+                    defaultMessage: 'Login occurs through Google Apps. Email cannot be updated. Email address used for notifications is {email}.',
                 }, {email});
                 break;
             case 'office365':
                 helpText = formatMessage({
                     id: 'user.settings.general.emailOffice365CantUpdate',
-                    defaultMessage: 'Login occurs through Office 365. Email cannot be updated. Email address used for notifications is {email}.'
+                    defaultMessage: 'Login occurs through Office 365. Email cannot be updated. Email address used for notifications is {email}.',
                 }, {email});
                 break;
             case 'ldap':
                 helpText = formatMessage({
                     id: 'user.settings.general.emailLdapCantUpdate',
-                    defaultMessage: 'Login occurs through AD/LDAP. Email cannot be updated. Email address used for notifications is {email}.'
+                    defaultMessage: 'Login occurs through AD/LDAP. Email cannot be updated. Email address used for notifications is {email}.',
                 }, {email});
                 break;
             case 'saml':
                 helpText = formatMessage({
                     id: 'user.settings.general.emailSamlCantUpdate',
-                    defaultMessage: 'Login occurs through SAML. Email cannot be updated. Email address used for notifications is {email}.'
+                    defaultMessage: 'Login occurs through SAML. Email cannot be updated. Email address used for notifications is {email}.',
                 }, {email});
                 break;
             }
@@ -364,7 +364,7 @@ export default class EditProfile extends PureComponent {
                 format={holders.nickname}
                 helpText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
-                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
+                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 updateValue={this.updateField}
                 theme={theme}
@@ -388,7 +388,7 @@ export default class EditProfile extends PureComponent {
                 format={holders.position}
                 helpText={formatMessage({
                     id: 'user.settings.general.field_handled_externally',
-                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
+                    defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
                 })}
                 updateValue={this.updateField}
                 theme={theme}
@@ -405,13 +405,13 @@ export default class EditProfile extends PureComponent {
         const {
             currentUser,
             theme,
-            navigator
+            navigator,
         } = this.props;
 
         const {
             profileImage,
             error,
-            updating
+            updating,
         } = this.state;
 
         const style = getStyleSheet(theme);
@@ -490,39 +490,39 @@ export default class EditProfile extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1
+            flex: 1,
         },
         container: {
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 10
+            paddingTop: 10,
         },
         top: {
             padding: 25,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         errorContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            width: '100%'
+            width: '100%',
         },
         errorWrapper: {
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
         },
         errorText: {
-            fontSize: 14
+            fontSize: 14,
         },
         separator: {
-            height: 15
+            height: 15,
         },
         footer: {
             height: 40,
-            width: '100%'
-        }
+            width: '100%',
+        },
     };
 });
 

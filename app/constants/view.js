@@ -6,7 +6,7 @@ import keyMirror from 'mattermost-redux/utils/key_mirror';
 export const UpgradeTypes = {
     CAN_UPGRADE: 'can_upgrade',
     MUST_UPGRADE: 'must_upgrade',
-    NO_UPGRADE: 'no_upgrade'
+    NO_UPGRADE: 'no_upgrade',
 };
 
 const ViewTypes = keyMirror({
@@ -64,7 +64,7 @@ const ViewTypes = keyMirror({
     EXTENSION_SELECTED_TEAM_ID: null,
     ANNOUNCEMENT_BANNER: null,
 
-    INCREMENT_EMOJI_PICKER_PAGE: null
+    INCREMENT_EMOJI_PICKER_PAGE: null,
 });
 
 export default {
@@ -80,5 +80,6 @@ export default {
     IOS_TOP_LANDSCAPE: 32,
     IOS_TOP_PORTRAIT: 64,
     IOSX_TOP_PORTRAIT: 88,
-    STATUS_BAR_HEIGHT: 20
+    STATUS_BAR_HEIGHT: 20,
+    PROFILE_PICTURE_SIZE: 32,
 };

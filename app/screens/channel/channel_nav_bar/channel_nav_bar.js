@@ -19,7 +19,7 @@ const {
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
-    STATUS_BAR_HEIGHT
+    STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
 export default class ChannelNavBar extends PureComponent {
@@ -29,7 +29,7 @@ export default class ChannelNavBar extends PureComponent {
         openChannelDrawer: PropTypes.func.isRequired,
         openSettingsDrawer: PropTypes.func.isRequired,
         onPress: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -85,7 +85,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             width: '100%',
-            zIndex: 10
-        }
+            zIndex: 10,
+        },
     };
 });

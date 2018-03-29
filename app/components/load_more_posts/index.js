@@ -7,7 +7,7 @@ import LoadMorePosts from './load_more_posts';
 
 function mapStateToProps(state, ownProps) {
     return {
-        loading: Boolean(state.views.channel.loadingPosts[ownProps.channelId])
+        loading: Boolean(state.views.channel.loadingPosts[ownProps.channelId]),
     };
 }
 

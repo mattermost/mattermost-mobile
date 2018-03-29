@@ -8,7 +8,7 @@ import {
     FlatList,
     Text,
     TouchableHighlight,
-    View
+    View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -30,7 +30,7 @@ class FilteredList extends Component {
             getProfilesInTeam: PropTypes.func.isRequired,
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            searchProfiles: PropTypes.func.isRequired
+            searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
         channels: PropTypes.object.isRequired,
         currentTeam: PropTypes.object.isRequired,
@@ -49,19 +49,18 @@ class FilteredList extends Component {
         statuses: PropTypes.object,
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        currentTeam: {},
         currentChannel: {},
-        pastDirectMessages: []
+        pastDirectMessages: [],
     };
 
     constructor(props) {
         super(props);
         this.state = {
-            dataSource: this.buildData(props)
+            dataSource: this.buildData(props),
         };
     }
 
@@ -146,28 +145,28 @@ class FilteredList extends Component {
         unreads: {
             builder: this.buildUnreadChannelsForSearch,
             id: 'mobile.channel_list.unreads',
-            defaultMessage: 'UNREADS'
+            defaultMessage: 'UNREADS',
         },
         channels: {
             builder: this.buildChannelsForSearch,
             id: 'mobile.channel_list.channels',
-            defaultMessage: 'CHANNELS'
+            defaultMessage: 'CHANNELS',
         },
         dms: {
             builder: this.buildCurrentDMSForSearch,
             id: 'sidebar.direct',
-            defaultMessage: 'DIRECT MESSAGES'
+            defaultMessage: 'DIRECT MESSAGES',
         },
         members: {
             builder: this.buildMembersForSearch,
             id: 'mobile.channel_list.members',
-            defaultMessage: 'MEMBERS'
+            defaultMessage: 'MEMBERS',
         },
         nonmembers: {
             builder: this.buildOtherMembersForSearch,
             id: 'mobile.channel_list.not_member',
-            defaultMessage: 'NOT A MEMBER'
-        }
+            defaultMessage: 'NOT A MEMBER',
+        },
     });
 
     buildUnreadChannelsForSearch = (props, term) => {
@@ -212,14 +211,14 @@ class FilteredList extends Component {
                 type: General.DM_CHANNEL,
                 fake: true,
                 nickname: u.nickname,
-                fullname: `${u.first_name} ${u.last_name}`
+                fullname: `${u.first_name} ${u.last_name}`,
             };
         });
 
         groupChannels = groupChannels.map((channel) => {
             return {
                 ...channel,
-                ...groupChannelMemberDetails[channel.id]
+                ...groupChannelMemberDetails[channel.id],
             };
         });
 
@@ -253,7 +252,7 @@ class FilteredList extends Component {
                 type: General.DM_CHANNEL,
                 fake: true,
                 nickname: u.nickname,
-                fullname: `${u.first_name} ${u.last_name}`
+                fullname: `${u.first_name} ${u.last_name}`,
             };
         });
 
@@ -266,7 +265,7 @@ class FilteredList extends Component {
         const {
             favoriteChannels,
             publicChannels,
-            privateChannels
+            privateChannels,
         } = props.channels;
 
         const favorites = favoriteChannels.filter((c) => {
@@ -283,7 +282,7 @@ class FilteredList extends Component {
         const notMemberOf = otherChannels.map((o) => {
             return {
                 ...o,
-                fake: true
+                fake: true,
             };
         });
 
@@ -369,7 +368,7 @@ class FilteredList extends Component {
                     </View>
                     {bottomDivider && this.renderDivider(styles, 16)}
                 </View>
-            )
+            ),
         };
     };
 

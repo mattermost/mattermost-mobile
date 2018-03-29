@@ -11,11 +11,11 @@ class FormattedText extends React.PureComponent {
         intl: intlShape.isRequired,
         id: PropTypes.string.isRequired,
         defaultMessage: PropTypes.string,
-        values: PropTypes.object
+        values: PropTypes.object,
     };
 
     static defaultProps = {
-        defaultMessage: ''
+        defaultMessage: '',
     };
 
     render() {

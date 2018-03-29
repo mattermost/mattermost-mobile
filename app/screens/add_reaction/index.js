@@ -9,7 +9,7 @@ import AddReaction from './add_reaction';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

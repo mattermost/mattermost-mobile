@@ -9,7 +9,7 @@ export default class SafeAreaAndroid extends PureComponent {
     static propTypes = {
         backgroundColor: PropTypes.string,
         children: PropTypes.node.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     render() {
@@ -29,6 +29,6 @@ export default class SafeAreaAndroid extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        flex: 1
-    }
+        flex: 1,
+    },
 });

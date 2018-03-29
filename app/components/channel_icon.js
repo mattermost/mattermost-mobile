@@ -5,7 +5,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -14,7 +14,7 @@ import {
     AwayAvatar,
     DndAvatar,
     OfflineAvatar,
-    OnlineAvatar
+    OnlineAvatar,
 } from 'app/components/status_icons';
 
 import {General} from 'mattermost-redux/constants';
@@ -31,14 +31,14 @@ export default class ChannelIcon extends React.PureComponent {
         status: PropTypes.string,
         teammateDeletedAt: PropTypes.number,
         theme: PropTypes.object.isRequired,
-        type: PropTypes.string.isRequired
+        type: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
         isActive: false,
         isInfo: false,
         isUnread: false,
-        size: 12
+        size: 12,
     };
 
     render() {
@@ -51,7 +51,7 @@ export default class ChannelIcon extends React.PureComponent {
             status,
             teammateDeletedAt,
             theme,
-            type
+            type,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -167,49 +167,49 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             marginRight: 12,
-            alignItems: 'center'
+            alignItems: 'center',
         },
         icon: {
-            color: changeOpacity(theme.sidebarText, 0.4)
+            color: changeOpacity(theme.sidebarText, 0.4),
         },
         iconActive: {
-            color: theme.sidebarTextActiveColor
+            color: theme.sidebarTextActiveColor,
         },
         iconUnread: {
-            color: theme.sidebarUnreadText
+            color: theme.sidebarUnreadText,
         },
         iconInfo: {
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         groupBox: {
             alignSelf: 'flex-start',
             alignItems: 'center',
             borderWidth: 1,
             borderColor: changeOpacity(theme.sidebarText, 0.4),
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         groupBoxActive: {
-            borderColor: theme.sidebarTextActiveColor
+            borderColor: theme.sidebarTextActiveColor,
         },
         groupBoxUnread: {
-            borderColor: theme.sidebarUnreadText
+            borderColor: theme.sidebarUnreadText,
         },
         groupBoxInfo: {
-            borderColor: theme.centerChannelColor
+            borderColor: theme.centerChannelColor,
         },
         group: {
             color: changeOpacity(theme.sidebarText, 0.4),
             fontSize: 10,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         groupActive: {
-            color: theme.sidebarTextActiveColor
+            color: theme.sidebarTextActiveColor,
         },
         groupUnread: {
-            color: theme.sidebarUnreadText
+            color: theme.sidebarUnreadText,
         },
         groupInfo: {
-            color: theme.centerChannelColor
-        }
+            color: theme.centerChannelColor,
+        },
     };
 });

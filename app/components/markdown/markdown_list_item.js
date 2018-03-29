@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     StyleSheet,
     Text,
-    View
+    View,
 } from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -19,7 +19,7 @@ export default class MarkdownListItem extends PureComponent {
         index: PropTypes.number.isRequired,
         bulletWidth: PropTypes.number,
         bulletStyle: CustomPropTypes.Style,
-        level: PropTypes.number
+        level: PropTypes.number,
     };
 
     render() {
@@ -41,7 +41,7 @@ export default class MarkdownListItem extends PureComponent {
                         {bullet}
                     </Text>
                 </View>
-                <View>
+                <View style={style.contents}>
                     {this.props.children}
                 </View>
             </View>
@@ -50,12 +50,15 @@ export default class MarkdownListItem extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    bullet: {
-        alignItems: 'flex-end',
-        marginRight: 5
-    },
     container: {
         flexDirection: 'row',
-        alignItems: 'flex-start'
-    }
+        alignItems: 'flex-start',
+    },
+    bullet: {
+        alignItems: 'flex-end',
+        marginRight: 5,
+    },
+    contents: {
+        flex: 1,
+    },
 });

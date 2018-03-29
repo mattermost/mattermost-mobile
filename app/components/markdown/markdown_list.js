@@ -1,20 +1,19 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View} from 'react-native';
+import React, {PureComponent} from 'react';
 
 export default class MarkdownList extends PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
         ordered: PropTypes.bool.isRequired,
         start: PropTypes.number,
-        tight: PropTypes.bool
+        tight: PropTypes.bool,
     };
 
     static defaultProps = {
-        start: 1
+        start: 1,
     };
 
     render() {
@@ -28,20 +27,14 @@ export default class MarkdownList extends PureComponent {
             return React.cloneElement(child, {
                 bulletWidth,
                 ordered: this.props.ordered,
-                tight: this.props.tight
+                tight: this.props.tight,
             });
         });
 
         return (
-            <View style={style.indent}>
+            <React.Fragment>
                 {children}
-            </View>
+            </React.Fragment>
         );
     }
 }
-
-const style = StyleSheet.create({
-    indent: {
-        marginRight: 20
-    }
-});

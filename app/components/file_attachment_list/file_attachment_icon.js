@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     View,
     Image,
-    StyleSheet
+    StyleSheet,
 } from 'react-native';
 
 import * as Utils from 'mattermost-redux/utils/file_utils';
@@ -32,7 +32,7 @@ const ICON_PATH_FROM_FILE_TYPE = {
     presentation: pptIcon,
     spreadsheet: excelIcon,
     video: videoIcon,
-    word: wordIcon
+    word: wordIcon,
 };
 
 export default class FileAttachmentIcon extends PureComponent {
@@ -41,14 +41,14 @@ export default class FileAttachmentIcon extends PureComponent {
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
         wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number
+        wrapperWidth: PropTypes.number,
     };
 
     static defaultProps = {
         iconHeight: 60,
         iconWidth: 60,
-        wrapperHeight: 100,
-        wrapperWidth: 100
+        wrapperHeight: 80,
+        wrapperWidth: 80,
     };
 
     getFileIconPath(file) {
@@ -63,7 +63,7 @@ export default class FileAttachmentIcon extends PureComponent {
         return (
             <View style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}>
                 <Image
-                    style={{height: iconHeight, width: iconWidth}}
+                    style={[styles.icon, {height: iconHeight, width: iconWidth}]}
                     source={source}
                     defaultSource={genericIcon}
                 />
@@ -76,6 +76,12 @@ const styles = StyleSheet.create({
     fileIconWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fff'
-    }
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 2,
+    },
+    icon: {
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 2,
+    },
 });

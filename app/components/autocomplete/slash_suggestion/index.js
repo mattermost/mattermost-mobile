@@ -30,15 +30,15 @@ function mapStateToProps(state) {
         commands: mobileCommandsSelector(state),
         commandsRequest: state.requests.integrations.getAutocompleteCommands,
         currentTeamId: getCurrentTeamId(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getAutocompleteCommands
-        }, dispatch)
+            getAutocompleteCommands,
+        }, dispatch),
     };
 }
 

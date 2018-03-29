@@ -9,7 +9,7 @@ import {
     Keyboard,
     Platform,
     StyleSheet,
-    View
+    View,
 } from 'react-native';
 
 import {General, WebsocketEvents} from 'mattermost-redux/constants';
@@ -29,7 +29,7 @@ const {
     ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
-    IOS_TOP_PORTRAIT
+    IOS_TOP_PORTRAIT,
 } = ViewTypes;
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
@@ -43,7 +43,7 @@ export default class ChannelDrawer extends Component {
             makeDirectChannel: PropTypes.func.isRequired,
             markChannelAsRead: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired
+            setChannelLoading: PropTypes.func.isRequired,
         }).isRequired,
         blurPostTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
@@ -54,7 +54,7 @@ export default class ChannelDrawer extends Component {
         intl: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         teamsCount: PropTypes.number.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     closeHandle = null;
@@ -69,7 +69,7 @@ export default class ChannelDrawer extends Component {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
         this.state = {
-            openDrawerOffset
+            openDrawerOffset,
         };
     }
 
@@ -175,12 +175,12 @@ export default class ChannelDrawer extends Component {
             mainOverlay: {
                 backgroundColor: this.props.theme.centerChannelBg,
                 elevation: 3,
-                opacity
+                opacity,
             },
             drawerOverlay: {
                 backgroundColor: ratio ? '#000' : '#FFF',
-                opacity: ratio ? (1 - ratio) / 2 : 1
-            }
+                opacity: ratio ? (1 - ratio) / 2 : 1,
+            },
         };
     };
 
@@ -202,7 +202,7 @@ export default class ChannelDrawer extends Component {
 
     selectChannel = (channel, currentChannelId) => {
         const {
-            actions
+            actions,
         } = this.props;
 
         const {
@@ -210,16 +210,17 @@ export default class ChannelDrawer extends Component {
             markChannelAsRead,
             setChannelLoading,
             setChannelDisplayName,
-            markChannelAsViewed
+            markChannelAsViewed,
         } = actions;
 
         tracker.channelSwitch = Date.now();
-        setChannelLoading(channel.id !== currentChannelId);
-        setChannelDisplayName(channel.display_name);
 
         this.closeChannelDrawer();
 
         InteractionManager.runAfterInteractions(() => {
+            setChannelLoading(channel.id !== currentChannelId);
+            setChannelDisplayName(channel.display_name);
+
             handleSelectChannel(channel.id);
             requestAnimationFrame(() => {
                 // mark the channel as viewed after all the frame has flushed
@@ -236,12 +237,12 @@ export default class ChannelDrawer extends Component {
             actions,
             currentTeamId,
             currentUserId,
-            intl
+            intl,
         } = this.props;
 
         const {
             joinChannel,
-            makeDirectChannel
+            makeDirectChannel,
         } = actions;
 
         const displayValue = {displayName: channel.display_name};
@@ -253,7 +254,7 @@ export default class ChannelDrawer extends Component {
             if (result.error) {
                 const dmFailedMessage = {
                     id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again."
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                 };
                 alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
             }
@@ -263,7 +264,7 @@ export default class ChannelDrawer extends Component {
             if (result.error) {
                 const joinFailedMessage = {
                     id: 'mobile.join_channel.error',
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
                 };
                 alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
             }
@@ -319,11 +320,11 @@ export default class ChannelDrawer extends Component {
         const {
             navigator,
             teamsCount,
-            theme
+            theme,
         } = this.props;
 
         const {
-            openDrawerOffset
+            openDrawerOffset,
         } = this.state;
 
         const multipleTeams = teamsCount > 1;
@@ -428,9 +429,9 @@ export default class ChannelDrawer extends Component {
                         shadowRadius: 12,
                         shadowOffset: {
                             width: -4,
-                            height: 0
-                        }
-                    }
+                            height: 0,
+                        },
+                    },
                 }}
             >
                 {children}
@@ -442,6 +443,6 @@ export default class ChannelDrawer extends Component {
 const style = StyleSheet.create({
     swiperContent: {
         flex: 1,
-        marginBottom: 10
-    }
+        marginBottom: 10,
+    },
 });

@@ -13,9 +13,10 @@ import {
     getChannelsWithUnreadSection,
     getCurrentChannel,
     getGroupChannels,
-    getOtherChannels
+    getOtherChannels,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
 import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -72,14 +73,14 @@ function getGroupDetails(currentUserId, userIdsInChannels, profiles, groupChanne
             email: [],
             fullname: [],
             nickname: [],
-            username: []
+            username: [],
         });
 
         groupMemberDetails[channel.id] = {
             email: members.email.join(','),
             fullname: members.fullname.join(','),
             nickname: members.nickname.join(','),
-            username: members.username.join(',')
+            username: members.username.join(','),
         };
 
         return groupMemberDetails;
@@ -109,6 +110,7 @@ function mapStateToProps(state) {
     return {
         channels: getChannelsWithUnreadSection(state),
         currentChannel: getCurrentChannel(state),
+        currentTeam: getCurrentTeam(state),
         currentUserId,
         otherChannels: getOtherChannels(state),
         groupChannelMemberDetails: getGroupChannelMemberDetails(state),
@@ -119,7 +121,7 @@ function mapStateToProps(state) {
         searchOrder,
         pastDirectMessages: pastDirectMessages(state),
         restrictDms,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -129,8 +131,8 @@ function mapDispatchToProps(dispatch) {
             getProfilesInTeam,
             makeGroupMessageVisibleIfNecessary,
             searchChannels,
-            searchProfiles
-        }, dispatch)
+            searchProfiles,
+        }, dispatch),
     };
 }
 

@@ -11,8 +11,8 @@ export function calculateDeviceDimensions() {
         type: DeviceTypes.DEVICE_DIMENSIONS_CHANGED,
         data: {
             deviceHeight: height,
-            deviceWidth: width
-        }
+            deviceWidth: width,
+        },
     };
 }
 
@@ -20,7 +20,7 @@ export function connection(isOnline) {
     return async (dispatch, getState) => {
         dispatch({
             type: DeviceTypes.CONNECTION_CHANGED,
-            data: isOnline
+            data: isOnline,
         }, getState);
     };
 }
@@ -28,21 +28,21 @@ export function connection(isOnline) {
 export function setStatusBarHeight(height = 20) {
     return {
         type: DeviceTypes.STATUSBAR_HEIGHT_CHANGED,
-        data: height
+        data: height,
     };
 }
 
 export function setDeviceOrientation(orientation) {
     return {
         type: DeviceTypes.DEVICE_ORIENTATION_CHANGED,
-        data: orientation
+        data: orientation,
     };
 }
 
 export function setDeviceAsTablet() {
     return {
         type: DeviceTypes.DEVICE_TYPE_CHANGED,
-        data: true
+        data: true,
     };
 }
 
@@ -51,5 +51,5 @@ export default {
     connection,
     setDeviceOrientation,
     setDeviceAsTablet,
-    setStatusBarHeight
+    setStatusBarHeight,
 };

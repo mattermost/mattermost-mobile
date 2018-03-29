@@ -4,7 +4,7 @@ sentry_properties="defaults.url=https://sentry.io
 defaults.org=${SENTRY_ORG}
 defaults.project=${SENTRY_PROJECT_IOS}
 auth.token=${SENTRY_AUTH_TOKEN}
-cli.executable=../node_modules/sentry-cli-binary/bin/sentry-cli"
+cli.executable=../node_modules/@sentry/cli/bin/sentry-cli"
 
 if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	if [[ ! -f "sentry.properties" ]]; then

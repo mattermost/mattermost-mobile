@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Text} from 'react-native';
+import {Clipboard, Platform, Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -19,11 +19,11 @@ export default class AtMention extends React.PureComponent {
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
-        usersByUsername: PropTypes.object.isRequired
+        usersByUsername: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     }
 
     constructor(props) {
@@ -32,7 +32,7 @@ export default class AtMention extends React.PureComponent {
         const userDetails = this.getUserDetailsFromMentionName(props);
         this.state = {
             username: userDetails.username,
-            id: userDetails.id
+            id: userDetails.id,
         };
     }
 
@@ -41,7 +41,7 @@ export default class AtMention extends React.PureComponent {
             const userDetails = this.getUserDetailsFromMentionName(nextProps);
             this.setState({
                 username: userDetails.username,
-                id: userDetails.id
+                id: userDetails.id,
             });
         }
     }
@@ -49,22 +49,27 @@ export default class AtMention extends React.PureComponent {
     goToUserProfile = () => {
         const {navigator, theme} = this.props;
         const {intl} = this.context;
-
-        navigator.push({
+        const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId: this.state.id
+                userId: this.state.id,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
-        });
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        };
+
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     getUserDetailsFromMentionName(props) {
@@ -75,7 +80,7 @@ export default class AtMention extends React.PureComponent {
                 const user = props.usersByUsername[mentionName];
                 return {
                     username: user.username,
-                    id: user.id
+                    id: user.id,
                 };
             }
 
@@ -88,7 +93,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         return {
-            username: ''
+            username: '',
         };
     }
 
@@ -102,9 +107,9 @@ export default class AtMention extends React.PureComponent {
             action = {
                 text: intl.formatMessage({
                     id: 'mobile.mention.copy_mention',
-                    defaultMessage: 'Copy Mention'
+                    defaultMessage: 'Copy Mention',
                 }),
-                onPress: this.handleCopyMention
+                onPress: this.handleCopyMention,
             };
         }
 

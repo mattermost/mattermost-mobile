@@ -11,7 +11,7 @@ class FormattedDate extends React.PureComponent {
         intl: intlShape.isRequired,
         value: PropTypes.any.isRequired,
         format: PropTypes.string,
-        children: PropTypes.func
+        children: PropTypes.func,
     };
 
     render() {

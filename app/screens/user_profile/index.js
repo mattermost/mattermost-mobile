@@ -26,7 +26,7 @@ function mapStateToProps(state, ownProps) {
         currentUserId: getCurrentUserId(state),
         user: state.entities.users.profiles[ownProps.userId],
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 
@@ -34,8 +34,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             makeDirectChannel,
-            setChannelDisplayName
-        }, dispatch)
+            setChannelDisplayName,
+        }, dispatch),
     };
 }
 

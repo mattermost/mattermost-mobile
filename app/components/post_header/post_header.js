@@ -7,7 +7,7 @@ import {
     Platform,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
@@ -25,7 +25,7 @@ export default class PostHeader extends PureComponent {
         commentCount: PropTypes.number,
         commentedOnDisplayName: PropTypes.string,
         createAt: PropTypes.number.isRequired,
-        displayName: PropTypes.string.isRequired,
+        displayName: PropTypes.string,
         enablePostUsernameOverride: PropTypes.bool,
         fromWebHook: PropTypes.bool,
         isPendingOrFailedPost: PropTypes.bool,
@@ -39,18 +39,20 @@ export default class PostHeader extends PureComponent {
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        username: PropTypes.string.isRequired,
-        isFlagged: PropTypes.bool
+        username: PropTypes.string,
+        isFlagged: PropTypes.bool,
     };
 
     static defaultProps = {
         commentCount: 0,
         onPress: emptyFunction,
-        onUsernamePress: emptyFunction
+        onUsernamePress: emptyFunction,
     };
 
     handleUsernamePress = () => {
-        this.props.onUsernamePress(this.props.username);
+        if (this.props.username) {
+            this.props.onUsernamePress(this.props.username);
+        }
     }
 
     getDisplayName = (style) => {
@@ -58,7 +60,7 @@ export default class PostHeader extends PureComponent {
             enablePostUsernameOverride,
             fromWebHook,
             isSystemMessage,
-            overrideUsername
+            overrideUsername,
         } = this.props;
 
         if (fromWebHook) {
@@ -136,7 +138,7 @@ export default class PostHeader extends PureComponent {
                 defaultMessage='Commented on {name}{apostrophe} message: '
                 values={{
                     name,
-                    apostrophe
+                    apostrophe,
                 }}
                 style={style.commentedOn}
             />
@@ -156,7 +158,7 @@ export default class PostHeader extends PureComponent {
             shouldRenderReplyButton,
             showFullDate,
             theme,
-            isFlagged
+            isFlagged,
         } = this.props;
         const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
@@ -236,29 +238,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         commentedOn: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             marginBottom: 3,
-            lineHeight: 21
+            lineHeight: 21,
         },
         postInfoContainer: {
             alignItems: 'center',
             flexDirection: 'row',
-            marginTop: 10
+            marginTop: 10,
         },
         pendingPost: {
-            opacity: 0.5
+            opacity: 0.5,
         },
         timeContainer: {
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         datetime: {
             flex: 1,
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         time: {
             color: theme.centerChannelColor,
             fontSize: 13,
             marginLeft: 5,
             marginBottom: 1,
-            opacity: 0.5
+            opacity: 0.5,
         },
         replyIconContainer: {
             flexDirection: 'row',
@@ -266,15 +268,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             height: 30,
             minWidth: 40,
-            paddingVertical: 10
+            paddingVertical: 10,
         },
         replyText: {
             fontSize: 15,
             marginLeft: 3,
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         botContainer: {
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         bot: {
             alignSelf: 'center',
@@ -285,26 +287,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             marginRight: 5,
             paddingVertical: 2,
-            paddingHorizontal: 4
+            paddingHorizontal: 4,
         },
         displayName: {
             color: theme.centerChannelColor,
             fontSize: 15,
             fontWeight: '600',
             marginRight: 5,
-            marginBottom: 3
+            marginBottom: 3,
         },
         flagContainer: {
             marginLeft: 10,
             alignSelf: 'center',
             ...Platform.select({
                 ios: {
-                    marginBottom: 2
+                    marginBottom: 2,
                 },
                 android: {
-                    marginBottom: 1
-                }
-            })
-        }
+                    marginBottom: 1,
+                },
+            }),
+        },
     };
 });

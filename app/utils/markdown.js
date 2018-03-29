@@ -1,119 +1,112 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Dimensions, PixelRatio, Platform, StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export function getCodeFont() {
     return Platform.OS === 'ios' ? 'Menlo' : 'monospace';
 }
 
-const portraitWidth = Dimensions.get('window').width <= Dimensions.get('window').height ? Dimensions.get('window').width : Dimensions.get('window').height;
-const scale = portraitWidth / 320;
-
-export const normalizeFontSizeByDevice = (size) => {
-    return Math.ceil(PixelRatio.roundToNearestPixel(size * scale));
-};
-
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme) => {
     const codeFont = getCodeFont();
 
     return {
         emph: {
-            fontStyle: 'italic'
+            fontStyle: 'italic',
         },
         strong: {
-            fontWeight: 'bold'
+            fontWeight: 'bold',
         },
         del: {
-            textDecorationLine: 'line-through'
+            textDecorationLine: 'line-through',
         },
         link: {
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         heading1: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: 25,
         },
         heading1Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: 8,
         },
         heading2: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: 25,
         },
         heading2Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: 8,
         },
         heading3: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: 25,
         },
         heading3Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: 8,
         },
         heading4: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: 25,
         },
         heading4Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: 8,
         },
         heading5: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: 25,
         },
         heading5Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: 8,
         },
         heading6: {
-            fontSize: normalizeFontSizeByDevice(16),
+            fontSize: 17,
             fontWeight: '700',
-            lineHeight: normalizeFontSizeByDevice(22)
+            lineHeight: 25,
         },
         heading6Text: {
-            paddingBottom: normalizeFontSizeByDevice(6)
+            paddingBottom: 8,
         },
         code: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
-            fontFamily: codeFont
+            fontFamily: codeFont,
         },
         codeBlock: {
-            fontFamily: codeFont
+            fontFamily: codeFont,
         },
         mention: {
-            color: theme.linkColor
+            color: theme.linkColor,
         },
         error: {
-            color: theme.errorTextColor
+            color: theme.errorTextColor,
         },
         table_header_row: {
-            fontWeight: '700'
-        }
+            fontWeight: '700',
+        },
     };
 });
 
 export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
     return {
         adjacentParagraph: {
-            marginTop: 6
+            marginTop: 6,
         },
         horizontalRule: {
             backgroundColor: theme.centerChannelColor,
             height: StyleSheet.hairlineWidth,
             flex: 1,
-            marginVertical: 10
+            marginVertical: 10,
         },
         quoteBlockIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            padding: 5
-        }
+            padding: 5,
+        },
     };
 });
 
@@ -175,9 +168,13 @@ const languages = {
     vbscript: 'VBScript',
     verilog: 'Verilog',
     xml: 'XML',
-    yaml: 'YAML'
+    yaml: 'YAML',
 };
 
 export function getDisplayNameForLanguage(language) {
     return languages[language.toLowerCase()] || '';
+}
+
+export function escapeRegex(text) {
+    return text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }

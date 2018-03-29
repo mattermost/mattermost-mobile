@@ -12,11 +12,11 @@ function withLayout(WrappedComponent) {
         static propTypes = {
             index: PropTypes.number.isRequired,
             onLayoutCalled: PropTypes.func,
-            shouldCallOnLayout: PropTypes.bool
+            shouldCallOnLayout: PropTypes.bool,
         };
 
         static defaultProps = {
-            onLayoutCalled: emptyFunction
+            onLayoutCalled: emptyFunction,
         }
 
         onLayout = (event) => {

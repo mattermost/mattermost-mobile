@@ -6,10 +6,12 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Clipboard,
+    Platform,
+    TouchableHighlight,
     View,
-    ViewPropTypes
+    ViewPropTypes,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import PostBody from 'app/components/post_body';
@@ -29,21 +31,20 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import Config from 'assets/config';
 
-class Post extends PureComponent {
+export default class Post extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReaction: PropTypes.func.isRequired,
             createPost: PropTypes.func.isRequired,
             deletePost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
-            removePost: PropTypes.func.isRequired
+            removePost: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         highlight: PropTypes.bool,
-        intl: intlShape.isRequired,
         style: ViewPropTypes.style,
         post: PropTypes.object,
         postId: PropTypes.string.isRequired, // Used by container // eslint-disable-line no-unused-prop-types
@@ -55,17 +56,24 @@ class Post extends PureComponent {
         license: PropTypes.object.isRequired,
         managedConfig: PropTypes.object.isRequired,
         navigator: PropTypes.object,
+        onPermalinkPress: PropTypes.func,
         roles: PropTypes.string,
         shouldRenderReplyButton: PropTypes.bool,
         showFullDate: PropTypes.bool,
+        showLongPost: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         onReply: PropTypes.func,
-        isFlagged: PropTypes.bool
+        isFlagged: PropTypes.bool,
     };
 
     static defaultProps = {
-        isSearchResult: false
+        isSearchResult: false,
+        showLongPost: false,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -76,12 +84,12 @@ class Post extends PureComponent {
         if (post) {
             this.state = {
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles)),
             };
         } else {
             this.state = {
                 canEdit: false,
-                canDelete: false
+                canDelete: false,
             };
         }
     }
@@ -96,7 +104,7 @@ class Post extends PureComponent {
 
             this.setState({
                 canEdit: canEditPost(config, license, currentUserId, post, this.editDisableAction),
-                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles))
+                canDelete: canDeletePost(config, license, currentUserId, post, isAdmin(roles), isSystemAdmin(roles)),
             });
         }
     }
@@ -106,22 +114,29 @@ class Post extends PureComponent {
     }
 
     goToUserProfile = () => {
-        const {intl, navigator, post, theme} = this.props;
-        navigator.push({
+        const {intl} = this.context;
+        const {navigator, post, theme} = this.props;
+        const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId: post.user_id
+                userId: post.user_id,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
-        });
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        };
+
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     autofillUserMention = (username) => {
@@ -135,7 +150,7 @@ class Post extends PureComponent {
     };
 
     handlePostDelete = () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
         const {actions, currentUserId, post} = this.props;
 
         Alert.alert(
@@ -143,7 +158,7 @@ class Post extends PureComponent {
             formatMessage({id: 'mobile.post.delete_question', defaultMessage: 'Are you sure you want to delete this post?'}),
             [{
                 text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
-                style: 'cancel'
+                style: 'cancel',
             }, {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
@@ -153,13 +168,14 @@ class Post extends PureComponent {
                     if (post.user_id === currentUserId) {
                         actions.removePost(post);
                     }
-                }
+                },
             }]
         );
     };
 
     handlePostEdit = () => {
-        const {intl, navigator, post, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, post, theme} = this.props;
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
             navigator.showModal({
                 screen: 'EditPost',
@@ -169,12 +185,12 @@ class Post extends PureComponent {
                     navBarTextColor: theme.sidebarHeaderTextColor,
                     navBarBackgroundColor: theme.sidebarHeaderBg,
                     navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
+                    screenBackgroundColor: theme.centerChannelBg,
                 },
                 passProps: {
                     post,
-                    closeButton: source
-                }
+                    closeButton: source,
+                },
             });
         });
     };
@@ -184,8 +200,9 @@ class Post extends PureComponent {
         this.props.actions.addReaction(post.id, emoji);
     }
 
-    handleAddReaction = () => {
-        const {intl, navigator, post, theme} = this.props;
+    handleAddReaction = preventDoubleTap(() => {
+        const {intl} = this.context;
+        const {navigator, post, theme} = this.props;
 
         MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
             then((source) => {
@@ -197,22 +214,22 @@ class Post extends PureComponent {
                         navBarTextColor: theme.sidebarHeaderTextColor,
                         navBarBackgroundColor: theme.sidebarHeaderBg,
                         navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg
+                        screenBackgroundColor: theme.centerChannelBg,
                     },
                     passProps: {
                         post,
                         closeButton: source,
-                        onEmojiPress: this.handleAddReactionToPost
-                    }
+                        onEmojiPress: this.handleAddReactionToPost,
+                    },
                 });
             });
-    }
+    });
 
     handleFailedPostPress = () => {
         const options = {
             title: {
                 id: 'mobile.post.failed_title',
-                defaultMessage: 'Unable to send your message:'
+                defaultMessage: 'Unable to send your message:',
             },
             items: [{
                 action: () => {
@@ -223,8 +240,8 @@ class Post extends PureComponent {
                 },
                 text: {
                     id: 'mobile.post.failed_retry',
-                    defaultMessage: 'Try Again'
-                }
+                    defaultMessage: 'Try Again',
+                },
             }, {
                 action: () => {
                     EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
@@ -232,12 +249,12 @@ class Post extends PureComponent {
                 },
                 text: {
                     id: 'mobile.post.failed_delete',
-                    defaultMessage: 'Delete Message'
+                    defaultMessage: 'Delete Message',
                 },
                 textStyle: {
-                    color: '#CC3239'
-                }
-            }]
+                    color: '#CC3239',
+                },
+            }],
         };
 
         this.props.navigator.showModal({
@@ -246,42 +263,45 @@ class Post extends PureComponent {
             animationType: 'none',
             passProps: {
                 items: options.items,
-                title: options.title
+                title: options.title,
             },
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'transparent',
-                modalPresentationStyle: 'overCurrentContext'
-            }
+                modalPresentationStyle: 'overCurrentContext',
+            },
         });
     };
 
-    handlePress = () => {
+    handlePress = preventDoubleTap(() => {
         const {
-            isSearchResult,
             onPress,
-            post
+            post,
+            showLongPost,
         } = this.props;
 
         if (!getToolTipVisible()) {
             if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
-                preventDoubleTap(onPress, null, post);
-            } else if (!isSearchResult && isPostEphemeral(post)) {
-                preventDoubleTap(this.onRemovePost, this, post);
+                onPress(post);
+            } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED) && !showLongPost) {
+                this.onRemovePost(post);
             }
+        } else if (this.refs.postBody) {
+            this.refs.postBody.getWrappedInstance().hideOptionsContext();
+            this.handleHideUnderlay();
         }
-    };
+    });
 
-    handleReply = () => {
+    handleReply = preventDoubleTap(() => {
         const {post, onReply} = this.props;
         if (!getToolTipVisible() && onReply) {
-            return preventDoubleTap(onReply, null, post);
+            return onReply(post);
         }
 
         return this.handlePress();
-    };
+    });
 
     onRemovePost = (post) => {
         const {removePost} = this.props.actions;
@@ -298,7 +318,7 @@ class Post extends PureComponent {
             commentedOnPost,
             isFirstReply,
             isLastReply,
-            theme
+            theme,
         } = this.props;
 
         if (!this.isReplyPost()) {
@@ -319,13 +339,11 @@ class Post extends PureComponent {
         return <View style={replyBarStyle}/>;
     };
 
-    viewUserProfile = () => {
-        const {isSearchResult} = this.props;
-
-        if (!isSearchResult && !getToolTipVisible()) {
-            preventDoubleTap(this.goToUserProfile, this);
+    viewUserProfile = preventDoubleTap(() => {
+        if (!getToolTipVisible()) {
+            this.goToUserProfile();
         }
-    };
+    });
 
     toggleSelected = (selected) => {
         if (!getToolTipVisible()) {
@@ -347,7 +365,21 @@ class Post extends PureComponent {
         const permalink = `${currentTeamUrl}/pl/${postId}`;
 
         Clipboard.setString(permalink);
-    }
+    };
+
+    handleHideUnderlay = () => {
+        this.toggleSelected(false);
+    };
+
+    handleShowUnderlay = () => {
+        this.toggleSelected(true);
+    };
+
+    showOptionsContext = () => {
+        if (this.refs.postBody) {
+            this.refs.postBody.getWrappedInstance().showOptionsContext();
+        }
+    };
 
     render() {
         const {
@@ -355,13 +387,15 @@ class Post extends PureComponent {
             highlight,
             isLastReply,
             isSearchResult,
+            onPermalinkPress,
             post,
             renderReplies,
             shouldRenderReplyButton,
             showFullDate,
+            showLongPost,
             theme,
             managedConfig,
-            isFlagged
+            isFlagged,
         } = this.props;
 
         if (!post) {
@@ -380,12 +414,19 @@ class Post extends PureComponent {
 
         return (
             <View style={[style.container, this.props.style, highlighted, selected]}>
-                <View style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}>
+                <TouchableHighlight
+                    style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}
+                    onPress={this.handlePress}
+                    onHideUnderlay={this.handleHideUnderlay}
+                    onShowUnderlay={this.handleShowUnderlay}
+                    onLongPress={this.showOptionsContext}
+                    underlayColor='transparent'
+                >
                     <PostProfilePicture
                         onViewUserProfile={this.viewUserProfile}
                         postId={post.id}
                     />
-                </View>
+                </TouchableHighlight>
                 <View style={style.messageContainerWithReplyBar}>
                     {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
@@ -404,14 +445,17 @@ class Post extends PureComponent {
                         />
                         <View style={{maxWidth: postWidth}}>
                             <PostBody
+                                ref={'postBody'}
                                 canDelete={this.state.canDelete}
                                 canEdit={this.state.canEdit}
+                                highlight={highlight}
                                 isSearchResult={isSearchResult}
                                 navigator={this.props.navigator}
                                 onAddReaction={this.handleAddReaction}
                                 onCopyPermalink={this.handleCopyPermalink}
                                 onCopyText={this.handleCopyText}
                                 onFailedPostPress={this.handleFailedPostPress}
+                                onPermalinkPress={onPermalinkPress}
                                 onPostDelete={this.handlePostDelete}
                                 onPostEdit={this.handlePostEdit}
                                 onPress={this.handlePress}
@@ -421,6 +465,7 @@ class Post extends PureComponent {
                                 managedConfig={managedConfig}
                                 isFlagged={isFlagged}
                                 isReplyPost={isReplyPost}
+                                showLongPost={showLongPost}
                             />
                         </View>
                     </View>
@@ -433,49 +478,47 @@ class Post extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            flexDirection: 'row'
+            flexDirection: 'row',
         },
         pendingPost: {
-            opacity: 0.5
+            opacity: 0.5,
         },
         rightColumn: {
             flex: 1,
             flexDirection: 'column',
-            marginRight: 12
+            marginRight: 12,
         },
         rightColumnPadding: {
-            paddingBottom: 3
+            paddingBottom: 3,
         },
         messageContainerWithReplyBar: {
             flexDirection: 'row',
-            flex: 1
+            flex: 1,
         },
         profilePictureContainer: {
             marginBottom: 10,
             marginRight: 10,
             marginLeft: 12,
-            marginTop: 10
+            marginTop: 10,
         },
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
             marginRight: 10,
             width: 3,
-            flexBasis: 3
+            flexBasis: 3,
         },
         replyBarFirst: {
-            paddingTop: 10
+            paddingTop: 10,
         },
         replyBarLast: {
-            paddingBottom: 10
+            paddingBottom: 10,
         },
         selected: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         highlight: {
-            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5)
-        }
+            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.5),
+        },
     };
 });
-
-export default injectIntl(Post);

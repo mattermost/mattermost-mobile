@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -17,18 +17,19 @@ export default class ChannelTitle extends PureComponent {
     static propTypes = {
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
+        isChannelMuted: PropTypes.bool,
         onPress: PropTypes.func,
-        theme: PropTypes.object
+        theme: PropTypes.object,
     };
 
     static defaultProps = {
         currentChannel: {},
         displayName: null,
-        theme: {}
+        theme: {},
     };
 
     render() {
-        const {currentChannelName, displayName, onPress, theme} = this.props;
+        const {currentChannelName, displayName, isChannelMuted, onPress, theme} = this.props;
         const channelName = displayName || currentChannelName;
         const style = getStyle(theme);
         let icon;
@@ -38,6 +39,17 @@ export default class ChannelTitle extends PureComponent {
                     style={style.icon}
                     size={12}
                     name='chevron-down'
+                />
+            );
+        }
+
+        let mutedIcon;
+        if (isChannelMuted) {
+            mutedIcon = (
+                <Icon
+                    style={[style.icon, style.muted]}
+                    size={15}
+                    name='bell-slash-o'
                 />
             );
         }
@@ -56,6 +68,7 @@ export default class ChannelTitle extends PureComponent {
                         {channelName}
                     </Text>
                     {icon}
+                    {mutedIcon}
                 </View>
             </TouchableOpacity>
         );
@@ -65,7 +78,7 @@ export default class ChannelTitle extends PureComponent {
 const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            flex: 1
+            flex: 1,
         },
         wrapper: {
             alignItems: 'center',
@@ -73,17 +86,23 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
             top: -1,
             flexDirection: 'row',
-            justifyContent: 'flex-start'
+            justifyContent: 'flex-start',
+            width: '90%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
-            marginHorizontal: 5
+            marginHorizontal: 5,
         },
         text: {
             color: theme.sidebarHeaderTextColor,
             fontSize: 18,
             fontWeight: 'bold',
-            textAlign: 'center'
-        }
+            textAlign: 'center',
+        },
+        muted: {
+            marginTop: 1,
+            opacity: 0.6,
+            marginLeft: 0,
+        },
     };
 });

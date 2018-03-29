@@ -6,7 +6,7 @@ import {
     Platform,
     SectionList,
     Text,
-    View
+    View,
 } from 'react-native';
 
 import Loading from 'app/components/loading';
@@ -85,7 +85,7 @@ export default class CustomSectionList extends React.PureComponent {
         /*
          * How many items to render when the list is first rendered.
          */
-        initialNumToRender: PropTypes.number
+        initialNumToRender: PropTypes.number,
     };
 
     static defaultProps = {
@@ -96,21 +96,21 @@ export default class CustomSectionList extends React.PureComponent {
         onListEndReached: () => true,
         onListEndReachedThreshold: 50,
         loadingText: null,
-        initialNumToRender: 10
+        initialNumToRender: 10,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            sections: this.extractSections(props.items)
+            sections: this.extractSections(props.items),
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.items !== this.props.items) {
             this.setState({
-                sections: this.extractSections(nextProps.items)
+                sections: this.extractSections(nextProps.items),
             });
         }
     }
@@ -134,7 +134,7 @@ export default class CustomSectionList extends React.PureComponent {
         return sectionKeys.map((sectionKey) => {
             return {
                 key: sectionKey,
-                data: sections[sectionKey].sort(this.props.compareItems)
+                data: sections[sectionKey].sort(this.props.compareItems),
             };
         });
     }
@@ -156,7 +156,7 @@ export default class CustomSectionList extends React.PureComponent {
         const props = {
             id: item.id,
             item,
-            onPress: this.props.onRowPress
+            onPress: this.props.onRowPress,
         };
 
         // Allow passing in a component like UserListRow or ChannelListRow
@@ -258,51 +258,51 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             ...Platform.select({
                 android: {
-                    marginBottom: 20
-                }
-            })
+                    marginBottom: 20,
+                },
+            }),
         },
         loading: {
             height: 70,
             backgroundColor: theme.centerChannelBg,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6)
+            color: changeOpacity(theme.centerChannelColor, 0.6),
         },
         searching: {
             backgroundColor: theme.centerChannelBg,
             height: '100%',
             position: 'absolute',
-            width: '100%'
+            width: '100%',
         },
         sectionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
             paddingLeft: 10,
-            paddingVertical: 2
+            paddingVertical: 2,
         },
         sectionWrapper: {
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         sectionText: {
             fontWeight: '600',
-            color: theme.centerChannelColor
+            color: theme.centerChannelColor,
         },
         separator: {
             height: 1,
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         noResultContainer: {
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         noResultText: {
             fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5)
-        }
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
 });

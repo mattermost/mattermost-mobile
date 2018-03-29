@@ -11,7 +11,7 @@ function mapStateToProps(state) {
     return {
         channelIsLoading: state.views.channel.loading,
         deviceWidth,
-        theme: getTheme(state)
+        theme: getTheme(state),
     };
 }
 

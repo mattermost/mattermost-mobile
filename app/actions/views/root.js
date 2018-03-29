@@ -14,7 +14,7 @@ import {recordTime} from 'app/utils/segment';
 import {
     handleSelectChannel,
     setChannelDisplayName,
-    retryGetPostsAction
+    retryGetPostsAction,
 } from 'app/actions/views/channel';
 
 export function loadConfigAndLicense() {
@@ -22,7 +22,7 @@ export function loadConfigAndLicense() {
         const {currentUserId} = getState().entities.users;
         const [configData, licenseData] = await Promise.all([
             getClientConfig()(dispatch, getState),
-            getLicenseConfig()(dispatch, getState)
+            getLicenseConfig()(dispatch, getState),
         ]);
 
         const config = configData.data || {};
@@ -56,7 +56,7 @@ export function loadFromPushNotification(notification) {
         if (teamId && (!teams[teamId] || !myTeamMembers[teamId])) {
             await Promise.all([
                 getMyTeams()(dispatch, getState),
-                getMyTeamMembers()(dispatch, getState)
+                getMyTeamMembers()(dispatch, getState),
             ]);
         }
 
@@ -95,7 +95,7 @@ export function createPost(post) {
             ...post,
             pending_post_id: pendingPostId,
             create_at: timestamp,
-            update_at: timestamp
+            update_at: timestamp,
         };
 
         return Client4.createPost({...newPost, create_at: 0}).then((payload) => {
@@ -104,10 +104,10 @@ export function createPost(post) {
                 data: {
                     order: [],
                     posts: {
-                        [payload.id]: payload
-                    }
+                        [payload.id]: payload,
+                    },
                 },
-                channelId: payload.channel_id
+                channelId: payload.channel_id,
             });
         });
     };
@@ -124,5 +124,5 @@ export function recordLoadTime(screenName, category) {
 export default {
     loadConfigAndLicense,
     loadFromPushNotification,
-    purgeOfflineStore
+    purgeOfflineStore,
 };

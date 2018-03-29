@@ -9,8 +9,7 @@ import AppIcon from 'app/components/app_icon';
 import ProfilePicture from 'app/components/profile_picture';
 import {emptyFunction} from 'app/utils/general';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
-
-const PROFILE_PICTURE_SIZE = 32;
+import {ViewTypes} from 'app/constants';
 
 export default class PostProfilePicture extends PureComponent {
     static propTypes = {
@@ -20,11 +19,11 @@ export default class PostProfilePicture extends PureComponent {
         overrideIconUrl: PropTypes.string,
         onViewUserProfile: PropTypes.func,
         theme: PropTypes.object,
-        userId: PropTypes.string
+        userId: PropTypes.string,
     };
 
     static defaultProps = {
-        onViewUserProfile: emptyFunction
+        onViewUserProfile: emptyFunction,
     };
 
     render() {
@@ -35,7 +34,7 @@ export default class PostProfilePicture extends PureComponent {
             onViewUserProfile,
             overrideIconUrl,
             theme,
-            userId
+            userId,
         } = this.props;
 
         if (isSystemMessage) {
@@ -43,8 +42,8 @@ export default class PostProfilePicture extends PureComponent {
                 <View>
                     <AppIcon
                         color={theme.centerChannelColor}
-                        height={PROFILE_PICTURE_SIZE}
-                        width={PROFILE_PICTURE_SIZE}
+                        height={ViewTypes.PROFILE_PICTURE_SIZE}
+                        width={ViewTypes.PROFILE_PICTURE_SIZE}
                     />
                 </View>
             );
@@ -58,9 +57,9 @@ export default class PostProfilePicture extends PureComponent {
                     <Image
                         source={icon}
                         style={{
-                            height: PROFILE_PICTURE_SIZE,
-                            width: PROFILE_PICTURE_SIZE,
-                            borderRadius: PROFILE_PICTURE_SIZE / 2
+                            height: ViewTypes.PROFILE_PICTURE_SIZE,
+                            width: ViewTypes.PROFILE_PICTURE_SIZE,
+                            borderRadius: ViewTypes.PROFILE_PICTURE_SIZE / 2,
                         }}
                     />
                 </View>
@@ -70,7 +69,7 @@ export default class PostProfilePicture extends PureComponent {
         let component = (
             <ProfilePicture
                 userId={userId}
-                size={PROFILE_PICTURE_SIZE}
+                size={ViewTypes.PROFILE_PICTURE_SIZE}
             />
         );
 

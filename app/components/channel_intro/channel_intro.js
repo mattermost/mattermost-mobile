@@ -4,9 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {General} from 'mattermost-redux/constants';
@@ -25,27 +26,32 @@ class ChannelIntro extends PureComponent {
         intl: intlShape.isRequired,
         isLoadingPosts: PropTypes.bool,
         navigator: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     goToUserProfile = (userId) => {
         const {intl, navigator, theme} = this.props;
-
-        navigator.push({
+        const options = {
             screen: 'UserProfile',
             title: intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId
+                userId,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
-            }
-        });
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        };
+
+        if (Platform.OS === 'ios') {
+            navigator.push(options);
+        } else {
+            navigator.showModal(options);
+        }
     };
 
     getDisplayName = (member) => {
@@ -69,7 +75,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
+                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
                 style={style.profile}
             >
                 <ProfilePicture
@@ -89,7 +95,7 @@ class ChannelIntro extends PureComponent {
         return currentChannelMembers.map((member, index) => (
             <TouchableOpacity
                 key={member.id}
-                onPress={() => preventDoubleTap(this.goToUserProfile, this, member.id)}
+                onPress={preventDoubleTap(() => this.goToUserProfile(member.id))}
             >
                 <Text style={style.displayName}>
                     {index === currentChannelMembers.length - 1 ? this.getDisplayName(member) : `${this.getDisplayName(member)}, `}
@@ -109,9 +115,9 @@ class ChannelIntro extends PureComponent {
                 <Text style={style.message}>
                     {intl.formatMessage({
                         id: 'mobile.intro_messages.DM',
-                        defaultMessage: 'This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.'
+                        defaultMessage: 'This is the start of your direct message history with {teammate}. Direct messages and files shared here are not shown to people outside this area.',
                     }, {
-                        teammate
+                        teammate,
                     })}
                 </Text>
             );
@@ -128,7 +134,7 @@ class ChannelIntro extends PureComponent {
             <Text style={style.message}>
                 {intl.formatMessage({
                     id: 'intro_messages.group_message',
-                    defaultMessage: 'This is the start of your group message history with these teammates. Messages and files shared here are not shown to people outside this area.'
+                    defaultMessage: 'This is the start of your group message history with these teammates. Messages and files shared here are not shown to people outside this area.',
                 })}
             </Text>
         );
@@ -141,7 +147,7 @@ class ChannelIntro extends PureComponent {
         const date = intl.formatDate(currentChannel.create_at, {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
 
         let mainMessageIntl;
@@ -156,9 +162,9 @@ class ChannelIntro extends PureComponent {
                     date,
                     type: intl.formatMessage({
                         id: 'intro_messages.channel',
-                        defaultMessage: 'channel'
-                    })
-                }
+                        defaultMessage: 'channel',
+                    }),
+                },
             };
         } else {
             mainMessageIntl = {
@@ -169,20 +175,20 @@ class ChannelIntro extends PureComponent {
                     date,
                     type: intl.formatMessage({
                         id: 'intro_messages.channel',
-                        defaultMessage: 'channel'
-                    })
-                }
+                        defaultMessage: 'channel',
+                    }),
+                },
             };
         }
 
         const mainMessage = intl.formatMessage({
             id: mainMessageIntl.id,
-            defaultMessage: mainMessageIntl.defaultMessage
+            defaultMessage: mainMessageIntl.defaultMessage,
         }, mainMessageIntl.values);
 
         const anyMemberMessage = intl.formatMessage({
             id: 'intro_messages.anyMember',
-            defaultMessage: ' Any member can join and read this channel.'
+            defaultMessage: ' Any member can join and read this channel.',
         });
 
         return (
@@ -190,9 +196,9 @@ class ChannelIntro extends PureComponent {
                 <Text style={style.channelTitle}>
                     {intl.formatMessage({
                         id: 'intro_messages.beginning',
-                        defaultMessage: 'Beginning of {name}'
+                        defaultMessage: 'Beginning of {name}',
                     }, {
-                        name: currentChannel.display_name
+                        name: currentChannel.display_name,
                     })}
                 </Text>
                 <Text style={style.message}>
@@ -210,25 +216,25 @@ class ChannelIntro extends PureComponent {
         const date = intl.formatDate(currentChannel.create_at, {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
 
         const mainMessage = intl.formatMessage({
             id: 'intro_messages.creator',
-            defaultMessage: 'This is the start of the {name} {type}, created by {creator} on {date}.'
+            defaultMessage: 'This is the start of the {name} {type}, created by {creator} on {date}.',
         }, {
             name: currentChannel.display_name,
             creator: creatorName,
             date,
             type: intl.formatMessage({
                 id: 'intro_messages.group',
-                defaultMessage: 'private channel'
-            })
+                defaultMessage: 'private channel',
+            }),
         });
 
         const onlyInvitedMessage = intl.formatMessage({
             id: 'intro_messages.onlyInvited',
-            defaultMessage: ' Only invited members can see this private channel.'
+            defaultMessage: ' Only invited members can see this private channel.',
         });
 
         return (
@@ -236,9 +242,9 @@ class ChannelIntro extends PureComponent {
                 <Text style={style.channelTitle}>
                     {intl.formatMessage({
                         id: 'intro_messages.beginning',
-                        defaultMessage: 'Beginning of {name}'
+                        defaultMessage: 'Beginning of {name}',
                     }, {
-                        name: currentChannel.display_name
+                        name: currentChannel.display_name,
                     })}
                 </Text>
                 <Text style={style.message}>
@@ -257,23 +263,23 @@ class ChannelIntro extends PureComponent {
                 <Text style={style.channelTitle}>
                     {intl.formatMessage({
                         id: 'intro_messages.beginning',
-                        defaultMessage: 'Beginning of {name}'
+                        defaultMessage: 'Beginning of {name}',
                     }, {
-                        name: currentChannel.display_name
+                        name: currentChannel.display_name,
                     })}
                 </Text>
                 <Text style={style.channelWelcome}>
                     {intl.formatMessage({
                         id: 'mobile.intro_messages.default_welcome',
-                        defaultMessage: 'Welcome to {name}!'
+                        defaultMessage: 'Welcome to {name}!',
                     }, {
-                        name: currentChannel.display_name
+                        name: currentChannel.display_name,
                     })}
                 </Text>
                 <Text style={style.message}>
                     {intl.formatMessage({
                         id: 'mobile.intro_messages.default_message',
-                        defaultMessage: 'This is the first channel teammates see when they sign up - use it for posting updates everyone needs to know.'
+                        defaultMessage: 'This is the first channel teammates see when they sign up - use it for posting updates everyone needs to know.',
                     })}
                 </Text>
             </View>
@@ -348,42 +354,42 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 19,
             fontWeight: '600',
-            marginBottom: 12
+            marginBottom: 12,
         },
         channelWelcome: {
             color: theme.centerChannelColor,
-            marginBottom: 12
+            marginBottom: 12,
         },
         container: {
             marginTop: 60,
             marginHorizontal: 12,
-            marginBottom: 12
+            marginBottom: 12,
         },
         displayName: {
             color: theme.centerChannelColor,
             fontSize: 15,
-            fontWeight: '600'
+            fontWeight: '600',
         },
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 15,
-            lineHeight: 22
+            lineHeight: 22,
         },
         namesContainer: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            marginBottom: 12
+            marginBottom: 12,
         },
         profile: {
             height: 67,
             marginBottom: 12,
-            marginRight: 12
+            marginRight: 12,
         },
         profilesContainer: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            justifyContent: 'flex-start'
-        }
+            justifyContent: 'flex-start',
+        },
     };
 });
 

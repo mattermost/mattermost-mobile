@@ -14,11 +14,11 @@ export default class VectorIcon extends PureComponent {
         name: PropTypes.string,
         type: PropTypes.string,
         size: PropTypes.number,
-        style: Text.propTypes.style
+        style: Text.propTypes.style,
     };
 
     static defaultProps = {
-        size: 14
+        size: 14,
     };
 
     render() {

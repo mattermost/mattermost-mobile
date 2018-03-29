@@ -3,9 +3,9 @@
 
 const VISIBILITY_CONFIG_DEFAULTS = {
     viewAreaCoveragePercentThreshold: 3,
-    waitForInteraction: false
+    waitForInteraction: false,
 };
 
 export default {
-    VISIBILITY_CONFIG_DEFAULTS
+    VISIBILITY_CONFIG_DEFAULTS,
 };

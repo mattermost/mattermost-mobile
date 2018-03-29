@@ -10,7 +10,7 @@ import {
     Platform,
     ScrollView,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import deepEqual from 'deep-equal';
 
@@ -29,7 +29,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 class NotificationSettings extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleUpdateUserNotifyProps: PropTypes.func.isRequired
+            handleUpdateUserNotifyProps: PropTypes.func.isRequired,
         }),
         config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
@@ -37,11 +37,11 @@ class NotificationSettings extends PureComponent {
         myPreferences: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
-        updateMeRequest: PropTypes.object.isRequired
+        updateMeRequest: PropTypes.object.isRequired,
     };
 
     state = {
-        showEmailNotificationsModal: false
+        showEmailNotificationsModal: false,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -54,19 +54,19 @@ class NotificationSettings extends PureComponent {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_title',
-                    defaultMessage: 'Connection issue'
+                    defaultMessage: 'Connection issue',
                 }),
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_description',
-                    defaultMessage: 'The notification settings failed to save due to a connection issue, please try again.'
+                    defaultMessage: 'The notification settings failed to save due to a connection issue, please try again.',
                 })
             );
         }
     }
 
-    handlePress = (action) => {
-        preventDoubleTap(action, this);
-    };
+    handlePress = preventDoubleTap((action) => {
+        action();
+    });
 
     goToNotificationSettingsEmail = () => {
         if (Platform.OS === 'ios') {
@@ -76,19 +76,19 @@ class NotificationSettings extends PureComponent {
                 screen: 'NotificationSettingsEmail',
                 title: intl.formatMessage({
                     id: 'mobile.notification_settings.email_title',
-                    defaultMessage: 'Email Notifications'
+                    defaultMessage: 'Email Notifications',
                 }),
                 animated: true,
                 navigatorStyle: {
                     navBarTextColor: theme.sidebarHeaderTextColor,
                     navBarBackgroundColor: theme.sidebarHeaderBg,
                     navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg
+                    screenBackgroundColor: theme.centerChannelBg,
                 },
                 passProps: {
                     currentUser,
-                    onBack: this.saveNotificationProps
-                }
+                    onBack: this.saveNotificationProps,
+                },
             });
         } else {
             this.setState({showEmailNotificationsModal: true});
@@ -106,12 +106,12 @@ class NotificationSettings extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
                 currentUser,
-                onBack: this.saveNotificationProps
-            }
+                onBack: this.saveNotificationProps,
+            },
         });
     };
 
@@ -129,13 +129,13 @@ class NotificationSettings extends PureComponent {
                         navBarTextColor: theme.sidebarHeaderTextColor,
                         navBarBackgroundColor: theme.sidebarHeaderBg,
                         navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg
+                        screenBackgroundColor: theme.centerChannelBg,
                     },
                     passProps: {
                         currentUser,
                         onBack: this.saveNotificationProps,
-                        notificationPreferences
-                    }
+                        notificationPreferences,
+                    },
                 });
             });
         }).catch((e) => {
@@ -166,7 +166,7 @@ class NotificationSettings extends PureComponent {
             this.saveNotificationProps({
                 ...getNotificationProps(currentUser),
                 email,
-                interval
+                interval,
             });
         }
     };
@@ -176,7 +176,7 @@ class NotificationSettings extends PureComponent {
         const {user_id: userId} = notifyProps;
         const previousProps = {
             ...getNotificationProps(currentUser),
-            user_id: userId
+            user_id: userId,
         };
 
         if (notifyProps.interval) {
@@ -234,37 +234,37 @@ class NotificationSettings extends PureComponent {
         const emailOptions = [{
             label: intl.formatMessage({
                 id: 'user.settings.notifications.email.immediately',
-                defaultMessage: 'Immediately'
+                defaultMessage: 'Immediately',
             }),
             value: sendImmediatleyValue,
-            checked: sendImmediatley
+            checked: sendImmediatley,
         }];
 
         if (emailBatchingEnabled) {
             emailOptions.push({
                 label: intl.formatMessage({
                     id: 'user.settings.notifications.email.everyXMinutes',
-                    defaultMessage: 'Every {count, plural, one {minute} other {{count, number} minutes}}'
+                    defaultMessage: 'Every {count, plural, one {minute} other {{count, number} minutes}}',
                 }, {count: Preferences.INTERVAL_FIFTEEN_MINUTES / 60}),
                 value: Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
-                checked: fifteenMinutes
+                checked: fifteenMinutes,
             }, {
                 label: intl.formatMessage({
                     id: 'user.settings.notifications.email.everyHour',
-                    defaultMessage: 'Every hour'
+                    defaultMessage: 'Every hour',
                 }),
                 value: Preferences.INTERVAL_HOUR.toString(),
-                checked: hourly
+                checked: hourly,
             });
         }
 
         emailOptions.push({
             label: intl.formatMessage({
                 id: 'user.settings.notifications.email.never',
-                defaultMessage: 'Never'
+                defaultMessage: 'Never',
             }),
             value: 'false',
-            checked: never
+            checked: never,
         });
 
         return (
@@ -391,75 +391,75 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
-                    paddingTop: 35
-                }
-            })
+                    paddingTop: 35,
+                },
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
-            width: '100%'
+            width: '100%',
         },
         modalOverlay: {
             backgroundColor: changeOpacity('#000000', 0.6),
             alignItems: 'center',
-            flex: 1
+            flex: 1,
         },
         modal: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
             marginTop: 20,
-            width: '95%'
+            width: '95%',
         },
         modalBody: {
-            paddingHorizontal: 24
+            paddingHorizontal: 24,
         },
         modalTitleContainer: {
             marginBottom: 30,
-            marginTop: 20
+            marginTop: 20,
         },
         modalTitle: {
             color: theme.centerChannelColor,
-            fontSize: 19
+            fontSize: 19,
         },
         modalOptionDisabled: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17
+            fontSize: 17,
         },
         modalHelpText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 13,
-            marginTop: 20
+            marginTop: 20,
         },
         modalFooter: {
             alignItems: 'flex-end',
             height: 58,
             marginTop: 40,
-            width: '100%'
+            width: '100%',
         },
         modalFooterContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            paddingRight: 24
+            paddingRight: 24,
         },
         modalFooterOptionContainer: {
             alignItems: 'center',
             height: 40,
             justifyContent: 'center',
             paddingHorizontal: 10,
-            paddingVertical: 5
+            paddingVertical: 5,
         },
         modalFooterOption: {
             color: theme.linkColor,
-            fontSize: 14
-        }
+            fontSize: 14,
+        },
     };
 });
 

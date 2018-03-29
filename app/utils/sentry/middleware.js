@@ -21,7 +21,7 @@ export function createSentryMiddleware() {
 function makeBreadcrumbFromAction(action) {
     const breadcrumb = {
         category: BREADCRUMB_REDUX_ACTION,
-        message: action.type
+        message: action.type,
     };
 
     if (action.type === BATCH) {

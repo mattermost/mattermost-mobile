@@ -3,11 +3,11 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Platform,
     InteractionManager,
-    View
+    View,
 } from 'react-native';
 
 import {General, RequestStatus} from 'mattermost-redux/constants';
@@ -21,9 +21,8 @@ import StatusBar from 'app/components/status_bar';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
-class MoreChannels extends PureComponent {
+export default class MoreChannels extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
@@ -37,21 +36,25 @@ class MoreChannels extends PureComponent {
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired
-        }).isRequired
+            setChannelDisplayName: PropTypes.func.isRequired,
+        }).isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     leftButton = {
-        id: 'close-more-channels'
+        id: 'close-more-channels',
     };
 
     rightButton = {
         id: 'create-pub-channel',
-        showAsAction: 'always'
+        showAsAction: 'always',
     };
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
 
         this.searchTimeoutId = 0;
 
@@ -63,13 +66,13 @@ class MoreChannels extends PureComponent {
             next: true,
             searching: false,
             showNoResults: false,
-            term: ''
+            term: '',
         };
-        this.rightButton.title = props.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+        this.rightButton.title = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         this.leftButton = {...this.leftButton, icon: props.closeButton};
 
         const buttons = {
-            leftButtons: [this.leftButton]
+            leftButtons: [this.leftButton],
         };
 
         if (props.canCreateChannels) {
@@ -132,7 +135,7 @@ class MoreChannels extends PureComponent {
 
     headerButtons = (canCreateChannels, enabled) => {
         const buttons = {
-            leftButtons: [this.leftButton]
+            leftButtons: [this.leftButton],
         };
 
         if (canCreateChannels) {
@@ -144,7 +147,7 @@ class MoreChannels extends PureComponent {
 
     filterChannels = (channels, term) => {
         return channels.filter((c) => {
-            return (c.name.toLowerCase().indexOf(term) !== -1 || c.display_name.toLowerCase().indexOf(term) !== -1);
+            return (c.name.toLowerCase().includes(term) || c.display_name.toLowerCase().includes(term));
         });
     };
 
@@ -152,11 +155,11 @@ class MoreChannels extends PureComponent {
         const term = text.toLowerCase();
 
         if (term) {
-            const channels = this.filterChannels(this.state.channels, term);
+            const channels = this.filterChannels(this.props.channels, term);
             this.setState({
                 channels,
-                term: text,
-                searching: true
+                term,
+                searching: true,
             });
             clearTimeout(this.searchTimeoutId);
 
@@ -173,7 +176,7 @@ class MoreChannels extends PureComponent {
         this.setState({
             term: '',
             searching: false,
-            page: 0
+            page: 0,
         });
     };
 
@@ -188,7 +191,7 @@ class MoreChannels extends PureComponent {
             ).then(({data}) => {
                 if (data && data.length) {
                     this.setState({
-                        page
+                        page,
                     });
                 } else {
                     this.setState({next: false});
@@ -205,7 +208,7 @@ class MoreChannels extends PureComponent {
                 break;
             case 'create-pub-channel':
                 this.setState({
-                    createScreenVisible: true
+                    createScreenVisible: true,
                 }, this.onCreateChannel);
                 break;
             }
@@ -213,7 +216,8 @@ class MoreChannels extends PureComponent {
     };
 
     onSelectChannel = async (id) => {
-        const {actions, currentTeamId, currentUserId, intl} = this.props;
+        const {intl} = this.context;
+        const {actions, currentTeamId, currentUserId} = this.props;
         const {channels} = this.state;
 
         this.emitCanCreateChannel(false);
@@ -228,10 +232,10 @@ class MoreChannels extends PureComponent {
                 result.error,
                 {
                     id: 'mobile.join_channel.error',
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again."
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
                 },
                 {
-                    displayName: channel ? channel.display_name : ''
+                    displayName: channel ? channel.display_name : '',
                 }
             );
             this.emitCanCreateChannel(true);
@@ -252,7 +256,8 @@ class MoreChannels extends PureComponent {
     };
 
     onCreateChannel = () => {
-        const {intl, navigator, theme} = this.props;
+        const {intl} = this.context;
+        const {navigator, theme} = this.props;
 
         navigator.push({
             screen: 'CreateChannel',
@@ -264,16 +269,17 @@ class MoreChannels extends PureComponent {
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg
+                screenBackgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                channelType: General.OPEN_CHANNEL
-            }
+                channelType: General.OPEN_CHANNEL,
+            },
         });
     };
 
     render() {
-        const {intl, requestStatus, theme} = this.props;
+        const {intl} = this.context;
+        const {requestStatus, theme} = this.props;
         const {adding, channels, searching, term} = this.state;
         const {formatMessage} = intl;
         const isLoading = requestStatus.status === RequestStatus.STARTED || requestStatus.status === RequestStatus.NOT_STARTED;
@@ -284,23 +290,27 @@ class MoreChannels extends PureComponent {
         if (adding) {
             content = (<Loading/>);
         } else {
+            const searchBarInput = {
+                backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+                color: theme.centerChannelColor,
+                fontSize: 15,
+                ...Platform.select({
+                    android: {
+                        marginBottom: -5,
+                    },
+                }),
+            };
+
             content = (
-                <View style={{flex: 1}}>
-                    <View
-                        style={{marginVertical: 5}}
-                    >
+                <View style={style.flex}>
+                    <View style={style.wrapper}>
                         <SearchBar
                             ref='search_bar'
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             backgroundColor='transparent'
                             inputHeight={33}
-                            inputStyle={{
-                                backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                                color: theme.centerChannelColor,
-                                fontSize: 15,
-                                lineHeight: 66
-                            }}
+                            inputStyle={searchBarInput}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -339,22 +349,26 @@ class MoreChannels extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
+        wrapper: {
+            marginVertical: 5,
+        },
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         navTitle: {
             ...Platform.select({
                 android: {
-                    fontSize: 18
+                    fontSize: 18,
                 },
                 ios: {
                     fontSize: 15,
-                    fontWeight: 'bold'
-                }
-            })
-        }
+                    fontWeight: 'bold',
+                },
+            }),
+        },
     };
 });
-
-export default injectIntl(MoreChannels);

@@ -41,7 +41,7 @@ class PushNotification {
                 this.deviceNotification = {
                     data,
                     text: data.text,
-                    badge: parseInt(data.badge, 10) - parseInt(data.msg_count, 10)
+                    badge: parseInt(data.badge, 10) - parseInt(data.msg_count, 10),
                 };
             }
         });
@@ -53,7 +53,7 @@ class PushNotification {
             foreground: !userInteraction && AppState.currentState === 'active',
             message: data.message,
             userInfo: data.userInfo,
-            userInteraction
+            userInteraction,
         };
 
         if (this.onNotification) {

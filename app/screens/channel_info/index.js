@@ -5,24 +5,33 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {
-    closeDMChannel,
-    closeGMChannel,
-    leaveChannel
-} from 'app/actions/views/channel';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
+    favoriteChannel,
+    getChannelStats,
+    deleteChannel,
+    unfavoriteChannel,
+    updateChannelNotifyProps,
+} from 'mattermost-redux/actions/channels';
 import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
-import {favoriteChannel, getChannelStats, deleteChannel, unfavoriteChannel} from 'mattermost-redux/actions/channels';
+import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
 import {General} from 'mattermost-redux/constants';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {
     getCurrentChannel,
+    getMyCurrentChannelMembership,
     getCurrentChannelStats,
     getSortedFavoriteChannelIds,
-    canManageChannelMembers
+    canManageChannelMembers,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
+import {getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isChannelAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
+
+import {
+    closeDMChannel,
+    closeGMChannel,
+    leaveChannel,
+    loadChannelsByTeamName,
+} from 'app/actions/views/channel';
 
 import ChannelInfo from './channel_info';
 
@@ -33,6 +42,7 @@ function mapStateToProps(state) {
     const currentChannelCreatorName = currentChannelCreator && currentChannelCreator.username;
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    const currentChannelMember = getMyCurrentChannelMembership(state);
     const currentUserId = getCurrentUserId(state);
     const favoriteChannels = getSortedFavoriteChannelIds(state);
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
@@ -52,11 +62,13 @@ function mapStateToProps(state) {
         currentChannel,
         currentChannelCreatorName,
         currentChannelMemberCount,
+        currentUserId,
+        isChannelMuted: isChannelMuted(currentChannelMember),
         isCurrent,
         isFavorite,
         status,
         theme: getTheme(state),
-        canManageUsers
+        canManageUsers,
     };
 }
 
@@ -68,10 +80,13 @@ function mapDispatchToProps(dispatch) {
             deleteChannel,
             getChannelStats,
             leaveChannel,
+            loadChannelsByTeamName,
             favoriteChannel,
             unfavoriteChannel,
-            getCustomEmojisInText
-        }, dispatch)
+            getCustomEmojisInText,
+            selectFocusedPostId,
+            updateChannelNotifyProps,
+        }, dispatch),
     };
 }
 

@@ -8,7 +8,7 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -21,7 +21,7 @@ export default class FileUploadPreview extends PureComponent {
         actions: PropTypes.shape({
             addFileToFetchCache: PropTypes.func.isRequired,
             handleRemoveFile: PropTypes.func.isRequired,
-            retryFileUpload: PropTypes.func.isRequired
+            retryFileUpload: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
@@ -33,7 +33,7 @@ export default class FileUploadPreview extends PureComponent {
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
-        showFileMaxWarning: PropTypes.bool.isRequired
+        showFileMaxWarning: PropTypes.bool.isRequired,
     };
 
     handleRetryFileUpload = (file) => {
@@ -53,6 +53,10 @@ export default class FileUploadPreview extends PureComponent {
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                         fetchCache={this.props.fetchCache}
                         file={file}
+                        imageHeight={100}
+                        imageWidth={100}
+                        wrapperHeight={100}
+                        wrapperWidth={100}
                     />
                 );
             } else {
@@ -60,6 +64,10 @@ export default class FileUploadPreview extends PureComponent {
                     <FileAttachmentIcon
                         file={file}
                         theme={this.props.theme}
+                        imageHeight={100}
+                        imageWidth={100}
+                        wrapperHeight={100}
+                        wrapperWidth={100}
                     />
                 );
             }
@@ -105,7 +113,7 @@ export default class FileUploadPreview extends PureComponent {
             channelIsLoading,
             filesUploadingForCurrentChannel,
             deviceHeight,
-            files
+            files,
         } = this.props;
         if (channelIsLoading || (!files.length && !filesUploadingForCurrentChannel)) {
             return null;
@@ -141,7 +149,7 @@ const style = StyleSheet.create({
         left: 0,
         bottom: 0,
         position: 'absolute',
-        width: '100%'
+        width: '100%',
     },
     failed: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -149,12 +157,12 @@ const style = StyleSheet.create({
         height: '100%',
         width: '100%',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     preview: {
         justifyContent: 'flex-end',
         height: 115,
-        width: 115
+        width: 115,
     },
     previewShadow: {
         height: 100,
@@ -168,18 +176,18 @@ const style = StyleSheet.create({
                 shadowRadius: 4,
                 shadowOffset: {
                     width: 0,
-                    height: 0
-                }
-            }
-        })
+                    height: 0,
+                },
+            },
+        }),
     },
     removeButtonIcon: Platform.select({
         ios: {
-            marginTop: 2
+            marginTop: 2,
         },
         android: {
-            marginLeft: 1
-        }
+            marginLeft: 1,
+        },
     }),
     removeButtonWrapper: {
         alignItems: 'center',
@@ -194,19 +202,19 @@ const style = StyleSheet.create({
         borderRadius: 12,
         backgroundColor: '#000',
         borderWidth: 1,
-        borderColor: '#fff'
+        borderColor: '#fff',
     },
     scrollView: {
         flex: 1,
-        marginBottom: 12
+        marginBottom: 10,
     },
     scrollViewContent: {
         alignItems: 'flex-end',
-        marginLeft: 14
+        marginLeft: 14,
     },
     warning: {
         color: 'white',
         marginLeft: 14,
-        marginBottom: 12
-    }
+        marginBottom: 10,
+    },
 });

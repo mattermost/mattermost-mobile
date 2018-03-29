@@ -6,7 +6,7 @@ import assert from 'assert';
 import {
     DATE_LINE,
     makePreparePostIdsForPostList,
-    START_OF_NEW_MESSAGES
+    START_OF_NEW_MESSAGES,
 } from 'app/selectors/post_list';
 
 import {Posts, Preferences} from 'mattermost-redux/constants';
@@ -21,20 +21,20 @@ describe('Selectors.PostList', () => {
                 entities: {
                     posts: {
                         posts: {
-                            1001: {id: '1001', create_at: 0},
-                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL}
-                        }
+                            1001: {id: '1001', create_at: 0, type: ''},
+                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL},
+                        },
                     },
                     preferences: {
-                        myPreferences: {}
+                        myPreferences: {},
                     },
                     users: {
                         currentUserId: '1234',
                         profiles: {
-                            1234: {id: '1234', username: 'user'}
-                        }
-                    }
-                }
+                            1234: {id: '1234', username: 'user'},
+                        },
+                    },
+                },
             };
             const lastViewedAt = Number.POSITIVE_INFINITY;
             const postIds = ['1002', '1001'];
@@ -56,11 +56,11 @@ describe('Selectors.PostList', () => {
                             [getPreferenceKey(Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE)]: {
                                 category: Preferences.CATEGORY_ADVANCED_SETTINGS,
                                 name: Preferences.ADVANCED_FILTER_JOIN_LEAVE,
-                                value: 'true'
-                            }
-                        }
-                    }
-                }
+                                value: 'true',
+                            },
+                        },
+                    },
+                },
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
@@ -78,11 +78,11 @@ describe('Selectors.PostList', () => {
                             [getPreferenceKey(Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE)]: {
                                 category: Preferences.CATEGORY_ADVANCED_SETTINGS,
                                 name: Preferences.ADVANCED_FILTER_JOIN_LEAVE,
-                                value: 'false'
-                            }
-                        }
-                    }
-                }
+                                value: 'false',
+                            },
+                        },
+                    },
+                },
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
@@ -97,10 +97,10 @@ describe('Selectors.PostList', () => {
                         ...state.entities.posts,
                         posts: {
                             ...state.entities.posts.posts,
-                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL, props: {username: 'user'}}
-                        }
-                    }
-                }
+                            1002: {id: '1002', create_at: 1, type: Posts.POST_TYPES.JOIN_CHANNEL, props: {username: 'user'}},
+                        },
+                    },
+                },
             };
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
@@ -115,21 +115,21 @@ describe('Selectors.PostList', () => {
                 entities: {
                     posts: {
                         posts: {
-                            1000: {id: '1000', create_at: 1000},
-                            1005: {id: '1005', create_at: 1005},
-                            1010: {id: '1010', create_at: 1010}
-                        }
+                            1000: {id: '1000', create_at: 1000, type: ''},
+                            1005: {id: '1005', create_at: 1005, type: ''},
+                            1010: {id: '1010', create_at: 1010, type: ''},
+                        },
                     },
                     preferences: {
-                        myPreferences: {}
+                        myPreferences: {},
                     },
                     users: {
                         currentUserId: '1234',
                         profiles: {
-                            1234: {id: '1234', username: 'user'}
-                        }
-                    }
-                }
+                            1234: {id: '1234', username: 'user'},
+                        },
+                    },
+                },
             };
 
             const postIds = ['1010', '1005', '1000']; // Remember that we list the posts backwards
@@ -152,34 +152,34 @@ describe('Selectors.PostList', () => {
 
             // Posts 7 hours apart so they should appear on multiple days
             const initialPosts = {
-                1001: {id: '1001', create_at: 1 * 60 * 60 * 1000},
-                1002: {id: '1002', create_at: (1 * 60 * 60 * 1000) + 5},
-                1003: {id: '1003', create_at: (1 * 60 * 60 * 1000) + 10},
-                1004: {id: '1004', create_at: 25 * 60 * 60 * 1000},
-                1005: {id: '1005', create_at: (25 * 60 * 60 * 1000) + 5},
-                1006: {id: '1006', create_at: (25 * 60 * 60 * 1000) + 10, type: Posts.POST_TYPES.JOIN_CHANNEL}
+                1001: {id: '1001', create_at: 1 * 60 * 60 * 1000, type: ''},
+                1002: {id: '1002', create_at: (1 * 60 * 60 * 1000) + 5, type: ''},
+                1003: {id: '1003', create_at: (1 * 60 * 60 * 1000) + 10, type: ''},
+                1004: {id: '1004', create_at: 25 * 60 * 60 * 1000, type: ''},
+                1005: {id: '1005', create_at: (25 * 60 * 60 * 1000) + 5, type: ''},
+                1006: {id: '1006', create_at: (25 * 60 * 60 * 1000) + 10, type: Posts.POST_TYPES.JOIN_CHANNEL},
             };
             let state = {
                 entities: {
                     posts: {
-                        posts: initialPosts
+                        posts: initialPosts,
                     },
                     preferences: {
                         myPreferences: {
                             [getPreferenceKey(Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE)]: {
                                 category: Preferences.CATEGORY_ADVANCED_SETTINGS,
                                 name: Preferences.ADVANCED_FILTER_JOIN_LEAVE,
-                                value: 'true'
-                            }
-                        }
+                                value: 'true',
+                            },
+                        },
                     },
                     users: {
                         currentUserId: '1234',
                         profiles: {
-                            1234: {id: '1234', username: 'user'}
-                        }
-                    }
-                }
+                            1234: {id: '1234', username: 'user'},
+                        },
+                    },
+                },
             };
 
             let postIds = ['1006', '1004', '1003', '1001'];
@@ -232,10 +232,10 @@ describe('Selectors.PostList', () => {
                         ...state.entities.posts,
                         posts: {
                             ...state.entities.posts.posts,
-                            1007: {id: '1007', create_at: 7 * 60 * 60 * 7 * 1000}
-                        }
-                    }
-                }
+                            1007: {id: '1007', create_at: 7 * 60 * 60 * 7 * 1000},
+                        },
+                    },
+                },
             };
 
             prev = now;
@@ -252,10 +252,10 @@ describe('Selectors.PostList', () => {
                         ...state.entities.posts,
                         posts: {
                             ...state.entities.posts.posts,
-                            1006: {...state.entities.posts.posts['1006'], message: 'abcd'}
-                        }
-                    }
-                }
+                            1006: {...state.entities.posts.posts['1006'], message: 'abcd'},
+                        },
+                    },
+                },
             };
 
             prev = now;
@@ -275,11 +275,11 @@ describe('Selectors.PostList', () => {
                             [getPreferenceKey(Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE)]: {
                                 category: Preferences.CATEGORY_ADVANCED_SETTINGS,
                                 name: Preferences.ADVANCED_FILTER_JOIN_LEAVE,
-                                value: 'false'
-                            }
-                        }
-                    }
-                }
+                                value: 'false',
+                            },
+                        },
+                    },
+                },
             };
 
             prev = now;

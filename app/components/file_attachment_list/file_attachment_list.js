@@ -5,8 +5,10 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Keyboard,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
     View,
-    TouchableOpacity
 } from 'react-native';
 
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -17,6 +19,7 @@ import FileAttachment from './file_attachment';
 export default class FileAttachmentList extends Component {
     static propTypes = {
         actions: PropTypes.object.isRequired,
+        deviceWidth: PropTypes.number.isRequired,
         fetchCache: PropTypes.object.isRequired,
         fileIds: PropTypes.array.isRequired,
         files: PropTypes.array.isRequired,
@@ -28,7 +31,7 @@ export default class FileAttachmentList extends Component {
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         toggleSelected: PropTypes.func.isRequired,
-        filesForPostRequest: PropTypes.object.isRequired
+        filesForPostRequest: PropTypes.object.isRequired,
     };
 
     componentDidMount() {
@@ -52,15 +55,15 @@ export default class FileAttachmentList extends Component {
             animationType: 'none',
             passProps: {
                 fileId,
-                postId
+                postId,
             },
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
                 screenBackgroundColor: 'black',
-                modalPresentationStyle: 'overCurrentContext'
-            }
+                modalPresentationStyle: 'overCurrentContext',
+            },
         });
     };
 
@@ -69,11 +72,11 @@ export default class FileAttachmentList extends Component {
         this.props.onPress();
     };
 
-    handlePreviewPress = (file) => {
+    handlePreviewPress = preventDoubleTap((file) => {
         this.props.hideOptionsContext();
         Keyboard.dismiss();
-        preventDoubleTap(this.goToImagePreview, this, this.props.postId, file.id);
-    };
+        this.goToImagePreview(this.props.postId, file.id);
+    });
 
     handlePressIn = () => {
         this.props.toggleSelected(true);
@@ -84,7 +87,7 @@ export default class FileAttachmentList extends Component {
     };
 
     render() {
-        const {fileIds, files, isFailed} = this.props;
+        const {deviceWidth, fileIds, files, isFailed, navigator} = this.props;
 
         let fileAttachments;
         if (!files.length && fileIds.length > 0) {
@@ -92,6 +95,7 @@ export default class FileAttachmentList extends Component {
                 <FileAttachment
                     key={id}
                     addFileToFetchCache={this.props.actions.addFileToFetchCache}
+                    deviceWidth={deviceWidth}
                     fetchCache={this.props.fetchCache}
                     file={{loading: true}}
                     theme={this.props.theme}
@@ -106,6 +110,8 @@ export default class FileAttachmentList extends Component {
                     onPressOut={this.handlePressOut}
                 >
                     <FileAttachment
+                        deviceWidth={deviceWidth}
+                        navigator={navigator}
                         addFileToFetchCache={this.props.actions.addFileToFetchCache}
                         fetchCache={this.props.fetchCache}
                         file={file}
@@ -118,9 +124,24 @@ export default class FileAttachmentList extends Component {
         }
 
         return (
-            <View style={[{flex: 1}, (isFailed && {opacity: 0.5})]}>
-                {fileAttachments}
+            <View style={styles.flex}>
+                <ScrollView
+                    horizontal={true}
+                    scrollEnabled={fileIds.length > 1}
+                    style={[styles.flex, (isFailed && styles.failed)]}
+                >
+                    {fileAttachments}
+                </ScrollView>
             </View>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    failed: {
+        opacity: 0.5,
+    },
+});

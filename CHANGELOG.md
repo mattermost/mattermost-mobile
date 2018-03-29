@@ -1,5 +1,42 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.7.0 Release
+- Release Date: March 26, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### iOS File Sharing
+- Share files and images from other applications as attached files in Mattermost
+
+#### Markdown Tables
+- Tables created using markdown formatting can now be viewed in the app
+
+#### Permalinks
+- Permalinks now open in the app instead of launching a browser window 
+
+### Improvements
+- Increased the tappable area of various icons for improved usability
+- Announcement banners now display in the app
+- Added "+" button to add emoji reactions to a post
+- Minor performance improvements for app launch time
+- Text files can now be viewed in the app
+- Support for email autolinking into the app
+
+### Bugs
+- Fixed an issue causing some devices to hang at the splash screen on app launch
+- Fixed an issue causing some letters to be hidden in the Android search input box
+- Fixed an issue causing some Direct Message channels to show date stamps below the most recent message
+- Fixed an issue where users weren't able to join open teams they've never been a member of
+- Fixed an issue so double tapping buttons can no longer cause UI issues
+- Fixed an issue where changing the channel display name wasn't being updated in the UI appropriately
+- Fixed an issue where searhing for public channels sometimes showed no results
+- Fixed an issue where the post menu could remain open while scrolling in the post list
+- Fixed an issue where the system message to add users to a channel was missing the execution link
+- Fixed an issue where bulleted lists cut off text if nested deeper than two levels
+- Fixed an issue where logging into an account that is not on any team freezes the app
+- Fixed an issue on iOS causing the app to crash when taking a photo then attaching it to a post
+
 ## v1.6.1 Release
 - Release Date: February 13, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported

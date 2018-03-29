@@ -24,11 +24,12 @@ export function makePreparePostIdsForPostList() {
 
     return createIdsSelector(
         (state, props) => getMyPosts(state, props.postIds),
+        (state) => state.entities.posts.selectedPostId,
         (state, props) => props.lastViewedAt,
         (state, props) => props.indicateNewMessages,
         getCurrentUser,
         shouldShowJoinLeaveMessages,
-        (posts, lastViewedAt, indicateNewMessages, currentUser, showJoinLeave) => {
+        (posts, selectedPostId, lastViewedAt, indicateNewMessages, currentUser, showJoinLeave) => {
             if (posts.length === 0 || !currentUser) {
                 return [];
             }
@@ -41,6 +42,10 @@ export function makePreparePostIdsForPostList() {
             // Iterating through the posts from oldest to newest
             for (let i = posts.length - 1; i >= 0; i--) {
                 const post = posts[i];
+
+                if (post.type === Posts.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !selectedPostId) {
+                    continue;
+                }
 
                 if (post.state === Posts.POST_DELETED && post.user_id === currentUser.id) {
                     continue;
@@ -55,7 +60,7 @@ export function makePreparePostIdsForPostList() {
                 const postDate = new Date(post.create_at);
 
                 if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + postDate.toDateString());
+                    out.push(DATE_LINE + postDate.toString());
 
                     lastDate = postDate;
                 }

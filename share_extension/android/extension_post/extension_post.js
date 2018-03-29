@@ -13,7 +13,7 @@ import {
     ScrollView,
     Text,
     TextInput,
-    View
+    View,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
@@ -26,7 +26,7 @@ import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_
 import PaperPlane from 'app/components/paper_plane';
 import mattermostManaged from 'app/mattermost_managed';
 import {emptyFunction} from 'app/utils/general';
-import {wrapWithPreventDoubleTap} from 'app/utils/tap';
+import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {
@@ -34,7 +34,7 @@ import {
     GenericSvg,
     PdfSvg,
     PptSvg,
-    ZipSvg
+    ZipSvg,
 } from 'share_extension/common/icons';
 
 import ChannelButton from './channel_button';
@@ -48,7 +48,7 @@ const extensionSvg = {
     pptx: PptSvg,
     xls: ExcelSvg,
     xlsx: ExcelSvg,
-    zip: ZipSvg
+    zip: ZipSvg,
 };
 const ShareExtension = NativeModules.MattermostShare;
 const INPUT_HEIGHT = 150;
@@ -62,11 +62,11 @@ export default class ExtensionPost extends PureComponent {
         navigation: PropTypes.object.isRequired,
         teamId: PropTypes.string.isRequired,
         token: PropTypes.string,
-        url: PropTypes.string
+        url: PropTypes.string,
     };
 
     static contextTypes = {
-        intl: intlShape
+        intl: intlShape,
     };
 
     static navigationOptions = ({navigation}) => {
@@ -122,8 +122,8 @@ export default class ExtensionPost extends PureComponent {
         props.navigation.setParams({
             title: context.intl.formatMessage({
                 id: 'mobile.extension.title',
-                defaultMessage: 'Share in Mattermost'
-            })
+                defaultMessage: 'Share in Mattermost',
+            }),
         });
 
         this.state = {
@@ -132,13 +132,13 @@ export default class ExtensionPost extends PureComponent {
             hasPermission: null,
             teamId: props.teamId,
             totalSize: 0,
-            value: ''
+            value: '',
         };
     }
 
     componentDidMount() {
         this.props.navigation.setParams({
-            close: this.onClose
+            close: this.onClose,
         });
         this.auth();
     }
@@ -158,10 +158,10 @@ export default class ExtensionPost extends PureComponent {
                             await LocalAuth.auth({
                                 reason: formatMessage({
                                     id: 'mobile.managed.secured_by',
-                                    defaultMessage: 'Secured by {vendor}'
+                                    defaultMessage: 'Secured by {vendor}',
                                 }, {vendor}),
                                 fallbackToPasscode: true,
-                                suppressEnterPassword: false
+                                suppressEnterPassword: false,
                             });
                         } catch (err) {
                             return this.onClose();
@@ -180,7 +180,7 @@ export default class ExtensionPost extends PureComponent {
         this.input = ref;
     };
 
-    goToChannels = wrapWithPreventDoubleTap(() => {
+    goToChannels = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
         const {navigation} = this.props;
         const navigateAction = NavigationActions.navigate({
@@ -188,16 +188,16 @@ export default class ExtensionPost extends PureComponent {
             params: {
                 title: formatMessage({
                     id: 'mobile.routes.selectChannel',
-                    defaultMessage: 'Select Channel'
+                    defaultMessage: 'Select Channel',
                 }),
                 currentChannelId: this.state.channelId,
-                onSelectChannel: this.handleSelectChannel
-            }
+                onSelectChannel: this.handleSelectChannel,
+            },
         });
         navigation.dispatch(navigateAction);
     });
 
-    goToTeams = wrapWithPreventDoubleTap(() => {
+    goToTeams = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
         const {navigation} = this.props;
         const navigateAction = NavigationActions.navigate({
@@ -205,11 +205,11 @@ export default class ExtensionPost extends PureComponent {
             params: {
                 title: formatMessage({
                     id: 'mobile.routes.selectTeam',
-                    defaultMessage: 'Select Team'
+                    defaultMessage: 'Select Team',
                 }),
                 currentTeamId: this.state.teamId,
-                onSelectTeam: this.handleSelectTeam
-            }
+                onSelectTeam: this.handleSelectTeam,
+            },
         });
         navigation.dispatch(navigateAction);
     });
@@ -217,7 +217,7 @@ export default class ExtensionPost extends PureComponent {
     handleBlur = () => {
         if (this.input) {
             this.input.setNativeProps({
-                autoScroll: false
+                autoScroll: false,
             });
         }
     };
@@ -225,7 +225,7 @@ export default class ExtensionPost extends PureComponent {
     handleFocus = () => {
         if (this.input) {
             this.input.setNativeProps({
-                autoScroll: true
+                autoScroll: true,
             });
         }
     };
@@ -267,7 +267,7 @@ export default class ExtensionPost extends PureComponent {
             let totalSize = 0;
 
             this.props.navigation.setParams({
-                post: this.onPost
+                post: this.onPost,
             });
 
             for (let i = 0; i < items.length; i++) {
@@ -288,7 +288,7 @@ export default class ExtensionPost extends PureComponent {
                         fullPath,
                         mimeType: lookupMimeType(filename.toLowerCase()),
                         size: getFormattedFileSize(fileSize),
-                        type: item.type
+                        type: item.type,
                     });
                     break;
                 }
@@ -315,7 +315,7 @@ export default class ExtensionPost extends PureComponent {
             files,
             token,
             url,
-            value
+            value,
         };
 
         this.onClose(data);
@@ -474,21 +474,21 @@ export default class ExtensionPost extends PureComponent {
             if (hasPermission === false) {
                 const storage = formatMessage({
                     id: 'mobile.extension.permission',
-                    defaultMessage: 'Mattermost needs access to the device storage to share files.'
+                    defaultMessage: 'Mattermost needs access to the device storage to share files.',
                 });
 
                 return this.renderErrorMessage(storage);
             } else if (files.length > 5) {
                 const fileCount = formatMessage({
                     id: 'mobile.extension.file_limit',
-                    defaultMessage: 'Sharing is limited to a maximum of 5 files.'
+                    defaultMessage: 'Sharing is limited to a maximum of 5 files.',
                 });
 
                 return this.renderErrorMessage(fileCount);
             } else if (totalSize > maxFileSize) {
                 const maxSize = formatMessage({
                     id: 'mobile.extension.max_file_size',
-                    defaultMessage: 'File attachments shared in Mattermost must be less than {size}.'
+                    defaultMessage: 'File attachments shared in Mattermost must be less than {size}.',
                 }, {size: getFormattedFileSize({size: maxFileSize})});
 
                 return this.renderErrorMessage(maxSize);
@@ -509,7 +509,7 @@ export default class ExtensionPost extends PureComponent {
 
         const loginNeeded = formatMessage({
             id: 'mobile.extension.authentication_required',
-            defaultMessage: 'Authentication required: Please first login using the app.'
+            defaultMessage: 'Authentication required: Please first login using the app.',
         });
 
         return this.renderErrorMessage(loginNeeded);
@@ -522,25 +522,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             height: 50,
             justifyContent: 'center',
-            width: 50
+            width: 50,
         },
         closeButton: {
             color: theme.sidebarHeaderTextColor,
-            fontSize: 20
+            fontSize: 20,
         },
         flex: {
-            flex: 1
+            flex: 1,
         },
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
-            flex: 1
+            flex: 1,
         },
         scrollView: {
-            padding: 15
+            padding: 15,
         },
         input: {
             color: theme.centerChannelColor,
@@ -548,17 +548,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: INPUT_HEIGHT,
             marginBottom: 5,
             textAlignVertical: 'top',
-            width: '100%'
+            width: '100%',
         },
         unauthenticatedContainer: {
             alignItems: 'center',
             flex: 1,
             paddingHorizontal: 20,
-            paddingTop: 35
+            paddingTop: 35,
         },
         unauthenticated: {
             color: theme.errorTextColor,
-            fontSize: 14
+            fontSize: 14,
         },
         fileContainer: {
             alignItems: 'center',
@@ -569,12 +569,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 48,
             marginBottom: 10,
-            width: '100%'
+            width: '100%',
         },
         filename: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 13,
-            flex: 1
+            flex: 1,
         },
         otherContainer: {
             borderBottomLeftRadius: 4,
@@ -582,17 +582,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 48,
             marginRight: 10,
             paddingVertical: 10,
-            width: 38
+            width: 38,
         },
         otherWrapper: {
             borderRightWidth: 1,
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
-            flex: 1
+            flex: 1,
         },
         fileIcon: {
             alignItems: 'center',
             justifyContent: 'center',
-            flex: 1
+            flex: 1,
         },
         imageContainer: {
             justifyContent: 'center',
@@ -601,7 +601,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 48,
             marginRight: 10,
             width: 38,
-            overflow: 'hidden'
+            overflow: 'hidden',
         },
         image: {
             alignItems: 'center',
@@ -610,7 +610,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 46,
             justifyContent: 'center',
             overflow: 'hidden',
-            width: 38
+            width: 38,
         },
         video: {
             backgroundColor: theme.centerChannelBg,
@@ -618,8 +618,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 48,
             justifyContent: 'center',
             overflow: 'hidden',
-            width: 38
-        }
+            width: 38,
+        },
     };
 });
 

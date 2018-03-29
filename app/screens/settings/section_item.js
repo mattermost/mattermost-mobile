@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Switch,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
@@ -17,7 +17,7 @@ const ActionTypes = {
     ARROW: 'arrow',
     DEFAULT: 'default',
     TOGGLE: 'toggle',
-    SELECT: 'select'
+    SELECT: 'select',
 };
 
 function sectionItem(props) {
@@ -28,7 +28,7 @@ function sectionItem(props) {
         label,
         theme,
         selected,
-        description
+        description,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -99,12 +99,12 @@ sectionItem.propTypes = {
     label: PropTypes.node.isRequired,
     selected: PropTypes.bool,
     theme: PropTypes.object.isRequired,
-    description: PropTypes.node
+    description: PropTypes.node,
 };
 
 sectionItem.defaultProps = {
     action: () => true,
-    actionType: ActionTypes.DEFAULT
+    actionType: ActionTypes.DEFAULT,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -112,33 +112,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
         },
         singleContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            height: 45
+            height: 45,
         },
         doubleContainer: {
             flex: 1,
             flexDirection: 'column',
             height: 69,
-            justifyContent: 'center'
+            justifyContent: 'center',
         },
         label: {
             color: theme.centerChannelColor,
-            fontSize: 15
+            fontSize: 15,
         },
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 14,
-            marginTop: 3
+            marginTop: 3,
         },
         arrow: {
             color: changeOpacity(theme.centerChannelColor, 0.25),
-            fontSize: 24
-        }
+            fontSize: 24,
+        },
     };
 });
 

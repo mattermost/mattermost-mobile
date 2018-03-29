@@ -54,5 +54,5 @@ export default {
         if (MattermostBucket) {
             MattermostBucket.removeFile(fileName, groupName);
         }
-    }
+    },
 };

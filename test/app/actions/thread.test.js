@@ -18,9 +18,9 @@ describe('Actions.Views.Thread', () => {
         assert.deepEqual(store.getState().views.thread, {
             drafts: {
                 1234: {
-                    draft: 'draft1'
-                }
-            }
+                    draft: 'draft1',
+                },
+            },
         });
 
         await ThreadActions.handleCommentDraftChanged('1235', 'draft2')(store.dispatch, store.getState);
@@ -28,12 +28,12 @@ describe('Actions.Views.Thread', () => {
         assert.deepEqual(store.getState().views.thread, {
             drafts: {
                 1234: {
-                    draft: 'draft1'
+                    draft: 'draft1',
                 },
                 1235: {
-                    draft: 'draft2'
-                }
-            }
+                    draft: 'draft2',
+                },
+            },
         });
 
         await ThreadActions.handleCommentDraftChanged('1235', 'draft3')(store.dispatch, store.getState);
@@ -41,12 +41,12 @@ describe('Actions.Views.Thread', () => {
         assert.deepEqual(store.getState().views.thread, {
             drafts: {
                 1234: {
-                    draft: 'draft1'
+                    draft: 'draft1',
                 },
                 1235: {
-                    draft: 'draft3'
-                }
-            }
+                    draft: 'draft3',
+                },
+            },
         });
     });
 });

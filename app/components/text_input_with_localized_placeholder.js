@@ -10,7 +10,7 @@ class TextInputWithLocalizedPlaceholder extends PureComponent {
     static propTypes = {
         ...TextInput.propTypes,
         placeholder: PropTypes.object.isRequired,
-        intl: intlShape.isRequired
+        intl: intlShape.isRequired,
     };
 
     blur = () => {

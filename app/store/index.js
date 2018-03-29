@@ -31,16 +31,16 @@ const usersSetTransform = [
     'profilesInChannel',
     'profilesNotInChannel',
     'profilesInTeam',
-    'profilesNotInTeam'
+    'profilesNotInTeam',
 ];
 
 const channelSetTransform = [
-    'channelsInTeam'
+    'channelsInTeam',
 ];
 
 const setTransforms = [
     ...usersSetTransform,
-    ...channelSetTransform
+    ...channelSetTransform,
 ];
 
 export default function configureAppStore(initialState) {
@@ -67,7 +67,7 @@ export default function configureAppStore(initialState) {
 
             return {
                 ...inboundState,
-                channel
+                channel,
             };
         },
         null,
@@ -87,7 +87,7 @@ export default function configureAppStore(initialState) {
 
             return {
                 ...inboundState,
-                emojis
+                emojis,
             };
         },
         null,
@@ -140,7 +140,7 @@ export default function configureAppStore(initialState) {
             const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
                 store.dispatch({
                     type: General.STORE_REHYDRATION_COMPLETE,
-                    complete: true
+                    complete: true,
                 });
             });
 
@@ -167,16 +167,16 @@ export default function configureAppStore(initialState) {
                     store.dispatch(batchActions([
                         {
                             type: General.OFFLINE_STORE_RESET,
-                            data: initialState
+                            data: initialState,
                         },
                         {
                             type: ViewTypes.SERVER_URL_CHANGED,
-                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl
+                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
                         },
                         {
                             type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                            data: state.entities.general.deviceToken
-                        }
+                            data: state.entities.general.deviceToken,
+                        },
                     ]));
 
                     setTimeout(() => {
@@ -190,27 +190,27 @@ export default function configureAppStore(initialState) {
                     store.dispatch(batchActions([
                         {
                             type: General.OFFLINE_STORE_RESET,
-                            data: initialState
+                            data: initialState,
                         },
                         {
                             type: ErrorTypes.RESTORE_ERRORS,
-                            data: [...state.errors]
+                            data: [...state.errors],
                         },
                         {
                             type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                            data: state.entities.general.deviceToken
+                            data: state.entities.general.deviceToken,
                         },
                         {
                             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
                             data: {
                                 url: state.entities.general.credentials.url,
-                                token: state.entities.general.credentials.token
-                            }
+                                token: state.entities.general.credentials.token,
+                            },
                         },
                         {
                             type: ViewTypes.SERVER_URL_CHANGED,
-                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl
-                        }
+                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                        },
                     ], 'BATCH_FOR_RESTART'));
 
                     setTimeout(() => {
@@ -224,7 +224,7 @@ export default function configureAppStore(initialState) {
         },
         persistOptions: {
             autoRehydrate: {
-                log: false
+                log: false,
             },
             blacklist: ['device', 'navigation', 'offline', 'requests'],
             debounce: 500,
@@ -233,13 +233,13 @@ export default function configureAppStore(initialState) {
                 viewsBlackListFilter,
                 typingBlackListFilter,
                 channelViewBlackListFilter,
-                emojiBlackListFilter
-            ]
-        }
+                emojiBlackListFilter,
+            ],
+        },
     };
 
     const additionalMiddleware = [createSentryMiddleware(), messageRetention, shareExtensionData];
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
-        additionalMiddleware
+        additionalMiddleware,
     });
 }
