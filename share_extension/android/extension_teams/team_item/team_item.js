@@ -59,6 +59,7 @@ export default class TeamItem extends PureComponent {
                             teamId={team.id}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
+                            styleImage={styles.imageContainer}
                         />
                         <Text
                             style={[styles.text]}
@@ -101,6 +102,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         teamIconText: {
             color: theme.sidebarText,
+        },
+        imageContainer: {
+            backgroundColor: theme.centerChannelBg,
         },
         checkmarkContainer: {
             alignItems: 'flex-end',

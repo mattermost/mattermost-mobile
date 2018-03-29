@@ -8,7 +8,7 @@
 
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
-#import "RCTTextField.h"
+#import "RCTUITextView.h"
 #import "MattermostManaged.h"
 
 @implementation MattermostManaged
@@ -82,7 +82,7 @@ RCT_EXPORT_METHOD(quitApp)
 
 @end
 
-@implementation RCTTextField (DisableCopyPaste)
+@implementation RCTUITextView (DisableCopyPaste)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
