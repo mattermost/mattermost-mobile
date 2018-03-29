@@ -28,9 +28,11 @@ import {
     isDirectChannel,
     isGroupChannel,
 } from 'mattermost-redux/utils/channel_utils';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
 import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels';
 
 const MAX_POST_TRIES = 3;
@@ -334,40 +336,9 @@ export function insertToDraft(value) {
         const channelId = getCurrentChannelId(state);
         const threadId = state.entities.posts.selectedPostId;
 
-        let draft;
-        let cursorPosition;
-        let action;
-        if (threadId && state.views.thread.drafts[threadId]) {
-            const threadDraft = state.views.thread.drafts[threadId];
-            draft = threadDraft.draft;
-            cursorPosition = threadDraft.cursorPosition;
-            action = {
-                type: ViewTypes.COMMENT_DRAFT_CHANGED,
-                rootId: threadId,
-            };
-        } else if (state.views.channel.drafts[channelId]) {
-            const channelDraft = state.views.channel.drafts[channelId];
-            draft = channelDraft.draft;
-            cursorPosition = channelDraft.cursorPosition;
-            action = {
-                type: ViewTypes.POST_DRAFT_CHANGED,
-                channelId,
-            };
-        }
+        const insertEvent = threadId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
 
-        let nextDraft = `${value}`;
-        if (cursorPosition > 0) {
-            const beginning = draft.slice(0, cursorPosition);
-            const end = draft.slice(cursorPosition);
-            nextDraft = `${beginning}${value}${end}`;
-        }
-
-        if (action && nextDraft !== draft) {
-            dispatch({
-                ...action,
-                draft: nextDraft,
-            });
-        }
+        EventEmitter.emit(insertEvent, value);
     };
 }
 

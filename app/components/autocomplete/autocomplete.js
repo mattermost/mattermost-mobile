@@ -19,6 +19,7 @@ import SlashSuggestion from './slash_suggestion';
 
 export default class Autocomplete extends PureComponent {
     static propTypes = {
+        cursorPosition: PropTypes.number.isRequired,
         deviceHeight: PropTypes.number,
         onChangeText: PropTypes.func.isRequired,
         rootId: PropTypes.string,
@@ -32,7 +33,6 @@ export default class Autocomplete extends PureComponent {
     };
 
     state = {
-        cursorPosition: 0,
         atMentionCount: 0,
         channelMentionCount: 0,
         emojiCount: 0,
@@ -116,18 +116,15 @@ export default class Autocomplete extends PureComponent {
                 <View style={containerStyle}>
                     <AtMention
                         listHeight={listHeight}
-                        cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleAtMentionCountChange}
                         {...this.props}
                     />
                     <ChannelMention
                         listHeight={listHeight}
-                        cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleChannelMentionCountChange}
                         {...this.props}
                     />
                     <EmojiSuggestion
-                        cursorPosition={this.state.cursorPosition}
                         onResultCountChange={this.handleEmojiCountChange}
                         {...this.props}
                     />
