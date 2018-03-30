@@ -41,6 +41,7 @@ class NotificationSettings extends PureComponent {
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
+        enableAutoResponder: PropTypes.bool.isRequired,
     };
 
     state = {
@@ -397,15 +398,13 @@ class NotificationSettings extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, enableAutoResponder} = this.props;
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
 
-        const isAutoResponderEnabled = isMinimumServerVersion(Client4.getServerVersion(), 4, 9);
-        const showEmailSeparator = isAutoResponderEnabled;
-
+        const showEmailSeparator = enableAutoResponder;
         let autoResponder;
-        if (isAutoResponderEnabled) {
+        if (enableAutoResponder) {
             autoResponder = (
                 <SettingsItem
                     defaultMessage='Out Of Office: Auto Responder'
