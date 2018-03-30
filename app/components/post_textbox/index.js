@@ -44,7 +44,7 @@ function mapStateToProps(state, ownProps) {
         currentUserId: getCurrentUserId(state),
         deactivatedChannel,
         files: currentDraft.files,
-        maxMessageLength: (config && config.MaxPostSize) || MAX_MESSAGE_LENGTH,
+        maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH,
         theme: getTheme(state),
         uploadFileRequestStatus: state.requests.files.uploadFiles.status,
         value: currentDraft.draft,
