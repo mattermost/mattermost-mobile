@@ -16,8 +16,6 @@ import deepEqual from 'deep-equal';
 
 import {General, Preferences, RequestStatus} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
-import {Client4} from 'mattermost-redux/client';
 
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
