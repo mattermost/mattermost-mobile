@@ -122,7 +122,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                             headerId='mobile.notification_settings.auto_responder.message_title'
                             headerDefaultMessage='CUSTOM MESSAGE'
                             footerId='mobile.notification_settings.auto_responder.footer_message'
-                            footerDefaultMessage='When enabled, sets your status to Out Of Office and answers direct messages with a custom response. Mentions in channels will not trigger a response. All notifications will be silenced.'
+                            footerDefaultMessage='Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies disables email and push notifications.'
                             theme={theme}
                         >
                             <View style={style.inputContainer}>

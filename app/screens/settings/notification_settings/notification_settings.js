@@ -78,8 +78,8 @@ class NotificationSettings extends PureComponent {
             backButtonTitle: '',
             screen: 'NotificationSettingsAutoResponder',
             title: intl.formatMessage({
-                id: 'mobile.notification_settings.auto_responder',
-                defaultMessage: 'Auto Responder',
+                id: 'mobile.notification_settings.auto_responder_short',
+                defaultMessage: 'Automatic Replies',
             }),
             animated: true,
             navigatorStyle: {
@@ -407,7 +407,7 @@ class NotificationSettings extends PureComponent {
         if (enableAutoResponder) {
             autoResponder = (
                 <SettingsItem
-                    defaultMessage='Out Of Office: Auto Responder'
+                    defaultMessage='Automatic Direct Message Replies'
                     i18nId='mobile.notification_settings.ooo_auto_responder'
                     iconName='airplanemode-active'
                     iconType='material'

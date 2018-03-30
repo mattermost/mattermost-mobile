@@ -19,7 +19,7 @@ import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const BOT_NAME = 'BOT';
-const AUTO_RESPONDER_NAME = 'AUTO RESPONDER';
+const AUTO_RESPONDER_NAME = 'AUTOMATIC REPLY';
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
@@ -93,7 +93,7 @@ export default class PostHeader extends PureComponent {
                     <Text style={style.displayName}>
                         {name}
                     </Text>
-                    <Text style={style.autoResponder}>
+                    <Text style={style.bot}>
                         {AUTO_RESPONDER_NAME}
                     </Text>
                 </View>
@@ -300,17 +300,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         bot: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            marginRight: 5,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
-        },
-        autoResponder: {
-            alignSelf: 'center',
-            backgroundColor: theme.awayIndicator,
             borderRadius: 2,
             color: theme.centerChannelColor,
             fontSize: 10,
