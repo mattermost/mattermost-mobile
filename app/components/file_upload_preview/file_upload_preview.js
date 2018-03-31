@@ -4,95 +4,39 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Platform,
     ScrollView,
     StyleSheet,
     View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 
-import FileUploadRetry from './file_upload_retry';
-import FileUploadRemove from './file_upload_remove';
+import FileUploadItem from './file_upload_item';
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            addFileToFetchCache: PropTypes.func.isRequired,
-            handleRemoveFile: PropTypes.func.isRequired,
-            retryFileUpload: PropTypes.func.isRequired,
-        }).isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         createPostRequestStatus: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
-        fetchCache: PropTypes.object.isRequired,
         files: PropTypes.array.isRequired,
+        filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
         inputHeight: PropTypes.number.isRequired,
         rootId: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
         showFileMaxWarning: PropTypes.bool.isRequired,
-    };
-
-    handleRetryFileUpload = (file) => {
-        if (!file.failed) {
-            return;
-        }
-
-        this.props.actions.retryFileUpload(file, this.props.rootId);
+        theme: PropTypes.object.isRequired,
     };
 
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
-            let filePreviewComponent;
-            if (file.loading | (file.has_preview_image || file.mime_type === 'image/gif')) {
-                filePreviewComponent = (
-                    <FileAttachmentImage
-                        addFileToFetchCache={this.props.actions.addFileToFetchCache}
-                        fetchCache={this.props.fetchCache}
-                        file={file}
-                        imageHeight={100}
-                        imageWidth={100}
-                        wrapperHeight={100}
-                        wrapperWidth={100}
-                    />
-                );
-            } else {
-                filePreviewComponent = (
-                    <FileAttachmentIcon
-                        file={file}
-                        theme={this.props.theme}
-                        imageHeight={100}
-                        imageWidth={100}
-                        wrapperHeight={100}
-                        wrapperWidth={100}
-                    />
-                );
-            }
             return (
-                <View
+                <FileUploadItem
                     key={file.clientId}
-                    style={style.preview}
-                >
-                    <View style={style.previewShadow}>
-                        {filePreviewComponent}
-                        {file.failed &&
-                        <FileUploadRetry
-                            file={file}
-                            onPress={this.handleRetryFileUpload}
-                        />
-                        }
-                    </View>
-                    <FileUploadRemove
-                        channelId={this.props.channelId}
-                        clientId={file.clientId}
-                        onPress={this.props.actions.handleRemoveFile}
-                        rootId={this.props.rootId}
-                    />
-                </View>
+                    channelId={this.props.channelId}
+                    file={file}
+                    rootId={this.props.rootId}
+                    theme={this.props.theme}
+                />
             );
         });
     };
@@ -140,28 +84,6 @@ const style = StyleSheet.create({
         bottom: 0,
         position: 'absolute',
         width: '100%',
-    },
-    preview: {
-        justifyContent: 'flex-end',
-        height: 115,
-        width: 115,
-    },
-    previewShadow: {
-        height: 100,
-        width: 100,
-        elevation: 10,
-        ...Platform.select({
-            ios: {
-                backgroundColor: '#fff',
-                shadowColor: '#000',
-                shadowOpacity: 0.5,
-                shadowRadius: 4,
-                shadowOffset: {
-                    width: 0,
-                    height: 0,
-                },
-            },
-        }),
     },
     scrollView: {
         flex: 1,

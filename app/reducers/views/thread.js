@@ -118,6 +118,7 @@ function handleReceiveUploadFiles(state, action) {
             return {
                 ...file,
                 localPath: tempFile.localPath,
+                loading: false,
             };
         }
 

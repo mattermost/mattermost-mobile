@@ -16,7 +16,7 @@ import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {handlePostDraftChanged, handlePostDraftSelectionChanged} from 'app/actions/views/channel';
-import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, handleUploadFiles} from 'app/actions/views/file_upload';
+import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, initUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app/actions/views/thread';
 import {userTyping} from 'app/actions/views/typing';
 import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
@@ -65,7 +65,7 @@ function mapDispatchToProps(dispatch) {
             handleCommentDraftChanged,
             handlePostDraftChanged,
             handleRemoveLastFile,
-            handleUploadFiles,
+            initUploadFiles,
             userTyping,
             handlePostDraftSelectionChanged,
             handleCommentDraftSelectionChanged,
