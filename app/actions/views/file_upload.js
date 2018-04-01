@@ -20,7 +20,7 @@ export function initUploadFiles(files, rootId) {
                 clientId,
                 localPath: fileData.uri,
                 name: fileData.name,
-                type: fileData.mimeType,
+                type: fileData.type,
                 extension: fileData.extension,
             });
         });

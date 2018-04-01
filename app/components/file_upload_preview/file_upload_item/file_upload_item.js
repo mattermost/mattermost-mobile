@@ -32,7 +32,7 @@ export default class FileUploadItem extends PureComponent {
     };
 
     state = {
-        progress: this.props.file.loading ? 0 : 100,
+        progress: 0,
     };
 
     componentDidMount() {
@@ -101,6 +101,17 @@ export default class FileUploadItem extends PureComponent {
         this.setState({progress: Math.floor((loaded / total) * 100)});
     };
 
+    isImageType = () => {
+        const {file} = this.props;
+
+        if (file.has_preview_image || file.mime_type === 'image/gif' ||
+            (file.localPath && file.type && file.type.includes('image'))) {
+            return true;
+        }
+
+        return false;
+    };
+
     uploadFile = () => {
         const {channelId, file} = this.props;
         const fileData = buildFileUploadData(file);
@@ -157,7 +168,7 @@ export default class FileUploadItem extends PureComponent {
         const {progress} = this.state;
         let filePreviewComponent;
 
-        if (file.has_preview_image || file.mime_type === 'image/gif' || file.localPath) {
+        if (this.isImageType()) {
             filePreviewComponent = (
                 <FileAttachmentImage
                     addFileToFetchCache={addFileToFetchCache}
