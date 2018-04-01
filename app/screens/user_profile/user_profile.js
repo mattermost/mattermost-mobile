@@ -9,7 +9,7 @@ import {
     View,
     Linking,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 
 import {getDirectChannelName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
@@ -22,7 +22,7 @@ import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/ut
 import UserProfileRow from './user_profile_row';
 import Config from 'assets/config';
 
-class UserProfile extends PureComponent {
+export default class UserProfile extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             makeDirectChannel: PropTypes.func.isRequired,
@@ -32,11 +32,14 @@ class UserProfile extends PureComponent {
         currentChannel: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -65,7 +68,7 @@ class UserProfile extends PureComponent {
     displaySendMessageOption = () => {
         const {currentChannel, currentUserId, user} = this.props;
 
-        return currentUserId !== user.id && currentChannel.name !== getDirectChannelName(currentUserId, user.id);
+        return currentChannel.name !== getDirectChannelName(currentUserId, user.id);
     };
 
     getDisplayName = () => {
@@ -98,7 +101,8 @@ class UserProfile extends PureComponent {
     };
 
     sendMessage = async () => {
-        const {actions, currentDisplayName, intl, teammateNameDisplay, user} = this.props;
+        const {intl} = this.context;
+        const {actions, currentDisplayName, teammateNameDisplay, user} = this.props;
 
         // save the current channel display name in case it fails
         const currentChannelDisplayName = currentDisplayName;
@@ -164,7 +168,7 @@ class UserProfile extends PureComponent {
         });
 
         return additionalOptions;
-    }
+    };
 
     render() {
         const {config, theme, user} = this.props;
@@ -255,4 +259,3 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(UserProfile);
