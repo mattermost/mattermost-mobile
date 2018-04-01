@@ -7,6 +7,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     View,
 } from 'react-native';
 
@@ -63,12 +64,12 @@ export default class TextPreview extends React.PureComponent {
                     horizontal={true}
                     contentContainerStyle={style.code}
                 >
-                    <Text
+                    <TextInput
+                        editable={false}
+                        multiline={true}
+                        value={this.props.content}
                         style={style.codeText}
-                        selectable={true}
-                    >
-                        {this.props.content}
-                    </Text>
+                    />
                 </ScrollView>
             </ScrollView>
         );
@@ -110,13 +111,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         code: {
             paddingHorizontal: 6,
-            paddingVertical: 4,
+            top: -4,
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             fontFamily: getCodeFont(),
             fontSize: 12,
             lineHeight: 18,
+            margin: 0,
+            padding: 0,
         },
     };
 });
