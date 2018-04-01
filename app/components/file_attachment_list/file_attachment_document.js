@@ -42,7 +42,6 @@ export const SUPPORTED_DOCS_FORMAT = [
 const TEXT_PREVIEW_FORMATS = [
     'application/json',
     'application/x-x509-ca-cert',
-    'application/x-x509-ca-cert',
     'text/plain',
 ];
 
