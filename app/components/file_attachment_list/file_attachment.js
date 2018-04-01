@@ -66,13 +66,13 @@ export default class FileAttachment extends PureComponent {
         const {deviceWidth, file, onInfoPress, theme, navigator} = this.props;
         const style = getStyleSheet(theme);
 
-        let mime = file.mime_type;
+        let mime = file.mime_type || file.type;
         if (mime && mime.includes(';')) {
             mime = mime.split(';')[0];
         }
 
         let fileAttachmentComponent;
-        if (file.has_preview_image || file.loading || file.mime_type === 'image/gif') {
+        if (file.has_preview_image || file.loading || mime === 'image/gif') {
             fileAttachmentComponent = (
                 <TouchableOpacity onPress={this.handlePreviewPress}>
                     <FileAttachmentImage
