@@ -9,11 +9,8 @@ import {
     General,
     Posts,
 } from 'mattermost-redux/constants';
-import {
-    getCurrentChannel,
-    getMyCurrentChannelMembership,
-    getChannel,
-} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, getChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
@@ -22,7 +19,13 @@ import Permissions from 'mattermost-redux/constants/permissions';
 import {isEdited, isPostEphemeral, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
-import {canManageMembers} from 'mattermost-redux/utils/channel_utils';
+
+import {canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {
+    isEdited,
+    isPostEphemeral,
+    isSystemMessage,
+} from 'mattermost-redux/utils/post_utils';
 
 import PostBody from './post_body';
 
@@ -55,7 +58,7 @@ function mapStateToProps(state, ownProps) {
     const teamMember = getCurrentTeamMembership(state);
     const channelMember = getMyCurrentChannelMembership(state);
     const {config, license} = state.entities.general;
-    const isUserCanManageMembers = canManageMembers(channel, user, teamMember, channelMember, config, license);
+    const isUserCanManageMembers = canManageChannelMembers(state);
     const isEphemeralPost = isPostEphemeral(post);
 
     let isPostAddChannelMember = false;

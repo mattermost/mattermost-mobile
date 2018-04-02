@@ -4,7 +4,8 @@
 import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
-import {getAllChannels, getChannelsInTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {getAllChannels, getChannelsInTeam} from 'mattermost-redux/selectors/entities/channels';
+import {getMyChannelMemberships} from 'mattermost-redux/selectors/entities/common';
 import {getCurrentUser, getUsers} from 'mattermost-redux/selectors/entities/users';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getLastPostPerChannel} from 'mattermost-redux/selectors/entities/posts';
