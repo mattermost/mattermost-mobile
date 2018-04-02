@@ -361,7 +361,7 @@ export default class Markdown extends PureComponent {
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
-            if (['heading', 'paragraph'].includes(ast.lastChild.type)) {
+            if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
                 ast.lastChild.appendChild(editIndicatorNode);
             } else {
                 const node = new Node('paragraph');
