@@ -4,14 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -43,7 +41,6 @@ function mapStateToProps(state, ownProps) {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
-        checkMessageLength: !isMinimumServerVersion(Client4.getServerVersion(), 4, 9),
         currentUserId: getCurrentUserId(state),
         deactivatedChannel,
         files: currentDraft.files,
