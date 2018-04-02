@@ -3,7 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
 

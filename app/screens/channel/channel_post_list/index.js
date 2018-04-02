@@ -6,7 +6,8 @@ import {connect} from 'react-redux';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
 import {getPostIdsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentChannelId, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 

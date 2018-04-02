@@ -7,7 +7,8 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {selectPost} from 'mattermost-redux/actions/posts';
-import {getMyCurrentChannelMembership, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
 import {makeGetPostIdsForThread} from 'mattermost-redux/selectors/entities/posts';
 
 import Thread from './thread';
