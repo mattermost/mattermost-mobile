@@ -9,8 +9,7 @@ import Config from 'assets/config';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeam, getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
 export const LOGGER_JAVASCRIPT = 'javascript';
 export const LOGGER_JAVASCRIPT_WARNING = 'javascript_warning';

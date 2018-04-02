@@ -9,8 +9,7 @@ import {
     General,
     Posts,
 } from 'mattermost-redux/constants';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
