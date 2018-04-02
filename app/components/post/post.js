@@ -478,7 +478,6 @@ export default class Post extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
         },
         pendingPost: {
