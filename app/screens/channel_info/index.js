@@ -16,11 +16,11 @@ import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
 import {General} from 'mattermost-redux/constants';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {
+    canManageChannelMembers,
     getCurrentChannel,
-    getMyCurrentChannelMembership,
     getCurrentChannelStats,
     getSortedFavoriteChannelIds,
-    canManageChannelMembers,
+    getMyCurrentChannelMembership,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';

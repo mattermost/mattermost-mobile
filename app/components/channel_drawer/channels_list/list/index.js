@@ -28,7 +28,7 @@ function mapStateToProps(state) {
     const directChannelIds = getSortedDirectChannelIds(state);
 
     return {
-        canCreatePrivateChannels: showCreateOption(config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
+        canCreatePrivateChannels: showCreateOption(state, config, license, General.PRIVATE_CHANNEL, isAdmin(roles), isSystemAdmin(roles)),
         unreadChannelIds,
         favoriteChannelIds,
         publicChannelIds,
