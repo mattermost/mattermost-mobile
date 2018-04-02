@@ -225,7 +225,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 10,
         },
         muted: {
-            opacity: 0.3,
+            opacity: 0.6,
         },
     };
 });
