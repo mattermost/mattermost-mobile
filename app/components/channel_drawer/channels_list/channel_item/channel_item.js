@@ -25,6 +25,7 @@ export default class ChannelItem extends PureComponent {
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
         fake: PropTypes.bool,
+        isChannelMuted: PropTypes.bool,
         isMyUser: PropTypes.bool,
         isUnread: PropTypes.bool,
         mentions: PropTypes.number.isRequired,
@@ -76,6 +77,7 @@ export default class ChannelItem extends PureComponent {
             channelId,
             currentChannelId,
             displayName,
+            isChannelMuted,
             isMyUser,
             isUnread,
             mentions,
@@ -101,6 +103,7 @@ export default class ChannelItem extends PureComponent {
         let extraItemStyle;
         let extraTextStyle;
         let extraBorder;
+        let mutedStyle;
 
         if (isActive) {
             extraItemStyle = style.itemActive;
@@ -127,6 +130,10 @@ export default class ChannelItem extends PureComponent {
             );
         }
 
+        if (isChannelMuted) {
+            mutedStyle = style.muted;
+        }
+
         const icon = (
             <ChannelIcon
                 isActive={isActive}
@@ -148,7 +155,7 @@ export default class ChannelItem extends PureComponent {
                     onPress={this.onPress}
                     onLongPress={this.onPreview}
                 >
-                    <View style={style.container}>
+                    <View style={[style.container, mutedStyle]}>
                         {extraBorder}
                         <View style={[style.item, extraItemStyle]}>
                             {icon}
@@ -216,6 +223,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
+        },
+        muted: {
+            opacity: 0.3,
         },
     };
 });

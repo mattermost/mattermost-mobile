@@ -51,7 +51,6 @@ function mapStateToProps(state, ownProps) {
         isPending = false;
     }
 
-    const channel = getCurrentChannel(state);
     const user = getCurrentUser(state);
     const teamMember = getCurrentTeamMembership(state);
     const channelMember = getMyCurrentChannelMembership(state);

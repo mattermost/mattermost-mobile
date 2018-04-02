@@ -182,6 +182,7 @@ export default class SelectTeam extends PureComponent {
                             teamId={item.id}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}
+                            styleImage={styles.imageContainer}
                         />
                         <View style={styles.teamNameContainer}>
                             <Text
@@ -279,6 +280,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         teamIconText: {
             color: theme.sidebarText,
             fontSize: 18,
+        },
+        imageContainer: {
+            backgroundColor: theme.centerChannelBg,
         },
         noTeam: {
             color: theme.centerChannelColor,

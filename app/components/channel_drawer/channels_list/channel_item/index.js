@@ -7,6 +7,7 @@ import {General} from 'mattermost-redux/constants';
 import {getCurrentChannelId, makeGetChannel, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
+import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
 
 import ChannelItem from './channel_item';
 
@@ -15,12 +16,9 @@ function makeMapStateToProps() {
 
     return (state, ownProps) => {
         const channel = ownProps.channel || getChannel(state, {id: ownProps.channelId});
-        let member;
-        if (ownProps.isUnread) {
-            member = getMyChannelMember(state, ownProps.channelId);
-        }
-
+        const member = getMyChannelMember(state, ownProps.channelId);
         const currentUserId = getCurrentUserId(state);
+
         let isMyUser = false;
         let teammateDeletedAt = 0;
         if (channel.type === General.DM_CHANNEL && channel.teammate_id) {
@@ -35,6 +33,7 @@ function makeMapStateToProps() {
             currentChannelId: getCurrentChannelId(state),
             displayName: channel.display_name,
             fake: channel.fake,
+            isChannelMuted: isChannelMuted(member),
             isMyUser,
             mentions: member ? member.mention_count : 0,
             status: channel.status,

@@ -20,7 +20,11 @@ function mapStateToProps(state) {
     const locale = getCurrentLocale(state);
 
     function sortTeams(a, b) {
-        return a.display_name.localeCompare(b.display_name, locale, {numeric: true});
+        const options = {
+            numeric: true,
+            sensitivity: 'base',
+        };
+        return a.display_name.localeCompare(b.display_name, locale, options);
     }
 
     return {
