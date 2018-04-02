@@ -13,7 +13,7 @@ import {ViewTypes} from 'app/constants';
 function displayName(state = '', action) {
     switch (action.type) {
     case ViewTypes.SET_CHANNEL_DISPLAY_NAME:
-        return action.displayName;
+        return action.displayName || '';
     default:
         return state;
     }
