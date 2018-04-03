@@ -113,7 +113,6 @@ android {
         targetSdkVersion 23
         versionCode 103
         versionName "1.8.0"
-        multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }
