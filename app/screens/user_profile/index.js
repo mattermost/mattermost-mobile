@@ -18,7 +18,6 @@ function mapStateToProps(state, ownProps) {
     const {createChannel: createChannelRequest} = state.requests.channels;
 
     return {
-        navigator: ownProps.navigator,
         config,
         createChannelRequest,
         currentChannel: getCurrentChannel(state) || {},
