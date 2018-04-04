@@ -1,5 +1,13 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.7.1 Release
+- Release Date: April 3, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+- Fixed an issue where the iOS share extension sometimes crashed the Mattermost app
+- Fixed an issue preventing Markdown tables from rendering with some international characters 
+
 ## v1.7.0 Release
 - Release Date: March 26, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported

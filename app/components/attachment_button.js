@@ -1,6 +1,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
@@ -14,12 +14,11 @@ import Permissions from 'react-native-permissions';
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
 
-class AttachmentButton extends PureComponent {
+export default class AttachmentButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
         children: PropTypes.node,
         fileCount: PropTypes.number,
-        intl: intlShape.isRequired,
         maxFileCount: PropTypes.number.isRequired,
         navigator: PropTypes.object.isRequired,
         onShowFileMaxWarning: PropTypes.func,
@@ -32,8 +31,12 @@ class AttachmentButton extends PureComponent {
         maxFileCount: 5,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     attachFileFromCamera = async () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
         const options = {
             quality: 1.0,
             noData: true,
@@ -72,7 +75,7 @@ class AttachmentButton extends PureComponent {
     };
 
     attachFileFromLibrary = () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
         const options = {
             quality: 1.0,
             noData: true,
@@ -107,7 +110,7 @@ class AttachmentButton extends PureComponent {
     };
 
     attachVideoFromLibraryAndroid = () => {
-        const {formatMessage} = this.props.intl;
+        const {formatMessage} = this.context.intl;
         const options = {
             quality: 1.0,
             mediaType: 'video',
@@ -140,7 +143,7 @@ class AttachmentButton extends PureComponent {
 
     hasPhotoPermission = async () => {
         if (Platform.OS === 'ios') {
-            const {formatMessage} = this.props.intl;
+            const {formatMessage} = this.context.intl;
             let permissionRequest;
             const hasPermissionToStorage = await Permissions.check('photo');
 
@@ -312,4 +315,3 @@ const style = StyleSheet.create({
     },
 });
 
-export default injectIntl(AttachmentButton);

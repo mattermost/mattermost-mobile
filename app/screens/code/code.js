@@ -4,9 +4,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     View,
 } from 'react-native';
 
@@ -48,6 +50,27 @@ export default class Code extends React.PureComponent {
             lineNumbersStyle = style.lineNumbers;
         }
 
+        let textComponent;
+        if (Platform.OS === 'ios') {
+            textComponent = (
+                <TextInput
+                    editable={false}
+                    multiline={true}
+                    value={this.props.content}
+                    style={[style.codeText]}
+                />
+            );
+        } else {
+            textComponent = (
+                <Text
+                    selectable={true}
+                    style={style.codeText}
+                >
+                    {this.props.content}
+                </Text>
+            );
+        }
+
         return (
             <ScrollView
                 style={style.scrollContainer}
@@ -63,9 +86,7 @@ export default class Code extends React.PureComponent {
                     contentContainerStyle={style.code}
                     horizontal={true}
                 >
-                    <Text style={style.codeText}>
-                        {this.props.content}
-                    </Text>
+                    {textComponent}
                 </ScrollView>
             </ScrollView>
         );
@@ -106,13 +127,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         code: {
             paddingHorizontal: 6,
-            paddingVertical: 4,
+            ...Platform.select({
+                android: {
+                    paddingVertical: 4,
+                },
+                ios: {
+                    top: -4,
+                },
+            }),
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
             fontFamily: getCodeFont(),
             fontSize: 12,
             lineHeight: 18,
+            ...Platform.select({
+                ios: {
+                    margin: 0,
+                    padding: 0,
+                },
+            }),
         },
     };
 });

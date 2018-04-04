@@ -24,16 +24,24 @@ import FileAttachmentIcon from './file_attachment_icon';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
 export const SUPPORTED_DOCS_FORMAT = [
-    'application/pdf',
+    'application/json',
     'application/msword',
+    'application/pdf',
     'application/rtf',
     'application/vnd.ms-excel',
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/x-x509-ca-cert',
     'application/xml',
     'text/csv',
+    'text/plain',
+];
+
+const TEXT_PREVIEW_FORMATS = [
+    'application/json',
+    'application/x-x509-ca-cert',
     'text/plain',
 ];
 
@@ -109,7 +117,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
             const mime = file.mime_type.split(';')[0];
             let openDocument = this.openDocument;
-            if (mime === 'text/plain') {
+            if (TEXT_PREVIEW_FORMATS.includes(mime)) {
                 openDocument = this.previewTextFile;
             }
 

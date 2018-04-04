@@ -144,13 +144,13 @@ export default class FileAttachmentImage extends PureComponent {
 
         if (this.state.retry === 4) {
             source = imageIcon;
+        } else if (file.failed || file.localPath) {
+            source = {uri: file.localPath};
         } else if (file.id) {
             source = {uri: this.handleGetImageURL()};
-        } else if (file.failed) {
-            source = {uri: file.localPath};
         }
 
-        const isInFetchCache = fetchCache[source.uri];
+        const isInFetchCache = fetchCache[source.uri] || Boolean(file.localPath);
 
         const imageComponentLoaders = {
             onError: isInFetchCache ? null : this.handleLoadError,
@@ -164,7 +164,7 @@ export default class FileAttachmentImage extends PureComponent {
         let imageStyle = {height, width};
         if (imageSize === IMAGE_SIZE.Preview) {
             height = 100;
-            width = this.calculateNeededWidth(file.height, file.width, height);
+            width = this.calculateNeededWidth(file.height, file.width, height) || 100;
             imageStyle = {height, width, position: 'absolute', top: 0, left: 0, borderBottomLeftRadius: 2, borderTopLeftRadius: 2};
         }
 

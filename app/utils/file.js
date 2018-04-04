@@ -59,8 +59,8 @@ export async function deleteFileCache() {
 export function buildFileUploadData(file) {
     const re = /heic/i;
     const uri = file.uri;
-    let name = file.fileName || file.path || file.uri;
-    let mimeType = lookupMimeType(name);
+    let name = file.fileName || file.name || file.path || file.uri;
+    let mimeType = lookupMimeType(name.toLowerCase());
     let extension = name.split('.').pop().replace('.', '');
 
     if (re.test(extension)) {
