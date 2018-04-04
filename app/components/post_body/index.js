@@ -9,13 +9,13 @@ import {
     General,
     Posts,
 } from 'mattermost-redux/constants';
-import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
+import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
+import Permissions from 'mattermost-redux/constants/permissions';
 
-import {canManageMembersOldPermissions} from 'mattermost-redux/utils/channel_utils';
 import {
     isEdited,
     isPostEphemeral,
@@ -28,6 +28,17 @@ const POST_TIMEOUT = 20000;
 
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
+    const channel = getChannel(state, post.channel_id) || {};
+    const teamId = channel.team_id;
+
+    let canAddReaction = true;
+    if (hasNewPermissions(state)) {
+        canAddReaction = haveIChannelPermission(state, {
+            team: teamId,
+            channel: post.channel_id,
+            permission: Permissions.ADD_REACTION,
+        });
+    }
 
     let isFailed = post.failed;
     let isPending = post.id === post.pending_post_id;
@@ -38,12 +49,7 @@ function mapStateToProps(state, ownProps) {
         isPending = false;
     }
 
-    const channel = getCurrentChannel(state);
-    const user = getCurrentUser(state);
-    const teamMember = getCurrentTeamMembership(state);
-    const channelMember = getMyCurrentChannelMembership(state);
-    const {config, license} = state.entities.general;
-    const isUserCanManageMembers = canManageMembersOldPermissions(channel, user, teamMember, channelMember, config, license);
+    const isUserCanManageMembers = canManageChannelMembers(state);
     const isEphemeralPost = isPostEphemeral(post);
 
     let isPostAddChannelMember = false;
@@ -70,6 +76,7 @@ function mapStateToProps(state, ownProps) {
         isSystemMessage: isSystemMessage(post),
         message: post.message,
         theme: getTheme(state),
+        canAddReaction,
     };
 }
 

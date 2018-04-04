@@ -53,6 +53,7 @@ export default class PostBody extends PureComponent {
         managedConfig: PropTypes.object,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
+        canAddReaction: PropTypes.bool,
         onAddReaction: PropTypes.func,
         onCopyPermalink: PropTypes.func,
         onCopyText: PropTypes.func,
@@ -114,6 +115,7 @@ export default class PostBody extends PureComponent {
         const {
             canEdit,
             canDelete,
+            canAddReaction,
             hasBeenDeleted,
             isPending,
             isFailed,
@@ -130,10 +132,12 @@ export default class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-            actions.push({
-                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                onPress: this.props.onAddReaction,
-            });
+            if (canAddReaction) {
+                actions.push({
+                    text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                    onPress: this.props.onAddReaction,
+                });
+            }
 
             if (managedConfig.copyAndPasteProtection !== 'true') {
                 actions.push({
