@@ -88,7 +88,6 @@ start: | pre-run ## Starts the React Native packager server
 		node ./node_modules/react-native/local-cli/cli.js start; \
 	else \
 		echo React Native packager server already running; \
-		ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' > server.PID; \
 	fi
 
 stop: ## Stops the React Native packager server

@@ -31,7 +31,7 @@ export default class PostTextbox extends PureComponent {
             handleClearFiles: PropTypes.func.isRequired,
             handleClearFailedFiles: PropTypes.func.isRequired,
             handleRemoveLastFile: PropTypes.func.isRequired,
-            handleUploadFiles: PropTypes.func.isRequired,
+            initUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired,
             handlePostDraftSelectionChanged: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
@@ -260,7 +260,7 @@ export default class PostTextbox extends PureComponent {
     };
 
     handleUploadFiles = (images) => {
-        this.props.actions.handleUploadFiles(images, this.props.rootId);
+        this.props.actions.initUploadFiles(images, this.props.rootId);
     };
 
     renderSendButton = () => {
