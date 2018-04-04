@@ -22,7 +22,6 @@ import {
     getSortedFavoriteChannelIds,
     getMyCurrentChannelMembership,
 } from 'mattermost-redux/selectors/entities/channels';
-import {getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/common';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isChannelAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';

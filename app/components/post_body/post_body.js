@@ -115,6 +115,7 @@ export default class PostBody extends PureComponent {
         const {
             canEdit,
             canDelete,
+            canAddReaction,
             hasBeenDeleted,
             isPending,
             isFailed,
@@ -131,10 +132,12 @@ export default class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-            actions.push({
-                text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                onPress: this.props.onAddReaction,
-            });
+            if (canAddReaction) {
+                actions.push({
+                    text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                    onPress: this.props.onAddReaction,
+                });
+            }
 
             if (managedConfig.copyAndPasteProtection !== 'true') {
                 actions.push({
@@ -366,49 +369,6 @@ export default class PostBody extends PureComponent {
         const textStyles = getMarkdownTextStyles(theme);
         const messageStyle = isSystemMessage ? [style.message, style.systemMessage] : style.message;
         const isPendingOrFailedPost = isPending || isFailed;
-
-        // we should check for the user roles and permissions
-        if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-            if (this.props.canAddReaction) {
-                actions.push({
-                    text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                    onPress: this.props.onAddReaction,
-                });
-            }
-
-            if (managedConfig.copyAndPasteProtection !== 'true') {
-                actions.push({
-                    text: formatMessage({id: 'mobile.post_info.copy_post', defaultMessage: 'Copy Post'}),
-                    onPress: this.props.onCopyText,
-                    copyPost: true,
-                });
-            }
-
-            if (isFlagged) {
-                actions.push({
-                    text: formatMessage({id: 'post_info.mobile.unflag', defaultMessage: 'Unflag'}),
-                    onPress: this.unflagPost,
-                });
-            } else {
-                actions.push({
-                    text: formatMessage({id: 'post_info.mobile.flag', defaultMessage: 'Flag'}),
-                    onPress: this.flagPost,
-                });
-            }
-
-            if (canEdit) {
-                actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: onPostEdit});
-            }
-
-            if (canDelete && !hasBeenDeleted) {
-                actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
-            }
-
-            actions.push({
-                text: formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'}),
-                onPress: this.props.onCopyPermalink,
-            });
-        }
 
         let body;
         let messageComponent;
