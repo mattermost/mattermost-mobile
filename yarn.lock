@@ -4637,7 +4637,7 @@ map-visit@^1.0.0:
 
 mattermost-redux@mattermost/mattermost-redux:
   version "1.2.0"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/b568f026cabebb04f39ac1bef93d8c45482a8d6a"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/6725f81174fe4c8514f5217a3f05b6b0368f2642"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
