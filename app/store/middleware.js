@@ -105,11 +105,6 @@ function resetStateForNewVersion(action) {
         i18n = payload.views.i18n;
     }
 
-    let fetchCache = initialState.views.fetchCache;
-    if (payload.views.fetchCache) {
-        fetchCache = payload.views.fetchCache;
-    }
-
     let lastTeamId = initialState.views.team.lastTeamId;
     if (payload.views.team && payload.views.team.lastTeamId) {
         lastTeamId = payload.views.team.lastTeamId;
@@ -147,7 +142,6 @@ function resetStateForNewVersion(action) {
                 drafts: channelDrafts,
             },
             i18n,
-            fetchCache,
             team: {
                 lastTeamId,
                 lastChannelForTeam,
@@ -190,6 +184,7 @@ function cleanupState(action, keepCurrent = false) {
         posts: {
             posts: {},
             postsInChannel: {},
+            postsInThread: {},
             reactions: {},
             openGraph: payload.entities.posts.openGraph,
             selectedPostId: payload.entities.posts.selectedPostId,
@@ -261,6 +256,11 @@ function cleanupState(action, keepCurrent = false) {
                 fileIds.forEach((fileId) => {
                     nextEntitites.files.files[fileId] = payload.entities.files.files[fileId];
                 });
+            }
+
+            const postsInThread = payload.entities.posts.postsInThread[postId];
+            if (postsInThread) {
+                nextEntitites.posts.postsInThread[postId] = postsInThread;
             }
         } else {
             // If the post is not in the store we need to remove it from the postsInChannel
