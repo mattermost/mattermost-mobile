@@ -2165,9 +2165,9 @@ commondir@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
 
-commonmark-react-renderer@hmhealey/commonmark-react-renderer:
+commonmark-react-renderer@mattermost/commonmark-react-renderer:
   version "4.3.3"
-  resolved "https://codeload.github.com/hmhealey/commonmark-react-renderer/tar.gz/86fa63f898802953842526c2030f3b63c5d1ae7a"
+  resolved "https://codeload.github.com/mattermost/commonmark-react-renderer/tar.gz/86fa63f898802953842526c2030f3b63c5d1ae7a"
   dependencies:
     in-publish "^2.0.0"
     lodash.assign "^4.2.0"
@@ -2175,15 +2175,15 @@ commonmark-react-renderer@hmhealey/commonmark-react-renderer:
     pascalcase "^0.1.1"
     xss-filters "^1.2.6"
 
-commonmark@hmhealey/commonmark.js:
+"commonmark@mattermost/commonmark.js":
   version "0.28.0"
-  resolved "https://codeload.github.com/hmhealey/commonmark.js/tar.gz/7c20ebc1b60f5bb56c1ed9ad3239f53293278d5c"
+  resolved "https://codeload.github.com/mattermost/commonmark.js/tar.gz/1496b5d11f245e00aae51f8fa1b2c4f12b4ddd7b"
   dependencies:
     entities "~ 1.1.1"
     mdurl "~ 1.0.1"
     minimist "~ 1.2.0"
     string.prototype.repeat "^0.2.0"
-    xregexp hmhealey/xregexp#b5358d3b7e6276ff7f438ed4271ece3238b88016
+    xregexp "4.1.1"
 
 component-emitter@1.2.0:
   version "1.2.0"
@@ -7958,9 +7958,9 @@ xpipe@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/xpipe/-/xpipe-1.0.5.tgz#8dd8bf45fc3f7f55f0e054b878f43a62614dafdf"
 
-xregexp@hmhealey/xregexp#b5358d3b7e6276ff7f438ed4271ece3238b88016:
-  version "3.2.0"
-  resolved "https://codeload.github.com/hmhealey/xregexp/tar.gz/b5358d3b7e6276ff7f438ed4271ece3238b88016"
+xregexp@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/xregexp/-/xregexp-4.1.1.tgz#eb8a032aa028d403f7b1b22c47a5f16c24b21d8d"
 
 xss-filters@^1.2.6:
   version "1.2.7"
