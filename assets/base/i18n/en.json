@@ -2669,7 +2669,7 @@
   "team_import_tab.failure": " Import failure: ",
   "team_import_tab.import": "Import",
   "team_import_tab.importHelpDocsLink": "documentation",
-  "team_import_tab.importHelpExportInstructions": "Slack > Team Settings > Import/Export Data > Export > Start Export",
+  "team_import_tab.importHelpExportInstructions": "Slack > Administration > Workspace settings > Import/Export Data > Export > Start Export",
   "team_import_tab.importHelpExporterLink": "Slack Advanced Exporter",
   "team_import_tab.importHelpLine1": "Slack import to Mattermost supports importing of messages in your Slack team's public channels.",
   "team_import_tab.importHelpLine2": "To import a team from Slack, go to {exportInstructions}. See {uploadDocsLink} to learn more.",
