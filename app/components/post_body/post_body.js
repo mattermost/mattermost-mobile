@@ -116,11 +116,8 @@ export default class PostBody extends PureComponent {
         const {
             canEdit,
             canDelete,
-<<<<<<< HEAD
             canAddReaction,
-=======
             channelIsReadOnly,
->>>>>>> Refactor to use new read only channel selectors
             hasBeenDeleted,
             isPending,
             isFailed,
@@ -137,11 +134,7 @@ export default class PostBody extends PureComponent {
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-<<<<<<< HEAD
-            if (canAddReaction) {
-=======
-            if (!channelIsReadOnly) {
->>>>>>> Refactor to use new read only channel selectors
+            if (canAddReaction && !channelIsReadOnly) {
                 actions.push({
                     text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                     onPress: this.props.onAddReaction,

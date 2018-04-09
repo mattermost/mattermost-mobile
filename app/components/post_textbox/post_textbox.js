@@ -468,7 +468,7 @@ export default class PostTextbox extends PureComponent {
                 />
                 <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
-                    <View style={inputContainerStyle}>
+                    <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
                         <TextInput
                             ref='input'
                             value={textValue}
