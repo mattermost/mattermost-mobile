@@ -1125,7 +1125,7 @@
   "admin.team.openServerTitle": "Włącz Open Server: ",
   "admin.team.restrictDescription": "Zespoły i konta użytkowników mogą być tworzone jedynie dla maili z wybranej domeny (np. \"mattermost.org\") lub listy domen oddzielonej przecinkami (np. \"corp.mattermost.com, mattermost.org\").",
   "admin.team.restrictDirectMessage": "Zezwalaj użytkownikom na otwieranie kanałów prywatnych wiadomości z:",
-  "admin.team.restrictDirectMessageDesc": "'Dowolny użytkownik na serwerze Mattermost' umożliwia użytkownikom otwarcie kanału do Prywatnych Wiadomości z dowolnym użytkownikiem na tym serwerze, nawet jeśli użytkownicy nie należą do żadnych wspólnych grup. 'Dowolny uczestnik zespołu' ogranicza możliwość otwierania kanałów do Prywatnych Wiadomości tylko do użytkowników którzy są w tym samym zespole.",
+  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability in the Direct Messages 'More' menu to only open Direct Message channels with users who are in the same team.<br /><br />Note: This setting only affects the UI, not permissions on the server.",
   "admin.team.restrictExample": "Np.: \"corp.mattermost.com, mattermost.org\"",
   "admin.team.restrictNameDesc": "Jeśli włączone, nie możesz utworzyć zespołu o nazwie takiej jak zarezerwowane słowa, takie jak www, admin, wsparcie, test, kanał, itp.",
   "admin.team.restrictNameTitle": "Ogranicz Nazwy Zespołów:",

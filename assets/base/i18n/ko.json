@@ -1125,7 +1125,7 @@
   "admin.team.openServerTitle": "공개 서버: ",
   "admin.team.restrictDescription": "Teams and user accounts can only be created from a specific domain (e.g. \"mattermost.org\") or list of comma-separated domains (e.g. \"corp.mattermost.com, mattermost.org\").",
   "admin.team.restrictDirectMessage": "Enable users to open Direct Message channels with:",
-  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability to open Direct Message channels to only users who are in the same team.",
+  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability in the Direct Messages 'More' menu to only open Direct Message channels with users who are in the same team.<br /><br />Note: This setting only affects the UI, not permissions on the server.",
   "admin.team.restrictExample": "예시 \"corp.mattermost.com, mattermost.org\"",
   "admin.team.restrictNameDesc": "When true, You cannot create a team name with reserved words like www, admin, support, test, channel, etc",
   "admin.team.restrictNameTitle": "팀 이름 제한: ",
