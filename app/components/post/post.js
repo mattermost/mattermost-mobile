@@ -18,7 +18,7 @@ import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import {NavigationTypes} from 'app/constants';
-import {emptyFunction} from 'app/utils/general';
+import {emptyFunction, fromAutoResponder} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getToolTipVisible} from 'app/utils/tooltip';
@@ -279,7 +279,8 @@ export default class Post extends PureComponent {
         } = this.props;
 
         if (!getToolTipVisible()) {
-            if (onPress && post.state !== Posts.POST_DELETED && !isSystemMessage(post) && !isPostPendingOrFailed(post)) {
+            const isValidSystemMessage = fromAutoResponder(post) || !isSystemMessage(post);
+            if (onPress && post.state !== Posts.POST_DELETED && isValidSystemMessage && !isPostPendingOrFailed(post)) {
                 onPress(post);
             } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED) && !showLongPost) {
                 this.onRemovePost(post);
