@@ -11,4 +11,4 @@ if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
 
-const app = new Mattermost();
+// const app = new Mattermost();
