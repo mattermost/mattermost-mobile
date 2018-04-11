@@ -9,6 +9,7 @@
   "dependencies": {
     "analytics-react-native": "1.2.0",
     "babel-polyfill": "6.26.0",
+    "base-64": "0.1.0",
     "commonmark": "mattermost/commonmark.js",
     "commonmark-react-renderer": "mattermost/commonmark-react-renderer",
     "deep-equal": "1.0.1",
@@ -31,6 +32,7 @@
     "react-native-exception-handler": "2.7.1",
     "react-native-fast-image": "4.0.0",
     "react-native-fetch-blob": "enahum/react-native-fetch-blob.git",
+    "react-native-image-gallery": "enahum/react-native-image-gallery",
     "react-native-image-picker": "0.26.7",
     "react-native-keyboard-aware-scroll-view": "0.5.0",
     "react-native-linear-gradient": "2.4.0",
