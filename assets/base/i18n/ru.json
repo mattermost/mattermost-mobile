@@ -1125,7 +1125,7 @@
   "admin.team.openServerTitle": "Открытый сервер: ",
   "admin.team.restrictDescription": "Команды и аккаунты пользователей могут быть созданы только с указанного домена (например, \"mattermost.org\"), или с доменов, заданных разделённым запятыми списком доменов (например, corp.mattermost.com, mattermost.org\").",
   "admin.team.restrictDirectMessage": "Enable users to open Direct Message channels with:",
-  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability to open Direct Message channels to only users who are in the same team.",
+  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability in the Direct Messages 'More' menu to only open Direct Message channels with users who are in the same team.<br /><br />Note: This setting only affects the UI, not permissions on the server.",
   "admin.team.restrictExample": "Например: \"corp.mattermost.com, mattermost.org\"",
   "admin.team.restrictNameDesc": "Когда включено, Вы не сможете использовать зарезервированные слова в имени команды (такие как www, admin, support, test, channel и др.)",
   "admin.team.restrictNameTitle": "Запрещённые имена команд:",

@@ -1125,7 +1125,7 @@
   "admin.team.openServerTitle": "Open server activeren: ",
   "admin.team.restrictDescription": "Teams en gebruiker accounts kunnen alleen aangemaakt worden van een specifiek domeinnaam (v.b. \"mattermost.org\") of van een lijst van domeinnamen gescheiden met een komma (zoals. \"corp.mattermost.org, mattermost.org\").",
   "admin.team.restrictDirectMessage": "Sta gebruikers to om Direct Message kanalen te openen met:",
-  "admin.team.restrictDirectMessageDesc": "'Iedere gebruiker op de Mattermost server' maakt het mogelijk dat het iedere gebruiker een Direct Bericht kanaal met iedere andere gebruiker kan openen, zelfs als ze niet bij elkaar in het team zitten. 'Ieder lid van het team' kunnen alleen gebruikers van hetzelfde team deze Direct Bericht kanalen openen.",
+  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability in the Direct Messages 'More' menu to only open Direct Message channels with users who are in the same team.<br /><br />Note: This setting only affects the UI, not permissions on the server.",
   "admin.team.restrictExample": "Bijv.: \"corp.mattermost.com, mattermost.org\"",
   "admin.team.restrictNameDesc": "Wanneer ingeschakeld, kunt u geen teams maken met gereserveerde namen zoals www, administratie, ondersteuning, testen, kanaal, enz.",
   "admin.team.restrictNameTitle": "Beperken team namen: ",

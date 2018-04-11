@@ -1125,7 +1125,7 @@
   "admin.team.openServerTitle": "启用开放服务器：",
   "admin.team.restrictDescription": "团队和用户帐户只能从一个特定的域创建(例如: \"mattermost.org\")或逗号分隔域列表(例如: \"corp.mattermost.com, mattermost.org\")。",
   "admin.team.restrictDirectMessage": "允许用户私信的频道：",
-  "admin.team.restrictDirectMessageDesc": "'任何Mattermost服务器上的用户'让用户对任何用户发起直接通讯频道，就算他们不在同一个团队。'任何团队成员'限制用户只能对同一团队开启直接通讯频道。",
+  "admin.team.restrictDirectMessageDesc": "'Any user on the Mattermost server' enables users to open a Direct Message channel with any user on the server, even if they are not on any teams together. 'Any member of the team' limits the ability in the Direct Messages 'More' menu to only open Direct Message channels with users who are in the same team.<br /><br />Note: This setting only affects the UI, not permissions on the server.",
   "admin.team.restrictExample": "例如 \"corp.mattermost.com, mattermost.org\"",
   "admin.team.restrictNameDesc": "当设置为是时，你不能以保留字如 www,admin,support,test,channel 等创建团队",
   "admin.team.restrictNameTitle": "限制团队名称：",
