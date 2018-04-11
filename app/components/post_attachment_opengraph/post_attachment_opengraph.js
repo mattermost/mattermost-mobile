@@ -7,6 +7,7 @@ import {
     Dimensions,
     Image,
     Linking,
+    Platform,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -117,13 +118,20 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     }
 
     getImageSize = (imageUrl) => {
-        Image.getSize(imageUrl, (width, height) => {
+        let prefix = '';
+        if (Platform.OS === 'android') {
+            prefix = 'file://';
+        }
+
+        const uri = `${prefix}${imageUrl}`;
+
+        Image.getSize(uri, (width, height) => {
             const dimensions = this.calculateLargeImageDimensions(width, height);
 
             if (this.mounted) {
                 this.setState({
                     ...dimensions,
-                    imageUrl,
+                    imageUrl: uri,
                 });
             }
         }, () => null);
@@ -178,7 +186,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         component.measure((rx, ry, width, height, x, y) => {
             const {imageUrl: uri, openGraphImageUrl: link} = this.state;
-            const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+            let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+            const extension = filename.split('.').pop();
+
+            if (extension === filename) {
+                const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+                filename = `${filename}${ext}`;
+            }
 
             const files = [{
                 caption: filename,

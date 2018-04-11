@@ -210,7 +210,13 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const {link} = this.props;
 
         if (link && path) {
-            Image.getSize(path, (width, height) => {
+            let prefix = '';
+            if (Platform.OS === 'android') {
+                prefix = 'file://';
+            }
+
+            const uri = `${prefix}${path}`;
+            Image.getSize(uri, (width, height) => {
                 if (!this.mounted) {
                     return;
                 }
@@ -221,8 +227,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 }
 
                 const dimensions = this.calculateDimensions(width, height);
-                this.setState({...dimensions, linkLoaded: true, uri: path});
-            }, () => null);
+                this.setState({...dimensions, linkLoaded: true, uri});
+            }, () => this.setState({linkLoadError: true}));
         }
     };
 
