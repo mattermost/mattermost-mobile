@@ -7,7 +7,6 @@ import announcement from './announcement';
 import channel from './channel';
 import clientUpgrade from './client_upgrade';
 import extension from './extension';
-import fetchCache from './fetch_cache';
 import i18n from './i18n';
 import login from './login';
 import recentEmojis from './recent_emojis';
@@ -23,7 +22,6 @@ export default combineReducers({
     channel,
     clientUpgrade,
     extension,
-    fetchCache,
     i18n,
     login,
     recentEmojis,

@@ -38,8 +38,6 @@ const ViewTypes = keyMirror({
     REMOVE_FILE_FROM_POST_DRAFT: null,
     REMOVE_LAST_FILE_FROM_POST_DRAFT: null,
 
-    ADD_FILE_TO_FETCH_CACHE: null,
-
     SET_CHANNEL_LOADER: null,
     SET_CHANNEL_REFRESHING: null,
     SET_CHANNEL_RETRY_FAILED: null,
