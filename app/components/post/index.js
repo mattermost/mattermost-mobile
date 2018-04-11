@@ -5,14 +5,13 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
-import {General} from 'mattermost-redux/constants';
-import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {canDeletePost, canEditPost, isPostFlagged} from 'mattermost-redux/utils/post_utils';
-import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
@@ -28,7 +27,7 @@ function mapStateToProps(state, ownProps) {
     const myPreferences = getMyPreferences(state);
     const currentUserId = getCurrentUserId(state);
     const currentTeamId = getCurrentTeamId(state);
-    const currentChannel = getCurrentChannel(state);
+    const currentChannelId = getCurrentChannelId(state);
 
     let isFirstReply = true;
     let isLastReply = true;
@@ -58,14 +57,13 @@ function mapStateToProps(state, ownProps) {
     const {deviceWidth} = getDimensions(state);
 
     const isAdmin = checkIsAdmin(roles);
-    const isChannelAdmin = checkIsChannelAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
 
     let canDelete = false;
     let canEdit = false;
     if (post) {
-        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannel.id, currentUserId, post, isAdmin, isSystemAdmin);
-        canEdit = canEditPost(state, config, license, currentTeamId, currentChannel.id, currentUserId, post);
+        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
+        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
     }
 
     return {
