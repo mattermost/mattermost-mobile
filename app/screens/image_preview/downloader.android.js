@@ -15,9 +15,12 @@ import {intlShape} from 'react-intl';
 
 import {Client4} from 'mattermost-redux/client';
 
+import {DeviceTypes} from 'app/constants/';
 import FormattedText from 'app/components/formatted_text';
+import {isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 
+const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
 const EXTERNAL_STORAGE_PERMISSION = 'android.permission.WRITE_EXTERNAL_STORAGE';
 const HEADER_HEIGHT = 64;
 const OPTION_LIST_WIDTH = 39;
@@ -85,24 +88,56 @@ export default class Downloader extends PureComponent {
             ToastAndroid.show(started, ToastAndroid.SHORT);
             onDownloadStart();
 
-            const imageUrl = Client4.getFileUrl(file.id);
+            const dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${file.caption}`;
+            let downloadFile = true;
 
-            const task = RNFetchBlob.config({
-                fileCache: true,
-                addAndroidDownloads: {
-                    useDownloadManager: true,
-                    notification: true,
-                    path: `${RNFetchBlob.fs.dirs.DownloadDir}/${file.name}`,
-                    title: `${file.name} ${title}`,
-                    mime: file.mime_type,
-                    description: file.name,
-                    mediaScannable: true,
-                },
-            }).fetch('GET', imageUrl, {
-                Authorization: `Bearer ${Client4.token}`,
-            });
+            const {data} = file;
 
-            await task;
+            if (data.localPath) {
+                const exists = await RNFetchBlob.fs.exists(data.localPath);
+
+                if (exists) {
+                    downloadFile = false;
+                    await RNFetchBlob.fs.cp(data.localPath, dest);
+                }
+            } else if (isVideo(data)) {
+                const path = `${VIDEOS_PATH}/${data.id}.${data.extension}`;
+                const exists = await RNFetchBlob.fs.exists(path);
+
+                if (exists) {
+                    downloadFile = false;
+                    await RNFetchBlob.fs.cp(path, dest);
+                }
+            } else if (isDocument(data)) {
+                const path = `${DOCUMENTS_PATH}/${data.name}`;
+                const exists = await RNFetchBlob.fs.exists(path);
+
+                if (exists) {
+                    downloadFile = false;
+                    await RNFetchBlob.fs.cp(path, dest);
+                }
+            }
+
+            if (downloadFile) {
+                const imageUrl = Client4.getFileUrl(data.id);
+
+                const task = RNFetchBlob.config({
+                    fileCache: true,
+                    addAndroidDownloads: {
+                        useDownloadManager: true,
+                        notification: true,
+                        path: dest,
+                        title: `${data.name} ${title}`,
+                        mime: data.mime_type,
+                        description: data.name,
+                        mediaScannable: true,
+                    },
+                }).fetch('GET', imageUrl, {
+                    Authorization: `Bearer ${Client4.token}`,
+                });
+
+                await task;
+            }
 
             ToastAndroid.show(complete, ToastAndroid.SHORT);
             onDownloadSuccess();

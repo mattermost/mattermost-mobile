@@ -9,19 +9,22 @@ import {
     View,
 } from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import * as Utils from 'mattermost-redux/utils/file_utils.js';
 
-import FileAttachmentDocument, {SUPPORTED_DOCS_FORMAT} from './file_attachment_document';
+import {isDocument, isGif} from 'app/utils/file';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import FileAttachmentDocument from './file_attachment_document';
 import FileAttachmentIcon from './file_attachment_icon';
 import FileAttachmentImage from './file_attachment_image';
 
 export default class FileAttachment extends PureComponent {
     static propTypes = {
-        addFileToFetchCache: PropTypes.func.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object.isRequired,
+        index: PropTypes.number.isRequired,
+        onCaptureRef: PropTypes.func,
+        onCapturePreviewRef: PropTypes.func,
         onInfoPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
@@ -33,8 +36,24 @@ export default class FileAttachment extends PureComponent {
         onPreviewPress: () => true,
     };
 
+    handleCaptureRef = (ref) => {
+        const {onCaptureRef, index} = this.props;
+
+        if (onCaptureRef) {
+            onCaptureRef(ref, index);
+        }
+    };
+
+    handleCapturePreviewRef = (ref) => {
+        const {onCapturePreviewRef, index} = this.props;
+
+        if (onCapturePreviewRef) {
+            onCapturePreviewRef(ref, index);
+        }
+    };
+
     handlePreviewPress = () => {
-        this.props.onPreviewPress(this.props.file);
+        this.props.onPreviewPress(this.props.index);
     };
 
     renderFileInfo() {
@@ -63,32 +82,33 @@ export default class FileAttachment extends PureComponent {
     }
 
     render() {
-        const {deviceWidth, file, onInfoPress, theme, navigator} = this.props;
+        const {
+            deviceWidth,
+            file,
+            onInfoPress,
+            theme,
+            navigator,
+        } = this.props;
         const style = getStyleSheet(theme);
 
-        let mime = file.mime_type || file.type;
-        if (mime && mime.includes(';')) {
-            mime = mime.split(';')[0];
-        }
-
         let fileAttachmentComponent;
-        if (file.has_preview_image || file.loading || mime === 'image/gif') {
+        if (file.has_preview_image || file.loading || isGif(file)) {
             fileAttachmentComponent = (
                 <TouchableOpacity onPress={this.handlePreviewPress}>
                     <FileAttachmentImage
-                        addFileToFetchCache={this.props.addFileToFetchCache}
-                        fetchCache={this.props.fetchCache}
                         file={file}
+                        onCaptureRef={this.handleCaptureRef}
+                        onCapturePreviewRef={this.handleCapturePreviewRef}
                         theme={theme}
                     />
                 </TouchableOpacity>
             );
-        } else if (SUPPORTED_DOCS_FORMAT.includes(mime)) {
+        } else if (isDocument(file)) {
             fileAttachmentComponent = (
                 <FileAttachmentDocument
                     file={file}
-                    theme={theme}
                     navigator={navigator}
+                    theme={theme}
                 />
             );
         } else {
@@ -96,6 +116,8 @@ export default class FileAttachment extends PureComponent {
                 <TouchableOpacity onPress={this.handlePreviewPress}>
                     <FileAttachmentIcon
                         file={file}
+                        onCaptureRef={this.handleCaptureRef}
+                        onCapturePreviewRef={this.handleCapturePreviewRef}
                         theme={theme}
                     />
                 </TouchableOpacity>

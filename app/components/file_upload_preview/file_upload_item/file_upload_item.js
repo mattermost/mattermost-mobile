@@ -18,14 +18,12 @@ import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
 export default class FileUploadItem extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            addFileToFetchCache: PropTypes.func.isRequired,
             handleRemoveFile: PropTypes.func.isRequired,
             retryFileUpload: PropTypes.func.isRequired,
             uploadComplete: PropTypes.func.isRequired,
             uploadFailed: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
-        fetchCache: PropTypes.object.isRequired,
         file: PropTypes.object.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -157,22 +155,17 @@ export default class FileUploadItem extends PureComponent {
 
     render() {
         const {
-            actions,
             channelId,
-            fetchCache,
             file,
             rootId,
             theme,
         } = this.props;
-        const {addFileToFetchCache} = actions;
         const {progress} = this.state;
         let filePreviewComponent;
 
         if (this.isImageType()) {
             filePreviewComponent = (
                 <FileAttachmentImage
-                    addFileToFetchCache={addFileToFetchCache}
-                    fetchCache={fetchCache}
                     file={file}
                     imageHeight={100}
                     imageWidth={100}

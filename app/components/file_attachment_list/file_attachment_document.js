@@ -5,7 +5,10 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
+    NativeModules,
+    NativeEventEmitter,
     Platform,
+    StatusBar,
     StyleSheet,
     TouchableOpacity,
     View,
@@ -14,30 +17,16 @@ import OpenFile from 'react-native-doc-viewer';
 import RNFetchBlob from 'react-native-fetch-blob';
 import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
+import tinyColor from 'tinycolor2';
 
-import {changeOpacity} from 'app/utils/theme';
 import {getFileUrl} from 'mattermost-redux/utils/file_utils.js';
 
 import {DeviceTypes} from 'app/constants/';
+import {changeOpacity} from 'app/utils/theme';
 
 import FileAttachmentIcon from './file_attachment_icon';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
-export const SUPPORTED_DOCS_FORMAT = [
-    'application/json',
-    'application/msword',
-    'application/pdf',
-    'application/rtf',
-    'application/vnd.ms-excel',
-    'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/x-x509-ca-cert',
-    'application/xml',
-    'text/csv',
-    'text/plain',
-];
 
 const TEXT_PREVIEW_FORMATS = [
     'application/json',
@@ -75,10 +64,13 @@ export default class FileAttachmentDocument extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
+        this.eventEmitter = new NativeEventEmitter(NativeModules.RNReactNativeDocViewer);
+        this.eventEmitter.addListener('DoneButtonEvent', () => this.setStatusBarColor());
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        this.eventEmitter.removeListener();
     }
 
     cancelDownload = () => {
@@ -88,6 +80,22 @@ export default class FileAttachmentDocument extends PureComponent {
 
         if (this.downloadTask) {
             this.downloadTask.cancel();
+        }
+    };
+
+    setStatusBarColor = (style) => {
+        if (Platform.OS === 'ios') {
+            if (style) {
+                StatusBar.setBarStyle(style, true);
+            } else {
+                const {theme} = this.props;
+                const headerColor = tinyColor(theme.sidebarHeaderBg);
+                let barStyle = 'light-content';
+                if (headerColor.isLight() && Platform.OS === 'ios') {
+                    barStyle = 'dark-content';
+                }
+                StatusBar.setBarStyle(barStyle, true);
+            }
         }
     };
 
@@ -207,6 +215,7 @@ export default class FileAttachmentDocument extends PureComponent {
             if (!this.state.didCancel && this.mounted) {
                 const prefix = Platform.OS === 'android' ? 'file:/' : '';
                 const path = `${DOCUMENTS_PATH}/${file.name}`;
+                this.setStatusBarColor('dark-content');
                 OpenFile.openDoc([{
                     url: `${prefix}${path}`,
                     fileName: file.name,
@@ -233,8 +242,10 @@ export default class FileAttachmentDocument extends PureComponent {
                                 }),
                             }]
                         );
+                        this.setStatusBarColor();
                         RNFetchBlob.fs.unlink(path);
                     }
+
                     this.setState({downloading: false, progress: 0});
                 });
             }

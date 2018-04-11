@@ -10,7 +10,6 @@ import {
     AppState,
     Image,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     StyleSheet,
     Text,
     View,
@@ -53,6 +52,7 @@ export default class VideoControls extends PureComponent {
         this.state = {
             opacity: new Animated.Value(1),
             isVisible: true,
+            isSeeking: false,
         };
     }
 
@@ -79,7 +79,12 @@ export default class VideoControls extends PureComponent {
 
     fadeInControls = (loop = true) => {
         this.setState({isVisible: true});
-        Animated.timing(this.state.opacity, {toValue: 1, duration: 250, delay: 0}).start(() => {
+        Animated.timing(this.state.opacity, {
+            toValue: 1,
+            duration: 250,
+            delay: 0,
+            useNativeDriver: true,
+        }).start(() => {
             if (loop) {
                 this.fadeOutControls(2000);
             }
@@ -87,7 +92,12 @@ export default class VideoControls extends PureComponent {
     };
 
     fadeOutControls = (delay = 0) => {
-        Animated.timing(this.state.opacity, {toValue: 0, duration: 250, delay}).start((result) => {
+        Animated.timing(this.state.opacity, {
+            toValue: 0,
+            duration: 250,
+            delay,
+            useNativeDriver: true,
+        }).start((result) => {
             if (result.finished) {
                 this.setState({isVisible: false});
             }
@@ -136,10 +146,6 @@ export default class VideoControls extends PureComponent {
     };
 
     renderControls() {
-        if (!this.state.isVisible) {
-            return null;
-        }
-
         return (
             <View style={styles.container}>
                 <View style={styles.controlsRow}/>
@@ -160,8 +166,9 @@ export default class VideoControls extends PureComponent {
                         </View>
                         <Slider
                             style={styles.progressSlider}
-                            onSlidingComplete={this.seekVideo}
-                            onSlidingStart={this.seekStart}
+                            onSlidingComplete={this.seekVideoEnd}
+                            onValueChange={this.seekVideo}
+                            onSlidingStart={this.seekVideoStart}
                             maximumValue={Math.floor(this.props.duration)}
                             value={Math.floor(this.props.progress)}
                             trackStyle={styles.track}
@@ -180,16 +187,27 @@ export default class VideoControls extends PureComponent {
         );
     }
 
-    seekStart = () => {
-        if (this.props.onSeeking) {
-            this.props.onSeeking(false);
-        }
+    seekVideo = (value) => {
+        this.setState({isSeeking: true});
+        this.props.onSeek(value);
     };
 
-    seekVideo = (value) => {
+    seekVideoEnd = (value) => {
+        this.setState({isSeeking: false});
+        if (this.props.playerState === PLAYER_STATE.PLAYING) {
+            this.toggleControls();
+        }
         this.props.onSeek(value);
         if (this.props.onSeeking) {
             this.props.onSeeking(true);
+        }
+    };
+
+    seekVideoStart = () => {
+        this.setState({isSeeking: true});
+        this.cancelAnimation();
+        if (this.props.onSeeking) {
+            this.props.onSeeking(false);
         }
     };
 
@@ -231,12 +249,14 @@ export default class VideoControls extends PureComponent {
     };
 
     render() {
+        if (!this.state.isVisible) {
+            return null;
+        }
+
         return (
-            <TouchableWithoutFeedback onPress={this.toggleControls}>
-                <Animated.View style={[styles.container, {opacity: this.state.opacity}]}>
-                    {this.renderControls()}
-                </Animated.View>
-            </TouchableWithoutFeedback>
+            <Animated.View style={[styles.container, {opacity: this.state.opacity}]}>
+                {this.renderControls()}
+            </Animated.View>
         );
     }
 }
@@ -249,7 +269,7 @@ const styles = StyleSheet.create({
         paddingVertical: 13,
         flexDirection: 'column',
         alignItems: 'center',
-        backgroundColor: 'rgba(45, 59, 62, 0.4)',
+        backgroundColor: 'transparent',
         justifyContent: 'space-between',
         top: 0,
         left: 0,
