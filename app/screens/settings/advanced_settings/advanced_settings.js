@@ -215,7 +215,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             flex: 1,
             fontSize: 14,
-            lineHeight: 43,
+            ...Platform.select({
+                android: {
+                    lineHeight: 68,
+                },
+                ios: {
+                    lineHeight: 43,
+                },
+            }),
         },
     };
 });
