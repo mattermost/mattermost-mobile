@@ -13,10 +13,11 @@ import {getProfilesInChannel, searchProfiles} from 'mattermost-redux/actions/use
 import ChannelMembers from './channel_members';
 
 function mapStateToProps(state) {
+    const currentChannelMembers = getProfilesInCurrentChannel(state).filter((member) => member.delete_at === 0);
     return {
         theme: getTheme(state),
         currentChannel: getCurrentChannel(state) || {},
-        currentChannelMembers: getProfilesInCurrentChannel(state),
+        currentChannelMembers,
         currentUserId: state.entities.users.currentUserId,
         requestStatus: state.requests.users.getProfilesInChannel.status,
         searchRequestStatus: state.requests.users.searchProfiles.status,
