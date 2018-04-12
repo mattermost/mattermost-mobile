@@ -188,7 +188,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         item: {
             alignItems: 'center',
-            height: 44,
             flex: 1,
             flexDirection: 'row',
             paddingLeft: 16,
@@ -199,11 +198,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             color: changeOpacity(theme.sidebarText, 0.4),
-            flex: 1,
             fontSize: 14,
             fontWeight: '600',
-            lineHeight: 16,
             paddingRight: 40,
+            height: '100%',
+            width: '100%',
+            textAlignVertical: 'center',
+            lineHeight: 44,
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
