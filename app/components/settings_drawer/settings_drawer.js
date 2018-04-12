@@ -201,6 +201,16 @@ export default class SettingsDrawer extends PureComponent {
         );
     });
 
+    goToMentions = preventDoubleTap(() => {
+        const {intl} = this.context;
+
+        this.closeSettingsDrawer();
+        this.openModal(
+            'RecentMentions',
+            intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
+        );
+    });
+
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
 
@@ -292,6 +302,15 @@ export default class SettingsDrawer extends PureComponent {
                         </View>
                         <View style={style.separator}/>
                         <View style={style.block}>
+                            <DrawerItem
+                                defaultMessage='Recent Mentions'
+                                i18nId='search_header.title2'
+                                iconName='ios-at-outline'
+                                iconType='ion'
+                                onPress={this.goToMentions}
+                                separator={true}
+                                theme={theme}
+                            />
                             <DrawerItem
                                 defaultMessage='Flagged Posts'
                                 i18nId='search_header.title3'

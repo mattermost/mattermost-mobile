@@ -2200,6 +2200,8 @@
   "mobile.post_textbox.uploadFailedDesc": "Some attachments failed to upload to the server, Are you sure you want to post the message?",
   "mobile.post_textbox.uploadFailedTitle": "Attachment failure",
   "mobile.posts_view.moreMsg": "More New Messages Above",
+  "mobile.recent_mentions.empty_title": "No Recent Mentions",
+  "mobile.recent_mentions.empty_description": "Messages containing your username and other words that trigger mentions will appear here.",
   "mobile.rename_channel.display_name_maxLength": "Channel name must be less than {maxLength, number} characters",
   "mobile.rename_channel.display_name_minLength": "Channel name must be {minLength, number} or more characters",
   "mobile.rename_channel.display_name_required": "Channel name is required",
