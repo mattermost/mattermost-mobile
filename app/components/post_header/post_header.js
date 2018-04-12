@@ -266,7 +266,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            height: 30,
+            height: 35,
             minWidth: 40,
             paddingVertical: 10,
         },
