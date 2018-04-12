@@ -21,6 +21,7 @@ import DisplaySettings from 'app/screens/settings/display_settings';
 import EditChannel from 'app/screens/edit_channel';
 import EditPost from 'app/screens/edit_post';
 import EditProfile from 'app/screens/edit_profile';
+import FlaggedPosts from 'app/screens/flagged_posts';
 import ImagePreview from 'app/screens/image_preview';
 import TextPreview from 'app/screens/text_preview';
 import Login from 'app/screens/login';
@@ -81,6 +82,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(EditChannel), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(EditProfile), store, Provider);
+    Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(FlaggedPosts), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(ImagePreview), store, Provider);
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(TextPreview), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(Login), store, Provider);

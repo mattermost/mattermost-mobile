@@ -2112,6 +2112,8 @@
   "mobile.file_upload.max_warning": "Uploads limited to 5 files maximum.",
   "mobile.file_upload.more": "More",
   "mobile.file_upload.video": "Video Library",
+  "mobile.flagged_posts.empty_title": "No Flagged Posts",
+  "mobile.flagged_posts.empty_description": "Flags are a way to mark messages for follow up. Your flags are personal, and cannot be seen by other users.",
   "mobile.help.title": "Help",
   "mobile.image_preview.deleted_post_message": "This post and its files have been deleted. The previewer will now be closed.",
   "mobile.image_preview.deleted_post_title": "Post Deleted",
