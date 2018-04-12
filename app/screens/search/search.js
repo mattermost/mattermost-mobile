@@ -19,6 +19,8 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
+import {DATE_LINE} from 'app/selectors/post_list';
+
 import Autocomplete from 'app/components/autocomplete';
 import DateHeader from 'app/components/post_list/date_header';
 import FormattedText from 'app/components/formatted_text';
@@ -27,6 +29,8 @@ import PostListRetry from 'app/components/post_list_retry';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import DateHeader from 'app/components/post_list/date_header';
+
 import mattermostManaged from 'app/mattermost_managed';
 import {DATE_LINE} from 'app/selectors/post_list';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -39,6 +43,7 @@ const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
 const MODIFIER_LABEL_HEIGHT = 58;
+const DATE_HEADER_HEIGHT = 28;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
 
@@ -63,6 +68,8 @@ export default class Search extends PureComponent {
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
+
+    itemMeasurements = {};
 
     static defaultProps = {
         postIds: [],
@@ -328,6 +335,11 @@ export default class Search extends PureComponent {
             separator = this.renderPostSeparator();
         }
 
+        if (item.indexOf(DATE_LINE) === 0) {
+            const date = item.substring(DATE_LINE.length);
+            return this.renderDateHeader(new Date(date), index);
+        }
+
         return (
             <View>
                 <ChannelDisplayName postId={item}/>
@@ -341,6 +353,16 @@ export default class Search extends PureComponent {
                 />
                 {separator}
             </View>
+        );
+    };
+
+    renderDateHeader = (date, index) => {
+        this.itemMeasurements[index] = DATE_HEADER_HEIGHT;
+        return (
+            <DateHeader
+                date={date}
+                index={index}
+            />
         );
     };
 
