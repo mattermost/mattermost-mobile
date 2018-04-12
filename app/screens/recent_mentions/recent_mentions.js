@@ -14,6 +14,7 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import ChannelLoader from 'app/components/channel_loader';
 import DateHeader from 'app/components/post_list/date_header';
+import FailedNetworkAction from 'app/components/failed_network_action';
 import NoResults from 'app/components/no_results';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
@@ -34,9 +35,10 @@ export default class RecentMentions extends PureComponent {
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
+        didFail: PropTypes.bool,
+        isLoading: PropTypes.bool,
         navigator: PropTypes.object,
         postIds: PropTypes.array,
-        isLoading: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     };
 
@@ -243,13 +245,24 @@ export default class RecentMentions extends PureComponent {
         }
     };
 
+    retry = () => {
+        this.props.actions.getRecentMentions();
+    };
+
     render() {
-        const {isLoading, postIds, theme} = this.props;
+        const {didFail, isLoading, postIds, theme} = this.props;
 
         const style = getStyleFromTheme(theme);
 
         let component;
-        if (isLoading) {
+        if (didFail) {
+            component = (
+                <FailedNetworkAction
+                    onRetry={this.retry}
+                    theme={theme}
+                />
+            );
+        } else if (isLoading) {
             component = (
                 <ChannelLoader channelIsLoading={true}/>
             );
