@@ -45,7 +45,7 @@ export default class ProgressiveImage extends PureComponent {
 
     componentDidUpdate(prevProps, prevState) {
         const {intensity, thumb, uri} = this.state;
-        if (uri && thumb && uri !== thumb && prevState.uri === thumb) {
+        if (uri && thumb && uri !== thumb && prevState.uri !== uri) {
             Animated.timing(intensity, {
                 duration: 300,
                 toValue: 0,
@@ -94,7 +94,9 @@ export default class ProgressiveImage extends PureComponent {
             }
 
             this.setState({thumb: path}, () => {
-                ImageCacheManager.cache(filename, imageUri, this.setImage);
+                setTimeout(() => {
+                    ImageCacheManager.cache(filename, imageUri, this.setImage);
+                }, 300);
             });
         }
     };
@@ -109,7 +111,7 @@ export default class ProgressiveImage extends PureComponent {
         const isImageReady = uri && uri !== thumb;
         const opacity = intensity.interpolate({
             inputRange: [50, 100],
-            outputRange: [0.5, 0],
+            outputRange: [0.5, 1],
         });
 
         let DefaultComponent;
