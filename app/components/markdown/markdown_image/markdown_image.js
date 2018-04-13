@@ -12,13 +12,15 @@ import {
     StyleSheet,
     Text,
     TouchableHighlight,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
-
+import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import {normalizeProtocol} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
@@ -30,6 +32,7 @@ export default class MarkdownImage extends React.Component {
     static propTypes = {
         children: PropTypes.node,
         linkDestination: PropTypes.string,
+        navigator: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
         serverURL: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
@@ -45,16 +48,17 @@ export default class MarkdownImage extends React.Component {
 
         this.state = {
             width: 0,
-            height: 0,
+            height: MAX_IMAGE_HEIGHT,
             maxWidth: Math.MAX_INT,
             failed: false,
+            uri: null,
         };
 
         this.mounted = false;
     }
 
     componentWillMount() {
-        this.loadImageSize(this.getSource());
+        ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
     }
 
     componentDidMount() {
@@ -70,13 +74,33 @@ export default class MarkdownImage extends React.Component {
             });
 
             // getSource also depends on serverURL, but that shouldn't change while this is mounted
-            this.loadImageSize(this.getSource(nextProps));
+            ImageCacheManager.cache(null, this.getSource(nextProps), this.setImageUrl);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
     }
+
+    getItemMeasures = (index, cb) => {
+        const activeComponent = this.refs.item;
+
+        if (!activeComponent) {
+            cb(null);
+            return;
+        }
+
+        activeComponent.measure((rx, ry, width, height, x, y) => {
+            cb({
+                origin: {x, y, width, height},
+            });
+        });
+    };
+
+    getPreviewProps = () => {
+        const previewComponent = this.refs.image;
+        return previewComponent ? {...previewComponent.props} : {};
+    };
 
     getSource = (props = this.props) => {
         let source = props.source;
@@ -88,8 +112,20 @@ export default class MarkdownImage extends React.Component {
         return source;
     };
 
-    loadImageSize = (source) => {
-        Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
+    goToImagePreview = (passProps) => {
+        this.props.navigator.showModal({
+            screen: 'ImagePreview',
+            title: '',
+            animationType: 'none',
+            passProps,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+        });
     };
 
     handleSizeReceived = (width, height) => {
@@ -153,8 +189,61 @@ export default class MarkdownImage extends React.Component {
         Clipboard.setString(this.props.linkDestination);
     };
 
+    handlePreviewImage = () => {
+        const component = this.refs.item;
+
+        if (!component) {
+            return;
+        }
+
+        component.measure((rx, ry, width, height, x, y) => {
+            const {uri} = this.state;
+            const link = this.getSource();
+            let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+            const extension = filename.split('.').pop();
+
+            if (extension === filename) {
+                const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+                filename = `${filename}${ext}`;
+            }
+
+            const files = [{
+                caption: filename,
+                source: {uri},
+                data: {
+                    localPath: uri,
+                },
+            }];
+
+            this.goToImagePreview({
+                index: 0,
+                origin: {x, y, width, height},
+                target: {x: 0, y: 0, opacity: 1},
+                files,
+                getItemMeasures: this.getItemMeasures,
+                getPreviewProps: this.getPreviewProps,
+            });
+        });
+    };
+
+    loadImageSize = (source) => {
+        Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
+    };
+
+    setImageUrl = (imageURL) => {
+        let uri = imageURL;
+
+        if (Platform.OS === 'android') {
+            uri = `file://${imageURL}`;
+        }
+
+        this.setState({uri});
+        this.loadImageSize(uri);
+    };
+
     render() {
         let image = null;
+        const {uri} = this.state;
 
         if (this.state.width && this.state.height && this.state.maxWidth) {
             let {width, height} = this.state;
@@ -190,12 +279,24 @@ export default class MarkdownImage extends React.Component {
                 }
 
                 // React Native complains if we try to pass resizeMode as a style
+                let source = null;
+                if (uri) {
+                    source = {uri};
+                }
+
                 image = (
-                    <Image
-                        source={{uri: this.getSource()}}
-                        resizeMode='contain'
-                        style={[{width, height}, style.image]}
-                    />
+                    <TouchableWithoutFeedback
+                        onLongPress={this.handleLinkLongPress}
+                        onPress={this.handlePreviewImage}
+                        style={{width, height}}
+                    >
+                        <ProgressiveImage
+                            ref='image'
+                            defaultSource={source}
+                            resizeMode='contain'
+                            style={[{width, height}, style.image]}
+                        />
+                    </TouchableWithoutFeedback>
                 );
             }
         } else if (this.state.failed) {
@@ -224,7 +325,8 @@ export default class MarkdownImage extends React.Component {
 
         return (
             <View
-                style={style.container}
+                ref='item'
+                style={[style.container, {height: Math.min(this.state.height, MAX_IMAGE_HEIGHT)}]}
                 onLayout={this.handleLayout}
             >
                 {image}

@@ -6,12 +6,13 @@ import PropTypes from 'prop-types';
 import {Image, Platform, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import {Client4} from 'mattermost-redux/client';
+
 import UserStatus from 'app/components/user_status';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
-
-import {Client4} from 'mattermost-redux/client';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
@@ -42,24 +43,34 @@ export default class ProfilePicture extends PureComponent {
         edit: false,
     };
 
+    state = {
+        pictureUrl: null,
+    };
+
+    componentWillMount() {
+        const {edit, imageUri, user} = this.props;
+
+        if (edit && imageUri) {
+            this.setImageURL(imageUri);
+        } else {
+            ImageCacheManager.cache('', Client4.getProfilePictureUrl(user.id, user.last_picture_update), this.setImageURL);
+        }
+    }
+
     componentDidMount() {
         if (!this.props.status && this.props.user) {
             this.props.actions.getStatusForId(this.props.user.id);
         }
     }
 
+    setImageURL = (pictureUrl) => {
+        this.setState({pictureUrl});
+    };
+
     render() {
-        const {edit, imageUri, showStatus, theme} = this.props;
+        const {edit, showStatus, theme} = this.props;
+        const {pictureUrl} = this.state;
         const style = getStyleSheet(theme);
-
-        let pictureUrl;
-        if (this.props.user) {
-            pictureUrl = Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update);
-        }
-
-        if (edit && imageUri) {
-            pictureUrl = imageUri;
-        }
 
         let statusIcon;
         let statusStyle;
@@ -86,12 +97,24 @@ export default class ProfilePicture extends PureComponent {
             );
         }
 
+        let source = null;
+        if (pictureUrl) {
+            let prefix = '';
+            if (Platform.OS === 'android') {
+                prefix = 'file://';
+            }
+
+            source = {
+                uri: `${prefix}${pictureUrl}`,
+            };
+        }
+
         return (
             <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
                 <Image
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
-                    source={{uri: pictureUrl}}
+                    source={source}
                     defaultSource={placeholder}
                 />
                 {(showStatus || edit) &&

@@ -5,11 +5,12 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     View,
-    Image,
     StyleSheet,
 } from 'react-native';
 
 import * as Utils from 'mattermost-redux/utils/file_utils';
+
+import ProgressiveImage from 'app/components/progressive_image';
 
 import audioIcon from 'assets/images/icons/audio.png';
 import codeIcon from 'assets/images/icons/code.png';
@@ -40,6 +41,8 @@ export default class FileAttachmentIcon extends PureComponent {
         file: PropTypes.object.isRequired,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
+        onCaptureRef: PropTypes.func,
+        onCapturePreviewRef: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
     };
@@ -56,16 +59,35 @@ export default class FileAttachmentIcon extends PureComponent {
         return ICON_PATH_FROM_FILE_TYPE[fileType] || ICON_PATH_FROM_FILE_TYPE.other;
     }
 
+    handleCaptureRef = (ref) => {
+        const {onCaptureRef} = this.props;
+
+        if (onCaptureRef) {
+            onCaptureRef(ref);
+        }
+    };
+
+    handleCapturePreviewRef = (ref) => {
+        const {onCapturePreviewRef} = this.props;
+
+        if (onCapturePreviewRef) {
+            onCapturePreviewRef(ref);
+        }
+    };
+
     render() {
         const {file, iconHeight, iconWidth, wrapperHeight, wrapperWidth} = this.props;
         const source = this.getFileIconPath(file);
 
         return (
-            <View style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}>
-                <Image
+            <View
+                ref={this.handleCaptureRef}
+                style={[styles.fileIconWrapper, {height: wrapperHeight, width: wrapperWidth}]}
+            >
+                <ProgressiveImage
+                    ref={this.handleCapturePreviewRef}
                     style={[styles.icon, {height: iconHeight, width: iconWidth}]}
-                    source={source}
-                    defaultSource={genericIcon}
+                    defaultSource={source}
                 />
             </View>
         );

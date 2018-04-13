@@ -1,12 +1,36 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {Platform} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
+
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+
 import {DeviceTypes} from 'app/constants/';
 
-const {DOCUMENTS_PATH, VIDEOS_PATH} = DeviceTypes;
+const {DOCUMENTS_PATH, IMAGES_PATH, VIDEOS_PATH} = DeviceTypes;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
+
+export const SUPPORTED_DOCS_FORMAT = [
+    'application/json',
+    'application/msword',
+    'application/pdf',
+    'application/rtf',
+    'application/vnd.ms-excel',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/x-x509-ca-cert',
+    'application/xml',
+    'text/csv',
+    'text/plain',
+];
+
+const SUPPORTED_VIDEO_FORMAT = Platform.select({
+    ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
+    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
+});
 
 export function generateId() {
     // Implementation taken from http://stackoverflow.com/a/2117523
@@ -30,12 +54,20 @@ export function generateId() {
 
 export async function getFileCacheSize() {
     const isDocsDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
+    const isImagesDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
     const isVideosDir = await RNFetchBlob.fs.isDir(VIDEOS_PATH);
     let size = 0;
 
     if (isDocsDir) {
         const docsStats = await RNFetchBlob.fs.lstat(DOCUMENTS_PATH);
         size = docsStats.reduce((accumulator, stat) => {
+            return accumulator + parseInt(stat.size, 10);
+        }, size);
+    }
+
+    if (isImagesDir) {
+        const imagesStats = await RNFetchBlob.fs.lstat(IMAGES_PATH);
+        size = imagesStats.reduce((accumulator, stat) => {
             return accumulator + parseInt(stat.size, 10);
         }, size);
     }
@@ -52,6 +84,7 @@ export async function getFileCacheSize() {
 
 export async function deleteFileCache() {
     await RNFetchBlob.fs.unlink(DOCUMENTS_PATH);
+    await RNFetchBlob.fs.unlink(IMAGES_PATH);
     await RNFetchBlob.fs.unlink(VIDEOS_PATH);
     return true;
 }
@@ -83,4 +116,31 @@ export const encodeHeaderURIStringToUTF8 = (string) => {
 
 export const getAllowedServerMaxFileSize = (config) => {
     return config && config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : DEFAULT_SERVER_MAX_FILE_SIZE;
+};
+
+export const isGif = (file) => {
+    let mime = file.mime_type || file.type || '';
+    if (mime && mime.includes(';')) {
+        mime = mime.split(';')[0];
+    }
+
+    return mime === 'image/gif';
+};
+
+export const isDocument = (file) => {
+    let mime = file.mime_type || file.type || '';
+    if (mime && mime.includes(';')) {
+        mime = mime.split(';')[0];
+    }
+
+    return SUPPORTED_DOCS_FORMAT.includes(mime);
+};
+
+export const isVideo = (file) => {
+    let mime = file.mime_type || file.type || '';
+    if (mime && mime.includes(';')) {
+        mime = mime.split(';')[0];
+    }
+
+    return SUPPORTED_VIDEO_FORMAT.includes(mime);
 };

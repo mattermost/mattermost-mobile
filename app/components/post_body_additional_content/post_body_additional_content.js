@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Image,
-    ImageBackground,
     Linking,
     Platform,
     StyleSheet,
@@ -17,10 +16,13 @@ import youTubeVideoId from 'youtube-video-id';
 
 import youtubePlayIcon from 'assets/images/icons/youtube-play-icon.png';
 
-import PostAttachmentOpenGraph from 'app/components/post_attachment_opengraph';
 import MessageAttachments from 'app/components/message_attachments';
+import PostAttachmentOpenGraph from 'app/components/post_attachment_opengraph';
+import ProgressiveImage from 'app/components/progressive_image';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import {isImageLink, isYoutubeLink} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
@@ -56,6 +58,8 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.state = {
             linkLoadError: false,
             linkLoaded: false,
+            width: 0,
+            height: 0,
         };
 
         this.mounted = false;
@@ -63,7 +67,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     componentWillMount() {
         this.mounted = true;
-        this.getImageSize();
+        this.load(this.props);
     }
 
     componentWillUnmount() {
@@ -71,15 +75,28 @@ export default class PostBodyAdditionalContent extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.message !== this.props.message) {
-            this.setState({
-                linkLoadError: false,
-                linkLoaded: false,
-            }, () => {
-                this.getImageSize();
-            });
+        if (this.props.link !== nextProps.link) {
+            this.load(nextProps);
         }
     }
+
+    load = (props) => {
+        const {link} = props;
+        if (link) {
+            let imageUrl;
+            if (isImageLink(link)) {
+                imageUrl = link;
+            } else if (isYoutubeLink(link)) {
+                const videoId = youTubeVideoId(link);
+                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
+            }
+
+            if (imageUrl) {
+                ImageCacheManager.cache(null, imageUrl, this.getImageSize);
+            }
+        }
+    };
 
     calculateDimensions = (width, height) => {
         const {deviceHeight, deviceWidth} = this.props;
@@ -108,7 +125,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             return null;
         }
 
-        const {isReplyPost, link, openGraphData, showLinkPreviews, theme} = this.props;
+        const {isReplyPost, link, navigator, openGraphData, showLinkPreviews, theme} = this.props;
         const attachments = this.getMessageAttachment();
         if (attachments) {
             return attachments;
@@ -119,6 +136,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 <PostAttachmentOpenGraph
                     isReplyPost={isReplyPost}
                     link={link}
+                    navigator={navigator}
                     openGraphData={openGraphData}
                     theme={theme}
                 />
@@ -128,35 +146,105 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return null;
     };
 
-    getImageSize = () => {
+    generateToggleableEmbed = (isImage, isYouTube) => {
         const {link} = this.props;
-        const {linkLoaded} = this.state;
+        const {width, height, uri} = this.state;
+        const imgHeight = height || MAX_IMAGE_HEIGHT;
 
         if (link) {
-            let imageUrl;
-            if (isImageLink(link)) {
-                imageUrl = link;
-            } else if (isYoutubeLink(link)) {
+            if (isYouTube) {
                 const videoId = youTubeVideoId(link);
-                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
+
+                return (
+                    <TouchableWithoutFeedback
+                        style={[styles.imageContainer, {height: imgHeight}]}
+                        {...this.responder}
+                        onPress={this.playYouTubeVideo}
+                    >
+                        <ProgressiveImage
+                            isBackgroundImage={true}
+                            imageUri={imgUrl}
+                            style={[styles.image, {width, height: imgHeight}]}
+                            thumbnailUri={thumbUrl}
+                            resizeMode='cover'
+                            onError={this.handleLinkLoadError}
+                        >
+                            <TouchableWithoutFeedback onPress={this.playYouTubeVideo}>
+                                <Image
+                                    source={youtubePlayIcon}
+                                    onPress={this.playYouTubeVideo}
+                                />
+                            </TouchableWithoutFeedback>
+                        </ProgressiveImage>
+                    </TouchableWithoutFeedback>
+                );
             }
 
-            if (imageUrl && !linkLoaded) {
-                Image.getSize(imageUrl, (width, height) => {
-                    if (!this.mounted) {
-                        return;
-                    }
-
-                    if (!width && !height) {
-                        this.setState({linkLoadError: true});
-                        return;
-                    }
-
-                    const dimensions = this.calculateDimensions(width, height);
-                    this.setState({...dimensions, linkLoaded: true});
-                }, () => null);
+            if (isImage) {
+                return (
+                    <TouchableWithoutFeedback
+                        onPress={this.handlePreviewImage}
+                        style={[styles.imageContainer, {height: imgHeight}]}
+                        {...this.responder}
+                    >
+                        <View ref='item'>
+                            <ProgressiveImage
+                                ref='image'
+                                style={[styles.image, {width, height: imgHeight}]}
+                                defaultSource={{uri}}
+                                resizeMode='cover'
+                                onError={this.handleLinkLoadError}
+                            />
+                        </View>
+                    </TouchableWithoutFeedback>
+                );
             }
         }
+
+        return null;
+    };
+
+    getImageSize = (path) => {
+        const {link} = this.props;
+
+        if (link && path) {
+            let prefix = '';
+            if (Platform.OS === 'android') {
+                prefix = 'file://';
+            }
+
+            const uri = `${prefix}${path}`;
+            Image.getSize(uri, (width, height) => {
+                if (!this.mounted) {
+                    return;
+                }
+
+                if (!width && !height) {
+                    this.setState({linkLoadError: true});
+                    return;
+                }
+
+                const dimensions = this.calculateDimensions(width, height);
+                this.setState({...dimensions, linkLoaded: true, uri});
+            }, () => this.setState({linkLoadError: true}));
+        }
+    };
+
+    getItemMeasures = (index, cb) => {
+        const activeComponent = this.refs.item;
+
+        if (!activeComponent) {
+            cb(null);
+            return;
+        }
+
+        activeComponent.measure((rx, ry, width, height, x, y) => {
+            cb({
+                origin: {x, y, width, height},
+            });
+        });
     };
 
     getMessageAttachment = () => {
@@ -191,54 +279,59 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return null;
     };
 
-    generateToggleableEmbed = (isImage, isYouTube) => {
-        const {link} = this.props;
-        const {width, height} = this.state;
-        const imgHeight = height || MAX_IMAGE_HEIGHT;
+    getPreviewProps = () => {
+        const previewComponent = this.refs.image;
+        return previewComponent ? {...previewComponent.props} : {};
+    };
 
-        if (link) {
-            if (isYouTube) {
-                const videoId = youTubeVideoId(link);
-                const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    goToImagePreview = (passProps) => {
+        this.props.navigator.showModal({
+            screen: 'ImagePreview',
+            title: '',
+            animationType: 'none',
+            passProps,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+        });
+    };
 
-                return (
-                    <TouchableWithoutFeedback
-                        style={[styles.imageContainer, {height: imgHeight}]}
-                        {...this.responder}
-                        onPress={this.playYouTubeVideo}
-                    >
-                        <ImageBackground
-                            style={[styles.image, {width, height: imgHeight}]}
-                            source={{uri: imgUrl}}
-                            resizeMode={'cover'}
-                            onError={this.handleLinkLoadError}
-                        >
-                            <TouchableWithoutFeedback onPress={this.playYouTubeVideo}>
-                                <Image
-                                    source={youtubePlayIcon}
-                                    onPress={this.playYouTubeVideo}
-                                />
-                            </TouchableWithoutFeedback>
-                        </ImageBackground>
-                    </TouchableWithoutFeedback>
-                );
-            }
+    handleLinkLoadError = () => {
+        this.setState({linkLoadError: true});
+    };
 
-            if (isImage) {
-                return (
-                    <View style={[styles.imageContainer, {height: imgHeight}]}>
-                        <Image
-                            style={[styles.image, {width, height: imgHeight}]}
-                            source={{uri: link}}
-                            resizeMode={'cover'}
-                            onError={this.handleLinkLoadError}
-                        />
-                    </View>
-                );
-            }
+    handlePreviewImage = () => {
+        const component = this.refs.item;
+
+        if (!component) {
+            return;
         }
 
-        return null;
+        component.measure((rx, ry, width, height, x, y) => {
+            const {link} = this.props;
+            const {uri} = this.state;
+            const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+            const files = [{
+                caption: filename,
+                source: {uri},
+                data: {
+                    localPath: uri,
+                },
+            }];
+
+            this.goToImagePreview({
+                index: 0,
+                origin: {x, y, width, height},
+                target: {x: 0, y: 0, opacity: 1},
+                files,
+                getItemMeasures: this.getItemMeasures,
+                getPreviewProps: this.getPreviewProps,
+            });
+        });
     };
 
     playYouTubeVideo = () => {
@@ -260,10 +353,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 Linking.openURL(link);
             }
         }
-    };
-
-    handleLinkLoadError = () => {
-        this.setState({linkLoadError: true});
     };
 
     render() {

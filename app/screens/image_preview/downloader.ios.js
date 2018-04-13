@@ -261,49 +261,65 @@ export default class Downloader extends PureComponent {
 
     startDownload = async () => {
         const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
+        const {data} = file;
+        let downloadFile = true;
 
         try {
             if (this.state.didCancel) {
                 this.setState({didCancel: false});
             }
 
-            const imageUrl = Client4.getFileUrl(file.id);
-            const options = {
-                session: file.id,
-                timeout: 10000,
-                indicator: true,
-                overwrite: true,
-            };
-
-            if (downloadPath && prompt) {
-                const isDir = await RNFetchBlob.fs.isDir(downloadPath);
-                if (!isDir) {
-                    try {
-                        await RNFetchBlob.fs.mkdir(downloadPath);
-                    } catch (error) {
-                        this.showDownloadFailedAlert();
-                        return;
-                    }
-                }
-
-                options.path = `${downloadPath}/${file.id}.${file.extension}`;
-            } else {
-                options.fileCache = true;
-                options.appendExt = file.extension;
+            let path;
+            let res;
+            if (data.localPath) {
+                path = data.localPath;
+                downloadFile = false;
+                this.setState({
+                    progress: 100,
+                    started: true,
+                });
             }
 
-            this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl);
-            this.downloadTask.progress((received, total) => {
-                const progress = (received / total) * 100;
-                if (this.mounted) {
-                    this.setState({
-                        progress,
-                        started: true,
-                    });
+            if (downloadFile) {
+                const imageUrl = Client4.getFileUrl(data.id);
+                const options = {
+                    session: data.id,
+                    timeout: 10000,
+                    indicator: true,
+                    overwrite: true,
+                };
+
+                if (downloadPath && prompt) {
+                    const isDir = await RNFetchBlob.fs.isDir(downloadPath);
+                    if (!isDir) {
+                        try {
+                            await RNFetchBlob.fs.mkdir(downloadPath);
+                        } catch (error) {
+                            this.showDownloadFailedAlert();
+                            return;
+                        }
+                    }
+
+                    options.path = `${downloadPath}/${file.caption}`;
+                } else {
+                    options.fileCache = true;
+                    options.appendExt = data.extension;
                 }
-            });
-            const res = await this.downloadTask;
-            let path = res.path();
+
+                this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl);
+                this.downloadTask.progress((received, total) => {
+                    const progress = (received / total) * 100;
+                    if (this.mounted) {
+                        this.setState({
+                            progress,
+                            started: true,
+                        });
+                    }
+                });
+
+                res = await this.downloadTask;
+                path = res.path();
+            }
 
             if (saveToCameraRoll) {
                 path = await CameraRoll.saveToCameraRoll(path, 'photo');
@@ -328,9 +344,10 @@ export default class Downloader extends PureComponent {
                 });
             }
 
-            if (saveToCameraRoll) {
+            if (saveToCameraRoll && res) {
                 res.flush(); // remove the temp file
             }
+
             this.downloadTask = null;
         } catch (error) {
             // cancellation throws so we need to catch

@@ -46,6 +46,7 @@ export default makeStyleSheetFromTheme((theme) => {
             height: 1,
         },
         arrowContainer: {
+            alignItems: 'center',
             justifyContent: 'center',
             paddingRight: 15,
         },

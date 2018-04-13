@@ -7,13 +7,11 @@ import {connect} from 'react-redux';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {handleRemoveFile, retryFileUpload, uploadComplete, uploadFailed} from 'app/actions/views/file_upload';
-import {addFileToFetchCache} from 'app/actions/views/file_preview';
 
 import FileUploadItem from './file_upload_item';
 
 function mapStateToProps(state) {
     return {
-        fetchCache: state.views.fetchCache,
         theme: getTheme(state),
     };
 }
@@ -21,7 +19,6 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            addFileToFetchCache,
             handleRemoveFile,
             retryFileUpload,
             uploadComplete,

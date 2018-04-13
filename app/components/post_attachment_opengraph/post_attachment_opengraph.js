@@ -7,11 +7,15 @@ import {
     Dimensions,
     Image,
     Linking,
+    Platform,
     Text,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
+import ProgressiveImage from 'app/components/progressive_image';
+import ImageCacheManager from 'app/utils/image_cache_manager';
 import {getNearestPoint} from 'app/utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -24,6 +28,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }).isRequired,
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
+        navigator: PropTypes.object.isRequired,
         openGraphData: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
@@ -32,7 +37,8 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         super(props);
 
         this.state = {
-            imageLoaded: false,
+            hasImage: false,
+            imageUrl: null,
         };
     }
 
@@ -47,7 +53,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.link !== this.props.link) {
-            this.setState({imageLoaded: false});
+            this.setState({hasImage: false});
             this.fetchData(nextProps.link, nextProps.openGraphData);
         }
 
@@ -96,37 +102,120 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             width: Dimensions.get('window').width - 88,
             height: MAX_IMAGE_HEIGHT,
         };
+
         const bestImage = getNearestPoint(bestDimensions, data.images, 'width', 'height');
         const imageUrl = bestImage.secure_url || bestImage.url;
 
+        this.setState({
+            hasImage: true,
+            ...bestDimensions,
+            openGraphImageUrl: imageUrl,
+        });
+
         if (imageUrl) {
-            this.getImageSize(imageUrl);
+            ImageCacheManager.cache(null, imageUrl, this.getImageSize);
         }
     }
 
     getImageSize = (imageUrl) => {
-        if (!this.state.imageLoaded) {
-            Image.getSize(imageUrl, (width, height) => {
-                const dimensions = this.calculateLargeImageDimensions(width, height);
-
-                if (this.mounted) {
-                    this.setState({
-                        ...dimensions,
-                        imageLoaded: true,
-                        imageUrl,
-                    });
-                }
-            }, () => null);
+        let prefix = '';
+        if (Platform.OS === 'android') {
+            prefix = 'file://';
         }
+
+        const uri = `${prefix}${imageUrl}`;
+
+        Image.getSize(uri, (width, height) => {
+            const dimensions = this.calculateLargeImageDimensions(width, height);
+
+            if (this.mounted) {
+                this.setState({
+                    ...dimensions,
+                    imageUrl: uri,
+                });
+            }
+        }, () => null);
+    };
+
+    getItemMeasures = (index, cb) => {
+        const activeComponent = this.refs.item;
+
+        if (!activeComponent) {
+            cb(null);
+            return;
+        }
+
+        activeComponent.measure((rx, ry, width, height, x, y) => {
+            cb({
+                origin: {x, y, width, height},
+            });
+        });
+    };
+
+    getPreviewProps = () => {
+        const previewComponent = this.refs.image;
+        return previewComponent ? {...previewComponent.props} : {};
+    };
+
+    goToImagePreview = (passProps) => {
+        this.props.navigator.showModal({
+            screen: 'ImagePreview',
+            title: '',
+            animationType: 'none',
+            passProps,
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+                modalPresentationStyle: 'overCurrentContext',
+            },
+        });
     };
 
     goToLink = () => {
         Linking.openURL(this.props.link);
     };
 
+    handlePreviewImage = () => {
+        const component = this.refs.item;
+
+        if (!component) {
+            return;
+        }
+
+        component.measure((rx, ry, width, height, x, y) => {
+            const {imageUrl: uri, openGraphImageUrl: link} = this.state;
+            let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+            const extension = filename.split('.').pop();
+
+            if (extension === filename) {
+                const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+                filename = `${filename}${ext}`;
+            }
+
+            const files = [{
+                caption: filename,
+                source: {uri},
+                data: {
+                    localPath: uri,
+                },
+            }];
+
+            this.goToImagePreview({
+                index: 0,
+                origin: {x, y, width, height},
+                target: {x: 0, y: 0, opacity: 1},
+                files,
+                getItemMeasures: this.getItemMeasures,
+                getPreviewProps: this.getPreviewProps,
+            });
+        });
+    };
+
     render() {
         const {isReplyPost, openGraphData, theme} = this.props;
-        const {height, imageLoaded, imageUrl, width} = this.state;
+        const {hasImage, height, imageUrl, width} = this.state;
 
         if (!openGraphData || !openGraphData.description) {
             return null;
@@ -168,12 +257,20 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         {openGraphData.description}
                     </Text>
                 </View>
-                {imageLoaded &&
-                <Image
-                    style={[style.image, {width, height}]}
-                    source={{uri: imageUrl}}
-                    resizeMode='cover'
-                />
+                {hasImage &&
+                    <View ref='item'>
+                        <TouchableWithoutFeedback
+                            onPress={this.handlePreviewImage}
+                            style={{width, height}}
+                        >
+                            <ProgressiveImage
+                                ref='image'
+                                style={[style.image, {width, height}]}
+                                imageUri={imageUrl}
+                                resizeMode='cover'
+                            />
+                        </TouchableWithoutFeedback>
+                    </View>
                 }
             </View>
         );

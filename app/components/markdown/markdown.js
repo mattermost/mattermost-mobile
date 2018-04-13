@@ -151,6 +151,7 @@ export default class Markdown extends PureComponent {
         return (
             <MarkdownImage
                 linkDestination={linkDestination}
+                navigator={this.props.navigator}
                 onLongPress={this.props.onLongPress}
                 source={src}
                 errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
