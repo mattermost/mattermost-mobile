@@ -24,6 +24,7 @@ import DateHeader from 'app/components/post_list/date_header';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
+import PostSeparator from 'app/components/post_separator';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
@@ -325,7 +326,7 @@ export default class Search extends PureComponent {
         let separator;
         const nextPost = postIds[index + 1];
         if (nextPost && nextPost.indexOf(DATE_LINE) === -1) {
-            separator = this.renderPostSeparator();
+            separator = <PostSeparator theme={theme}/>;
         }
 
         return (
@@ -350,17 +351,6 @@ export default class Search extends PureComponent {
 
         return (
             <View style={style.separatorContainer}>
-                <View style={style.separator}/>
-            </View>
-        );
-    };
-
-    renderPostSeparator = () => {
-        const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
-
-        return (
-            <View style={[style.separatorContainer, style.postsSeparator]}>
                 <View style={style.separator}/>
             </View>
         );
