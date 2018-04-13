@@ -21,6 +21,7 @@ import DisplaySettings from 'app/screens/settings/display_settings';
 import EditChannel from 'app/screens/edit_channel';
 import EditPost from 'app/screens/edit_post';
 import EditProfile from 'app/screens/edit_profile';
+import FlaggedPosts from 'app/screens/flagged_posts';
 import ImagePreview from 'app/screens/image_preview';
 import TextPreview from 'app/screens/text_preview';
 import Login from 'app/screens/login';
@@ -37,6 +38,7 @@ import NotificationSettingsMentionsKeywords from 'app/screens/settings/notificat
 import NotificationSettingsMobile from 'app/screens/settings/notification_settings_mobile';
 import OptionsModal from 'app/screens/options_modal';
 import Permalink from 'app/screens/permalink';
+import RecentMentions from 'app/screens/recent_mentions';
 import Root from 'app/screens/root';
 import SSO from 'app/screens/sso';
 import Search from 'app/screens/search';
@@ -81,6 +83,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(EditChannel), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(EditPost), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(EditProfile), store, Provider);
+    Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(FlaggedPosts), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(ImagePreview), store, Provider);
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(TextPreview), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(Login), store, Provider);
@@ -97,6 +100,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('NotificationSettingsMobile', () => wrapWithContextProvider(NotificationSettingsMobile), store, Provider);
     Navigation.registerComponent('OptionsModal', () => wrapWithContextProvider(OptionsModal), store, Provider);
     Navigation.registerComponent('Permalink', () => wrapWithContextProvider(Permalink), store, Provider);
+    Navigation.registerComponent('RecentMentions', () => wrapWithContextProvider(RecentMentions), store, Provider);
     Navigation.registerComponent('Root', () => Root, store, Provider);
     Navigation.registerComponent('Search', () => wrapWithContextProvider(Search), store, Provider);
     Navigation.registerComponent('SelectServer', () => wrapWithContextProvider(SelectServer), store, Provider);

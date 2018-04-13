@@ -80,3 +80,44 @@ export function makePreparePostIdsForPostList() {
         }
     );
 }
+
+export function makePreparePostIdsForSearchPosts() {
+    const getMyPosts = makeGetPostsForIds();
+
+    return createIdsSelector(
+        (state, postIds) => getMyPosts(state, postIds),
+        getCurrentUser,
+        (posts, currentUser) => {
+            if (posts.length === 0 || !currentUser) {
+                return [];
+            }
+
+            const out = [];
+            let lastDate = null;
+            for (let i = 0; i < posts.length; i++) {
+                const post = posts[i];
+
+                // give chance for the post to be loaded
+                if (!post) {
+                    continue;
+                }
+
+                if (post.state === Posts.POST_DELETED && post.user_id === currentUser.id) {
+                    continue;
+                }
+
+                // Push on a date header if the last post was on a different day than the current one
+                const postDate = new Date(post.create_at);
+
+                if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
+                    out.push(DATE_LINE + postDate.toString());
+                    lastDate = postDate;
+                }
+                out.push(post.id);
+            }
+
+            // Flip it back to newest to oldest
+            return out;
+        }
+    );
+}

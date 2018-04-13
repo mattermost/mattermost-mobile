@@ -180,58 +180,45 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     goToEditProfile = preventDoubleTap(() => {
-        const {currentUser, navigator, theme} = this.props;
+        const {currentUser} = this.props;
         const {formatMessage} = this.context.intl;
 
         this.closeSettingsDrawer();
-        navigator.showModal({
-            screen: 'EditProfile',
-            title: formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: this.closeButton,
-                }],
-            },
-            passProps: {
-                currentUser,
-            },
-        });
+        this.openModal(
+            'EditProfile',
+            formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
+            {currentUser}
+        );
+    });
+
+    goToFlagged = preventDoubleTap(() => {
+        const {formatMessage} = this.context.intl;
+
+        this.closeSettingsDrawer();
+        this.openModal(
+            'FlaggedPosts',
+            formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
+        );
+    });
+
+    goToMentions = preventDoubleTap(() => {
+        const {intl} = this.context;
+
+        this.closeSettingsDrawer();
+        this.openModal(
+            'RecentMentions',
+            intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
+        );
     });
 
     goToSettings = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {navigator, theme} = this.props;
 
         this.closeSettingsDrawer();
-        navigator.showModal({
-            screen: 'Settings',
-            title: intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
-            animationType: 'slide-up',
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-                screenBackgroundColor: theme.centerChannelBg,
-            },
-            navigatorButtons: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: this.closeButton,
-                }],
-            },
-        });
+        this.openModal(
+            'Settings',
+            intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
+        );
     });
 
     logout = preventDoubleTap(() => {
@@ -239,6 +226,32 @@ export default class SettingsDrawer extends PureComponent {
         this.closeSettingsDrawer();
         InteractionManager.runAfterInteractions(logout);
     });
+
+    openModal = (screen, title, passProps) => {
+        const {navigator, theme} = this.props;
+
+        this.closeSettingsDrawer();
+        navigator.showModal({
+            screen,
+            title,
+            animationType: 'slide-up',
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            navigatorButtons: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+            passProps,
+        });
+    };
 
     renderUserStatusIcon = (userId) => {
         return (
@@ -282,10 +295,34 @@ export default class SettingsDrawer extends PureComponent {
                             <DrawerItem
                                 labelComponent={this.renderUserStatusLabel(currentUser.id)}
                                 leftComponent={this.renderUserStatusIcon(currentUser.id)}
-                                separator={true}
+                                separator={false}
                                 onPress={this.handleSetStatus}
                                 theme={theme}
                             />
+                        </View>
+                        <View style={style.separator}/>
+                        <View style={style.block}>
+                            <DrawerItem
+                                defaultMessage='Recent Mentions'
+                                i18nId='search_header.title2'
+                                iconName='ios-at-outline'
+                                iconType='ion'
+                                onPress={this.goToMentions}
+                                separator={true}
+                                theme={theme}
+                            />
+                            <DrawerItem
+                                defaultMessage='Flagged Posts'
+                                i18nId='search_header.title3'
+                                iconName='ios-flag-outline'
+                                iconType='ion'
+                                onPress={this.goToFlagged}
+                                separator={false}
+                                theme={theme}
+                            />
+                        </View>
+                        <View style={style.separator}/>
+                        <View style={style.block}>
                             <DrawerItem
                                 defaultMessage='Settings'
                                 i18nId='mobile.routes.settings'
