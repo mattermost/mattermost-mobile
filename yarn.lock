@@ -2175,7 +2175,7 @@ commonmark-react-renderer@mattermost/commonmark-react-renderer:
     pascalcase "^0.1.1"
     xss-filters "^1.2.6"
 
-"commonmark@mattermost/commonmark.js":
+commonmark@mattermost/commonmark.js:
   version "0.28.0"
   resolved "https://codeload.github.com/mattermost/commonmark.js/tar.gz/1496b5d11f245e00aae51f8fa1b2c4f12b4ddd7b"
   dependencies:
@@ -3655,9 +3655,15 @@ iconv-lite@0.4.13:
   version "0.4.13"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.13.tgz#1f88aba4ab0b1508e8312acc39345f36e992e2f2"
 
-iconv-lite@0.4.19, iconv-lite@^0.4.17, iconv-lite@~0.4.13:
+iconv-lite@0.4.19, iconv-lite@^0.4.17:
   version "0.4.19"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.19.tgz#f7468f60135f5e5dad3399c0a81be9a1603a082b"
+
+iconv-lite@~0.4.13:
+  version "0.4.21"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.21.tgz#c47f8733d02171189ebc4a400f3218d348094798"
+  dependencies:
+    safer-buffer "^2.1.0"
 
 ignore@^3.3.3:
   version "3.3.5"
@@ -4637,7 +4643,7 @@ map-visit@^1.0.0:
 
 mattermost-redux@mattermost/mattermost-redux:
   version "1.2.0"
-  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/10d691f386e1dbb7669ae549bbe81b855ef4c505"
+  resolved "https://codeload.github.com/mattermost/mattermost-redux/tar.gz/3d058a0d98095885e4712ad6c0aadf7e3913ad1c"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
@@ -6701,6 +6707,10 @@ safe-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/safe-regex/-/safe-regex-1.1.0.tgz#40a3669f3b077d1e943d44629e157dd48023bf2e"
   dependencies:
     ret "~0.1.10"
+
+safer-buffer@^2.1.0:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
 
 sane@^2.0.0:
   version "2.0.0"
