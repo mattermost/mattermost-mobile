@@ -12,23 +12,26 @@ import {getProfilesInChannel, searchProfiles} from 'mattermost-redux/actions/use
 
 import ChannelMembers from './channel_members';
 
-function mapStateToProps(state) {
-    const currentChannel = getCurrentChannel(state) || {};
-    let currentChannelMembers = [];
-    if (currentChannel) {
-        const getChannelMembers = makeGetProfilesInChannel();
-        currentChannelMembers = getChannelMembers(state, currentChannel.id, true);
-    }
+function makeMapStateToProps() {
+    const getChannelMembers = makeGetProfilesInChannel();
 
-    return {
-        theme: getTheme(state),
-        currentChannel,
-        currentChannelMembers,
-        currentUserId: state.entities.users.currentUserId,
-        requestStatus: state.requests.users.getProfilesInChannel.status,
-        searchRequestStatus: state.requests.users.searchProfiles.status,
-        removeMembersStatus: state.requests.channels.removeChannelMember.status,
-        canManageUsers: canManageChannelMembers(state),
+    return (state) => {
+        const currentChannel = getCurrentChannel(state) || {};
+        let currentChannelMembers = [];
+        if (currentChannel) {
+            currentChannelMembers = getChannelMembers(state, currentChannel.id, true);
+        }
+
+        return {
+            theme: getTheme(state),
+            currentChannel,
+            currentChannelMembers,
+            currentUserId: state.entities.users.currentUserId,
+            requestStatus: state.requests.users.getProfilesInChannel.status,
+            searchRequestStatus: state.requests.users.searchProfiles.status,
+            removeMembersStatus: state.requests.channels.removeChannelMember.status,
+            canManageUsers: canManageChannelMembers(state),
+        };
     };
 }
 
@@ -42,4 +45,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChannelMembers);
+export default connect(makeMapStateToProps, mapDispatchToProps)(ChannelMembers);
