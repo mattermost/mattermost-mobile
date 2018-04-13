@@ -411,15 +411,12 @@ class MoreDirectMessages extends PureComponent {
     };
 
     sectionKeyExtractor = (user) => {
-        // Group items alphabetically by first letter
-        return displayUsername(user, this.props.teammateNameDisplay)[0].toUpperCase();
+        // Group items alphabetically by first letter of username
+        return user.username[0].toUpperCase();
     }
 
     compareItems = (a, b) => {
-        const aName = displayUsername(a, this.props.teammateNameDisplay);
-        const bName = displayUsername(b, this.props.teammateNameDisplay);
-
-        return aName.localeCompare(bName);
+        return a.username.localeCompare(b.username);
     };
 
     renderItem = (props) => {
