@@ -6,19 +6,16 @@ import PropTypes from 'prop-types';
 import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import {RequestStatus} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
 import PaperPlane from 'app/components/paper_plane';
+import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Typing from './components/typing';
-
-const INITIAL_HEIGHT = Platform.OS === 'ios' ? 34 : 36;
-const MAX_CONTENT_HEIGHT = 100;
-const MAX_FILE_COUNT = 5;
-const IS_REACTION_REGEX = /(^\+:([^:\s]*):)$/i;
 
 export default class PostTextbox extends PureComponent {
     static propTypes = {
@@ -33,7 +30,6 @@ export default class PostTextbox extends PureComponent {
             handleRemoveLastFile: PropTypes.func.isRequired,
             initUploadFiles: PropTypes.func.isRequired,
             userTyping: PropTypes.func.isRequired,
-            handlePostDraftSelectionChanged: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
@@ -66,6 +62,7 @@ export default class PostTextbox extends PureComponent {
 
         this.state = {
             contentHeight: INITIAL_HEIGHT,
+            cursorPosition: 0,
             keyboardType: 'default',
             value: props.value,
             showFileMaxWarning: false,
@@ -73,6 +70,8 @@ export default class PostTextbox extends PureComponent {
     }
 
     componentDidMount() {
+        const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
+        EventEmitter.on(event, this.handleInsertTextToDraft);
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -86,6 +85,8 @@ export default class PostTextbox extends PureComponent {
     }
 
     componentWillUnmount() {
+        const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
+        EventEmitter.off(event, this.handleInsertTextToDraft);
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -192,13 +193,9 @@ export default class PostTextbox extends PureComponent {
 
     handlePostDraftSelectionChanged = (event) => {
         const cursorPosition = event.nativeEvent.selection.end;
-        if (this.props.rootId) {
-            this.props.actions.handleCommentDraftSelectionChanged(this.props.rootId, cursorPosition);
-        } else {
-            this.props.actions.handlePostDraftSelectionChanged(this.props.channelId, cursorPosition);
-        }
-
-        this.autocomplete.getWrappedInstance().handleSelectionChange(event);
+        this.setState({
+            cursorPosition,
+        });
     };
 
     handleSendMessage = () => {
@@ -244,6 +241,23 @@ export default class PostTextbox extends PureComponent {
             this.sendMessage();
         }
     };
+
+    handleInsertTextToDraft = (text) => {
+        const {cursorPosition, value} = this.state;
+
+        let completed;
+        if (value.length === 0) {
+            completed = text;
+        } else {
+            const firstPart = value.substring(0, cursorPosition);
+            const secondPart = value.substring(cursorPosition);
+            completed = `${firstPart}${text}${secondPart}`;
+        }
+
+        this.setState({
+            value: completed,
+        });
+    }
 
     handleTextChange = (value) => {
         const {
@@ -418,10 +432,10 @@ export default class PostTextbox extends PureComponent {
             );
         }
 
-        const {showFileMaxWarning} = this.state;
+        const {contentHeight, cursorPosition, showFileMaxWarning, value} = this.state;
 
-        const textInputHeight = Math.min(this.state.contentHeight, MAX_CONTENT_HEIGHT);
-        const textValue = channelIsLoading ? '' : this.state.value;
+        const textInputHeight = Math.min(contentHeight, MAX_CONTENT_HEIGHT);
+        const textValue = channelIsLoading ? '' : value;
 
         let placeholder;
         if (channelIsReadOnly) {
@@ -462,6 +476,7 @@ export default class PostTextbox extends PureComponent {
                 />
                 <Autocomplete
                     ref={this.attachAutocomplete}
+                    cursorPosition={cursorPosition}
                     onChangeText={this.handleTextChange}
                     value={this.state.value}
                     rootId={rootId}

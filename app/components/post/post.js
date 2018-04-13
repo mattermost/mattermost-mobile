@@ -136,8 +136,6 @@ export default class Post extends PureComponent {
     };
 
     autofillUserMention = (username) => {
-        // create a general action that checks for currentThreadId in the state and decides
-        // whether to insert to root or thread
         this.props.actions.insertToDraft(`@${username} `);
     }
 

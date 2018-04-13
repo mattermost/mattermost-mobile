@@ -26,15 +26,6 @@ function handlePostDraftChanged(state, action) {
     };
 }
 
-function handlePostDraftSelectionChanged(state, action) {
-    return {
-        ...state,
-        [action.channelId]: Object.assign({}, state[action.channelId], {
-            cursorPosition: action.cursorPosition,
-        }),
-    };
-}
-
 function handleSetPostDraft(state, action) {
     return {
         ...state,
@@ -205,8 +196,6 @@ function drafts(state = {}, action) { // eslint-disable-line complexity
     switch (action.type) {
     case ViewTypes.POST_DRAFT_CHANGED:
         return handlePostDraftChanged(state, action);
-    case ViewTypes.POST_DRAFT_SELECTION_CHANGED:
-        return handlePostDraftSelectionChanged(state, action);
     case ViewTypes.SET_POST_DRAFT:
         return handleSetPostDraft(state, action);
     case ChannelTypes.SELECT_CHANNEL:

@@ -166,7 +166,7 @@ export default class AtMention extends PureComponent {
             completedDraft += value.substring(cursorPosition);
         }
 
-        onChangeText(completedDraft, true);
+        onChangeText(completedDraft);
         this.setState({mentionComplete: true});
     };
 
