@@ -88,90 +88,6 @@ export default class ImagePreview extends PureComponent {
         StatusBar.setHidden(false, 'fade');
     }
 
-    get gallery() {
-        return (
-            <Gallery
-                errorComponent={this.renderOtherItems}
-                images={this.props.files}
-                initialPage={this.state.index}
-                onLayout={this.handleGalleryLayout}
-                onPageSelected={this.handleChangeImage}
-                onSingleTapConfirmed={this.handleTapped}
-                onSwipedVertical={this.handleSwipedVertical}
-                pageMargin={2}
-                style={style.flex}
-            />
-        );
-    }
-
-    get header() {
-        const {files} = this.props;
-        const {index} = this.state;
-        const header = this.getHeaderFooterStyle();
-
-        return (
-            <AnimatedView style={[style.headerContainer, {top: header.start, opacity: header.opacity}]}>
-                <View style={style.header}>
-                    <View style={style.headerControls}>
-                        <TouchableOpacity
-                            onPress={this.close}
-                            style={style.headerIcon}
-                        >
-                            <Icon
-                                name='md-close'
-                                size={26}
-                                color='#fff'
-                            />
-                        </TouchableOpacity>
-                        <Text style={style.title}>
-                            {`${index + 1}/${files.length}`}
-                        </Text>
-                        {this.renderDownloadButton()}
-                    </View>
-                </View>
-            </AnimatedView>
-        );
-    }
-
-    get footer() {
-        const {files} = this.props;
-        const {index} = this.state;
-        const footer = this.getHeaderFooterStyle();
-        return (
-            <Animated.View style={[{bottom: footer.start, opacity: footer.opacity}, style.footerContainer]}>
-                <LinearGradient
-                    style={style.footer}
-                    start={{x: 0.0, y: 0.0}}
-                    end={{x: 0.0, y: 0.9}}
-                    colors={['transparent', '#000000']}
-                    pointerEvents='none'
-                >
-                    <Text style={style.filename}>
-                        {(files[index] && files[index].caption) || ''}
-                    </Text>
-                </LinearGradient>
-            </Animated.View>
-        );
-    }
-
-    get download() {
-        const {deviceHeight, deviceWidth} = this.props;
-        const file = this.getCurrentFile();
-
-        return (
-            <Downloader
-                ref='downloader'
-                show={this.state.showDownloader}
-                file={file}
-                deviceHeight={deviceHeight}
-                deviceWidth={deviceWidth}
-                onDownloadCancel={this.hideDownloader}
-                onDownloadStart={this.hideDownloader}
-                onDownloadSuccess={this.hideDownloader}
-            />
-        );
-    }
-
     animateOpenAnimToValue = (toValue, onComplete) => {
         Animated.timing(this.openAnim, {
             ...ANIM_CONFIG,
@@ -363,6 +279,90 @@ export default class ImagePreview extends PureComponent {
 
         return null;
     };
+
+    renderDownloader() {
+        const {deviceHeight, deviceWidth} = this.props;
+        const file = this.getCurrentFile();
+
+        return (
+            <Downloader
+                ref='downloader'
+                show={this.state.showDownloader}
+                file={file}
+                deviceHeight={deviceHeight}
+                deviceWidth={deviceWidth}
+                onDownloadCancel={this.hideDownloader}
+                onDownloadStart={this.hideDownloader}
+                onDownloadSuccess={this.hideDownloader}
+            />
+        );
+    }
+
+    renderFooter() {
+        const {files} = this.props;
+        const {index} = this.state;
+        const footer = this.getHeaderFooterStyle();
+        return (
+            <Animated.View style={[{bottom: footer.start, opacity: footer.opacity}, style.footerContainer]}>
+                <LinearGradient
+                    style={style.footer}
+                    start={{x: 0.0, y: 0.0}}
+                    end={{x: 0.0, y: 0.9}}
+                    colors={['transparent', '#000000']}
+                    pointerEvents='none'
+                >
+                    <Text style={style.filename}>
+                        {(files[index] && files[index].caption) || ''}
+                    </Text>
+                </LinearGradient>
+            </Animated.View>
+        );
+    }
+
+    renderGallery() {
+        return (
+            <Gallery
+                errorComponent={this.renderOtherItems}
+                images={this.props.files}
+                initialPage={this.state.index}
+                onLayout={this.handleGalleryLayout}
+                onPageSelected={this.handleChangeImage}
+                onSingleTapConfirmed={this.handleTapped}
+                onSwipedVertical={this.handleSwipedVertical}
+                pageMargin={2}
+                style={style.flex}
+            />
+        );
+    }
+
+    renderHeader() {
+        const {files} = this.props;
+        const {index} = this.state;
+        const header = this.getHeaderFooterStyle();
+
+        return (
+            <AnimatedView style={[style.headerContainer, {top: header.start, opacity: header.opacity}]}>
+                <View style={style.header}>
+                    <View style={style.headerControls}>
+                        <TouchableOpacity
+                            onPress={this.close}
+                            style={style.headerIcon}
+                        >
+                            <Icon
+                                name='md-close'
+                                size={26}
+                                color='#fff'
+                            />
+                        </TouchableOpacity>
+                        <Text style={style.title}>
+                            {`${index + 1}/${files.length}`}
+                        </Text>
+                        {this.renderDownloadButton()}
+                    </View>
+                </View>
+            </AnimatedView>
+        );
+    }
 
     renderOtherItems = (index) => {
         const {files} = this.props;
@@ -591,11 +591,11 @@ export default class ImagePreview extends PureComponent {
             <AnimatedSafeAreaView style={[style.container, opacity]}>
                 <AnimatedView style={style.container}>
                     {this.renderSelectedItem()}
-                    {this.state.gallery && this.gallery}
-                    {this.header}
-                    {this.footer}
+                    {this.state.gallery && this.renderGallery()}
+                    {this.renderHeader()}
+                    {this.renderFooter()}
                 </AnimatedView>
-                {this.download}
+                {this.renderDownloader()}
             </AnimatedSafeAreaView>
         );
     }
