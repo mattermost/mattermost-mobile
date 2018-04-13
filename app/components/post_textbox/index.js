@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannel, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
@@ -41,6 +41,7 @@ function mapStateToProps(state, ownProps) {
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         canUploadFiles: canUploadFilesOnMobile(state),
         channelIsLoading: state.views.channel.loading,
+        channelIsReadOnly: isCurrentChannelReadOnly(state),
         currentUserId: getCurrentUserId(state),
         deactivatedChannel,
         files: currentDraft.files,

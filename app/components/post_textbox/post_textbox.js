@@ -39,6 +39,7 @@ export default class PostTextbox extends PureComponent {
         canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool.isRequired,
+        channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
         files: PropTypes.array,
@@ -397,6 +398,7 @@ export default class PostTextbox extends PureComponent {
             canUploadFiles,
             channelId,
             channelIsLoading,
+            channelIsReadOnly,
             deactivatedChannel,
             files,
             navigator,
@@ -422,7 +424,9 @@ export default class PostTextbox extends PureComponent {
         const textValue = channelIsLoading ? '' : this.state.value;
 
         let placeholder;
-        if (rootId) {
+        if (channelIsReadOnly) {
+            placeholder = {id: 'mobile.create_post.read_only', defaultMessage: 'This channel is read-only.'};
+        } else if (rootId) {
             placeholder = {id: 'create_comment.addComment', defaultMessage: 'Add a comment...'};
         } else {
             placeholder = {id: 'create_post.write', defaultMessage: 'Write a message...'};
@@ -463,8 +467,8 @@ export default class PostTextbox extends PureComponent {
                     rootId={rootId}
                 />
                 <View style={style.inputWrapper}>
-                    {attachmentButton}
-                    <View style={inputContainerStyle}>
+                    {!channelIsReadOnly && attachmentButton}
+                    <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
                         <TextInput
                             ref='input'
                             value={textValue}
@@ -481,6 +485,7 @@ export default class PostTextbox extends PureComponent {
                             keyboardType={this.state.keyboardType}
                             onEndEditing={this.handleEndEditing}
                             disableFullscreenUI={true}
+                            editable={!channelIsReadOnly}
                         />
                         {this.renderSendButton()}
                     </View>

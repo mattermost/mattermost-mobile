@@ -28,9 +28,9 @@
             "console": true
         }
     },
-    
+
     "ExperimentalNormalizeMarkdownLinks": false,
-    
+
     "AutoSelectServerUrl": false,
 
     "EnableMobileClientUpgrade": false,

@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
-import {getCurrentChannelId, makeGetChannel, getMyChannelMember} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentChannelId, makeGetChannel, getMyChannelMember, isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
@@ -29,6 +29,9 @@ function makeMapStateToProps() {
             }
         }
 
+        const isReadOnly = isChannelReadOnlyById(state, channel.id);
+        const shouldHideChannel = !ownProps.isSearchResult && !ownProps.isFavorite && isReadOnly;
+
         return {
             currentChannelId: getCurrentChannelId(state),
             displayName: channel.display_name,
@@ -36,6 +39,7 @@ function makeMapStateToProps() {
             isChannelMuted: isChannelMuted(member),
             isMyUser,
             mentions: member ? member.mention_count : 0,
+            shouldHideChannel,
             status: channel.status,
             teammateDeletedAt,
             theme: getTheme(state),

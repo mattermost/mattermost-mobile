@@ -113,6 +113,7 @@ class FilteredList extends Component {
                 ref={channel.id}
                 channelId={channel.id}
                 channel={channel}
+                isSearchResult={true}
                 isUnread={false}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
