@@ -70,10 +70,14 @@ public class RealPathUtil {
                 return uri.getLastPathSegment();
             }
 
-            String path = getDataColumn(context, uri, null, null);
+            try {
+                String path = getDataColumn(context, uri, null, null);
 
-            if (path != null) {
-                return path;
+                if (path != null) {
+                    return path;
+                }
+            } catch (Exception e) {
+                // do nothing and try to get a temp file
             }
 
             // Try save to tmp file, and return tmp file path
@@ -89,7 +93,12 @@ public class RealPathUtil {
         File tmpFile;
         try {
             String fileName = uri.getLastPathSegment();
-            tmpFile = File.createTempFile("tmp", fileName, context.getCacheDir());
+            File cacheDir = new File(context.getCacheDir(), "mmShare");
+            if (!cacheDir.exists()) {
+                cacheDir.mkdirs();
+            }
+
+            tmpFile = File.createTempFile("tmp", fileName, cacheDir);
 
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
 
@@ -171,5 +180,23 @@ public class RealPathUtil {
     public static String getMimeType(String filePath) {
         File file = new File(filePath);
         return getMimeType(file);
+    }
+
+    public static void deleteTempFiles(final File dir) {
+        try {
+            if (dir.isDirectory()) {
+                deleteRecursive(dir);
+            }
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
+
+    private static void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursive(child);
+
+        fileOrDirectory.delete();
     }
 }

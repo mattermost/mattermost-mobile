@@ -40,6 +40,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
     public ShareModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
+    private File tempFolder;
 
     @Override
     public String getName() {
@@ -60,6 +61,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void close(ReadableMap data) {
+        this.clear();
         getCurrentActivity().finish();
 
         if (data != null) {
@@ -78,6 +80,8 @@ public class ShareModule extends ReactContextBaseJavaModule {
                 }
             }
         }
+
+        RealPathUtil.deleteTempFiles(this.tempFolder);
     }
 
     @ReactMethod
@@ -96,6 +100,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         Activity currentActivity = getCurrentActivity();
 
         if (currentActivity != null) {
+            this.tempFolder = new File(currentActivity.getCacheDir(), "mmShare");
             Intent intent = currentActivity.getIntent();
             action = intent.getAction();
             type = intent.getType();
