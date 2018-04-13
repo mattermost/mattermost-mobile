@@ -19,18 +19,15 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
-import {DATE_LINE} from 'app/selectors/post_list';
-
 import Autocomplete from 'app/components/autocomplete';
 import DateHeader from 'app/components/post_list/date_header';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
+import PostSeparator from 'app/components/post_separator';
 import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
-import DateHeader from 'app/components/post_list/date_header';
-
 import mattermostManaged from 'app/mattermost_managed';
 import {DATE_LINE} from 'app/selectors/post_list';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -43,7 +40,6 @@ const SECTION_HEIGHT = 20;
 const RECENT_LABEL_HEIGHT = 42;
 const RECENT_SEPARATOR_HEIGHT = 3;
 const MODIFIER_LABEL_HEIGHT = 58;
-const DATE_HEADER_HEIGHT = 28;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
 
@@ -68,8 +64,6 @@ export default class Search extends PureComponent {
         searchingStatus: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
-
-    itemMeasurements = {};
 
     static defaultProps = {
         postIds: [],
@@ -332,12 +326,7 @@ export default class Search extends PureComponent {
         let separator;
         const nextPost = postIds[index + 1];
         if (nextPost && nextPost.indexOf(DATE_LINE) === -1) {
-            separator = this.renderPostSeparator();
-        }
-
-        if (item.indexOf(DATE_LINE) === 0) {
-            const date = item.substring(DATE_LINE.length);
-            return this.renderDateHeader(new Date(date), index);
+            separator = <PostSeparator theme={theme}/>;
         }
 
         return (
@@ -356,33 +345,12 @@ export default class Search extends PureComponent {
         );
     };
 
-    renderDateHeader = (date, index) => {
-        this.itemMeasurements[index] = DATE_HEADER_HEIGHT;
-        return (
-            <DateHeader
-                date={date}
-                index={index}
-            />
-        );
-    };
-
     renderRecentSeparator = () => {
         const {theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.separatorContainer}>
-                <View style={style.separator}/>
-            </View>
-        );
-    };
-
-    renderPostSeparator = () => {
-        const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
-
-        return (
-            <View style={[style.separatorContainer, style.postsSeparator]}>
                 <View style={style.separator}/>
             </View>
         );

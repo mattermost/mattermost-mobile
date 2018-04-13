@@ -93,7 +93,6 @@ export function makePreparePostIdsForSearchPosts() {
             }
 
             const out = [];
-            let lastDate = null;
             for (let i = 0; i < posts.length; i++) {
                 const post = posts[i];
 
@@ -106,17 +105,11 @@ export function makePreparePostIdsForSearchPosts() {
                     continue;
                 }
 
-                // Push on a date header if the last post was on a different day than the current one
                 const postDate = new Date(post.create_at);
 
-                if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + postDate.toString());
-                    lastDate = postDate;
-                }
-                out.push(post.id);
+                out.push(DATE_LINE + postDate.toString(), post.id);
             }
 
-            // Flip it back to newest to oldest
             return out;
         }
     );
