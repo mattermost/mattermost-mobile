@@ -70,10 +70,14 @@ public class RealPathUtil {
                 return uri.getLastPathSegment();
             }
 
-            String path = getDataColumn(context, uri, null, null);
+            try {
+                String path = getDataColumn(context, uri, null, null);
 
-            if (path != null) {
-                return path;
+                if (path != null) {
+                    return path;
+                }
+            } catch (Exception e) {
+                // do nothing and try to get a temp file
             }
 
             // Try save to tmp file, and return tmp file path
@@ -89,7 +93,7 @@ public class RealPathUtil {
         File tmpFile;
         try {
             String fileName = uri.getLastPathSegment();
-            tmpFile = File.createTempFile("tmp", fileName, context.getCacheDir());
+            tmpFile = File.createTempFile("mmShare", fileName, context.getCacheDir());
 
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
 
@@ -171,5 +175,23 @@ public class RealPathUtil {
     public static String getMimeType(String filePath) {
         File file = new File(filePath);
         return getMimeType(file);
+    }
+
+    public static void deleteTempFiles(final String tempFolder) {
+        try {
+            File dir = new File(tempFolder);
+            if (dir.isDirectory()) {
+                String[] files = dir.list();
+                for (int i =0; i < files.length; i++) {
+                    String file = files[i];
+                    if (file.startsWith("mmShare") || file.startsWith("tmp")) {
+                        File f = new File(dir, files[i]);
+                        f.delete();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // do nothing
+        }
     }
 }
