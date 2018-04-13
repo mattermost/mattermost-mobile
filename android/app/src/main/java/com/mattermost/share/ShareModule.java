@@ -40,7 +40,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
     public ShareModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
-    private String tempFolder;
+    private File tempFolder;
 
     @Override
     public String getName() {
@@ -100,7 +100,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         Activity currentActivity = getCurrentActivity();
 
         if (currentActivity != null) {
-            this.tempFolder = currentActivity.getCacheDir() + "/";
+            this.tempFolder = new File(currentActivity.getCacheDir(), "mmShare");
             Intent intent = currentActivity.getIntent();
             action = intent.getAction();
             type = intent.getType();
