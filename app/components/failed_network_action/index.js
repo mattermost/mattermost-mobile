@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Cloud from './cloud';
 
-export default class NoResults extends PureComponent {
+export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
         onRetry: PropTypes.func,
         theme: PropTypes.object.isRequired,

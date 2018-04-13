@@ -4,13 +4,14 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, View} from 'react-native';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class NoResults extends PureComponent {
     static propTypes = {
         description: PropTypes.string,
-        icon: PropTypes.node,
+        iconName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         title: PropTypes.string.isRequired,
     };
@@ -18,11 +19,22 @@ export default class NoResults extends PureComponent {
     render() {
         const {
             description,
-            icon,
+            iconName,
             theme,
             title,
         } = this.props;
         const style = getStyleFromTheme(theme);
+
+        let icon;
+        if (iconName) {
+            icon = (
+                <IonIcon
+                    size={76}
+                    color={changeOpacity(theme.centerChannelColor, 0.4)}
+                    name={iconName}
+                />
+            );
+        }
 
         return (
             <View style={style.container}>

@@ -19,7 +19,7 @@ export default class SearchResultPost extends PureComponent {
     };
 
     static defaultProps = {
-        showFullDate: true,
+        showFullDate: false,
     };
 
     render() {

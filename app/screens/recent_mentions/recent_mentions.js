@@ -8,22 +8,21 @@ import {
     Keyboard,
     FlatList,
     SafeAreaView,
+    StyleSheet,
     View,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import ChannelLoader from 'app/components/channel_loader';
 import DateHeader from 'app/components/post_list/date_header';
 import FailedNetworkAction from 'app/components/failed_network_action';
 import NoResults from 'app/components/no_results';
+import PostSeparator from 'app/components/post_separator';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
 import SearchResultPost from 'app/screens/search/search_result_post';
 import ChannelDisplayName from 'app/screens/search/channel_display_name';
 import {DATE_LINE} from 'app/selectors/post_list';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-const SEPARATOR_HEIGHT = 3;
+import {changeOpacity} from 'app/utils/theme';
 
 export default class RecentMentions extends PureComponent {
     static propTypes = {
@@ -131,25 +130,9 @@ export default class RecentMentions extends PureComponent {
         this.showPermalinkView(post.id, false);
     };
 
-    renderDateHeader = (date, index) => {
-        return (
-            <DateHeader
-                date={date}
-                index={index}
-            />
-        );
-    };
-
     renderEmpty = () => {
         const {formatMessage} = this.context.intl;
         const {theme} = this.props;
-        const icon = (
-            <IonIcon
-                size={76}
-                color={changeOpacity(theme.centerChannelColor, 0.4)}
-                name='ios-at-outline'
-            />
-        );
 
         return (
             <NoResults
@@ -157,7 +140,7 @@ export default class RecentMentions extends PureComponent {
                     id: 'mobile.recent_mentions.empty_description',
                     defaultMessage: 'Messages containing your username and other words that trigger mentions will appear here.',
                 })}
-                icon={icon}
+                iconName='ios-at-outline'
                 title={formatMessage({id: 'mobile.recent_mentions.empty_title', defaultMessage: 'No Recent Mentions'})}
                 theme={theme}
             />
@@ -165,17 +148,23 @@ export default class RecentMentions extends PureComponent {
     };
 
     renderPost = ({item, index}) => {
-        const {postIds} = this.props;
+        const {postIds, theme} = this.props;
         const {managedConfig} = this.state;
         if (item.indexOf(DATE_LINE) === 0) {
-            const date = item.substring(DATE_LINE.length);
-            return this.renderDateHeader(new Date(date), index);
+            const date = new Date(item.substring(DATE_LINE.length));
+
+            return (
+                <DateHeader
+                    date={date}
+                    index={index}
+                />
+            );
         }
 
         let separator;
         const nextPost = postIds[index + 1];
         if (nextPost && nextPost.indexOf(DATE_LINE) === -1) {
-            separator = this.renderPostSeparator();
+            separator = <PostSeparator theme={theme}/>;
         }
 
         return (
@@ -191,17 +180,6 @@ export default class RecentMentions extends PureComponent {
                     showFullDate={false}
                 />
                 {separator}
-            </View>
-        );
-    };
-
-    renderPostSeparator = () => {
-        const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
-
-        return (
-            <View style={[style.separatorContainer, style.postsSeparator]}>
-                <View style={style.separator}/>
             </View>
         );
     };
@@ -252,8 +230,6 @@ export default class RecentMentions extends PureComponent {
     render() {
         const {didFail, isLoading, postIds, theme} = this.props;
 
-        const style = getStyleFromTheme(theme);
-
         let component;
         if (didFail) {
             component = (
@@ -293,22 +269,8 @@ export default class RecentMentions extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        separatorContainer: {
-            justifyContent: 'center',
-            flex: 1,
-            height: SEPARATOR_HEIGHT,
-        },
-        postsSeparator: {
-            height: 15,
-        },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
 });
