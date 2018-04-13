@@ -19,7 +19,7 @@ export default function errorMessage(props) {
                         <Text style={styles.errorMessageText}>
                             {formatMessage({
                                 id: 'mobile.share_extension.error_message',
-                                defaultMessage: 'An error has occurred while initializing the share extension.',
+                                defaultMessage: 'An error has occurred while using the share extension.',
                             })}
                         </Text>
                     </View>

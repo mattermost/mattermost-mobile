@@ -13,7 +13,7 @@ import {getCurrentLocale} from 'app/selectors/i18n';
 import configureStore from 'app/store';
 
 import {extensionSelectTeamId} from './actions';
-import Navigation from './navigation';
+import Extension from './extension';
 
 export default class ShareApp extends PureComponent {
     constructor() {
@@ -54,7 +54,7 @@ export default class ShareApp extends PureComponent {
                     locale={locale}
                     messages={getTranslations(locale)}
                 >
-                    <Navigation/>
+                    <Extension/>
                 </IntlProvider>
             </Provider>
         );

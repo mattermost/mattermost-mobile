@@ -51,6 +51,10 @@ export function captureException(error, logger, store) {
 }
 
 export function captureExceptionWithoutState(err, logger) {
+    if (!Config.SentryEnabled) {
+        return;
+    }
+
     try {
         Sentry.captureException(err, {logger});
     } catch (error) {
