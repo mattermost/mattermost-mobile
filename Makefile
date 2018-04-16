@@ -10,14 +10,14 @@ OS := $(shell sh -c 'uname -s 2>/dev/null')
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
 
-.yarninstall: package.json
-	@if ! [ $(shell which yarn 2> /dev/null) ]; then \
-		echo "yarn is not installed https://yarnpkg.com"; \
+.npminstall: package.json
+	@if ! [ $(shell which npm 2> /dev/null) ]; then \
+		echo "npm is not installed https://npmjs.com"; \
 		exit 1; \
 	fi
 
 	@echo Getting Javascript dependencies
-	@yarn install --pure-lockfile
+	@npm install
 
 	@touch $@
 
@@ -43,22 +43,23 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@echo "Generating app assets"
 	@node scripts/make-dist-assets.js
 
-pre-run: | .yarninstall .podinstall dist/assets ## Installs dependencies and assets
+pre-run: | .npminstall .podinstall dist/assets ## Installs dependencies and assets
 
-check-style: .yarninstall ## Runs eslint
+check-style: .npminstall ## Runs eslint
 	@echo Checking for style guide compliance
-	@yarn run check
+	@npm run check
 
 clean: ## Cleans dependencies, previous builds and temp files
 	@echo Cleaning started
-	@yarn cache clean
+
 	@rm -rf node_modules
-	@rm -f .yarninstall
+	@rm -f .npminstall
 	@rm -f .podinstall
 	@rm -rf dist
 	@rm -rf ios/build
 	@rm -rf ios/Pods
 	@rm -rf android/app/build
+
 	@echo Cleanup finished
 
 post-install:
@@ -80,7 +81,7 @@ post-install:
 		sed $ -i'' -e "s|const ReactNative = require('ReactNative');|const ReactNative = require('ReactNative');`echo $\\\\\\r;`const Platform = require('Platform');|g" node_modules/react-native/Libraries/Lists/VirtualizedList.js; \
 	fi
 	@sed -i'' -e 's|transform: \[{scaleY: -1}\],|...Platform.select({android: {transform: \[{perspective: 1}, {scaleY: -1}\]}, ios: {transform: \[{scaleY: -1}\]}}),|g' node_modules/react-native/Libraries/Lists/VirtualizedList.js
-	@cd ./node_modules/mattermost-redux && yarn run build
+	@cd ./node_modules/mattermost-redux && npm run build
 
 start: | pre-run ## Starts the React Native packager server
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
@@ -217,7 +218,7 @@ unsigned-android: pre-run check-style prepare-android-build
 	@ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' | xargs kill -9
 
 test: | pre-run check-style ## Runs tests
-	@yarn test
+	@npm test
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
