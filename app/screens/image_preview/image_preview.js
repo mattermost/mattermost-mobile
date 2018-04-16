@@ -392,6 +392,7 @@ export default class ImagePreview extends PureComponent {
         const {getPreviewProps} = this.props;
         const containerStyle = this.getSwipeableStyle();
         const previewProps = getPreviewProps(index);
+        Reflect.deleteProperty(previewProps, 'thumbnailUri');
 
         return (
             <ScrollView scrollEnabled={false}>
