@@ -19,7 +19,7 @@ import {
     LOGGER_NATIVE
 } from 'app/utils/sentry';
 
-import {app, store} from 'app/app';
+import {app, store} from 'app/mattermost.android.js';
 
 const errorHandler = (e, isFatal) => {
     console.warn('Handling Javascript error ' + JSON.stringify(e)); // eslint-disable-line no-console

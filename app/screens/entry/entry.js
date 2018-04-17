@@ -18,7 +18,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {
     app,
     store,
-} from 'app/app';
+} from 'app/mattermost.android.js';
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
