@@ -271,7 +271,7 @@ export default class Downloader extends PureComponent {
 
             let path;
             let res;
-            if (data.localPath) {
+            if (data && data.localPath) {
                 path = data.localPath;
                 downloadFile = false;
                 this.setState({
@@ -300,7 +300,7 @@ export default class Downloader extends PureComponent {
                         }
                     }
 
-                    options.path = `${downloadPath}/${file.caption}`;
+                    options.path = `${downloadPath}/${data.id}-${file.caption}`;
                 } else {
                     options.fileCache = true;
                     options.appendExt = data.extension;
@@ -352,7 +352,7 @@ export default class Downloader extends PureComponent {
         } catch (error) {
             // cancellation throws so we need to catch
             if (downloadPath) {
-                RNFetchBlob.fs.unlink(`${downloadPath}/${file.id}.${file.extension}`);
+                RNFetchBlob.fs.unlink(`${downloadPath}/${data.id}-${file.caption}`);
             }
             if (error.message !== 'cancelled' && this.mounted) {
                 this.showDownloadFailedAlert();

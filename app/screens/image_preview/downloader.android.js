@@ -64,6 +64,7 @@ export default class Downloader extends PureComponent {
     handleDownload = async () => {
         const {file, onDownloadCancel, onDownloadStart, onDownloadSuccess} = this.props;
         const {intl} = this.context;
+        const {data} = file;
 
         const canWriteToStorage = await this.checkForPermissions();
         if (!canWriteToStorage) {
@@ -88,10 +89,8 @@ export default class Downloader extends PureComponent {
             ToastAndroid.show(started, ToastAndroid.SHORT);
             onDownloadStart();
 
-            const dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${file.caption}`;
+            const dest = `${RNFetchBlob.fs.dirs.DownloadDir}/${data.id}-${file.caption}`;
             let downloadFile = true;
-
-            const {data} = file;
 
             if (data.localPath) {
                 const exists = await RNFetchBlob.fs.exists(data.localPath);
@@ -101,7 +100,7 @@ export default class Downloader extends PureComponent {
                     await RNFetchBlob.fs.cp(data.localPath, dest);
                 }
             } else if (isVideo(data)) {
-                const path = `${VIDEOS_PATH}/${data.id}.${data.extension}`;
+                const path = `${VIDEOS_PATH}/${data.id}-${file.caption}`;
                 const exists = await RNFetchBlob.fs.exists(path);
 
                 if (exists) {
@@ -109,7 +108,7 @@ export default class Downloader extends PureComponent {
                     await RNFetchBlob.fs.cp(path, dest);
                 }
             } else if (isDocument(data)) {
-                const path = `${DOCUMENTS_PATH}/${data.name}`;
+                const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
                 const exists = await RNFetchBlob.fs.exists(path);
 
                 if (exists) {
@@ -127,7 +126,7 @@ export default class Downloader extends PureComponent {
                         useDownloadManager: true,
                         notification: true,
                         path: dest,
-                        title: `${data.name} ${title}`,
+                        title: `${file.caption} ${title}`,
                         mime: data.mime_type,
                         description: data.name,
                         mediaScannable: true,

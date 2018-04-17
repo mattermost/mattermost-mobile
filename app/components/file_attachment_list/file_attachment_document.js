@@ -100,7 +100,8 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     downloadAndPreviewFile = async (file) => {
-        const path = `${DOCUMENTS_PATH}/${file.name}`;
+        const {data} = file;
+        const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
 
         this.setState({didCancel: false});
 
@@ -116,14 +117,14 @@ export default class FileAttachmentDocument extends PureComponent {
             }
 
             const options = {
-                session: file.id,
+                session: data.id,
                 timeout: 10000,
                 indicator: true,
                 overwrite: true,
                 path,
             };
 
-            const mime = file.mime_type.split(';')[0];
+            const mime = data.mime_type.split(';')[0];
             let openDocument = this.openDocument;
             if (TEXT_PREVIEW_FORMATS.includes(mime)) {
                 openDocument = this.previewTextFile;
@@ -134,7 +135,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 openDocument(file, 0);
             } else {
                 this.setState({downloading: true});
-                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
+                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(data.id));
                 this.downloadTask.progress((received, total) => {
                     const progress = (received / total) * 100;
                     if (this.mounted) {
@@ -179,15 +180,16 @@ export default class FileAttachmentDocument extends PureComponent {
 
     previewTextFile = (file, delay = 2000) => {
         const {navigator, theme} = this.props;
+        const {data} = file;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
-        const path = `${DOCUMENTS_PATH}/${file.name}`;
+        const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
         const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
         setTimeout(async () => {
             try {
                 const content = await readFile;
                 navigator.push({
                     screen: 'TextPreview',
-                    title: file.name,
+                    title: file.caption,
                     animated: true,
                     backButtonTitle: '',
                     passProps: {
@@ -213,13 +215,15 @@ export default class FileAttachmentDocument extends PureComponent {
         // shown nicely and smooth
         setTimeout(() => {
             if (!this.state.didCancel && this.mounted) {
+                const {data} = file;
                 const prefix = Platform.OS === 'android' ? 'file:/' : '';
-                const path = `${DOCUMENTS_PATH}/${file.name}`;
+                const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
                 this.setStatusBarColor('dark-content');
                 OpenFile.openDoc([{
                     url: `${prefix}${path}`,
-                    fileName: file.name,
-                    fileType: file.extension,
+                    fileNameOptional: file.caption,
+                    fileName: data.name,
+                    fileType: data.extension,
                     cache: false,
                 }], (error) => {
                     if (error) {
@@ -233,7 +237,7 @@ export default class FileAttachmentDocument extends PureComponent {
                                 id: 'mobile.document_preview.failed_description',
                                 defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
                             }, {
-                                fileType: file.extension.toUpperCase(),
+                                fileType: data.extension.toUpperCase(),
                             }),
                             [{
                                 text: intl.formatMessage({
@@ -270,7 +274,7 @@ export default class FileAttachmentDocument extends PureComponent {
         return (
             <View style={[style.circularProgressContent, {width: wrapperWidth}]}>
                 <FileAttachmentIcon
-                    file={file}
+                    file={file.data}
                     iconHeight={iconHeight}
                     iconWidth={iconWidth}
                     theme={theme}
@@ -324,7 +328,7 @@ export default class FileAttachmentDocument extends PureComponent {
         } else {
             fileAttachmentComponent = (
                 <FileAttachmentIcon
-                    file={file}
+                    file={file.data}
                     theme={theme}
                     iconHeight={iconHeight}
                     iconWidth={iconWidth}
