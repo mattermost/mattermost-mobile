@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {NativeModules} from 'react-native';
-import {IntlProvider, intlShape} from 'react-intl';
+import {IntlProvider} from 'react-intl';
 import DeviceInfo from 'react-native-device-info';
 
 import Config from 'assets/config';
@@ -17,10 +17,6 @@ import Extension from './extension';
 const ShareExtension = NativeModules.MattermostShare;
 
 export class SharedApp extends PureComponent {
-    static contextTypes = {
-        intl: intlShape,
-    };
-
     constructor(props) {
         super(props);
 
@@ -43,12 +39,8 @@ export class SharedApp extends PureComponent {
 
     render() {
         if (this.state.hasError) {
-            const {formatMessage} = this.context.intl;
             return (
-                <ErrorMessage
-                    close={this.close}
-                    formatMessage={formatMessage}
-                />
+                <ErrorMessage close={this.close}/>
             );
         }
 

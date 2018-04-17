@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
 
+import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default function errorMessage(props) {
-    const {close, formatMessage} = props;
+    const {close} = props;
     const theme = Preferences.THEMES.default;
     const styles = getStyleSheet(theme);
 
@@ -16,20 +17,21 @@ export default function errorMessage(props) {
             <View style={styles.errorContainer}>
                 <View style={styles.errorContent}>
                     <View style={styles.errorMessage}>
-                        <Text style={styles.errorMessageText}>
-                            {formatMessage({
-                                id: 'mobile.share_extension.error_message',
-                                defaultMessage: 'An error has occurred while using the share extension.',
-                            })}
-                        </Text>
+                        <FormattedText
+                            style={styles.errorMessageText}
+                            id={'mobile.share_extension.error_message'}
+                            defaultMessage={'An error has occurred while using the share extension.'}
+                        />
                     </View>
                     <TouchableOpacity
                         style={styles.errorButton}
                         onPress={() => close()}
                     >
-                        <Text style={styles.errorButtonText}>
-                            {formatMessage({id: 'mobile.share_extension.error_close', defaultMessage: 'Close'})}
-                        </Text>
+                        <FormattedText
+                            style={styles.errorButtonText}
+                            id={'mobile.share_extension.error_close'}
+                            defaultMessage={'Close'}
+                        />
                     </TouchableOpacity>
                 </View>
             </View>

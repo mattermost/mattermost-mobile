@@ -14,12 +14,12 @@ const ShareExtension = NativeModules.MattermostShare;
 
 export default class ShareApp extends PureComponent {
     static contextTypes = {
-      intl: intlShape,
-      store: PropTypes.object.isRequired
+        intl: intlShape,
+        store: PropTypes.object.isRequired,
     };
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         initializeSentry();
     }
 
@@ -27,32 +27,32 @@ export default class ShareApp extends PureComponent {
         const {intl, store} = this.context;
         const {formatMessage} = intl;
 
-        // captureException(error, LOGGER_EXTENSION, store);
+        captureException(error, LOGGER_EXTENSION, store);
 
         Alert.alert(
-          formatMessage({
-            id: 'mobile.share_extension.error_title',
-            defaultMessage: 'Extension Error'
-          }),
-          formatMessage({
-            id: 'mobile.share_extension.error_message',
-            defaultMessage: 'An error has occurred while using the share extension.',
-          }),
-          [
-            {
-              text: formatMessage({
-                id: 'mobile.share_extension.error_close',
-                defaultMessage: 'Close'
-              }),
-              onPress: this.close
-            }
-          ]
+            formatMessage({
+                id: 'mobile.share_extension.error_title',
+                defaultMessage: 'Extension Error',
+            }),
+            formatMessage({
+                id: 'mobile.share_extension.error_message',
+                defaultMessage: 'An error has occurred while using the share extension.',
+            }),
+            [
+                {
+                    text: formatMessage({
+                        id: 'mobile.share_extension.error_close',
+                        defaultMessage: 'Close',
+                    }),
+                    onPress: this.close,
+                },
+            ]
         );
     }
 
     close = () => ShareExtension.close(null)
 
     render() {
-        return <Navigation/>
+        return <Navigation/>;
     }
 }
