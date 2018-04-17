@@ -37,6 +37,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(require('app/screens/edit_channel').default), store, Provider); //eslint-disable-line global-require
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(require('app/screens/edit_post').default), store, Provider); //eslint-disable-line global-require
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(require('app/screens/edit_profile').default), store, Provider); //eslint-disable-line global-require
+    Navigation.registerComponent('Entry', () => wrapWithContextProvider(require('app/screens/entry').default), store, Provider); //eslint-disable-line global-require
     Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(require('app/screens/flagged_posts').default), store, Provider); //eslint-disable-line global-require
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(require('app/screens/image_preview').default), store, Provider); //eslint-disable-line global-require
     Navigation.registerComponent('TextPreview', () => wrapWithContextProvider(require('app/screens/text_preview').default), store, Provider); //eslint-disable-line global-require
