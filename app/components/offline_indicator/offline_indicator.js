@@ -16,7 +16,9 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import FormattedText from 'app/components/formatted_text';
 import {ViewTypes} from 'app/constants';
+import mattermostBucket from 'app/mattermost_bucket';
 import checkNetwork from 'app/utils/network';
+import LocalConfig from 'assets/config';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -95,7 +97,7 @@ export default class OfflineIndicator extends Component {
             this.setState({network: CONNECTING}, () => {
                 if (result) {
                     this.props.actions.connection(true);
-                    this.props.actions.initWebSocket(Platform.OS);
+                    this.initializeWebSocket();
                 } else {
                     this.setState({network: OFFLINE});
                 }
@@ -152,6 +154,18 @@ export default class OfflineIndicator extends Component {
         }
 
         return IOS_TOP_PORTRAIT;
+    };
+
+    initializeWebSocket = async () => {
+        const {actions} = this.props;
+        const {initWebSocket} = actions;
+        const platform = Platform.OS;
+        let certificate = null;
+        if (platform === 'ios') {
+            certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+        }
+
+        initWebSocket(platform, null, null, null, {certificate});
     };
 
     offline = () => {

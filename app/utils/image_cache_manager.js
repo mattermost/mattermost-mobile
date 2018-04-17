@@ -6,6 +6,9 @@
 import RNFetchBlob from 'react-native-fetch-blob';
 
 import {DeviceTypes} from 'app/constants';
+import mattermostBucket from 'app/mattermost_bucket';
+
+import LocalConfig from 'assets/config';
 
 const {IMAGES_PATH} = DeviceTypes;
 
@@ -31,12 +34,14 @@ export default class ImageCacheManager {
             }
 
             try {
+                const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
                 const options = {
                     session: uri,
                     timeout: 10000,
                     indicator: true,
                     overwrite: true,
                     path,
+                    certificate,
                 };
 
                 this.downloadTask = await RNFetchBlob.config(options).fetch('GET', uri);

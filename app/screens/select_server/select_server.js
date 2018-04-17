@@ -18,12 +18,14 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import {UpgradeTypes} from 'app/constants/view';
+import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
 import checkUpgradeType from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
@@ -108,6 +110,23 @@ export default class SelectServer extends PureComponent {
         }
     }
 
+    goToNextScreen = (screen, title) => {
+        const {navigator, theme} = this.props;
+        navigator.push({
+            screen,
+            title,
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarHidden: LocalConfig.AutoSelectServerUrl,
+                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+            },
+        });
+    };
+
     handleNavigatorEvent = (event) => {
         if (event.id === 'didDisappear') {
             this.setState({
@@ -125,7 +144,7 @@ export default class SelectServer extends PureComponent {
             title: intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'}),
             backButtonTitle: '',
             navigatorStyle: {
-                navBarHidden: false,
+                navBarHidden: LocalConfig.AutoSelectServerUrl,
                 disabledBackGesture: LocalConfig.AutoSelectServerUrl,
                 statusBarHidden: true,
                 statusBarHideWithNavBar: true,
@@ -138,11 +157,11 @@ export default class SelectServer extends PureComponent {
                 upgradeType,
             },
         });
-    }
+    };
 
     handleLoginOptions = (props = this.props) => {
         const {intl} = this.context;
-        const {config, license, theme} = props;
+        const {config, license} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
 
@@ -161,21 +180,15 @@ export default class SelectServer extends PureComponent {
             title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
         }
 
-        this.props.navigator.push({
-            screen,
-            title,
-            animated: true,
-            backButtonTitle: '',
-            navigatorStyle: {
-                navBarHidden: LocalConfig.AutoSelectServerUrl,
-                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
-                navBarTextColor: theme.sidebarHeaderTextColor,
-                navBarBackgroundColor: theme.sidebarHeaderBg,
-                navBarButtonColor: theme.sidebarHeaderTextColor,
-            },
-        });
-
         this.props.actions.resetPing();
+
+        if (Platform.OS === 'ios' && LocalConfig.ExperimentalClientSideCertEnable) {
+            setTimeout(() => {
+                this.goToNextScreen(screen, title);
+            }, 250);
+        } else {
+            this.goToNextScreen(screen, title);
+        }
     };
 
     handleAndroidKeyboard = () => {
@@ -212,7 +225,20 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
-        this.pingServer(url);
+        if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
+            RNFetchBlob.cba.selectCertificate((certificate) => {
+                if (certificate) {
+                    mattermostBucket.setPreference('cert', certificate, LocalConfig.AppGroupId);
+                    window.fetch = new RNFetchBlob.polyfill.Fetch({
+                        auto: true,
+                        certificate,
+                    }).build();
+                    this.pingServer(url);
+                }
+            });
+        } else {
+            this.pingServer(url);
+        }
     });
 
     pingServer = (url) => {
