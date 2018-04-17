@@ -370,9 +370,9 @@ export default class ImagePreview extends PureComponent {
 
         if (file.data) {
             if (isDocument(file.data)) {
-                return this.renderAttachmentDocument(file.data);
+                return this.renderAttachmentDocument(file);
             } else if (isVideo(file.data)) {
-                return this.renderVideoPreview(file.data);
+                return this.renderVideoPreview(file);
             }
 
             return this.renderAttachmentIcon(file.data);

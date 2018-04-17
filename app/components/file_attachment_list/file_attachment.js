@@ -58,23 +58,29 @@ export default class FileAttachment extends PureComponent {
 
     renderFileInfo() {
         const {file, theme} = this.props;
+        const {data} = file;
         const style = getStyleSheet(theme);
 
-        if (!file.id) {
+        if (!data || !data.id) {
             return null;
         }
 
         return (
             <View style={style.attachmentContainer}>
                 <Text
-                    numberOfLines={4}
+                    numberOfLines={2}
+                    ellipsizeMode='tail'
                     style={style.fileName}
                 >
-                    {file.name.trim()}
+                    {file.caption.trim()}
                 </Text>
                 <View style={style.fileDownloadContainer}>
-                    <Text style={style.fileInfo}>
-                        {`${file.extension.toUpperCase()} ${Utils.getFormattedFileSize(file)}`}
+                    <Text
+                        numberOfLines={2}
+                        ellipsizeMode='tail'
+                        style={style.fileInfo}
+                    >
+                        {`${data.extension.toUpperCase()} ${Utils.getFormattedFileSize(data)}`}
                     </Text>
                 </View>
             </View>
@@ -89,21 +95,22 @@ export default class FileAttachment extends PureComponent {
             theme,
             navigator,
         } = this.props;
+        const {data} = file;
         const style = getStyleSheet(theme);
 
         let fileAttachmentComponent;
-        if (file.has_preview_image || file.loading || isGif(file)) {
+        if ((data && data.has_preview_image) || file.loading || isGif(data)) {
             fileAttachmentComponent = (
                 <TouchableOpacity onPress={this.handlePreviewPress}>
                     <FileAttachmentImage
-                        file={file}
+                        file={data || {}}
                         onCaptureRef={this.handleCaptureRef}
                         onCapturePreviewRef={this.handleCapturePreviewRef}
                         theme={theme}
                     />
                 </TouchableOpacity>
             );
-        } else if (isDocument(file)) {
+        } else if (isDocument(data)) {
             fileAttachmentComponent = (
                 <FileAttachmentDocument
                     file={file}
@@ -115,7 +122,7 @@ export default class FileAttachment extends PureComponent {
             fileAttachmentComponent = (
                 <TouchableOpacity onPress={this.handlePreviewPress}>
                     <FileAttachmentIcon
-                        file={file}
+                        file={data}
                         onCaptureRef={this.handleCaptureRef}
                         onCapturePreviewRef={this.handleCapturePreviewRef}
                         theme={theme}

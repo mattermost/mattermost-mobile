@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
+    Platform,
     StyleSheet,
     TouchableOpacity,
     View,
@@ -62,8 +63,9 @@ export default class VideoPreview extends PureComponent {
 
     async initializeComponent() {
         const {file} = this.props;
-        const path = `${VIDEOS_PATH}/${file.id}.${file.extension}`;
-        const exist = await RNFetchBlob.fs.exists(path);
+        const prefix = Platform.OS === 'android' ? 'file:/' : '';
+        const path = `${VIDEOS_PATH}/${file.data.id}-${file.caption}`;
+        const exist = await RNFetchBlob.fs.exists(`${prefix}${path}`);
 
         if (exist) {
             this.setState({path});
@@ -82,7 +84,7 @@ export default class VideoPreview extends PureComponent {
 
     onDownloadSuccess = () => {
         const {file} = this.props;
-        const path = `${VIDEOS_PATH}/${file.id}.${file.extension}`;
+        const path = `${VIDEOS_PATH}/${file.data.id}-${file.caption}`;
 
         this.setState({showDownloader: false, path});
     };

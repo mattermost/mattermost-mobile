@@ -212,26 +212,33 @@ export default class FileAttachmentList extends Component {
             ));
         }
 
-        return files.map((file, idx) => (
-            <TouchableOpacity
-                key={file.id}
-                onLongPress={this.props.onLongPress}
-                onPressIn={this.handlePressIn}
-                onPressOut={this.handlePressOut}
-            >
-                <FileAttachment
-                    deviceWidth={deviceWidth}
-                    file={file}
-                    index={idx}
-                    navigator={navigator}
-                    onCaptureRef={this.handleCaptureRef}
-                    onCapturePreviewRef={this.handleCapturePreviewRef}
-                    onInfoPress={this.handleInfoPress}
-                    onPreviewPress={this.handlePreviewPress}
-                    theme={this.props.theme}
-                />
-            </TouchableOpacity>
-        ));
+        return files.map((file, idx) => {
+            const f = {
+                caption: file.name,
+                data: file,
+            };
+
+            return (
+                <TouchableOpacity
+                    key={file.id}
+                    onLongPress={this.props.onLongPress}
+                    onPressIn={this.handlePressIn}
+                    onPressOut={this.handlePressOut}
+                >
+                    <FileAttachment
+                        deviceWidth={deviceWidth}
+                        file={f}
+                        index={idx}
+                        navigator={navigator}
+                        onCaptureRef={this.handleCaptureRef}
+                        onCapturePreviewRef={this.handleCapturePreviewRef}
+                        onInfoPress={this.handleInfoPress}
+                        onPreviewPress={this.handlePreviewPress}
+                        theme={this.props.theme}
+                    />
+                </TouchableOpacity>
+            );
+        });
     };
 
     render() {
