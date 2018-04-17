@@ -27,6 +27,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 
 public class NotificationsLifecycleFacade extends ActivityCallbacks implements AppLifecycleFacade {
+    public static final String NATIVE_APP_LAUNCHED = "NATIVE_APP_LAUNCHED";
     private static final String TAG = NotificationsLifecycleFacade.class.getSimpleName();
     private static NotificationsLifecycleFacade instance;
 
@@ -79,6 +80,12 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
         switchToVisible(activity);
 
         ReactContext ctx = getRunningReactContext();
+
+        if (ctx != null) {
+            ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
+                    emit(NATIVE_APP_LAUNCHED, null);
+        }
+
         if (managedConfig != null && managedConfig.size() > 0 && ctx != null) {
 
             RestrictionsManager myRestrictionsMgr =

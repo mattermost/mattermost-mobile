@@ -4,11 +4,13 @@
 /* eslint-disable no-unused-vars */
 import {AppRegistry, Platform} from 'react-native';
 
-import Mattermost from 'app/mattermost';
+// import Mattermost from 'app/mattermost_deprecated';
+import App from 'app/app';
 import ShareExtension from 'share_extension/android';
 
 if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
 
+// TODO: Keep old implementation for iOS
 // const app = new Mattermost();
