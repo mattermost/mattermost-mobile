@@ -199,7 +199,7 @@ class LoginOptions extends PureComponent {
                 backgroundColor,
             };
 
-            if (config.SAMLLoginButtonBorderColor) {
+            if (config.SamlLoginButtonBorderColor) {
                 additionalStyle.borderColor = config.SamlLoginButtonBorderColor;
             }
 
