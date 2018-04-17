@@ -1,13 +1,10 @@
 package com.mattermost.rnbeta;
 
-import com.facebook.react.bridge.ReactMarker;
-import com.facebook.react.bridge.ReactMarkerConstants;
 import com.mattermost.share.SharePackage;
 import android.app.Application;
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.facebook.react.ReactApplication;
 import com.reactnativedocumentpicker.ReactNativeDocumentPicker;
@@ -41,30 +38,15 @@ import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
-  HashMap<String, Long> nativeModules = new HashMap<>();
-  public long JS_BUNDLE_RUN_START_TIME;
-  private long totalElapsed = 0;
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
 
   @Override
   public boolean isDebug() {
     return BuildConfig.DEBUG;
-  }
-
-  public long getReactInitializeElapshedTime() {
-    return this.REACT_INITIALIZED_ELAPSED;
-  }
-
-  public long getReactAfterStartTime() {
-    return this.REACT_AFTER_START_TIME;
   }
 
   @NonNull
@@ -73,8 +55,12 @@ public class MainApplication extends NavigationApplication implements INotificat
     // Add the packages you require here.
     // No need to add RnnPackage and MainReactPackage
     return Arrays.<ReactPackage>asList(
+            new ImagePickerPackage(),
             new RNBottomSheetPackage(),
+            new RNDeviceInfo(),
             new CookieManagerPackage(),
+            new VectorIconsPackage(),
+            new SvgPackage(),
             new LinearGradientPackage(),
             new OrientationPackage(),
             new RNNotificationsPackage(this),
@@ -82,18 +68,15 @@ public class MainApplication extends NavigationApplication implements INotificat
             new JailMonkeyPackage(),
             new RNFetchBlobPackage(),
             new MattermostPackage(this),
+            new RNSentryPackage(this),
             new ReactNativeExceptionHandlerPackage(),
             new ReactNativeYouTube(),
             new ReactVideoPackage(),
             new RNReactNativeDocViewerPackage(),
             new ReactNativeDocumentPicker(),
             new SharePackage(),
-            new RNSentryPackage(this),
-            new ImagePickerPackage(),
-            new VectorIconsPackage(),
-            new SvgPackage(),
-            new RNDeviceInfo(),
             new StartTimePackage(this)
+            new SharePackage()
     );
   }
 
@@ -105,7 +88,6 @@ public class MainApplication extends NavigationApplication implements INotificat
   @Override
   public void onCreate() {
     super.onCreate();
-    Log.e("Mattermost", "MainApplication.onCreate");
     instance = this;
     // Create an object of the custom facade impl
     notificationsLifecycleFacade = NotificationsLifecycleFacade.getInstance();
@@ -113,27 +95,6 @@ public class MainApplication extends NavigationApplication implements INotificat
     setActivityCallbacks(notificationsLifecycleFacade);
 
     SoLoader.init(this, /* native exopackage */ false);
-
-    ReactMarker.addListener(new ReactMarker.MarkerListener() {
-      @Override
-      public void logMarker(ReactMarkerConstants name, @Nullable String tag, int instanceKey) {
-        Log.i("Mattermost", "LogMarker: " + name.toString() + ", " + tag);
-
-        if (name.toString() == ReactMarkerConstants.NATIVE_MODULE_SETUP_START.toString()) {
-          nativeModules.put(tag, System.currentTimeMillis());
-        } else if (name.toString() == ReactMarkerConstants.NATIVE_MODULE_SETUP_END.toString()) {
-          Long setupStart = nativeModules.get(tag);
-          if (setupStart != null) {
-            long elapsed = System.currentTimeMillis() - setupStart;
-            totalElapsed += elapsed;
-            Log.e("Mattermost", "native module setup time for " + tag + ": " + String.valueOf(elapsed));
-            Log.e("Mattermost", "total elapsed native module setup: " + String.valueOf(totalElapsed));
-          }
-        } else if (name.toString() == ReactMarkerConstants.RUN_JS_BUNDLE_START.toString()) {
-          JS_BUNDLE_RUN_START_TIME = System.currentTimeMillis();
-        }
-      }
-    });
   }
 
   @Override
