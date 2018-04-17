@@ -221,7 +221,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 this.setStatusBarColor('dark-content');
                 OpenFile.openDoc([{
                     url: `${prefix}${path}`,
-                    title: file.caption,
+                    fileNameOptional: file.caption,
                     fileName: data.name,
                     fileType: data.extension,
                     cache: false,
