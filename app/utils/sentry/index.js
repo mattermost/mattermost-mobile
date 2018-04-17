@@ -11,6 +11,7 @@ import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeam, getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
 
+export const LOGGER_EXTENSION = 'extension';
 export const LOGGER_JAVASCRIPT = 'javascript';
 export const LOGGER_JAVASCRIPT_WARNING = 'javascript_warning';
 export const LOGGER_NATIVE = 'native';
@@ -47,6 +48,18 @@ export function captureException(error, logger, store) {
     capture(() => {
         Sentry.captureException(error, {logger});
     }, store);
+}
+
+export function captureExceptionWithoutState(err, logger) {
+    if (!Config.SentryEnabled) {
+        return;
+    }
+
+    try {
+        Sentry.captureException(err, {logger});
+    } catch (error) {
+        // do nothing...
+    }
 }
 
 export function captureMessage(message, logger, store) {
