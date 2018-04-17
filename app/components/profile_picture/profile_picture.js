@@ -52,7 +52,7 @@ export default class ProfilePicture extends PureComponent {
 
         if (edit && imageUri) {
             this.setImageURL(imageUri);
-        } else {
+        } else if (user) {
             ImageCacheManager.cache('', Client4.getProfilePictureUrl(user.id, user.last_picture_update), this.setImageURL);
         }
     }
@@ -60,6 +60,18 @@ export default class ProfilePicture extends PureComponent {
     componentDidMount() {
         if (!this.props.status && this.props.user) {
             this.props.actions.getStatusForId(this.props.user.id);
+        }
+    }
+
+    componentWillUpdate(nextProps) {
+        if (Boolean(nextProps.user) !== Boolean(this.props.user) || nextProps.user.id !== this.props.user.id) {
+            this.setState({pictureUrl: null});
+
+            const nextUser = nextProps.user;
+
+            if (nextUser) {
+                ImageCacheManager.cache('', Client4.getProfilePictureUrl(nextUser.id, nextUser.last_picture_update), this.setImageURL);
+            }
         }
     }
 
