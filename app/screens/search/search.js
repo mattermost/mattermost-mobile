@@ -81,6 +81,7 @@ export default class Search extends PureComponent {
         this.isX = DeviceInfo.getModel() === 'iPhone X';
         this.state = {
             channelName: '',
+            cursorPosition: 0,
             value: '',
             managedConfig: {},
         };
@@ -122,10 +123,6 @@ export default class Search extends PureComponent {
     componentWillUnmount() {
         mattermostManaged.removeEventListener(this.listenerId);
     }
-
-    attachAutocomplete = (c) => {
-        this.autocomplete = c;
-    };
 
     cancelSearch = preventDoubleTap(() => {
         const {navigator} = this.props;
@@ -173,9 +170,10 @@ export default class Search extends PureComponent {
     };
 
     handleSelectionChange = (event) => {
-        if (this.autocomplete) {
-            this.autocomplete.getWrappedInstance().handleSelectionChange(event);
-        }
+        const cursorPosition = event.nativeEvent.selection.end;
+        this.setState({
+            cursorPosition,
+        });
     };
 
     handleTextChanged = (value, selectionChanged) => {
@@ -490,7 +488,10 @@ export default class Search extends PureComponent {
         } = this.props;
 
         const {intl} = this.context;
-        const {value} = this.state;
+        const {
+            cursorPosition,
+            value,
+        } = this.state;
         const style = getStyleFromTheme(theme);
         const sections = [{
             data: [{
@@ -625,7 +626,7 @@ export default class Search extends PureComponent {
                         stickySectionHeadersEnabled={Platform.OS === 'ios'}
                     />
                     <Autocomplete
-                        ref={this.attachAutocomplete}
+                        cursorPosition={cursorPosition}
                         onChangeText={this.handleTextChanged}
                         isSearch={true}
                         value={value}
