@@ -379,7 +379,7 @@ export default class Downloader extends PureComponent {
 
     render() {
         const {show, downloadPath} = this.props;
-        if ((!show || this.state.didCancel) && !this.state.force) {
+        if (!show && !this.state.force) {
             return null;
         }
 
