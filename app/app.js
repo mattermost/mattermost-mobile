@@ -194,7 +194,7 @@ const handleServerVersionUpgradeNeeded = async () => {
 
 // TEST ON IOS
 const handleStatusBarHeightChange = (nextStatusBarHeight) => {
-    setStatusBarHeight(nextStatusBarHeight)(store.dispatch, store.getState);
+    store.dispatch(setStatusBarHeight(nextStatusBarHeight));
 };
 
 const handleOrientationChange = (orientation) => {
