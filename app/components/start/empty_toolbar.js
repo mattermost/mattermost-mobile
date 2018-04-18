@@ -19,15 +19,11 @@ const {
     STATUS_BAR_HEIGHT
 } = ViewTypes;
 
-export default class ChannelNavBar extends PureComponent {
-    // static propTypes = {
-    //     isLandscape: PropTypes.bool.isRequired,
-    //     navigator: PropTypes.object.isRequired,
-    //     openChannelDrawer: PropTypes.func.isRequired,
-    //     openSettingsDrawer: PropTypes.func.isRequired,
-    //     onPress: PropTypes.func.isRequired,
-    //     theme: PropTypes.object.isRequired
-    // };
+export default class EmptyToolbar extends PureComponent {
+    static propTypes = {
+        isLandscape: PropTypes.bool.isRequired,
+        theme: PropTypes.object.isRequired
+    };
 
     constructor(props) {
         super(props);
@@ -36,7 +32,7 @@ export default class ChannelNavBar extends PureComponent {
     }
 
     render() {
-        const {isLandscape, navigator, onPress, theme} = this.props;
+        const {isLandscape, theme} = this.props;
 
         const style = getStyleFromTheme(theme);
         const padding = {paddingHorizontal: 0};
