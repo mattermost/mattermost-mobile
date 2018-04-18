@@ -24,6 +24,10 @@ const lazyLoadLocalization = () => {
 };
 
 const DEVICE_SECURE_CACHE_KEY = 'DEVICE_SECURE_CACHE_KEY';
+const DEVICE_TOKEN_CACHE_KEY = 'DEVICE_TOKEN_CACHE_KEY';
+const USER_ID_CACHE_KEY = 'USER_ID_CACHE_KEY';
+const TOKEN_CACHE_KEY = 'TOKEN_CACHE_KEY';
+const URL_CACHE_KEY = 'URL_CACHE_KEY';
 
 export default class App {
     constructor() {
@@ -43,6 +47,13 @@ export default class App {
         // Usage utils/push_notifications.js
         this.replyNotificationData = null;
         this.deviceToken = null;
+
+        // Usage credentials
+        this.currentUserId = null;
+        this.token = null;
+        this.url = null;
+
+        this.getAppCredentials();
     }
 
     getIntl = () => {
@@ -78,8 +89,42 @@ export default class App {
         return false;
     };
 
+    getAppCredentials = async () => {
+        try {
+            const [
+                deviceToken,
+                currentUserId,
+                token,
+                url
+            ] = await Promise.all([
+                await AsyncStorage.getItem(DEVICE_TOKEN_CACHE_KEY),
+                AsyncStorage.getItem(USER_ID_CACHE_KEY),
+                AsyncStorage.getItem(TOKEN_CACHE_KEY),
+                AsyncStorage.getItem(URL_CACHE_KEY),
+            ]);
+
+            if (currentUserId) {
+                this.deviceToken = deviceToken;
+                this.currentUserId = currentUserId;
+                this.token = token;
+                this.url = url;
+            }
+        } catch (error) {
+            return null;
+        }
+
+        return null;
+    };
+
     setManagedConfig = (shouldStart) => {
         AsyncStorage.setItem(DEVICE_SECURE_CACHE_KEY, shouldStart.toString());
+    };
+
+    setAppCredentials = (deviceToken, currentUserId, token, url) => {
+        AsyncStorage.setItem(DEVICE_TOKEN_CACHE_KEY, deviceToken);
+        AsyncStorage.setItem(USER_ID_CACHE_KEY, currentUserId);
+        AsyncStorage.setItem(TOKEN_CACHE_KEY, token);
+        AsyncStorage.setItem(URL_CACHE_KEY, url);
     };
 
     setStartAppFromPushNotification = (startAppFromPushNotification) => {

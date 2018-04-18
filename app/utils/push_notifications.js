@@ -41,6 +41,7 @@ const onRegisterDevice = (data) => {
 
     const token = `${prefix}:${data.token}`;
     if (state.views.root.hydrationComplete) {
+        app.setDeviceToken(token);
         setDeviceToken(token)(store.dispatch, store.getState);
     } else {
         app.setDeviceToken(token);

@@ -71,7 +71,7 @@ export default class Entry extends PureComponent {
         this.state = {
             launchLogin: false,
             launchChannel: false,
-        }
+        };
     }
 
     componentDidMount() {
@@ -156,6 +156,8 @@ export default class Entry extends PureComponent {
         if (currentUserId) {
             Client4.setUserId(currentUserId);
         }
+
+        app.setAppCredentials(app.deviceToken, currentUserId, credentials.token, credentials.url,);
     };
 
     setReplyNotifications = () => {
@@ -251,12 +253,16 @@ export default class Entry extends PureComponent {
             return this.renderChannel();
         }
 
+        const toolbar = app.token && (
+            <EmptyToolbar
+                theme={theme}
+                isLandscape={isLandscape}
+            />
+        );
+
         return (
             <View style={styles.container}>
-                <EmptyToolbar
-                    theme={theme}
-                    isLandscape={isLandscape}
-                />
+                {toolbar}
                 <Loading/>
             </View>
         );
@@ -266,7 +272,8 @@ export default class Entry extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            flex: 1
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
         },
     };
 });
