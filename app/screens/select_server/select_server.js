@@ -26,10 +26,12 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import {UpgradeTypes} from 'app/constants/view';
 import mattermostBucket from 'app/mattermost_bucket';
+import PushNotifications from 'app/push_notifications';
 import {GlobalStyles} from 'app/styles';
 import checkUpgradeType from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
+import tracker from 'app/utils/time_tracker';
 
 import LocalConfig from 'assets/config';
 
@@ -38,7 +40,10 @@ export default class SelectServer extends PureComponent {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
+            handleSuccessfulLogin: PropTypes.func.isRequired,
+            getSession: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
+            login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
@@ -183,9 +188,15 @@ export default class SelectServer extends PureComponent {
         this.props.actions.resetPing();
 
         if (Platform.OS === 'ios' && LocalConfig.ExperimentalClientSideCertEnable) {
+            if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
+                // log in automatically and send directly to the channel screen
+                this.loginWithCertificate();
+                return;
+            }
+
             setTimeout(() => {
                 this.goToNextScreen(screen, title);
-            }, 250);
+            }, 350);
         } else {
             this.goToNextScreen(screen, title);
         }
@@ -197,6 +208,44 @@ export default class SelectServer extends PureComponent {
 
     handleTextChanged = (url) => {
         this.setState({url});
+    };
+
+    loginWithCertificate = async () => {
+        const {intl, navigator} = this.props;
+
+        tracker.initialLoad = Date.now();
+
+        await this.props.actions.login('credential', 'password');
+        await this.props.actions.handleSuccessfulLogin();
+        const expiresAt = await this.props.actions.getSession();
+
+        if (expiresAt) {
+            PushNotifications.localNotificationSchedule({
+                date: new Date(expiresAt),
+                message: intl.formatMessage({
+                    id: 'mobile.session_expired',
+                    defaultMessage: 'Session Expired: Please log in to continue receiving notifications.',
+                }),
+                userInfo: {
+                    localNotification: true,
+                },
+            });
+        }
+
+        navigator.resetTo({
+            screen: 'Channel',
+            title: '',
+            animated: false,
+            backButtonTitle: '',
+            navigatorStyle: {
+                animated: true,
+                animationType: 'fade',
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false,
+                screenBackgroundColor: 'transparent',
+            },
+        });
     };
 
     onClick = preventDoubleTap(async () => {

@@ -5,8 +5,10 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
+import {login} from 'mattermost-redux/actions/users';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
+import LoginActions from 'app/actions/views/login';
 import {loadConfigAndLicense} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
@@ -33,9 +35,11 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            ...LoginActions,
             getPing,
             handleServerUrlChanged,
             loadConfigAndLicense,
+            login,
             resetPing,
             setLastUpgradeCheck,
             setServerVersion,
