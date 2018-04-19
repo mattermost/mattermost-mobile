@@ -139,11 +139,19 @@ run-ios: | check-device-ios pre-run ## Runs the app on an iOS simulator
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		node ./node_modules/react-native/local-cli/cli.js start & echo Running iOS app in development; \
-		react-native run-ios --simulator="${SIMULATOR}"; \
+		if [ ! -z "${SIMULATOR}" ]; then \
+			react-native run-ios --simulator="${SIMULATOR}"; \
+		else \
+			react-native run-ios; \
+		fi; \
 		wait; \
 	else \
 		echo Running iOS app in development; \
-		react-native run-ios --simulator="${SIMULATOR}"; \
+		if [ ! -z "${SIMULATOR}" ]; then \
+			react-native run-ios --simulator="${SIMULATOR}"; \
+		else \
+			react-native run-ios; \
+		fi; \
 	fi
 
 run-android: | check-device-android pre-run prepare-android-build ## Runs the app on an Android emulator or dev device
