@@ -46,7 +46,6 @@
 		7F292AA71E8ABB1100A450A3 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA51E8ABB1100A450A3 /* splash.png */; };
 		7F380D0B1FDB3CFC0061AAD2 /* libRCTVideo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F93F9D91FBB726B0088E416 /* libRCTVideo.a */; };
 		7F3F66021FE426EE0085CA0E /* libRNSVG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF28E11E1F4B1F00DBBE56 /* libRNSVG.a */; };
-		7F3F660F1FE4280D0085CA0E /* libReactNativeExceptionHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7950B1F61A1A500C02924 /* libReactNativeExceptionHandler.a */; };
 		7F3F66101FE4281A0085CA0E /* libRNSentry.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA795061F61A1A500C02924 /* libRNSentry.a */; };
 		7F43D5D61F6BF8C2001FC614 /* libRNLocalAuth.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F8C49871F3DFC30003A22BA /* libRNLocalAuth.a */; };
 		7F43D5D71F6BF8D0001FC614 /* libRNPasscodeStatus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F8C49F81F3E0710003A22BA /* libRNPasscodeStatus.a */; };
@@ -86,6 +85,7 @@
 		7FF7BE6E1FDEE5E8005E55FE /* MattermostBucket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FF7BE6C1FDEE5E8005E55FE /* MattermostBucket.m */; };
 		7FF7BE6F1FDF3CE4005E55FE /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF290C1E1F4B4E00DBBE56 /* libRNVectorIcons.a */; };
 		7FF7BE701FDF3EE7005E55FE /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2DCFD31D3F4A4154822AB532 /* Ionicons.ttf */; };
+		7FF7BE711FE004A3005E55FE /* libRNDeviceInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37DD11281E79EBE1004111BA /* libRNDeviceInfo.a */; };
 		7FFDB3191FE3566C009E3BCF /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 005346E5C0E542BFABAE1411 /* FontAwesome.ttf */; };
 		7FFE329E1FD9CB650038C7A0 /* ShareViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FFE329D1FD9CB650038C7A0 /* ShareViewController.m */; };
 		7FFE32A11FD9CB650038C7A0 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7FFE329F1FD9CB650038C7A0 /* MainInterface.storyboard */; };
@@ -836,6 +836,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7FFE32EA1FD9CD050038C7A0 /* libReact.a in Frameworks */,
 				7FFE32E71FD9CCD00038C7A0 /* libART.a in Frameworks */,
 				7F3F66101FE4281A0085CA0E /* libRNSentry.a in Frameworks */,
 				7F642DF1209353A400F3165E /* libRNDeviceInfo.a in Frameworks */,
@@ -850,7 +851,6 @@
 				7FFE32ED1FD9CD450038C7A0 /* libRCTNetwork.a in Frameworks */,
 				7FFE32EC1FD9CD360038C7A0 /* libRCTText.a in Frameworks */,
 				7FFE32EB1FD9CD170038C7A0 /* libRCTImage.a in Frameworks */,
-				7FFE32EA1FD9CD050038C7A0 /* libReact.a in Frameworks */,
 				7FFE32E91FD9CCF40038C7A0 /* libRCTAnimation.a in Frameworks */,
 				7FFE32E81FD9CCDE0038C7A0 /* libRCTCameraRoll.a in Frameworks */,
 				7FD8DEDE2029EDB7001AAC5E /* libRNTableView.a in Frameworks */,
@@ -1500,6 +1500,9 @@
 							com.apple.BackgroundModes = {
 								enabled = 1;
 							};
+							com.apple.Keychain = {
+								enabled = 1;
+							};
 							com.apple.Push = {
 								enabled = 1;
 							};
@@ -1515,6 +1518,12 @@
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+							com.apple.Keychain = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
 								enabled = 1;
 							};
 						};
@@ -2645,16 +2654,15 @@
 					"$(SRCROOT)/../node_modules/react-native-passcode-status/ios",
 					"$(SRCROOT)/../node_modules/jail-monkey/JailMonkey",
 					"$(SRCROOT)/../node_modules/react-native/Libraries/**",
+					"$(SRCROOT)/../node_modules/react-native-navigation/ios/**",
+					"$(SRCROOT)/../node_modules/react-native-local-auth/**",
+					"$(SRCROOT)/../node_modules/react-native-passcode-status/ios/**",
+					"$(SRCROOT)/../node_modules/jail-monkey/JailMonkey/**",
 					"$(SRCROOT)/../node_modules/react-native-fast-image/ios/FastImage/**",
 					"$(SRCROOT)/../node_modules/react-native-fetch-blob/ios/**",
-					"$(SRCROOT)/../node_modules/react-native-exception-handler/ios",
 					"$(SRCROOT)/../node_modules/react-native-sentry/ios/**",
-					"$(SRCROOT)/../node_modules/react-native-cookies/ios/RNCookieManagerIOS",
-					"$(SRCROOT)/../node_modules/react-native-image-picker/ios",
-					"$(SRCROOT)/../node_modules/react-native-youtube/**",
-					"$(SRCROOT)/../node_modules/react-native-video/ios",
-					"$(SRCROOT)/../node_modules/react-native-doc-viewer/ios/**",
-					"$(SRCROOT)/../node_modules/react-native-safe-area/ios/RNSafeArea",
+					"$(SRCROOT)/../node_modules/react-native-cookies/ios/RNCookieManagerIOS/**",
+					"$(SRCROOT)/../node_modules/react-native-video/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-tableview/**",
 					"$(SRCROOT)/../node_modules/react-native-device-info/ios/**",
 				);
@@ -2705,16 +2713,15 @@
 					"$(SRCROOT)/../node_modules/react-native-passcode-status/ios",
 					"$(SRCROOT)/../node_modules/jail-monkey/JailMonkey",
 					"$(SRCROOT)/../node_modules/react-native/Libraries/**",
+					"$(SRCROOT)/../node_modules/react-native-navigation/ios/**",
+					"$(SRCROOT)/../node_modules/react-native-local-auth/**",
+					"$(SRCROOT)/../node_modules/react-native-passcode-status/ios/**",
+					"$(SRCROOT)/../node_modules/jail-monkey/JailMonkey/**",
 					"$(SRCROOT)/../node_modules/react-native-fast-image/ios/FastImage/**",
 					"$(SRCROOT)/../node_modules/react-native-fetch-blob/ios/**",
-					"$(SRCROOT)/../node_modules/react-native-exception-handler/ios",
 					"$(SRCROOT)/../node_modules/react-native-sentry/ios/**",
-					"$(SRCROOT)/../node_modules/react-native-cookies/ios/RNCookieManagerIOS",
-					"$(SRCROOT)/../node_modules/react-native-image-picker/ios",
-					"$(SRCROOT)/../node_modules/react-native-youtube/**",
-					"$(SRCROOT)/../node_modules/react-native-video/ios",
-					"$(SRCROOT)/../node_modules/react-native-doc-viewer/ios/**",
-					"$(SRCROOT)/../node_modules/react-native-safe-area/ios/RNSafeArea",
+					"$(SRCROOT)/../node_modules/react-native-cookies/ios/RNCookieManagerIOS/**",
+					"$(SRCROOT)/../node_modules/react-native-video/ios/**",
 					"$(SRCROOT)/../node_modules/react-native-tableview/**",
 					"$(SRCROOT)/../node_modules/react-native-device-info/ios/**",
 				);

@@ -569,6 +569,7 @@ export default class ExtensionPost extends PureComponent {
 
         if (currentUserId && authenticated) {
             await this.emmAuthenticationIfNeeded();
+            const certificate = await mattermostBucket.getPreference('cert', Config.AppGroupId);
 
             try {
                 // Check to see if the use still belongs to the channel
@@ -584,6 +585,7 @@ export default class ExtensionPost extends PureComponent {
                     post,
                     requestId: generateId().replace(/-/g, ''),
                     useBackgroundUpload: this.useBackgroundUpload,
+                    certificate,
                 };
 
                 this.setState({sending: true});
