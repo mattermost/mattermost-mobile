@@ -115,6 +115,7 @@ export default class Entry extends PureComponent {
             this.unsubscribeFromStore();
 
             this.setAppCredentials();
+            this.setStartupThemes();
             this.setReplyNotifications();
 
             if (Platform.OS === 'android') {
@@ -158,6 +159,19 @@ export default class Entry extends PureComponent {
         }
 
         app.setAppCredentials(app.deviceToken, currentUserId, credentials.token, credentials.url,);
+    };
+
+    setStartupThemes = () => {
+        const {theme} = this.props;
+        if (app.toolbarBackground === theme.sidebarHeaderBg) {
+            return;
+        }
+
+        app.setStartupThemes(
+            theme.sidebarHeaderBg,
+            theme.sidebarHeaderTextColor,
+            theme.centerChannelBg
+        );
     };
 
     setReplyNotifications = () => {
@@ -253,15 +267,24 @@ export default class Entry extends PureComponent {
             return this.renderChannel();
         }
 
-        const toolbar = app.token && (
-            <EmptyToolbar
-                theme={theme}
-                isLandscape={isLandscape}
-            />
-        );
+        let toolbar = null;
+        const backgroundColor = app.appBackground ? app.appBackground : '#ffff';
+        if (app.token && app.toolbarBackground) {
+            const toolbarTheme = {
+                sidebarHeaderBg: app.toolbarBackground,
+                sidebarHeaderTextColor: app.toolbarTextColor,
+            };
+
+            toolbar = (
+                <EmptyToolbar
+                    theme={toolbarTheme}
+                    isLandscape={isLandscape}
+                />
+            );
+        };
 
         return (
-            <View style={styles.container}>
+            <View style={[styles.container, {backgroundColor}]}>
                 {toolbar}
                 <Loading/>
             </View>
@@ -273,7 +296,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
     };
 });

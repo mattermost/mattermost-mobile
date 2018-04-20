@@ -25,6 +25,7 @@ import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {handleLoginIdChanged} from 'app/actions/views/login';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import initialState from 'app/initial_state';
 import configureStore from 'app/store';
@@ -409,10 +410,16 @@ const handleAppActive = async () => {
 
 const handleAppInActive = () => {
     const {dispatch, getState} = store;
+    const theme = getTheme(getState());
 
     // When the app is sent to the background we set the time when that happens
     // and perform a data clean up to improve on performance
     app.setInBackgroundSince(Date.now());
+    app.setStartupThemes(
+        theme.sidebarHeaderBg,
+        theme.sidebarHeaderTextColor,
+        theme.centerChannelBg
+    );
     startDataCleanup()(dispatch, getState);
 };
 

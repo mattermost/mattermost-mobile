@@ -28,6 +28,9 @@ const DEVICE_TOKEN_CACHE_KEY = 'DEVICE_TOKEN_CACHE_KEY';
 const USER_ID_CACHE_KEY = 'USER_ID_CACHE_KEY';
 const TOKEN_CACHE_KEY = 'TOKEN_CACHE_KEY';
 const URL_CACHE_KEY = 'URL_CACHE_KEY';
+const TOOLBAR_BACKGROUND = 'TOOLBAR_BACKGROUND';
+const TOOLBAR_TEXT_COLOR = 'TOOLBAR_TEXT_COLOR';
+const APP_BACKGROUND = 'APP_BACKGROUND';
 
 export default class App {
     constructor() {
@@ -43,6 +46,9 @@ export default class App {
         this.appStarted = false;
         this.emmEnabled = false;
         this.intl = null;
+        this.toolbarBackground = null;
+        this.toolbarTextColor = null;
+        this.appBackground = null;
 
         // Usage utils/push_notifications.js
         this.replyNotificationData = null;
@@ -53,6 +59,7 @@ export default class App {
         this.token = null;
         this.url = null;
 
+        this.getStartupThemes();
         this.getAppCredentials();
     }
 
@@ -116,6 +123,30 @@ export default class App {
         return null;
     };
 
+    getStartupThemes = async () => {
+        try {
+            const [
+                toolbarBackground,
+                toolbarTextColor,
+                appBackground,
+            ] = await Promise.all([
+                await AsyncStorage.getItem(TOOLBAR_BACKGROUND),
+                AsyncStorage.getItem(TOOLBAR_TEXT_COLOR),
+                AsyncStorage.getItem(APP_BACKGROUND),
+            ]);
+
+            if (toolbarBackground) {
+                this.toolbarBackground = toolbarBackground;
+                this.toolbarTextColor = toolbarTextColor;
+                this.appBackground = appBackground;
+            }
+        } catch (error) {
+            return null;
+        }
+
+        return null;
+    };
+
     setManagedConfig = (shouldStart) => {
         AsyncStorage.setItem(DEVICE_SECURE_CACHE_KEY, shouldStart.toString());
     };
@@ -125,6 +156,12 @@ export default class App {
         AsyncStorage.setItem(USER_ID_CACHE_KEY, currentUserId);
         AsyncStorage.setItem(TOKEN_CACHE_KEY, token);
         AsyncStorage.setItem(URL_CACHE_KEY, url);
+    };
+
+    setStartupThemes = (toolbarBackground, toolbarTextColor, appBackground) => {
+        AsyncStorage.setItem(TOOLBAR_BACKGROUND, toolbarBackground);
+        AsyncStorage.setItem(TOOLBAR_TEXT_COLOR, toolbarTextColor);
+        AsyncStorage.setItem(APP_BACKGROUND, appBackground);
     };
 
     setStartAppFromPushNotification = (startAppFromPushNotification) => {
