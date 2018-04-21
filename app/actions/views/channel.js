@@ -400,11 +400,23 @@ export function refreshChannelWithRetry(channelId) {
 
 export function leaveChannel(channel, reset = false) {
     return async (dispatch, getState) => {
-        const {currentTeamId} = getState().entities.teams;
-        await serviceLeaveChannel(channel.id)(dispatch, getState);
-        if (channel.isCurrent || reset) {
-            await selectInitialChannel(currentTeamId)(dispatch, getState);
+        const state = getState();
+        const {currentChannelId} = state.entities.channels;
+        const {currentTeamId} = state.entities.teams;
+
+        dispatch({
+            type: ViewTypes.REMOVE_LAST_CHANNEL_FOR_TEAM,
+            data: {
+                teamId: currentTeamId,
+                channelId: channel.id,
+            },
+        });
+
+        if (channel.id === currentChannelId || reset) {
+            await dispatch(selectInitialChannel(currentTeamId));
         }
+
+        await serviceLeaveChannel(channel.id)(dispatch, getState);
     };
 }
 
