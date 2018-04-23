@@ -25,18 +25,19 @@ platform :ios do
 
   desc 'Build iOS app'
   lane :build do
+    sh "echo starting build lane"
     if ENV['SYNC_IOS_PROVISIONING_PROFILES'] == 'true'
       match(type: ENV['MATCH_TYPE'] || 'adhoc')
     end
 
     configure_from_env()
-
+    sh "echo starting build lane"
     build_ios()
 
     if ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
       pilot
     end
-
+    sh "echo starting git actions"
     git_actions()
   end
 
