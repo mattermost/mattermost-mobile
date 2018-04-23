@@ -176,7 +176,8 @@ platform :ios do
         scheme: 'Mattermost',
         configuration: config_mode,
         workspace: './ios/Mattermost.xcworkspace',
-        export_method: method
+        export_method: method,
+        verbose: true
     )
     sh "echo gym end 179"
   end
