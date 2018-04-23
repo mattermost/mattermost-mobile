@@ -35,6 +35,7 @@
     "react-native-image-gallery": "enahum/react-native-image-gallery#a98b1051e94f5a394541ca1ff9b15e2c9ffed84f",
     "react-native-image-picker": "0.26.7",
     "react-native-keyboard-aware-scroll-view": "0.5.0",
+    "react-native-keychain": "3.0.0-rc.3",
     "react-native-linear-gradient": "2.4.0",
     "react-native-local-auth": "enahum/react-native-local-auth.git#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",
     "react-native-navigation": "1.1.450",

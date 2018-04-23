@@ -3,6 +3,7 @@
 
 import {AsyncStorage} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -24,10 +25,6 @@ const lazyLoadLocalization = () => {
 };
 
 const DEVICE_SECURE_CACHE_KEY = 'DEVICE_SECURE_CACHE_KEY';
-const DEVICE_TOKEN_CACHE_KEY = 'DEVICE_TOKEN_CACHE_KEY';
-const USER_ID_CACHE_KEY = 'USER_ID_CACHE_KEY';
-const TOKEN_CACHE_KEY = 'TOKEN_CACHE_KEY';
-const URL_CACHE_KEY = 'URL_CACHE_KEY';
 const TOOLBAR_BACKGROUND = 'TOOLBAR_BACKGROUND';
 const TOOLBAR_TEXT_COLOR = 'TOOLBAR_TEXT_COLOR';
 const APP_BACKGROUND = 'APP_BACKGROUND';
@@ -98,23 +95,22 @@ export default class App {
 
     getAppCredentials = async () => {
         try {
-            const [
-                deviceToken,
-                currentUserId,
-                token,
-                url
-            ] = await Promise.all([
-                await AsyncStorage.getItem(DEVICE_TOKEN_CACHE_KEY),
-                AsyncStorage.getItem(USER_ID_CACHE_KEY),
-                AsyncStorage.getItem(TOKEN_CACHE_KEY),
-                AsyncStorage.getItem(URL_CACHE_KEY),
-            ]);
+            const credentials = await getGenericPassword();
+            if (credentials) {
+                const usernameParsed = credentials.username.split(',');
+                const passwordParsed = credentials.password.split(',');
 
-            if (currentUserId) {
-                this.deviceToken = deviceToken;
-                this.currentUserId = currentUserId;
-                this.token = token;
-                this.url = url;
+                // username == deviceToken, currentUserId
+                // password == token, url
+                if (usernameParsed.length === 2 && passwordParsed.length === 2) {
+                    const [deviceToken, currentUserId] = usernameParsed;
+                    const [token, url] = passwordParsed;
+
+                    this.deviceToken = deviceToken;
+                    this.currentUserId = currentUserId;
+                    this.token = token;
+                    this.url = url;
+                }
             }
         } catch (error) {
             return null;
@@ -152,10 +148,12 @@ export default class App {
     };
 
     setAppCredentials = (deviceToken, currentUserId, token, url) => {
-        AsyncStorage.setItem(DEVICE_TOKEN_CACHE_KEY, deviceToken);
-        AsyncStorage.setItem(USER_ID_CACHE_KEY, currentUserId);
-        AsyncStorage.setItem(TOKEN_CACHE_KEY, token);
-        AsyncStorage.setItem(URL_CACHE_KEY, url);
+        if (!currentUserId) {
+            return;
+        }
+        const username = `${deviceToken}, ${currentUserId}`;
+        const password = `${token},${url}`;
+        setGenericPassword(username, password);
     };
 
     setStartupThemes = (toolbarBackground, toolbarTextColor, appBackground) => {
@@ -206,6 +204,16 @@ export default class App {
 
     setNativeAppLaunched = (nativeAppLaunched) => {
         this.nativeAppLaunched = nativeAppLaunched;
+    };
+
+    clearCache = () => {
+        resetGenericPassword();
+        AsyncStorage.multiRemove([
+            DEVICE_SECURE_CACHE_KEY,
+            TOOLBAR_BACKGROUND,
+            TOOLBAR_TEXT_COLOR,
+            APP_BACKGROUND
+        ]);
     };
 
     verifyManagedConfigCache = async (shouldStartCache) => {
