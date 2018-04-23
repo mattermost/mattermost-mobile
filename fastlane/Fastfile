@@ -31,7 +31,7 @@ platform :ios do
     end
 
     configure_from_env()
-    sh "echo starting build lane"
+    sh "echo starting configure from env"
     build_ios()
 
     if ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
@@ -136,7 +136,7 @@ platform :ios do
     if ENV['ENSURE_GIT_IS_CLEAN'] == 'true'
       ensure_git_status_clean
     end
-
+    sh "echo build ios 139"
     if ENV['IOS_INCREMENT_BUILD_NUMBER'] == 'true'
       current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj').to_i
       increment_build_number(
@@ -155,7 +155,7 @@ platform :ios do
 
       commit_version_bump(commit_version_options)
     end
-
+    sh "echo update identifiers 158"
     update_identifiers()
     replace_ios_assets()
 
@@ -176,6 +176,7 @@ platform :ios do
         workspace: './ios/Mattermost.xcworkspace',
         export_method: method
     )
+    sh "echo gym end 179"
   end
 
   def send_message_for_ios(pretext, title, msg, default_payloads, success)
