@@ -157,13 +157,15 @@ platform :ios do
     end
     sh "echo update identifiers 158"
     update_identifiers()
+    sh "echo debug 160"
     replace_ios_assets()
-
+    sh "echo debug 162"
     unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
       update_project_team(
           path: './ios/Mattermost.xcodeproj',
           teamid: ENV['FASTLANE_TEAM_ID']
       )
+      sh "echo project team 167"
     end
 
     config_mode = ENV['IOS_BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
