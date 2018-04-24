@@ -10,7 +10,7 @@
     "analytics-react-native": "1.2.0",
     "babel-polyfill": "6.26.0",
     "base-64": "0.1.0",
-    "commonmark": "mattermost/commonmark.js#1496b5d11f245e00aae51f8fa1b2c4f12b4ddd7b",
+    "commonmark": "github:mattermost/commonmark.js#c9c29834005af6eedd1a979d913b75e34f16a83b",
     "commonmark-react-renderer": "mattermost/commonmark-react-renderer#86fa63f898802953842526c2030f3b63c5d1ae7a",
     "deep-equal": "1.0.1",
     "fuse.js": "^3.2.0",
