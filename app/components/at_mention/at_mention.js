@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import {Clipboard, Platform, Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -18,30 +20,29 @@ export default class AtMention extends React.PureComponent {
         onLongPress: PropTypes.func.isRequired,
         onPostPress: PropTypes.func,
         textStyle: CustomPropTypes.Style,
+        teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape,
-    }
+    };
 
     constructor(props) {
         super(props);
 
-        const userDetails = this.getUserDetailsFromMentionName(props);
+        const user = this.getUserDetailsFromMentionName(props);
         this.state = {
-            username: userDetails.username,
-            id: userDetails.id,
+            user,
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.mentionName !== this.props.mentionName || nextProps.usersByUsername !== this.props.usersByUsername) {
-            const userDetails = this.getUserDetailsFromMentionName(nextProps);
+            const user = this.getUserDetailsFromMentionName(nextProps);
             this.setState({
-                username: userDetails.username,
-                id: userDetails.id,
+                user,
             });
         }
     }
@@ -55,7 +56,7 @@ export default class AtMention extends React.PureComponent {
             animated: true,
             backButtonTitle: '',
             passProps: {
-                userId: this.state.id,
+                userId: this.state.user.id,
             },
             navigatorStyle: {
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -77,11 +78,7 @@ export default class AtMention extends React.PureComponent {
 
         while (mentionName.length > 0) {
             if (props.usersByUsername.hasOwnProperty(mentionName)) {
-                const user = props.usersByUsername[mentionName];
-                return {
-                    username: user.username,
-                    id: user.id,
-                };
+                return props.usersByUsername[mentionName];
             }
 
             // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
@@ -114,22 +111,22 @@ export default class AtMention extends React.PureComponent {
         }
 
         this.props.onLongPress(action);
-    }
+    };
 
     handleCopyMention = () => {
         const {username} = this.state;
         Clipboard.setString(`@${username}`);
-    }
+    };
 
     render() {
-        const {isSearchResult, mentionName, mentionStyle, onPostPress, textStyle} = this.props;
-        const username = this.state.username;
+        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle} = this.props;
+        const {user} = this.state;
 
-        if (!username) {
+        if (!user.username) {
             return <Text style={textStyle}>{'@' + mentionName}</Text>;
         }
 
-        const suffix = this.props.mentionName.substring(username.length);
+        const suffix = this.props.mentionName.substring(user.username.length);
 
         return (
             <Text
@@ -138,7 +135,7 @@ export default class AtMention extends React.PureComponent {
                 onLongPress={this.handleLongPress}
             >
                 <Text style={mentionStyle}>
-                    {'@' + username}
+                    {'@' + displayUsername(user, teammateNameDisplay)}
                 </Text>
                 {suffix}
             </Text>
