@@ -38,7 +38,7 @@ class Channel extends PureComponent {
             connection: PropTypes.func.isRequired,
             loadChannelsIfNecessary: PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
-            selectFirstAvailableTeam: PropTypes.func.isRequired,
+            selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
             closeWebSocket: PropTypes.func.isRequired,
@@ -62,7 +62,7 @@ class Channel extends PureComponent {
         if (this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
         } else {
-            this.props.actions.selectFirstAvailableTeam();
+            this.props.actions.selectDefaultTeam();
         }
     }
 
@@ -190,7 +190,7 @@ class Channel extends PureComponent {
     };
 
     handleLeaveTeam = () => {
-        this.props.actions.selectFirstAvailableTeam();
+        this.props.actions.selectDefaultTeam();
     };
 
     loadChannels = (teamId) => {

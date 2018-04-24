@@ -20,10 +20,7 @@ export function handleTeamChange(teamId, selectChannel = true) {
             return;
         }
 
-        const actions = [
-            setChannelDisplayName(''),
-            {type: TeamTypes.SELECT_TEAM, data: teamId},
-        ];
+        const actions = [setChannelDisplayName(''), {type: TeamTypes.SELECT_TEAM, data: teamId}];
 
         if (selectChannel) {
             actions.push({type: ChannelTypes.SELECT_CHANNEL, data: ''});
@@ -39,14 +36,25 @@ export function handleTeamChange(teamId, selectChannel = true) {
     };
 }
 
-export function selectFirstAvailableTeam() {
+export function selectDefaultTeam() {
     return async (dispatch, getState) => {
-        const {teams: allTeams, myMembers} = getState().entities.teams;
-        const teams = Object.keys(myMembers).map((key) => allTeams[key]);
-        const firstTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
+        const state = getState();
 
-        if (firstTeam) {
-            handleTeamChange(firstTeam.id)(dispatch, getState);
+        const {ExperimentalPrimaryTeam} = state.entities.general.config;
+        const {teams: allTeams, myMembers} = state.entities.teams;
+        const teams = Object.keys(myMembers).map((key) => allTeams[key]);
+
+        let defaultTeam;
+        if (ExperimentalPrimaryTeam) {
+            defaultTeam = teams.find((t) => t.name === ExperimentalPrimaryTeam.toLowerCase());
+        }
+
+        if (!defaultTeam) {
+            defaultTeam = Object.values(teams).sort((a, b) => a.display_name.localeCompare(b.display_name))[0];
+        }
+
+        if (defaultTeam) {
+            handleTeamChange(defaultTeam.id)(dispatch, getState);
         } else {
             EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
         }
@@ -55,5 +63,5 @@ export function selectFirstAvailableTeam() {
 
 export default {
     handleTeamChange,
-    selectFirstAvailableTeam,
+    selectDefaultTeam,
 };
