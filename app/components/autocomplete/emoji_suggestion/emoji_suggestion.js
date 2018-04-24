@@ -82,7 +82,7 @@ export default class EmojiSuggestion extends Component {
                 return;
             }
 
-            if (this.props.emojis !== nextProps.emojis) {
+            if (this.props.emojis === nextProps.emojis && this.matchTerm.length) {
                 this.handleFuzzySearch(this.matchTerm, nextProps);
             } else if (!this.matchTerm.length) {
                 const initialEmojis = [...nextProps.emojis];
