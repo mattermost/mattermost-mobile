@@ -22,7 +22,6 @@ const STATUS_BUFFER = Platform.select({
 export default class ProfilePicture extends PureComponent {
     static propTypes = {
         size: PropTypes.number,
-        statusBorderWidth: PropTypes.number,
         statusSize: PropTypes.number,
         user: PropTypes.object,
         showStatus: PropTypes.bool,
@@ -38,7 +37,6 @@ export default class ProfilePicture extends PureComponent {
     static defaultProps = {
         showStatus: true,
         size: 128,
-        statusBorderWidth: 2,
         statusSize: 14,
         edit: false,
     };
@@ -65,7 +63,13 @@ export default class ProfilePicture extends PureComponent {
     }
 
     componentWillUpdate(nextProps) {
-        if (Boolean(nextProps.user) !== Boolean(this.props.user) || nextProps.user.id !== this.props.user.id) {
+        if (
+            Boolean(nextProps.user) !== Boolean(this.props.user) ||
+            nextProps.user.id !== this.props.user.id ||
+            nextProps.user.last_picture_update !== this.props.user.last_picture_update
+        ) {
+            this.setState({pictureUrl: null});
+
             const nextUser = nextProps.user;
 
             if (this.mounted) {
@@ -75,6 +79,10 @@ export default class ProfilePicture extends PureComponent {
             if (nextUser) {
                 ImageCacheManager.cache('', Client4.getProfilePictureUrl(nextUser.id, nextUser.last_picture_update), this.setImageURL);
             }
+        }
+
+        if (nextProps.edit && nextProps.imageUri !== this.props.imageUri) {
+            this.setImageURL(nextProps.imageUri);
         }
     }
 
@@ -121,7 +129,7 @@ export default class ProfilePicture extends PureComponent {
         let source = null;
         if (pictureUrl) {
             let prefix = '';
-            if (Platform.OS === 'android') {
+            if (Platform.OS === 'android' && !pictureUrl.includes('content://')) {
                 prefix = 'file://';
             }
 
