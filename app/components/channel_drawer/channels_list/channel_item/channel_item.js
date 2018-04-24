@@ -208,7 +208,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             paddingRight: 40,
             height: '100%',
-            width: '100%',
+            flex: 1,
             textAlignVertical: 'center',
             lineHeight: 44,
         },
