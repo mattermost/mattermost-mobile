@@ -49,6 +49,7 @@ export default class ProfilePicture extends PureComponent {
 
     componentWillMount() {
         const {edit, imageUri, user} = this.props;
+        this.mounted = true;
 
         if (edit && imageUri) {
             this.setImageURL(imageUri);
@@ -65,9 +66,11 @@ export default class ProfilePicture extends PureComponent {
 
     componentWillUpdate(nextProps) {
         if (Boolean(nextProps.user) !== Boolean(this.props.user) || nextProps.user.id !== this.props.user.id) {
-            this.setState({pictureUrl: null});
-
             const nextUser = nextProps.user;
+
+            if (this.mounted) {
+                this.setState({pictureUrl: null});
+            }
 
             if (nextUser) {
                 ImageCacheManager.cache('', Client4.getProfilePictureUrl(nextUser.id, nextUser.last_picture_update), this.setImageURL);
@@ -75,8 +78,14 @@ export default class ProfilePicture extends PureComponent {
         }
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     setImageURL = (pictureUrl) => {
-        this.setState({pictureUrl});
+        if (this.mounted) {
+            this.setState({pictureUrl});
+        }
     };
 
     render() {
