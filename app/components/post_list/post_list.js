@@ -346,7 +346,7 @@ export default class PostList extends PureComponent {
                 ref='list'
                 data={postIds}
                 extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
-                initialNumToRender={false}
+                initialNumToRender={10}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 inverted={true}
                 keyExtractor={this.keyExtractor}

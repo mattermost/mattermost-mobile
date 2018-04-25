@@ -16,6 +16,8 @@ import {isGif} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 
+import thumb from 'assets/images/thumb.png';
+
 const IMAGE_SIZE = {
     Fullsize: 'fullsize',
     Preview: 'preview',
@@ -135,6 +137,8 @@ export default class FileAttachmentImage extends PureComponent {
                 <ProgressiveImage
                     ref={this.handleCapturePreviewRef}
                     style={imageStyle}
+                    defaultSource={thumb}
+                    tintDefaultSource={true}
                     filename={file.name}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}

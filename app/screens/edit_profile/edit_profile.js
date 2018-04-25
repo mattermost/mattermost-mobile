@@ -11,7 +11,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Loading from 'app/components/loading';
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar/index';
-import ProfilePicture from 'app/components/profile_picture/index';
+import ProfilePicture from 'app/components/profile_picture';
 import AttachmentButton from 'app/components/attachment_button';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
