@@ -16,7 +16,7 @@
     "fuse.js": "^3.2.0",
     "intl": "1.2.5",
     "jail-monkey": "0.2.0",
-    "mattermost-redux": "mattermost/mattermost-redux#3e509a951cdca620fa4dabc651ebe695bc5b9213",
+    "mattermost-redux": "mattermost/mattermost-redux#c2cdd8fad33b97af4d0af2462b24f9cfd50a1913",
     "prop-types": "15.6.1",
     "react": "16.3.1",
     "react-intl": "2.4.0",
