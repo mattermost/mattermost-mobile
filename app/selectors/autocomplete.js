@@ -193,7 +193,7 @@ export const filterPublicChannels = createSelector(
             );
         } else {
             channels = myChannels.filter((c) => {
-                return (c.type === General.OPEN_CHANNEL || c.type === General.PRIVATE_CHANNEL);
+                return (c.type === General.OPEN_CHANNEL);
             }).concat(otherChannels);
         }
 
