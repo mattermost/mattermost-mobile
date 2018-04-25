@@ -2408,7 +2408,7 @@
   "mobile.notification_settings.auto_responder.message_title": "CUSTOM MESSAGE",
   "mobile.notification_settings.auto_responder.message_placeholder": "Message",
   "mobile.notification_settings.auto_responder.default_message": "Hello, I am out of office and unable to respond to messages.",
-  "mobile.notification_settings.auto_responder.footer_message": "Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies disables email and push notifications.",
+  "mobile.notification_settings.auto_responder.footer_message": "Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.",
   "mobile.notification_settings.email": "Email",
   "mobile.notification_settings.email_title": "Email Notifications",
   "mobile.notification_settings.mentions.channelWide": "Channel-wide mentions",

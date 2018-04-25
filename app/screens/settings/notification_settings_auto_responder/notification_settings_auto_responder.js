@@ -121,8 +121,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                         <Section
                             headerId='mobile.notification_settings.auto_responder.message_title'
                             headerDefaultMessage='CUSTOM MESSAGE'
-                            footerId='mobile.notification_settings.auto_responder.footer_message'
-                            footerDefaultMessage='Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies disables email and push notifications.'
                             theme={theme}
                         >
                             <View style={style.inputContainer}>
@@ -145,6 +143,11 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                             </View>
                         </Section>
                     )}
+                    <FormattedText
+                        id={'mobile.notification_settings.auto_responder.footer_message'}
+                        defaultMessage={'Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.'}
+                        style={style.footer}
+                    />
                 </View>
             </View>
         );
@@ -175,6 +178,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 150,
             paddingHorizontal: 15,
             paddingVertical: 10,
+        },
+        footer: {
+            marginHorizontal: 15,
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };
 });
