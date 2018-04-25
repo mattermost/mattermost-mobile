@@ -64,6 +64,8 @@
 	<string>Take a Photo or Video and upload it to your mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Send your current location to your Mattermost instance</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+    <string>Send your current location to your Mattermost instance</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Share your route in your Mattermost instance</string>
 	<key>NSPhotoLibraryUsageDescription</key>
