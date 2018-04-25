@@ -7,6 +7,7 @@ import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'reac
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import {changeOpacity} from 'app/utils/theme';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
@@ -18,7 +19,9 @@ export default class ProgressiveImage extends PureComponent {
         filename: PropTypes.string,
         imageUri: PropTypes.string,
         style: CustomPropTypes.Style,
+        theme: PropTypes.object.isRequired,
         thumbnailUri: PropTypes.string,
+        tintDefaultSource: PropTypes.bool,
     };
 
     constructor(props) {
@@ -34,7 +37,7 @@ export default class ProgressiveImage extends PureComponent {
     }
 
     componentWillMount() {
-        const intensity = new Animated.Value(100);
+        const intensity = new Animated.Value(80);
         this.setState({intensity});
         this.load(this.props);
     }
@@ -102,7 +105,7 @@ export default class ProgressiveImage extends PureComponent {
     };
 
     render() {
-        const {style, defaultSource, isBackgroundImage, ...otherProps} = this.props;
+        const {style, defaultSource, isBackgroundImage, theme, tintDefaultSource, ...otherProps} = this.props;
         const {style: computedStyle} = this;
         const {uri, intensity, thumb} = this.state;
         const hasDefaultSource = Boolean(defaultSource);
@@ -124,9 +127,22 @@ export default class ProgressiveImage extends PureComponent {
             ImageComponent = Animated.Image;
         }
 
-        return (
-            <View {...{style}}>
-                {(hasDefaultSource && !hasPreview && !hasURI) &&
+        let defaultImage;
+        if (hasDefaultSource && tintDefaultSource) {
+            defaultImage = (
+                <View style={styles.defaultImageContainer}>
+                    <DefaultComponent
+                        {...otherProps}
+                        source={defaultSource}
+                        style={{flex: 1, tintColor: changeOpacity(theme.centerChannelColor, 0.2)}}
+                        resizeMode='center'
+                    >
+                        {this.props.children}
+                    </DefaultComponent>
+                </View>
+            );
+        } else {
+            defaultImage = (
                 <DefaultComponent
                     {...otherProps}
                     source={defaultSource}
@@ -134,7 +150,12 @@ export default class ProgressiveImage extends PureComponent {
                 >
                     {this.props.children}
                 </DefaultComponent>
-                }
+            );
+        }
+
+        return (
+            <View {...{style}}>
+                {(hasDefaultSource && !hasPreview && !hasURI) && defaultImage}
                 {hasPreview && !isImageReady &&
                 <ImageComponent
                     {...otherProps}
@@ -155,9 +176,20 @@ export default class ProgressiveImage extends PureComponent {
                 </ImageComponent>
                 }
                 {hasPreview &&
-                <Animated.View style={[computedStyle, {backgroundColor: 'black', opacity}]}/>
+                <Animated.View style={[computedStyle, {backgroundColor: theme.centerChannelBg, opacity}]}/>
                 }
             </View>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    defaultImageContainer: {
+        flex: 1,
+        position: 'absolute',
+        height: 80,
+        width: 80,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
