@@ -3,16 +3,20 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Alert,
+    NativeModules,
     Platform,
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {DocumentPicker} from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {PermissionTypes} from 'app/constants';
 import {changeOpacity} from 'app/utils/theme';
+
+const ShareExtension = NativeModules.MattermostShare;
 
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
@@ -141,6 +145,32 @@ export default class AttachmentButton extends PureComponent {
         });
     };
 
+    attachFileFromFiles = async () => {
+        const hasPermission = await this.hasStoragePermission();
+
+        if (hasPermission) {
+            DocumentPicker.show({
+                filetype: [Platform.OS === 'ios' ? 'public.item' : '*/*'],
+            }, async (error, res) => {
+                if (error) {
+                    return;
+                }
+
+                if (Platform.OS === 'android') {
+                    // For android we need to retrieve the realPath in case the file being imported is from the cloud
+                    const newUri = await ShareExtension.getFilePath(res.uri);
+                    if (newUri.filePath) {
+                        res.uri = newUri.filePath;
+                    } else {
+                        return;
+                    }
+                }
+
+                this.uploadFiles([res]);
+            });
+        }
+    };
+
     hasPhotoPermission = async () => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
@@ -175,6 +205,59 @@ export default class AttachmentButton extends PureComponent {
                     formatMessage({
                         id: 'mobile.android.photos_permission_denied_description',
                         defaultMessage: 'To upload images from your library, please change your permission settings.',
+                    }),
+                    [
+                        grantOption,
+                        {
+                            text: formatMessage({
+                                id: 'mobile.android.permission_denied_dismiss',
+                                defaultMessage: 'Dismiss',
+                            }),
+                        },
+                    ]
+                );
+                return false;
+            }
+            }
+        }
+
+        return true;
+    };
+
+    hasStoragePermission = async () => {
+        if (Platform.OS === 'android') {
+            const {formatMessage} = this.context.intl;
+            let permissionRequest;
+            const hasPermissionToStorage = await Permissions.check('storage');
+
+            switch (hasPermissionToStorage) {
+            case PermissionTypes.UNDETERMINED:
+                permissionRequest = await Permissions.request('storage');
+                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                    return false;
+                }
+                break;
+            case PermissionTypes.DENIED: {
+                const canOpenSettings = await Permissions.canOpenSettings();
+                let grantOption = null;
+                if (canOpenSettings) {
+                    grantOption = {
+                        text: formatMessage({
+                            id: 'mobile.android.permission_denied_retry',
+                            defaultMessage: 'Set permission',
+                        }),
+                        onPress: () => Permissions.openSettings(),
+                    };
+                }
+
+                Alert.alert(
+                    formatMessage({
+                        id: 'mobile.android.storage_permission_denied_title',
+                        defaultMessage: 'File Storage access is required',
+                    }),
+                    formatMessage({
+                        id: 'mobile.android.storage_permission_denied_description',
+                        defaultMessage: 'To upload images from your Android device, please change your permission settings.',
                     }),
                     [
                         grantOption,
@@ -250,6 +333,15 @@ export default class AttachmentButton extends PureComponent {
                 icon: 'file-video-o',
             });
         }
+
+        options.items.push({
+            action: () => this.handleFileAttachmentOption(this.attachFileFromFiles),
+            text: {
+                id: 'mobile.file_upload.browse',
+                defaultMessage: 'Browse Files',
+            },
+            icon: 'file',
+        });
 
         this.props.navigator.showModal({
             screen: 'OptionsModal',

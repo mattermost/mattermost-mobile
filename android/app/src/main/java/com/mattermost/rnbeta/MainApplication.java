@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.facebook.react.ReactApplication;
+import com.reactnativedocumentpicker.ReactNativeDocumentPicker;
 import com.reactlibrary.RNReactNativeDocViewerPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.horcrux.svg.SvgPackage;
@@ -72,6 +73,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactNativeYouTube(),
             new ReactVideoPackage(),
             new RNReactNativeDocViewerPackage(),
+            new ReactNativeDocumentPicker(),
             new SharePackage()
     );
   }

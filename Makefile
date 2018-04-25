@@ -67,7 +67,9 @@ post-install:
 	@# Must remove the .babelrc for 0.42.0 to work correctly
 	@# Need to copy custom ImagePickerModule.java that implements correct permission checks for android
 	@rm node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-	@cp ./ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
+	@cp ./native_modules/ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
+	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
+	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js

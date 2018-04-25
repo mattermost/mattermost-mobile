@@ -64,7 +64,9 @@ public class RealPathUtil {
 
                 return getDataColumn(context, contentUri, selection, selectionArgs);
             }
-        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+        }
+
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
             // MediaStore (and general)
 
             if (isGooglePhotosUri(uri)) {
