@@ -20,7 +20,7 @@
     "prop-types": "15.6.1",
     "react": "16.3.1",
     "react-intl": "2.4.0",
-    "react-native": "0.55.3",
+    "react-native": "0.52.3",
     "react-native-animatable": "1.2.4",
     "react-native-bottom-sheet": "1.0.3",
     "react-native-button": "2.3.0",
