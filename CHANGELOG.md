@@ -1,5 +1,38 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.8.0 Release
+- Release Date: April 27, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### Image performance
+- Images are now downloaded and stored locally for better performance
+
+#### Flagged Posts and Recent Mentions
+- Access all your flagged posts and recent mentions from the buttons in the sidebar
+
+#### Muted Channels
+- Added support for Muted Channels released with Mattermost server v4.9 
+
+### Improvements
+- Date separators now appear between each posts in the search view
+- Deactivated users are now filtered out of the channel members lists
+- Direct Messages user list is now sorted by username first
+- Added the option to Direct Message yourself from your user profile screen
+- Ability to select and copy parts of code or text previews
+- Improved performance on the post list
+- Improved matching and display when searching for users in the Direct Message user list
+
+### Bug Fixes
+- Fixed an issue where emoji reactions could be added from the search view but did not appear
+- Fixed an issue causing the app to crash when trying to share content from a custom keyboard
+- Fixed an issue where team names were being sorted based on letter case
+- Fixed an issue where username would not be inserted to the post draft when using experimental configuration settings
+- Fixed an issue with nested bullet lists being cut off in the user interface
+- Fixed an issue where private channels were listed in the public channels section of the channel autocomplete list
+- Fixed an issue where a profile images could not be updated from the app
+
 ## v1.7.1 Release
 - Release Date: April 3, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
