@@ -313,7 +313,6 @@ export default class PostList extends PureComponent {
                 managedConfig={managedConfig}
                 onLayoutCalled={this.measureItem}
                 shouldCallOnLayout={this.props.measureCellLayout && !this.newMessageScrolledTo}
-                showAddReaction={true}
             />
         );
     };

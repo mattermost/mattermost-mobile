@@ -71,6 +71,7 @@ export default class Post extends PureComponent {
 
     static defaultProps = {
         isSearchResult: false,
+        showAddReaction: true,
         showLongPost: false,
         channelIsReadOnly: false,
     };
