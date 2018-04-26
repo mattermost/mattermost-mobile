@@ -32,7 +32,7 @@ class Settings extends PureComponent {
         currentUrl: PropTypes.string.isRequired,
         errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
-        joinableTeams: PropTypes.object.isRequired,
+        hasJoinableTeams: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object,
     };
@@ -214,9 +214,8 @@ class Settings extends PureComponent {
     });
 
     render() {
-        const {config, joinableTeams, theme} = this.props;
+        const {config, hasJoinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
-        const showTeams = Object.keys(joinableTeams).length > 0;
         const showHelp = isValidUrl(config.HelpLink);
         const showArrow = Platform.OS === 'ios';
 
@@ -246,7 +245,7 @@ class Settings extends PureComponent {
                         showArrow={showArrow}
                         theme={theme}
                     />
-                    {showTeams &&
+                    {hasJoinableTeams &&
                     <SettingsItem
                         defaultMessage='Open teams you can join'
                         i18nId='mobile.select_team.join_open'
