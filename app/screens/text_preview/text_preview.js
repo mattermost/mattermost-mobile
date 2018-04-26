@@ -8,7 +8,6 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     View,
 } from 'react-native';
 
@@ -50,27 +49,6 @@ export default class TextPreview extends React.PureComponent {
             lineNumbersStyle = style.lineNumbers;
         }
 
-        let textComponent;
-        if (Platform.OS === 'ios') {
-            textComponent = (
-                <TextInput
-                    editable={false}
-                    multiline={true}
-                    value={this.props.content}
-                    style={[style.codeText]}
-                />
-            );
-        } else {
-            textComponent = (
-                <Text
-                    selectable={true}
-                    style={style.codeText}
-                >
-                    {this.props.content}
-                </Text>
-            );
-        }
-
         return (
             <ScrollView
                 style={style.scrollContainer}
@@ -86,7 +64,12 @@ export default class TextPreview extends React.PureComponent {
                     horizontal={true}
                     contentContainerStyle={style.code}
                 >
-                    {textComponent}
+                    <Text
+                        selectable={true}
+                        style={style.codeText}
+                    >
+                        {this.props.content}
+                    </Text>
                 </ScrollView>
             </ScrollView>
         );
@@ -131,9 +114,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...Platform.select({
                 android: {
                     paddingVertical: 4,
-                },
-                ios: {
-                    top: -4,
                 },
             }),
         },
