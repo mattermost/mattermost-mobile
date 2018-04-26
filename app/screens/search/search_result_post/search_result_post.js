@@ -40,6 +40,7 @@ export default class SearchResultPost extends PureComponent {
                 postId={this.props.postId}
                 {...postComponentProps}
                 isSearchResult={true}
+                showAddReaction={false}
                 showFullDate={this.props.showFullDate}
                 navigator={this.props.navigator}
             />

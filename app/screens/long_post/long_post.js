@@ -239,6 +239,7 @@ export default class LongPost extends PureComponent {
                                 shouldRenderReplyButton={false}
                                 onPress={this.handlePress}
                                 isSearchResult={false}
+                                showAddReaction={true}
                                 showLongPost={true}
                                 onPermalinkPress={onPermalinkPress}
                                 navigator={navigator}

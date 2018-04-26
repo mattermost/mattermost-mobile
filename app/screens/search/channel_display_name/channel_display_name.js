@@ -9,7 +9,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelDisplayName extends PureComponent {
     static propTypes = {
-        displayName: PropTypes.string.isRequired,
+        displayName: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
