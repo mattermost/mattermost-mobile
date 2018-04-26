@@ -10,6 +10,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import UserStatus from 'app/components/user_status';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
@@ -63,26 +64,24 @@ export default class ProfilePicture extends PureComponent {
     }
 
     componentWillUpdate(nextProps) {
-        if (
-            Boolean(nextProps.user) !== Boolean(this.props.user) ||
-            nextProps.user.id !== this.props.user.id ||
-            nextProps.user.last_picture_update !== this.props.user.last_picture_update
-        ) {
-            this.setState({pictureUrl: null});
+        if (this.mounted) {
+            const url = this.state.pictureUrl;
+            const nextUrl = nextProps.user ? Client4.getProfilePictureUrl(nextProps.user.id, nextProps.user.last_picture_update) : null;
 
-            const nextUser = nextProps.user;
+            if (url !== nextUrl) {
+                this.setState({
+                    pictureUrl: nextUrl,
+                });
 
-            if (this.mounted) {
-                this.setState({pictureUrl: null});
+                if (nextUrl) {
+                    // empty function is so that promise unhandled is not triggered in dev mode
+                    ImageCacheManager.cache('', nextUrl, this.setImageUrl).then(emptyFunction).catch(emptyFunction);
+                }
             }
 
-            if (nextUser) {
-                ImageCacheManager.cache('', Client4.getProfilePictureUrl(nextUser.id, nextUser.last_picture_update), this.setImageURL);
+            if (nextProps.edit && nextProps.imageUri !== this.props.imageUri) {
+                this.setImageURL(nextProps.imageUri);
             }
-        }
-
-        if (nextProps.edit && nextProps.imageUri !== this.props.imageUri) {
-            this.setImageURL(nextProps.imageUri);
         }
     }
 
