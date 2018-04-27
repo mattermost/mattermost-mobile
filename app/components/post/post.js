@@ -60,6 +60,7 @@ export default class Post extends PureComponent {
         canDelete: PropTypes.bool.isRequired,
         onPermalinkPress: PropTypes.func,
         shouldRenderReplyButton: PropTypes.bool,
+        showAddReaction: PropTypes.bool,
         showFullDate: PropTypes.bool,
         showLongPost: PropTypes.bool,
         theme: PropTypes.object.isRequired,
@@ -70,6 +71,7 @@ export default class Post extends PureComponent {
 
     static defaultProps = {
         isSearchResult: false,
+        showAddReaction: true,
         showLongPost: false,
         channelIsReadOnly: false,
     };
@@ -386,6 +388,7 @@ export default class Post extends PureComponent {
             post,
             renderReplies,
             shouldRenderReplyButton,
+            showAddReaction,
             showFullDate,
             showLongPost,
             theme,
@@ -461,6 +464,7 @@ export default class Post extends PureComponent {
                                 managedConfig={managedConfig}
                                 isFlagged={isFlagged}
                                 isReplyPost={isReplyPost}
+                                showAddReaction={showAddReaction}
                                 showLongPost={showLongPost}
                             />
                         </View>

@@ -16,7 +16,7 @@ function makeMapStateToProps() {
         const channel = getChannel(state, {id: post.channel_id});
 
         return {
-            displayName: channel.display_name,
+            displayName: channel ? channel.display_name : '',
             theme: getTheme(state),
         };
     };
