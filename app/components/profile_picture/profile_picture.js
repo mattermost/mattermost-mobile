@@ -48,7 +48,6 @@ export default class ProfilePicture extends PureComponent {
 
     componentWillMount() {
         const {edit, imageUri, user} = this.props;
-        this.mounted = true;
 
         if (edit && imageUri) {
             this.setImageURL(imageUri);
@@ -61,16 +60,18 @@ export default class ProfilePicture extends PureComponent {
         if (!this.props.status && this.props.user) {
             this.props.actions.getStatusForId(this.props.user.id);
         }
+
+        this.mounted = true;
     }
 
-    componentWillUpdate(nextProps) {
+    componentWillReceiveProps(nextProps) {
         if (this.mounted) {
-            const url = this.state.pictureUrl;
+            const url = this.props.user ? Client4.getProfilePictureUrl(this.props.user.id, this.props.user.last_picture_update) : null;
             const nextUrl = nextProps.user ? Client4.getProfilePictureUrl(nextProps.user.id, nextProps.user.last_picture_update) : null;
 
             if (url !== nextUrl) {
                 this.setState({
-                    pictureUrl: nextUrl,
+                    pictureUrl: null,
                 });
 
                 if (nextUrl) {
@@ -128,7 +129,8 @@ export default class ProfilePicture extends PureComponent {
         let source = null;
         if (pictureUrl) {
             let prefix = '';
-            if (Platform.OS === 'android' && !pictureUrl.includes('content://')) {
+            if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') &&
+                !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
                 prefix = 'file://';
             }
 
