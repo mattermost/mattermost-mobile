@@ -35,6 +35,7 @@ export default class PostBody extends PureComponent {
             flagPost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
         }).isRequired,
+        canAddReaction: PropTypes.bool,
         canDelete: PropTypes.bool,
         canEdit: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
@@ -54,7 +55,6 @@ export default class PostBody extends PureComponent {
         managedConfig: PropTypes.object,
         message: PropTypes.string,
         navigator: PropTypes.object.isRequired,
-        canAddReaction: PropTypes.bool,
         onAddReaction: PropTypes.func,
         onCopyPermalink: PropTypes.func,
         onCopyText: PropTypes.func,
@@ -66,6 +66,7 @@ export default class PostBody extends PureComponent {
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
         renderReplyBar: PropTypes.func,
+        showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
         theme: PropTypes.object,
         toggleSelected: PropTypes.func,
@@ -128,13 +129,14 @@ export default class PostBody extends PureComponent {
             onCopyText,
             onPostDelete,
             onPostEdit,
+            showAddReaction,
         } = this.props;
         const actions = [];
         const isPendingOrFailedPost = isPending || isFailed;
 
         // we should check for the user roles and permissions
         if (!isPendingOrFailedPost && !isSystemMessage && !isPostEphemeral) {
-            if (canAddReaction && !channelIsReadOnly) {
+            if (showAddReaction && canAddReaction && !channelIsReadOnly) {
                 actions.push({
                     text: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
                     onPress: this.props.onAddReaction,
