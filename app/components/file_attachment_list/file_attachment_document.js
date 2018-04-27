@@ -46,8 +46,8 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     static defaultProps = {
-        iconHeight: 50,
-        iconWidth: 50,
+        iconHeight: 47,
+        iconWidth: 47,
         wrapperHeight: 80,
         wrapperWidth: 80,
     };
@@ -320,7 +320,6 @@ export default class FileAttachmentDocument extends PureComponent {
                     backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     tintColor={theme.linkColor}
                     rotation={0}
-                    style={style.circularProgress}
                 >
                     {this.renderProgress}
                 </CircularProgress>
@@ -347,12 +346,6 @@ export default class FileAttachmentDocument extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    circularProgress: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-        width: '100%',
-    },
     circularProgressContent: {
         alignItems: 'center',
         height: '100%',
