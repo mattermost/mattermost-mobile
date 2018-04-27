@@ -28,6 +28,7 @@ DerivedData
 *.apk
 *.xcuserstate
 project.xcworkspace
+xcshareddata/
 
 # Android/IntelliJ
 #

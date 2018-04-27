@@ -1,5 +1,4 @@
 --require test/setup.js
 --compilers js:babel-core/register
 --require babel-polyfill
---require jsdom-global/register
 --recursive
