@@ -138,7 +138,7 @@ export default class FileAttachmentImage extends PureComponent {
                     ref={this.handleCapturePreviewRef}
                     style={imageStyle}
                     defaultSource={thumb}
-                    tintDefaultSource={true}
+                    tintDefaultSource={!file.localPath}
                     filename={file.name}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
