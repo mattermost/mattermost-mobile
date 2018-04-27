@@ -54,6 +54,7 @@ function mapStateToProps(state, ownProps) {
 
     let isPostAddChannelMember = false;
     if (
+        channel &&
         (channel.type === General.PRIVATE_CHANNEL || channel.type === General.OPEN_CHANNEL) &&
         isUserCanManageMembers &&
         isEphemeralPost &&

@@ -21,8 +21,8 @@ function makeMapStateToProps() {
 
         return {
             channelId: ownProps.channelId,
-            channelType: channel.type,
-            displayName: channel.display_name,
+            channelType: channel ? channel.type : '',
+            displayName: channel ? channel.display_name : '',
             myMember: getMyCurrentChannelMembership(state),
             rootId: ownProps.rootId,
             postIds: getPostIdsForThread(state, ownProps.rootId),
