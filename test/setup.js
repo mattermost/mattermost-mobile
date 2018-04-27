@@ -12,6 +12,8 @@ import register from 'babel-core/register';
 import mockery from 'mockery';
 import MockAsyncStorage from 'mock-async-storage';
 
+window = {};
+
 mockery.enable({
     warnOnReplace: false,
     warnOnUnregistered: false

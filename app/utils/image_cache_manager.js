@@ -76,6 +76,8 @@ const unsubscribe = (uri) => Reflect.deleteProperty(ImageCacheManager.listeners,
 
 const notifyAll = (uri, path) => {
     ImageCacheManager.listeners[uri].forEach((listener) => {
-        listener(path);
+        if (typeof listener === 'function') {
+            listener(path);
+        }
     });
 };

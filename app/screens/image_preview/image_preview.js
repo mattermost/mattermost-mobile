@@ -427,7 +427,7 @@ export default class ImagePreview extends PureComponent {
 
         if (this.refs.downloader) {
             EventEmitter.emit(NavigationTypes.NAVIGATION_CLOSE_MODAL);
-            this.refs.downloader.saveVideo(`${VIDEOS_PATH}/${data.id}.${data.extension}`);
+            this.refs.downloader.saveVideo(`${VIDEOS_PATH}/${data.id}-${file.caption}`);
         }
     };
 
@@ -508,7 +508,7 @@ export default class ImagePreview extends PureComponent {
         }
 
         if (isVideo(file.data)) {
-            const path = `${VIDEOS_PATH}/${file.data.id}.${file.data.extension}`;
+            const path = `${VIDEOS_PATH}/${file.data.id}-${file.caption}`;
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
                 items.push({

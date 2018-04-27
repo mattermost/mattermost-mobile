@@ -111,40 +111,13 @@ export default class Downloader extends PureComponent {
         ]).start();
     };
 
-    renderProgress = (fill) => {
+    renderBottomContent = () => {
         const {saveToCameraRoll} = this.props;
-        const {isVideo} = this.state;
-        const realFill = Number(fill.toFixed(0));
+        const {isVideo, progress} = this.state;
+        const realFill = Number(progress.toFixed(0));
 
-        let component;
-        if (realFill === 100) {
-            component = (
-                <Icon
-                    name='ios-checkmark'
-                    size={64}
-                    color='white'
-                />
-            );
-        } else {
-            component = (
-                <View style={styles.progressCirclePercentage}>
-                    <Text style={styles.progressText}>
-                        {`${fill.toFixed(0)}%`}
-                    </Text>
-                    {!isVideo &&
-                    <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={this.downloadDidCancel}
-                    >
-                        <FormattedText
-                            id='channel_modal.cancel'
-                            defaultMessage='Cancel'
-                            style={styles.cancelText}
-                        />
-                    </TouchableOpacity>
-                    }
-                </View>
-            );
+        if (realFill === 0) {
+            return null;
         }
 
         let savedComponent;
@@ -183,18 +156,58 @@ export default class Downloader extends PureComponent {
         }
 
         return (
-            <View style={styles.progressContent}>
-                {component}
-                <View style={styles.bottomContent}>
-                    {savedComponent}
-                </View>
+            <View style={styles.bottomContent}>
+                {savedComponent}
             </View>
+        );
+    };
+
+    renderProgress = (fill) => {
+        const {isVideo} = this.state;
+        const realFill = Number(fill.toFixed(0));
+
+        let component;
+        if (realFill === 100) {
+            component = (
+                <Icon
+                    name='ios-checkmark'
+                    size={64}
+                    color='white'
+                />
+            );
+        } else {
+            component = (
+                <View style={styles.progressCirclePercentage}>
+                    <Text style={styles.progressText}>
+                        {`${fill.toFixed(0)}%`}
+                    </Text>
+                    {!isVideo &&
+                    <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={this.downloadDidCancel}
+                    >
+                        <FormattedText
+                            id='channel_modal.cancel'
+                            defaultMessage='Cancel'
+                            style={styles.cancelText}
+                        />
+                    </TouchableOpacity>
+                    }
+                </View>
+            );
+        }
+
+        return (
+            <View>
+                {component}
+            </View>
+
         );
     };
 
     renderStartDownload = () => {
         return (
-            <View style={styles.progressContent}>
+            <View>
                 <TouchableOpacity onPress={this.startDownload}>
                     <View style={styles.manualDownloadContainer}>
                         <Icon
@@ -404,10 +417,10 @@ export default class Downloader extends PureComponent {
                             backgroundColor='rgba(255, 255, 255, 0.5)'
                             tintColor='white'
                             rotation={0}
-                            style={styles.progressCircle}
                         >
                             {component}
                         </CircularProgress>
+                        {this.renderBottomContent()}
                     </View>
                 </AnimatedView>
             </View>
@@ -417,12 +430,8 @@ export default class Downloader extends PureComponent {
 
 const styles = StyleSheet.create({
     bottomContent: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 0,
         alignItems: 'center',
-        justifyContent: 'center',
+        marginTop: 10,
     },
     bottomText: {
         color: 'white',
@@ -457,15 +466,6 @@ const styles = StyleSheet.create({
     progressContainer: {
         flex: 1,
     },
-    progressContent: {
-        position: 'absolute',
-        height: '100%',
-        width: '100%',
-        top: 0,
-        left: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     progressCircle: {
         width: '100%',
         height: '100%',
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     progressCirclePercentage: {
         flex: 1,
         alignItems: 'center',
-        marginTop: 80,
+        marginTop: 40,
     },
     progressText: {
         color: 'white',
