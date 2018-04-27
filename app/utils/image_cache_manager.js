@@ -14,6 +14,9 @@ export default class ImageCacheManager {
     static listeners = {};
 
     static cache = async (filename, uri, listener) => {
+        if (!listener) {
+            console.warn('Unable to cache image when no listener is provided'); // eslint-disable-line no-console
+        }
         const {path, exists} = await getCacheFile(filename, uri);
         if (isDownloading(uri)) {
             addListener(uri, listener);
