@@ -76,7 +76,7 @@ export default class ProfilePicture extends PureComponent {
 
                 if (nextUrl) {
                     // empty function is so that promise unhandled is not triggered in dev mode
-                    ImageCacheManager.cache('', nextUrl, this.setImageUrl).then(emptyFunction).catch(emptyFunction);
+                    ImageCacheManager.cache('', nextUrl, this.setImageURL).then(emptyFunction).catch(emptyFunction);
                 }
             }
 
