@@ -20,7 +20,6 @@
 - Deactivated users are now filtered out of the channel members lists
 - Direct Messages user list is now sorted by username first
 - Added the option to Direct Message yourself from your user profile screen
-- Ability to select and copy parts of code or text previews
 - Improved performance on the post list
 - Improved matching and display when searching for users in the Direct Message user list
 
