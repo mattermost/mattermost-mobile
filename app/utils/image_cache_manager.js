@@ -3,7 +3,6 @@
 
 // Based on the work done by https://github.com/wcandillon/react-native-expo-image-cache/
 
-import base64 from 'base-64';
 import RNFetchBlob from 'react-native-fetch-blob';
 
 import {DeviceTypes} from 'app/constants';
@@ -14,6 +13,10 @@ export default class ImageCacheManager {
     static listeners = {};
 
     static cache = async (filename, uri, listener) => {
+        if (!listener) {
+            console.warn('Unable to cache image when no listener is provided'); // eslint-disable-line no-console
+        }
+
         const {path, exists} = await getCacheFile(filename, uri);
         if (isDownloading(uri)) {
             addListener(uri, listener);
@@ -21,9 +24,15 @@ export default class ImageCacheManager {
             listener(path);
         } else {
             addListener(uri, listener);
+            if (uri.startsWith('file://')) {
+                // In case the uri we are trying to cache is already a local file just notify and return
+                notifyAll(uri, uri);
+                return;
+            }
+
             try {
                 const options = {
-                    session: base64.encode(uri),
+                    session: uri,
                     timeout: 10000,
                     indicator: true,
                     overwrite: true,
@@ -48,7 +57,7 @@ export default class ImageCacheManager {
 export const getCacheFile = async (name, uri) => {
     const filename = name || uri.substring(uri.lastIndexOf('/'), uri.indexOf('?') === -1 ? uri.length : uri.indexOf('?'));
     const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-    const path = `${IMAGES_PATH}/${base64.encode(uri)}${ext}`;
+    const path = `${IMAGES_PATH}/${hashCode(uri)}${ext}`;
 
     try {
         const isDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
@@ -78,4 +87,21 @@ const notifyAll = (uri, path) => {
     ImageCacheManager.listeners[uri].forEach((listener) => {
         listener(path);
     });
+};
+
+// taken from https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+const hashCode = (str) => {
+    let hash = 0;
+    let i;
+    let chr;
+    if (str.length === 0) {
+        return hash;
+    }
+
+    for (i = 0; i < str.length; i++) {
+        chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
 };
