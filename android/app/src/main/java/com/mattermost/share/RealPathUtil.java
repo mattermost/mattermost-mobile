@@ -7,6 +7,7 @@ import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.content.ContentUris;
+import android.content.ContentResolver;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
 
@@ -98,6 +99,7 @@ public class RealPathUtil {
                 cacheDir.mkdirs();
             }
 
+            String mimeType = getMimeType(uri.getPath());
             tmpFile = File.createTempFile("tmp", fileName, cacheDir);
 
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
@@ -180,6 +182,11 @@ public class RealPathUtil {
     public static String getMimeType(String filePath) {
         File file = new File(filePath);
         return getMimeType(file);
+    }
+
+    public static String getMimeTypeFromUri(final Context context, final Uri uri) {
+        ContentResolver cR = context.getContentResolver();
+        return cR.getType(uri);
     }
 
     public static void deleteTempFiles(final File dir) {
