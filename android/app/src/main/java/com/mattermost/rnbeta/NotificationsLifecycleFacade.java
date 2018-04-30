@@ -30,6 +30,7 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
     public static final String NATIVE_APP_LAUNCHED = "NATIVE_APP_LAUNCHED";
     private static final String TAG = NotificationsLifecycleFacade.class.getSimpleName();
     private static NotificationsLifecycleFacade instance;
+    private boolean firstTimeResumed = true;
 
     private Bundle managedConfig = null;
     private Activity mVisibleActivity;
@@ -81,7 +82,8 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
 
         ReactContext ctx = getRunningReactContext();
 
-        if (ctx != null) {
+        if (firstTimeResumed && ctx != null) {
+            firstTimeResumed = false;
             ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
                     emit(NATIVE_APP_LAUNCHED, null);
         }
