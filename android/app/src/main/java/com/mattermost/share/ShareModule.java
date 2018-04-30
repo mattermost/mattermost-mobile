@@ -126,7 +126,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     map = Arguments.createMap();
                     text = "file://" + filePath;
                     map.putString("value", text);
-                    map.putString("type", RealPathUtil.getMimeType(filePath));
+                    map.putString("type", RealPathUtil.getMimeTypeFromUri(currentActivity, uri));
                     items.pushMap(map);
                 }
             }

@@ -3,11 +3,13 @@
 
 import {Platform} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
+import mimeDB from 'mime-db';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import {DeviceTypes} from 'app/constants/';
 
+const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const {DOCUMENTS_PATH, IMAGES_PATH, VIDEOS_PATH} = DeviceTypes;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
@@ -31,6 +33,9 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
     android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
 });
+
+const types = {};
+const extensions = {};
 
 export function generateId() {
     // Implementation taken from http://stackoverflow.com/a/2117523
@@ -144,3 +149,69 @@ export const isVideo = (file) => {
 
     return SUPPORTED_VIDEO_FORMAT.includes(mime);
 };
+
+/**
+ * Get the default extension for a MIME type.
+ *
+ * @param {string} type
+ * @return {boolean|string}
+ */
+
+export function getExtensionFromMime(type) {
+    if (!Object.keys(extensions).length) {
+        populateMaps();
+    }
+
+    if (!type || typeof type !== 'string') {
+        return false;
+    }
+
+    // TODO: use media-typer
+    const match = EXTRACT_TYPE_REGEXP.exec(type);
+
+    // get extensions
+    const exts = match && extensions[match[1].toLowerCase()];
+
+    if (!exts || !exts.length) {
+        return false;
+    }
+
+    return exts[0];
+}
+
+/**
+ * Populate the extensions and types maps.
+ * @private
+ */
+
+function populateMaps() {
+    // source preference (least -> most)
+    const preference = ['nginx', 'apache', undefined, 'iana']; //eslint-disable-line no-undefined
+
+    Object.keys(mimeDB).forEach((type) => {
+        const mime = mimeDB[type];
+        const exts = mime.extensions;
+
+        if (!exts || !exts.length) {
+            return;
+        }
+
+        extensions[type] = exts;
+
+        for (let i = 0; i < exts.length; i++) {
+            const extension = exts[i];
+
+            if (types[extension]) {
+                const from = preference.indexOf(mimeDB[types[extension]].source);
+                const to = preference.indexOf(mime.source);
+
+                if (types[extension] !== 'application/octet-stream' &&
+                    (from > to || (from === to && types[extension].substr(0, 12) === 'application/'))) {
+                    continue;
+                }
+            }
+
+            types[extension] = type;
+        }
+    });
+}

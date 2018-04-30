@@ -6,6 +6,7 @@ import {NavigationActions} from 'react-navigation';
 import TouchableItem from 'react-navigation/src/views/TouchableItem';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
+
 import {
     Image,
     NativeModules,
@@ -25,6 +26,7 @@ import {getFormattedFileSize, lookupMimeType} from 'mattermost-redux/utils/file_
 
 import PaperPlane from 'app/components/paper_plane';
 import mattermostManaged from 'app/mattermost_managed';
+import {getExtensionFromMime} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -278,15 +280,20 @@ export default class ExtensionPost extends PureComponent {
                     break;
                 default: {
                     const fullPath = item.value;
-                    const filename = fullPath.replace(/^.*[\\/]/, '');
-                    const extension = filename.split('.').pop();
                     const fileSize = await RNFetchBlob.fs.stat(fullPath);
+                    let filename = fullPath.replace(/^.*[\\/]/, '');
+                    let extension = filename.split('.').pop();
+                    if (extension === filename) {
+                        extension = getExtensionFromMime(item.type);
+                        filename = `${filename}.${extension}`;
+                    }
+
                     totalSize += fileSize.size;
                     files.push({
                         extension,
                         filename,
                         fullPath,
-                        mimeType: lookupMimeType(filename.toLowerCase()),
+                        mimeType: item.type || lookupMimeType(filename.toLowerCase()),
                         size: getFormattedFileSize(fileSize),
                         type: item.type,
                     });
