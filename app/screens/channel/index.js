@@ -17,7 +17,7 @@ import {
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
-import {selectFirstAvailableTeam} from 'app/actions/views/select_team';
+import {selectDefaultTeam} from 'app/actions/views/select_team';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Channel from './channel';
@@ -39,7 +39,7 @@ function mapDispatchToProps(dispatch) {
             connection,
             loadChannelsIfNecessary,
             loadProfilesAndTeamMembersForDMSidebar,
-            selectFirstAvailableTeam,
+            selectDefaultTeam,
             selectInitialChannel,
             initWebSocket,
             closeWebSocket,
