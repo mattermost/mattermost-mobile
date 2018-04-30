@@ -1,4 +1,0 @@
---require test/setup.js
---compilers js:babel-core/register
---require babel-polyfill
---recursive

@@ -9,6 +9,8 @@ import {
     pullOutImages,
 } from 'app/components/markdown/transform';
 
+/* eslint-disable max-nested-callbacks, no-console */
+
 describe('Components.Markdown.transform', () => {
     const parser = new Parser();
 

@@ -11,24 +11,27 @@
     },
     "parser": "babel-eslint",
     "plugins": [
-        "react",
-        "mocha"
+        "react"
     ],
     "env": {
         "browser": true,
         "node": true,
         "jquery": true,
-        "es6": true
+        "es6": true,
+        "jest": true
     },
     "globals": {
-        "jest": true,
-        "describe": true,
-        "it": true,
-        "expect": true,
-        "before": true,
-        "beforeEach": true,
         "after": true,
-        "afterEach": true
+        "afterAll": true,
+        "afterEach": true,
+        "before": true,
+        "beforeAll": true,
+        "beforeEach": true,
+        "describe": true,
+        "expect": true,
+        "it": true,
+        "jest": true,
+        "test": true
     },
     "rules": {
         "array-bracket-spacing": [2, "never"],
@@ -256,7 +259,6 @@
         "vars-on-top": 0,
         "wrap-iife": [2, "outside"],
         "wrap-regex": 2,
-        "yoda": [2, "never", {"exceptRange": false, "onlyEquality": false}],
-        "mocha/no-exclusive-tests": 2
+        "yoda": [2, "never", {"exceptRange": false, "onlyEquality": false}]
     }
 }
