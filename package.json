@@ -78,40 +78,49 @@
     "babel-preset-react-native": "4.0.0",
     "babel-preset-stage-0": "6.24.1",
     "babel-register": "6.26.0",
-    "chai": "4.1.2",
-    "chai-enzyme": "0.8.0",
-    "chai-fetch-mock": "2.0.0",
     "deep-freeze": "0.0.1",
     "enzyme": "3.3.0",
+    "enzyme-adapter-react-16": "1.1.1",
+    "enzyme-to-json": "3.3.3",
     "eslint": "4.19.1",
-    "eslint-plugin-mocha": "5.0.0",
+    "eslint-plugin-jest": "21.15.1",
     "eslint-plugin-react": "7.7.0",
-    "fetch-mock": "6.3.0",
+    "jest": "22.4.3",
+    "jest-cli": "22.4.3",
     "jsdom-global": "3.0.2",
-    "mocha": "5.1.1",
-    "mocha-react-native": "0.6.0",
-    "mock-async-storage": "2.0.2",
-    "mockery": "2.1.0",
     "nyc": "11.7.1",
-    "react-addons-test-utils": "15.6.2",
     "react-dom": "16.3.2",
-    "react-native-mock": "0.3.1",
-    "react-native-svg-mock": "2.0.0",
-    "react-test-renderer": "16.3.2",
+    "redux-mock-store": "1.5.1",
     "remote-redux-devtools": "0.5.12",
     "remotedev-rn-debugger": "0.8.3",
     "socketcluster": "11.4.2",
     "underscore": "1.9.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test nyc --reporter=text mocha --exit --opts test/mocha.opts",
     "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
-    "postinstall": "make post-install"
+    "postinstall": "make post-install",
+    "test": "jest --forceExit",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "rnpm": {
     "assets": [
       "./assets/fonts"
+    ]
+  },
+  "jest": {
+    "clearMocks": true,
+    "collectCoverageFrom": [
+      "app/**/*.{js,jsx}"
+    ],
+    "coverageReporters": [
+      "lcov",
+      "text-summary"
+    ],
+    "preset": "react-native",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
     ]
   }
 }

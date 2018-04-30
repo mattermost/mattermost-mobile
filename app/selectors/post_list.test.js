@@ -12,6 +12,8 @@ import {
 import {Posts, Preferences} from 'mattermost-redux/constants';
 import {getPreferenceKey} from 'mattermost-redux/utils/preference_utils';
 
+/* eslint-disable max-nested-callbacks, no-console */
+
 describe('Selectors.PostList', () => {
     describe('makePreparePostIdsForPostList', () => {
         it('filter join/leave posts', () => {
