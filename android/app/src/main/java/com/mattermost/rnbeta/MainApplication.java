@@ -43,6 +43,7 @@ import java.util.List;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
+  public Boolean sharedExtensionIsOpened = false;
 
   @Override
   public boolean isDebug() {
@@ -74,9 +75,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactVideoPackage(),
             new RNReactNativeDocViewerPackage(),
             new ReactNativeDocumentPicker(),
-            new SharePackage(),
+            new SharePackage(this),
             new StartTimePackage(this)
-            new SharePackage()
     );
   }
 

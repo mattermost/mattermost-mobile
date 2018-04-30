@@ -11,7 +11,7 @@ import {
     Keyboard,
     DeviceEventEmitter,
 } from 'react-native';
-const {StatusBarManager, StartTime} = NativeModules;
+const {StatusBarManager, MattermostShare, StartTime} = NativeModules;
 
 import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
@@ -424,20 +424,27 @@ const handleAppInActive = () => {
 };
 
 AppState.addEventListener('change', handleAppStateChange);
-Navigation.startSingleScreenApp({
-    screen: {
-        screen: 'Entry',
-        navigatorStyle: {
-            navBarHidden: true,
-            statusBarHidden: false,
-            statusBarHideWithNavBar: false
-        }
-    },
-    passProps: {
-        initializeModules: initializeModules
-    },
-    appStyle: {
-        orientation: 'auto'
-    },
-    animationType: 'fade'
-});
+
+if (Platform.OS === 'android' && MattermostShare.isOpened) {
+    app.setAppStarted(true);
+}
+
+if (!app.appStarted) {
+    Navigation.startSingleScreenApp({
+        screen: {
+            screen: 'Entry',
+            navigatorStyle: {
+                navBarHidden: true,
+                statusBarHidden: false,
+                statusBarHideWithNavBar: false
+            }
+        },
+        passProps: {
+            initializeModules: initializeModules
+        },
+        appStyle: {
+            orientation: 'auto'
+        },
+        animationType: 'fade'
+    });
+}
