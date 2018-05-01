@@ -25,19 +25,18 @@ platform :ios do
 
   desc 'Build iOS app'
   lane :build do
-    sh "echo starting build lane"
     if ENV['SYNC_IOS_PROVISIONING_PROFILES'] == 'true'
       match(type: ENV['MATCH_TYPE'] || 'adhoc')
     end
 
     configure_from_env()
-    sh "echo starting configure from env"
+
     build_ios()
 
     if ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
       pilot
     end
-    sh "echo starting git actions"
+
     git_actions()
   end
 
@@ -136,7 +135,7 @@ platform :ios do
     if ENV['ENSURE_GIT_IS_CLEAN'] == 'true'
       ensure_git_status_clean
     end
-    sh "echo build ios 139"
+
     if ENV['IOS_INCREMENT_BUILD_NUMBER'] == 'true'
       current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj').to_i
       increment_build_number(
@@ -155,17 +154,15 @@ platform :ios do
 
       commit_version_bump(commit_version_options)
     end
-    sh "echo update identifiers 158"
+
     update_identifiers()
-    sh "echo debug 160"
     replace_ios_assets()
-    sh "echo debug 162"
+
     unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
       update_project_team(
           path: './ios/Mattermost.xcodeproj',
           teamid: ENV['FASTLANE_TEAM_ID']
       )
-      sh "echo project team 167"
     end
 
     config_mode = ENV['IOS_BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
@@ -176,10 +173,8 @@ platform :ios do
         scheme: 'Mattermost',
         configuration: config_mode,
         workspace: './ios/Mattermost.xcworkspace',
-        export_method: method,
-        verbose: true
+        export_method: method
     )
-    sh "echo gym end 179"
   end
 
   def send_message_for_ios(pretext, title, msg, default_payloads, success)

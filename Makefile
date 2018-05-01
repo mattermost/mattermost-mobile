@@ -184,7 +184,6 @@ endif
 	fi
 	@echo "Building iOS app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
-	@echo "Build Finished"
 	@ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' | xargs kill -9
 	@rm -rf assets/override
 
