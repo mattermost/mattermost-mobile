@@ -11,7 +11,7 @@ import {ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 
-import {store, handleManagedConfig} from 'app/mattermost.android.js';
+import {store, handleManagedConfig} from 'app/mattermost';
 
 const lazyLoadLocalization = () => {
     const IntlProvider = require('react-intl').IntlProvider;

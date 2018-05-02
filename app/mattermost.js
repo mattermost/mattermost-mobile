@@ -142,6 +142,7 @@ const resetBadgeAndVersion = () => {
 
 const handleLogout = () => {
     app.setAppStarted(false);
+    app.clearCache();
     deleteFileCache();
     resetBadgeAndVersion();
     launchSelectServer();

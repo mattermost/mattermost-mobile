@@ -23,7 +23,7 @@ import {stripTrailingSlashes} from 'app/utils/url';
 import {
     app,
     store,
-} from 'app/mattermost.android.js';
+} from 'app/mattermost';
 
 const onRegisterDevice = (data) => {
     app.setIsNotificationsConfigured(true);
