@@ -61,7 +61,7 @@ const onPushNotification = (deviceNotification) => {
     const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
     const notification = {
         data,
-        message
+        message,
     };
 
     if (userInfo) {
@@ -104,7 +104,7 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
             channel_id: data.channel_id,
             root_id: rootId,
             parent_id: rootId,
-            message: text
+            message: text,
         };
 
         if (!Client4.getUrl()) {
@@ -131,7 +131,7 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
             data,
             text,
             badge,
-            completed
+            completed,
         });
     }
 };
@@ -142,7 +142,7 @@ export const configurePushNotifications = () => {
         onNotification: onPushNotification,
         onReply: onPushNotificationReply,
         popInitialNotification: true,
-        requestPermissions: true
+        requestPermissions: true,
     });
     app.setIsNotificationsConfigured(true);
 };

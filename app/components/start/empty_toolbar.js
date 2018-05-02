@@ -16,13 +16,13 @@ const {
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
     IOS_TOP_PORTRAIT,
-    STATUS_BAR_HEIGHT
+    STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
 export default class EmptyToolbar extends PureComponent {
     static propTypes = {
         isLandscape: PropTypes.bool.isRequired,
-        theme: PropTypes.object.isRequired
+        theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -80,17 +80,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             width: '100%',
-            zIndex: 10
+            zIndex: 10,
         },
         button_container: {
-            width: 55
+            width: 55,
         },
         button_wrapper: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'column',
             justifyContent: 'center',
-            paddingHorizontal: 10
+            paddingHorizontal: 10,
         },
     };
 });

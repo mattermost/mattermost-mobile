@@ -1,6 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+/* eslint-disable global-require*/
 import {AsyncStorage} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
@@ -20,7 +21,7 @@ const lazyLoadLocalization = () => {
 
     return {
         IntlProvider,
-        getTranslations
+        getTranslations,
     };
 };
 
@@ -66,7 +67,7 @@ export default class App {
         }
         const {
             IntlProvider,
-            getTranslations
+            getTranslations,
         } = lazyLoadLocalization();
 
         const state = store.getState();
@@ -212,7 +213,7 @@ export default class App {
             DEVICE_SECURE_CACHE_KEY,
             TOOLBAR_BACKGROUND,
             TOOLBAR_TEXT_COLOR,
-            APP_BACKGROUND
+            APP_BACKGROUND,
         ]);
     };
 
@@ -263,12 +264,12 @@ export default class App {
             }
 
             switch (screen) {
-                case 'SelectServer':
-                    EventEmitter.emit(ViewTypes.LAUNCH_LOGIN, true);
-                    break;
-                case 'Channel':
-                    EventEmitter.emit(ViewTypes.LAUNCH_CHANNEL, true);
-                    break;
+            case 'SelectServer':
+                EventEmitter.emit(ViewTypes.LAUNCH_LOGIN, true);
+                break;
+            case 'Channel':
+                EventEmitter.emit(ViewTypes.LAUNCH_CHANNEL, true);
+                break;
             }
 
             this.setStartAppFromPushNotification(false);

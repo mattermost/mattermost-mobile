@@ -1,6 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+/* eslint-disable global-require*/
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -23,7 +24,6 @@ import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import Loading from 'app/components/loading';
@@ -88,11 +88,11 @@ export default class Entry extends PureComponent {
     }
 
     handleLaunchLogin = (initializeModules) => {
-      this.setState({launchLogin: true});
+        this.setState({launchLogin: true});
 
-      if (initializeModules) {
-          this.props.initializeModules();
-      }
+        if (initializeModules) {
+            this.props.initializeModules();
+        }
     };
 
     handleLaunchChannel = (initializeModules) => {
@@ -135,15 +135,14 @@ export default class Entry extends PureComponent {
     setAppCredentials = () => {
         const {
             actions: {
-                setDeviceToken
-            }
+                setDeviceToken,
+            },
         } = this.props;
         const {getState} = store;
         const state = getState();
 
         const {credentials} = state.entities.general;
         const {currentUserId} = state.entities.users;
-
 
         if (app.deviceToken) {
             setDeviceToken(app.deviceToken);
@@ -158,7 +157,7 @@ export default class Entry extends PureComponent {
             Client4.setUserId(currentUserId);
         }
 
-        app.setAppCredentials(app.deviceToken, currentUserId, credentials.token, credentials.url,);
+        app.setAppCredentials(app.deviceToken, currentUserId, credentials.token, credentials.url);
     };
 
     setStartupThemes = () => {
@@ -197,7 +196,6 @@ export default class Entry extends PureComponent {
                 app.launchApp();
                 return false;
             }
-            
             return true;
         };
 
@@ -255,12 +253,12 @@ export default class Entry extends PureComponent {
     render() {
         const {
             theme,
-            isLandscape
+            isLandscape,
         } = this.props;
         const styles = getStyleFromTheme(theme);
 
         if (this.state.launchLogin) {
-          return this.renderLogin();
+            return this.renderLogin();
         }
 
         if (this.state.launchChannel) {
@@ -281,7 +279,7 @@ export default class Entry extends PureComponent {
                     isLandscape={isLandscape}
                 />
             );
-        };
+        }
 
         return (
             <View style={[styles.container, {backgroundColor}]}>
@@ -292,7 +290,7 @@ export default class Entry extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     return {
         container: {
             flex: 1,

@@ -22,7 +22,7 @@ export function startDataCleanup() {
     return async (dispatch, getState) => {
         dispatch({
             type: ViewTypes.DATA_CLEANUP,
-            payload: getState()
+            payload: getState(),
         });
     };
 }

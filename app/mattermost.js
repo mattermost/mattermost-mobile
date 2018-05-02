@@ -1,6 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+/* eslint-disable global-require*/
 import 'babel-polyfill';
 import {
     Alert,
@@ -11,7 +12,7 @@ import {
     Keyboard,
     DeviceEventEmitter,
 } from 'react-native';
-const {StatusBarManager, MattermostShare, StartTime} = NativeModules;
+const {StatusBarManager, MattermostShare} = NativeModules;
 
 import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
@@ -38,7 +39,7 @@ import {
     calculateDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
-    setStatusBarHeight
+    setStatusBarHeight,
 } from 'app/actions/device';
 import {loadConfigAndLicense, startDataCleanup} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
@@ -69,14 +70,14 @@ const lazyLoadExternalModules = () => {
         Orientation,
         StatusBarSizeIOS,
         initializeErrorHandling,
-    }
+    };
 };
 
 const lazyLoadAnalytics = () => {
     const initAnalytics = require('app/utils/segment').init;
 
     return {
-        initAnalytics
+        initAnalytics,
     };
 };
 
@@ -88,7 +89,7 @@ const initializeModules = () => {
         initializeErrorHandling,
     } = lazyLoadExternalModules();
     const {
-        config
+        config,
     } = store.getState().entities.general;
     const orientation = Orientation.getInitialOrientation();
 
@@ -123,7 +124,7 @@ const initializeModules = () => {
 
 const configureAnalytics = (config) => {
     const {
-        initAnalytics
+        initAnalytics,
     } = lazyLoadAnalytics();
     if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
         initAnalytics(config);
@@ -170,7 +171,7 @@ const handleServerConfigChanged = async (serverVersion) => {
                 intl.formatMessage({id: 'mobile.server_upgrade.description', defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n'}),
                 [{
                     text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
-                    onPress: handleServerVersionUpgradeNeeded
+                    onPress: handleServerVersionUpgradeNeeded,
                 }],
                 {cancelable: false}
             );
@@ -253,18 +254,18 @@ export const handleManagedConfig = async (serverConfig) => {
                     Alert.alert(
                         intl.formatMessage({
                             id: 'mobile.managed.blocked_by',
-                            defaultMessage: 'Blocked by {vendor}'
+                            defaultMessage: 'Blocked by {vendor}',
                         }, {vendor}),
                         intl.formatMessage({
                             id: 'mobile.managed.jailbreak',
-                            defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.'
+                            defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.',
                         }, {vendor}),
                         [{
                             text: intl.formatMessage({id: 'mobile.managed.exit', defaultMessage: 'Exit'}),
                             style: 'destructive',
                             onPress: () => {
                                 mattermostManaged.quitApp();
-                            }
+                            },
                         }],
                         {cancelable: false}
                     );
@@ -308,10 +309,10 @@ const handleAuthentication = async (vendor) => {
             await mattermostManaged.authenticate({
                 reason: intl.formatMessage({
                     id: 'mobile.managed.secured_by',
-                    defaultMessage: 'Secured by {vendor}'
+                    defaultMessage: 'Secured by {vendor}',
                 }, {vendor}),
                 fallbackToPasscode: true,
-                suppressEnterPassword: true
+                suppressEnterPassword: true,
             });
         } catch (err) {
             mattermostManaged.quitApp();
@@ -334,16 +335,16 @@ const launchSelectServer = () => {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent'
-            }
+                screenBackgroundColor: 'transparent',
+            },
         },
         passProps: {
-            allowOtherServers: app.allowOtherServers
+            allowOtherServers: app.allowOtherServers,
         },
         appStyle: {
-            orientation: 'auto'
+            orientation: 'auto',
         },
-        animationType: 'fade'
+        animationType: 'fade',
     });
 };
 
@@ -355,13 +356,13 @@ const launchChannel = () => {
                 navBarHidden: true,
                 statusBarHidden: false,
                 statusBarHideWithNavBar: false,
-                screenBackgroundColor: 'transparent'
-            }
+                screenBackgroundColor: 'transparent',
+            },
         },
         appStyle: {
-            orientation: 'auto'
+            orientation: 'auto',
         },
-        animationType: 'fade'
+        animationType: 'fade',
     });
 };
 
@@ -419,7 +420,7 @@ const handleAppInActive = () => {
     app.setStartupThemes(
         theme.sidebarHeaderBg,
         theme.sidebarHeaderTextColor,
-        theme.centerChannelBg
+        theme.centerChannelBg,
     );
     startDataCleanup()(dispatch, getState);
 };
@@ -437,15 +438,15 @@ if (!app.appStarted) {
             navigatorStyle: {
                 navBarHidden: true,
                 statusBarHidden: false,
-                statusBarHideWithNavBar: false
-            }
+                statusBarHideWithNavBar: false,
+            },
         },
         passProps: {
-            initializeModules: initializeModules
+            initializeModules,
         },
         appStyle: {
-            orientation: 'auto'
+            orientation: 'auto',
         },
-        animationType: 'fade'
+        animationType: 'fade',
     });
 }

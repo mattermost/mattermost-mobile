@@ -1,6 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+/* eslint-disable global-require*/
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
@@ -13,8 +14,6 @@ const lazyLoadEntry = () => {
     return require('./entry').default;
 };
 
-// TODO: pull from AsyncStorate general.credentials and general.token
-// TODO: cache theme background for next time
 function mapStateToProps(state) {
     const {config} = state.entities.general;
 
@@ -30,7 +29,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             setDeviceToken,
-        }, dispatch)
+        }, dispatch),
     };
 }
 
