@@ -43,23 +43,28 @@ export default class MarkdownLink extends PureComponent {
             return;
         }
 
-        const pattern = new RegExp('^' + escapeRegex(serverURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)');
-        const sitePattern = new RegExp('^' + escapeRegex(siteURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)');
-        const match = url.match(pattern) || url.match(sitePattern);
+        const match = this.matchPermalink(url, serverURL) || this.matchPermalink(url, siteURL);
 
-        if (!match) {
+        if (match) {
+            const teamName = match[1];
+            const postId = match[2];
+            onPermalinkPress(postId, teamName);
+        } else {
             Linking.canOpenURL(url).then((supported) => {
                 if (supported) {
                     Linking.openURL(url);
                 }
             });
-            return;
+        }
+    });
+
+    matchPermalink = (link, rootURL) => {
+        if (!rootURL) {
+            return null;
         }
 
-        const teamName = match[1];
-        const postId = match[2];
-        onPermalinkPress(postId, teamName);
-    });
+        return new RegExp('^' + escapeRegex(rootURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(link);
+    }
 
     parseLinkLiteral = (literal) => {
         let nextLiteral = literal;
