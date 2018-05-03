@@ -217,7 +217,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const {isReplyPost, openGraphData, theme} = this.props;
         const {hasImage, height, imageUrl, width} = this.state;
 
-        if (!openGraphData || !openGraphData.description) {
+        if (!openGraphData || openGraphData.description == null) {
             return null;
         }
 
@@ -248,15 +248,17 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         </Text>
                     </TouchableOpacity>
                 </View>
-                <View style={style.flex}>
-                    <Text
-                        style={style.siteDescription}
-                        numberOfLines={5}
-                        ellipsizeMode='tail'
-                    >
-                        {openGraphData.description}
-                    </Text>
-                </View>
+                {openGraphData.description &&
+                    <View style={style.flex}>
+                        <Text
+                            style={style.siteDescription}
+                            numberOfLines={5}
+                            ellipsizeMode='tail'
+                        >
+                            {openGraphData.description}
+                        </Text>
+                    </View>
+                }
                 {hasImage &&
                     <View ref='item'>
                         <TouchableWithoutFeedback
