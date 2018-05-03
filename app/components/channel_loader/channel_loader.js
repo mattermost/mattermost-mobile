@@ -6,14 +6,20 @@ import PropTypes from 'prop-types';
 import {
     Platform,
     View,
+    Animated,
+    Easing,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const GRADIENT_START = 0.05;
-const GRADIENT_MIDDLE = 0.1;
-const GRADIENT_END = 0.01;
+const GRADIENT_START_END = 0;
+const GRADIENT_MIDDLE = 0.8;
+
+const START_VALUE = 0;
+const MIDDLE_VALUE = 50;
+const END_VALUE = 100;
+const DURATION = 2000;
 
 export default class ChannelLoader extends PureComponent {
     static propTypes = {
@@ -22,7 +28,64 @@ export default class ChannelLoader extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    buildSections(key, style, top) {
+    constructor() {
+        super();
+        this.animation = new Animated.Value(0);
+    }
+
+    componentDidMount() {
+        if (this.props.channelIsLoading) {
+            this.start();
+        }
+    }
+
+    componentWillUnmount() {
+        this.animation.stopAnimation();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.channelIsLoading !== this.props.channelIsLoading) {
+            if (nextProps.channelIsLoading) {
+                this.start();
+            } else {
+                this.animation.stopAnimation();
+            }
+        }
+    }
+
+    start() {
+        this.animation.setValue(START_VALUE);
+        Animated.sequence([
+            Animated.timing(this.animation, {
+                toValue: END_VALUE,
+                duration: DURATION,
+                easing: Easing.linear,
+            }),
+        ]).start((animation) => {
+            if (animation.finished) {
+                this.start();
+            }
+        });
+    }
+
+    buildSections({key, style, top, bg}) {
+        const left = this.animation.interpolate({
+            inputRange: [START_VALUE, END_VALUE],
+            outputRange: ['-10%', '50%'],
+        });
+
+        const opacity = this.animation.interpolate({
+            inputRange: [START_VALUE, MIDDLE_VALUE, END_VALUE],
+            outputRange: [GRADIENT_START_END, GRADIENT_MIDDLE, GRADIENT_START_END],
+        });
+
+        const bodyPosLeft = this.animation.interpolate({
+            inputRange: [START_VALUE, END_VALUE],
+            outputRange: ['-20%', '80%'],
+        });
+
+        const AnimatedGradient = Animated.createAnimatedComponent(LinearGradient);
+
         return (
             <View
                 key={key}
@@ -30,39 +93,48 @@ export default class ChannelLoader extends PureComponent {
             >
                 <View style={style.avatar}/>
                 <View style={style.sectionMessage}>
-                    <LinearGradient
-                        start={{x: 0.0, y: 1.0}}
-                        end={{x: 1.0, y: 1.0}}
-                        colors={[
-                            changeOpacity('#e5e5e4', GRADIENT_START),
-                            changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
-                            changeOpacity('#e5e5e4', GRADIENT_END),
-                        ]}
-                        locations={[0.1, 0.3, 0.7]}
-                        style={[style.messageText, {width: 106}]}
-                    />
-                    <LinearGradient
-                        start={{x: 0.0, y: 1.0}}
-                        end={{x: 1.0, y: 1.0}}
-                        colors={[
-                            changeOpacity('#e5e5e4', GRADIENT_START),
-                            changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
-                            changeOpacity('#e5e5e4', GRADIENT_END),
-                        ]}
-                        locations={[0.1, 0.3, 0.7]}
-                        style={[style.messageText, {alignSelf: 'stretch'}]}
-                    />
-                    <LinearGradient
-                        start={{x: 0.0, y: 1.0}}
-                        end={{x: 1.0, y: 1.0}}
-                        colors={[
-                            changeOpacity('#e5e5e4', GRADIENT_START),
-                            changeOpacity('#d6d6d5', GRADIENT_MIDDLE),
-                            changeOpacity('#e5e5e4', GRADIENT_END),
-                        ]}
-                        locations={[0.1, 0.3, 0.7]}
-                        style={[style.messageText, {alignSelf: 'stretch'}]}
-                    />
+                    <View>
+                        <View style={[style.messageText]}/>
+                        <AnimatedGradient
+                            start={{x: 0.0, y: 1.0}}
+                            end={{x: 1.0, y: 1.0}}
+                            colors={[
+                                changeOpacity(bg, GRADIENT_START_END),
+                                changeOpacity(bg, GRADIENT_MIDDLE),
+                                changeOpacity(bg, GRADIENT_START_END),
+                            ]}
+                            locations={[0, 0.5, 1]}
+                            style={[style.gradientText, {left, opacity}]}
+                        />
+                    </View>
+                    <View>
+                        <View style={[style.messageText, {width: '100%'}]}/>
+                        <AnimatedGradient
+                            start={{x: 0.0, y: 1.0}}
+                            end={{x: 1.0, y: 1.0}}
+                            colors={[
+                                changeOpacity(bg, GRADIENT_START_END),
+                                changeOpacity(bg, GRADIENT_MIDDLE),
+                                changeOpacity(bg, GRADIENT_START_END),
+                            ]}
+                            locations={[0, 0.5, 1]}
+                            style={[style.gradientText, {left: bodyPosLeft, opacity}]}
+                        />
+                    </View>
+                    <View>
+                        <View style={[style.messageText, {width: '100%'}]}/>
+                        <AnimatedGradient
+                            start={{x: 0.0, y: 1.0}}
+                            end={{x: 1.0, y: 1.0}}
+                            colors={[
+                                changeOpacity(bg, GRADIENT_START_END),
+                                changeOpacity(bg, GRADIENT_MIDDLE),
+                                changeOpacity(bg, GRADIENT_START_END),
+                            ]}
+                            locations={[0, 0.5, 1]}
+                            style={[style.gradientText, {left: bodyPosLeft, opacity}]}
+                        />
+                    </View>
                 </View>
             </View>
         );
@@ -79,7 +151,7 @@ export default class ChannelLoader extends PureComponent {
 
         return (
             <View style={[style.container, {width: deviceWidth}]}>
-                {Array(20).fill().map((item, index) => this.buildSections(index, style, index === 0))}
+                {Array(20).fill().map((item, index) => this.buildSections({key: index, style, top: index === 0, bg: theme.centerChannelBg}))}
             </View>
         );
     }
@@ -101,15 +173,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             }),
         },
         avatar: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderRadius: 16,
             height: 32,
             width: 32,
         },
-        messageText: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+        gradientText: {
+            backgroundColor: changeOpacity(theme.centerChannelBg, 0.2),
             height: 10,
             marginBottom: 10,
+            position: 'absolute',
+            width: '40%',
         },
         section: {
             backgroundColor: theme.centerChannelBg,
@@ -122,6 +196,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 12,
             flex: 1,
         },
+        messageText: {
+            width: '80%',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 10,
+            marginBottom: 10,
+        },
     };
 });
-
