@@ -98,7 +98,8 @@ const initializeModules = () => {
 
     EventEmitter.on(NavigationTypes.NAVIGATION_RESET, handleLogout);
     EventEmitter.on(NavigationTypes.RESTART_APP, restartApp);
-    EventEmitter.on(General.CONFIG_CHANGED, handleServerConfigChanged);
+    EventEmitter.on(General.SERVER_VERSION_CHANGED, handleServerVersionChanged);
+    EventEmitter.on(General.CONFIG_CHANGED, handleConfigChanged);
     EventEmitter.on(General.DEFAULT_CHANNEL, handleResetChannelDisplayName);
     Orientation.addOrientationListener(handleOrientationChange);
     mattermostManaged.addEventListener('managedConfigDidChange', handleManagedConfig);
@@ -158,7 +159,7 @@ const restartApp = async () => {
     launchChannel();
 };
 
-const handleServerConfigChanged = async (serverVersion) => {
+const handleServerVersionChanged = async (serverVersion) => {
     const {dispatch, getState} = store;
     const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
     const intl = app.getIntl();
@@ -181,6 +182,10 @@ const handleServerConfigChanged = async (serverVersion) => {
             configureAnalytics(data.config);
         }
     }
+};
+
+const handleConfigChanged = (config) => {
+    configureAnalytics(config)
 };
 
 const handleServerVersionUpgradeNeeded = async () => {
