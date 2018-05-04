@@ -204,10 +204,6 @@ class NotificationSettings extends PureComponent {
             user_id: userId,
         };
 
-        if (notifyProps.interval) {
-            previousProps.interval = notifyProps.interval;
-        }
-
         if (!deepEqual(previousProps, notifyProps)) {
             this.props.actions.handleUpdateUserNotifyProps(notifyProps);
         }
