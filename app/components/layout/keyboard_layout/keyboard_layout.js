@@ -44,10 +44,12 @@ export default class KeyboardLayout extends PureComponent {
 
     onKeyboardWillHide = (e) => {
         const {duration} = e;
-        Animated.timing(this.state.bottom, {
-            toValue: 0,
-            duration,
-        }).start();
+        // Animated.timing(this.state.bottom, {
+        //     toValue: 0,
+        //     duration,
+        // }).start();
+
+        this.setState({bottom: 0});
     };
 
     onKeyboardChange = (e) => {
@@ -58,10 +60,12 @@ export default class KeyboardLayout extends PureComponent {
 
         const {endCoordinates, duration} = e;
         const {height} = endCoordinates;
-        Animated.timing(this.state.bottom, {
-            toValue: height,
-            duration,
-        }).start();
+        // Animated.timing(this.state.bottom, {
+        //     toValue: height,
+        //     duration,
+        // }).start();
+
+        this.setState({bottom: height});
     };
 
     render() {
@@ -80,11 +84,11 @@ export default class KeyboardLayout extends PureComponent {
         }
 
         return (
-            <AnimatedView
+            <View
                 style={[style.keyboardLayout, {bottom: this.state.bottom}]}
             >
                 {children}
-            </AnimatedView>
+            </View>
         );
     }
 }
