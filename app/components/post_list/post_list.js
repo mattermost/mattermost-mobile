@@ -26,6 +26,8 @@ const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
 
+import telemetry from '../../../telemetry';
+
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -58,15 +60,20 @@ export default class PostList extends PureComponent {
         loadMore: () => true,
     };
 
-    newMessagesIndex = -1;
-    scrollToMessageTries = 0;
-    makeExtraData = makeExtraData();
-    itemMeasurements = {};
+    constructor(props) {
+        super(props);
 
-    state = {
-        managedConfig: {},
-        scrollToMessage: false,
-    };
+        this.newMessagesIndex = -1;
+        this.makeExtraData = makeExtraData();
+        this.itemMeasurements = {};
+
+        this.state = {
+            managedConfig: {},
+            scrollToMessage: false,
+        };
+
+        telemetry.captureStart('postlist');
+    }
 
     componentWillMount() {
         this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);
@@ -74,6 +81,9 @@ export default class PostList extends PureComponent {
 
     componentDidMount() {
         this.setManagedConfig();
+        telemetry.captureEnd('postlist');
+        telemetry.captureSinceLaunch('postlist');
+        telemetry.sendMetrics();
     }
 
     componentWillReceiveProps(nextProps) {

@@ -5,13 +5,13 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Dimensions,
     Image,
     ScrollView,
     StyleSheet,
     Text,
 } from 'react-native';
 import Button from 'react-native-button';
-import Orientation from 'react-native-orientation';
 
 import {ViewTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';
@@ -33,11 +33,11 @@ class LoginOptions extends PureComponent {
     };
 
     componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
+        Dimensions.addEventListener('change', this.orientationDidChange);
     }
 
     componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
+        Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
     goToLogin = preventDoubleTap(() => {

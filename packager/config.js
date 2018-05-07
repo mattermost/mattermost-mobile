@@ -11,7 +11,7 @@ const modulesRegex = /\/(node_modules)/;
 
 const config = {
     getTransformOptions: (entryFile, {platform}) => {
-        console.log('Building modules for', platform);
+        console.log('BUILDING MODULES FOR', platform);
         const moduleMap = {};
         modulePaths.forEach((path) => {
             let realPath = path;

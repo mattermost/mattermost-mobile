@@ -6,12 +6,12 @@ import {connect} from 'react-redux';
 
 import {joinChannel, markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/entities/teams';
 
 import {handleSelectChannel, setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {isLandscape, isTablet} from 'app/selectors/device';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ChannelDrawer from './channel_drawer.js';
 

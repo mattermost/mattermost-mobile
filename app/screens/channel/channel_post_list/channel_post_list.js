@@ -13,12 +13,15 @@ import {
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
-import ChannelIntro from 'app/components/channel_intro';
-import LoadMorePosts from 'app/components/load_more_posts';
 import PostList from 'app/components/post_list';
 import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import tracker from 'app/utils/time_tracker';
+
+import telemetry from '../../../../telemetry';
+
+let ChannelIntro = null;
+let LoadMorePosts = null;
 
 export default class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -47,7 +50,7 @@ export default class ChannelPostList extends PureComponent {
 
     constructor(props) {
         super(props);
-
+        telemetry.captureStart('channelPostList');
         this.state = {
             visiblePostIds: this.getVisiblePostIds(props),
             loading: true,
@@ -82,6 +85,7 @@ export default class ChannelPostList extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => this.setState({loading: false}));
+        telemetry.captureEnd('channelPostList');
     }
 
     getVisiblePostIds = (props) => {
@@ -136,6 +140,10 @@ export default class ChannelPostList extends PureComponent {
         }
 
         if (this.props.loadMorePostsVisible) {
+            if (!LoadMorePosts) {
+                LoadMorePosts = require('app/components/load_more_posts').default;
+            }
+
             return (
                 <LoadMorePosts
                     channelId={this.props.channelId}
@@ -143,6 +151,10 @@ export default class ChannelPostList extends PureComponent {
                     theme={this.props.theme}
                 />
             );
+        }
+
+        if (!ChannelIntro) {
+            ChannelIntro = require('app/components/channel_intro').default;
         }
 
         return (

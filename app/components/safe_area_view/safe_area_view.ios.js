@@ -3,10 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard, NativeModules, View} from 'react-native';
+import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import SafeArea from 'react-native-safe-area';
-import Orientation from 'react-native-orientation';
 
 const {StatusBarManager} = NativeModules;
 
@@ -54,7 +53,7 @@ export default class SafeAreaIos extends PureComponent {
     }
 
     componentDidMount() {
-        Orientation.addOrientationListener(this.getSafeAreaInsets);
+        Dimensions.addEventListener('change', this.getSafeAreaInsets);
         this.keyboardDidShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
         this.getStatusBarHeight();
@@ -62,7 +61,7 @@ export default class SafeAreaIos extends PureComponent {
 
     componentWillUnmount() {
         this.mounted = false;
-        Orientation.removeOrientationListener(this.getSafeAreaInsets);
+        Dimensions.removeEventListener('change', this.getSafeAreaInsets);
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
         this.mounted = false;

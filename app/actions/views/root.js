@@ -9,6 +9,7 @@ import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'matterm
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
 
+import {ViewTypes} from 'app/constants';
 import {recordTime} from 'app/utils/segment';
 
 import {
@@ -16,6 +17,15 @@ import {
     setChannelDisplayName,
     retryGetPostsAction,
 } from 'app/actions/views/channel';
+
+export function startDataCleanup() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: ViewTypes.DATA_CLEANUP,
+            payload: getState(),
+        });
+    };
+}
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
@@ -55,26 +65,26 @@ export function loadFromPushNotification(notification) {
         //verify that we have the team loaded
         if (teamId && (!teams[teamId] || !myTeamMembers[teamId])) {
             await Promise.all([
-                getMyTeams()(dispatch, getState),
-                getMyTeamMembers()(dispatch, getState),
+                dispatch(getMyTeams()),
+                dispatch(getMyTeamMembers()),
             ]);
         }
 
         // when the notification is from a team other than the current team
         if (teamId !== currentTeamId) {
-            selectTeam({id: teamId})(dispatch, getState);
+            dispatch(selectTeam({id: teamId}));
         }
 
         // when the notification is from the same channel as the current channel
         // we should get the posts
         if (channelId === currentChannelId) {
-            markChannelAsRead(channelId, null, false)(dispatch, getState);
+            dispatch(markChannelAsRead(channelId, null, false));
             await retryGetPostsAction(getPosts(channelId), dispatch, getState);
         } else {
             // when the notification is from a channel other than the current channel
-            markChannelAsRead(channelId, currentChannelId, false)(dispatch, getState);
+            dispatch(markChannelAsRead(channelId, currentChannelId, false));
             dispatch(setChannelDisplayName(''));
-            handleSelectChannel(channelId)(dispatch, getState);
+            dispatch(handleSelectChannel(channelId));
         }
     };
 }

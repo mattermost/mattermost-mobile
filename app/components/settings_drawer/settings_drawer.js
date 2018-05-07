@@ -28,6 +28,8 @@ import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
 
+import telemetry from '../../../telemetry';
+
 const DRAWER_INITIAL_OFFSET = 80;
 
 export default class SettingsDrawer extends PureComponent {
@@ -54,6 +56,7 @@ export default class SettingsDrawer extends PureComponent {
     constructor(props) {
         super(props);
 
+        telemetry.captureStart('settingsDrawer');
         this.closeHandle = null;
         this.openHandle = null;
 
@@ -64,6 +67,7 @@ export default class SettingsDrawer extends PureComponent {
 
     componentDidMount() {
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
+        telemetry.captureEnd('settingsDrawer');
     }
 
     componentWillUnmount() {

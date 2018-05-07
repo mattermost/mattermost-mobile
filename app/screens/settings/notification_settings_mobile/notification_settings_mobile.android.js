@@ -14,7 +14,7 @@ import {
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
 import NotificationPreferences from 'app/notification_preferences';
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from 'app/initialize/push_notifications';
 import StatusBar from 'app/components/status_bar';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
