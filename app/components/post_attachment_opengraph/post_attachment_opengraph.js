@@ -217,7 +217,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const {isReplyPost, openGraphData, theme} = this.props;
         const {hasImage, height, imageUrl, width} = this.state;
 
-        if (!openGraphData || openGraphData.description == null) {
+        if (!openGraphData || !openGraphData.url) {
             return null;
         }
 
