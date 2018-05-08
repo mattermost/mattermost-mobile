@@ -22,29 +22,26 @@ export default class RadioButtonGroup extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.selected = null;
-        if (this.props.options.length) {
-            this.props.options.forEach((option) => {
-                const {
-                    value,
-                    checked,
-                } = option;
+        this.state = {
+            selected: this.getSelectedValue(),
+        };
+    }
 
-                if (!this.state.selected && checked) {
-                    this.selected = value;
-                }
-            });
+    componentWillReceiveProps(nextProps) {
+        if (this.props.options !== nextProps.options) {
+            this.setState({selected: this.getSelectedValue()});
+        }
+    }
+
+    getSelectedValue = (options = []) => {
+        let selected;
+        for (const option in options) {
+            if (option.checked) {
+                selected = option.value;
+            }
         }
 
-        this.state = {selected: this.selected};
-    }
-
-    get value() {
-        return this.state.selected;
-    }
-
-    set value(value) {
-        this.onChange(value);
+        return selected;
     }
 
     onChange = (value) => {
@@ -81,7 +78,7 @@ export default class RadioButtonGroup extends PureComponent {
                         label={label}
                         disabled={disabled}
                         onCheck={this.onChange}
-                        checked={this.state.selected && value === this.state.selected}
+                        checked={option.checked}
                     />
                 );
             });

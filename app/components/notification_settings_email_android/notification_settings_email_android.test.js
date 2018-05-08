@@ -6,54 +6,37 @@ import {configure, shallow} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 configure({adapter: new Adapter()});
 
-import NotificationSettingsEmail from './notification_settings_email.js';
+import NotificationSettingsEmailAndroid from './notification_settings_email_android.js';
 
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
-    return {
-        ...original,
-        changeOpacity: jest.fn(),
-    };
-});
-
-describe('NotificationSettingsEmail', () => {
+describe('NotificationSettingsEmailAndroid', () => {
     const baseProps = {
+        actions: {
+            savePreferences: () => {}, // eslint-disable-line no-empty-function
+        },
         currentUserId: 'current_user_id',
         emailInterval: '30',
-        enableEmailBatching: false,
-        navigator: {setOnNavigatorEvent: () => {}}, // eslint-disable-line no-empty-function
-        savePreferences: () => {}, // eslint-disable-line no-empty-function
+        enableEmailBatching: true,
+        onClose: () => {}, // eslint-disable-line no-empty-function
         sendEmailNotifications: true,
         siteName: 'Mattermost',
         theme: {
             centerChannelBg: '#aaa',
             centerChannelColor: '#aaa',
         },
+        visible: true,
     };
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <NotificationSettingsEmail {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         expect(wrapper).toMatchSnapshot();
     });
 
-    test('should call saveUserNotifyProps on onNavigatorEvent', () => {
-        const wrapper = shallow(
-            <NotificationSettingsEmail {...baseProps}/>
-        );
-
-        const instance = wrapper.instance();
-        instance.saveUserNotifyProps = jest.fn();
-        instance.onNavigatorEvent({type: 'ScreenChangedEvent', id: 'willDisappear'});
-
-        expect(instance.saveUserNotifyProps).toHaveBeenCalledTimes(1);
-    });
-
     test('should macth state on setEmailNotifications', () => {
         const wrapper = shallow(
-            <NotificationSettingsEmail {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>
         );
 
         wrapper.setState({email: 'false', interval: '0'});
@@ -67,14 +50,25 @@ describe('NotificationSettingsEmail', () => {
         expect(wrapper.state({email: 'true', interval: '3600'}));
     });
 
-    test('should call props.actions.savePreferences on saveUserNotifyProps', () => {
-        const props = {...baseProps, actions: {savePreferences: jest.fn()}};
+    test('should call props.onClose on handleClose', () => {
+        const props = {...baseProps, onClose: jest.fn()};
         const wrapper = shallow(
-            <NotificationSettingsEmail {...props}/>
+            <NotificationSettingsEmailAndroid {...props}/>
+        );
+
+        wrapper.instance().handleClose();
+        expect(props.onClose).toHaveBeenCalledTimes(1);
+        expect(props.onClose).toBeCalledWith();
+    });
+
+    test('should call props.actions.savePreferences and props.onClose on handleSaveEmailNotification', () => {
+        const props = {...baseProps, onClose: jest.fn(), actions: {savePreferences: jest.fn()}};
+        const wrapper = shallow(
+            <NotificationSettingsEmailAndroid {...props}/>
         );
 
         wrapper.setState({email: 'true', interval: '3600'});
-        wrapper.instance().saveUserNotifyProps();
+        wrapper.instance().handleSaveEmailNotification();
         expect(props.actions.savePreferences).toHaveBeenCalledTimes(1);
         expect(props.actions.savePreferences).toBeCalledWith(
             'current_user_id',
@@ -83,13 +77,7 @@ describe('NotificationSettingsEmail', () => {
                 {category: 'notifications', name: 'email_interval', user_id: 'current_user_id', value: '3600'},
             ]
         );
-    });
-
-    test('should match snapshot, renderEmailSection', () => {
-        const wrapper = shallow(
-            <NotificationSettingsEmail {...baseProps}/>
-        );
-
-        expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
+        expect(props.onClose).toHaveBeenCalledTimes(1);
+        expect(props.onClose).toBeCalledWith();
     });
 });

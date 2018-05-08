@@ -5,14 +5,7 @@ ShallowWrapper {
   "length": 1,
   Symbol(enzyme.__root__): [Circular],
   Symbol(enzyme.__unrendered__): <NotificationSettingsEmail
-    currentUser={
-      Object {
-        "id": "user_id",
-        "notify_props": Object {
-          "email": "true",
-        },
-      }
-    }
+    currentUserId="current_user_id"
     emailInterval="30"
     enableEmailBatching={false}
     navigator={
@@ -20,7 +13,7 @@ ShallowWrapper {
         "setOnNavigatorEvent": [Function],
       }
     }
-    onBack={[Function]}
+    savePreferences={[Function]}
     sendEmailNotifications={true}
     siteName="Mattermost"
     theme={

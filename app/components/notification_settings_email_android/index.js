@@ -1,5 +1,5 @@
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
+// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
@@ -14,7 +14,7 @@ import {
     getTheme,
 } from 'mattermost-redux/selectors/entities/preferences';
 
-import NotificationSettingsEmail from './notification_settings_email';
+import NotificationSettingsEmailAndroid from './notification_settings_email_android';
 
 function mapStateToProps(state) {
     const config = getConfig(state);
@@ -44,4 +44,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(NotificationSettingsEmail);
+export default connect(mapStateToProps, mapDispatchToProps)(NotificationSettingsEmailAndroid);

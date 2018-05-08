@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <NotificationSettingsEmailAndroid
+    actions={
+      Object {
+        "savePreferences": [Function],
+      }
+    }
+    currentUserId="current_user_id"
+    emailInterval="30"
+    enableEmailBatching={true}
+    onClose={[Function]}
+    sendEmailNotifications={true}
+    siteName="Mattermost"
+    theme={
+      Object {
+        "centerChannelBg": "#aaa",
+        "centerChannelColor": "#aaa",
+      }
+    }
+    visible={true}
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): null,
+  Symbol(enzyme.__nodes__): Array [
+    null,
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+  },
+}
+`;

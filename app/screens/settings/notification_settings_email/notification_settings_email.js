@@ -14,7 +14,6 @@ import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-import {getNotificationProps} from 'app/utils/notify_props';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 
 import Section from 'app/screens/settings/section';
@@ -22,11 +21,13 @@ import SectionItem from 'app/screens/settings/section_item';
 
 export default class NotificationSettingsEmail extends PureComponent {
     static propTypes = {
-        currentUser: PropTypes.object.isRequired,
+        actions: PropTypes.shape({
+            savePreferences: PropTypes.func.isRequired,
+        }),
+        currentUserId: PropTypes.string.isRequired,
         emailInterval: PropTypes.string.isRequired,
         enableEmailBatching: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
-        onBack: PropTypes.func.isRequired,
         sendEmailNotifications: PropTypes.bool.isRequired,
         siteName: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -36,16 +37,13 @@ export default class NotificationSettingsEmail extends PureComponent {
         super(props);
 
         const {
-            currentUser,
             emailInterval,
             enableEmailBatching,
             navigator,
             sendEmailNotifications,
         } = props;
 
-        const notifyProps = getNotificationProps(currentUser);
         this.state = {
-            ...notifyProps,
             interval: getEmailInterval(
                 sendEmailNotifications,
                 enableEmailBatching,
@@ -90,7 +88,7 @@ export default class NotificationSettingsEmail extends PureComponent {
         const {sendEmailNotifications} = this.props;
 
         let email = 'false';
-        if (sendEmailNotifications && interval !== Preferences.INTERVAL_NEVER) {
+        if (sendEmailNotifications && interval !== Preferences.INTERVAL_NEVER.toString()) {
             email = 'true';
         }
 
@@ -101,10 +99,12 @@ export default class NotificationSettingsEmail extends PureComponent {
     };
 
     saveUserNotifyProps = () => {
-        this.props.onBack({
-            ...this.state,
-            user_id: this.props.currentUser.id,
-        });
+        const {currentUserId} = this.props;
+        const {email, interval} = this.state;
+
+        const emailNotify = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: 'email', value: email};
+        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: Preferences.EMAIL_INTERVAL, value: interval};
+        this.props.actions.savePreferences(currentUserId, [emailNotify, emailInterval]);
     };
 
     renderEmailSection = () => {
@@ -226,11 +226,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
-        },
-        input: {
-            color: theme.centerChannelColor,
-            fontSize: 12,
-            height: 40,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
