@@ -223,6 +223,21 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         const style = getStyleSheet(theme);
 
+        let description = null;
+        if (openGraphData.description) {
+            description = (
+                <View style={style.flex}>
+                    <Text
+                        style={style.siteDescription}
+                        numberOfLines={5}
+                        ellipsizeMode='tail'
+                    >
+                        {openGraphData.description}
+                    </Text>
+                </View>
+            );
+        }
+
         return (
             <View style={style.container}>
                 <View style={style.flex}>
@@ -248,17 +263,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         </Text>
                     </TouchableOpacity>
                 </View>
-                {openGraphData.description &&
-                    <View style={style.flex}>
-                        <Text
-                            style={style.siteDescription}
-                            numberOfLines={5}
-                            ellipsizeMode='tail'
-                        >
-                            {openGraphData.description}
-                        </Text>
-                    </View>
-                }
+                {description}
                 {hasImage &&
                     <View ref='item'>
                         <TouchableWithoutFeedback
