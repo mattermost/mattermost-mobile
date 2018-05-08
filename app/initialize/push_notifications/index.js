@@ -70,7 +70,7 @@ export default class PushNotification {
     };
 
     onPushNotification = (deviceNotification) => {
-        // THIS HAS TO WAIT UNTIL rehydration finishes!!
+        // THIS HAS TO WAIT UNTIL re-hydration finishes!!
         const {dispatch, getState} = this.store;
         const state = getState();
         const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
@@ -106,7 +106,6 @@ export default class PushNotification {
         const {dispatch, getState} = this.store;
         const state = getState();
         const {currentUserId} = state.entities.users;
-
         if (currentUserId) {
             // one thing to note is that for android it will reply to the last post in the stack
             const rootId = data.root_id || data.post_id;
@@ -125,10 +124,10 @@ export default class PushNotification {
                     PushNotifications.setApplicationIconBadgeNumber(badge);
                 }
 
-                this.replyNotificationData = null;
+                this.notification = null;
             }).then(completed);
         } else {
-            this.replyNotificationData = {
+            this.notification = {
                 data,
                 text,
                 badge,
