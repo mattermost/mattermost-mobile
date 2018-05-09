@@ -25,6 +25,8 @@ platform :ios do
 
   desc 'Build iOS app'
   lane :build do
+    update_identifiers()
+
     if ENV['SYNC_IOS_PROVISIONING_PROFILES'] == 'true'
       match(type: ENV['MATCH_TYPE'] || 'adhoc')
     end
@@ -38,6 +40,22 @@ platform :ios do
     end
 
     git_actions()
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      pretext = '#### New iOS beta published to TestFlight'
+      msg = '#ios-beta should be available in TestFlight soon, you can sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
+      if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
+        pretext = '#### New iOS released ready to be published'
+        msg = '#ios-release has been cut and should be available for [download](https://itunes.apple.com/us/app/mattermost/id1257222717?mt=8) soon.'
+      end
+      send_message_for_ios(
+          pretext,
+          '',
+          msg,
+          [],
+          true
+      )
+    end
   end
 
   desc 'Build an unsigned ipa'
@@ -55,6 +73,7 @@ platform :ios do
   end
 
   lane :build_qa do
+    update_identifiers()
     match(type: 'adhoc')
     build_ios
 
@@ -92,6 +111,12 @@ platform :ios do
           plist_path: 'Mattermost/Info.plist',
           app_identifier: ENV['IOS_MAIN_APP_IDENTIFIER']
       )
+
+      find_replace_string(
+          path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+          old_string: 'com.mattermost.rnbeta',
+          new_string: ENV['IOS_MAIN_APP_IDENTIFIER']
+      )
     end
 
     if ENV['IOS_APP_NAME'] != 'Mattermost Beta'
@@ -120,6 +145,12 @@ platform :ios do
             xcodeproj: './ios/Mattermost.xcodeproj',
             plist_path: 'MattermostShare/Info.plist',
             app_identifier: ENV['IOS_EXTENSION_APP_IDENTIFIER']
+        )
+
+        find_replace_string(
+            path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+            old_string: 'com.mattermost.rnbeta.MattermostShare',
+            new_string: ENV['IOS_EXTENSION_APP_IDENTIFIER']
         )
       end
     end
@@ -156,7 +187,6 @@ platform :ios do
       commit_version_bump(commit_version_options)
     end
 
-    update_identifiers()
     replace_ios_assets()
 
     unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
@@ -174,12 +204,17 @@ platform :ios do
         scheme: 'Mattermost',
         configuration: config_mode,
         workspace: './ios/Mattermost.xcworkspace',
-        export_method: method
+        export_method: method,
+        skip_profile_detection: true,
+        export_options: {
+            signingStyle: 'manual',
+            iCloudContainerEnvironment: 'Production'
+        }
     )
   end
 
   def send_message_for_ios(pretext, title, msg, default_payloads, success)
-    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
     build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
     mattermost(
         pretext: pretext,
@@ -257,6 +292,22 @@ platform :android do
     sh "mv #{apk_path} ../Mattermost.apk"
 
     git_actions()
+
+    if ENV['MATTERMOST_WEBHOOK_URL']
+      pretext = '#### New Android beta published to Google Play'
+      msg = '#android-beta available for testing, you can sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
+      if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
+        pretext = '#### New Android released ready to be published'
+        msg = '#android-release has been cut and should be available for [download](https://play.google.com/store/apps/details?id=com.mattermost.rn&hl=en) soon.'
+      end
+      send_message_for_android(
+          pretext,
+          '',
+          msg,
+          [],
+          true
+      )
+    end
   end
 
   desc 'Build an unsigned apk'
