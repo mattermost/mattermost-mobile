@@ -5,14 +5,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import {
-    Text,
     Image,
+    Platform,
+    Text,
     View,
 } from 'react-native';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import {Client4} from 'mattermost-redux/client';
+
+import ImageCacheManager from 'app/utils/image_cache_manager';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
@@ -24,13 +26,37 @@ export default class TeamIcon extends React.PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    state = {
-        imageError: false,
-    };
+    constructor(props) {
+        super(props);
 
-    componentWillReceiveProps() {
-        this.setState({imageError: false});
+        const {team} = props;
+        if (team.last_team_icon_update) {
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(team.id, team.last_team_icon_update), this.setImageURL);
+        }
+
+        this.state = {
+            teamIcon: null,
+            imageError: false,
+        };
     }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({imageError: false});
+
+        if (this.props.team.last_team_icon_update !== nextProps.team.last_team_icon_update) {
+            const {team} = nextProps;
+            ImageCacheManager.cache('', Client4.getTeamIconUrl(team.id, team.last_team_icon_update), this.setImageURL);
+        }
+    }
+
+    setImageURL = (teamIcon) => {
+        let prefix = '';
+        if (Platform.OS === 'android') {
+            prefix = 'file://';
+        }
+
+        this.setState({teamIcon: `${prefix}${teamIcon}`});
+    };
 
     render() {
         const {
@@ -44,12 +70,11 @@ export default class TeamIcon extends React.PureComponent {
         const styles = getStyleSheet(theme);
 
         let teamIconContent;
-        if (team.last_team_icon_update && !this.state.imageError) {
-            const teamIconUrl = Client4.getTeamIconUrl(team.id, team.last_team_icon_update);
+        if (this.state.teamIcon) {
             teamIconContent = (
                 <Image
                     style={[styles.image, styleImage]}
-                    source={{uri: teamIconUrl, headers: {Authorization: `Bearer ${Client4.getToken()}`}}}
+                    source={{uri: this.state.teamIcon}}
                     onError={() => this.setState({imageError: true})}
                 />
             );
