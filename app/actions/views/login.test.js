@@ -11,9 +11,11 @@ import {
     handlePasswordChanged,
 } from 'app/actions/views/login';
 
-jest.mock('react-native-fetch-blob', () => ({
-    DocumentDir: () => jest.fn(),
-    fs: {dirs: {CacheDir: () => jest.fn()}},
+jest.mock('react-native-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: () => jest.fn(),
+    },
 }));
 
 const mockStore = configureStore([thunk]);

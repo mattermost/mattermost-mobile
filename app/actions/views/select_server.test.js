@@ -11,9 +11,11 @@ import {ViewTypes} from 'app/constants';
 
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
-jest.mock('react-native-fetch-blob', () => ({
-    DocumentDir: () => jest.fn(),
-    fs: {dirs: {CacheDir: () => jest.fn()}},
+jest.mock('react-native-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: () => jest.fn(),
+    },
 }));
 
 const mockStore = configureStore([thunk]);
