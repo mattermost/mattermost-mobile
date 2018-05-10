@@ -35,6 +35,7 @@ export default class MoreChannels extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
+            removeHiddenDefaultChannel: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
@@ -225,6 +226,10 @@ export default class MoreChannels extends PureComponent {
 
         const channel = channels.find((c) => c.id === id);
         const result = await actions.joinChannel(currentUserId, currentTeamId, id);
+
+        if (channel.name === General.DEFAULT_CHANNEL) {
+            actions.removeHiddenDefaultChannel(currentTeamId, channel.id);
+        }
 
         if (result.error) {
             alertErrorWithFallback(

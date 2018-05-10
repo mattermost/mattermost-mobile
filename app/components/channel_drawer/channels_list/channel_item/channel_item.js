@@ -21,6 +21,9 @@ const {View: AnimatedView} = Animated;
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            addHiddenDefaultChannel: PropTypes.func.isRequired,
+        }).isRequired,
         channelId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
@@ -32,15 +35,34 @@ export default class ChannelItem extends PureComponent {
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         shouldHideChannel: PropTypes.bool,
+        showUnreadForMsgs: PropTypes.bool.isRequired,
         status: PropTypes.string,
+        teamId: PropTypes.string,
         teammateDeletedAt: PropTypes.number,
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        unreadMsgs: PropTypes.number.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape,
     };
+
+    componentDidMount() {
+        if (this.props.shouldHideChannel && !this.showChannelAsUnread()) {
+            this.props.actions.addHiddenDefaultChannel(this.props.teamId, this.props.channelId);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (
+            nextProps.shouldHideChannel !== this.props.shouldHideChannel &&
+            nextProps.shouldHideChannel &&
+            !this.showChannelAsUnread()
+        ) {
+            nextProps.actions.addHiddenDefaultChannel(nextProps.teamId, nextProps.channelId);
+        }
+    }
 
     onPress = preventDoubleTap(() => {
         const {channelId, currentChannelId, displayName, fake, onSelectChannel, type} = this.props;
@@ -73,6 +95,10 @@ export default class ChannelItem extends PureComponent {
         this.previewRef = ref;
     };
 
+    showChannelAsUnread = () => {
+        return this.props.mentions > 0 || (this.props.unreadMsgs > 0 && this.props.showUnreadForMsgs);
+    };
+
     render() {
         const {
             channelId,
@@ -89,7 +115,7 @@ export default class ChannelItem extends PureComponent {
             type,
         } = this.props;
 
-        if (shouldHideChannel) {
+        if (!this.showChannelAsUnread() && shouldHideChannel) {
             return null;
         }
 

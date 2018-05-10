@@ -6,8 +6,18 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
-import {getChannels, joinChannel, searchChannels} from 'mattermost-redux/actions/channels';
-import {getChannelsInCurrentTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {
+    getChannels,
+    joinChannel,
+    removeHiddenDefaultChannel,
+    searchChannels,
+} from 'mattermost-redux/actions/channels';
+import {
+    getChannelsInCurrentTeam,
+    getHiddenChannelIdInCurrentTeam,
+    getMyChannelMemberships,
+} from 'mattermost-redux/selectors/entities/channels';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
@@ -20,16 +30,17 @@ import MoreChannels from './more_channels';
 const joinableChannels = createSelector(
     getChannelsInCurrentTeam,
     getMyChannelMemberships,
-    (channels, myMembers) => {
+    getHiddenChannelIdInCurrentTeam,
+    (channels, myMembers, hiddenChannelId) => {
         return channels.filter((c) => {
-            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL);
+            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL) || hiddenChannelId === c.id;
         });
     }
 );
 
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
-    const {currentTeamId} = state.entities.teams;
+    const currentTeamId = getCurrentTeamId(state);
     const {getChannels: requestStatus} = state.requests.channels;
     const {config, license} = state.entities.general;
     const roles = getCurrentUserRoles(state);
@@ -51,6 +62,7 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             joinChannel,
             getChannels,
+            removeHiddenDefaultChannel,
             searchChannels,
             setChannelDisplayName,
         }, dispatch),
