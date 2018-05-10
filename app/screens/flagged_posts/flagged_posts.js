@@ -155,6 +155,7 @@ export default class FlaggedPosts extends PureComponent {
 
             return (
                 <DateHeader
+                    key={`${date}-${index}`}
                     date={date}
                     index={index}
                 />
