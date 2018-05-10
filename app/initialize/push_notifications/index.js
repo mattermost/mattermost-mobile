@@ -14,15 +14,12 @@ import {ViewTypes} from 'app/constants';
 
 import PushNotifications from './push_notifications';
 
-import telemetry from '../../../telemetry';
-
 export default class PushNotification {
     constructor(store) {
         this.store = store;
         this.appStarted = false;
         this.notification = null;
 
-        telemetry.captureStart('configurePushNotifications');
         PushNotifications.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
@@ -66,7 +63,6 @@ export default class PushNotification {
 
         const token = `${prefix}:${data.token}`;
         dispatch(setDeviceToken(token));
-        telemetry.captureEnd('configurePushNotifications');
     };
 
     onPushNotification = (deviceNotification) => {

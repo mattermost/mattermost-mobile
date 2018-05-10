@@ -22,8 +22,6 @@ const {
     STATUS_BAR_HEIGHT,
 } = ViewTypes;
 
-import telemetry from '../../../../telemetry';
-
 export default class ChannelNavBar extends PureComponent {
     static propTypes = {
         isLandscape: PropTypes.bool.isRequired,
@@ -36,13 +34,8 @@ export default class ChannelNavBar extends PureComponent {
 
     constructor(props) {
         super(props);
-        telemetry.captureStart('ChannelNavBar');
 
         this.isX = DeviceInfo.getModel() === 'iPhone X';
-    }
-
-    componentDidMount() {
-        telemetry.captureEnd('ChannelNavBar');
     }
 
     render() {

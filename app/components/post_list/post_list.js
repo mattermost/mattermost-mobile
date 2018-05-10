@@ -26,8 +26,6 @@ const INITIAL_BATCH_TO_RENDER = 15;
 const NEW_MESSAGES_HEIGHT = 28;
 const DATE_HEADER_HEIGHT = 28;
 
-import telemetry from '../../../telemetry';
-
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -71,8 +69,6 @@ export default class PostList extends PureComponent {
             managedConfig: {},
             scrollToMessage: false,
         };
-
-        telemetry.captureStart('postlist');
     }
 
     componentWillMount() {
@@ -81,9 +77,6 @@ export default class PostList extends PureComponent {
 
     componentDidMount() {
         this.setManagedConfig();
-        telemetry.captureEnd('postlist');
-        telemetry.captureSinceLaunch('postlist');
-        telemetry.sendMetrics();
     }
 
     componentWillReceiveProps(nextProps) {

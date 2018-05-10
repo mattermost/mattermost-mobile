@@ -110,7 +110,7 @@ android {
 
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 23
         versionCode 102
         versionName "1.8.0"

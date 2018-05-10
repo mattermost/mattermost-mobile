@@ -15,11 +15,8 @@ import PushNotification from 'app/initialize/push_notifications';
 import configureStore from 'app/store';
 import {registerScreens} from 'app/screens';
 
-import telemetry from '../telemetry';
-
 export default class EntryPoint {
     constructor() {
-        telemetry.captureStart('hydration');
         this.store = configureStore(initialState);
         this.emm = new Emm(this.store, this.startFakeApp);
         this.push_notification = new PushNotification(this.store);
@@ -33,9 +30,7 @@ export default class EntryPoint {
             this.startApp,
         );
 
-        telemetry.captureStart('registerScreens');
         registerScreens(this.store, Provider);
-        telemetry.captureEnd('registerScreens');
         this.unsubscribeFromStore = this.store.subscribe(this.listenForHydration);
 
         const Emojis = require('app/utils/emojis');
@@ -47,8 +42,6 @@ export default class EntryPoint {
         const state = getState();
 
         if (state.views.root.hydrationComplete) {
-            telemetry.captureEnd('hydration');
-
             this.unsubscribeFromStore();
 
             const {credentials} = state.entities.general;
@@ -89,9 +82,7 @@ export default class EntryPoint {
     };
 
     launchApp = () => {
-        telemetry.captureStart('emmValidation');
         this.emm.handleManagedConfig().then((shouldStart) => {
-            telemetry.captureEnd('emmValidation');
             if (shouldStart) {
                 this.startApp('fade');
             }
@@ -112,7 +103,6 @@ export default class EntryPoint {
     };
 
     startApp = (animationType = 'fade') => {
-        telemetry.captureStart('selectInitialScreen');
         const {dispatch} = this.store;
         let screen = 'SelectServer';
 
@@ -123,9 +113,6 @@ export default class EntryPoint {
             dispatch(loadMe());
         }
 
-        telemetry.captureEnd('selectInitialScreen');
-        telemetry.captureStart('mattermostInitiliaze');
-        telemetry.captureStart('startSingleScreenApp');
         Navigation.startSingleScreenApp({
             screen: {
                 screen,
@@ -146,6 +133,5 @@ export default class EntryPoint {
         });
 
         this.push_notification.setAppStarted();
-        telemetry.captureSinceLaunch('splashscreen');
     };
 }

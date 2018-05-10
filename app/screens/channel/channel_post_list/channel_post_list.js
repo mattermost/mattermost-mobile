@@ -18,8 +18,6 @@ import PostListRetry from 'app/components/post_list_retry';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import tracker from 'app/utils/time_tracker';
 
-import telemetry from '../../../../telemetry';
-
 let ChannelIntro = null;
 let LoadMorePosts = null;
 
@@ -50,7 +48,7 @@ export default class ChannelPostList extends PureComponent {
 
     constructor(props) {
         super(props);
-        telemetry.captureStart('channelPostList');
+
         this.state = {
             visiblePostIds: this.getVisiblePostIds(props),
             loading: true,
@@ -85,7 +83,6 @@ export default class ChannelPostList extends PureComponent {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => this.setState({loading: false}));
-        telemetry.captureEnd('channelPostList');
     }
 
     getVisiblePostIds = (props) => {

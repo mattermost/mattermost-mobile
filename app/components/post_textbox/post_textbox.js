@@ -16,8 +16,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Typing from './components/typing';
 
-import telemetry from '../../../telemetry';
-
 let PaperPlane = null;
 
 export default class PostTextbox extends PureComponent {
@@ -63,7 +61,6 @@ export default class PostTextbox extends PureComponent {
     constructor(props) {
         super(props);
 
-        telemetry.captureStart('postTextBox');
         this.state = {
             contentHeight: INITIAL_HEIGHT,
             cursorPosition: 0,
@@ -80,8 +77,6 @@ export default class PostTextbox extends PureComponent {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
             BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
-
-        telemetry.captureEnd('postTextBox');
     }
 
     componentWillReceiveProps(nextProps) {

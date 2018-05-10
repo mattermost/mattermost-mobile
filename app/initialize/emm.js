@@ -12,8 +12,6 @@ import {getCurrentLocale} from 'app/selectors/i18n';
 
 import LocalConfig from 'assets/config';
 
-import telemetry from '../../telemetry';
-
 export default class Emm {
     constructor(store, start) {
         const locale = getCurrentLocale(store.getState());
@@ -41,7 +39,6 @@ export default class Emm {
     };
 
     handleAuthentication = async (vendor) => {
-        telemetry.captureStart('emmAuthentication');
         const isSecured = await mattermostManaged.isDeviceSecure();
 
         if (isSecured) {
@@ -57,7 +54,7 @@ export default class Emm {
                 return false;
             }
         }
-        telemetry.captureEnd('emmAuthentication');
+
         return true;
     };
 

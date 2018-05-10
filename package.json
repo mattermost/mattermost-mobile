@@ -8,7 +8,6 @@
   "private": true,
   "dependencies": {
     "analytics-react-native": "1.2.0",
-    "babel-polyfill": "6.26.0",
     "commonmark": "github:mattermost/commonmark.js#21742b9d51070b6abba82d88590a0c51ee552a47",
     "commonmark-react-renderer": "mattermost/commonmark-react-renderer#86fa63f898802953842526c2030f3b63c5d1ae7a",
     "deep-equal": "1.0.1",
@@ -20,7 +19,7 @@
     "prop-types": "15.6.1",
     "react": "16.3.2",
     "react-intl": "2.4.0",
-    "react-native": "0.55.3",
+    "react-native": "0.55.4",
     "react-native-animatable": "1.2.4",
     "react-native-bottom-sheet": "1.0.3",
     "react-native-button": "2.3.0",

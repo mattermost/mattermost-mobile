@@ -25,8 +25,6 @@ import networkConnectionListener from 'app/utils/network';
 import tracker from 'app/utils/time_tracker';
 import LocalConfig from 'assets/config';
 
-import telemetry from '../../../telemetry';
-
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
@@ -59,7 +57,6 @@ export default class Channel extends PureComponent {
 
     constructor(props) {
         super(props);
-        telemetry.captureEnd('startSingleScreenApp');
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -84,9 +81,7 @@ export default class Channel extends PureComponent {
         if (tracker.initialLoad) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
-        telemetry.captureEnd('mattermostInitiliaze');
-        telemetry.captureSinceLaunch('renderChannelScreen');
-        telemetry.sendMetrics();
+
         EventEmitter.emit('renderDrawer');
     }
 

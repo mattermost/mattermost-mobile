@@ -34,8 +34,6 @@ const {
 const DRAWER_INITIAL_OFFSET = 40;
 const DRAWER_LANDSCAPE_OFFSET = 150;
 
-import telemetry from '../../../telemetry';
-
 export default class ChannelDrawer extends Component {
     static propTypes = {
         actions: PropTypes.shape({
@@ -66,7 +64,6 @@ export default class ChannelDrawer extends Component {
     constructor(props) {
         super(props);
 
-        telemetry.captureStart('channelDrawer');
         let openDrawerOffset = DRAWER_INITIAL_OFFSET;
         if (props.isLandscape || props.isTablet) {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
@@ -86,7 +83,6 @@ export default class ChannelDrawer extends Component {
         EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-        telemetry.captureEnd('channelDrawer');
     }
 
     componentWillReceiveProps(nextProps) {

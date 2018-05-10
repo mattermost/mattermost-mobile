@@ -31,8 +31,6 @@ import {preventDoubleTap} from 'app/utils/tap';
 
 import LocalConfig from 'assets/config';
 
-import telemetry from '../../../telemetry';
-
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -85,9 +83,6 @@ export default class SelectServer extends PureComponent {
         }
 
         this.props.navigator.setOnNavigatorEvent(this.handleNavigatorEvent);
-
-        telemetry.captureEnd('mattermostInitiliaze');
-        telemetry.sendMetrics();
     }
 
     componentWillUpdate(nextProps, nextState) {

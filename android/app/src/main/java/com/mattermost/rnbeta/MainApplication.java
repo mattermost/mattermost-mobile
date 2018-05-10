@@ -2,11 +2,6 @@ package com.mattermost.rnbeta;
 
 import android.app.Application;
 
-//import com.facebook.react.ReactApplication;
-
-//import com.facebook.react.ReactNativeHost;
-
-//import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.reactnativenavigation.NavigationApplication;
 
@@ -45,17 +40,6 @@ import android.os.Bundle;
 import java.util.Arrays;
 import java.util.List;
 
-
-// telemtry stuff
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactMarker;
-import com.facebook.react.bridge.ReactMarkerConstants;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-import android.support.annotation.Nullable;
-
-
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
 
@@ -87,8 +71,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactVideoPackage(),
             new RNReactNativeDocViewerPackage(),
             new MattermostPackage(this),
-            new SharePackage(),
-            new StartTimePackage(this)
+            new SharePackage()
     );
   }
 
@@ -112,31 +95,6 @@ public class MainApplication extends NavigationApplication implements INotificat
     setActivityCallbacks(notificationsLifecycleFacade);
 
     SoLoader.init(this, /* native exopackage */ false);
-
-    ReactMarker.addListener(new ReactMarker.MarkerListener() {
-      @Override
-      public void logMarker(ReactMarkerConstants name, @Nullable String tag, int instanceKey) {
-        if (name.toString() == ReactMarkerConstants.NATIVE_MODULE_SETUP_START.toString()) {
-
-        } else if (name.toString() == ReactMarkerConstants.NATIVE_MODULE_SETUP_END.toString()) {
-
-        } else if (name.toString() == ReactMarkerConstants.RUN_JS_BUNDLE_START.toString()) {
-          JS_BUNDLE_RUN_START_TIME = System.currentTimeMillis();
-        } else if (name.toString() == ReactMarkerConstants.RUN_JS_BUNDLE_END.toString()) {
-          JS_BUNDLE_RUN_END_TIME = System.currentTimeMillis();
-          ReactContext ctx = getReactGateway().getReactContext();
-
-          if (ctx != null) {
-            WritableMap map = Arguments.createMap();
-            map.putDouble("jsBundleRunStartTime", JS_BUNDLE_RUN_START_TIME);
-            map.putDouble("jsBundleRunEndTime", JS_BUNDLE_RUN_END_TIME);
-            ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
-                    emit("JS_BUNDLE_METRICS", map);
-          }
-        }
-      }
-    });
-
   }
 
   @Override
