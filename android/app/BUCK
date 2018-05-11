@@ -49,9 +49,9 @@ android_build_config(
 )
 
 android_resource(
-  name = "res",
-  res = "src/main/res",
-  package = "com.mattermost.rnbeta",
+    name = "res",
+    package = "com.mattermost.rnbeta",
+    res = "src/main/res",
 )
 
 android_binary(

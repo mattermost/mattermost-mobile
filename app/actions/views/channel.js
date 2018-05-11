@@ -38,8 +38,8 @@ import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels'
 const MAX_POST_TRIES = 3;
 
 export function loadChannelsIfNecessary(teamId) {
-    return async (dispatch, getState) => {
-        await fetchMyChannelsAndMembers(teamId)(dispatch, getState);
+    return async (dispatch) => {
+        await dispatch(fetchMyChannelsAndMembers(teamId));
     };
 }
 
@@ -293,9 +293,8 @@ export function handleSelectChannel(channelId) {
         const {currentTeamId} = getState().entities.teams;
 
         dispatch(setLoadMorePostsVisible(true));
-
-        loadPostsIfNecessaryWithRetry(channelId)(dispatch, getState);
-        selectChannel(channelId)(dispatch, getState);
+        dispatch(loadPostsIfNecessaryWithRetry(channelId));
+        dispatch(selectChannel(channelId));
 
         dispatch(batchActions([
             {

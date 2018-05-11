@@ -18,7 +18,7 @@ import {Client4} from 'mattermost-redux/client';
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from 'app/initialize/push_notifications';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import tracker from 'app/utils/time_tracker';
 

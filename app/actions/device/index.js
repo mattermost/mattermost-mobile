@@ -32,6 +32,16 @@ export function setStatusBarHeight(height = 20) {
     };
 }
 
+export function setDeviceDimensions(height, width) {
+    return {
+        type: DeviceTypes.DEVICE_DIMENSIONS_CHANGED,
+        data: {
+            deviceHeight: height,
+            deviceWidth: width,
+        },
+    };
+}
+
 export function setDeviceOrientation(orientation) {
     return {
         type: DeviceTypes.DEVICE_ORIENTATION_CHANGED,
@@ -49,6 +59,7 @@ export function setDeviceAsTablet() {
 export default {
     calculateDeviceDimensions,
     connection,
+    setDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
     setStatusBarHeight,
