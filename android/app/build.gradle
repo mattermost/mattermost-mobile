@@ -152,6 +152,21 @@ android {
             signingConfig null
         }
     }
+
+    flavorDimensions "type"
+
+    productFlavors {
+        // includes proprietary libs
+        play {
+            dimension "type"
+        }
+
+        // only foss
+        foss {
+            dimension "type"
+        }
+    }
+
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -178,7 +193,7 @@ dependencies {
     compile project(':react-native-image-picker')
     compile project(':react-native-orientation')
     compile project(':react-native-bottom-sheet')
-    compile ('com.google.android.gms:play-services-gcm:9.4.0') {
+    playCompile ('com.google.android.gms:play-services-gcm:9.4.0') {
         force = true;
     }
     compile project(':react-native-device-info')
@@ -189,7 +204,7 @@ dependencies {
     compile project(':react-native-svg')
     compile project(':react-native-local-auth')
     compile project(':jail-monkey')
-    compile project(':react-native-youtube')
+    playCompile project(':react-native-youtube')
     compile project(':react-native-sentry')
     compile project(':react-native-exception-handler')
     compile project(':react-native-fetch-blob')
