@@ -168,6 +168,7 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-document-picker')
     compile project(':react-native-doc-viewer')
     compile project(':react-native-video')
     compile fileTree(dir: "libs", include: ["*.jar"])
