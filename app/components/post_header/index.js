@@ -23,7 +23,7 @@ function makeMapStateToProps() {
         const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
 
         return {
-            commentedOnDisplayName: displayUsername(commentedOnUser, teammateNameDisplay),
+            commentedOnDisplayName: ownProps.commentedOnUserId ? displayUsername(commentedOnUser, teammateNameDisplay) : '',
             commentCount: getCommentCountForPost(state, {post}),
             createAt: post.create_at,
             displayName: displayUsername(user, teammateNameDisplay),
