@@ -155,6 +155,7 @@ export default class RecentMentions extends PureComponent {
 
             return (
                 <DateHeader
+                    key={`${date}-${index}`}
                     date={date}
                     index={index}
                 />

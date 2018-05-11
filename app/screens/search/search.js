@@ -263,6 +263,7 @@ export default class Search extends PureComponent {
     renderDateHeader = (date, index) => {
         return (
             <DateHeader
+                key={`${date}-${index}`}
                 date={date}
                 index={index}
             />
