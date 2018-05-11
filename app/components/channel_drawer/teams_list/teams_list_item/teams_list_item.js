@@ -136,7 +136,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 12,
         },
         imageContainer: {
-            backgroundColor: theme.sidebarBg,
+            backgroundColor: '#ffffff',
         },
         checkmarkContainer: {
             alignItems: 'flex-end',
