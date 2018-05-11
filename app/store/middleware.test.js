@@ -1,28 +1,29 @@
 // Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+/* eslint-disable max-nested-callbacks */
+
 import assert from 'assert';
-import DeviceInfo from 'react-native-device-info';
 
 import {ViewTypes} from 'app/constants';
 import {messageRetention} from 'app/store/middleware';
 
 jest.mock('react-native-fetch-blob', () => {
-  return {
-    DocumentDir: () => {},
-    polyfill: () => {},
-    fs: {
-        dirs: {
+    return {
+        DocumentDir: () => null,
+        polyfill: () => null,
+        fs: {
+            dirs: {
+            },
         },
-    },
-  }
+    };
 });
 
 jest.mock('react-native-device-info', () => {
-  return {
-    getVersion: () => '0.0.0',
-    getBuildNumber: () => '0',
-  };
+    return {
+        getVersion: () => '0.0.0',
+        getBuildNumber: () => '0',
+    };
 });
 
 describe('store/middleware', () => {
@@ -61,9 +62,9 @@ describe('store/middleware', () => {
             actions.forEach((action) => {
                 it(`for action type ${action.type}`, () => {
                     const store = {};
-                    const next = (action) => action;
+                    const next = (a) => a;
 
-                    nextAction = messageRetention(store)(next)(action);
+                    const nextAction = messageRetention(store)(next)(action);
                     assert.equal(action.type, nextAction.type);
                 });
             });
