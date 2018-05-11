@@ -22,26 +22,27 @@ module Fastlane
         require 'slack-notifier'
 
         options[:message] = self.trim_message(options[:message].to_s || '')
-        options[:message] = Slack::Notifier::LinkFormatter.format(options[:message])
+        options[:message] = Slack::Notifier::Util::LinkFormatter.format(options[:message])
 
-        notifier = Slack::Notifier.new(options[:mattermost_url])
-
-        notifier.username = options[:overwrite_webhook_username_and_icon] ? nil : options[:username]
+        username = options[:overwrite_webhook_username_and_icon] ? nil : options[:username]
         icon_url = options[:overwrite_webhook_username_and_icon] ? nil : options[:icon_url]
 
         if options[:channel].to_s.length > 0
-          notifier.channel = options[:channel]
-          notifier.channel = ('#' + notifier.channel) unless ['#', '@'].include?(notifier.channel[0]) # send message to channel by default
+          channel = options[:channel]
+          channel = ('#' + channel) unless ['#', '@'].include?(channel[0]) # send message to channel by default
         end
+
+        notifier = Slack::Notifier.new(options[:mattermost_url], channel: channel, username: username)
 
         mattermost_attachment = generate_mattermost_attachments(options)
 
         return [notifier, mattermost_attachment] if Helper.is_test? # tests will verify the mattermost attachments and other properties
 
-        result = notifier.ping '',
+        results = notifier.ping '',
                                icon_url: icon_url,
                                attachments: [mattermost_attachment]
 
+        result = results.first
         if result.code.to_i == 200
           UI.success('Successfully sent Mattermost notification')
         else
@@ -75,7 +76,7 @@ module Fastlane
                                        is_string: false,
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :mattermost_url,
-                                       env_name: "MATTERMOST_URL",
+                                       env_name: "MATTERMOST_WEBHOOK_URL",
                                        sensitive: true,
                                        description: "Create an Incoming WebHook for your Mattermost channel",
                                        verify_block: proc do |value|
@@ -84,7 +85,7 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :username,
                                        env_name: "MATTERMOST_USERNAME",
                                        description: "Overrides the webook's username property if overwrite_webhook_username_and_icon is false",
-                                       default_value: "fastlane",
+                                       default_value: "Fastlane",
                                        is_string: true,
                                        optional: true),
           FastlaneCore::ConfigItem.new(key: :icon_url,
