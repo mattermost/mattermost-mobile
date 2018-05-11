@@ -1372,7 +1372,7 @@
   "channel_header.addToFavorites": "Добавить в избранное",
   "channel_header.channelHeader": "Изменить заголовок канала",
   "channel_header.channelMembers": "Участники",
-  "channel_header.convert": "Convert to Private Channel",
+  "channel_header.convert": "Преобразование в приватный канал",
   "channel_header.delete": "Удалить канал",
   "channel_header.directchannel.you": "{displayname} (you) ",
   "channel_header.flagged": "Отмеченные сообщения",
