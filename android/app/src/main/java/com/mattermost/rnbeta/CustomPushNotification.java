@@ -143,13 +143,9 @@ public class CustomPushNotification extends PushNotification {
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
         Bundle bundle = mNotificationProps.asBundle();
-        String title = bundle.getString("title");
-        if (title == null) {
-            ApplicationInfo appInfo = mContext.getApplicationInfo();
-            title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
-        }
 
         String channelId = bundle.getString("channel_id");
+        String channelName = bundle.getString("channel_name");
         String postId = bundle.getString("post_id");
         int notificationId = channelId != null ? channelId.hashCode() : MESSAGE_NOTIFICATION_ID;
         String message = bundle.getString("message");
@@ -157,6 +153,12 @@ public class CustomPushNotification extends PushNotification {
         String numberString = bundle.getString("badge");
         String smallIcon = bundle.getString("smallIcon");
         String largeIcon = bundle.getString("largeIcon");
+
+        String title = channelName != null ? channelName : bundle.getString("title");
+        if (title == null) {
+            ApplicationInfo appInfo = mContext.getApplicationInfo();
+            title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
+        }
 
         Bundle b = bundle.getBundle("userInfo");
         if (b != null) {
@@ -220,12 +222,10 @@ public class CustomPushNotification extends PushNotification {
 
             for (Bundle data : list) {
                 String msg = data.getString("message");
-                if (msg != message) {
-                    style.addLine(data.getString("message"));
-                }
+                style.addLine(data.getString("message"));
             }
 
-            style.setBigContentTitle(message)
+            style.setBigContentTitle(title)
                     .setSummaryText(String.format("+%d more", (numMessages - 1)));
             notification.setStyle(style)
                     .setContentTitle(summaryTitle);
