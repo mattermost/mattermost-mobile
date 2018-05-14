@@ -88,6 +88,11 @@ function resetStateForNewVersion(action) {
         preferences = payload.entities.preferences;
     }
 
+    let roles = initialState.entities.roles;
+    if (payload.entities.roles) {
+        roles = payload.entities.roles;
+    }
+
     let search = initialState.entities.search;
     if (payload.entities.search && payload.entities.search.recent) {
         search = {
@@ -136,6 +141,7 @@ function resetStateForNewVersion(action) {
             users,
             preferences,
             search,
+            roles,
         },
         views: {
             channel: {
@@ -327,6 +333,7 @@ function cleanupState(action, keepCurrent = false) {
             },
             teams: resetPayload.entities.teams,
             users: payload.entities.users,
+            roles: resetPayload.entities.roles,
         },
         views: {
             announcement: payload.views.announcement,
