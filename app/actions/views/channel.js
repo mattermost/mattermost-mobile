@@ -144,8 +144,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
             if (channel) {
                 actions.push({
                     type: UserTypes.RECEIVED_PROFILE_IN_CHANNEL,
-                    data: {user_id: members[i]},
-                    id: channel.id,
+                    data: {id: channel.id, user_id: members[i]},
                 });
             }
         }
