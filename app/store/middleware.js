@@ -348,7 +348,7 @@ function cleanupState(action, keepCurrent = false) {
     nextState.errors = payload.errors;
 
     return {
-        type: 'persist/REHYDRATE',
+        type: action.type,
         payload: nextState,
         error: action.error,
     };
