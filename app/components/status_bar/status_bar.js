@@ -12,11 +12,15 @@ import tinyColor from 'tinycolor2';
 export default class StatusBar extends PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
+        headerColor: PropTypes.string,
     };
 
     render() {
         const {theme} = this.props;
-        const headerColor = tinyColor(theme.sidebarHeaderBg);
+        let headerColor = tinyColor(theme.sidebarHeaderBg);
+        if (this.props.headerColor) {
+            headerColor = tinyColor(this.props.headerColor);
+        }
         let barStyle = 'light-content';
         if (headerColor.isLight() && Platform.OS === 'ios') {
             barStyle = 'dark-content';

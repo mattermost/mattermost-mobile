@@ -26,6 +26,8 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import Loading from 'app/components/loading';
+import SafeAreaView from 'app/components/safe_area_view';
+import StatusBar from 'app/components/status_bar';
 
 const lazyLoadSelectServer = () => {
     return require('app/screens/select_server').default;
@@ -229,9 +231,9 @@ export default class Entry extends PureComponent {
     render() {
         const {
             theme,
+            navigator,
             isLandscape,
         } = this.props;
-        const styles = getStyleFromTheme(theme);
 
         if (this.state.launchLogin) {
             return this.renderLogin();
@@ -250,26 +252,24 @@ export default class Entry extends PureComponent {
             };
 
             toolbar = (
-                <EmptyToolbar
-                    theme={toolbarTheme}
-                    isLandscape={isLandscape}
-                />
+                <View>
+                    <StatusBar headerColor={app.toolbarBackground}/>
+                    <EmptyToolbar
+                        theme={toolbarTheme}
+                        isLandscape={isLandscape}
+                    />
+                </View>
             );
         }
 
         return (
-            <View style={[styles.container, {backgroundColor}]}>
+            <SafeAreaView
+                navBarBackgroundColor={app.toolbarBackground}
+                backgroundColor={backgroundColor}
+                navigator={navigator}>
                 {toolbar}
                 <Loading/>
-            </View>
+            </SafeAreaView>
         );
     }
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme(() => {
-    return {
-        container: {
-            flex: 1,
-        },
-    };
-});
