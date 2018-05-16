@@ -45,6 +45,7 @@ import {
 import {loadConfigAndLicense, startDataCleanup} from 'app/actions/views/root';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {deleteFileCache} from 'app/utils/file';
+import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import LocalConfig from 'assets/config';
 
 import App from './app';
@@ -227,7 +228,15 @@ export const handleManagedConfig = async (serverConfig) => {
     }
 
     try {
-        const config = await mattermostManaged.getConfig();
+        const config = await avoidNativeBridge(
+            () => { return true; },
+            () => {
+                return StartTime.managedConfig;
+            },
+            () => {
+                return mattermostManaged.getConfig();
+            }
+        );
         if (config && Object.keys(config).length) {
             app.setEMMEnabled(true);
             authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';

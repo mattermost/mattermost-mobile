@@ -12,10 +12,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by miguelespinoza on 3/22/18.
- */
-
 public class StartTimePackage implements ReactPackage {
 
     private final Application mApplication;

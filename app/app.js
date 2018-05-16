@@ -2,7 +2,7 @@
 // See License.txt for license information.
 
 /* eslint-disable global-require*/
-import {AsyncStorage} from 'react-native';
+import {AsyncStorage, NativeModules} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
@@ -14,6 +14,9 @@ import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 
 import {store, handleManagedConfig} from 'app/mattermost';
+import avoidNativeBridge from 'app/utils/avoid_native_bridge';
+
+const {StartTime} = NativeModules;
 
 const lazyLoadLocalization = () => {
     const IntlProvider = require('react-intl').IntlProvider;
@@ -83,7 +86,17 @@ export default class App {
 
     getManagedConfig = async () => {
         try {
-            const shouldStart = await AsyncStorage.getItem(DEVICE_SECURE_CACHE_KEY);
+            const shouldStart = await avoidNativeBridge(
+                () => {
+                    return StartTime.managedConfigResult;
+                },
+                () => {
+                    return StartTime.managedConfigResult;
+                },
+                () => {
+                    return AsyncStorage.getItem(DEVICE_SECURE_CACHE_KEY);
+                }
+            );
             if (shouldStart !== null) {
                 return shouldStart === 'true';
             }
@@ -95,7 +108,18 @@ export default class App {
 
     getAppCredentials = async () => {
         try {
-            const credentials = await getGenericPassword();
+            const credentials = await avoidNativeBridge(
+                () => {
+                    return StartTime.credentialsExist;
+                },
+                () => {
+                    return StartTime.credentials;
+                },
+                () => {
+                    return getGenericPassword();
+                }
+            );
+
             if (credentials) {
                 const usernameParsed = credentials.username.split(',');
                 const passwordParsed = credentials.password.split(',');
@@ -125,11 +149,25 @@ export default class App {
                 toolbarBackground,
                 toolbarTextColor,
                 appBackground,
-            ] = await Promise.all([
-                await AsyncStorage.getItem(TOOLBAR_BACKGROUND),
-                AsyncStorage.getItem(TOOLBAR_TEXT_COLOR),
-                AsyncStorage.getItem(APP_BACKGROUND),
-            ]);
+            ] = await avoidNativeBridge(
+                () => {
+                    return StartTime.themesExist;
+                },
+                () => {
+                    return [
+                        StartTime.toolbarBackground,
+                        StartTime.toolbarTextColor,
+                        StartTime.appBackground,
+                    ]
+                },
+                () => {
+                    return Promise.all([
+                        AsyncStorage.getItem(TOOLBAR_BACKGROUND),
+                        AsyncStorage.getItem(TOOLBAR_TEXT_COLOR),
+                        AsyncStorage.getItem(APP_BACKGROUND),
+                    ]);
+                }
+            );
 
             if (toolbarBackground) {
                 this.toolbarBackground = toolbarBackground;
