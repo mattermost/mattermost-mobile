@@ -449,8 +449,8 @@ if (Platform.OS === 'android' && MattermostShare.isOpened) {
     app.setAppStarted(true);
 }
 
+configurePushNotifications();
 if (Platform.OS === 'android' && StartTime.replyFromPushNotification) {
-    configurePushNotifications();
     app.setAppStarted(true);
 
     // Listen for when the user opens the app
