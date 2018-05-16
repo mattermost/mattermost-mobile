@@ -10,7 +10,6 @@ import {
     Platform,
     NativeModules,
     Keyboard,
-    DeviceEventEmitter,
 } from 'react-native';
 const {StatusBarManager, MattermostShare, StartTime} = NativeModules;
 
@@ -179,7 +178,7 @@ const handleServerVersionChanged = async (serverVersion) => {
 };
 
 const handleConfigChanged = (config) => {
-    configureAnalytics(config)
+    configureAnalytics(config);
 };
 
 const handleServerVersionUpgradeNeeded = async () => {
@@ -229,7 +228,9 @@ export const handleManagedConfig = async (serverConfig) => {
 
     try {
         const config = await avoidNativeBridge(
-            () => { return true; },
+            () => {
+                return true;
+            },
             () => {
                 return StartTime.managedConfig;
             },

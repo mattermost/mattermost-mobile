@@ -17,6 +17,8 @@ import trLocaleData from 'react-intl/locale-data/tr';
 import ruLocaleData from 'react-intl/locale-data/ru';
 import zhLocaleData from 'react-intl/locale-data/zh';
 
+import {DEFAULT_LOCALE} from 'mattermost-redux/constants/general';
+
 import de from 'assets/i18n/de.json';
 import en from 'assets/i18n/en.json';
 import es from 'assets/i18n/es.json';

@@ -22,7 +22,6 @@ import {
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import Loading from 'app/components/loading';
@@ -230,7 +229,6 @@ export default class Entry extends PureComponent {
 
     render() {
         const {
-            theme,
             navigator,
             isLandscape,
         } = this.props;
@@ -266,7 +264,8 @@ export default class Entry extends PureComponent {
             <SafeAreaView
                 navBarBackgroundColor={app.toolbarBackground}
                 backgroundColor={backgroundColor}
-                navigator={navigator}>
+                navigator={navigator}
+            >
                 {toolbar}
                 <Loading/>
             </SafeAreaView>

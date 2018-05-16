@@ -158,7 +158,7 @@ export default class App {
                         StartTime.toolbarBackground,
                         StartTime.toolbarTextColor,
                         StartTime.appBackground,
-                    ]
+                    ];
                 },
                 () => {
                     return Promise.all([
