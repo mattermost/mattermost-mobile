@@ -79,7 +79,6 @@ public class NotificationsLifecycleFacade extends ActivityCallbacks implements A
         switchToVisible(activity);
 
         ReactContext ctx = getRunningReactContext();
-
         if (managedConfig != null && managedConfig.size() > 0 && ctx != null) {
 
             RestrictionsManager myRestrictionsMgr =

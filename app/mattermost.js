@@ -74,7 +74,6 @@ const lazyLoadAnalytics = () => {
     };
 };
 
-// TEST ON IOS
 const initializeModules = () => {
     const {
         Orientation,
@@ -193,7 +192,6 @@ const handleServerVersionUpgradeNeeded = async () => {
     }
 };
 
-// TEST ON IOS
 const handleStatusBarHeightChange = (nextStatusBarHeight) => {
     store.dispatch(setStatusBarHeight(nextStatusBarHeight));
 };

@@ -279,34 +279,34 @@ export default class App {
     };
 
     startApp = () => {
-        // TODO: should we check if entryComponent exists?
-
-        if (!this.appStarted) {
-            const {dispatch, getState} = store;
-            const {entities} = getState();
-
-            let screen = 'SelectServer';
-            if (entities) {
-                const {credentials} = entities.general;
-
-                if (credentials.token && credentials.url) {
-                    screen = 'Channel';
-                    tracker.initialLoad = Date.now();
-                    loadMe()(dispatch, getState);
-                }
-            }
-
-            switch (screen) {
-            case 'SelectServer':
-                EventEmitter.emit(ViewTypes.LAUNCH_LOGIN, true);
-                break;
-            case 'Channel':
-                EventEmitter.emit(ViewTypes.LAUNCH_CHANNEL, true);
-                break;
-            }
-
-            this.setStartAppFromPushNotification(false);
-            this.setAppStarted(true);
+        if (this.appStarted) {
+            return;
         }
+
+        const {dispatch, getState} = store;
+        const {entities} = getState();
+
+        let screen = 'SelectServer';
+        if (entities) {
+            const {credentials} = entities.general;
+
+            if (credentials.token && credentials.url) {
+                screen = 'Channel';
+                tracker.initialLoad = Date.now();
+                loadMe()(dispatch, getState);
+            }
+        }
+
+        switch (screen) {
+        case 'SelectServer':
+            EventEmitter.emit(ViewTypes.LAUNCH_LOGIN, true);
+            break;
+        case 'Channel':
+            EventEmitter.emit(ViewTypes.LAUNCH_CHANNEL, true);
+            break;
+        }
+
+        this.setStartAppFromPushNotification(false);
+        this.setAppStarted(true);
     }
 }
