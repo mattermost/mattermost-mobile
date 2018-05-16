@@ -77,7 +77,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNReactNativeDocViewerPackage(),
             new ReactNativeDocumentPicker(),
             new SharePackage(this),
-            new KeychainPackage()
+            new KeychainPackage(),
+            new StartTimePackage(this)
     );
   }
 
