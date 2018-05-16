@@ -45,7 +45,8 @@ export default class AnnouncementBanner extends PureComponent {
     componentWillReceiveProps(nextProps) {
         if (this.props.bannerText !== nextProps.bannerText ||
             this.props.bannerEnabled !== nextProps.bannerEnabled ||
-            this.props.bannerDismissed !== nextProps.bannerDismissed) {
+            this.props.bannerDismissed !== nextProps.bannerDismissed
+        ) {
             const showBanner = nextProps.bannerEnabled && !nextProps.bannerDismissed && Boolean(nextProps.bannerText);
             this.toggleBanner(showBanner);
         }
@@ -86,15 +87,24 @@ export default class AnnouncementBanner extends PureComponent {
     };
 
     render() {
+        if (!this.props.bannerEnabled) {
+            return null;
+        }
+
         const {bannerHeight} = this.state;
+        const {
+            bannerColor,
+            bannerText,
+            bannerTextColor,
+        } = this.props;
 
         const bannerStyle = {
-            backgroundColor: this.props.bannerColor,
+            backgroundColor: bannerColor,
             height: bannerHeight,
         };
 
         const bannerTextStyle = {
-            color: this.props.bannerTextColor,
+            color: bannerTextColor,
         };
 
         return (
@@ -110,10 +120,10 @@ export default class AnnouncementBanner extends PureComponent {
                         numberOfLines={1}
                         style={[style.bannerText, bannerTextStyle]}
                     >
-                        {this.props.bannerText}
+                        {bannerText}
                     </Text>
                     <MaterialIcons
-                        color={this.props.bannerTextColor}
+                        color={bannerTextColor}
                         name='info'
                         size={16}
                     />

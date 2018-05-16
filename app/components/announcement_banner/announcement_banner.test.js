@@ -19,7 +19,7 @@ describe('AnnouncementBanner', () => {
         bannerColor: '#ddd',
         bannerDismissed: false,
         bannerEnabled: true,
-        bannerText: 'Batter Text',
+        bannerText: 'Banner Text',
         bannerTextColor: '#fff',
     };
 
@@ -28,6 +28,9 @@ describe('AnnouncementBanner', () => {
             <AnnouncementBanner {...baseProps}/>
         );
 
+        expect(wrapper).toMatchSnapshot();
+
+        wrapper.setProps({bannerEnabled: false});
         expect(wrapper).toMatchSnapshot();
     });
 
