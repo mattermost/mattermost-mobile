@@ -12,10 +12,10 @@ import {
     Keyboard,
     DeviceEventEmitter,
 } from 'react-native';
-const {StatusBarManager, MattermostShare} = NativeModules;
+const {StatusBarManager, MattermostShare, StartTime} = NativeModules;
 
 import DeviceInfo from 'react-native-device-info';
-import {Navigation} from 'react-native-navigation';
+import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 import semver from 'semver';
 
@@ -33,6 +33,7 @@ import configureStore from 'app/store';
 import {NavigationTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
+import {configurePushNotifications} from 'app/utils/push_notifications';
 import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import {
@@ -53,14 +54,6 @@ const AUTHENTICATION_TIMEOUT = 5 * 60 * 1000;
 export const app = new App();
 export const store = configureStore(initialState);
 registerScreens(store, Provider);
-
-if (Platform.OS === 'android') {
-    const appLaunchedKey = NavigationTypes.NATIVE_APP_LAUNCHED;
-    const subscription = DeviceEventEmitter.addListener(appLaunchedKey, () => {
-        app.setNativeAppLaunched(true);
-        DeviceEventEmitter.removeSubscription(subscription);
-    });
-}
 
 const lazyLoadExternalModules = () => {
     const Orientation = require('react-native-orientation');
@@ -432,11 +425,7 @@ const handleAppInActive = () => {
 
 AppState.addEventListener('change', handleAppStateChange);
 
-if (Platform.OS === 'android' && MattermostShare.isOpened) {
-    app.setAppStarted(true);
-}
-
-if (!app.appStarted) {
+const launchEntry = () => {
     Navigation.startSingleScreenApp({
         screen: {
             screen: 'Entry',
@@ -454,4 +443,23 @@ if (!app.appStarted) {
         },
         animationType: 'fade',
     });
+};
+
+if (Platform.OS === 'android' && MattermostShare.isOpened) {
+    app.setAppStarted(true);
+}
+
+if (Platform.OS === 'android' && StartTime.replyFromPushNotification) {
+    configurePushNotifications();
+    app.setAppStarted(true);
+
+    // Listen for when the user opens the app
+    new NativeEventsReceiver().appLaunched(() => {
+        app.setAppStarted(false);
+        launchEntry();
+    });
+}
+
+if (!app.appStarted) {
+    launchEntry();
 }

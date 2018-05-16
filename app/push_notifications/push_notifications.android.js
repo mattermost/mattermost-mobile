@@ -35,7 +35,7 @@ class PushNotification {
             const notification = new Notification(deviceNotification);
             const data = notification.getData();
 
-            if (this.onReply && AppState.currentState === 'background') {
+            if (this.onReply) {
                 this.onReply(data, data.text, parseInt(data.badge, 10) - parseInt(data.msg_count, 10));
             } else {
                 this.deviceNotification = {

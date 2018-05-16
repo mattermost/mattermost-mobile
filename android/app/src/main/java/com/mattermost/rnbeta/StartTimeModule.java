@@ -1,6 +1,7 @@
 package com.mattermost.rnbeta;
 
 import android.app.Application;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
@@ -10,6 +11,9 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.reactnativenavigation.NavigationApplication;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by miguelespinoza on 3/22/18.
@@ -27,6 +31,17 @@ public class StartTimeModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return "StartTime";
+    }
+
+    @Nullable
+    @Override
+    public Map<String, Object> getConstants() {
+        Map<String, Object> constants = new HashMap<>();
+        MainApplication app = (MainApplication) mApplication;
+
+        constants.put("replyFromPushNotification", app.replyFromPushNotification);
+
+        return constants;
     }
 
     @ReactMethod

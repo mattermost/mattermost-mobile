@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
-import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
 
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -189,34 +188,11 @@ export default class Entry extends PureComponent {
     };
 
     launchForAndroid = () => {
-        const launchAndroidApp = (appLaunched) => {
-            if (app.startAppFromPushNotification) {
-                return false;
-            } else if (appLaunched) {
-                app.launchApp();
-                return false;
-            }
-            return true;
-        };
-
-        // Avoid native bridge if we know appLaunched
-        if (app.nativeAppLaunched) {
-            launchAndroidApp(true);
+        if (app.startAppFromPushNotification) {
             return;
         }
 
-        // We need to handle the bridge being initialized by HeadlessJS
-        Promise.resolve(Navigation.isAppLaunched()).then((appLaunched) => {
-            const useFallback = launchAndroidApp(appLaunched);
-
-            if (useFallback) {
-                // Wait for native app to launch
-                new NativeEventsReceiver().appLaunched(() => {
-                    app.setAppStarted(false);
-                    app.launchApp();
-                });
-            }
-        });
+        app.launchApp();
     };
 
     launchForiOS = () => {

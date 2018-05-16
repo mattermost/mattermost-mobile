@@ -45,6 +45,7 @@ import java.util.List;
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
   public NotificationsLifecycleFacade notificationsLifecycleFacade;
   public Boolean sharedExtensionIsOpened = false;
+  public Boolean replyFromPushNotification = false;
 
   @Override
   public boolean isDebug() {

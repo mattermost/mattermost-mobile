@@ -54,7 +54,7 @@ const onPushNotification = (deviceNotification) => {
     const {token, url} = state.entities.general.credentials;
 
     // mark the app as started as soon as possible
-    if (!app.appStarted && Platform.OS !== 'ios') {
+    if (Platform.OS === 'android' && !app.appStarted) {
         app.setStartAppFromPushNotification(true);
     }
 
@@ -94,7 +94,13 @@ const onPushNotification = (deviceNotification) => {
 export const onPushNotificationReply = (data, text, badge, completed) => {
     const {dispatch, getState} = store;
     const state = getState();
-    const {currentUserId} = state.entities.users;
+    const {currentUserId: reduxCurrentUserId} = state.entities.users;
+    const reduxCredentialsUrl = state.entities.general.credentials.url;
+    const reduxCredentialsToken = state.entities.general.credentials.token;
+
+    const currentUserId = reduxCurrentUserId || app.currentUserId;
+    const url = reduxCredentialsUrl || app.url;
+    const token = reduxCredentialsToken || app.token;
 
     if (currentUserId) {
         // one thing to note is that for android it will reply to the last post in the stack
@@ -109,12 +115,12 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
 
         if (!Client4.getUrl()) {
             // Make sure the Client has the server url set
-            Client4.setUrl(state.entities.general.credentials.url);
+            Client4.setUrl(url);
         }
 
         if (!Client4.getToken()) {
             // Make sure the Client has the server token set
-            Client4.setToken(state.entities.general.credentials.token);
+            Client4.setToken(token);
         }
 
         createPost(post)(dispatch, getState).then(() => {
@@ -144,5 +150,8 @@ export const configurePushNotifications = () => {
         popInitialNotification: true,
         requestPermissions: true,
     });
-    app.setIsNotificationsConfigured(true);
+
+    if (app) {
+        app.setIsNotificationsConfigured(true);
+    }
 };

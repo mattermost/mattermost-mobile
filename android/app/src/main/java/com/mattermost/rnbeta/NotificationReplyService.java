@@ -32,6 +32,8 @@ public class NotificationReplyService extends HeadlessJsTaskService {
             int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
             CustomPushNotification.clearNotification(mContext, notificationId, channelId);
 
+            MainApplication app = (MainApplication) this.getApplication();
+            app.replyFromPushNotification = true;
             Log.i("ReactNative", "Replying service");
             return new HeadlessJsTaskConfig(
                     "notificationReplied",

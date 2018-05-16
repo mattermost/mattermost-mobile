@@ -35,7 +35,6 @@ export default class App {
         // Usage: app.js
         this.shouldRelaunchWhenActive = false;
         this.inBackgroundSince = null;
-        this.nativeAppLaunched = false;
 
         // Usage: screen/entry.js
         this.startAppFromPushNotification = false;
@@ -201,10 +200,6 @@ export default class App {
 
     setShouldRelaunchWhenActive = (shouldRelaunchWhenActive) => {
         this.shouldRelaunchWhenActive = shouldRelaunchWhenActive;
-    };
-
-    setNativeAppLaunched = (nativeAppLaunched) => {
-        this.nativeAppLaunched = nativeAppLaunched;
     };
 
     clearCache = () => {
