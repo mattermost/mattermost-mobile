@@ -1,12 +1,11 @@
 package com.mattermost.rnbeta;
 
 import com.mattermost.share.SharePackage;
-import android.app.Application;
+
 import android.support.annotation.NonNull;
 import android.content.Context;
 import android.os.Bundle;
 
-import com.facebook.react.ReactApplication;
 import com.reactnativedocumentpicker.ReactNativeDocumentPicker;
 import com.oblador.keychain.KeychainPackage;
 import com.reactlibrary.RNReactNativeDocViewerPackage;
@@ -18,10 +17,8 @@ import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.gantix.JailMonkey.JailMonkeyPackage;
 import io.tradle.react.LocalAuthPackage;
-import com.facebook.react.ReactInstanceManager;
-import com.facebook.react.ReactNativeHost;
+
 import com.facebook.react.ReactPackage;
-import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 
 import com.imagepicker.ImagePickerPackage;
@@ -79,7 +76,7 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactNativeDocumentPicker(),
             new SharePackage(this),
             new KeychainPackage(),
-            new StartTimePackage(this)
+            new InitializationPackage(this)
     );
   }
 

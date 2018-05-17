@@ -12,17 +12,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class StartTimePackage implements ReactPackage {
+public class InitializationPackage implements ReactPackage {
 
     private final Application mApplication;
 
-    public StartTimePackage(Application application) {
+    public InitializationPackage(Application application) {
         mApplication = application;
     }
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList(new StartTimeModule(mApplication, reactContext));
+        return Arrays.<NativeModule>asList(new InitializationModule(mApplication, reactContext));
     }
 
     public List<Class<? extends JavaScriptModule>> createJSModules() {

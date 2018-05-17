@@ -16,7 +16,7 @@ import tracker from 'app/utils/time_tracker';
 import {store, handleManagedConfig} from 'app/mattermost';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 
-const {StartTime} = NativeModules;
+const {Initialization} = NativeModules;
 
 const lazyLoadLocalization = () => {
     const IntlProvider = require('react-intl').IntlProvider;
@@ -88,10 +88,10 @@ export default class App {
         try {
             const shouldStart = await avoidNativeBridge(
                 () => {
-                    return StartTime.managedConfigResult;
+                    return Initialization.managedConfigResult;
                 },
                 () => {
-                    return StartTime.managedConfigResult;
+                    return Initialization.managedConfigResult;
                 },
                 () => {
                     return AsyncStorage.getItem(DEVICE_SECURE_CACHE_KEY);
@@ -110,10 +110,10 @@ export default class App {
         try {
             const credentials = await avoidNativeBridge(
                 () => {
-                    return StartTime.credentialsExist;
+                    return Initialization.credentialsExist;
                 },
                 () => {
-                    return StartTime.credentials;
+                    return Initialization.credentials;
                 },
                 () => {
                     return getGenericPassword();
@@ -151,13 +151,13 @@ export default class App {
                 appBackground,
             ] = await avoidNativeBridge(
                 () => {
-                    return StartTime.themesExist;
+                    return Initialization.themesExist;
                 },
                 () => {
                     return [
-                        StartTime.toolbarBackground,
-                        StartTime.toolbarTextColor,
-                        StartTime.appBackground,
+                        Initialization.toolbarBackground,
+                        Initialization.toolbarTextColor,
+                        Initialization.appBackground,
                     ];
                 },
                 () => {

@@ -11,7 +11,7 @@ import {
     NativeModules,
     Keyboard,
 } from 'react-native';
-const {StatusBarManager, MattermostShare, StartTime} = NativeModules;
+const {StatusBarManager, MattermostShare, Initialization} = NativeModules;
 
 import DeviceInfo from 'react-native-device-info';
 import {Navigation, NativeEventsReceiver} from 'react-native-navigation';
@@ -230,7 +230,7 @@ export const handleManagedConfig = async (serverConfig) => {
                 return true;
             },
             () => {
-                return StartTime.managedConfig;
+                return Initialization.managedConfig;
             },
             () => {
                 return mattermostManaged.getConfig();
@@ -458,7 +458,7 @@ if (Platform.OS === 'android' && MattermostShare.isOpened) {
 }
 
 configurePushNotifications();
-if (Platform.OS === 'android' && StartTime.replyFromPushNotification) {
+if (Platform.OS === 'android' && Initialization.replyFromPushNotification) {
     app.setAppStarted(true);
 
     // Listen for when the user opens the app

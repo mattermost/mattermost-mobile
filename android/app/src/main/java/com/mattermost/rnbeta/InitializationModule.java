@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StartTimeModule extends ReactContextBaseJavaModule {
+public class InitializationModule extends ReactContextBaseJavaModule {
 
     static final String TOOLBAR_BACKGROUND = "TOOLBAR_BACKGROUND";
     static final String TOOLBAR_TEXT_COLOR = "TOOLBAR_TEXT_COLOR";
@@ -30,14 +30,14 @@ public class StartTimeModule extends ReactContextBaseJavaModule {
 
     private final Application mApplication;
 
-    public StartTimeModule(Application application, ReactApplicationContext reactContext) {
+    public InitializationModule(Application application, ReactApplicationContext reactContext) {
         super(reactContext);
         mApplication = application;
     }
 
     @Override
     public String getName() {
-        return "StartTime";
+        return "Initialization";
     }
 
     @Nullable
