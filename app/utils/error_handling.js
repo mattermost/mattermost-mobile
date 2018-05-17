@@ -27,7 +27,7 @@ const errorHandler = (e, isFatal) => {
 
     captureException(e, LOGGER_JAVASCRIPT, store);
 
-    const intl = app.getIntl();
+    const translations = app.getTranslations();
     closeWebSocket()(dispatch, getState);
 
     if (Client4.getUrl()) {
@@ -36,10 +36,10 @@ const errorHandler = (e, isFatal) => {
 
     if (isFatal) {
         Alert.alert(
-            intl.formatMessage({id: 'mobile.error_handler.title', defaultMessage: 'Unexpected error occurred'}),
-            intl.formatMessage({id: 'mobile.error_handler.description', defaultMessage: '\nClick relaunch to open the app again. After restart, you can report the problem from the settings menu.\n'}),
+            translations['mobile.error_handler.title'],
+            translations['mobile.error_handler.description'],
             [{
-                text: intl.formatMessage({id: 'mobile.error_handler.button', defaultMessage: 'Relaunch'}),
+                text: translations['mobile.error_handler.button'],
                 onPress: () => {
                     // purge the store
                     purgeOfflineStore()(dispatch, getState);

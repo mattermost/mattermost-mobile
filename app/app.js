@@ -3,7 +3,6 @@
 
 /* eslint-disable global-require*/
 import {AsyncStorage, NativeModules} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';
@@ -12,21 +11,13 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
+import {getCurrentLocale} from 'app/selectors/i18n';
 
+import {getTranslations as getLocalTranslations} from 'app/i18n';
 import {store, handleManagedConfig} from 'app/mattermost';
 import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 
 const {Initialization} = NativeModules;
-
-const lazyLoadLocalization = () => {
-    const IntlProvider = require('react-intl').IntlProvider;
-    const getTranslations = require('app/i18n').getTranslations;
-
-    return {
-        IntlProvider,
-        getTranslations,
-    };
-};
 
 const DEVICE_SECURE_CACHE_KEY = 'DEVICE_SECURE_CACHE_KEY';
 const TOOLBAR_BACKGROUND = 'TOOLBAR_BACKGROUND';
@@ -45,7 +36,7 @@ export default class App {
         this.allowOtherServers = true;
         this.appStarted = false;
         this.emmEnabled = false;
-        this.intl = null;
+        this.translations = null;
         this.toolbarBackground = null;
         this.toolbarTextColor = null;
         this.appBackground = null;
@@ -63,25 +54,16 @@ export default class App {
         this.getAppCredentials();
     }
 
-    getIntl = () => {
-        if (this.intl) {
-            return this.intl;
+    getTranslations = () => {
+        if (this.translations) {
+            return this.translations;
         }
-        const {
-            IntlProvider,
-            getTranslations,
-        } = lazyLoadLocalization();
 
         const state = store.getState();
-        let locale = DeviceInfo.getDeviceLocale().split('-')[0];
-        if (state.views.i18n.locale) {
-            locale = state.views.i18n.locale;
-        }
+        const locale = getCurrentLocale(state);
 
-        const intlProvider = new IntlProvider({locale, messages: getTranslations(locale)}, {});
-        const {intl} = intlProvider.getChildContext();
-        this.setIntl(intl);
-        return intl;
+        this.translations = getLocalTranslations(locale);
+        return this.translations;
     };
 
     getManagedConfig = async () => {
@@ -218,10 +200,6 @@ export default class App {
 
     setEMMEnabled = (emmEnabled) => {
         this.emmEnabled = emmEnabled;
-    };
-
-    setIntl = (intl) => {
-        this.intl = intl;
     };
 
     setDeviceToken = (deviceToken) => {

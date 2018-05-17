@@ -153,16 +153,16 @@ const restartApp = async () => {
 const handleServerVersionChanged = async (serverVersion) => {
     const {dispatch, getState} = store;
     const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
-    const intl = app.getIntl();
+    const translations = app.getTranslations();
     const state = getState();
 
     if (serverVersion) {
         if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
             Alert.alert(
-                intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'}),
-                intl.formatMessage({id: 'mobile.server_upgrade.description', defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n'}),
+                translations['mobile.server_upgrade.title'],
+                translations['mobile.server_upgrade.description'],
                 [{
-                    text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
+                    text: translations['mobile.server_upgrade.button'],
                     onPress: handleServerVersionUpgradeNeeded,
                 }],
                 {cancelable: false}
@@ -255,18 +255,12 @@ export const handleManagedConfig = async (serverConfig) => {
                 const isTrusted = mattermostManaged.isTrustedDevice();
 
                 if (!isTrusted) {
-                    const intl = app.getIntl();
+                    const translations = app.getTranslations();
                     Alert.alert(
-                        intl.formatMessage({
-                            id: 'mobile.managed.blocked_by',
-                            defaultMessage: 'Blocked by {vendor}',
-                        }, {vendor}),
-                        intl.formatMessage({
-                            id: 'mobile.managed.jailbreak',
-                            defaultMessage: 'Jailbroken devices are not trusted by {vendor}, please exit the app.',
-                        }, {vendor}),
+                        translations['mobile.managed.blocked_by'].replace('{vendor}', vendor),
+                        translations['mobile.managed.jailbreak'].replace('{vendor}', vendor),
                         [{
-                            text: intl.formatMessage({id: 'mobile.managed.exit', defaultMessage: 'Exit'}),
+                            text: translations['mobile.managed.exit'],
                             style: 'destructive',
                             onPress: () => {
                                 mattermostManaged.quitApp();
@@ -307,15 +301,12 @@ export const handleManagedConfig = async (serverConfig) => {
 const handleAuthentication = async (vendor) => {
     const isSecured = await mattermostManaged.isDeviceSecure();
 
-    const intl = app.getIntl();
+    const translations = app.getTranslations();
     if (isSecured) {
         try {
             mattermostBucket.setPreference('emm', vendor, LocalConfig.AppGroupId);
             await mattermostManaged.authenticate({
-                reason: intl.formatMessage({
-                    id: 'mobile.managed.secured_by',
-                    defaultMessage: 'Secured by {vendor}',
-                }, {vendor}),
+                reason: translations['mobile.managed.secured_by'].replace('{vendor}', vendor),
                 fallbackToPasscode: true,
                 suppressEnterPassword: true,
             });
