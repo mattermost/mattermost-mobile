@@ -3,8 +3,9 @@
 
 import {latinise} from './latinise.js';
 
+import {Files} from 'mattermost-redux/constants';
+
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
-const imgRegex = /.+\/(.+\.(?:jpg|gif|bmp|png|jpeg))(?:\?.*)?$/i;
 
 export function isValidUrl(url = '') {
     const regex = /^https?:\/\//i;
@@ -42,8 +43,20 @@ export function isYoutubeLink(link) {
 }
 
 export function isImageLink(link) {
-    const match = link.trim().match(imgRegex);
-    return Boolean(match && match[1]);
+    let linkWithoutQuery = link;
+    if (link.indexOf('?') !== -1) {
+        linkWithoutQuery = linkWithoutQuery.split('?')[0];
+    }
+
+    for (let i = 0; i < Files.IMAGE_TYPES.length; i++) {
+        const imageType = Files.IMAGE_TYPES[i];
+
+        if (linkWithoutQuery.endsWith('.' + imageType) || linkWithoutQuery.endsWith('=' + imageType)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // Converts the protocol of a link (eg. http, ftp) to be lower case since
