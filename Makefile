@@ -73,10 +73,8 @@ post-install:
 	@# Add caching support for native module constants
 	@rm node_modules/react-native-device-info/android/src/main/java/com/learnium/RNDeviceInfo/RNDeviceModule.java
 	@rm node_modules/react-native-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlob.java
-	@rm node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
 	@cp ./native_modules/RNDeviceModule.java node_modules/react-native-device-info/android/src/main/java/com/learnium/RNDeviceInfo
 	@cp ./native_modules/RNFetchBlob.java node_modules/react-native-fetch-blob/android/src/main/java/com/RNFetchBlob
-	@cp ./native_modules/NavigationApplication.java node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation
 
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
