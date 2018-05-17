@@ -7,7 +7,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
-import com.mattermost.rnbeta.react_native_interface.AsyncStorage;
+import com.mattermost.rnbeta.react_native_interface.AsyncStorageHelper;
 import com.mattermost.rnbeta.react_native_interface.KeysReadableArray;
 import com.mattermost.rnbeta.react_native_interface.ResolvePromise;
 import com.oblador.keychain.KeychainModule;
@@ -41,6 +41,9 @@ public class InitializationModule extends ReactContextBaseJavaModule {
         Map<String, Object> constants = new HashMap<>();
 
         /**
+         * Package all native module variables in constants
+         * in order to avoid the native bridge
+         *
          * KeyStore:
          * credentialsExist
          * deviceToken
@@ -110,7 +113,7 @@ public class InitializationModule extends ReactContextBaseJavaModule {
             }
         };
 
-        AsyncStorage asyncStorage = new AsyncStorage(this.getReactApplicationContext());
+        AsyncStorageHelper asyncStorage = new AsyncStorageHelper(this.getReactApplicationContext());
         HashMap<String, String> asyncStorageResults = asyncStorage.multiGet(asyncStorageKeys);
 
         String toolbarBackground = asyncStorageResults.get(TOOLBAR_BACKGROUND);

@@ -240,7 +240,7 @@ export default class App {
         this.shouldRelaunchWhenActive = shouldRelaunchWhenActive;
     };
 
-    clearCache = () => {
+    clearNativeCache = () => {
         resetGenericPassword();
         AsyncStorage.multiRemove([
             DEVICE_SECURE_CACHE_KEY,

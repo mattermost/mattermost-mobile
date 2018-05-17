@@ -7,6 +7,9 @@ import com.facebook.react.bridge.ReadableType;
 
 import java.util.ArrayList;
 
+/**
+ * KeysReadableArray: Helper class that abstracts boilerplate
+ */
 public class KeysReadableArray implements ReadableArray {
     @Override
     public int size() {

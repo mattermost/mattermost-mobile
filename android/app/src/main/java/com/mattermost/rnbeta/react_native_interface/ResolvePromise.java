@@ -2,6 +2,9 @@ package com.mattermost.rnbeta.react_native_interface;
 
 import com.facebook.react.bridge.Promise;
 
+/**
+ * ResolvePromise: Helper class that abstracts boilerplate
+ */
 public class ResolvePromise implements Promise {
     @Override
     public void resolve(@javax.annotation.Nullable Object value) {

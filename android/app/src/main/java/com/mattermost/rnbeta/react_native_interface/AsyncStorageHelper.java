@@ -11,7 +11,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class AsyncStorage {
+/**
+ * AsyncStorageHelper: Class that accesses React Native AsyncStorage Database synchronously
+ */
+public class AsyncStorageHelper {
 
     // Static variables from: com.facebook.react.modules.storage.ReactDatabaseSupplier
     static final String TABLE_CATALYST = "catalystLocalStorage";
@@ -23,7 +26,7 @@ public class AsyncStorage {
 
     Context mReactContext = null;
 
-    public AsyncStorage(Context mReactContext) {
+    public AsyncStorageHelper(Context mReactContext) {
         this.mReactContext = mReactContext;
     }
 

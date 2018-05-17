@@ -131,23 +131,22 @@ const resetBadgeAndVersion = () => {
     Client4.setUserId('');
     PushNotifications.setApplicationIconBadgeNumber(0);
     PushNotifications.cancelAllLocalNotifications();
-    setServerVersion('')(store.dispatch, store.getState);
+    store.dispatch(setServerVersion(''));
 };
 
 const handleLogout = () => {
     app.setAppStarted(false);
-    app.clearCache();
+    app.clearNativeCache();
     deleteFileCache();
     resetBadgeAndVersion();
     launchSelectServer();
 };
 
 const restartApp = async () => {
-    const {dispatch, getState} = store;
     Navigation.dismissModal({animationType: 'none'});
 
-    await loadConfigAndLicense()(dispatch, getState);
-    await loadMe()(dispatch, getState);
+    await store.dispatch(loadConfigAndLicense());
+    await store.dispatch(loadMe());
     launchChannel();
 };
 
@@ -169,8 +168,8 @@ const handleServerVersionChanged = async (serverVersion) => {
                 {cancelable: false}
             );
         } else if (state.entities.users && state.entities.users.currentUserId) {
-            setServerVersion(serverVersion)(dispatch, getState);
-            const data = await loadConfigAndLicense()(dispatch, getState);
+            dispatch(setServerVersion(serverVersion));
+            const data = await dispatch(loadConfigAndLicense());
             configureAnalytics(data.config);
         }
     }
@@ -187,7 +186,7 @@ const handleServerVersionUpgradeNeeded = async () => {
 
     if (getState().entities.general.credentials.token) {
         InteractionManager.runAfterInteractions(() => {
-            logout()(dispatch, getState);
+            dispatch(logout());
         });
     }
 };
@@ -220,7 +219,7 @@ export const handleManagedConfig = async (serverConfig) => {
     let username = null;
 
     if (LocalConfig.AutoSelectServerUrl) {
-        handleServerUrlChanged(LocalConfig.DefaultServerUrl)(dispatch, getState);
+        dispatch(handleServerUrlChanged(LocalConfig.DefaultServerUrl));
         app.setAllowOtherServers(false);
     }
 
@@ -291,11 +290,11 @@ export const handleManagedConfig = async (serverConfig) => {
             }
 
             if (serverUrl) {
-                handleServerUrlChanged(serverUrl)(dispatch, getState);
+                dispatch(handleServerUrlChanged(serverUrl));
             }
 
             if (username) {
-                handleLoginIdChanged(username)(dispatch, getState);
+                dispatch(handleLoginIdChanged(username));
             }
         }
     } catch (error) {
@@ -330,7 +329,7 @@ const handleAuthentication = async (vendor) => {
 };
 
 const handleResetChannelDisplayName = (displayName) => {
-    setChannelDisplayName(displayName)(store.dispatch, store.getState);
+    dispatch(setChannelDisplayName(displayName));
 };
 
 const launchSelectServer = () => {
@@ -373,10 +372,9 @@ const launchChannel = () => {
 };
 
 const handleAppStateChange = (appState) => {
-    const {dispatch, getState} = store;
     const isActive = appState === 'active';
 
-    setAppState(isActive)(dispatch, getState);
+    store.dispatch(setAppState(isActive));
 
     if (isActive) {
         handleAppActive();
@@ -428,7 +426,7 @@ const handleAppInActive = () => {
         theme.sidebarHeaderTextColor,
         theme.centerChannelBg,
     );
-    startDataCleanup()(dispatch, getState);
+    dispatch(startDataCleanup());
 };
 
 AppState.addEventListener('change', handleAppStateChange);
