@@ -329,7 +329,7 @@ const handleAuthentication = async (vendor) => {
 };
 
 const handleResetChannelDisplayName = (displayName) => {
-    dispatch(setChannelDisplayName(displayName));
+    store.dispatch(setChannelDisplayName(displayName));
 };
 
 const launchSelectServer = () => {
@@ -451,12 +451,12 @@ const launchEntry = () => {
     });
 };
 
-if (Platform.OS === 'android' && MattermostShare.isOpened) {
-    app.setAppStarted(true);
-}
-
 configurePushNotifications();
-if (Platform.OS === 'android' && Initialization.replyFromPushNotification) {
+const startedSharedExtension = Platform.OS === 'android' && MattermostShare.isOpened;
+const fromPushNotification = Platform.OS === 'android' && Initialization.replyFromPushNotification;
+
+if (startedSharedExtension || fromPushNotification) {
+    // Hold on launching Entry screen
     app.setAppStarted(true);
 
     // Listen for when the user opens the app

@@ -68,6 +68,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         HashMap<String, Object> constants = new HashMap<>(1);
         constants.put("isOpened", mApplication.sharedExtensionIsOpened);
+        mApplication.sharedExtensionIsOpened = false;
         return constants;
     }
 

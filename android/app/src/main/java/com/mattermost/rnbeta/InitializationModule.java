@@ -147,6 +147,7 @@ public class InitializationModule extends ReactContextBaseJavaModule {
 
         constants.put("managedConfig", config[0]);
         constants.put("replyFromPushNotification", app.replyFromPushNotification);
+        app.replyFromPushNotification = false;
 
         return constants;
     }
