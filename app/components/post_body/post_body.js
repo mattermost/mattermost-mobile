@@ -15,6 +15,10 @@ import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 
+import {Posts} from 'mattermost-redux/constants';
+
+import CombinedSystemMessage from 'app/components/combined_system_message';
+import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';
@@ -65,6 +69,7 @@ export default class PostBody extends PureComponent {
         onPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object,
+        postType: PropTypes.string,
         renderReplyBar: PropTypes.func,
         showAddReaction: PropTypes.bool,
         showLongPost: PropTypes.bool.isRequired,
@@ -401,6 +406,8 @@ export default class PostBody extends PureComponent {
             onFailedPostPress,
             onPermalinkPress,
             onPress,
+            postProps,
+            postType,
             renderReplyBar,
             theme,
             toggleSelected,
@@ -434,6 +441,20 @@ export default class PostBody extends PureComponent {
             body = (<View>{messageComponent}</View>);
         } else if (isPostAddChannelMember) {
             messageComponent = this.renderAddChannelMember(style, textStyles);
+        } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
+            const {allUserIds, messageData} = postProps.user_activity;
+            messageComponent = (
+                <View style={style.row}>
+                    <View style={style.flex}>
+                        <CombinedSystemMessage
+                            allUserIds={allUserIds}
+                            linkStyle={textStyles.link}
+                            messageData={messageData}
+                            theme={theme}
+                        />
+                    </View>
+                </View>
+            );
         } else if (message.length) {
             messageComponent = (
                 <View style={style.row}>

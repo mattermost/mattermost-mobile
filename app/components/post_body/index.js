@@ -66,6 +66,7 @@ function mapStateToProps(state, ownProps) {
 
     return {
         postProps: post.props || {},
+        postType: post.type || '',
         fileIds: post.file_ids,
         hasBeenDeleted: post.state === Posts.POST_DELETED,
         hasBeenEdited: isEdited(post),
