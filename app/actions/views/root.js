@@ -9,6 +9,7 @@ import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'matterm
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
 
+import {ViewTypes} from 'app/constants';
 import {recordTime} from 'app/utils/segment';
 
 import {
@@ -16,6 +17,15 @@ import {
     setChannelDisplayName,
     retryGetPostsAction,
 } from 'app/actions/views/channel';
+
+export function startDataCleanup() {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: ViewTypes.DATA_CLEANUP,
+            payload: getState(),
+        });
+    };
+}
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {

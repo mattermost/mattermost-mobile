@@ -70,6 +70,7 @@ post-install:
 	@cp ./native_modules/ImagePickerModule.java node_modules/react-native-image-picker/android/src/main/java/com/imagepicker
 	@# Need to copy custom RNDocumentPicker.m that implements direct access to the document picker in iOS
 	@cp ./native_modules/RNDocumentPicker.m node_modules/react-native-document-picker/ios/RNDocumentPicker/RNDocumentPicker.m
+
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
@@ -78,6 +79,7 @@ post-install:
 	@sed -i'' -e 's|"./lib/locales": false|"./lib/locales": "./lib/locales"|g' node_modules/intl-relativeformat/package.json
 	@sed -i'' -e 's|"./locale-data/complete.js": false|"./locale-data/complete.js": "./locale-data/complete.js"|g' node_modules/intl/package.json
 	@sed -i'' -e 's|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);|auto("auto", Configuration.ORIENTATION_UNDEFINED, ActivityInfo.SCREEN_ORIENTATION_FULL_USER);|g' node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation/params/Orientation.java
+	@sed -i'' -e "s|activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);|activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);|g" node_modules/react-native-orientation/android/src/main/java/com/github/yamill/orientation/OrientationModule.java
 	@sed -i'' -e "s|super.onBackPressed();|this.moveTaskToBack(true);|g" node_modules/react-native-navigation/android/app/src/main/java/com/reactnativenavigation/controllers/NavigationActivity.java
 	@if [ $(shell grep "const Platform" node_modules/react-native/Libraries/Lists/VirtualizedList.js | grep -civ grep) -eq 0 ]; then \
 		sed $ -i'' -e "s|const ReactNative = require('ReactNative');|const ReactNative = require('ReactNative');`echo $\\\\\\r;`const Platform = require('Platform');|g" node_modules/react-native/Libraries/Lists/VirtualizedList.js; \

@@ -10,5 +10,3 @@ import ShareExtension from 'share_extension/android';
 if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
-
-const app = new Mattermost();
