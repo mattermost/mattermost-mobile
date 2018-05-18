@@ -14,7 +14,7 @@ ShallowWrapper {
     bannerColor="#ddd"
     bannerDismissed={false}
     bannerEnabled={true}
-    bannerText="Batter Text"
+    bannerText="Banner Text"
     bannerTextColor="#fff"
   />,
   Symbol(enzyme.__renderer__): Object {
@@ -58,7 +58,7 @@ ShallowWrapper {
             ]
           }
         >
-          Batter Text
+          Banner Text
         </Text>
         <Icon
           allowFontScaling={false}
@@ -107,7 +107,7 @@ ShallowWrapper {
               ]
             }
           >
-            Batter Text
+            Banner Text
           </Text>,
           <Icon
             allowFontScaling={false}
@@ -132,7 +132,7 @@ ShallowWrapper {
           "props": Object {
             "accessible": true,
             "allowFontScaling": true,
-            "children": "Batter Text",
+            "children": "Banner Text",
             "ellipsizeMode": "tail",
             "numberOfLines": 1,
             "style": Array [
@@ -147,7 +147,7 @@ ShallowWrapper {
             ],
           },
           "ref": null,
-          "rendered": "Batter Text",
+          "rendered": "Banner Text",
           "type": [Function],
         },
         Object {
@@ -204,7 +204,7 @@ ShallowWrapper {
               ]
             }
           >
-            Batter Text
+            Banner Text
           </Text>
           <Icon
             allowFontScaling={false}
@@ -253,7 +253,7 @@ ShallowWrapper {
                 ]
               }
             >
-              Batter Text
+              Banner Text
             </Text>,
             <Icon
               allowFontScaling={false}
@@ -278,7 +278,7 @@ ShallowWrapper {
             "props": Object {
               "accessible": true,
               "allowFontScaling": true,
-              "children": "Batter Text",
+              "children": "Banner Text",
               "ellipsizeMode": "tail",
               "numberOfLines": 1,
               "style": Array [
@@ -293,7 +293,7 @@ ShallowWrapper {
               ],
             },
             "ref": null,
-            "rendered": "Batter Text",
+            "rendered": "Banner Text",
             "type": [Function],
           },
           Object {
@@ -315,6 +315,44 @@ ShallowWrapper {
       },
       "type": [Function],
     },
+  ],
+  Symbol(enzyme.__options__): Object {
+    "adapter": ReactSixteenAdapter {
+      "options": Object {
+        "enableComponentDidUpdateOnSetState": true,
+      },
+    },
+  },
+}
+`;
+
+exports[`AnnouncementBanner should match snapshot 2`] = `
+ShallowWrapper {
+  "length": 1,
+  Symbol(enzyme.__root__): [Circular],
+  Symbol(enzyme.__unrendered__): <AnnouncementBanner
+    actions={
+      Object {
+        "dismissBanner": [MockFunction],
+      }
+    }
+    allowDismissal={true}
+    bannerColor="#ddd"
+    bannerDismissed={false}
+    bannerEnabled={false}
+    bannerText="Banner Text"
+    bannerTextColor="#fff"
+  />,
+  Symbol(enzyme.__renderer__): Object {
+    "batchedUpdates": [Function],
+    "getNode": [Function],
+    "render": [Function],
+    "simulateEvent": [Function],
+    "unmount": [Function],
+  },
+  Symbol(enzyme.__node__): null,
+  Symbol(enzyme.__nodes__): Array [
+    null,
   ],
   Symbol(enzyme.__options__): Object {
     "adapter": ReactSixteenAdapter {
