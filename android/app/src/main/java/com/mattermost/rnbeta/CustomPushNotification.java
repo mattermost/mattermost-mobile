@@ -143,8 +143,8 @@ public class CustomPushNotification extends PushNotification {
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
         Bundle bundle = mNotificationProps.asBundle();
-        String title = bundle.getString("title");
-        if (title == null) {
+        String title = bundle.getString("channel_name");
+        if (android.text.TextUtils.isEmpty(title)) {
             ApplicationInfo appInfo = mContext.getApplicationInfo();
             title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
         }
@@ -207,7 +207,7 @@ public class CustomPushNotification extends PushNotification {
                     .setStyle(new Notification.BigTextStyle()
                             .bigText(message));
         } else {
-            String summaryTitle = String.format("%s (%d)", title, numMessages);
+            String summaryTitle = String.format("(%d) %s", numMessages, title);
 
             Notification.InboxStyle style = new Notification.InboxStyle();
             List<Bundle> bundleArray = channelIdToNotification.get(channelId);
@@ -218,6 +218,8 @@ public class CustomPushNotification extends PushNotification {
                 list = new ArrayList<Bundle>();
             }
 
+            style.addLine(message);
+
             for (Bundle data : list) {
                 String msg = data.getString("message");
                 if (msg != message) {
@@ -225,10 +227,10 @@ public class CustomPushNotification extends PushNotification {
                 }
             }
 
-            style.setBigContentTitle(message)
-                    .setSummaryText(String.format("+%d more", (numMessages - 1)));
-            notification.setStyle(style)
-                    .setContentTitle(summaryTitle);
+            notification
+                    .setContentTitle(summaryTitle)
+                    .setContentText(message)
+                    .setStyle(style);
         }
 
         // Let's add a delete intent when the notification is dismissed
