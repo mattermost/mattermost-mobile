@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 /* eslint-disable global-require*/
@@ -6,6 +6,7 @@ import {AsyncStorage, NativeModules} from 'react-native';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';
+import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {ViewTypes} from 'app/constants';
@@ -36,6 +37,7 @@ export default class App {
         this.allowOtherServers = true;
         this.appStarted = false;
         this.emmEnabled = false;
+        this.performingEMMAuthentication = false;
         this.translations = null;
         this.toolbarBackground = null;
         this.toolbarTextColor = null;
@@ -116,6 +118,8 @@ export default class App {
                     this.currentUserId = currentUserId;
                     this.token = token;
                     this.url = url;
+                    Client4.setUrl(url);
+                    Client4.setToken(token);
                 }
             }
         } catch (error) {
@@ -161,6 +165,10 @@ export default class App {
         }
 
         return null;
+    };
+
+    setPerformingEMMAuthentication = (authenticating) => {
+        this.performingEMMAuthentication = authenticating;
     };
 
     setManagedConfig = (shouldStart) => {
@@ -238,13 +246,13 @@ export default class App {
             return;
         }
 
+        this.startApp();
         this.setManagedConfig(true);
     };
 
     launchApp = async () => {
         const shouldStartCache = await this.getManagedConfig();
         if (shouldStartCache) {
-            this.startApp();
             this.verifyManagedConfigCache(shouldStartCache);
             return;
         }
@@ -261,18 +269,13 @@ export default class App {
             return;
         }
 
-        const {dispatch, getState} = store;
-        const {entities} = getState();
+        const {dispatch} = store;
 
         let screen = 'SelectServer';
-        if (entities) {
-            const {credentials} = entities.general;
-
-            if (credentials.token && credentials.url) {
-                screen = 'Channel';
-                tracker.initialLoad = Date.now();
-                loadMe()(dispatch, getState);
-            }
+        if (this.token && this.url) {
+            screen = 'Channel';
+            tracker.initialLoad = Date.now();
+            dispatch(loadMe());
         }
 
         switch (screen) {
