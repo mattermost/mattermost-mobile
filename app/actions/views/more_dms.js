@@ -18,10 +18,11 @@ export function makeDirectChannel(otherUserId) {
 
         let result;
         let channel = Object.values(channels).find((c) => c.name === channelName);
+        console.log(Object.values(channels).filter((c) => c.name === channelName), myMembers[channel.id]);
         if (channel && myMembers[channel.id]) {
             result = {data: channel};
 
-            toggleDMChannel(otherUserId, 'true')(dispatch, getState);
+            toggleDMChannel(otherUserId, 'true', channel.id)(dispatch, getState);
         } else {
             result = await createDirectChannel(currentUserId, otherUserId)(dispatch, getState);
             channel = result.data;
