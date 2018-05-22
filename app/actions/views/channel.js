@@ -346,7 +346,7 @@ export function toggleDMChannel(otherUserId, visible, channelId) {
             user_id: currentUserId,
             category: Preferences.CATEGORY_CHANNEL_OPEN_TIME,
             name: channelId,
-            value: new Date().getTime().toString(),
+            value: Date.now().toString(),
         }];
 
         savePreferences(currentUserId, dm)(dispatch, getState);
