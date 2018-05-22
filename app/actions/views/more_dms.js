@@ -13,22 +13,22 @@ export function makeDirectChannel(otherUserId) {
         const channelName = getDirectChannelName(currentUserId, otherUserId);
         const {channels, myMembers} = state.entities.channels;
 
-        getProfilesByIds([otherUserId])(dispatch, getState);
-        getStatusesByIds([otherUserId])(dispatch, getState);
+        dispatch(getProfilesByIds([otherUserId]));
+        dispatch(getStatusesByIds([otherUserId]));
 
         let result;
         let channel = Object.values(channels).find((c) => c.name === channelName);
         if (channel && myMembers[channel.id]) {
             result = {data: channel};
 
-            toggleDMChannel(otherUserId, 'true')(dispatch, getState);
+            dispatch(toggleDMChannel(otherUserId, 'true', channel.id));
         } else {
             result = await createDirectChannel(currentUserId, otherUserId)(dispatch, getState);
             channel = result.data;
         }
 
         if (channel) {
-            handleSelectChannel(channel.id)(dispatch, getState);
+            dispatch(handleSelectChannel(channel.id));
         }
 
         return result;
@@ -40,15 +40,15 @@ export function makeGroupChannel(otherUserIds) {
         const state = getState();
         const {currentUserId} = state.entities.users;
 
-        getProfilesByIds(otherUserIds)(dispatch, getState);
-        getStatusesByIds(otherUserIds)(dispatch, getState);
+        dispatch(getProfilesByIds(otherUserIds));
+        dispatch(getStatusesByIds(otherUserIds));
 
         const result = await createGroupChannel([currentUserId, ...otherUserIds])(dispatch, getState);
         const channel = result.data;
 
         if (channel) {
-            toggleGMChannel(channel.id, 'true')(dispatch, getState);
-            handleSelectChannel(channel.id)(dispatch, getState);
+            dispatch(toggleGMChannel(channel.id, 'true'));
+            dispatch(handleSelectChannel(channel.id));
         }
 
         return result;
