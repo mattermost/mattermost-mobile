@@ -61,6 +61,8 @@ export default class Entry extends PureComponent {
         navigator: PropTypes.object,
         isLandscape: PropTypes.bool,
         hydrationComplete: PropTypes.bool,
+        enableTimezone: PropTypes.bool,
+        deviceTimezone: PropTypes.string,
         initializeModules: PropTypes.func.isRequired,
         actions: PropTypes.shape({
             setDeviceToken: PropTypes.func.isRequired,
@@ -111,7 +113,7 @@ export default class Entry extends PureComponent {
                 autoUpdateTimezone,
             },
             enableTimezone,
-            deviceTimezone
+            deviceTimezone,
         } = this.props;
         const {getState} = store;
         const state = getState();

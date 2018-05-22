@@ -27,7 +27,7 @@ function mapStateToProps(state) {
         isLandscape: isLandscape(state),
         hydrationComplete: state.views.root.hydrationComplete,
         enableTimezone,
-        deviceTimezone
+        deviceTimezone,
     };
 }
 

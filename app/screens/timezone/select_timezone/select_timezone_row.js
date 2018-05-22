@@ -4,13 +4,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    StyleSheet,
     TouchableOpacity,
     Text,
     View,
 } from 'react-native';
 
 import CheckMark from 'app/components/checkmark';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const ITEM_HEIGHT = 45;
 
@@ -29,6 +29,7 @@ export default class SelectTimezoneRow extends PureComponent {
 
     render() {
         const {theme, timezone, selectedTimezone} = this.props;
+        const styles = getStyleSheet(theme);
 
         const selected = timezone === selectedTimezone && (
             <CheckMark
@@ -55,20 +56,23 @@ export default class SelectTimezoneRow extends PureComponent {
     }
 }
 
-const styles = StyleSheet.create({
-    itemContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        paddingHorizontal: 15,
-        height: ITEM_HEIGHT,
-    },
-    item: {
-        alignItems: 'center',
-        flex: 1,
-        flexDirection: 'row',
-    },
-    itemText: {
-        fontSize: 15,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        itemContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            width: '100%',
+            paddingHorizontal: 15,
+            height: ITEM_HEIGHT,
+        },
+        item: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+        },
+        itemText: {
+            fontSize: 15,
+            color: theme.centerChannelColor,
+        },
+    };
 });
