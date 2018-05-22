@@ -27,7 +27,6 @@ import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.psykar.cookiemanager.CookieManagerPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
-import com.github.yamill.orientation.OrientationPackage;
 import com.reactnativenavigation.NavigationApplication;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 import com.wix.reactnativenotifications.core.notification.INotificationsApplication;
@@ -62,7 +61,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             new VectorIconsPackage(),
             new SvgPackage(),
             new LinearGradientPackage(),
-            new OrientationPackage(),
             new RNNotificationsPackage(this),
             new LocalAuthPackage(),
             new JailMonkeyPackage(),

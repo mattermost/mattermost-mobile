@@ -16,7 +16,6 @@
 #else
 #import "RNSentry.h" // This is used for versions of react < 0.40
 #endif
-#import "Orientation.h"
 #import "RCCManager.h"
 #import "RNNotifications.h"
 #import "SessionManager.h"
@@ -35,11 +34,6 @@
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
   return YES;
-}
-
-// Required for orientation
-- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
-  return [Orientation getOrientation];
 }
 
 // Required to register for notifications

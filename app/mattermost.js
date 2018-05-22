@@ -6,6 +6,7 @@ import 'babel-polyfill';
 import {
     Alert,
     AppState,
+    Dimensions,
     InteractionManager,
     Platform,
     NativeModules,
@@ -36,7 +37,7 @@ import {configurePushNotifications} from 'app/utils/push_notifications';
 import PushNotifications from 'app/push_notifications';
 import {registerScreens} from 'app/screens';
 import {
-    calculateDeviceDimensions,
+    setDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
     setStatusBarHeight,
@@ -56,11 +57,9 @@ export const store = configureStore(initialState);
 registerScreens(store, Provider);
 
 const lazyLoadExternalModules = () => {
-    const Orientation = require('react-native-orientation');
     const StatusBarSizeIOS = require('react-native-status-bar-size');
     const initializeErrorHandling = require('app/utils/error_handling').initializeErrorHandling;
     return {
-        Orientation,
         StatusBarSizeIOS,
         initializeErrorHandling,
     };
@@ -76,16 +75,14 @@ const lazyLoadAnalytics = () => {
 
 const initializeModules = () => {
     const {
-        Orientation,
         StatusBarSizeIOS,
         initializeErrorHandling,
     } = lazyLoadExternalModules();
     const {
         config,
     } = store.getState().entities.general;
-    const orientation = Orientation.getInitialOrientation();
+    const window = Dimensions.get('window');
 
-    Orientation.unlockAllOrientations();
     initializeErrorHandling();
 
     EventEmitter.on(NavigationTypes.NAVIGATION_RESET, handleLogout);
@@ -93,7 +90,7 @@ const initializeModules = () => {
     EventEmitter.on(General.SERVER_VERSION_CHANGED, handleServerVersionChanged);
     EventEmitter.on(General.CONFIG_CHANGED, handleConfigChanged);
     EventEmitter.on(General.DEFAULT_CHANNEL, handleResetChannelDisplayName);
-    Orientation.addOrientationListener(handleOrientationChange);
+    Dimensions.addEventListener('change', handleOrientationChange);
     mattermostManaged.addEventListener('managedConfigDidChange', () => {
         handleManagedConfig(true);
     });
@@ -102,9 +99,7 @@ const initializeModules = () => {
         configureAnalytics(config);
     }
 
-    if (orientation) {
-        handleOrientationChange(orientation);
-    }
+    handleOrientationChange({window});
 
     if (Platform.OS === 'ios') {
         StatusBarSizeIOS.addEventListener('willChange', handleStatusBarHeightChange);
@@ -197,16 +192,17 @@ const handleStatusBarHeightChange = (nextStatusBarHeight) => {
     store.dispatch(setStatusBarHeight(nextStatusBarHeight));
 };
 
-const handleOrientationChange = (orientation) => {
+const handleOrientationChange = (dimensions) => {
     const {dispatch} = store;
     if (DeviceInfo.isTablet()) {
         dispatch(setDeviceAsTablet());
     }
 
+    const {height, width} = dimensions.window;
+    const orientation = height > width ? 'PORTRAIT' : 'LANDSCAPE';
+
     dispatch(setDeviceOrientation(orientation));
-    setTimeout(() => {
-        dispatch(calculateDeviceDimensions());
-    }, 100);
+    dispatch(setDeviceDimensions(height, width));
 };
 
 export const handleManagedConfig = async (eventFromEmmServer = false) => {

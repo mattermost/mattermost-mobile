@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    Dimensions,
     Image,
     InteractionManager,
     Keyboard,
@@ -17,7 +18,6 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import Orientation from 'react-native-orientation';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -61,7 +61,7 @@ class Login extends PureComponent {
     }
 
     componentWillMount() {
-        Orientation.addOrientationListener(this.orientationDidChange);
+        Dimensions.addEventListener('change', this.orientationDidChange);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -73,7 +73,7 @@ class Login extends PureComponent {
     }
 
     componentWillUnmount() {
-        Orientation.removeOrientationListener(this.orientationDidChange);
+        Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
     goToLoadTeam = (expiresAt) => {
