@@ -34,7 +34,7 @@ export default {
             listeners.splice(index, 1);
         }
     },
-    authenticate: LocalAuth.authenticate,
+    authenticate: LocalAuth.auth,
     blurAppScreen: MattermostManaged.blurAppScreen,
     getConfig: MattermostManaged.getConfig,
     getLocalConfig: async () => {

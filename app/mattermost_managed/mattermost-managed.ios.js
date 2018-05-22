@@ -35,7 +35,17 @@ export default {
     },
     authenticate: LocalAuth.authenticate,
     blurAppScreen: BlurAppScreen.enabled,
-    getConfig: MattermostManaged.getConfig,
+    getConfig: async () => {
+        return {
+            inAppPinCode: 'true',
+            blurApplicationScreen: 'true',
+            jailbreakDetection: 'true',
+            allowOtherServers: 'true',
+            vendor: 'Local Test',
+            serverUrl: 'http://192.168.0.18:8065',
+            username: 'elias',
+        };
+    },
     getLocalConfig: async () => {
         if (!localConfig) {
             try {

@@ -1,7 +1,7 @@
-import {
-    Platform,
-    InteractionManager,
-} from 'react-native';
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See License.txt for license information.
+
+import {Platform} from 'react-native';
 
 import PushNotifications from 'app/push_notifications';
 import DeviceInfo from 'react-native-device-info';
@@ -17,8 +17,6 @@ import {
     createPost,
     loadFromPushNotification,
 } from 'app/actions/views/root';
-
-import {stripTrailingSlashes} from 'app/utils/url';
 
 import {
     app,
@@ -42,16 +40,14 @@ const onRegisterDevice = (data) => {
     const token = `${prefix}:${data.token}`;
     if (state.views.root.hydrationComplete) {
         app.setDeviceToken(token);
-        setDeviceToken(token)(store.dispatch, store.getState);
+        store.dispatch(setDeviceToken(token));
     } else {
         app.setDeviceToken(token);
     }
 };
 
-const onPushNotification = (deviceNotification) => {
+const onPushNotification = async (deviceNotification) => {
     const {dispatch, getState} = store;
-    const state = getState();
-    const {token, url} = state.entities.general.credentials;
 
     // mark the app as started as soon as possible
     if (Platform.OS === 'android' && !app.appStarted) {
@@ -69,25 +65,18 @@ const onPushNotification = (deviceNotification) => {
     }
 
     if (data.type === 'clear') {
-        markChannelAsRead(data.channel_id, null, false)(dispatch, getState);
+        dispatch(markChannelAsRead(data.channel_id, null, false));
     } else if (foreground) {
         EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
     } else if (userInteraction && !notification.localNotification) {
         EventEmitter.emit('close_channel_drawer');
-        if (app.startAppFromPushNotification) {
-            Client4.setToken(token);
-            Client4.setUrl(stripTrailingSlashes(url));
-        }
-
-        InteractionManager.runAfterInteractions(async () => {
-            await loadFromPushNotification(notification)(dispatch, getState);
-
-            if (app.startAppFromPushNotification) {
-                app.launchApp();
-            } else {
+        if (getState().views.root.hydrationComplete) {
+            await dispatch(loadFromPushNotification(notification));
+            if (!app.startAppFromPushNotification) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+                PushNotifications.resetNotification();
             }
-        });
+        }
     }
 };
 

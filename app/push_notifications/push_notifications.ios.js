@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import {AppState} from 'react-native';
@@ -12,6 +12,7 @@ const replies = new Set();
 
 class PushNotification {
     constructor() {
+        this.deviceNotification = null;
         this.onRegister = null;
         this.onNotification = null;
         this.onReply = null;
@@ -56,7 +57,7 @@ class PushNotification {
     }
 
     handleNotification = (data, foreground, userInteraction) => {
-        const deviceNotification = {
+        this.deviceNotification = {
             data,
             foreground: foreground || (!userInteraction && AppState.currentState === 'active'),
             message: data.message,
@@ -65,7 +66,7 @@ class PushNotification {
         };
 
         if (this.onNotification) {
-            this.onNotification(deviceNotification);
+            this.onNotification(this.deviceNotification);
         }
     };
 
@@ -130,7 +131,7 @@ class PushNotification {
     }
 
     getNotification() {
-        return null;
+        return this.deviceNotification;
     }
 
     resetNotification() {

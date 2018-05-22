@@ -153,6 +153,7 @@ export default class ExtensionPost extends PureComponent {
             if (config) {
                 const authNeeded = config.inAppPinCode && config.inAppPinCode === 'true';
                 const vendor = config.vendor || 'Mattermost';
+
                 if (authNeeded) {
                     const isSecured = await mattermostManaged.isDeviceSecure();
                     if (isSecured) {
@@ -166,7 +167,7 @@ export default class ExtensionPost extends PureComponent {
                                 suppressEnterPassword: false,
                             });
                         } catch (err) {
-                            return this.onClose();
+                            return this.onClose({nativeEvent: true});
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 /* eslint-disable global-require*/
@@ -19,10 +19,12 @@ import {
     app,
     store,
 } from 'app/mattermost';
+import {loadFromPushNotification} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
 
+import ChannelLoader from 'app/components/channel_loader';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import Loading from 'app/components/loading';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -116,7 +118,7 @@ export default class Entry extends PureComponent {
 
             this.setAppCredentials();
             this.setStartupThemes();
-            this.setReplyNotifications();
+            this.handleNotification();
 
             if (Platform.OS === 'android') {
                 this.launchForAndroid();
@@ -173,7 +175,7 @@ export default class Entry extends PureComponent {
         );
     };
 
-    setReplyNotifications = () => {
+    handleNotification = async () => {
         const notification = PushNotifications.getNotification();
 
         // If notification exists, it means that the app was started through a reply
@@ -183,16 +185,18 @@ export default class Entry extends PureComponent {
             const notificationData = notification || app.replyNotificationData;
             const {data, text, badge, completed} = notificationData;
 
-            onPushNotificationReply(data, text, badge, completed);
+            // if the notification has a completed property it means that we are replying to a notification
+            // and in case it doesn't it means we just opened the notification
+            if (completed) {
+                onPushNotificationReply(data, text, badge, completed);
+            } else {
+                await store.dispatch(loadFromPushNotification(notification));
+            }
             PushNotifications.resetNotification();
         }
     };
 
     launchForAndroid = () => {
-        if (app.startAppFromPushNotification) {
-            return;
-        }
-
         app.launchApp();
     };
 
@@ -242,6 +246,7 @@ export default class Entry extends PureComponent {
         }
 
         let toolbar = null;
+        let loading = null;
         const backgroundColor = app.appBackground ? app.appBackground : '#ffff';
         if (app.token && app.toolbarBackground) {
             const toolbarTheme = {
@@ -258,6 +263,14 @@ export default class Entry extends PureComponent {
                     />
                 </View>
             );
+
+            loading = (
+                <View>
+                    <ChannelLoader channelIsLoading={true}/>
+                </View>
+            );
+        } else {
+            loading = <Loading/>;
         }
 
         return (
@@ -267,7 +280,7 @@ export default class Entry extends PureComponent {
                 navigator={navigator}
             >
                 {toolbar}
-                <Loading/>
+                {loading}
             </SafeAreaView>
         );
     }

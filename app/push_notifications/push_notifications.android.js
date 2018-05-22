@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import {AppRegistry, AppState} from 'react-native';
@@ -15,6 +15,9 @@ class PushNotification {
 
         NotificationsAndroid.setRegistrationTokenUpdateListener((deviceToken) => {
             this.deviceToken = deviceToken;
+            if (this.onRegister) {
+                this.onRegister({token: this.deviceToken});
+            }
         });
 
         NotificationsAndroid.setNotificationReceivedListener((notification) => {
@@ -42,13 +45,14 @@ class PushNotification {
                     data,
                     text: data.text,
                     badge: parseInt(data.badge, 10) - parseInt(data.msg_count, 10),
+                    completed: true, // used to identify that the notification belongs to a reply
                 };
             }
         });
     }
 
     handleNotification = (data, userInteraction) => {
-        const deviceNotification = {
+        this.deviceNotification = {
             data,
             foreground: !userInteraction && AppState.currentState === 'active',
             message: data.message,
@@ -57,7 +61,7 @@ class PushNotification {
         };
 
         if (this.onNotification) {
-            this.onNotification(deviceNotification);
+            this.onNotification(this.deviceNotification);
         }
     };
 
