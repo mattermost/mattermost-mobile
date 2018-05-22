@@ -45,7 +45,7 @@ class PushNotification {
                     data,
                     text: data.text,
                     badge: parseInt(data.badge, 10) - parseInt(data.msg_count, 10),
-                    completed: () => true,
+                    completed: true, // used to identify that the notification belongs to a reply
                 };
             }
         });

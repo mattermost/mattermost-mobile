@@ -118,7 +118,7 @@ export default class Entry extends PureComponent {
 
             this.setAppCredentials();
             this.setStartupThemes();
-            this.setReplyNotifications();
+            this.handleNotification();
 
             if (Platform.OS === 'android') {
                 this.launchForAndroid();
@@ -175,7 +175,7 @@ export default class Entry extends PureComponent {
         );
     };
 
-    setReplyNotifications = async () => {
+    handleNotification = async () => {
         const notification = PushNotifications.getNotification();
 
         // If notification exists, it means that the app was started through a reply
@@ -185,6 +185,8 @@ export default class Entry extends PureComponent {
             const notificationData = notification || app.replyNotificationData;
             const {data, text, badge, completed} = notificationData;
 
+            // if the notification has a completed property it means that we are replying to a notification
+            // and in case it doesn't it means we just opened the notification
             if (completed) {
                 onPushNotificationReply(data, text, badge, completed);
             } else {
