@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import configureStore from 'redux-mock-store';
@@ -11,9 +11,11 @@ import {
     handleCommentDraftSelectionChanged,
 } from 'app/actions/views/thread';
 
-jest.mock('react-native-fetch-blob', () => ({
-    DocumentDir: () => jest.fn(),
-    fs: {dirs: {CacheDir: () => jest.fn()}},
+jest.mock('react-native-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: () => jest.fn(),
+    },
 }));
 
 const mockStore = configureStore([thunk]);

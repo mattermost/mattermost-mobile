@@ -1,9 +1,9 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
     Image,
@@ -13,27 +13,25 @@ import {
     StatusBar,
     StyleSheet,
     Text,
+    TextInput,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
 import Button from 'react-native-button';
-import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
 
-import Config from 'assets/config';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {GlobalStyles} from 'app/styles';
-import {preventDoubleTap} from 'app/utils/tap';
-import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {UpgradeTypes} from 'app/constants/view';
+import {GlobalStyles} from 'app/styles';
 import checkUpgradeType from 'app/utils/client_upgrade';
+import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
+import {preventDoubleTap} from 'app/utils/tap';
 
-import logo from 'assets/images/logo.png';
+import LocalConfig from 'assets/config';
 
-class SelectServer extends PureComponent {
+export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
@@ -47,13 +45,16 @@ class SelectServer extends PureComponent {
         config: PropTypes.object,
         currentVersion: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
-        intl: intlShape.isRequired,
         latestVersion: PropTypes.string,
         license: PropTypes.object,
         minVersion: PropTypes.string,
         navigator: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
         theme: PropTypes.object,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -86,7 +87,7 @@ class SelectServer extends PureComponent {
 
     componentWillUpdate(nextProps, nextState) {
         if (nextState.connected && nextProps.hasConfigAndLicense && !(this.state.connected && this.props.hasConfigAndLicense)) {
-            if (Config.EnableMobileClientUpgrade) {
+            if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = nextProps;
                 const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
@@ -116,7 +117,8 @@ class SelectServer extends PureComponent {
     };
 
     handleShowClientUpgrade = (upgradeType) => {
-        const {intl, theme} = this.props;
+        const {intl} = this.context;
+        const {theme} = this.props;
 
         this.props.navigator.push({
             screen: 'ClientUpgrade',
@@ -124,7 +126,7 @@ class SelectServer extends PureComponent {
             backButtonTitle: '',
             navigatorStyle: {
                 navBarHidden: false,
-                disabledBackGesture: Config.AutoSelectServerUrl,
+                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
                 statusBarHidden: true,
                 statusBarHideWithNavBar: true,
                 navBarTextColor: theme.sidebarHeaderTextColor,
@@ -132,14 +134,15 @@ class SelectServer extends PureComponent {
                 navBarButtonColor: theme.sidebarHeaderTextColor,
             },
             passProps: {
-                closeAction: () => this.handleLoginOptions(this.props),
+                closeAction: this.handleLoginOptions,
                 upgradeType,
             },
         });
     }
 
-    handleLoginOptions = (props) => {
-        const {config, intl, license, theme} = props;
+    handleLoginOptions = (props = this.props) => {
+        const {intl} = this.context;
+        const {config, license, theme} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
 
@@ -164,8 +167,8 @@ class SelectServer extends PureComponent {
             animated: true,
             backButtonTitle: '',
             navigatorStyle: {
-                navBarHidden: Config.AutoSelectServerUrl,
-                disabledBackGesture: Config.AutoSelectServerUrl,
+                navBarHidden: LocalConfig.AutoSelectServerUrl,
+                disabledBackGesture: LocalConfig.AutoSelectServerUrl,
                 navBarTextColor: theme.sidebarHeaderTextColor,
                 navBarBackgroundColor: theme.sidebarHeaderBg,
                 navBarButtonColor: theme.sidebarHeaderTextColor,
@@ -184,6 +187,7 @@ class SelectServer extends PureComponent {
     };
 
     onClick = preventDoubleTap(async () => {
+        const urlParse = require('url-parse');
         const preUrl = urlParse(this.state.url, true);
         const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
 
@@ -272,11 +276,12 @@ class SelectServer extends PureComponent {
 
     blur = () => {
         if (this.textInput) {
-            this.textInput.refs.wrappedInstance.blur();
+            this.textInput.blur();
         }
     };
 
     render() {
+        const {formatMessage} = this.context.intl;
         const {allowOtherServers} = this.props;
         const {
             connected,
@@ -331,7 +336,7 @@ class SelectServer extends PureComponent {
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image
-                            source={logo}
+                            source={require('assets/images/logo.png')}
                         />
 
                         <View>
@@ -341,7 +346,7 @@ class SelectServer extends PureComponent {
                                 defaultMessage='Enter Server URL'
                             />
                         </View>
-                        <TextInputWithLocalizedPlaceholder
+                        <TextInput
                             ref={this.inputRef}
                             value={url}
                             editable={!inputDisabled}
@@ -351,7 +356,10 @@ class SelectServer extends PureComponent {
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'
-                            placeholder={{id: 'mobile.components.select_server_view.siteUrlPlaceholder', defaultMessage: 'https://mattermost.example.com'}}
+                            placeholder={formatMessage({
+                                id: 'mobile.components.select_server_view.siteUrlPlaceholder',
+                                defaultMessage: 'https://mattermost.example.com',
+                            })}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -387,5 +395,3 @@ const style = StyleSheet.create({
         marginRight: 5,
     },
 });
-
-export default injectIntl(SelectServer);

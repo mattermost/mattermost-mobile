@@ -1,8 +1,8 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import keyMirror from 'mattermost-redux/utils/key_mirror';
-import RNFetchBlob from 'react-native-fetch-blob';
+import RNFetchBlobFS from 'react-native-fetch-blob/fs';
 
 const deviceTypes = keyMirror({
     CONNECTION_CHANGED: null,
@@ -14,7 +14,7 @@ const deviceTypes = keyMirror({
 
 export default {
     ...deviceTypes,
-    DOCUMENTS_PATH: `${RNFetchBlob.fs.dirs.CacheDir}/Documents`,
-    IMAGES_PATH: `${RNFetchBlob.fs.dirs.CacheDir}/Images`,
-    VIDEOS_PATH: `${RNFetchBlob.fs.dirs.CacheDir}/Videos`,
+    DOCUMENTS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Documents`,
+    IMAGES_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Images`,
+    VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
 };

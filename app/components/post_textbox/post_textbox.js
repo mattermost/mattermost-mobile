@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -11,11 +11,12 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
-import PaperPlane from 'app/components/paper_plane';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Typing from './components/typing';
+
+let PaperPlane = null;
 
 export default class PostTextbox extends PureComponent {
     static propTypes = {
@@ -282,35 +283,44 @@ export default class PostTextbox extends PureComponent {
         const {files, theme} = this.props;
         const style = getStyleSheet(theme);
 
-        const icon = (
-            <PaperPlane
-                height={13}
-                width={15}
-                color={theme.buttonColor}
-            />
-        );
+        const canSend = this.canSend();
+        const imagesLoading = files.filter((f) => f.loading).length > 0;
 
         let button = null;
-        const imagesLoading = files.filter((f) => f.loading).length > 0;
-        if (imagesLoading) {
-            button = (
-                <View style={style.sendButtonContainer}>
-                    <View style={[style.sendButton, style.disableButton]}>
-                        {icon}
-                    </View>
-                </View>
+
+        if (canSend || imagesLoading) {
+            if (!PaperPlane) {
+                PaperPlane = require('app/components/paper_plane').default;
+            }
+
+            const icon = (
+                <PaperPlane
+                    height={13}
+                    width={15}
+                    color={theme.buttonColor}
+                />
             );
-        } else if (this.canSend()) {
-            button = (
-                <TouchableOpacity
-                    onPress={this.handleSendMessage}
-                    style={style.sendButtonContainer}
-                >
-                    <View style={style.sendButton}>
-                        {icon}
+
+            if (imagesLoading) {
+                button = (
+                    <View style={style.sendButtonContainer}>
+                        <View style={[style.sendButton, style.disableButton]}>
+                            {icon}
+                        </View>
                     </View>
-                </TouchableOpacity>
-            );
+                );
+            } else if (canSend) {
+                button = (
+                    <TouchableOpacity
+                        onPress={this.handleSendMessage}
+                        style={style.sendButtonContainer}
+                    >
+                        <View style={style.sendButton}>
+                            {icon}
+                        </View>
+                    </TouchableOpacity>
+                );
+            }
         }
 
         return button;

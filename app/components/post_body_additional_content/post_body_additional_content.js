@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -14,10 +14,6 @@ import {
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import youTubeVideoId from 'youtube-video-id';
 
-import youtubePlayIcon from 'assets/images/icons/youtube-play-icon.png';
-
-import MessageAttachments from 'app/components/message_attachments';
-import PostAttachmentOpenGraph from 'app/components/post_attachment_opengraph';
 import ProgressiveImage from 'app/components/progressive_image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -26,6 +22,9 @@ import ImageCacheManager from 'app/utils/image_cache_manager';
 import {isImageLink, isYoutubeLink} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
+
+let MessageAttachments;
+let PostAttachmentOpenGraph;
 
 export default class PostBodyAdditionalContent extends PureComponent {
     static propTypes = {
@@ -132,6 +131,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
 
         if (link && showLinkPreviews) {
+            if (!PostAttachmentOpenGraph) {
+                PostAttachmentOpenGraph = require('app/components/post_attachment_opengraph').default;
+            }
             return (
                 <PostAttachmentOpenGraph
                     isReplyPost={isReplyPost}
@@ -173,7 +175,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                         >
                             <TouchableWithoutFeedback onPress={this.playYouTubeVideo}>
                                 <Image
-                                    source={youtubePlayIcon}
+                                    source={require('assets/images/icons/youtube-play-icon.png')}
                                     onPress={this.playYouTubeVideo}
                                 />
                             </TouchableWithoutFeedback>
@@ -261,6 +263,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
         const {attachments} = postProps;
 
         if (attachments && attachments.length) {
+            if (!MessageAttachments) {
+                MessageAttachments = require('app/components/message_attachments').default;
+            }
+
             return (
                 <MessageAttachments
                     attachments={attachments}
