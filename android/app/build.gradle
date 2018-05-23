@@ -166,6 +166,22 @@ android {
     }
 }
 
+repositories {
+    maven {
+        url 'https://maven.google.com'
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            if (details.requested.name == 'android-jsc') {
+                details.useTarget group: details.requested.group, name: 'android-jsc-intl', version: 'r216113'
+            }
+        }
+    }
+}
+
 dependencies {
     compile project(':react-native-document-picker')
     compile project(':react-native-keychain')

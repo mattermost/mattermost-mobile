@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 /* eslint-disable global-require*/
-import 'babel-polyfill';
 import {
     Alert,
     AppState,
