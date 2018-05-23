@@ -9,6 +9,10 @@ const fs = require('fs');
 const platformRegex = /\.(android\.js|ios\.js)/g;
 const modulesRegex = /\/(node_modules)/;
 
+// This script will let the react native packager what modules to include
+// in the main bundle and what modules to blacklist from the inline requires
+// this modules are taken from the modulePaths.js file
+
 const config = {
     getTransformOptions: (entryFile, {platform}) => {
         console.log('BUILDING MODULES FOR', platform);

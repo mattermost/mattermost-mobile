@@ -846,7 +846,6 @@ module.exports = ['./node_modules/react-native/Libraries/ART/ARTSerializablePath
     './node_modules/node_modules/raven-js/vendor/json-stringify-safe/stringify.js',
     './node_modules/node_modules/raven-js/vendor/md5/md5.js',
     './node_modules/node_modules/react-deep-force-update/lib/index.js',
-    './node_modules/node_modules/react-devtools-core/build/backend.js',
     './node_modules/node_modules/react-intl/lib/index.js',
     './node_modules/node_modules/react-intl/locale-data/en.js',
     './node_modules/node_modules/react-intl/locale-data/index.js',

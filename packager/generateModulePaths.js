@@ -9,6 +9,9 @@ const moduleNames = require('./moduleNames');
 const pjson = require('../package.json');
 const localPrefix = `${pjson.name}/`;
 
+// Transforming to Module Paths
+// This script will convert the module names found in moduleNames.js
+// to the absolute module path that we need.
 const modulePaths = moduleNames.map((moduleName) => {
     if (moduleName.startsWith(localPrefix)) {
         return `./${moduleName.substring(localPrefix.length)}`;
