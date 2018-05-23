@@ -1,4 +1,4 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -17,7 +17,6 @@ import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
 import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
-import UnreadIndicator from 'app/components/channel_drawer/channels_list/unread_indicator';
 import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
@@ -26,6 +25,8 @@ const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
     waitForInteraction: true,
 };
+
+let UnreadIndicator = null;
 
 export default class List extends PureComponent {
     static propTypes = {
@@ -311,6 +312,9 @@ export default class List extends PureComponent {
     };
 
     emitUnreadIndicatorChange = debounce((showIndicator) => {
+        if (showIndicator && !UnreadIndicator) {
+            UnreadIndicator = require('app/components/channel_drawer/channels_list/unread_indicator').default;
+        }
         this.setState({showIndicator});
     }, 100);
 
@@ -349,12 +353,14 @@ export default class List extends PureComponent {
                     stickySectionHeadersEnabled={false}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
+                {showIndicator &&
                 <UnreadIndicator
                     show={showIndicator}
                     style={[styles.above, {width}]}
                     onPress={this.scrollToTop}
                     theme={theme}
                 />
+                }
             </View>
         );
     }

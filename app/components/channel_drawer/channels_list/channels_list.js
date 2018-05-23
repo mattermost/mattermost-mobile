@@ -1,28 +1,27 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Platform,
     View,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import FilteredList from './filtered_list';
 import List from './list';
 import SwitchTeamsButton from './switch_teams_button';
 
 const {ANDROID_TOP_PORTRAIT} = ViewTypes;
+let FilteredList = null;
 
-class ChannelsList extends React.PureComponent {
+export default class ChannelsList extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
         navigator: PropTypes.object,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
@@ -30,6 +29,10 @@ class ChannelsList extends React.PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -62,6 +65,9 @@ class ChannelsList extends React.PureComponent {
     };
 
     onSearchFocused = () => {
+        if (!FilteredList) {
+            FilteredList = require('./filtered_list').default;
+        }
         this.setState({searching: true});
         this.props.onSearchStart();
     };
@@ -73,8 +79,8 @@ class ChannelsList extends React.PureComponent {
     };
 
     render() {
+        const {intl} = this.context;
         const {
-            intl,
             navigator,
             onShowTeams,
             theme,
@@ -243,5 +249,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(ChannelsList);
