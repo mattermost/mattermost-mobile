@@ -249,8 +249,6 @@ export default class Channel extends PureComponent {
             }
 
             const Loading = require('app/components/channel_loader').default;
-
-            // perhaps we should change this for the ChannelLoader
             return (
                 <View style={style.loading}>
                     <Loading channelIsLoading={true}/>
