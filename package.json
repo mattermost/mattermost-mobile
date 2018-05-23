@@ -98,6 +98,7 @@
     "underscore": "1.9.0"
   },
   "scripts": {
+    "start": "node ./node_modules/react-native/local-cli/cli.js start --config ../../../../packager/config.js",
     "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
     "postinstall": "make post-install",

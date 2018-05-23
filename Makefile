@@ -89,7 +89,7 @@ post-install:
 start: | pre-run ## Starts the React Native packager server
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start; \
+		npm start; \
 	else \
 		echo React Native packager server already running; \
 	fi
@@ -141,7 +141,7 @@ run: run-ios ## alias for run-ios
 run-ios: | check-device-ios pre-run ## Runs the app on an iOS simulator
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start & echo Running iOS app in development; \
+		npm start & echo Running iOS app in development; \
 		if [ ! -z "${SIMULATOR}" ]; then \
 			react-native run-ios --simulator="${SIMULATOR}"; \
 		else \
@@ -160,7 +160,7 @@ run-ios: | check-device-ios pre-run ## Runs the app on an iOS simulator
 run-android: | check-device-android pre-run prepare-android-build ## Runs the app on an Android emulator or dev device
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
         echo Starting React Native packager server; \
-    	node ./node_modules/react-native/local-cli/cli.js start & echo Running Android app in development; \
+    	npm start & echo Running Android app in development; \
     	if [ ! -z ${VARIANT} ]; then \
     		react-native run-android --no-packager --variant=${VARIANT}; \
     	else \
@@ -183,7 +183,7 @@ ifneq ($(IOS_APP_GROUP),)
 endif
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start & echo; \
+		npm start & echo; \
 	fi
 	@echo "Building iOS app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
@@ -193,7 +193,7 @@ endif
 build-android: | pre-run check-style prepare-android-build ## Creates an Android build
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start & echo; \
+		npm start & echo; \
 	fi
 	@echo "Building Android app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android build
@@ -202,7 +202,7 @@ build-android: | pre-run check-style prepare-android-build ## Creates an Android
 unsigned-ios: pre-run check-style
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start & echo; \
+		npm start & echo; \
 	fi
 	@echo "Building unsigned iOS app"
 ifneq ($(IOS_APP_GROUP),)
@@ -221,7 +221,7 @@ endif
 unsigned-android: pre-run check-style prepare-android-build
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
-		node ./node_modules/react-native/local-cli/cli.js start & echo; \
+		npm start & echo; \
     fi
 	@echo "Building unsigned Android app"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -58,15 +58,18 @@ export default class PostList extends PureComponent {
         loadMore: () => true,
     };
 
-    newMessagesIndex = -1;
-    scrollToMessageTries = 0;
-    makeExtraData = makeExtraData();
-    itemMeasurements = {};
+    constructor(props) {
+        super(props);
 
-    state = {
-        managedConfig: {},
-        scrollToMessage: false,
-    };
+        this.newMessagesIndex = -1;
+        this.makeExtraData = makeExtraData();
+        this.itemMeasurements = {};
+
+        this.state = {
+            managedConfig: {},
+            scrollToMessage: false,
+        };
+    }
 
     componentWillMount() {
         this.listenerId = mattermostManaged.addEventListener('change', this.setManagedConfig);

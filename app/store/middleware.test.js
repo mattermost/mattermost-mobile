@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 /* eslint-disable max-nested-callbacks */
@@ -8,16 +8,12 @@ import assert from 'assert';
 import {ViewTypes} from 'app/constants';
 import {messageRetention} from 'app/store/middleware';
 
-jest.mock('react-native-fetch-blob', () => {
-    return {
-        DocumentDir: () => null,
-        polyfill: () => null,
-        fs: {
-            dirs: {
-            },
-        },
-    };
-});
+jest.mock('react-native-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: () => jest.fn(),
+    },
+}));
 
 jest.mock('react-native-device-info', () => {
     return {

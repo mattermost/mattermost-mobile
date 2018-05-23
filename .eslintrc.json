@@ -59,7 +59,7 @@
         "func-names": 2,
         "func-style": [2, "declaration", { "allowArrowFunctions": true }],
         "generator-star-spacing": [0, {"before": false, "after": true}],
-        "global-require": 2,
+        "global-require": 0,
         "guard-for-in": 2,
         "id-blacklist": 0,
         "indent": [2, 4, {"SwitchCase": 0}],
