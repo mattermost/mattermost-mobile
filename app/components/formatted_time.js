@@ -3,7 +3,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import 'date-time-format-timezone/build/src/date-time-format-timezone-all-zones-no-locale';
 import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 

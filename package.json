@@ -10,7 +10,6 @@
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#e5c34706cafa2924370772ff47937b833648a6de",
     "commonmark-react-renderer": "mattermost/commonmark-react-renderer#86fa63f898802953842526c2030f3b63c5d1ae7a",
-    "date-time-format-timezone": "1.0.21-alpha.2",
     "deep-equal": "1.0.1",
     "fuse.js": "^3.2.0",
     "intl": "1.2.5",

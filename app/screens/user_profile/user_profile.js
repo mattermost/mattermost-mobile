@@ -9,7 +9,6 @@ import {
     View,
     Linking,
 } from 'react-native';
-import 'date-time-format-timezone/build/src/date-time-format-timezone-all-zones-no-locale';
 import {intlShape} from 'react-intl';
 
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
