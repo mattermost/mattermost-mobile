@@ -18,7 +18,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import {Posts} from 'mattermost-redux/constants';
 
 import CombinedSystemMessage from 'app/components/combined_system_message';
-import FileAttachmentList from 'app/components/file_attachment_list';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
 import OptionsContext from 'app/components/options_context';

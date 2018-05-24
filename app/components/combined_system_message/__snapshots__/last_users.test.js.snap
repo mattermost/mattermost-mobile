@@ -51,7 +51,7 @@ exports[`LastUsers should match snapshot 2`] = `
 >
   <InjectIntl(FormattedText)
     defaultMessage="{firstUser} and "
-    id="combined_system_message.first_user_and"
+    id="mobile.combined_system_message.first_user_and"
     values={
       Object {
         "firstUser": "User One",
@@ -67,7 +67,7 @@ exports[`LastUsers should match snapshot 2`] = `
   >
     <InjectIntl(FormattedText)
       defaultMessage="{numOthers} others "
-      id="combined_system_message.others"
+      id="mobile.combined_system_message.others"
       values={
         Object {
           "numOthers": 1,
@@ -77,7 +77,7 @@ exports[`LastUsers should match snapshot 2`] = `
   </Text>
   <InjectIntl(FormattedText)
     defaultMessage="were "
-    id="combined_system_message.were"
+    id="mobile.combined_system_message.were"
   />
   <Text
     accessible={true}
@@ -91,12 +91,12 @@ exports[`LastUsers should match snapshot 2`] = `
   >
     <InjectIntl(FormattedText)
       defaultMessage="added to the team"
-      id="combined_system_message.added_to_team"
+      id="mobile.combined_system_message.added_to_team"
     />
   </Text>
   <InjectIntl(FormattedText)
     defaultMessage=" by {actor}."
-    id="combined_system_message.by_actor"
+    id="mobile.combined_system_message.by_actor"
     values={
       Object {
         "actor": "actor",

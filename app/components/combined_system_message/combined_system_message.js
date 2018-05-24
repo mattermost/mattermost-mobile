@@ -25,129 +25,129 @@ const {
 const postTypeMessage = {
     [JOIN_CHANNEL]: {
         one: {
-            id: ['combined_system_message.first_user', 'combined_system_message.joined_channel'],
+            id: ['mobile.combined_system_message.first_user', 'mobile.combined_system_message.joined_channel'],
             defaultMessage: ['{firstUser} ', 'joined the channel'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user', 'combined_system_message.joined_channel'],
+            id: ['mobile.combined_system_message.first_user_and_second_user', 'mobile.combined_system_message.joined_channel'],
             defaultMessage: ['{firstUser} and {secondUser} ', 'joined the channel'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user', 'combined_system_message.joined_channel'],
+            id: ['mobile.combined_system_message.users_and_last_user', 'mobile.combined_system_message.joined_channel'],
             defaultMessage: ['{users} and {lastUser} ', 'joined the channel'],
         },
     },
     [ADD_TO_CHANNEL]: {
         one: {
-            id: ['combined_system_message.first_user', 'combined_system_message.added_to_channel', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.first_user', 'mobile.combined_system_message.added_to_channel', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['{firstUser} ', 'added to the channel', ' by {actor}.'],
         },
         one_you: {
-            id: ['combined_system_message.you_were', 'combined_system_message.added_to_channel', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.you_were', 'mobile.combined_system_message.added_to_channel', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['You were ', 'added to the channel', ' by {actor}.'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user', 'combined_system_message.added_to_channel', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.first_user_and_second_user', 'mobile.combined_system_message.added_to_channel', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['{firstUser} and {secondUser} ', 'added to the channel', ' by {actor}.'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user', 'combined_system_message.added_to_channel', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.users_and_last_user', 'mobile.combined_system_message.added_to_channel', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['{users} and {lastUser} ', 'added to the channel', ' by {actor}.'],
         },
     },
     [REMOVE_FROM_CHANNEL]: {
         one: {
-            id: ['combined_system_message.first_user_was', 'combined_system_message.removed_from_channel'],
+            id: ['mobile.combined_system_message.first_user_was', 'mobile.combined_system_message.removed_from_channel'],
             defaultMessage: ['{firstUser} was ', 'removed from the channel'],
         },
         one_you: {
-            id: ['combined_system_message.you_were', 'combined_system_message.removed_from_channel'],
+            id: ['mobile.combined_system_message.you_were', 'mobile.combined_system_message.removed_from_channel'],
             defaultMessage: ['You were ', 'removed from the channel'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user_were', 'combined_system_message.removed_from_channel'],
+            id: ['mobile.combined_system_message.first_user_and_second_user_were', 'mobile.combined_system_message.removed_from_channel'],
             defaultMessage: ['{firstUser} and {secondUser} were ', 'removed from the channel'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user_were', 'combined_system_message.removed_from_channel'],
+            id: ['mobile.combined_system_message.users_and_last_user_were', 'mobile.combined_system_message.removed_from_channel'],
             defaultMessage: ['{users} and {lastUser} were ', 'removed from the channel'],
         },
     },
     [LEAVE_CHANNEL]: {
         one: {
-            id: ['combined_system_message.first_user', 'combined_system_message.left_channel'],
+            id: ['mobile.combined_system_message.first_user', 'mobile.combined_system_message.left_channel'],
             defaultMessage: ['{firstUser} ', 'left the channel'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user', 'combined_system_message.left_channel'],
+            id: ['mobile.combined_system_message.first_user_and_second_user', 'mobile.combined_system_message.left_channel'],
             defaultMessage: ['{firstUser} and {secondUser} ', 'left the channel'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user', 'combined_system_message.left_channel'],
+            id: ['mobile.combined_system_message.users_and_last_user', 'mobile.combined_system_message.left_channel'],
             defaultMessage: ['{users} and {lastUser} ', 'left the channel'],
         },
     },
     [JOIN_TEAM]: {
         one: {
-            id: ['combined_system_message.first_user', 'combined_system_message.joined_team'],
+            id: ['mobile.combined_system_message.first_user', 'mobile.combined_system_message.joined_team'],
             defaultMessage: ['{firstUser} ', 'joined the team'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user', 'combined_system_message.joined_team'],
+            id: ['mobile.combined_system_message.first_user_and_second_user', 'mobile.combined_system_message.joined_team'],
             defaultMessage: ['{firstUser} and {secondUser} ', 'joined the team'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user', 'combined_system_message.joined_team'],
+            id: ['mobile.combined_system_message.users_and_last_user', 'mobile.combined_system_message.joined_team'],
             defaultMessage: ['{users} and {lastUser} ', 'joined the team'],
         },
     },
     [ADD_TO_TEAM]: {
         one: {
-            id: ['combined_system_message.first_user', 'combined_system_message.added_to_team', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.first_user', 'mobile.combined_system_message.added_to_team', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['{firstUser} ', 'added to the team', ' by {actor}.'],
         },
         one_you: {
-            id: ['combined_system_message.you_were', 'combined_system_message.added_to_team', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.you_were', 'mobile.combined_system_message.added_to_team', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['You were ', 'added to the team', ' by {actor}.'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user', 'combined_system_message.added_to_team', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.first_user_and_second_user', 'mobile.combined_system_message.added_to_team', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['{firstUser} and {secondUser} ', 'added to the team', ' by {actor}.'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user', 'combined_system_message.added_to_team', 'combined_system_message.by_actor'],
+            id: ['mobile.combined_system_message.users_and_last_user', 'mobile.combined_system_message.added_to_team', 'mobile.combined_system_message.by_actor'],
             defaultMessage: ['{users} and {lastUser} ', 'added to the team', ' by {actor}.'],
         },
     },
     [REMOVE_FROM_TEAM]: {
         one: {
-            id: ['combined_system_message.first_user_was', 'combined_system_message.removed_from_team'],
+            id: ['mobile.combined_system_message.first_user_was', 'mobile.combined_system_message.removed_from_team'],
             defaultMessage: ['{firstUser} was ', 'removed from the team'],
         },
         one_you: {
-            id: ['combined_system_message.you_were', 'combined_system_message.removed_from_team'],
+            id: ['mobile.combined_system_message.you_were', 'mobile.combined_system_message.removed_from_team'],
             defaultMessage: ['You were ', 'removed from the team'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user_were', 'combined_system_message.removed_from_team'],
+            id: ['mobile.combined_system_message.first_user_and_second_user_were', 'mobile.combined_system_message.removed_from_team'],
             defaultMessage: ['{firstUser} and {secondUser} were ', 'removed from the team'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user_were', 'combined_system_message.removed_from_team'],
+            id: ['mobile.combined_system_message.users_and_last_user_were', 'mobile.combined_system_message.removed_from_team'],
             defaultMessage: ['{users} and {lastUser} were ', 'removed from the team'],
         },
     },
     [LEAVE_TEAM]: {
         one: {
-            id: ['combined_system_message.first_user', 'combined_system_message.left_team'],
+            id: ['mobile.combined_system_message.first_user', 'mobile.combined_system_message.left_team'],
             defaultMessage: ['{firstUser} ', 'left the team'],
         },
         two: {
-            id: ['combined_system_message.first_user_and_second_user', 'combined_system_message.left_team'],
+            id: ['mobile.combined_system_message.first_user_and_second_user', 'mobile.combined_system_message.left_team'],
             defaultMessage: ['{firstUser} and {secondUser} ', 'left the team'],
         },
         many_expanded: {
-            id: ['combined_system_message.users_and_last_user', 'combined_system_message.left_team'],
+            id: ['mobile.combined_system_message.users_and_last_user', 'mobile.combined_system_message.left_team'],
             defaultMessage: ['{users} and {lastUser} ', 'left the team'],
         },
     },
@@ -207,7 +207,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
 
         const includesCurrentUser = allUserIds.includes(currentUserId);
         if (includesCurrentUser) {
-            usersDisplayName[currentUserId] = formatMessage({id: 'combined_system_message.you', defaultMessage: 'You'});
+            usersDisplayName[currentUserId] = formatMessage({id: 'mobile.combined_system_message.you', defaultMessage: 'You'});
         }
 
         return usersDisplayName;
@@ -255,7 +255,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
 
             if (
                 userIds[0] === this.props.currentUserId &&
-                ([ADD_TO_CHANNEL, ADD_TO_TEAM, REMOVE_FROM_CHANNEL, REMOVE_FROM_TEAM].includes(postType))
+                postTypeMessage[postType].one_you
             ) {
                 formattedMessage = this.renderFormattedMessage(
                     postTypeMessage[postType].one_you,

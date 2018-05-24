@@ -8,7 +8,7 @@ exports[`CombinedSystemMessage should match snapshot 1`] = `
 >
   <InjectIntl(FormattedText)
     defaultMessage="{firstUser} "
-    id="combined_system_message.first_user"
+    id="mobile.combined_system_message.first_user"
     values={
       Object {
         "firstUser": "@user1",
@@ -28,12 +28,12 @@ exports[`CombinedSystemMessage should match snapshot 1`] = `
   >
     <InjectIntl(FormattedText)
       defaultMessage="added to the team"
-      id="combined_system_message.added_to_team"
+      id="mobile.combined_system_message.added_to_team"
     />
   </Text>
   <InjectIntl(FormattedText)
     defaultMessage=" by {actor}."
-    id="combined_system_message.by_actor"
+    id="mobile.combined_system_message.by_actor"
     values={
       Object {
         "actor": "@user2",

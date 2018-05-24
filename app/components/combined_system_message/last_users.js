@@ -11,35 +11,35 @@ import FormattedText from 'app/components/formatted_text';
 
 const typeMessage = {
     [Posts.POST_TYPES.ADD_TO_CHANNEL]: {
-        id: ['combined_system_message.were', 'combined_system_message.added_to_channel', 'combined_system_message.by_actor'],
+        id: ['mobile.combined_system_message.were', 'mobile.combined_system_message.added_to_channel', 'mobile.combined_system_message.by_actor'],
         defaultMessage: ['were ', 'added to the channel', ' by {actor}.'],
     },
     [Posts.POST_TYPES.JOIN_CHANNEL]: {
-        id: ['', 'combined_system_message.joined_channel'],
+        id: ['', 'mobile.combined_system_message.joined_channel'],
         defaultMessage: ['', 'joined the channel'],
     },
     [Posts.POST_TYPES.LEAVE_CHANNEL]: {
-        id: ['', 'combined_system_message.left_channel', ''],
+        id: ['', 'mobile.combined_system_message.left_channel', ''],
         defaultMessage: ['', 'left the channel'],
     },
     [Posts.POST_TYPES.REMOVE_FROM_CHANNEL]: {
-        id: ['combined_system_message.were', 'combined_system_message.removed_from_channel'],
+        id: ['mobile.combined_system_message.were', 'mobile.combined_system_message.removed_from_channel'],
         defaultMessage: ['were ', 'removed from the channel'],
     },
     [Posts.POST_TYPES.ADD_TO_TEAM]: {
-        id: ['combined_system_message.were', 'combined_system_message.added_to_team', 'combined_system_message.by_actor'],
+        id: ['mobile.combined_system_message.were', 'mobile.combined_system_message.added_to_team', 'mobile.combined_system_message.by_actor'],
         defaultMessage: ['were ', 'added to the team', ' by {actor}.'],
     },
     [Posts.POST_TYPES.JOIN_TEAM]: {
-        id: ['', 'combined_system_message.joined_team'],
+        id: ['', 'mobile.combined_system_message.joined_team'],
         defaultMessage: ['', 'joined the team'],
     },
     [Posts.POST_TYPES.LEAVE_TEAM]: {
-        id: ['', 'combined_system_message.left_team'],
+        id: ['', 'mobile.combined_system_message.left_team'],
         defaultMessage: ['', 'left the team'],
     },
     [Posts.POST_TYPES.REMOVE_FROM_TEAM]: {
-        id: ['', 'combined_system_message.removed_from_team'],
+        id: ['', 'mobile.combined_system_message.removed_from_team'],
         defaultMessage: ['were ', 'removed from the team'],
     },
 };
@@ -100,7 +100,7 @@ export default class LastUsers extends React.PureComponent {
         return (
             <Text>
                 <FormattedText
-                    id={'combined_system_message.first_user_and'}
+                    id={'mobile.combined_system_message.first_user_and'}
                     defaultMessage={'{firstUser} and '}
                     values={{firstUser: userDisplayNames[0]}}
                 />
@@ -109,7 +109,7 @@ export default class LastUsers extends React.PureComponent {
                     onPress={this.handleOnClick}
                 >
                     <FormattedText
-                        id={'combined_system_message.others'}
+                        id={'mobile.combined_system_message.others'}
                         defaultMessage={'{numOthers} others '}
                         values={{numOthers: lastIndex}}
                     />
