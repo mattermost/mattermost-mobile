@@ -1,0 +1,79 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CombinedSystemMessage should match snapshot 1`] = `
+<Text
+  accessible={true}
+  allowFontScaling={true}
+  ellipsizeMode="tail"
+>
+  <InjectIntl(FormattedText)
+    defaultMessage="{firstUser} "
+    id="mobile.combined_system_message.first_user"
+    values={
+      Object {
+        "firstUser": "@user1",
+        "secondUser": null,
+      }
+    }
+  />
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    style={
+      Object {
+        "fontSize": 14,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="added to the team"
+      id="mobile.combined_system_message.added_to_team"
+    />
+  </Text>
+  <InjectIntl(FormattedText)
+    defaultMessage=" by {actor}."
+    id="mobile.combined_system_message.by_actor"
+    values={
+      Object {
+        "actor": "@user2",
+      }
+    }
+  />
+</Text>
+`;
+
+exports[`CombinedSystemMessage should match snapshot 2`] = `
+<Text
+  accessible={true}
+  allowFontScaling={true}
+  ellipsizeMode="tail"
+>
+  <InjectIntl(FormattedText)
+    defaultMessage="{firstUser} and {secondUser} were "
+    id="combined_system_message.first_user_and_second_user_were"
+    values={
+      Object {
+        "firstUser": "first_user",
+        "secondUser": "second_user",
+      }
+    }
+  />
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    style={
+      Object {
+        "fontSize": 14,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="removed from the team"
+      id="combined_system_message.removed_from_team"
+    />
+  </Text>
+  .
+</Text>
+`;

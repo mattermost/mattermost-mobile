@@ -1,0 +1,107 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LastUsers should match snapshot 1`] = `
+<Text
+  accessible={true}
+  allowFontScaling={true}
+  ellipsizeMode="tail"
+>
+  <InjectIntl(FormattedText)
+    defaultMessage="E"
+    id="e"
+    values={
+      Object {
+        "lastUser": "User Two",
+        "users": "User One",
+      }
+    }
+  />
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    style={
+      Object {
+        "fontSize": 14,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="x"
+      id="x"
+    />
+  </Text>
+  <InjectIntl(FormattedText)
+    defaultMessage="p"
+    id="p"
+    values={
+      Object {
+        "actor": "actor",
+      }
+    }
+  />
+</Text>
+`;
+
+exports[`LastUsers should match snapshot 2`] = `
+<Text
+  accessible={true}
+  allowFontScaling={true}
+  ellipsizeMode="tail"
+>
+  <InjectIntl(FormattedText)
+    defaultMessage="{firstUser} and "
+    id="mobile.combined_system_message.first_user_and"
+    values={
+      Object {
+        "firstUser": "User One",
+      }
+    }
+  />
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    onPress={[Function]}
+    style={1}
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="{numOthers} others "
+      id="mobile.combined_system_message.others"
+      values={
+        Object {
+          "numOthers": 1,
+        }
+      }
+    />
+  </Text>
+  <InjectIntl(FormattedText)
+    defaultMessage="were "
+    id="mobile.combined_system_message.were"
+  />
+  <Text
+    accessible={true}
+    allowFontScaling={true}
+    ellipsizeMode="tail"
+    style={
+      Object {
+        "fontSize": 14,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="added to the team"
+      id="mobile.combined_system_message.added_to_team"
+    />
+  </Text>
+  <InjectIntl(FormattedText)
+    defaultMessage=" by {actor}."
+    id="mobile.combined_system_message.by_actor"
+    values={
+      Object {
+        "actor": "actor",
+      }
+    }
+  />
+</Text>
+`;
