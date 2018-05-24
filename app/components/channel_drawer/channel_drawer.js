@@ -18,7 +18,6 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import Drawer from 'app/components/drawer';
 import SafeAreaView from 'app/components/safe_area_view';
 import {ViewTypes} from 'app/constants';
-import {alertErrorWithFallback} from 'app/utils/general';
 import tracker from 'app/utils/time_tracker';
 
 import ChannelsList from './channels_list';
@@ -69,6 +68,7 @@ export default class ChannelDrawer extends Component {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
         this.state = {
+            show: false,
             openDrawerOffset,
         };
     }
@@ -79,6 +79,7 @@ export default class ChannelDrawer extends Component {
 
     componentDidMount() {
         EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
+        EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
     }
@@ -100,7 +101,7 @@ export default class ChannelDrawer extends Component {
         const {currentTeamId, isLandscape, teamsCount} = this.props;
         const {openDrawerOffset} = this.state;
 
-        if (nextState.openDrawerOffset !== openDrawerOffset) {
+        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== this.state.show) {
             return true;
         }
 
@@ -112,6 +113,7 @@ export default class ChannelDrawer extends Component {
     componentWillUnmount() {
         EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
+        EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
         BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
     }
 
@@ -122,6 +124,10 @@ export default class ChannelDrawer extends Component {
         }
 
         return false;
+    };
+
+    handleShowDrawerContent = () => {
+        this.setState({show: true});
     };
 
     closeChannelDrawer = () => {
@@ -246,6 +252,7 @@ export default class ChannelDrawer extends Component {
         } = actions;
 
         const displayValue = {displayName: channel.display_name};
+        const utils = require('app/utils/general');
 
         let result;
         if (channel.type === General.DM_CHANNEL) {
@@ -256,7 +263,7 @@ export default class ChannelDrawer extends Component {
                     id: 'mobile.open_dm.error',
                     defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
                 };
-                alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
+                utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
             }
         } else {
             result = await joinChannel(currentUserId, currentTeamId, channel.id);
@@ -266,7 +273,7 @@ export default class ChannelDrawer extends Component {
                     id: 'mobile.join_channel.error',
                     defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
                 };
-                alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
+                utils.alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
             }
         }
 
@@ -324,8 +331,13 @@ export default class ChannelDrawer extends Component {
         } = this.props;
 
         const {
+            show,
             openDrawerOffset,
         } = this.state;
+
+        if (!show) {
+            return null;
+        }
 
         const multipleTeams = teamsCount > 1;
         const showTeams = openDrawerOffset !== 0 && multipleTeams;
@@ -403,7 +415,7 @@ export default class ChannelDrawer extends Component {
                 onClose={this.handleDrawerClose}
                 onCloseStart={this.handleDrawerCloseStart}
                 captureGestures='open'
-                type='static'
+                type={Platform.OS === 'ios' ? 'static' : 'displace'}
                 acceptTap={true}
                 acceptPanOnDrawer={false}
                 disabled={false}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -70,11 +70,11 @@ export default class Autocomplete extends PureComponent {
     keyboardDidShow = (e) => {
         const {height} = e.endCoordinates;
         this.setState({keyboardOffset: height});
-    }
+    };
 
     keyboardDidHide = () => {
         this.setState({keyboardOffset: 0});
-    }
+    };
 
     listHeight() {
         let offset = Platform.select({ios: 65, android: 75});
@@ -85,6 +85,10 @@ export default class Autocomplete extends PureComponent {
     }
 
     render() {
+        if (!this.props.value) {
+            return null;
+        }
+
         const style = getStyleFromTheme(this.props.theme);
 
         const wrapperStyle = [];

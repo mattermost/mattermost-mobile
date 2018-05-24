@@ -1,4 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 import React, {PureComponent} from 'react';
@@ -11,7 +11,7 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
@@ -28,7 +28,7 @@ const VIEWABILITY_CONFIG = {
     waitForInteraction: true,
 };
 
-class TeamsList extends PureComponent {
+export default class TeamsList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
@@ -36,10 +36,13 @@ class TeamsList extends PureComponent {
         closeChannelDrawer: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
-        intl: intlShape.isRequired,
         navigator: PropTypes.object.isRequired,
         teamIds: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -64,7 +67,8 @@ class TeamsList extends PureComponent {
     };
 
     goToSelectTeam = preventDoubleTap(() => {
-        const {currentUrl, intl, navigator, theme} = this.props;
+        const {intl} = this.context;
+        const {currentUrl, navigator, theme} = this.props;
 
         navigator.showModal({
             screen: 'SelectTeam',
@@ -195,5 +199,3 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-export default injectIntl(TeamsList);

@@ -81,6 +81,8 @@ export default class Channel extends PureComponent {
         if (tracker.initialLoad) {
             this.props.actions.recordLoadTime('Start time', 'initialLoad');
         }
+
+        EventEmitter.emit('renderDrawer');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -99,9 +101,14 @@ export default class Channel extends PureComponent {
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         if (tracker.teamSwitch) {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
+        }
+
+        // When the team changes emit the event to render the drawer content
+        if (this.props.currentChannelId && !prevProps.currentChannelId) {
+            EventEmitter.emit('renderDrawer');
         }
     }
 
