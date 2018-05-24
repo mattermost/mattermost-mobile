@@ -32,10 +32,16 @@ export default class ChannelItem extends PureComponent {
         navigator: PropTypes.object,
         onSelectChannel: PropTypes.func.isRequired,
         shouldHideChannel: PropTypes.bool,
+        showUnreadForMsgs: PropTypes.bool.isRequired,
         status: PropTypes.string,
         teammateDeletedAt: PropTypes.number,
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        unreadMsgs: PropTypes.number.isRequired,
+    };
+
+    static defaultProps = {
+        mentions: 0,
     };
 
     static contextTypes = {
@@ -73,6 +79,10 @@ export default class ChannelItem extends PureComponent {
         this.previewRef = ref;
     };
 
+    showChannelAsUnread = () => {
+        return this.props.mentions > 0 || (this.props.unreadMsgs > 0 && this.props.showUnreadForMsgs);
+    };
+
     render() {
         const {
             channelId,
@@ -89,7 +99,7 @@ export default class ChannelItem extends PureComponent {
             type,
         } = this.props;
 
-        if (shouldHideChannel) {
+        if (!this.showChannelAsUnread() && shouldHideChannel) {
             return null;
         }
 

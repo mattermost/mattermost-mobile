@@ -4,7 +4,12 @@
 import {connect} from 'react-redux';
 
 import {General} from 'mattermost-redux/constants';
-import {getCurrentChannelId, makeGetChannel, getMyChannelMember, isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
+import {
+    getCurrentChannelId,
+    makeGetChannel,
+    getMyChannelMember,
+    shouldHideDefaultChannel,
+} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isChannelMuted} from 'mattermost-redux/utils/channel_utils';
@@ -29,21 +34,44 @@ function makeMapStateToProps() {
             }
         }
 
-        const isReadOnly = isChannelReadOnlyById(state, channel.id);
-        const shouldHideChannel = !ownProps.isSearchResult && !ownProps.isFavorite && isReadOnly;
+        const currentChannelId = getCurrentChannelId(state);
+        const isActive = ownProps.channelId === currentChannelId;
+
+        let shouldHideChannel = false;
+        if (
+            channel.name === General.DEFAULT_CHANNEL &&
+            !isActive &&
+            !ownProps.isFavorite &&
+            !ownProps.isSearchResult &&
+            shouldHideDefaultChannel(state, channel)
+        ) {
+            shouldHideChannel = true;
+        }
+
+        let unreadMsgs = 0;
+        if (member && channel) {
+            unreadMsgs = Math.max(channel.total_msg_count - member.msg_count, 0);
+        }
+
+        let showUnreadForMsgs = true;
+        if (member && member.notify_props) {
+            showUnreadForMsgs = member.notify_props.mark_unread !== General.MENTION;
+        }
 
         return {
-            currentChannelId: getCurrentChannelId(state),
+            currentChannelId,
             displayName: channel.display_name,
             fake: channel.fake,
             isChannelMuted: isChannelMuted(member),
             isMyUser,
             mentions: member ? member.mention_count : 0,
             shouldHideChannel,
+            showUnreadForMsgs,
             status: channel.status,
             teammateDeletedAt,
             theme: getTheme(state),
             type: channel.type,
+            unreadMsgs,
         };
     };
 }
