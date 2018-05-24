@@ -21,9 +21,6 @@ const {View: AnimatedView} = Animated;
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            addHiddenDefaultChannel: PropTypes.func.isRequired,
-        }).isRequired,
         channelId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
@@ -37,32 +34,19 @@ export default class ChannelItem extends PureComponent {
         shouldHideChannel: PropTypes.bool,
         showUnreadForMsgs: PropTypes.bool.isRequired,
         status: PropTypes.string,
-        teamId: PropTypes.string,
         teammateDeletedAt: PropTypes.number,
         type: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
     };
 
+    static defaultProps = {
+        mentions: 0,
+    };
+
     static contextTypes = {
         intl: intlShape,
     };
-
-    componentDidMount() {
-        if (this.props.shouldHideChannel && !this.showChannelAsUnread()) {
-            this.props.actions.addHiddenDefaultChannel(this.props.teamId, this.props.channelId);
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (
-            nextProps.shouldHideChannel !== this.props.shouldHideChannel &&
-            nextProps.shouldHideChannel &&
-            !this.showChannelAsUnread()
-        ) {
-            nextProps.actions.addHiddenDefaultChannel(nextProps.teamId, nextProps.channelId);
-        }
-    }
 
     onPress = preventDoubleTap(() => {
         const {channelId, currentChannelId, displayName, fake, onSelectChannel, type} = this.props;

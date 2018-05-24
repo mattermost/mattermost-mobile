@@ -19,7 +19,7 @@ import {General} from 'mattermost-redux/constants';
 import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
-import ChannelDrawerItem from 'app/components/channel_drawer/channels_list/channel_item';
+import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
@@ -109,7 +109,7 @@ class FilteredList extends Component {
 
     createChannelElement = (channel) => {
         return (
-            <ChannelDrawerItem
+            <ChannelItem
                 ref={channel.id}
                 channelId={channel.id}
                 channel={channel}

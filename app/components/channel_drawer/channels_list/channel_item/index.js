@@ -2,16 +2,13 @@
 // See License.txt for license information.
 
 import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
 
 import {General} from 'mattermost-redux/constants';
-
-import {addHiddenDefaultChannel} from 'mattermost-redux/actions/channels';
 import {
     getCurrentChannelId,
     makeGetChannel,
     getMyChannelMember,
-    isChannelHidden,
+    shouldHideDefaultChannel,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
@@ -40,8 +37,16 @@ function makeMapStateToProps() {
         const currentChannelId = getCurrentChannelId(state);
         const isActive = ownProps.channelId === currentChannelId;
 
-        const isHidden = isChannelHidden(state, channel);
-        const shouldHideChannel = !ownProps.isSearchResult && !ownProps.isFavorite && isHidden && !isActive;
+        let shouldHideChannel = false;
+        if (
+            channel.name === General.DEFAULT_CHANNEL &&
+            !isActive &&
+            !ownProps.isFavorite &&
+            !ownProps.isSearchResult &&
+            shouldHideDefaultChannel(state, channel)
+        ) {
+            shouldHideChannel = true;
+        }
 
         let unreadMsgs = 0;
         if (member && channel) {
@@ -63,7 +68,6 @@ function makeMapStateToProps() {
             shouldHideChannel,
             showUnreadForMsgs,
             status: channel.status,
-            teamId: channel.team_id,
             teammateDeletedAt,
             theme: getTheme(state),
             type: channel.type,
@@ -72,12 +76,4 @@ function makeMapStateToProps() {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            addHiddenDefaultChannel,
-        }, dispatch),
-    };
-}
-
-export default connect(makeMapStateToProps, mapDispatchToProps)(ChannelItem);
+export default connect(makeMapStateToProps)(ChannelItem);

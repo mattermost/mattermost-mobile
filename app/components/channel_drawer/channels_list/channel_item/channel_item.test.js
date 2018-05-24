@@ -12,9 +12,6 @@ jest.mock('react-intl');
 
 describe('ChannelItem', () => {
     const baseProps = {
-        actions: {
-            addHiddenDefaultChannel: () => {},  // eslint-disable-line
-        },
         channelId: 'channel_id',
         currentChannelId: 'current_channel_id',
         displayName: 'display_name',
@@ -28,7 +25,6 @@ describe('ChannelItem', () => {
         shouldHideChannel: false,
         showUnreadForMsgs: true,
         status: 'online',
-        teamId: 'team_id',
         teammateDeletedAt: 0,
         type: 'O',
         theme: {
@@ -47,24 +43,5 @@ describe('ChannelItem', () => {
         );
 
         expect(wrapper).toMatchSnapshot();
-    });
-
-    test('should call actions.addHiddenDefaultChannel on componentDidMount and componentWillReceiveProps', () => {
-        const props = {...baseProps, unreadMsgs: 0, shouldHideChannel: true, actions: {addHiddenDefaultChannel: jest.fn()}};
-        const wrapper = shallow(
-            <ChannelItem {...props}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        // on componentDidMount
-        expect(props.actions.addHiddenDefaultChannel).toHaveBeenCalledTimes(1);
-        expect(props.actions.addHiddenDefaultChannel).toHaveBeenCalledWith(props.teamId, props.channelId);
-        expect(wrapper.instance().showChannelAsUnread()).toEqual(false);
-
-        // on componentWillReceiveProps
-        wrapper.setProps({mentions: 1});
-        expect(props.actions.addHiddenDefaultChannel).toHaveBeenCalledTimes(1);
-        expect(props.actions.addHiddenDefaultChannel).toHaveBeenCalledWith(props.teamId, props.channelId);
-        expect(wrapper.instance().showChannelAsUnread()).toEqual(true);
     });
 });

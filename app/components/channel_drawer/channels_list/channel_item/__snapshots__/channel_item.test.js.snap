@@ -5,11 +5,6 @@ ShallowWrapper {
   "length": 1,
   Symbol(enzyme.__root__): [Circular],
   Symbol(enzyme.__unrendered__): <ChannelItem
-    actions={
-      Object {
-        "addHiddenDefaultChannel": [Function],
-      }
-    }
     channelId="channel_id"
     currentChannelId="current_channel_id"
     displayName="display_name"
@@ -27,7 +22,6 @@ ShallowWrapper {
     shouldHideChannel={false}
     showUnreadForMsgs={true}
     status="online"
-    teamId="team_id"
     teammateDeletedAt={0}
     theme={
       Object {
