@@ -6,36 +6,40 @@ import {bindActionCreators} from 'redux';
 
 import {createPost, deletePost, removePost} from 'mattermost-redux/actions/posts';
 import {getCurrentChannelId, isCurrentChannelReadOnly} from 'mattermost-redux/selectors/entities/channels';
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
+import {getPost, makeGetCommentCountForPost} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {canDeletePost, canEditPost, isPostFlagged} from 'mattermost-redux/utils/post_utils';
+import {canDeletePost, canEditPost, isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
+import {Posts} from 'mattermost-redux/constants';
+
 
 import Post from './post';
 
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
-
     const {config, license} = state.entities.general;
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const myPreferences = getMyPreferences(state);
     const currentUserId = getCurrentUserId(state);
     const currentTeamId = getCurrentTeamId(state);
     const currentChannelId = getCurrentChannelId(state);
+    const getCommentCountForPost = makeGetCommentCountForPost();
 
     let isFirstReply = true;
     let isLastReply = true;
+    let isConsecutivePost = false;
     let commentedOnPost = null;
+    let hasComments = getCommentCountForPost(state, {post}) > 0;
+
     if (ownProps.renderReplies && post && post.root_id) {
         if (ownProps.previousPostId) {
             const previousPost = getPost(state, ownProps.previousPostId);
-
             if (previousPost && (previousPost.id === post.root_id || previousPost.root_id === post.root_id)) {
                 // Previous post is root post or previous post is in same thread
                 isFirstReply = false;
@@ -51,6 +55,21 @@ function mapStateToProps(state, ownProps) {
             if (nextPost && nextPost.root_id === post.root_id) {
                 isLastReply = false;
             }
+        }
+    }
+
+    const previousPost = ownProps.previousPostId && getPost(state, ownProps.previousPostId);
+    if (previousPost) {
+        const postFromWebhook = Boolean(post.props && post.props.from_webhook);
+        const prevPostFromWebhook = Boolean(previousPost.props && previousPost.props.from_webhook);
+
+        if (previousPost && previousPost.user_id === post.user_id &&
+            post.create_at - previousPost.create_at <= Posts.POST_COLLAPSE_TIMEOUT &&
+            !postFromWebhook && !prevPostFromWebhook &&
+            !isSystemMessage(post) && !isSystemMessage(previousPost)
+            && previousPost.root_id === post.root_id) {
+            // The last post and this post were made by the same user within some time
+            isConsecutivePost = true;
         }
     }
 
@@ -77,6 +96,8 @@ function mapStateToProps(state, ownProps) {
         post,
         isFirstReply,
         isLastReply,
+        isConsecutivePost,
+        hasComments,
         commentedOnPost,
         license,
         theme: getTheme(state),
