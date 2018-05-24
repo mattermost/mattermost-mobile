@@ -4,8 +4,10 @@
 import {getDataRetentionPolicy} from 'mattermost-redux/actions/general';
 import {GeneralTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
+import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
+import {app} from 'app/mattermost';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -27,9 +29,14 @@ export function handlePasswordChanged(password) {
 
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {
-        const {config, license} = getState().entities.general;
+        const state = getState();
+        const {config, license} = state.entities.general;
         const token = Client4.getToken();
         const url = Client4.getUrl();
+        const deviceToken = state.entities.general.deviceToken;
+        const currentUserId = getCurrentUserId(state);
+
+        app.setAppCredentials(deviceToken, currentUserId, token, url);
 
         dispatch({
             type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
