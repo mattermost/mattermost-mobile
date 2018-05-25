@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelLoader extends PureComponent {
     static propTypes = {
+        backgroundColor: PropTypes.string,
         channelIsLoading: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -45,10 +46,16 @@ export default class ChannelLoader extends PureComponent {
         }
 
         const style = getStyleSheet(theme);
+        const bg = this.props.backgroundColor || theme.centerChannelBg;
 
         return (
             <View style={[style.container]}>
-                {Array(6).fill().map((item, index) => this.buildSections({key: index, style, bg: theme.centerChannelBg, color: theme.centerChannelColor}))}
+                {Array(6).fill().map((item, index) => this.buildSections({
+                    key: index,
+                    style,
+                    bg,
+                    color: theme.centerChannelColor,
+                }))}
             </View>
         );
     }

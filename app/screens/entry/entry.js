@@ -263,7 +263,12 @@ export default class Entry extends PureComponent {
                 </View>
             );
 
-            loading = <ChannelLoader channelIsLoading={true}/>;
+            loading = (
+                <ChannelLoader
+                    backgroundColor={backgroundColor}
+                    channelIsLoading={true}
+                />
+            );
         } else {
             loading = <Loading/>;
         }
