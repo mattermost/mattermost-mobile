@@ -22,6 +22,7 @@ import {loadFromPushNotification} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import {stripTrailingSlashes} from 'app/utils/url';
+import {wrapWithContextProvider} from 'app/utils/wrap_context_provider';
 
 import ChannelLoader from 'app/components/channel_loader';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
@@ -212,22 +213,21 @@ export default class Entry extends PureComponent {
 
     renderLogin = () => {
         const SelectServer = lazyLoadSelectServer();
-        return (
-            <SelectServer
-                navigator={this.props.navigator}
-                allowOtherServers={app.allowOtherServers}
-            />
-        );
+        const props = {
+            allowOtherServers: app.allowOtherServers,
+            navigator: this.props.navigator,
+        };
+
+        return wrapWithContextProvider(SelectServer)(props);
     };
 
     renderChannel = () => {
         const ChannelScreen = lazyLoadChannel();
+        const props = {
+            navigator: this.props.navigator,
+        };
 
-        return (
-            <ChannelScreen
-                navigator={this.props.navigator}
-            />
-        );
+        return wrapWithContextProvider(ChannelScreen, true)(props);
     };
 
     render() {
@@ -263,11 +263,7 @@ export default class Entry extends PureComponent {
                 </View>
             );
 
-            loading = (
-                <View>
-                    <ChannelLoader channelIsLoading={true}/>
-                </View>
-            );
+            loading = <ChannelLoader channelIsLoading={true}/>;
         } else {
             loading = <Loading/>;
         }

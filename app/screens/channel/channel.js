@@ -13,6 +13,7 @@ import {
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import ChannelDrawer from 'app/components/channel_drawer';
+import EmptyToolbar from 'app/components/start/empty_toolbar';
 import SettingsDrawer from 'app/components/settings_drawer';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import OfflineIndicator from 'app/components/offline_indicator';
@@ -47,6 +48,7 @@ export default class Channel extends PureComponent {
         currentChannelId: PropTypes.string,
         channelsRequestFailed: PropTypes.bool,
         currentTeamId: PropTypes.string,
+        isLandscape: PropTypes.bool,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
@@ -257,9 +259,15 @@ export default class Channel extends PureComponent {
 
             const Loading = require('app/components/channel_loader').default;
             return (
-                <View style={style.loading}>
-                    <Loading channelIsLoading={true}/>
-                </View>
+                <SafeAreaView navigator={navigator}>
+                    <View style={style.loading}>
+                        <EmptyToolbar
+                            theme={theme}
+                            isLandscape={this.props.isLandscape}
+                        />
+                        <Loading channelIsLoading={true}/>
+                    </View>
+                </SafeAreaView>
             );
         }
 
