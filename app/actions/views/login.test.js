@@ -18,6 +18,12 @@ jest.mock('react-native-fetch-blob/fs', () => ({
     },
 }));
 
+jest.mock('app/mattermost', () => ({
+    app: {
+        setAppCredentials: () => jest.fn(),
+    },
+}));
+
 const mockStore = configureStore([thunk]);
 
 describe('Actions.Views.Login', () => {
