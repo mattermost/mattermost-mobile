@@ -41,6 +41,7 @@ export default class PostList extends PureComponent {
         indicateNewMessages: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
+        loadMorePostsVisible: PropTypes.bool,
         measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
         onEndReached: PropTypes.func,
@@ -249,8 +250,7 @@ export default class PostList extends PureComponent {
 
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
-            this.moreNewMessages = this.props.postIds.length === index + 2;
-
+            this.moreNewMessages = this.props.loadMorePostsVisible && this.props.postIds.length === index + 2;
             this.itemMeasurements[index] = NEW_MESSAGES_HEIGHT;
             return (
                 <NewMessagesDivider

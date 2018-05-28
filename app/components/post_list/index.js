@@ -9,6 +9,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {loadChannelsByTeamName, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from 'app/selectors/post_list';
+import {getLoadMorePostsVisible} from 'app/selectors/channel';
 
 import PostList from './post_list';
 
@@ -22,6 +23,7 @@ function makeMapStateToProps() {
 
         return {
             deviceHeight,
+            loadMorePostsVisible: getLoadMorePostsVisible(state),
             measureCellLayout,
             postIds,
             theme: getTheme(state),
