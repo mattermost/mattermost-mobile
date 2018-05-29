@@ -49,7 +49,7 @@ export default class ChannelLoader extends PureComponent {
         const bg = this.props.backgroundColor || theme.centerChannelBg;
 
         return (
-            <View style={[style.container]}>
+            <View style={style.container}>
                 {Array(6).fill().map((item, index) => this.buildSections({
                     key: index,
                     style,
