@@ -1,27 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
 import {Navigation} from 'react-native-navigation';
 
 import Channel from 'app/screens/channel';
 import Entry from 'app/screens/entry';
 import SelectServer from 'app/screens/select_server';
-import IntlWrapper from 'app/components/root';
-
-function wrapWithContextProvider(Comp, excludeEvents = true) {
-    return (props) => { //eslint-disable-line react/display-name
-        const {navigator} = props; //eslint-disable-line react/prop-types
-        return (
-            <IntlWrapper
-                navigator={navigator}
-                excludeEvents={excludeEvents}
-            >
-                <Comp {...props}/>
-            </IntlWrapper>
-        );
-    };
-}
+import {wrapWithContextProvider} from 'app/utils/wrap_context_provider';
 
 export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapWithContextProvider(require('app/screens/about').default), store, Provider);
@@ -40,7 +25,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditChannel', () => wrapWithContextProvider(require('app/screens/edit_channel').default), store, Provider);
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(require('app/screens/edit_post').default), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(require('app/screens/edit_profile').default), store, Provider);
-    Navigation.registerComponent('Entry', () => wrapWithContextProvider(Entry), store, Provider);
+    Navigation.registerComponent('Entry', () => Entry, store, Provider);
     Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(require('app/screens/flagged_posts').default), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(require('app/screens/image_preview').default), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(require('app/screens/login').default), store, Provider);

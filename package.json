@@ -61,6 +61,7 @@
     "redux-persist-transform-filter": "0.0.16",
     "redux-thunk": "2.2.0",
     "reselect": "3.0.1",
+    "rn-placeholder": "github:enahum/rn-placeholder#4b065f892d7a7f9d921a969f2e72e609ebc0a212",
     "semver": "5.5.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.1",
