@@ -42,9 +42,9 @@ export function handleSuccessfulLogin() {
 
         app.setAppCredentials(deviceToken, currentUserId, token, url);
 
-        const enableTimezone = isTimezoneEnabled(getState());
+        const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
-            autoUpdateTimezone(getDeviceTimezone())(dispatch, getState);
+            dispatch(autoUpdateTimezone(getDeviceTimezone()));
         }
 
         dispatch({

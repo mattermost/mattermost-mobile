@@ -66,10 +66,6 @@ export default class Timezone extends PureComponent {
         this.setState({value});
     };
 
-    attachList = (l) => {
-        this.list = l;
-    };
-
     keyExtractor = (item) => item;
 
     getItemLayout = (data, index) => ({
@@ -125,7 +121,6 @@ export default class Timezone extends PureComponent {
                     />
                 </View>
                 <FlatList
-                    ref={this.attachList}
                     data={this.filteredTimezones(value)}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
