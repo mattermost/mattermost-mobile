@@ -23,12 +23,17 @@ export default class FormattedTime extends React.PureComponent {
             value,
             children,
             timeZone,
-            ...props
+            hour12,
         } = this.props;
         const {intl} = this.context;
 
         const timezoneProps = timeZone ? {timeZone} : {};
-        const formattedTime = intl.formatDate(value, {...props, ...timezoneProps, hour: 'numeric', minute: 'numeric'});
+        const formattedTime = intl.formatDate(value, {
+            ...timezoneProps,
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12,
+        });
 
         if (typeof children === 'function') {
             return children(formattedTime);
