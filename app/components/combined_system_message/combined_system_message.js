@@ -179,14 +179,17 @@ export default class CombinedSystemMessage extends React.PureComponent {
     }
 
     componentDidMount() {
-        this.loadUserProfiles();
+        this.loadUserProfiles(this.props.allUserIds);
     }
 
-    loadUserProfiles = async () => {
-        const {
-            actions,
-            allUserIds,
-        } = this.props;
+    componentWillReceiveProps(nextProps) {
+        if (this.props.allUserIds !== nextProps.allUserIds) {
+            this.loadUserProfiles(nextProps.allUserIds);
+        }
+    }
+
+    loadUserProfiles = async (allUserIds) => {
+        const {actions} = this.props;
         const {data: userProfiles} = await actions.getProfilesByIds(allUserIds);
 
         this.setState({userProfiles});
