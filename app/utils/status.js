@@ -7,7 +7,7 @@ import {
 import {toTitleCase} from 'app/utils/general';
 
 export function confirmOutOfOfficeDisabled(intl, status, updateStatus) {
-    const userStatusId = 'mobile.reset_status.message_' + status;
+    const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
 
     let normalizeStatus = status;
     if (status === 'dnd') {
@@ -17,11 +17,11 @@ export function confirmOutOfOfficeDisabled(intl, status, updateStatus) {
     Alert.alert(
         intl.formatMessage({
             id: 'mobile.reset_status.title_ooo',
-            defaultMessage: 'You are "Out Of Office"',
+            defaultMessage: 'Disable "Out Of Office"?',
         }),
         intl.formatMessage({
             id: userStatusId,
-            defaultMessage: 'Would you like to switch your status to "{status}"?',
+            defaultMessage: 'Would you like to switch your status to "{status}" and disable Automatic Replies?',
         }, {status: toTitleCase(normalizeStatus)}),
         [{
             text: intl.formatMessage({id: 'mobile.reset_status.alert_cancel', defaultMessage: 'Cancel'}),
