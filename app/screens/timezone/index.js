@@ -7,31 +7,17 @@ import {bindActionCreators} from 'redux';
 import {getSupportedTimezones} from 'mattermost-redux/actions/general';
 import {getSupportedTimezones as getTimezones} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getUserTimezone} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {updateUser} from 'app/actions/views/edit_profile';
 
 import Timezone from './timezone';
 
-const getTimezone = (user) => {
-    if (user && user.timezone) {
-        return {
-            ...user.timezone,
-            useAutomaticTimezone: user.timezone.useAutomaticTimezone === 'true',
-        };
-    }
-
-    return {
-        useAutomaticTimezone: true,
-        automaticTimezone: '',
-        manualTimezone: '',
-    };
-};
-
 function mapStateToProps(state) {
     const timezones = getTimezones(state);
     const currentUser = getCurrentUser(state);
-    const userTimezone = getTimezone(currentUser);
+    const userTimezone = getUserTimezone(state, currentUser.id);
 
     return {
         user: currentUser,
