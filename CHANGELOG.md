@@ -1,5 +1,16 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.9.0 Release
+- Release Date: June 16, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+### Improvements
+
+### Bug Fixes
+
+
 ## v1.8.0 Release
 - Release Date: April 27, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
