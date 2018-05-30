@@ -6,10 +6,23 @@
 
 ### Highlights
 
+#### Android Push notification styling improvements
+
+#### Push notification styling improvements
+
 ### Improvements
+
+ - Combined join/leave messages.
+ - Entry screen and channel loader improvements.
+ - Removed desktop duration on notify props.
+ - Added ability to upload other file types.
+ - Cache team icon and set background to always be white.
+ - Added whitelabel for icons and splash screen.
 
 ### Bug Fixes
 
+ - Fixed an issue where other user's display name did not render in combined system messages after joining the channel.
+ - Fixed an issue with reading messages in Town Square if the channel was hidden.
 
 ## v1.8.0 Release
 - Release Date: April 27, 2018
