@@ -3,7 +3,14 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Clipboard, Platform, TouchableHighlight, View, ViewPropTypes} from 'react-native';
+import {
+    Alert,
+    Clipboard,
+    Platform,
+    TouchableHighlight,
+    View,
+    ViewPropTypes,
+} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
@@ -44,7 +51,7 @@ export default class Post extends PureComponent {
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
-        isConsecutiveReply: PropTypes.bool,
+        consecutivePost: PropTypes.bool,
         hasComments: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
@@ -390,7 +397,7 @@ export default class Post extends PureComponent {
             showLongPost,
             theme,
             managedConfig,
-            isConsecutivePost,
+            consecutivePost,
             hasComments,
             isFlagged,
         } = this.props;
@@ -404,13 +411,18 @@ export default class Post extends PureComponent {
         const highlighted = highlight ? style.highlight : null;
         const isReplyPost = this.isReplyPost();
         const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
-        const mergeMessage = isConsecutivePost && !hasComments;
+        const mergeMessage = consecutivePost && !hasComments;
+
         // postWidth = deviceWidth - profilePic width - profilePictureContainer margins - right column margin
         const postWidth = this.props.deviceWidth - 66;
-        
-        return (
-            <View style={[style.container, this.props.style, highlighted, selected]}>
-                {mergeMessage ? <View style={style.consecutivePostContainer}/> :
+
+        let postHeader;
+        let userProfile;
+
+        if (mergeMessage) {
+            userProfile = <View style={style.consecutivePostContainer}/>;
+        } else {
+            userProfile = (
                 <TouchableHighlight
                     style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}
                     onPress={this.handlePress}
@@ -423,23 +435,32 @@ export default class Post extends PureComponent {
                         onViewUserProfile={this.viewUserProfile}
                         postId={post.id}
                     />
-                </TouchableHighlight>}
+                </TouchableHighlight>
+            );
+            postHeader = (
+                <PostHeader
+                    postId={post.id}
+                    commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
+                    createAt={post.create_at}
+                    isSearchResult={isSearchResult}
+                    shouldRenderReplyButton={shouldRenderReplyButton}
+                    showFullDate={showFullDate}
+                    onPress={this.handleReply}
+                    onUsernamePress={onUsernamePress}
+                    renderReplies={renderReplies}
+                    theme={theme}
+                    isFlagged={isFlagged}
+                />
+            );
+        }
+
+        return (
+            <View style={[style.container, this.props.style, highlighted, selected]}>
+                {userProfile}
                 <View style={style.messageContainerWithReplyBar}>
                     {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
-                        {mergeMessage || <PostHeader
-                            postId={post.id}
-                            commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
-                            createAt={post.create_at}
-                            isSearchResult={isSearchResult}
-                            shouldRenderReplyButton={shouldRenderReplyButton}
-                            showFullDate={showFullDate}
-                            onPress={this.handleReply}
-                            onUsernamePress={onUsernamePress}
-                            renderReplies={renderReplies}
-                            theme={theme}
-                            isFlagged={isFlagged}
-                        />}
+                        {postHeader}
                         <View style={{maxWidth: postWidth}}>
                             <PostBody
                                 ref={'postBody'}
