@@ -69,7 +69,7 @@ export default class LastUsers extends React.PureComponent {
 
     renderExpandedView = (expandedLocale, userDisplayNames, actor, lastIndex, style) => {
         return (
-            <Text>
+            <Text style={style.text}>
                 <FormattedText
                     id={expandedLocale.id[0]}
                     defaultMessage={expandedLocale.defaultMessage[0]}
@@ -98,7 +98,7 @@ export default class LastUsers extends React.PureComponent {
 
     renderCollapsedView = (postType, userDisplayNames, actor, lastIndex, style) => {
         return (
-            <Text>
+            <Text style={style.text}>
                 <FormattedText
                     id={'mobile.combined_system_message.first_user_and'}
                     defaultMessage={'{firstUser} and '}

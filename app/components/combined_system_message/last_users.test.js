@@ -17,7 +17,7 @@ describe('LastUsers', () => {
         actor: 'actor',
         expandedLocale: {id: 'expanded_locale_id', defaultMessage: 'Expanded Locale'},
         postType: Posts.POST_TYPES.ADD_TO_TEAM,
-        style: {activityType: {fontSize: 14}, link: 1},
+        style: {activityType: {fontSize: 14}, link: 1, text: {opacity: 0.6}},
         userDisplayNames: ['User One', 'User Two'],
     };
 
