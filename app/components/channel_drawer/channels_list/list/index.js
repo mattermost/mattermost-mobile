@@ -34,6 +34,7 @@ function mapStateToProps(state) {
 
     return {
         canCreatePrivateChannels: showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin),
+        canCreatePublicChannels: showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin),
         unreadChannelIds,
         favoriteChannelIds,
         publicChannelIds,
