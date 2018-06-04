@@ -19,6 +19,7 @@ describe('CombinedSystemMessage', () => {
         },
         allUserIds: ['user_id_1', 'user_id_2', 'user_id_3'],
         currentUserId: 'user_id_3',
+        currentUsername: 'username_3',
         linkStyle: 1,
         messageData: [
             {postType: Posts.POST_TYPES.ADD_TO_TEAM, userIds: ['user_id_1'], actorId: 'user_id_2'},
@@ -38,7 +39,7 @@ describe('CombinedSystemMessage', () => {
         wrapper.setState({userProfiles: [{id: 'user_id_1', username: 'user1'}, {id: 'user_id_2', username: 'user2'}, {id: 'user_id_3', username: 'user3'}]});
 
         const {postType, userIds, actorId} = baseProps.messageData[0];
-        expect(wrapper.instance().renderSystemMessage(postType, userIds, actorId, {activityType: {fontSize: 14}}, 1)).toMatchSnapshot();
+        expect(wrapper.instance().renderSystemMessage(postType, userIds, actorId, {activityType: {fontSize: 14}, text: {opacity: 0.6}}, 1)).toMatchSnapshot();
 
         // on componentDidMount
         expect(props.actions.getProfilesByIds).toHaveBeenCalledTimes(1);
@@ -59,6 +60,6 @@ describe('CombinedSystemMessage', () => {
         );
 
         wrapper.setState({userProfiles: [{id: 'user_id_1', username: 'user1'}, {id: 'user_id_2', username: 'user2'}, {id: 'user_id_3', username: 'user3'}]});
-        expect(wrapper.instance().renderFormattedMessage(localeFormat, 'first_user', 'second_user', 'actor', {activityType: {fontSize: 14}})).toMatchSnapshot();
+        expect(wrapper.instance().renderFormattedMessage(localeFormat, 'first_user', 'second_user', 'actor', {activityType: {fontSize: 14}, text: {opacity: 0.6}})).toMatchSnapshot();
     });
 });

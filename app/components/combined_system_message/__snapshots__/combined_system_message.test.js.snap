@@ -5,6 +5,11 @@ exports[`CombinedSystemMessage should match snapshot 1`] = `
   accessible={true}
   allowFontScaling={true}
   ellipsizeMode="tail"
+  style={
+    Object {
+      "opacity": 0.6,
+    }
+  }
 >
   <InjectIntl(FormattedText)
     defaultMessage="{firstUser} "
@@ -48,6 +53,11 @@ exports[`CombinedSystemMessage should match snapshot 2`] = `
   accessible={true}
   allowFontScaling={true}
   ellipsizeMode="tail"
+  style={
+    Object {
+      "opacity": 0.6,
+    }
+  }
 >
   <InjectIntl(FormattedText)
     defaultMessage="{firstUser} and {secondUser} were "

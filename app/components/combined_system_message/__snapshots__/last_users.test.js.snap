@@ -5,6 +5,11 @@ exports[`LastUsers should match snapshot 1`] = `
   accessible={true}
   allowFontScaling={true}
   ellipsizeMode="tail"
+  style={
+    Object {
+      "opacity": 0.6,
+    }
+  }
 >
   <InjectIntl(FormattedText)
     defaultMessage="E"
@@ -48,6 +53,11 @@ exports[`LastUsers should match snapshot 2`] = `
   accessible={true}
   allowFontScaling={true}
   ellipsizeMode="tail"
+  style={
+    Object {
+      "opacity": 0.6,
+    }
+  }
 >
   <InjectIntl(FormattedText)
     defaultMessage="{firstUser} and "
