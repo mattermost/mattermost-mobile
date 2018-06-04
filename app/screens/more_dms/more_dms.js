@@ -382,11 +382,12 @@ class MoreDirectMessages extends PureComponent {
     makeDirectChannel = async (id) => {
         const {
             actions,
+            allProfiles,
             intl,
             teammateNameDisplay,
         } = this.props;
 
-        const user = this.state.profiles[id];
+        const user = allProfiles[id];
 
         const displayName = displayUsername(user, teammateNameDisplay);
         actions.setChannelDisplayName(displayName);
