@@ -31,6 +31,7 @@ let UnreadIndicator = null;
 export default class List extends PureComponent {
     static propTypes = {
         canCreatePrivateChannels: PropTypes.bool.isRequired,
+        canCreatePublicChannels: PropTypes.bool.isRequired,
         directChannelIds: PropTypes.array.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         navigator: PropTypes.object,
@@ -63,6 +64,7 @@ export default class List extends PureComponent {
     componentWillReceiveProps(nextProps) {
         const {
             canCreatePrivateChannels,
+            canCreatePublicChannels,
             directChannelIds,
             favoriteChannelIds,
             publicChannelIds,
@@ -71,6 +73,7 @@ export default class List extends PureComponent {
         } = this.props;
 
         if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            nextProps.canCreatePublicChannels !== canCreatePublicChannels ||
             nextProps.directChannelIds !== directChannelIds || nextProps.favoriteChannelIds !== favoriteChannelIds ||
             nextProps.publicChannelIds !== publicChannelIds || nextProps.privateChannelIds !== privateChannelIds ||
             nextProps.unreadChannelIds !== unreadChannelIds) {
@@ -90,6 +93,7 @@ export default class List extends PureComponent {
     buildSections = (props) => {
         const {
             canCreatePrivateChannels,
+            canCreatePublicChannels,
             directChannelIds,
             favoriteChannelIds,
             publicChannelIds,
@@ -120,7 +124,7 @@ export default class List extends PureComponent {
         }
 
         sections.push({
-            action: this.goToMoreChannels,
+            action: canCreatePublicChannels ? this.goToMoreChannels : null,
             id: 'sidebar.channels',
             defaultMessage: 'PUBLIC CHANNELS',
             data: publicChannelIds,
@@ -354,12 +358,12 @@ export default class List extends PureComponent {
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
                 {showIndicator &&
-                <UnreadIndicator
-                    show={showIndicator}
-                    style={[styles.above, {width}]}
-                    onPress={this.scrollToTop}
-                    theme={theme}
-                />
+                    <UnreadIndicator
+                        show={showIndicator}
+                        style={[styles.above, {width}]}
+                        onPress={this.scrollToTop}
+                        theme={theme}
+                    />
                 }
             </View>
         );
