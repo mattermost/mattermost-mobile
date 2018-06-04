@@ -3,12 +3,14 @@
 
 import {connect} from 'react-redux';
 
+import {getAutolinkedUrlSchemes} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import Markdown from './markdown';
 
 function mapStateToProps(state) {
     return {
+        autolinkedUrlSchemes: getAutolinkedUrlSchemes(state),
         theme: getTheme(state),
     };
 }
