@@ -146,10 +146,10 @@ public class CustomPushNotification extends PushNotification {
         String version = bundle.getString("version");
 
         String title = null;
-        if (version == "v2") {
+        if (version.equals("v2")) {
             title = bundle.getString("channel_name");
         } else {
-            String title = bundle.getString("title");
+            title = bundle.getString("title");
         }
 
         if (android.text.TextUtils.isEmpty(title)) {
@@ -217,7 +217,7 @@ public class CustomPushNotification extends PushNotification {
         } else {
             String summaryTitle = null;
 
-            if (version == "v2") {
+            if (version.equals("v2")) {
                 summaryTitle = String.format("(%d) %s", numMessages, title);
             } else {
                 summaryTitle = String.format("%s (%d)", title, numMessages);
@@ -232,7 +232,7 @@ public class CustomPushNotification extends PushNotification {
                 list = new ArrayList<Bundle>();
             }
 
-            if (version == "v2") {
+            if (version.equals("v2")) {
                 style.addLine(message);
             }
 
@@ -243,7 +243,7 @@ public class CustomPushNotification extends PushNotification {
                 }
             }
 
-            if (version == "v2") {
+            if (version.equals("v2")) {
                 notification
                         .setContentTitle(summaryTitle)
                         .setContentText(message)

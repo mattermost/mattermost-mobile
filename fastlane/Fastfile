@@ -300,7 +300,7 @@ platform :android do
 
     git_actions()
 
-    if ENV['MATTERMOST_WEBHOOK_URL']
+    if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
       pretext = '#### New Android beta published to Google Play'
       msg = '#android-beta available for testing, you can sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
       if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
@@ -342,14 +342,14 @@ platform :android do
 
     android_install_path = "https://s3.#{ENV['AWS_REGION']}.amazonaws.com/#{ENV['AWS_BUCKET_NAME']}/android/#{abbreviated_commit_hash}.apk"
 
-    if ENV['MATTERMOST_WEBHOOK_URL']
+    if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
       msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — Android: #{android_install_path}"
       mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
     end
   end
 
   error do |lane, exception|
-    if ENV['MATTERMOST_WEBHOOK_URL']
+    if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
       send_message_for_android('', 'Unsuccessful Build', exception.message, [:lane], false)
     end
   end
@@ -408,6 +408,15 @@ platform :android do
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{packageId};"
+        )
+      end
+
+      #
+      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.MainApplication;',
+            new_string: "import #{packageId}.MainApplication;"
         )
       end
     end

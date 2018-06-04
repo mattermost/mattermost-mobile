@@ -1,4 +1,4 @@
-package com.mattermost.rnbeta.react_native_interface;
+package com.mattermost.react_native_interface;
 
 import android.content.Context;
 import android.database.Cursor;
