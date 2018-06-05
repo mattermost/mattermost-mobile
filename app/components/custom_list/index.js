@@ -60,10 +60,9 @@ export default class CustomList extends PureComponent {
                 newData = this.props.createSections(data);
             }
 
-            const mergedData = Object.assign({}, newData, this.state.data);
-            const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(mergedData) : this.state.dataSource.cloneWithRows(mergedData);
+            const dataSource = showSections ? this.state.dataSource.cloneWithRowsAndSections(newData) : this.state.dataSource.cloneWithRows(newData);
             this.setState({
-                data: mergedData,
+                data: newData,
                 dataSource,
             });
         }
