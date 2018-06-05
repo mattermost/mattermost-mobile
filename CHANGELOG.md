@@ -6,23 +6,29 @@
 
 ### Highlights
 
-#### Android Push notification styling improvements
+#### Decreased first load time on Android
+ - 
 
 #### Push notification styling improvements
+ - 
 
 ### Improvements
 
  - Combined join/leave messages.
- - Entry screen and channel loader improvements.
+ - Added entry screen and channel loader improvements.
  - Removed desktop duration on notify props.
- - Added ability to upload other file types.
- - Cache team icon and set background to always be white.
+ - Added ability to "Browse Files" on iOS Files app and File browser on Android.
+ - Added cache team icon and set background to always be white if using PNG file.
  - Added whitelabel for icons and splash screen.
+ - Added a whitelist for valid types of links when autolinking.
 
 ### Bug Fixes
 
  - Fixed an issue where other user's display name did not render in combined system messages after joining the channel.
  - Fixed an issue with reading messages in Town Square if the channel was hidden.
+ - Fixed an issue where posts incorrectly had "Commented on Someone's message" above them.
+ 
+_____
 
 ## v1.8.0 Release
 - Release Date: April 27, 2018
