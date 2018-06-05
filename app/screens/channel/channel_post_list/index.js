@@ -12,7 +12,6 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {loadPostsIfNecessaryWithRetry, loadThreadIfNecessary, increasePostVisibility, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {recordLoadTime} from 'app/actions/views/root';
-import {getLoadMorePostsVisible} from 'app/selectors/channel';
 
 import ChannelPostList from './channel_post_list';
 
@@ -27,7 +26,7 @@ function mapStateToProps(state) {
         postIds: getPostIdsInCurrentChannel(state),
         postVisibility: state.views.channel.postVisibility[channelId],
         lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,
-        loadMorePostsVisible: getLoadMorePostsVisible(state),
+        loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         theme: getTheme(state),
     };
 }

@@ -27,7 +27,3 @@ export const getChannelMembersForDm = createSelector(
         return [otherUser];
     }
 );
-
-export function getLoadMorePostsVisible(state) {
-    return state.views.channel.loadMorePostsVisible;
-}
