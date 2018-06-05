@@ -7,6 +7,7 @@ import Adapter from 'enzyme-adapter-react-16';
 configure({adapter: new Adapter()});
 
 import {shallowWithIntl} from 'test/intl-test-helper';
+import {emptyFunction} from 'app/utils/general';
 
 import {Posts} from 'mattermost-redux/constants';
 
@@ -15,11 +16,10 @@ import CombinedSystemMessage from './combined_system_message';
 /* eslint-disable max-nested-callbacks, no-console */
 
 describe('CombinedSystemMessage', () => {
-    function emptyFunc() {} // eslint-disable-line no-empty-function
     const baseProps = {
         actions: {
-            getProfilesByIds: emptyFunc,
-            getProfilesByUsernames: emptyFunc,
+            getProfilesByIds: emptyFunction,
+            getProfilesByUsernames: emptyFunction,
         },
         allUserIds: ['user_id_1', 'user_id_2', 'user_id_3'],
         currentUserId: 'user_id_3',
@@ -37,7 +37,7 @@ describe('CombinedSystemMessage', () => {
             ...baseProps,
             actions: {
                 getProfilesByIds: jest.fn(() => Promise.resolve({data: true})),
-                getProfilesByUsernames: emptyFunc,
+                getProfilesByUsernames: emptyFunction,
             },
         };
         const wrapper = shallowWithIntl(
@@ -58,7 +58,7 @@ describe('CombinedSystemMessage', () => {
             ...baseProps,
             actions: {
                 getProfilesByIds: jest.fn(() => Promise.resolve({data: true})),
-                getProfilesByUsernames: emptyFunc,
+                getProfilesByUsernames: emptyFunction,
             },
         };
         const localeFormat = {
