@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {Platform, StyleSheet} from 'react-native';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';

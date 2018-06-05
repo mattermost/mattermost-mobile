@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {GeneralTypes, PostTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';

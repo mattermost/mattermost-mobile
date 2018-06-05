@@ -1,6 +1,4 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
-
-// Used to leverage the platform specific components
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 import SearchBar from './search_bar';
 export default SearchBar;
