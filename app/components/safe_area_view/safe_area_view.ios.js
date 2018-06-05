@@ -40,7 +40,10 @@ export default class SafeAreaIos extends PureComponent {
         this.state = {
             keyboard: false,
             safeAreaInsets: {
-                top: 20, left: 0, bottom: 15, right: 0,
+                top: this.isX ? 44 : 20,
+                left: 0,
+                bottom: this.isX ? 34 : 15,
+                right: 0,
             },
             statusBarHeight: 20,
         };
@@ -87,6 +90,7 @@ export default class SafeAreaIos extends PureComponent {
         if (this.isX) {
             SafeArea.getSafeAreaInsetsForRootView().then((result) => {
                 const {safeAreaInsets} = result;
+
                 if (this.mounted) {
                     this.setState({safeAreaInsets});
                 }
