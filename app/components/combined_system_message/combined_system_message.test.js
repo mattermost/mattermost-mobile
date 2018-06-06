@@ -7,15 +7,19 @@ import Adapter from 'enzyme-adapter-react-16';
 configure({adapter: new Adapter()});
 
 import {shallowWithIntl} from 'test/intl-test-helper';
+import {emptyFunction} from 'app/utils/general';
 
 import {Posts} from 'mattermost-redux/constants';
 
 import CombinedSystemMessage from './combined_system_message';
 
+/* eslint-disable max-nested-callbacks, no-console */
+
 describe('CombinedSystemMessage', () => {
     const baseProps = {
         actions: {
-            getProfilesByIds: () => {}, // eslint-disable-line no-empty-function
+            getProfilesByIds: emptyFunction,
+            getProfilesByUsernames: emptyFunction,
         },
         allUserIds: ['user_id_1', 'user_id_2', 'user_id_3'],
         currentUserId: 'user_id_3',
@@ -31,7 +35,10 @@ describe('CombinedSystemMessage', () => {
     test('should match snapshot', () => {
         const props = {
             ...baseProps,
-            actions: {getProfilesByIds: jest.fn(() => Promise.resolve({data: true}))},
+            actions: {
+                getProfilesByIds: jest.fn(() => Promise.resolve({data: true})),
+                getProfilesByUsernames: emptyFunction,
+            },
         };
         const wrapper = shallowWithIntl(
             <CombinedSystemMessage {...props}/>
@@ -49,7 +56,10 @@ describe('CombinedSystemMessage', () => {
     test('should match snapshot', () => {
         const props = {
             ...baseProps,
-            actions: {getProfilesByIds: jest.fn(() => Promise.resolve({data: true}))},
+            actions: {
+                getProfilesByIds: jest.fn(() => Promise.resolve({data: true})),
+                getProfilesByUsernames: emptyFunction,
+            },
         };
         const localeFormat = {
             id: ['combined_system_message.first_user_and_second_user_were', 'combined_system_message.removed_from_team'],
