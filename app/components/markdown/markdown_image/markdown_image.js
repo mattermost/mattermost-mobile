@@ -294,7 +294,7 @@ export default class MarkdownImage extends React.Component {
                             ref='image'
                             defaultSource={source}
                             resizeMode='contain'
-                            style={[{width, height}, style.image]}
+                            style={{width, height}}
                         />
                     </TouchableWithoutFeedback>
                 );
@@ -337,9 +337,6 @@ export default class MarkdownImage extends React.Component {
 
 const style = StyleSheet.create({
     container: {
-        flex: 1,
-    },
-    image: {
-        marginVertical: 5,
+        marginBottom: 5,
     },
 });
