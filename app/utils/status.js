@@ -9,9 +9,17 @@ import {toTitleCase} from 'app/utils/general';
 export function confirmOutOfOfficeDisabled(intl, status, updateStatus) {
     const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
 
-    let normalizeStatus = status;
+    let translatedStatus;
     if (status === 'dnd') {
-        normalizeStatus = 'Do Not Disturb';
+        translatedStatus = intl.formatMessage({
+            id: 'mobile.set_status.dnd',
+            defaultMessage: 'Do Not Disturb',
+        });
+    } else {
+        translatedStatus = intl.formatMessage({
+            id: `mobile.set_status.${status}`,
+            defaultMessage: toTitleCase(status),
+        });
     }
 
     Alert.alert(
@@ -22,7 +30,7 @@ export function confirmOutOfOfficeDisabled(intl, status, updateStatus) {
         intl.formatMessage({
             id: userStatusId,
             defaultMessage: 'Would you like to switch your status to "{status}" and disable Automatic Replies?',
-        }, {status: toTitleCase(normalizeStatus)}),
+        }, {status: translatedStatus}),
         [{
             text: intl.formatMessage({id: 'mobile.reset_status.alert_cancel', defaultMessage: 'Cancel'}),
         }, {
