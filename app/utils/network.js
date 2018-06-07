@@ -1,6 +1,10 @@
 import {NetInfo} from 'react-native';
 
+import RNFetchBlob from 'react-native-fetch-blob';
+
 import {Client4} from 'mattermost-redux/client';
+
+const PING_TIMEOUT = 10000;
 
 export async function checkConnection(isConnected) {
     if (Client4.getBaseRoute() === '/api/v4') {
@@ -12,7 +16,7 @@ export async function checkConnection(isConnected) {
     const server = `${Client4.getBaseRoute()}/system/ping?time=${Date.now()}`;
 
     try {
-        await fetch(server, {method: 'get'});
+        await RNFetchBlob.config({timeout: PING_TIMEOUT}).fetch('GET', server);
         return true;
     } catch (error) {
         return false;
@@ -21,6 +25,10 @@ export async function checkConnection(isConnected) {
 
 function handleConnectionChange(onChange) {
     return async (isConnected) => {
+        // Set device internet connectivity immediately
+        onChange(isConnected);
+
+        // Check if connected to server
         const result = await checkConnection(isConnected);
         onChange(result);
     };
