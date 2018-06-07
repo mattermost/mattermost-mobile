@@ -1977,6 +1977,84 @@ describe('Components.Markdown.transform', () => {
             assert.equal(astToString(actual), astToString(expected));
             assert.deepStrictEqual(actual, expected);
         });
+
+        it('adjacent images and text', () => {
+            const input = makeAst({
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'First:',
+                    }, {
+                        type: 'softbreak',
+                    }, {
+                        type: 'image',
+                        destination: 'http://example.com/image',
+                        children: [{
+                            type: 'text',
+                            literal: 'Image',
+                        }],
+                    }, {
+                        type: 'softbreak',
+                    }, {
+                        type: 'text',
+                        literal: 'Second:',
+                    }, {
+                        type: 'softbreak',
+                    }, {
+                        type: 'image',
+                        destination: 'http://example.com/image',
+                        children: [{
+                            type: 'text',
+                            literal: 'Image',
+                        }],
+                    }],
+                }],
+            });
+            const expected = makeAst({
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'First:',
+                    }, {
+                        type: 'softbreak',
+                    }],
+                }, {
+                    type: 'image',
+                    destination: 'http://example.com/image',
+                    children: [{
+                        type: 'text',
+                        literal: 'Image',
+                    }],
+                }, {
+                    type: 'paragraph',
+                    continue: true,
+                    children: [{
+                        type: 'softbreak',
+                    }, {
+                        type: 'text',
+                        literal: 'Second:',
+                    }, {
+                        type: 'softbreak',
+                    }],
+                }, {
+                    type: 'image',
+                    destination: 'http://example.com/image',
+                    children: [{
+                        type: 'text',
+                        literal: 'Image',
+                    }],
+                }],
+            });
+            const actual = pullOutImages(input);
+
+            assert.ok(verifyAst(actual));
+            assert.equal(astToString(actual), astToString(expected));
+            assert.deepStrictEqual(actual, expected);
+        });
     });
 });
 
