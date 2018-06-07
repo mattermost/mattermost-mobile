@@ -65,13 +65,13 @@ export function makePreparePostIdsForPostList() {
                     lastDate = postDate;
                 }
 
-                // Only add the new messages line if a lastViewedAt time is set
-                let postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUser.id;
-                if (lastViewedAt === 0 && post.type === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
-                    postIsUnread = false;
-                }
-
-                if (lastViewedAt !== null && !addedNewMessagesIndicator && postIsUnread && indicateNewMessages) {
+                if (
+                    lastViewedAt &&
+                    post.create_at > lastViewedAt &&
+                    post.user_id !== currentUser.id &&
+                    !addedNewMessagesIndicator &&
+                    indicateNewMessages
+                ) {
                     out.push(START_OF_NEW_MESSAGES);
                     addedNewMessagesIndicator = true;
                 }
