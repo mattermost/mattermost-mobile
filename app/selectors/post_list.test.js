@@ -136,13 +136,26 @@ describe('Selectors.PostList', () => {
 
             const postIds = ['1010', '1005', '1000']; // Remember that we list the posts backwards
 
-            // Show new messages indicator before all posts
+            // Do not show new messages indicator before all posts
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 0, indicateNewMessages: true});
+            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+
+            now = preparePostIdsForPostList(state, {postIds, indicateNewMessages: true});
+            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: false});
+            assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000']);
+
+            // Show new messages indicator before all posts
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: true});
             assert.deepEqual(removeDateLines(now), ['1010', '1005', '1000', START_OF_NEW_MESSAGES]);
 
             // Show indicator between posts
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003, indicateNewMessages: true});
             assert.deepEqual(removeDateLines(now), ['1010', '1005', START_OF_NEW_MESSAGES, '1000']);
+
+            now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1006, indicateNewMessages: true});
+            assert.deepEqual(removeDateLines(now), ['1010', START_OF_NEW_MESSAGES, '1005', '1000']);
 
             // Don't show indicator when all posts are read
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1020});
