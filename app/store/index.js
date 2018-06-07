@@ -170,6 +170,9 @@ export default function configureAppStore(initialState) {
                             users: {
                                 ...state.entities.users,
                                 profilesInChannel,
+                                profilesNotInTeam: [],
+                                profilesWithoutTeam: [],
+                                profilesNotInChannel: [],
                             },
                         };
                         mattermostBucket.writeToFile('entities', JSON.stringify(entities), Config.AppGroupId);
