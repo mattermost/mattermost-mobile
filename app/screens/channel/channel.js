@@ -213,9 +213,9 @@ export default class Channel extends PureComponent {
 
         loadChannelsIfNecessary(teamId).then(() => {
             loadProfilesAndTeamMembersForDMSidebar(teamId);
-            return selectInitialChannel(teamId);
+            selectInitialChannel(teamId);
         }).catch(() => {
-            return selectInitialChannel(teamId);
+            selectInitialChannel(teamId);
         });
     };
 

@@ -244,7 +244,7 @@ export function loadThreadIfNecessary(rootId, channelId) {
 }
 
 export function selectInitialChannel(teamId) {
-    return async (dispatch, getState) => {
+    return (dispatch, getState) => {
         const state = getState();
         const {channels, myMembers} = state.entities.channels;
         const {currentUserId} = state.entities.users;
@@ -266,6 +266,14 @@ export function selectInitialChannel(teamId) {
             return;
         }
 
+        dispatch(selectDefaultChannel(teamId));
+    };
+}
+
+export function selectDefaultChannel(teamId) {
+    return (dispatch, getState) => {
+        const channels = getState().entities.channels.channels;
+
         const channel = Object.values(channels).find((c) => c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
         let channelId;
         if (channel) {
@@ -281,8 +289,8 @@ export function selectInitialChannel(teamId) {
 
         if (channelId) {
             dispatch(setChannelDisplayName(''));
-            handleSelectChannel(channelId)(dispatch, getState);
-            markChannelAsRead(channelId)(dispatch, getState);
+            dispatch(handleSelectChannel(channelId));
+            dispatch(markChannelAsRead(channelId));
         }
     };
 }
@@ -417,7 +425,7 @@ export function leaveChannel(channel, reset = false) {
         });
 
         if (channel.id === currentChannelId || reset) {
-            await dispatch(selectInitialChannel(currentTeamId));
+            await dispatch(selectDefaultChannel(currentTeamId));
         }
 
         await serviceLeaveChannel(channel.id)(dispatch, getState);
