@@ -2930,7 +2930,6 @@
   "status_dropdown.set_away": "Away",
   "status_dropdown.set_dnd": "Do Not Disturb",
   "status_dropdown.set_dnd.extra": "Disables Desktop and Push Notifications",
-  "status_dropdown.set_ooo": "Out Of Office",
   "status_dropdown.set_offline": "Offline",
   "status_dropdown.set_online": "Online",
   "status_dropdown.set_ooo": "Out of Office",

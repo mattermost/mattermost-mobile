@@ -83,7 +83,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
     };
 
     onAutoResponseChangeText = (message) => {
-        return this.setState({auto_responder_message: message});
+        this.setState({auto_responder_message: message});
     };
 
     render() {

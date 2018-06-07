@@ -18,9 +18,6 @@ import FlagIcon from 'app/components/flag_icon';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const BOT_NAME = 'BOT';
-const AUTO_RESPONDER_NAME = 'AUTOMATIC REPLY';
-
 export default class PostHeader extends PureComponent {
     static propTypes = {
         commentCount: PropTypes.number,
@@ -77,9 +74,11 @@ export default class PostHeader extends PureComponent {
                     <Text style={style.displayName}>
                         {name}
                     </Text>
-                    <Text style={style.bot}>
-                        {BOT_NAME}
-                    </Text>
+                    <FormattedText
+                        id='post_info.bot'
+                        defaultMessage='BOT'
+                        style={style.bot}
+                    />
                 </View>
             );
         } else if (fromAutoResponder) {
@@ -93,9 +92,11 @@ export default class PostHeader extends PureComponent {
                     <Text style={style.displayName}>
                         {name}
                     </Text>
-                    <Text style={style.bot}>
-                        {AUTO_RESPONDER_NAME}
-                    </Text>
+                    <FormattedText
+                        id='post_info.auto_responder'
+                        defaultMessage='AUTOMATIC REPLY'
+                        style={style.bot}
+                    />
                 </View>
             );
         } else if (isSystemMessage) {

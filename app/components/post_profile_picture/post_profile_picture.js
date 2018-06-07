@@ -39,16 +39,6 @@ export default class PostProfilePicture extends PureComponent {
             userId,
         } = this.props;
 
-        if (fromAutoResponder) {
-            return (
-                <ProfilePicture
-                    userId={userId}
-                    size={ViewTypes.PROFILE_PICTURE_SIZE}
-                    showStatus={false}
-                />
-            );
-        }
-
         if (isSystemMessage) {
             return (
                 <View>
@@ -78,10 +68,12 @@ export default class PostProfilePicture extends PureComponent {
             );
         }
 
+        const showProfileStatus = !fromAutoResponder;
         let component = (
             <ProfilePicture
                 userId={userId}
                 size={ViewTypes.PROFILE_PICTURE_SIZE}
+                showStatus={showProfileStatus}
             />
         );
 
