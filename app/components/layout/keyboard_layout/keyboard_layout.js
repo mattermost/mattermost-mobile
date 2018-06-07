@@ -3,11 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Keyboard, Platform, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-const {View: AnimatedView} = Animated;
 
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {
@@ -25,7 +23,7 @@ export default class KeyboardLayout extends PureComponent {
         this.subscriptions = [];
         this.count = 0;
         this.state = {
-            bottom: new Animated.Value(0),
+            bottom: 0,
         };
     }
 
@@ -42,28 +40,18 @@ export default class KeyboardLayout extends PureComponent {
         this.subscriptions.forEach((sub) => sub.remove());
     }
 
-    onKeyboardWillHide = (e) => {
-        const {duration} = e;
-        // Animated.timing(this.state.bottom, {
-        //     toValue: 0,
-        //     duration,
-        // }).start();
-
+    onKeyboardWillHide = () => {
         this.setState({bottom: 0});
     };
 
     onKeyboardChange = (e) => {
         if (!e) {
-            this.setState({bottom: new Animated.Value(0)});
+            this.setState({bottom: 0});
             return;
         }
 
-        const {endCoordinates, duration} = e;
+        const {endCoordinates} = e;
         const {height} = endCoordinates;
-        // Animated.timing(this.state.bottom, {
-        //     toValue: height,
-        //     duration,
-        // }).start();
 
         this.setState({bottom: height});
     };
