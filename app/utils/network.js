@@ -1,6 +1,6 @@
 import {NetInfo} from 'react-native';
 
-import RNFetchBlob from 'react-native-fetch-blob'
+import RNFetchBlob from 'react-native-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 
