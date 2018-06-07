@@ -6,10 +6,7 @@ import {makeGetPostsForIds} from 'mattermost-redux/selectors/entities/posts';
 import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 import {createIdsSelector} from 'mattermost-redux/utils/helpers';
-import {
-    isSystemMessage,
-    shouldFilterJoinLeavePost,
-} from 'mattermost-redux/utils/post_utils';
+import {shouldFilterJoinLeavePost} from 'mattermost-redux/utils/post_utils';
 
 export const DATE_LINE = 'date-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
@@ -69,15 +66,12 @@ export function makePreparePostIdsForPostList() {
                 }
 
                 // Only add the new messages line if a lastViewedAt time is set
-                const postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUser.id;
+                let postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUser.id;
+                if (lastViewedAt === 0 && post.type === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
+                    postIsUnread = false;
+                }
 
-                if (
-                    !isSystemMessage(post) &&
-                    (lastViewedAt !== null || lastViewedAt !== 0) &&
-                    !addedNewMessagesIndicator &&
-                    postIsUnread &&
-                    indicateNewMessages
-                ) {
+                if (lastViewedAt !== null && !addedNewMessagesIndicator && postIsUnread && indicateNewMessages) {
                     out.push(START_OF_NEW_MESSAGES);
                     addedNewMessagesIndicator = true;
                 }
