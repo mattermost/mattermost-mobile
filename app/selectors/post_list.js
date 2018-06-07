@@ -65,9 +65,13 @@ export function makePreparePostIdsForPostList() {
                     lastDate = postDate;
                 }
 
-                // Only add the new messages line if a lastViewedAt time is set
-                const postIsUnread = post.create_at > lastViewedAt && post.user_id !== currentUser.id;
-                if (lastViewedAt !== null && !addedNewMessagesIndicator && postIsUnread && indicateNewMessages) {
+                if (
+                    lastViewedAt &&
+                    post.create_at > lastViewedAt &&
+                    post.user_id !== currentUser.id &&
+                    !addedNewMessagesIndicator &&
+                    indicateNewMessages
+                ) {
                     out.push(START_OF_NEW_MESSAGES);
                     addedNewMessagesIndicator = true;
                 }
