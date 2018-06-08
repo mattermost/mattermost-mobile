@@ -2,6 +2,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
+    Platform,
     Text,
 } from 'react-native';
 
@@ -94,7 +95,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 10,
             paddingTop: 3,
             fontSize: 11,
-            marginBottom: 5,
+            ...Platform.select({
+                android: {
+                    marginBottom: 5,
+                },
+                ios: {
+                    marginBottom: 2,
+                },
+            }),
             color: theme.centerChannelColor,
             backgroundColor: 'transparent',
         },
