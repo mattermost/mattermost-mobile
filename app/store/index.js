@@ -38,9 +38,14 @@ const channelSetTransform = [
     'channelsInTeam',
 ];
 
+const rolesSetTransform = [
+    'pending',
+];
+
 const setTransforms = [
     ...usersSetTransform,
     ...channelSetTransform,
+    ...rolesSetTransform,
 ];
 
 export default function configureAppStore(initialState) {
