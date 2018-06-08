@@ -370,6 +370,9 @@ export default class Permalink extends PureComponent {
                                 </Text>
                             </View>
                         </View>
+                        <View style={style.dividerContainer}>
+                            <View style={style.divider}/>
+                        </View>
                         <View style={[style.postList, error ? style.bottom : null]}>
                             {postList}
                         </View>
@@ -407,14 +410,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         header: {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
             borderTopLeftRadius: 6,
             borderTopRightRadius: 6,
             flexDirection: 'row',
             height: 44,
             paddingRight: 16,
             width: '100%',
+        },
+        dividerContainer: {
+            backgroundColor: theme.centerChannelBg,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
         },
         close: {
             justifyContent: 'center',
