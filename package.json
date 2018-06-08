@@ -90,6 +90,7 @@
     "jest": "22.4.3",
     "jest-cli": "22.4.3",
     "jsdom-global": "3.0.2",
+    "metro-bundler": "0.22.1",
     "nyc": "11.7.1",
     "react-dom": "16.3.2",
     "redux-mock-store": "1.5.1",
