@@ -88,3 +88,9 @@ export function cleanUpUrlable(input) {
     cleaned = cleaned.replace(/-+$/, '');
     return cleaned;
 }
+
+export function getScheme(url) {
+    const match = (/([a-z0-9+.-]+):/i).exec(url);
+
+    return match && match[1];
+}

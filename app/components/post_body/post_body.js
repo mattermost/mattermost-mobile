@@ -191,7 +191,7 @@ export default class PostBody extends PureComponent {
         const {height: deviceHeight} = Dimensions.get('window');
         const {showLongPost} = this.props;
 
-        if (!showLongPost && height >= 1000) {
+        if (!showLongPost && height >= (deviceHeight * 1.2)) {
             this.setState({
                 isLongPost: true,
                 maxHeight: (deviceHeight * 0.6),
@@ -441,12 +441,13 @@ export default class PostBody extends PureComponent {
         } else if (isPostAddChannelMember) {
             messageComponent = this.renderAddChannelMember(style, textStyles);
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
-            const {allUserIds, messageData} = postProps.user_activity;
+            const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
                 <View style={style.row}>
                     <View style={style.flex}>
                         <CombinedSystemMessage
                             allUserIds={allUserIds}
+                            allUsernames={allUsernames}
                             linkStyle={textStyles.link}
                             messageData={messageData}
                             theme={theme}

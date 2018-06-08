@@ -7,9 +7,9 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
-import com.mattermost.rnbeta.react_native_interface.AsyncStorageHelper;
-import com.mattermost.rnbeta.react_native_interface.KeysReadableArray;
-import com.mattermost.rnbeta.react_native_interface.ResolvePromise;
+import com.mattermost.react_native_interface.AsyncStorageHelper;
+import com.mattermost.react_native_interface.KeysReadableArray;
+import com.mattermost.react_native_interface.ResolvePromise;
 import com.oblador.keychain.KeychainModule;
 
 import java.util.ArrayList;

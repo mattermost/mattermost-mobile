@@ -151,7 +151,28 @@ export default function configureAppStore(initialState) {
                 store.subscribe(throttle(() => {
                     const state = store.getState();
                     if (state.entities) {
-                        mattermostBucket.writeToFile('entities', JSON.stringify(state.entities), Config.AppGroupId);
+                        const channelsInTeam = {...state.entities.channels.channelsInTeam};
+                        Object.keys(channelsInTeam).forEach((teamId) => {
+                            channelsInTeam[teamId] = Array.from(channelsInTeam[teamId]);
+                        });
+
+                        const profilesInChannel = {...state.entities.users.profilesInChannel};
+                        Object.keys(profilesInChannel).forEach((channelId) => {
+                            profilesInChannel[channelId] = Array.from(profilesInChannel[channelId]);
+                        });
+
+                        const entities = {
+                            ...state.entities,
+                            channels: {
+                                ...state.entities.channels,
+                                channelsInTeam,
+                            },
+                            users: {
+                                ...state.entities.users,
+                                profilesInChannel,
+                            },
+                        };
+                        mattermostBucket.writeToFile('entities', JSON.stringify(entities), Config.AppGroupId);
                     }
                 }, 1000));
             }

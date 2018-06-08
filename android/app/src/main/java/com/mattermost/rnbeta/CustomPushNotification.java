@@ -143,7 +143,15 @@ public class CustomPushNotification extends PushNotification {
         // First, get a builder initialized with defaults from the core class.
         final Notification.Builder notification = new Notification.Builder(mContext);
         Bundle bundle = mNotificationProps.asBundle();
-        String title = bundle.getString("channel_name");
+        String version = bundle.getString("version");
+
+        String title = null;
+        if (version.equals("v2")) {
+            title = bundle.getString("channel_name");
+        } else {
+            title = bundle.getString("title");
+        }
+
         if (android.text.TextUtils.isEmpty(title)) {
             ApplicationInfo appInfo = mContext.getApplicationInfo();
             title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
@@ -207,7 +215,13 @@ public class CustomPushNotification extends PushNotification {
                     .setStyle(new Notification.BigTextStyle()
                             .bigText(message));
         } else {
-            String summaryTitle = String.format("(%d) %s", numMessages, title);
+            String summaryTitle = null;
+
+            if (version.equals("v2")) {
+                summaryTitle = String.format("(%d) %s", numMessages, title);
+            } else {
+                summaryTitle = String.format("%s (%d)", title, numMessages);
+            }
 
             Notification.InboxStyle style = new Notification.InboxStyle();
             List<Bundle> bundleArray = channelIdToNotification.get(channelId);
@@ -218,7 +232,9 @@ public class CustomPushNotification extends PushNotification {
                 list = new ArrayList<Bundle>();
             }
 
-            style.addLine(message);
+            if (version.equals("v2")) {
+                style.addLine(message);
+            }
 
             for (Bundle data : list) {
                 String msg = data.getString("message");
@@ -227,10 +243,17 @@ public class CustomPushNotification extends PushNotification {
                 }
             }
 
-            notification
-                    .setContentTitle(summaryTitle)
-                    .setContentText(message)
-                    .setStyle(style);
+            if (version.equals("v2")) {
+                notification
+                        .setContentTitle(summaryTitle)
+                        .setContentText(message)
+                        .setStyle(style);
+            } else {
+                style.setBigContentTitle(message)
+                        .setSummaryText(String.format("+%d more", (numMessages - 1)));
+                notification.setStyle(style)
+                        .setContentTitle(summaryTitle);
+            }
         }
 
         // Let's add a delete intent when the notification is dismissed

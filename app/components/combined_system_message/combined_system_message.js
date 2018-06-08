@@ -157,13 +157,21 @@ export default class CombinedSystemMessage extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getProfilesByIds: PropTypes.func.isRequired,
+            getProfilesByUsernames: PropTypes.func.isRequired,
         }).isRequired,
         allUserIds: PropTypes.array.isRequired,
+        allUsernames: PropTypes.array.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        currentUsername: PropTypes.string.isRequired,
         linkStyle: CustomPropTypes.Style,
         messageData: PropTypes.array.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+    };
+
+    static defaultProps = {
+        allUserIds: [],
+        allUsernames: [],
     };
 
     static contextTypes = {
@@ -179,18 +187,31 @@ export default class CombinedSystemMessage extends React.PureComponent {
     }
 
     componentDidMount() {
-        this.loadUserProfiles(this.props.allUserIds);
+        this.loadUserProfiles(this.props.allUserIds, this.props.allUsernames);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.allUserIds !== nextProps.allUserIds) {
-            this.loadUserProfiles(nextProps.allUserIds);
+        if (this.props.allUserIds !== nextProps.allUserIds || this.props.allUsernames !== nextProps.allUsernames) {
+            this.loadUserProfiles(nextProps.allUserIds, nextProps.allUsernames);
         }
     }
 
-    loadUserProfiles = async (allUserIds) => {
+    loadUserProfiles = async (allUserIds, allUsernames) => {
         const {actions} = this.props;
-        const {data: userProfiles} = await actions.getProfilesByIds(allUserIds);
+        const userProfiles = [];
+        if (allUserIds.length > 0) {
+            const {data} = await actions.getProfilesByIds(allUserIds);
+            if (data.length > 0) {
+                userProfiles.push(...data);
+            }
+        }
+
+        if (allUsernames.length > 0) {
+            const {data} = await actions.getProfilesByUsernames(allUsernames);
+            if (data.length > 0) {
+                userProfiles.push(...data);
+            }
+        }
 
         this.setState({userProfiles});
     }
@@ -199,47 +220,55 @@ export default class CombinedSystemMessage extends React.PureComponent {
         const {userProfiles} = this.state;
         const {
             allUserIds,
+            allUsernames,
             currentUserId,
+            currentUsername,
             teammateNameDisplay,
         } = this.props;
         const {formatMessage} = this.context.intl;
         const usersDisplayName = userProfiles.reduce((acc, user) => {
-            acc[user.id] = displayUsername(user, teammateNameDisplay, true);
+            const displayName = displayUsername(user, teammateNameDisplay, true);
+            acc[user.id] = displayName;
+            acc[user.username] = displayName;
             return acc;
         }, {});
 
-        const includesCurrentUser = allUserIds.includes(currentUserId);
-        if (includesCurrentUser) {
+        if (allUserIds.includes(currentUserId)) {
             usersDisplayName[currentUserId] = formatMessage({id: 'mobile.combined_system_message.you', defaultMessage: 'You'});
+        } else if (allUsernames.includes(currentUsername)) {
+            usersDisplayName[currentUsername] = formatMessage({id: 'mobile.combined_system_message.you', defaultMessage: 'You'});
         }
 
         return usersDisplayName;
     }
 
     getDisplayNameByIds = (userIds = []) => {
-        const {currentUserId} = this.props;
+        const {currentUserId, currentUsername} = this.props;
         const usersDisplayName = this.getAllUsersDisplayName();
-
         const displayNames = userIds.
             filter((userId) => {
-                return userId !== currentUserId;
+                return userId !== currentUserId && userId !== currentUsername;
             }).
             map((userId) => {
                 return usersDisplayName[userId];
+            }).filter((displayName) => {
+                return displayName && displayName !== '';
             });
 
-        const includesCurrentUser = userIds.includes(currentUserId);
-        if (includesCurrentUser) {
+        if (userIds.includes(currentUserId)) {
             displayNames.unshift(usersDisplayName[currentUserId]);
+        } else if (userIds.includes(currentUsername)) {
+            displayNames.unshift(usersDisplayName[currentUsername]);
         }
 
         return displayNames;
     }
 
     renderSystemMessage(postType, userIds, actorId, style) {
+        const {currentUserId, currentUsername} = this.props;
         const usersDisplayName = this.getDisplayNameByIds(userIds);
         let actorDisplayName = actorId ? this.getDisplayNameByIds([actorId])[0] : '';
-        if (actorDisplayName && actorId === this.props.currentUserId) {
+        if (actorDisplayName && (actorId === currentUserId || actorId === currentUsername)) {
             actorDisplayName = actorDisplayName.toLowerCase();
         }
 
@@ -257,7 +286,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
             );
 
             if (
-                userIds[0] === this.props.currentUserId &&
+                (userIds[0] === currentUserId || userIds[0] === currentUsername) &&
                 postTypeMessage[postType].one_you
             ) {
                 formattedMessage = this.renderFormattedMessage(
@@ -276,7 +305,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
                 actorDisplayName,
                 style,
             );
-        } else {
+        } else if (numOthers > 1) {
             formattedMessage = (
                 <LastUsers
                     actor={actorDisplayName}
@@ -293,7 +322,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
 
     renderFormattedMessage = (localeFormat, firstUser, secondUser, actor, style) => {
         return (
-            <Text>
+            <Text style={style.text}>
                 <FormattedText
                     id={localeFormat.id[0]}
                     defaultMessage={localeFormat.defaultMessage[0]}
@@ -307,7 +336,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
                         id={localeFormat.id[1]}
                         defaultMessage={localeFormat.defaultMessage[1]}
                     />
-                </Text>
+                </Text >
                 {localeFormat.id[2] ? (
                     <FormattedText
                         id={localeFormat.id[2]}
@@ -333,7 +362,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
                 {messageData.map(({postType, userIds, actorId}) => {
                     return (
                         <React.Fragment key={postType + actorId}>
-                            {this.renderSystemMessage(postType, userIds, actorId, {activityType: style.activityType, link: linkStyle})}
+                            {this.renderSystemMessage(postType, userIds, actorId, {activityType: style.activityType, link: linkStyle, text: style.text})}
                         </React.Fragment>
                     );
                 })}
@@ -348,6 +377,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 14,
             fontWeight: 'bold',
+        },
+        text: {
+            color: theme.centerChannelColor,
+            opacity: 0.6,
         },
     };
 });

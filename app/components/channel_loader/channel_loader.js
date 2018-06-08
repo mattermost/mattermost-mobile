@@ -49,7 +49,7 @@ export default class ChannelLoader extends PureComponent {
         const bg = this.props.backgroundColor || theme.centerChannelBg;
 
         return (
-            <View style={style.container}>
+            <View style={[style.container, {backgroundColor: bg}]}>
                 {Array(6).fill().map((item, index) => this.buildSections({
                     key: index,
                     style,
@@ -64,7 +64,6 @@ export default class ChannelLoader extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
             ...Platform.select({
                 android: {

@@ -4,7 +4,7 @@
 import {GeneralTypes, PostTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
-import {markChannelAsRead} from 'mattermost-redux/actions/channels';
+import {fetchMyChannelsAndMembers, markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {getPosts} from 'mattermost-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
@@ -56,35 +56,43 @@ export function loadFromPushNotification(notification) {
         const state = getState();
         const {data} = notification;
         const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
-        const {currentChannelId} = state.entities.channels;
+        const {currentChannelId, channels} = state.entities.channels;
         const channelId = data.channel_id;
 
         // when the notification does not have a team id is because its from a DM or GM
         const teamId = data.team_id || currentTeamId;
 
-        //verify that we have the team loaded
+        // load any missing data
+        const loading = [];
+
         if (teamId && (!teams[teamId] || !myTeamMembers[teamId])) {
-            await Promise.all([
-                getMyTeams()(dispatch, getState),
-                getMyTeamMembers()(dispatch, getState),
-            ]);
+            loading.push(dispatch(getMyTeams()));
+            loading.push(dispatch(getMyTeamMembers()));
+        }
+
+        if (channelId && !channels[channelId]) {
+            loading.push(dispatch(fetchMyChannelsAndMembers(teamId)));
+        }
+
+        if (loading.length > 0) {
+            await Promise.all(loading);
         }
 
         // when the notification is from a team other than the current team
         if (teamId !== currentTeamId) {
-            selectTeam({id: teamId})(dispatch, getState);
+            dispatch(selectTeam({id: teamId}));
         }
 
         // when the notification is from the same channel as the current channel
         // we should get the posts
         if (channelId === currentChannelId) {
-            markChannelAsRead(channelId, null, false)(dispatch, getState);
-            await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+            dispatch(markChannelAsRead(channelId, null, false));
+            await dispatch(retryGetPostsAction(getPosts(channelId)));
         } else {
             // when the notification is from a channel other than the current channel
-            markChannelAsRead(channelId, currentChannelId, false)(dispatch, getState);
+            dispatch(markChannelAsRead(channelId, currentChannelId, false));
             dispatch(setChannelDisplayName(''));
-            handleSelectChannel(channelId)(dispatch, getState);
+            dispatch(handleSelectChannel(channelId));
         }
     };
 }
