@@ -70,11 +70,6 @@ export default class SearchBarAndroid extends PureComponent {
             isFocused: false,
         };
     }
-    componentWillReceiveProps(nextProps) {
-        if (this.state.value !== nextProps.value) {
-            this.setState({value: nextProps.value});
-        }
-    }
 
     cancel = () => {
         this.onCancelButtonPress();
@@ -153,10 +148,12 @@ export default class SearchBarAndroid extends PureComponent {
         } = this.props;
         const {isFocused} = this.state;
 
-        const inputNoBackground = {
-            ...inputStyle,
-        };
-        Reflect.deleteProperty(inputNoBackground, 'backgroundColor');
+        const {
+            backgroundColor: bgColor, //eslint-disable-line no-unused-vars
+            ...otherStyles
+        } = inputStyle;
+
+        const inputNoBackground = otherStyles;
 
         let inputColor = styles.searchBarInput.backgroundColor;
         if (inputStyle) {
