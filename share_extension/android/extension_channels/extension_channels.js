@@ -129,21 +129,23 @@ export default class ExtensionTeam extends PureComponent {
         }
 
         return (
-            <SectionList
-                sections={sections}
-                ListHeaderComponent={this.renderSearchBar(styles)}
-                ItemSeparatorComponent={this.renderItemSeparator}
-                renderItem={this.renderItem}
-                renderSectionHeader={this.renderSectionHeader}
-                keyExtractor={this.keyExtractor}
-                keyboardShouldPersistTaps='always'
-                keyboardDismissMode='on-drag'
-                initialNumToRender={10}
-                maxToRenderPerBatch={10}
-                stickySectionHeadersEnabled={true}
-                scrollEventThrottle={100}
-                windowSize={5}
-            />
+            <View>
+                {this.renderSearchBar(styles)}
+                <SectionList
+                    sections={sections}
+                    ItemSeparatorComponent={this.renderItemSeparator}
+                    renderItem={this.renderItem}
+                    renderSectionHeader={this.renderSectionHeader}
+                    keyExtractor={this.keyExtractor}
+                    keyboardShouldPersistTaps='always'
+                    keyboardDismissMode='on-drag'
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    stickySectionHeadersEnabled={true}
+                    scrollEventThrottle={100}
+                    windowSize={5}
+                />
+            </View>
         );
     };
 
@@ -188,7 +190,6 @@ export default class ExtensionTeam extends PureComponent {
                     titleCancelColor={defaultTheme.centerChannelColor}
                     onChangeText={this.handleSearch}
                     autoCapitalize='none'
-                    value={this.state.term}
                 />
             </View>
         );
