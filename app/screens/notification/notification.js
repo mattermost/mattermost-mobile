@@ -92,8 +92,28 @@ export default class Notification extends PureComponent {
         return icon;
     };
 
-    getNotificationTitle = (titleText) => {
+    getNotificationTitle = (notification) => {
         const {channel} = this.props;
+        const {message, data} = notification;
+
+        if (data.version === 'v2') {
+            if (data.channel_name) {
+                return (
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode='tail'
+                        style={style.title}
+                    >
+                        {data.channel_name}
+                    </Text>
+                );
+            }
+
+            return null;
+        }
+
+        const msg = message.split(':');
+        const titleText = msg.shift();
 
         let title = (
             <Text
@@ -165,14 +185,20 @@ export default class Notification extends PureComponent {
 
     render() {
         const {deviceWidth, notification} = this.props;
-        const {message} = notification;
+        const {data, message} = notification;
 
         if (message) {
-            const msg = message.split(':');
-            const titleText = msg.shift();
-            const messageText = msg.join('').trim();
+            let messageText;
+            if (data.version !== 'v2') {
+                const msg = message.split(':');
+                messageText = msg.join('').trim();
+            } else if (Platform.OS === 'ios') {
+                messageText = message.body || message;
+            } else {
+                messageText = message;
+            }
 
-            const title = this.getNotificationTitle(titleText);
+            const title = this.getNotificationTitle(notification);
             const icon = this.getNotificationIcon();
 
             return (

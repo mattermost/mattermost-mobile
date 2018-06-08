@@ -227,7 +227,7 @@ export default class Entry extends PureComponent {
             navigator: this.props.navigator,
         };
 
-        return wrapWithContextProvider(ChannelScreen, true)(props);
+        return wrapWithContextProvider(ChannelScreen, false)(props);
     };
 
     render() {
