@@ -1,6 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import {Node} from 'commonmark';
+
 /* eslint-disable no-underscore-dangle */
 
 // Add indices to the items of every list
@@ -185,7 +187,15 @@ function pullOutImage(image) {
 // Copies a Node without its parent, children, or siblings
 function copyNodeWithoutNeighbors(node) {
     // commonmark uses classes so it takes a bit of work to copy them
-    const copy = Object.assign(Object.create(Reflect.getPrototypeOf(node)), node);
+    const copy = new Node();
+
+    for (const key in node) {
+        if (!node.hasOwnProperty(key)) {
+            continue;
+        }
+
+        copy[key] = node[key];
+    }
 
     copy._parent = null;
     copy._firstChild = null;
