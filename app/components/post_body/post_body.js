@@ -173,14 +173,14 @@ export default class PostBody extends PureComponent {
                 actions.push({text: formatMessage({id: 'post_info.edit', defaultMessage: 'Edit'}), onPress: onPostEdit});
             }
 
-            if (canDelete && !hasBeenDeleted) {
-                actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
-            }
-
             actions.push({
                 text: formatMessage({id: 'get_post_link_modal.title', defaultMessage: 'Copy Permalink'}),
                 onPress: this.props.onCopyPermalink,
             });
+        }
+
+        if (!isPendingOrFailedPost && !isPostEphemeral && canDelete && !hasBeenDeleted) {
+            actions.push({text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}), onPress: onPostDelete});
         }
 
         return actions;
@@ -507,16 +507,16 @@ export default class PostBody extends PureComponent {
                         {body}
                     </View>
                     {isFailed &&
-                    <TouchableOpacity
-                        onPress={onFailedPostPress}
-                        style={style.retry}
-                    >
-                        <Icon
-                            name='ios-information-circle-outline'
-                            size={26}
-                            color={theme.errorTextColor}
-                        />
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={onFailedPostPress}
+                            style={style.retry}
+                        >
+                            <Icon
+                                name='ios-information-circle-outline'
+                                size={26}
+                                color={theme.errorTextColor}
+                            />
+                        </TouchableOpacity>
                     }
                 </View>
             </View>
