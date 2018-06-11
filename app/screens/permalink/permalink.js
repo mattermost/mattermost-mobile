@@ -109,6 +109,10 @@ export default class Permalink extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.channelId === '') {
+            this.handleClose();
+        }
+
         if (this.props.channelName !== nextProps.channelName) {
             this.setState({title: nextProps.channelName});
         }
