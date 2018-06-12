@@ -13,7 +13,7 @@
 
  - Combined join/leave messages.
  - Added entry screen and channel loader improvements.
- - Removed desktop duration on notify props.
+ - Removed the desktop notification duration setting.
  - Added ability to "Browse Files" on iOS Files app and File browser on Android.
  - Added cache team icon and set background to always be white if using a PNG file.
  - Added whitelabel for icons and splash screen.
@@ -22,14 +22,16 @@
 ### Bug Fixes
 
  - Fixed an issue where other user's display name did not render in combined system messages after joining the channel.
- - Fixed an issue with reading messages in Town Square if the channel was hidden.
  - Fixed an issue where posts incorrectly had "Commented on Someone's message" above them.
  - Fixed an issue where deleting a focused post or its parent in permalink view left permalink view blank.
- - Fixed an issue where there was no option to delete a system message.
- - Fixed an issue where "user is typing" message cut was off.
- - Fixed an issue where the line below the permalink view header was partially transparent.
+ - Fixed an issue where "User is typing" message cut was off.
  - Fixed an issue where `More New Messages Above` appeared at the top of new channel on joining.
  - Fixed an issue where a user was not directed to Town Square when leaving a channel.
+ - Fixed an issue where long post were not truncating on Android.
+ - Fixed an issue where a user's name was initially shown as "someone" when opening a direct message with the user.
+ - Fixed an issue where an error was received when trying to change team or channel on share extension.
+ - Fixed an issue where switching to a newly created channel from a push notification redirected a user to Town Square.
+ - Fixed an issue where a public channel made private did not disappear automatically from clients not part of the channel.
  
 
 ## v1.8.0 Release
