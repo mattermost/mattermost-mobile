@@ -7,10 +7,7 @@
 ### Highlights
 
 #### Decreased first load time on Android
- - 
-
-#### Push notification styling improvements
- - 
+ -
 
 ### Improvements
 
@@ -18,7 +15,7 @@
  - Added entry screen and channel loader improvements.
  - Removed desktop duration on notify props.
  - Added ability to "Browse Files" on iOS Files app and File browser on Android.
- - Added cache team icon and set background to always be white if using PNG file.
+ - Added cache team icon and set background to always be white if using a PNG file.
  - Added whitelabel for icons and splash screen.
  - Added a whitelist for valid types of links when autolinking.
 
@@ -27,8 +24,13 @@
  - Fixed an issue where other user's display name did not render in combined system messages after joining the channel.
  - Fixed an issue with reading messages in Town Square if the channel was hidden.
  - Fixed an issue where posts incorrectly had "Commented on Someone's message" above them.
+ - Fixed an issue where deleting a focused post or its parent in permalink view left permalink view blank.
+ - Fixed an issue where there was no option to delete a system message.
+ - Fixed an issue where "user is typing" message cut was off.
+ - Fixed an issue where the line below the permalink view header was partially transparent.
+ - Fixed an issue where `More New Messages Above` appeared at the top of new channel on joining.
+ - Fixed an issue where a user was not directed to Town Square when leaving a channel.
  
-_____
 
 ## v1.8.0 Release
 - Release Date: April 27, 2018
