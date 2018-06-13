@@ -58,6 +58,15 @@ export default class ChannelPostList extends PureComponent {
         this.contentHeight = 0;
     }
 
+    componentDidMount() {
+        this.mounted = true;
+        InteractionManager.runAfterInteractions(() => {
+            if (this.mounted === true) {
+                this.setState({loading: false});
+            }
+        });
+    }
+
     componentWillReceiveProps(nextProps) {
         const {postIds: nextPostIds} = nextProps;
 
@@ -84,8 +93,8 @@ export default class ChannelPostList extends PureComponent {
         }
     }
 
-    componentDidMount() {
-        InteractionManager.runAfterInteractions(() => this.setState({loading: false}));
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     getVisiblePostIds = (props) => {

@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable global-require*/
-import {AsyncStorage, NativeModules} from 'react-native';
+import {AsyncStorage, Linking, NativeModules} from 'react-native';
 import {setGenericPassword, getGenericPassword, resetGenericPassword} from 'react-native-keychain';
 
 import {loadMe} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
+import {setDeepLinkURL} from 'app/actions/views/root';
 import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {getCurrentLocale} from 'app/selectors/i18n';
@@ -49,6 +50,9 @@ export default class App {
         this.currentUserId = null;
         this.token = null;
         this.url = null;
+
+        // Usage deeplinking
+        Linking.addEventListener('url', this.handleDeepLink);
 
         this.getStartupThemes();
         this.getAppCredentials();
@@ -207,6 +211,11 @@ export default class App {
         ]);
     };
 
+    handleDeepLink = (event) => {
+        const {url} = event;
+        store.dispatch(setDeepLinkURL(url));
+    }
+
     launchApp = async () => {
         const shouldStart = await handleManagedConfig();
         if (shouldStart) {
@@ -220,6 +229,10 @@ export default class App {
         }
 
         const {dispatch} = store;
+
+        Linking.getInitialURL().then((url) => {
+            dispatch(setDeepLinkURL(url));
+        });
 
         let screen = 'SelectServer';
         if (this.token && this.url) {

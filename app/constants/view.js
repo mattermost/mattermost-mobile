@@ -67,6 +67,8 @@ const ViewTypes = keyMirror({
 
     LAUNCH_LOGIN: null,
     LAUNCH_CHANNEL: null,
+
+    SET_DEEP_LINK_URL: null,
 });
 
 export default {

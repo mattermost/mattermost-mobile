@@ -7,9 +7,9 @@ import {
     AppState,
     Dimensions,
     InteractionManager,
-    Platform,
-    NativeModules,
     Keyboard,
+    NativeModules,
+    Platform,
 } from 'react-native';
 const {StatusBarManager, MattermostShare, Initialization} = NativeModules;
 

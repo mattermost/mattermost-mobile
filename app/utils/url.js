@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {latinise} from './latinise.js';
+import {escapeRegex} from './markdown';
 
 import {Files} from 'mattermost-redux/constants';
 
@@ -93,4 +94,12 @@ export function getScheme(url) {
     const match = (/([a-z0-9+.-]+):/i).exec(url);
 
     return match && match[1];
+}
+
+export function matchPermalink(link, rootURL) {
+    if (!rootURL) {
+        return null;
+    }
+
+    return new RegExp('^' + escapeRegex(rootURL) + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(link);
 }
