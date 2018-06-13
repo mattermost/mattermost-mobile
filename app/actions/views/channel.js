@@ -468,7 +468,7 @@ export function increasePostVisibility(channelId, focusedPostId) {
         const currentPostVisibility = postVisibility[channelId] || 0;
 
         if (loadingPosts[channelId]) {
-            return;
+            return false;
         }
 
         // Check if we already have the posts that we want to show
@@ -484,7 +484,7 @@ export function increasePostVisibility(channelId, focusedPostId) {
                     setLoadMorePostsVisible(true),
                 ]));
 
-                return;
+                return true;
             }
         }
 
@@ -520,6 +520,8 @@ export function increasePostVisibility(channelId, focusedPostId) {
         }
 
         dispatch(batchActions(actions));
+
+        return Boolean(posts);
     };
 }
 
