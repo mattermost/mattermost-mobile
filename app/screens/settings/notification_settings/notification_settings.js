@@ -407,7 +407,7 @@ class NotificationSettings extends PureComponent {
                 <SettingsItem
                     defaultMessage='Automatic Direct Message Replies'
                     i18nId='mobile.notification_settings.ooo_auto_responder'
-                    iconName='airplanemode-active'
+                    iconName='beach-access'
                     iconType='material'
                     onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
                     separator={false}
