@@ -155,7 +155,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 10,
         },
         badge: {
-            backgroundColor: theme.mentionBj,
+            backgroundColor: theme.mentionBg,
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 10,
             borderWidth: 1,

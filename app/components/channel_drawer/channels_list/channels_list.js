@@ -244,7 +244,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18,
         },
         above: {
-            backgroundColor: theme.mentionBj,
+            backgroundColor: theme.mentionBg,
             top: 9,
         },
     };
