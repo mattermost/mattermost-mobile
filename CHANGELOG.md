@@ -10,7 +10,7 @@
  - Significantly decreased first load time on Android devices from cold start.
  
 #### iOS Files app support
-- Attach files from the iOS Files app from within Mattermost.
+- Added support for attaching files from the iOS Files app from within Mattermost.
 
 #### Improved styling of push notification
 - Improved the layout of message content, channel name and sender name in push notifications.
@@ -36,7 +36,6 @@
  - Fixed an issue where an error was received when trying to change the team or channel from the share extension.
  - Fixed an issue where switching to a newly created channel from a push notification redirected a user to Town Square.
  - Fixed an issue where a public channel made private did not disappear automatically from clients not part of the channel.
- 
 
 ## v1.8.0 Release
 - Release Date: April 27, 2018
