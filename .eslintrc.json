@@ -46,7 +46,7 @@
         "comma-dangle": [2, "always-multiline"],
         "comma-spacing": [2, {"before": false, "after": true}],
         "comma-style": [2, "last"],
-        "complexity": [1, 10],
+        "complexity": [0, 10],
         "computed-property-spacing": [2, "never"],
         "consistent-return": 2,
         "consistent-this": [2, "self"],
