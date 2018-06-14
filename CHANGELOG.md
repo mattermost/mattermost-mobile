@@ -6,30 +6,34 @@
 
 ### Highlights
 
-#### Decreased first load time on Android
- -
+#### Improved first load time on Android
+ - Significantly decreased first load time on Android devices from cold start.
+ 
+#### iOS Files app support
+- Attach files from the iOS Files app from within Mattermost.
+
+#### Improved styling of push notification
+- Improved the layout of message content, channel name and sender name in push notifications.
 
 ### Improvements
 
- - Combined join/leave messages.
- - Added entry screen and channel loader improvements.
+ - Combined join/leave system messages.
+ - Added splash screen and channel loader improvements.
  - Removed the desktop notification duration setting.
- - Added ability to "Browse Files" on iOS Files app and File browser on Android.
  - Added cache team icon and set background to always be white if using a PNG file.
  - Added whitelabel for icons and splash screen.
- - Added a whitelist for valid types of links when autolinking.
 
 ### Bug Fixes
 
  - Fixed an issue where other user's display name did not render in combined system messages after joining the channel.
  - Fixed an issue where posts incorrectly had "Commented on Someone's message" above them.
- - Fixed an issue where deleting a focused post or its parent in permalink view left permalink view blank.
+ - Fixed an issue where deleting a post or its parent in permalink view left permalink view blank.
  - Fixed an issue where "User is typing" message cut was off.
  - Fixed an issue where `More New Messages Above` appeared at the top of new channel on joining.
  - Fixed an issue where a user was not directed to Town Square when leaving a channel.
- - Fixed an issue where long post were not truncating on Android.
+ - Fixed an issue where long post were not collapsed on Android.
  - Fixed an issue where a user's name was initially shown as "someone" when opening a direct message with the user.
- - Fixed an issue where an error was received when trying to change team or channel on share extension.
+ - Fixed an issue where an error was received when trying to change the team or channel from the share extension.
  - Fixed an issue where switching to a newly created channel from a push notification redirected a user to Town Square.
  - Fixed an issue where a public channel made private did not disappear automatically from clients not part of the channel.
  
