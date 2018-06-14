@@ -165,6 +165,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
         currentUsername: PropTypes.string.isRequired,
         linkStyle: CustomPropTypes.Style,
         messageData: PropTypes.array.isRequired,
+        showJoinLeave: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -357,15 +358,36 @@ export default class CombinedSystemMessage extends React.PureComponent {
         } = this.props;
         const style = getStyleSheet(theme);
 
+        const content = [];
+        for (const message of messageData) {
+            const {
+                postType,
+                actorId,
+            } = message;
+            let userIds = message.userIds;
+
+            if (!this.props.showJoinLeave && actorId !== this.props.currentUserId) {
+                const affectsCurrentUser = userIds.indexOf(this.props.currentUserId) !== -1;
+
+                if (affectsCurrentUser) {
+                    // Only show the message that the current user was added, etc
+                    userIds = [this.props.currentUserId];
+                } else {
+                    // Not something the current user did or was affected by
+                    continue;
+                }
+            }
+
+            content.push(
+                <React.Fragment key={postType + actorId}>
+                    {this.renderSystemMessage(postType, userIds, actorId, {activityType: style.activityType, link: linkStyle, text: style.text})}
+                </React.Fragment>
+            );
+        }
+
         return (
             <React.Fragment>
-                {messageData.map(({postType, userIds, actorId}) => {
-                    return (
-                        <React.Fragment key={postType + actorId}>
-                            {this.renderSystemMessage(postType, userIds, actorId, {activityType: style.activityType, link: linkStyle, text: style.text})}
-                        </React.Fragment>
-                    );
-                })}
+                {content}
             </React.Fragment>
         );
     }
