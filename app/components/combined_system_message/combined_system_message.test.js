@@ -18,8 +18,8 @@ import CombinedSystemMessage from './combined_system_message';
 describe('CombinedSystemMessage', () => {
     const baseProps = {
         actions: {
-            getProfilesByIds: emptyFunction,
-            getProfilesByUsernames: emptyFunction,
+            getMissingProfilesByIds: emptyFunction,
+            getMissingProfilesByUsernames: emptyFunction,
         },
         allUserIds: ['user_id_1', 'user_id_2', 'user_id_3'],
         currentUserId: 'user_id_3',
@@ -38,8 +38,8 @@ describe('CombinedSystemMessage', () => {
         const props = {
             ...baseProps,
             actions: {
-                getProfilesByIds: jest.fn(),
-                getProfilesByUsernames: emptyFunction,
+                getMissingProfilesByIds: jest.fn(),
+                getMissingProfilesByUsernames: emptyFunction,
             },
         };
         const wrapper = shallowWithIntl(
@@ -50,8 +50,8 @@ describe('CombinedSystemMessage', () => {
         expect(wrapper.instance().renderSystemMessage(postType, userIds, actorId, {activityType: {fontSize: 14}, text: {opacity: 0.6}}, 1)).toMatchSnapshot();
 
         // on componentDidMount
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledTimes(1);
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledWith(props.allUserIds);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledTimes(1);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledWith(props.allUserIds);
     });
 
     test('should match snapshot', () => {
@@ -66,13 +66,13 @@ describe('CombinedSystemMessage', () => {
         expect(wrapper.instance().renderFormattedMessage(localeFormat, 'first_user', 'second_user', 'actor', {activityType: {fontSize: 14}, text: {opacity: 0.6}})).toMatchSnapshot();
     });
 
-    test('should call getProfilesByIds and/or getProfilesByUsernames on loadUserProfiles', () => {
+    test('should call getMissingProfilesByIds and/or getMissingProfilesByUsernames on loadUserProfiles', () => {
         const props = {
             ...baseProps,
             allUserIds: [],
             actions: {
-                getProfilesByIds: jest.fn(),
-                getProfilesByUsernames: jest.fn(),
+                getMissingProfilesByIds: jest.fn(),
+                getMissingProfilesByUsernames: jest.fn(),
             },
         };
 
@@ -81,18 +81,18 @@ describe('CombinedSystemMessage', () => {
         );
 
         wrapper.instance().loadUserProfiles([], []);
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledTimes(0);
-        expect(props.actions.getProfilesByUsernames).toHaveBeenCalledTimes(0);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledTimes(0);
+        expect(props.actions.getMissingProfilesByUsernames).toHaveBeenCalledTimes(0);
 
         wrapper.instance().loadUserProfiles(['user_id_1'], []);
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledTimes(1);
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledWith(['user_id_1']);
-        expect(props.actions.getProfilesByUsernames).toHaveBeenCalledTimes(0);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledTimes(1);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledWith(['user_id_1']);
+        expect(props.actions.getMissingProfilesByUsernames).toHaveBeenCalledTimes(0);
 
         wrapper.instance().loadUserProfiles(['user_id_1', 'user_id_2'], ['user1']);
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledTimes(2);
-        expect(props.actions.getProfilesByIds).toHaveBeenCalledWith(['user_id_1', 'user_id_2']);
-        expect(props.actions.getProfilesByUsernames).toHaveBeenCalledTimes(1);
-        expect(props.actions.getProfilesByUsernames).toHaveBeenCalledWith(['user1']);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledTimes(2);
+        expect(props.actions.getMissingProfilesByIds).toHaveBeenCalledWith(['user_id_1', 'user_id_2']);
+        expect(props.actions.getMissingProfilesByUsernames).toHaveBeenCalledTimes(1);
+        expect(props.actions.getMissingProfilesByUsernames).toHaveBeenCalledWith(['user1']);
     });
 });
