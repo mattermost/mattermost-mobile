@@ -1,119 +1,105 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Modal,
-    Platform,
+    ScrollView,
     TouchableOpacity,
     View,
 } from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
-import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import SectionItem from 'app/screens/settings/section_item';
 
-export default class NotificationSettingsEmailAndroid extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            savePreferences: PropTypes.func.isRequired,
-        }),
-        currentUserId: PropTypes.string.isRequired,
-        emailInterval: PropTypes.string.isRequired,
-        enableEmailBatching: PropTypes.bool.isRequired,
-        onClose: PropTypes.func.isRequired,
-        sendEmailNotifications: PropTypes.bool.isRequired,
-        siteName: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        visible: PropTypes.bool.isRequired,
-    };
+import NotificationSettingsEmailBase from './notification_settings_email_base';
 
+class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
     static contextTypes = {
         intl: intlShape,
     };
 
-    constructor(props) {
-        super(props);
-
-        const {
-            emailInterval,
-            enableEmailBatching,
-            sendEmailNotifications,
-        } = props;
-
-        this.state = {
-            interval: getEmailInterval(
-                sendEmailNotifications,
-                enableEmailBatching,
-                parseInt(emailInterval, 10),
-            ).toString(),
-        };
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (
-            this.props.sendEmailNotifications !== nextProps.sendEmailNotifications ||
-            this.props.enableEmailBatching !== nextProps.enableEmailBatching ||
-            this.props.emailInterval !== nextProps.emailInterval
-        ) {
-            this.setState({
-                interval: getEmailInterval(
-                    nextProps.sendEmailNotifications,
-                    nextProps.enableEmailBatching,
-                    parseInt(nextProps.emailInterval, 10),
-                ).toString(),
-            });
-        }
-    }
-
-    setEmailNotifications = (interval) => {
-        const {sendEmailNotifications} = this.props;
-
-        let email = 'false';
-        if (sendEmailNotifications && interval !== Preferences.INTERVAL_NEVER.toString()) {
-            email = 'true';
-        }
-
-        this.setState({
-            email,
-            interval,
-        });
-    };
-
     handleClose = () => {
-        this.props.onClose();
+        this.setState({showEmailNotificationsModal: false});
     }
 
     handleSaveEmailNotification = () => {
-        const {currentUserId} = this.props;
-        const {email, interval} = this.state;
-
-        const emailNotify = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: 'email', value: email};
-        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: Preferences.EMAIL_INTERVAL, value: interval};
-        this.props.actions.savePreferences(currentUserId, [emailNotify, emailInterval]);
-        this.props.onClose();
+        this.saveEmailNotifyProps();
+        this.handleClose();
     };
 
-    render() {
-        if (Platform.OS === 'ios') {
-            return null;
+    showEmailModal = () => {
+        this.setState({showEmailNotificationsModal: true});
+    };
+
+    renderEmailSection() {
+        const {
+            sendEmailNotifications,
+            theme,
+        } = this.props;
+        const {interval} = this.state;
+        let i18nId;
+        let i18nMessage;
+        if (sendEmailNotifications) {
+            switch (interval) {
+            case Preferences.INTERVAL_IMMEDIATE.toString():
+                i18nId = 'user.settings.notifications.email.immediately';
+                i18nMessage = 'Immediately';
+                break;
+            case Preferences.INTERVAL_HOUR.toString():
+                i18nId = 'user.settings.notifications.email.everyHour';
+                i18nMessage = 'Every hour';
+                break;
+            case Preferences.INTERVAL_FIFTEEN_MINUTES.toString():
+                i18nId = 'user.settings.notifications.email.fifteenMinutes';
+                i18nMessage = 'Every 15 minutes';
+                break;
+            case Preferences.INTERVAL_NEVER.toString():
+            default:
+                i18nId = 'user.settings.notifications.email.never';
+                i18nMessage = 'Never';
+                break;
+            }
+        } else {
+            i18nId = 'user.settings.notifications.email.disabled';
+            i18nMessage = 'Email notifications are not enabled';
         }
 
+        return (
+            <SectionItem
+                description={(
+                    <FormattedText
+                        id={i18nId}
+                        defaultMessage={i18nMessage}
+                    />
+                )}
+                label={(
+                    <FormattedText
+                        id='user.settings.notifications.email.send'
+                        defaultMessage='Send email notifications'
+                    />
+                )}
+                action={this.showEmailModal}
+                actionType='default'
+                theme={theme}
+            />
+        );
+    }
+
+    renderEmailNotificationsModal(style) {
         const {intl} = this.context;
         const {
             enableEmailBatching,
             sendEmailNotifications,
             siteName,
-            theme,
-            visible,
         } = this.props;
         const {interval} = this.state;
-        const style = getStyleSheet(theme);
 
         let helpText;
         if (sendEmailNotifications) {
@@ -139,9 +125,9 @@ export default class NotificationSettingsEmailAndroid extends PureComponent {
         if (enableEmailBatching) {
             emailOptions.push({
                 label: intl.formatMessage({
-                    id: 'user.settings.notifications.email.everyXMinutes',
-                    defaultMessage: 'Every {count, plural, one {minute} other {{count, number} minutes}}',
-                }, {count: Preferences.INTERVAL_FIFTEEN_MINUTES / 60}),
+                    id: 'user.settings.notifications.email.fifteenMinutes',
+                    defaultMessage: 'Every 15 minutes',
+                }),
                 value: Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
                 checked: interval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
             }, {
@@ -167,7 +153,7 @@ export default class NotificationSettingsEmailAndroid extends PureComponent {
             <Modal
                 animationType='slide'
                 transparent={true}
-                visible={visible}
+                visible={this.state.showEmailNotificationsModal}
                 onRequestClose={this.handleClose}
             >
                 <View style={style.modalOverlay}>
@@ -231,14 +217,49 @@ export default class NotificationSettingsEmailAndroid extends PureComponent {
             </Modal>
         );
     }
+
+    render() {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        return (
+            <View style={style.container}>
+                <ScrollView
+                    style={style.scrollView}
+                    contentContainerStyle={style.scrollViewContent}
+                    alwaysBounceVertical={false}
+                >
+                    {this.renderEmailSection()}
+                    <View style={style.separator}/>
+                    {this.renderEmailNotificationsModal(style)}
+                </ScrollView>
+            </View>
+        );
+    }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+        },
+        separator: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            height: 1,
+            width: '100%',
+        },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
             width: '100%',
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+        },
+        scrollViewContent: {
+            paddingVertical: 0,
         },
         modalOverlay: {
             backgroundColor: changeOpacity('#000000', 0.6),
@@ -296,3 +317,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default NotificationSettingsEmailAndroid;

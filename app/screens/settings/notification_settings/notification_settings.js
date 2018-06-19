@@ -35,10 +35,6 @@ class NotificationSettings extends PureComponent {
         enableAutoResponder: PropTypes.bool.isRequired,
     };
 
-    state = {
-        showEmailNotificationsModal: false,
-    };
-
     componentWillReceiveProps(nextProps) {
         if (this.props.theme !== nextProps.theme) {
             setNavigatorStyles(this.props.navigator, nextProps.theme);
@@ -155,10 +151,6 @@ class NotificationSettings extends PureComponent {
             Alert.alert('There was a problem getting the device preferences', e.message);
         });
     };
-
-    closeEmailNotifications = () => {
-        this.setState({showEmailNotificationsModal: false});
-    }
 
     saveNotificationProps = (notifyProps) => {
         const {currentUser} = this.props;

@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 
 import {
     ScrollView,
@@ -10,104 +9,18 @@ import {
 } from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
-import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 
-export default class NotificationSettingsEmail extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            savePreferences: PropTypes.func.isRequired,
-        }),
-        currentUserId: PropTypes.string.isRequired,
-        emailInterval: PropTypes.string.isRequired,
-        enableEmailBatching: PropTypes.bool.isRequired,
-        navigator: PropTypes.object,
-        sendEmailNotifications: PropTypes.bool.isRequired,
-        siteName: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-    };
+import NotificationSettingsEmailBase from './notification_settings_email_base';
 
-    constructor(props) {
-        super(props);
-
-        const {
-            emailInterval,
-            enableEmailBatching,
-            navigator,
-            sendEmailNotifications,
-        } = props;
-
-        this.state = {
-            interval: getEmailInterval(
-                sendEmailNotifications,
-                enableEmailBatching,
-                parseInt(emailInterval, 10),
-            ).toString(),
-        };
-
-        navigator.setOnNavigatorEvent(this.onNavigatorEvent);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.navigator, nextProps.theme);
-        }
-
-        if (
-            this.props.sendEmailNotifications !== nextProps.sendEmailNotifications ||
-            this.props.enableEmailBatching !== nextProps.enableEmailBatching ||
-            this.props.emailInterval !== nextProps.emailInterval
-        ) {
-            this.setState({
-                interval: getEmailInterval(
-                    nextProps.sendEmailNotifications,
-                    nextProps.enableEmailBatching,
-                    parseInt(nextProps.emailInterval, 10),
-                ).toString(),
-            });
-        }
-    }
-
-    onNavigatorEvent = (event) => {
-        if (event.type === 'ScreenChangedEvent') {
-            switch (event.id) {
-            case 'willDisappear':
-                this.saveUserNotifyProps();
-                break;
-            }
-        }
-    };
-
-    setEmailNotifications = (interval) => {
-        const {sendEmailNotifications} = this.props;
-
-        let email = 'false';
-        if (sendEmailNotifications && interval !== Preferences.INTERVAL_NEVER.toString()) {
-            email = 'true';
-        }
-
-        this.setState({
-            email,
-            interval,
-        });
-    };
-
-    saveUserNotifyProps = () => {
-        const {currentUserId} = this.props;
-        const {email, interval} = this.state;
-
-        const emailNotify = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: 'email', value: email};
-        const emailInterval = {category: Preferences.CATEGORY_NOTIFICATIONS, user_id: currentUserId, name: Preferences.EMAIL_INTERVAL, value: interval};
-        this.props.actions.savePreferences(currentUserId, [emailNotify, emailInterval]);
-    };
-
-    renderEmailSection = () => {
+class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
+    renderEmailSection() {
         const {
             enableEmailBatching,
             sendEmailNotifications,
@@ -148,9 +61,8 @@ export default class NotificationSettingsEmail extends PureComponent {
                         <SectionItem
                             label={(
                                 <FormattedText
-                                    id='user.settings.notifications.email.everyXMinutes'
-                                    defaultMessage='Every {count, plural, one {minute} other {{count, number} minutes}}'
-                                    values={{count: Preferences.INTERVAL_FIFTEEN_MINUTES / 60}}
+                                    id='user.settings.notifications.email.fifteenMinutes'
+                                    defaultMessage='Every 15 minutes'
                                 />
                             )}
                             action={this.setEmailNotifications}
@@ -200,7 +112,7 @@ export default class NotificationSettingsEmail extends PureComponent {
                 }
             </Section>
         );
-    };
+    }
 
     render() {
         const {theme} = this.props;
@@ -248,3 +160,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default NotificationSettingsEmailIos;

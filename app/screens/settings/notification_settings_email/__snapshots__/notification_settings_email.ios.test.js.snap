@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 1`] = `
+<section
+  disableFooter={false}
+  footerDefaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes."
+  footerId="user.settings.notifications.emailInfo"
+  footerValues={
+    Object {
+      "siteName": "Mattermost",
+    }
+  }
+  headerDefaultMessage="SEND EMAIL NOTIFICATIONS"
+  headerId="mobile.notification_settings.email.send"
+  theme={
+    Object {
+      "centerChannelBg": "#aaa",
+      "centerChannelColor": "#aaa",
+    }
+  }
+>
+  <Component>
+    <sectionItem
+      action={[Function]}
+      actionType="select"
+      actionValue="30"
+      label={
+        <InjectIntl(FormattedText)
+          defaultMessage="Immediately"
+          id="user.settings.notifications.email.immediately"
+        />
+      }
+      selected={true}
+      theme={
+        Object {
+          "centerChannelBg": "#aaa",
+          "centerChannelColor": "#aaa",
+        }
+      }
+    />
+    <Component
+      style={
+        Object {
+          "backgroundColor": undefined,
+          "flex": 1,
+          "height": 1,
+          "marginLeft": 15,
+        }
+      }
+    />
+    <sectionItem
+      action={[Function]}
+      actionType="select"
+      actionValue="0"
+      label={
+        <InjectIntl(FormattedText)
+          defaultMessage="Never"
+          id="user.settings.notifications.email.never"
+        />
+      }
+      selected={false}
+      theme={
+        Object {
+          "centerChannelBg": "#aaa",
+          "centerChannelColor": "#aaa",
+        }
+      }
+    />
+  </Component>
+</section>
+`;
