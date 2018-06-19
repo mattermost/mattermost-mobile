@@ -8,7 +8,9 @@ import {
     ScrollView,
     ViewPagerAndroid,
     Platform,
-    StyleSheet, InteractionManager,
+    StyleSheet,
+    InteractionManager,
+    PanResponder,
 } from 'react-native';
 
 export default class Swiper extends PureComponent {
@@ -52,6 +54,21 @@ export default class Swiper extends PureComponent {
         this.state = this.initialState(props);
     }
 
+    componentWillMount() {
+        this.panResponder = PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onStartShouldSetPanResponderCapture: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponderCapture: () => true,
+        });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.width !== nextProps.width) {
+            this.scrollByWidth(nextProps.width);
+        }
+    }
+
     componentDidUpdate(prevProps, prevState) {
         // If the index has changed, we notify the parent via the onIndexChanged callback
         if (this.state.index !== prevState.index) {
@@ -61,7 +78,6 @@ export default class Swiper extends PureComponent {
 
     initialState = (props) => {
         const index = props.initialPage;
-
         return {
             index,
             total: React.Children.count(props.children),
@@ -69,20 +85,7 @@ export default class Swiper extends PureComponent {
     };
 
     onLayout = (e) => {
-        this.offset = e.nativeEvent.layout.width * this.state.index;
-
-        if (this.runOnLayout) {
-            if (Platform.OS === 'ios') {
-                setTimeout(() => {
-                    if (this.scrollView) {
-                        this.scrollView.scrollTo({x: this.props.width * this.state.index, animated: false});
-                    }
-                }, 100);
-            } else if (this.scrollView) {
-                this.scrollView.setPageWithoutAnimation(this.state.index);
-            }
-            this.runOnLayout = false;
-        }
+        this.scrollByWidth(e.nativeEvent.layout.width);
     };
 
     onScrollBegin = () => {
@@ -114,6 +117,20 @@ export default class Swiper extends PureComponent {
         }
     };
 
+    scrollByWidth = (width) => {
+        this.offset = width * this.state.index;
+
+        if (Platform.OS === 'ios') {
+            setTimeout(() => {
+                if (this.scrollView) {
+                    this.scrollView.scrollTo({x: width * this.state.index, animated: false});
+                }
+            }, 0);
+        } else if (this.scrollView) {
+            this.scrollView.setPageWithoutAnimation(this.state.index);
+        }
+    };
+
     scrollToStart = () => {
         if (Platform.OS === 'ios') {
             InteractionManager.runAfterInteractions(() => {
@@ -135,6 +152,7 @@ export default class Swiper extends PureComponent {
         if (Platform.OS === 'ios') {
             return (
                 <ScrollView
+                    {...this.panResponder.panHandlers}
                     ref={this.refScrollView}
                     bounces={false}
                     horizontal={true}
@@ -147,7 +165,7 @@ export default class Swiper extends PureComponent {
                     onMomentumScrollEnd={this.onScrollEnd}
                     pagingEnabled={true}
                     keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-                    scrollEnabled={scrollEnabled}
+                    scrollEnabled={true}
                 >
                     {pages}
                 </ScrollView>
@@ -287,7 +305,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     slide: {
-        backgroundColor: 'transparent',
+        flex: 1,
+        width: '100%',
     },
     pagination: {
         position: 'absolute',

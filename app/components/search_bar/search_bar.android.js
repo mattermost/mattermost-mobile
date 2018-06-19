@@ -102,6 +102,7 @@ export default class SearchBarAndroid extends PureComponent {
         InteractionManager.runAfterInteractions(() => {
             this.setState({
                 isFocused: false,
+                value: '',
             }, () => {
                 this.props.onCancelButtonPress();
             });
