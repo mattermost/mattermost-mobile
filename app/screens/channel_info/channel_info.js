@@ -183,10 +183,10 @@ export default class ChannelInfo extends PureComponent {
                 });
             };
         } else if (eventType === 'delete') {
-            title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Delete {term}'};
+            title = {id: 'mobile.channel_info.alertTitleDeleteChannel', defaultMessage: 'Archive {term}'};
             message = {
                 id: 'mobile.channel_info.alertMessageDeleteChannel',
-                defaultMessage: 'Are you sure you want to delete the {term} {name}?',
+                defaultMessage: 'Are you sure you want to archive the {term} {name}?',
             };
             onPressAction = async () => {
                 const result = await this.props.actions.deleteChannel(channel.id);
@@ -196,7 +196,7 @@ export default class ChannelInfo extends PureComponent {
                         result.error,
                         {
                             id: 'mobile.channel_info.delete_failed',
-                            defaultMessage: "We couldn't delete the channel {displayName}. Please check your connection and try again.",
+                            defaultMessage: "We couldn't archive the channel {displayName}. Please check your connection and try again.",
                         },
                         {
                             displayName: channel.display_name,
@@ -464,7 +464,7 @@ export default class ChannelInfo extends PureComponent {
                         <View style={style.footer}>
                             <ChannelInfoRow
                                 action={this.handleDelete}
-                                defaultMessage='Delete Channel'
+                                defaultMessage='Archive Channel'
                                 icon='trash'
                                 iconColor='#CA3B27'
                                 textId='mobile.routes.channelInfo.delete_channel'
