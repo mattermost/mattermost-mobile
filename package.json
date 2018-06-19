@@ -32,7 +32,7 @@
     "react-native-drawer": "2.5.0",
     "react-native-exception-handler": "2.7.5",
     "react-native-fast-image": "4.0.8",
-    "react-native-fetch-blob": "enahum/react-native-fetch-blob.git#2e8f9b05b012496bd3ff9790aace3f2b462e2fee",
+    "react-native-fetch-blob": "enahum/react-native-fetch-blob.git#fe0590afd9706683aab757b0c5d2faf9c5e9f492",
     "react-native-image-gallery": "enahum/react-native-image-gallery#a98b1051e94f5a394541ca1ff9b15e2c9ffed84f",
     "react-native-image-picker": "0.26.7",
     "react-native-keyboard-aware-scroll-view": "0.5.0",

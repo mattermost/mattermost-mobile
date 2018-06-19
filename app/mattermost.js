@@ -48,6 +48,7 @@ import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import LocalConfig from 'assets/config';
 
 import App from './app';
+import './fetch_preconfig';
 
 const AUTHENTICATION_TIMEOUT = 5 * 60 * 1000;
 
