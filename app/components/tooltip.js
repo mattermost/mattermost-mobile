@@ -11,7 +11,7 @@ export default class ToolTip extends PureComponent {
     static propTypes = {
         onHide: PropTypes.func,
         onShow: PropTypes.func,
-        actions: PropTypes.array,
+        actions: PropTypes.array.isRequired,
     };
 
     handleHide = () => {
