@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import mattermostBucket from 'app/mattermost_bucket';
+import LocalConfig from 'assets/config';
 
 const HEADER_X_VERSION_ID = 'X-Version-Id';
 const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
@@ -91,6 +95,15 @@ Client4.doFetchWithResponse = async (url, options) => {
     };
 };
 
-window.fetch = new RNFetchBlob.polyfill.Fetch({
-    auto: true,
-}).build();
+if (Platform.OS === 'ios') {
+    mattermostBucket.getPreference('cert', LocalConfig.AppGroupId).then((certificate) => {
+        window.fetch = new RNFetchBlob.polyfill.Fetch({
+            auto: true,
+            certificate,
+        }).build();
+    });
+} else {
+    window.fetch = new RNFetchBlob.polyfill.Fetch({
+        auto: true,
+    }).build();
+}

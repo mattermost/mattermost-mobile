@@ -22,7 +22,10 @@ import tinyColor from 'tinycolor2';
 import {getFileUrl} from 'mattermost-redux/utils/file_utils.js';
 
 import {DeviceTypes} from 'app/constants/';
+import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
+
+import LocalConfig from 'assets/config';
 
 import FileAttachmentIcon from './file_attachment_icon';
 
@@ -106,6 +109,7 @@ export default class FileAttachmentDocument extends PureComponent {
         this.setState({didCancel: false});
 
         try {
+            const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
             const isDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
             if (!isDir) {
                 try {
@@ -122,6 +126,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 indicator: true,
                 overwrite: true,
                 path,
+                certificate,
             };
 
             const mime = data.mime_type.split(';')[0];

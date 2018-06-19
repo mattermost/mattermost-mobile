@@ -22,5 +22,9 @@
 	<array>
 		<string>group.com.mattermost.rnbeta</string>
 	</array>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.mattermost.rnbeta</string>
+	</array>
 </dict>
 </plist>

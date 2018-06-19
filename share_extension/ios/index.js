@@ -8,6 +8,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import Config from 'assets/config';
 import {getTranslations} from 'app/i18n';
+import 'app/fetch_preconfig';
 
 import {captureExceptionWithoutState, initializeSentry, LOGGER_EXTENSION} from 'app/utils/sentry';
 
