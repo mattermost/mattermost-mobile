@@ -1,15 +1,16 @@
 # Mattermost Mobile
 
-**Supported Server Versions:** 4.0+
-
-**Supported iOS versions:** 9.3+
-**Supported Android versions:** 5.0+
+- **Supported Server versions:** 4.0+
+- **Supported iOS versions:** 9.3+
+- **Supported Android versions:** 5.0+
 
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 14 languages. Learn more at [https://about.mattermost.com](https://about.mattermost.com).
 
 You can download our apps from the [App Store](https://about.mattermost.com/mattermost-ios-app/) or [Google Play Store](https://about.mattermost.com/mattermost-android-app/), or [build them yourself](https://about.mattermost.com/default-enterprise-app-store). 
 
 We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
+
+**Important:** If you self-compile the Mattermost Mobile apps you also need to self-compile and deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy). 
 
 # How to Contribute
 
