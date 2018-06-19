@@ -11,7 +11,8 @@
     },
     "parser": "babel-eslint",
     "plugins": [
-        "react"
+        "react",
+        "header"
     ],
     "env": {
         "browser": true,
@@ -61,6 +62,7 @@
         "generator-star-spacing": [0, {"before": false, "after": true}],
         "global-require": 0,
         "guard-for-in": 2,
+        "header/header": [2, "line", " Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.\n See LICENSE.txt for license information."],
         "id-blacklist": 0,
         "indent": [2, 4, {"SwitchCase": 0}],
         "jsx-quotes": [2, "prefer-single"],

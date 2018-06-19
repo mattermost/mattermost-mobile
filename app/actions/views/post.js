@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import {Posts} from 'mattermost-redux/constants';
 import {PostTypes} from 'mattermost-redux/action_types';
