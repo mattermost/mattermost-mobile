@@ -11,6 +11,7 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {NavigationTypes} from 'app/constants';
 
 import {setChannelDisplayName} from './channel';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 export function handleTeamChange(teamId, selectChannel = true) {
     return async (dispatch, getState) => {
@@ -40,7 +41,7 @@ export function selectDefaultTeam() {
     return async (dispatch, getState) => {
         const state = getState();
 
-        const {ExperimentalPrimaryTeam} = state.entities.general.config;
+        const {ExperimentalPrimaryTeam} = getConfig(state);
         const {teams: allTeams, myMembers} = state.entities.teams;
         const teams = Object.keys(myMembers).map((key) => allTeams[key]);
 

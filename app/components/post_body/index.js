@@ -12,7 +12,7 @@ import {
 import {getChannel, canManageChannelMembers, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
+import {hasNewPermissions, getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -57,7 +57,8 @@ function mapStateToProps(state, ownProps) {
     const isUserCanManageMembers = canManageChannelMembers(state);
     const isEphemeralPost = isPostEphemeral(post);
 
-    const {config, license} = state.entities.general;
+    const config = getConfig(state);
+    const license = getLicense(state);
     const currentUserId = getCurrentUserId(state);
     const currentTeamId = getCurrentTeamId(state);
     const currentChannelId = getCurrentChannelId(state);

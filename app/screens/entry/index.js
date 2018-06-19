@@ -7,6 +7,7 @@ import {connect} from 'react-redux';
 
 import {setDeviceToken} from 'mattermost-redux/actions/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import {isLandscape} from 'app/selectors/device';
 
@@ -15,7 +16,7 @@ const lazyLoadEntry = () => {
 };
 
 function mapStateToProps(state) {
-    const {config} = state.entities.general;
+    const config = getConfig(state);
 
     return {
         config,

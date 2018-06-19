@@ -14,6 +14,7 @@ import {isAdmin, isSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import MoreChannels from './more_channels';
 
@@ -31,7 +32,8 @@ function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
     const {currentTeamId} = state.entities.teams;
     const {getChannels: requestStatus} = state.requests.channels;
-    const {config, license} = state.entities.general;
+    const config = getConfig(state);
+    const license = getLicense(state);
     const roles = getCurrentUserRoles(state);
     const channels = joinableChannels(state);
 

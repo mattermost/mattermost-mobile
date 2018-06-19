@@ -6,13 +6,15 @@ import {connect} from 'react-redux';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import {getAllowedServerMaxFileSize} from 'app/utils/file';
 
 import ExtensionPost from './extension_post';
 
 function mapStateToProps(state) {
-    const {config, credentials} = state.entities.general;
+    const config = getConfig(state);
+    const {credentials} = state.entities.general;
     const {token, url} = credentials;
 
     return {

@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import LoginActions from 'app/actions/views/login';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {checkMfa, login} from 'mattermost-redux/actions/users';
 
@@ -13,7 +14,8 @@ import Login from './login.js';
 
 function mapStateToProps(state) {
     const {checkMfa: checkMfaRequest, login: loginRequest} = state.requests.users;
-    const {config, license} = state.entities.general;
+    const config = getConfig(state);
+    const license = getLicense(state);
     return {
         ...state.views.login,
         checkMfaRequest,
