@@ -3,6 +3,7 @@
 
 import {connect} from 'react-redux';
 
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
@@ -16,6 +17,7 @@ function mapStateToProps(state) {
     const {token, url} = credentials;
 
     return {
+        config: getConfig(state),
         channelId: getCurrentChannelId(state),
         currentUserId: getCurrentUserId(state),
         maxFileSize: getAllowedServerMaxFileSize(config),

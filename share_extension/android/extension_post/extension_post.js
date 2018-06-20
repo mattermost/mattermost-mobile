@@ -58,6 +58,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 
 export default class ExtensionPost extends PureComponent {
     static propTypes = {
+        config: PropTypes.object.isRequired,
         channelId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         maxFileSize: PropTypes.number.isRequired,
@@ -120,11 +121,14 @@ export default class ExtensionPost extends PureComponent {
 
     constructor(props, context) {
         super(props, context);
+        const {config} = this.props;
 
         props.navigation.setParams({
             title: context.intl.formatMessage({
                 id: 'mobile.extension.title',
-                defaultMessage: 'Share in Mattermost',
+                defaultMessage: 'Share in {siteName}',
+            }, {
+                siteName: config.SiteName,
             }),
         });
 

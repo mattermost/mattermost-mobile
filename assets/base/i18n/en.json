@@ -2347,7 +2347,7 @@
   "mobile.extension.max_file_size": "File attachments shared in Mattermost must be less than {size}.",
   "mobile.extension.permission": "Mattermost needs access to the device storage to share files.",
   "mobile.extension.posting": "Posting...",
-  "mobile.extension.title": "Share in Mattermost",
+  "mobile.extension.title": "Share in {siteName}",
   "mobile.failed_network_action.description": "There seems to be a problem with your internet connection. Make sure you have an active connection and try again.",
   "mobile.failed_network_action.retry": "Try Again",
   "mobile.failed_network_action.title": "No internet connection",
