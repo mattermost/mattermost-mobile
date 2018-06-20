@@ -58,6 +58,9 @@ export default class ChannelSidebar extends Component {
         if (props.isLandscape || props.isTablet) {
             openDrawerOffset = DRAWER_LANDSCAPE_OFFSET;
         }
+
+        this.drawerOpened = false;
+
         this.state = {
             show: false,
             openDrawerOffset,
@@ -109,7 +112,7 @@ export default class ChannelSidebar extends Component {
     }
 
     handleAndroidBack = () => {
-        if (this.refs.drawer) {
+        if (this.drawerOpened) {
             this.refs.drawer.closeDrawer();
             return true;
         }
@@ -122,7 +125,7 @@ export default class ChannelSidebar extends Component {
     };
 
     closeChannelDrawer = () => {
-        if (this.refs.drawer) {
+        if (this.drawerOpened) {
             this.refs.drawer.closeDrawer();
         }
     };
@@ -132,10 +135,13 @@ export default class ChannelSidebar extends Component {
     };
 
     handleDrawerClose = () => {
+        this.drawerOpened = false;
         this.resetDrawer();
     };
 
     handleDrawerOpen = () => {
+        this.drawerOpened = true;
+
         if (this.state.openDrawerOffset !== 0) {
             Keyboard.dismiss();
         }
@@ -338,6 +344,7 @@ export default class ChannelSidebar extends Component {
             <DrawerLayout
                 ref='drawer'
                 renderNavigationView={this.renderNavigationView}
+                onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
                 drawerWidth={deviceWidth - openDrawerOffset}
             >
