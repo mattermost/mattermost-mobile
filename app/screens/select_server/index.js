@@ -1,12 +1,14 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
+import {login} from 'mattermost-redux/actions/users';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
+import {getSession, handleSuccessfulLogin} from 'app/actions/views/login';
 import {loadConfigAndLicense} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
@@ -33,9 +35,12 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            handleSuccessfulLogin,
             getPing,
+            getSession,
             handleServerUrlChanged,
             loadConfigAndLicense,
+            login,
             resetPing,
             setLastUpgradeCheck,
             setServerVersion,

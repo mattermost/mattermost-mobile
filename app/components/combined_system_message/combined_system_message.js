@@ -156,8 +156,8 @@ const postTypeMessage = {
 export default class CombinedSystemMessage extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            getProfilesByIds: PropTypes.func.isRequired,
-            getProfilesByUsernames: PropTypes.func.isRequired,
+            getMissingProfilesByIds: PropTypes.func.isRequired,
+            getMissingProfilesByUsernames: PropTypes.func.isRequired,
         }).isRequired,
         allUserIds: PropTypes.array.isRequired,
         allUsernames: PropTypes.array.isRequired,
@@ -165,8 +165,10 @@ export default class CombinedSystemMessage extends React.PureComponent {
         currentUsername: PropTypes.string.isRequired,
         linkStyle: CustomPropTypes.Style,
         messageData: PropTypes.array.isRequired,
+        showJoinLeave: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        userProfiles: PropTypes.array.isRequired,
     };
 
     static defaultProps = {
@@ -178,14 +180,6 @@ export default class CombinedSystemMessage extends React.PureComponent {
         intl: intlShape,
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            userProfiles: [],
-        };
-    }
-
     componentDidMount() {
         this.loadUserProfiles(this.props.allUserIds, this.props.allUsernames);
     }
@@ -196,34 +190,24 @@ export default class CombinedSystemMessage extends React.PureComponent {
         }
     }
 
-    loadUserProfiles = async (allUserIds, allUsernames) => {
-        const {actions} = this.props;
-        const userProfiles = [];
+    loadUserProfiles = (allUserIds, allUsernames) => {
         if (allUserIds.length > 0) {
-            const {data} = await actions.getProfilesByIds(allUserIds);
-            if (data.length > 0) {
-                userProfiles.push(...data);
-            }
+            this.props.actions.getMissingProfilesByIds(allUserIds);
         }
 
         if (allUsernames.length > 0) {
-            const {data} = await actions.getProfilesByUsernames(allUsernames);
-            if (data.length > 0) {
-                userProfiles.push(...data);
-            }
+            this.props.actions.getMissingProfilesByUsernames(allUsernames);
         }
-
-        this.setState({userProfiles});
     }
 
     getAllUsersDisplayName = () => {
-        const {userProfiles} = this.state;
         const {
             allUserIds,
             allUsernames,
             currentUserId,
             currentUsername,
             teammateNameDisplay,
+            userProfiles,
         } = this.props;
         const {formatMessage} = this.context.intl;
         const usersDisplayName = userProfiles.reduce((acc, user) => {
@@ -247,7 +231,11 @@ export default class CombinedSystemMessage extends React.PureComponent {
         const usersDisplayName = this.getAllUsersDisplayName();
         const displayNames = userIds.
             filter((userId) => {
-                return userId !== currentUserId && userId !== currentUsername;
+                return (
+                    usersDisplayName[userId] &&
+                    userId !== currentUserId &&
+                    userId !== currentUsername
+                );
             }).
             map((userId) => {
                 return usersDisplayName[userId];
@@ -357,15 +345,36 @@ export default class CombinedSystemMessage extends React.PureComponent {
         } = this.props;
         const style = getStyleSheet(theme);
 
+        const content = [];
+        for (const message of messageData) {
+            const {
+                postType,
+                actorId,
+            } = message;
+            let userIds = message.userIds;
+
+            if (!this.props.showJoinLeave && actorId !== this.props.currentUserId) {
+                const affectsCurrentUser = userIds.indexOf(this.props.currentUserId) !== -1;
+
+                if (affectsCurrentUser) {
+                    // Only show the message that the current user was added, etc
+                    userIds = [this.props.currentUserId];
+                } else {
+                    // Not something the current user did or was affected by
+                    continue;
+                }
+            }
+
+            content.push(
+                <React.Fragment key={postType + actorId}>
+                    {this.renderSystemMessage(postType, userIds, actorId, {activityType: style.activityType, link: linkStyle, text: style.text})}
+                </React.Fragment>
+            );
+        }
+
         return (
             <React.Fragment>
-                {messageData.map(({postType, userIds, actorId}) => {
-                    return (
-                        <React.Fragment key={postType + actorId}>
-                            {this.renderSystemMessage(postType, userIds, actorId, {activityType: style.activityType, link: linkStyle, text: style.text})}
-                        </React.Fragment>
-                    );
-                })}
+                {content}
             </React.Fragment>
         );
     }

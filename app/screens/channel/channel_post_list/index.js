@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
@@ -23,6 +23,7 @@ function mapStateToProps(state) {
         channelId,
         channelRefreshingFailed,
         currentUserId: getCurrentUserId(state),
+        deviceHeight: state.device.dimension.deviceHeight,
         postIds: getPostIdsInCurrentChannel(state),
         postVisibility: state.views.channel.postVisibility[channelId],
         lastViewedAt: getMyCurrentChannelMembership(state).last_viewed_at,

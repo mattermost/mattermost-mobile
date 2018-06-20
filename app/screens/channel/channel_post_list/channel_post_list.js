@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -34,6 +34,7 @@ export default class ChannelPostList extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelRefreshingFailed: PropTypes.bool,
         currentUserId: PropTypes.string,
+        deviceHeight: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number,
         loadMorePostsVisible: PropTypes.bool.isRequired,
         navigator: PropTypes.object,
@@ -53,6 +54,8 @@ export default class ChannelPostList extends PureComponent {
             visiblePostIds: this.getVisiblePostIds(props),
             loading: true,
         };
+
+        this.contentHeight = 0;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -119,10 +122,19 @@ export default class ChannelPostList extends PureComponent {
         }
     };
 
+    handleContentSizeChange = (contentWidth, contentHeight) => {
+        this.contentHeight = contentHeight;
+    };
+
     loadMorePosts = debounce(() => {
         if (this.props.loadMorePostsVisible) {
             const {actions, channelId} = this.props;
-            actions.increasePostVisibility(channelId);
+            actions.increasePostVisibility(channelId).then((hasMore) => {
+                if (hasMore && this.contentHeight < this.props.deviceHeight) {
+                    // We still have less than 1 screen of posts loaded with more to get, so load more
+                    this.loadMorePosts();
+                }
+            });
         }
     }, 100);
 
@@ -198,6 +210,7 @@ export default class ChannelPostList extends PureComponent {
                 <PostList
                     postIds={visiblePostIds}
                     extraData={loadMorePostsVisible}
+                    onContentSizeChange={this.handleContentSizeChange}
                     onEndReached={this.loadMorePosts}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}

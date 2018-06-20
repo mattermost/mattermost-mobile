@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
 import {NativeModules} from 'react-native';
@@ -8,6 +8,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import Config from 'assets/config';
 import {getTranslations} from 'app/i18n';
+import 'app/fetch_preconfig';
 
 import {captureExceptionWithoutState, initializeSentry, LOGGER_EXTENSION} from 'app/utils/sentry';
 

@@ -166,7 +166,7 @@ platform :ios do
   def replace_ios_assets()
     if ENV['IOS_REPLACE_ASSETS'] == 'true'
       sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
-      sh 'cp -R ../dist/assets/release/splash_screen/ios/* ../ios/SplashScreenResource/*'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/* ../ios/SplashScreenResource/'
     end
   end
 
@@ -571,7 +571,7 @@ def configure_from_env
   unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
     find_replace_string(
         path_to_file: './dist/assets/config.json',
-        old_string: '"SegmentApiKey": "3MT7rAoC0OP7yy3ThzqFSAtKzmzqtUPX"',
+        old_string: '"SegmentApiKey": "oPPT2MA24VYZTBGDyXtUDa7u50lkPIE4"',
         new_string: "\"SegmentApiKey\": \"#{ENV['SEGMENT_API_KEY']}\""
     )
   end

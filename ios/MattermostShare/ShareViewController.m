@@ -52,10 +52,12 @@ RCT_EXPORT_METHOD(close:(NSDictionary *)data appGroupId:(NSString *)appGroupId) 
   if (data != nil) {
     NSString *requestId = [data objectForKey:@"requestId"];
     NSString *useBackgroundUpload = [data objectForKey:@"useBackgroundUpload"];
-    BOOL isBackgroundUpload = useBackgroundUpload ? [useBackgroundUpload boolValue] : NO;
+    NSString *certificateName = [data objectForKey:@"certificate"];
+    BOOL tryToUploadInTheBackgound = useBackgroundUpload ? [useBackgroundUpload boolValue] : NO;
 
-    if (isBackgroundUpload) {
+    if (tryToUploadInTheBackgound) {
       NSString *requestWithGroup = [NSString stringWithFormat:@"%@|%@", requestId, appGroupId];
+      [[SessionManager sharedSession] setRequestWithGroup:requestWithGroup certificateName:certificateName];
       [[SessionManager sharedSession] setDataForRequest:data forRequestWithGroup:requestWithGroup];
       [[SessionManager sharedSession] createPostForRequest:requestWithGroup];
 

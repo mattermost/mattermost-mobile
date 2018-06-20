@@ -1,3 +1,5 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 module.exports = ['./node_modules/react-native/Libraries/ART/ARTSerializablePath.js',
     './node_modules/react-native/Libraries/Animated/src/Animated.js',
     './node_modules/react-native/Libraries/Animated/src/nodes/AnimatedAddition.js',
@@ -141,6 +143,7 @@ module.exports = ['./node_modules/react-native/Libraries/ART/ARTSerializablePath
     './node_modules/app/actions/views/thread.js',
     './node_modules/app/actions/views/typing.js',
     './node_modules/app/app.js',
+    './node_modules/app/fetch_preconfig.js',
     './node_modules/app/components/announcement_banner/announcement_banner.js',
     './node_modules/app/components/announcement_banner/index.js',
     './node_modules/app/components/at_mention/at_mention.js',

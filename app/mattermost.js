@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 /* eslint-disable global-require*/
 import {
@@ -48,6 +48,7 @@ import avoidNativeBridge from 'app/utils/avoid_native_bridge';
 import LocalConfig from 'assets/config';
 
 import App from './app';
+import './fetch_preconfig';
 
 const AUTHENTICATION_TIMEOUT = 5 * 60 * 1000;
 

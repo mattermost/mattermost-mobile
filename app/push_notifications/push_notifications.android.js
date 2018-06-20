@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import {AppRegistry, AppState} from 'react-native';
 import {NotificationsAndroid, PendingNotifications} from 'react-native-notifications';

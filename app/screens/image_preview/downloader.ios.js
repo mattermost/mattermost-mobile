@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
@@ -12,7 +12,10 @@ import {intlShape} from 'react-intl';
 import {Client4} from 'mattermost-redux/client';
 
 import FormattedText from 'app/components/formatted_text';
+import mattermostBucket from 'app/mattermost_bucket';
 import {emptyFunction} from 'app/utils/general';
+
+import LocalConfig from 'assets/config';
 
 const {View: AnimatedView} = Animated;
 
@@ -294,12 +297,14 @@ export default class Downloader extends PureComponent {
             }
 
             if (downloadFile) {
+                const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
                 const imageUrl = Client4.getFileUrl(data.id);
                 const options = {
                     session: data.id,
                     timeout: 10000,
                     indicator: true,
                     overwrite: true,
+                    certificate,
                 };
 
                 if (downloadPath && prompt) {

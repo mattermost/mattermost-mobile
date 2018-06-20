@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import DeviceInfo from 'react-native-device-info';
 
@@ -361,6 +361,7 @@ export function shareExtensionData() {
 
         switch (action.type) {
         case UserTypes.LOGOUT_SUCCESS:
+            mattermostBucket.removePreference('cert', Config.AppGroupId);
             mattermostBucket.removePreference('emm', Config.AppGroupId);
             mattermostBucket.removeFile('entities', Config.AppGroupId);
             break;

@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
@@ -244,7 +244,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18,
         },
         above: {
-            backgroundColor: theme.mentionBj,
+            backgroundColor: theme.mentionBg,
             top: 9,
         },
     };

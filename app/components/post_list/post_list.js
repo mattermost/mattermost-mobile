@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
@@ -43,6 +43,7 @@ export default class PostList extends PureComponent {
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
         measureCellLayout: PropTypes.bool,
         navigator: PropTypes.object,
+        onContentSizeChange: PropTypes.func,
         onEndReached: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
@@ -345,6 +346,7 @@ export default class PostList extends PureComponent {
 
         return (
             <FlatList
+                onContentSizeChange={this.props.onContentSizeChange}
                 onLayout={this.onLayout}
                 ref='list'
                 data={postIds}
