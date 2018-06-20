@@ -9,6 +9,7 @@ import {
     Platform,
     StyleSheet,
     TouchableWithoutFeedback,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
@@ -160,7 +161,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
 
                 return (
-                    <TouchableWithoutFeedback
+                    <TouchableOpacity
                         style={[styles.imageContainer, {height: imgHeight}]}
                         {...this.responder}
                         onPress={this.playYouTubeVideo}
@@ -173,14 +174,14 @@ export default class PostBodyAdditionalContent extends PureComponent {
                             resizeMode='cover'
                             onError={this.handleLinkLoadError}
                         >
-                            <TouchableWithoutFeedback onPress={this.playYouTubeVideo}>
+                            <TouchableOpacity onPress={this.playYouTubeVideo}>
                                 <Image
                                     source={require('assets/images/icons/youtube-play-icon.png')}
                                     onPress={this.playYouTubeVideo}
                                 />
-                            </TouchableWithoutFeedback>
+                            </TouchableOpacity>
                         </ProgressiveImage>
-                    </TouchableWithoutFeedback>
+                    </TouchableOpacity>
                 );
             }
 
@@ -343,9 +344,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
     playYouTubeVideo = () => {
         const {link} = this.props;
         const videoId = youTubeVideoId(link);
+        const startTime = this.getYouTubeTime(link);
 
         if (Platform.OS === 'ios') {
-            YouTubeStandaloneIOS.playVideo(videoId);
+            YouTubeStandaloneIOS.playVideo(videoId, startTime);
         } else {
             const {config} = this.props;
 
@@ -354,11 +356,41 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     apiKey: config.GoogleDeveloperKey,
                     videoId,
                     autoplay: true,
+                    startTime,
                 });
             } else {
                 Linking.openURL(link);
             }
         }
+    };
+
+    getYouTubeTime = (link) => {
+        const timeRegex = /[\\?&](t|start|time_continue)=([0-9]+h)?([0-9]+m)?([0-9]+s?)/;
+
+        const time = link.match(timeRegex);
+        if (!time || !time[0]) {
+            return '';
+        }
+
+        const hours = time[2] ? time[2].match(/([0-9]+)h/) : null;
+        const minutes = time[3] ? time[3].match(/([0-9]+)m/) : null;
+        const seconds = time[4] ? time[4].match(/([0-9]+)s?/) : null;
+
+        let ticks = 0;
+
+        if (hours && hours[1]) {
+            ticks += parseInt(hours[1], 10) * 3600;
+        }
+
+        if (minutes && minutes[1]) {
+            ticks += parseInt(minutes[1], 10) * 60;
+        }
+
+        if (seconds && seconds[1]) {
+            ticks += parseInt(seconds[1], 10);
+        }
+
+        return ticks;
     };
 
     render() {
