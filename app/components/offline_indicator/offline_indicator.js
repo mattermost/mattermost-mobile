@@ -66,13 +66,17 @@ export default class OfflineIndicator extends Component {
         this.backgroundColor = new Animated.Value(0);
     }
 
+    componentDidMount() {
+        this.mounted = true;
+    }
+
     componentWillReceiveProps(nextProps) {
         const {isLandscape, webSocketStatus} = this.props;
 
         if (nextProps.isLandscape !== isLandscape && this.state.network) {
             const navBar = this.getNavBarHeight(nextProps.isLandscape);
             const top = new Animated.Value(navBar - HEIGHT);
-            this.setState({navBar, top});
+            this.setLocalState({navBar, top});
         }
 
         if (nextProps.isOnline) {
@@ -92,14 +96,18 @@ export default class OfflineIndicator extends Component {
         return (nextState.network !== this.state.network || nextProps.isLandscape !== this.props.isLandscape);
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     connect = () => {
         checkNetwork((result) => {
-            this.setState({network: CONNECTING}, () => {
+            this.setLocalState({network: CONNECTING}, () => {
                 if (result) {
                     this.props.actions.connection(true);
                     this.initializeWebSocket();
                 } else {
-                    this.setState({network: OFFLINE});
+                    this.setLocalState({network: OFFLINE});
                 }
             });
         });
@@ -123,13 +131,13 @@ export default class OfflineIndicator extends Component {
             ),
         ]).start(() => {
             this.backgroundColor.setValue(0);
-            this.setState({network: null});
+            this.setLocalState({network: null});
         });
     };
 
     connecting = () => {
         const prevState = this.state.network;
-        this.setState({network: CONNECTING}, () => {
+        this.setLocalState({network: CONNECTING}, () => {
             if (prevState !== OFFLINE) {
                 this.show();
             }
@@ -169,9 +177,17 @@ export default class OfflineIndicator extends Component {
     };
 
     offline = () => {
-        this.setState({network: OFFLINE}, () => {
+        this.setLocalState({network: OFFLINE}, () => {
             this.show();
         });
+    };
+
+    setLocalState = (state, callback) => {
+        if (!this.mounted) {
+            return;
+        }
+
+        this.setState(state, callback);
     };
 
     show = () => {
