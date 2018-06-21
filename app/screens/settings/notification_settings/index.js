@@ -10,7 +10,6 @@ import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/pr
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notifications';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import NotificationSettings from './notification_settings';
 

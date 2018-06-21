@@ -39,7 +39,7 @@ export default class PostProfilePicture extends PureComponent {
             userId,
         } = this.props;
 
-        if (isSystemMessage) {
+        if (isSystemMessage && !fromAutoResponder) {
             return (
                 <View>
                     <AppIcon
