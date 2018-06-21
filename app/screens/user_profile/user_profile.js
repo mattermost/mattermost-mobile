@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {getDirectChannelName} from 'mattermost-redux/utils/channel_utils';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
@@ -29,7 +28,6 @@ export default class UserProfile extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
         config: PropTypes.object.isRequired,
-        currentChannel: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
         currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
@@ -66,9 +64,9 @@ export default class UserProfile extends PureComponent {
     };
 
     displaySendMessageOption = () => {
-        const {currentChannel, currentUserId, user} = this.props;
+        const {currentUserId, user} = this.props;
 
-        return currentChannel.name !== getDirectChannelName(currentUserId, user.id);
+        return user.id !== currentUserId;
     };
 
     getDisplayName = () => {
