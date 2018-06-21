@@ -251,7 +251,7 @@ export default class SelectServer extends PureComponent {
     onClick = preventDoubleTap(async () => {
         const urlParse = require('url-parse');
         const preUrl = urlParse(this.state.url, true);
-        const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host);
+        const url = stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
 
         Keyboard.dismiss();
 
