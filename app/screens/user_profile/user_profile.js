@@ -29,7 +29,6 @@ export default class UserProfile extends PureComponent {
         }).isRequired,
         config: PropTypes.object.isRequired,
         currentDisplayName: PropTypes.string,
-        currentUserId: PropTypes.string.isRequired,
         navigator: PropTypes.object,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -61,12 +60,6 @@ export default class UserProfile extends PureComponent {
                 screenBackgroundColor: theme.centerChannelBg,
             },
         });
-    };
-
-    displaySendMessageOption = () => {
-        const {currentUserId, user} = this.props;
-
-        return user.id !== currentUserId;
     };
 
     getDisplayName = () => {
@@ -197,7 +190,6 @@ export default class UserProfile extends PureComponent {
                         {config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                         {this.buildDisplayBlock('position')}
                     </View>
-                    {this.displaySendMessageOption() &&
                     <UserProfileRow
                         action={this.sendMessage}
                         defaultMessage='Send Message'
@@ -206,7 +198,6 @@ export default class UserProfile extends PureComponent {
                         textId='mobile.routes.user_profile.send_message'
                         theme={theme}
                     />
-                    }
                     {this.renderAdditionalOptions()}
                 </ScrollView>
             </View>
