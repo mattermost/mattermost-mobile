@@ -5,11 +5,10 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {clearErrors} from 'mattermost-redux/actions/errors';
-import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
+import {getCurrentUrl, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 
 import {purgeOfflineStore} from 'app/actions/views/root';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {removeProtocol} from 'app/utils/url';
 
