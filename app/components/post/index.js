@@ -12,6 +12,7 @@ import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/pr
 import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {canDeletePost, canEditPost, isPostFlagged} from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';
@@ -22,7 +23,8 @@ import Post from './post';
 function mapStateToProps(state, ownProps) {
     const post = getPost(state, ownProps.postId);
 
-    const {config, license} = state.entities.general;
+    const config = getConfig(state);
+    const license = getLicense(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const myPreferences = getMyPreferences(state);
     const currentUserId = getCurrentUserId(state);

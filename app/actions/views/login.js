@@ -8,6 +8,7 @@ import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
 import {ViewTypes} from 'app/constants';
 import {app} from 'app/mattermost';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -30,7 +31,8 @@ export function handlePasswordChanged(password) {
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {
         const state = getState();
-        const {config, license} = state.entities.general;
+        const config = getConfig(state);
+        const license = getLicense(state);
         const token = Client4.getToken();
         const url = Client4.getUrl();
         const deviceToken = state.entities.general.deviceToken;

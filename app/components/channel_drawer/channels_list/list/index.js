@@ -16,11 +16,13 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme, getFavoritesPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {showCreateOption} from 'mattermost-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import List from './list';
 
 function mapStateToProps(state) {
-    const {config, license} = state.entities.general;
+    const config = getConfig(state);
+    const license = getLicense(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const unreadChannelIds = getSortedUnreadChannelIds(state);
     const favoriteChannelIds = getSortedFavoriteChannelIds(state);

@@ -9,18 +9,23 @@ import {
     General,
     Posts,
 } from 'mattermost-redux/constants';
-import {getChannel, canManageChannelMembers} from 'mattermost-redux/selectors/entities/channels';
+import {getChannel, canManageChannelMembers, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
+import {hasNewPermissions, getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
+import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import Permissions from 'mattermost-redux/constants/permissions';
 
 import {
     isEdited,
     isPostEphemeral,
     isSystemMessage,
+    canEditPost,
+    canDeletePost,
 } from 'mattermost-redux/utils/post_utils';
+import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
 
 import PostBody from './post_body';
 
@@ -52,6 +57,21 @@ function mapStateToProps(state, ownProps) {
     const isUserCanManageMembers = canManageChannelMembers(state);
     const isEphemeralPost = isPostEphemeral(post);
 
+    const config = getConfig(state);
+    const license = getLicense(state);
+    const currentUserId = getCurrentUserId(state);
+    const currentTeamId = getCurrentTeamId(state);
+    const currentChannelId = getCurrentChannelId(state);
+    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const isAdmin = checkIsAdmin(roles);
+    const isSystemAdmin = checkIsSystemAdmin(roles);
+    let canDelete = false;
+    let canEdit = false;
+    if (post) {
+        canDelete = canDeletePost(state, config, license, currentTeamId, currentChannelId, currentUserId, post, isAdmin, isSystemAdmin);
+        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
+    }
+
     let isPostAddChannelMember = false;
     if (
         channel &&
@@ -79,6 +99,8 @@ function mapStateToProps(state, ownProps) {
         message: post.message,
         theme: getTheme(state),
         canAddReaction,
+        canDelete,
+        canEdit,
     };
 }
 
