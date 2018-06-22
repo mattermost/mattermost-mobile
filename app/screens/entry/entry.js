@@ -153,6 +153,8 @@ export default class Entry extends PureComponent {
         if (credentials.token && credentials.url) {
             Client4.setToken(credentials.token);
             Client4.setUrl(stripTrailingSlashes(credentials.url));
+        } else if (app.waitForRehydration) {
+            app.waitForRehydration = false;
         }
 
         if (currentUserId) {
