@@ -46,7 +46,7 @@ export default class ChannelLoader extends PureComponent {
             };
         }
 
-        return prevState;
+        return null;
     }
 
     componentDidMount() {
