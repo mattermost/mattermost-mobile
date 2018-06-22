@@ -12,6 +12,7 @@ import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/pr
 import {getCurrentTeamUrl, getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {canDeletePost, canEditPost, isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {addReaction} from 'app/actions/views/emoji';

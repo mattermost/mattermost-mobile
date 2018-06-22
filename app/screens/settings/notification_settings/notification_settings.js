@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import deepEqual from 'deep-equal';
 
-import {Preferences, RequestStatus} from 'mattermost-redux/constants';
+import {General, Preferences, RequestStatus} from 'mattermost-redux/constants';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import FormattedText from 'app/components/formatted_text';
@@ -38,6 +38,8 @@ class NotificationSettings extends PureComponent {
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
+        currentUserStatus: PropTypes.string.isRequired,
+        enableAutoResponder: PropTypes.bool.isRequired,
     };
 
     state = {
@@ -67,6 +69,29 @@ class NotificationSettings extends PureComponent {
     handlePress = preventDoubleTap((action) => {
         action();
     });
+
+    goToNotificationSettingsAutoResponder = () => {
+        const {currentUser, intl, navigator, theme} = this.props;
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsAutoResponder',
+            title: intl.formatMessage({
+                id: 'mobile.notification_settings.auto_responder_short',
+                defaultMessage: 'Automatic Replies',
+            }),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentUser,
+                onBack: this.saveAutoResponder,
+            },
+        });
+    };
 
     goToNotificationSettingsEmail = () => {
         if (Platform.OS === 'ios') {
@@ -184,6 +209,40 @@ class NotificationSettings extends PureComponent {
         }
 
         if (!deepEqual(previousProps, notifyProps)) {
+            this.props.actions.handleUpdateUserNotifyProps(notifyProps);
+        }
+    };
+
+    /**
+     * shouldSaveAutoResponder
+     *
+     * Necessary in order to properly update the notifyProps when
+     * enabling/disabling the Auto Responder.
+     *
+     * Reason being, on mobile when the AutoResponder is disabled on the server
+     * for some reason the update does not get received on mobile, it does for web
+     */
+    shouldSaveAutoResponder = (notifyProps) => {
+        const {currentUserStatus} = this.props;
+        const {auto_responder_active: autoResponderActive} = notifyProps;
+
+        const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
+        const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoResponderActive === 'false';
+
+        return enabling || disabling;
+    };
+
+    saveAutoResponder = (notifyProps) => {
+        const {intl} = this.props;
+
+        if (!notifyProps.auto_responder_message || notifyProps.auto_responder_message === '') {
+            notifyProps.auto_responder_message = intl.formatMessage({
+                id: 'mobile.notification_settings.auto_responder.default_message',
+                defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
+            });
+        }
+
+        if (this.shouldSaveAutoResponder(notifyProps)) {
             this.props.actions.handleUpdateUserNotifyProps(notifyProps);
         }
     };
@@ -337,9 +396,26 @@ class NotificationSettings extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, enableAutoResponder} = this.props;
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
+
+        const showEmailSeparator = enableAutoResponder;
+        let autoResponder;
+        if (enableAutoResponder) {
+            autoResponder = (
+                <SettingsItem
+                    defaultMessage='Automatic Direct Message Replies'
+                    i18nId='mobile.notification_settings.ooo_auto_responder'
+                    iconName='beach-access'
+                    iconType='material'
+                    onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
+                    separator={false}
+                    showArrow={showArrow}
+                    theme={theme}
+                />
+            );
+        }
 
         return (
             <View style={style.container}>
@@ -375,10 +451,11 @@ class NotificationSettings extends PureComponent {
                         iconName='ios-mail'
                         iconType='ion'
                         onPress={() => this.handlePress(this.goToNotificationSettingsEmail)}
-                        separator={false}
+                        separator={showEmailSeparator}
                         showArrow={showArrow}
                         theme={theme}
                     />
+                    {autoResponder}
                     <View style={style.divider}/>
                 </ScrollView>
                 {this.renderEmailNotificationSettings(style)}

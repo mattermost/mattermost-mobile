@@ -13,11 +13,13 @@ import {loadConfigAndLicense} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
 
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
-    const {config, license} = state.entities.general;
+    const config = getConfig(state);
+    const license = getLicense(state);
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
     return {

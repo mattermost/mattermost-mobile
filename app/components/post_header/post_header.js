@@ -18,8 +18,6 @@ import FlagIcon from 'app/components/flag_icon';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-const BOT_NAME = 'BOT';
-
 export default class PostHeader extends PureComponent {
     static propTypes = {
         commentCount: PropTypes.number,
@@ -31,6 +29,7 @@ export default class PostHeader extends PureComponent {
         isPendingOrFailedPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         isSystemMessage: PropTypes.bool,
+        fromAutoResponder: PropTypes.bool,
         militaryTime: PropTypes.bool,
         onPress: PropTypes.func,
         onUsernamePress: PropTypes.func,
@@ -60,6 +59,7 @@ export default class PostHeader extends PureComponent {
             enablePostUsernameOverride,
             fromWebHook,
             isSystemMessage,
+            fromAutoResponder,
             overrideUsername,
         } = this.props;
 
@@ -70,13 +70,33 @@ export default class PostHeader extends PureComponent {
             }
 
             return (
-                <View style={style.botContainer}>
+                <View style={style.indicatorContainer}>
                     <Text style={style.displayName}>
                         {name}
                     </Text>
-                    <Text style={style.bot}>
-                        {BOT_NAME}
+                    <FormattedText
+                        id='post_info.bot'
+                        defaultMessage='BOT'
+                        style={style.bot}
+                    />
+                </View>
+            );
+        } else if (fromAutoResponder) {
+            let name = this.props.displayName;
+            if (overrideUsername && enablePostUsernameOverride) {
+                name = overrideUsername;
+            }
+
+            return (
+                <View style={style.indicatorContainer}>
+                    <Text style={style.displayName}>
+                        {name}
                     </Text>
+                    <FormattedText
+                        id='post_info.auto_responder'
+                        defaultMessage='AUTOMATIC REPLY'
+                        style={style.bot}
+                    />
                 </View>
             );
         } else if (isSystemMessage) {
@@ -275,7 +295,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 3,
             color: theme.linkColor,
         },
-        botContainer: {
+        indicatorContainer: {
             flexDirection: 'row',
         },
         bot: {

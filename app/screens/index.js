@@ -36,6 +36,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreDirectMessages', () => wrapWithContextProvider(require('app/screens/more_dms').default), store, Provider);
     Navigation.registerComponent('Notification', () => wrapWithContextProvider(require('app/screens/notification').default), store, Provider);
     Navigation.registerComponent('NotificationSettings', () => wrapWithContextProvider(require('app/screens/settings/notification_settings').default), store, Provider);
+    Navigation.registerComponent('NotificationSettingsAutoResponder', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_auto_responder').default), store, Provider);
     Navigation.registerComponent('NotificationSettingsEmail', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_email').default), store, Provider);
     Navigation.registerComponent('NotificationSettingsMentions', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mentions').default), store, Provider);
     Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapWithContextProvider(require('app/screens/settings/notification_settings_mentions_keywords').default), store, Provider);
