@@ -47,7 +47,8 @@ function makeMapStateToProps() {
     const getCommentCountForPost = makeGetCommentCountForPost();
     return function mapStateToProps(state, ownProps) {
         const post = getPost(state, ownProps.postId);
-        const {config, license} = state.entities.general;
+        const config = getConfig(state);
+        const license = getLicense(state);
         const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
