@@ -11,6 +11,8 @@ import {isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/pos
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
+import {fromAutoResponder} from 'app/utils/general';
+
 import PostHeader from './post_header';
 
 function makeMapStateToProps() {
@@ -33,6 +35,7 @@ function makeMapStateToProps() {
             militaryTime,
             isPendingOrFailedPost: isPostPendingOrFailed(post),
             isSystemMessage: isSystemMessage(post),
+            fromAutoResponder: fromAutoResponder(post),
             overrideUsername: post.props && post.props.override_username,
             theme: getTheme(state),
             username: user.username,

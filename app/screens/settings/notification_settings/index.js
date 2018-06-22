@@ -4,22 +4,30 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 
 import {handleUpdateUserNotifyProps} from 'app/actions/views/account_notifications';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
 import NotificationSettings from './notification_settings';
 
 function mapStateToProps(state) {
     const config = getConfig(state);
+    const currentUser = getCurrentUser(state);
+    const currentUserStatus = getStatusForUserId(state, currentUser.id);
+    const serverVersion = state.entities.general.serverVersion;
+    const enableAutoResponder = isMinimumServerVersion(serverVersion, 4, 9) && config.ExperimentalEnableAutomaticReplies === 'true';
+
     return {
         config,
-        currentUser: getCurrentUser(state),
+        currentUser,
+        currentUserStatus,
         myPreferences: getMyPreferences(state),
         updateMeRequest: state.requests.users.updateMe,
         theme: getTheme(state),
+        enableAutoResponder,
     };
 }
 
