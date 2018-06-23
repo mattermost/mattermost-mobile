@@ -7,7 +7,7 @@
 ### Bug Fixes
 - Fixed an issue with typing lag on Android devices
 - Fixed an issue causing users to be logged out after upgrading to v1.9.0
-- Fixed an issue where the in: and from: modifiers were not being added to the search field
+- Fixed an issue where the ``in:`` and ``from:`` modifiers were not being added to the search field
 
 ## v1.9.0 Release
 - Release Date: June 16, 2018
