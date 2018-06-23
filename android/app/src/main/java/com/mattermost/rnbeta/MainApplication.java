@@ -11,7 +11,6 @@ import com.oblador.keychain.KeychainPackage;
 import com.reactlibrary.RNReactNativeDocViewerPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.horcrux.svg.SvgPackage;
-import com.inprogress.reactnativeyoutube.ReactNativeYouTube;
 import io.sentry.RNSentryPackage;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
@@ -53,7 +52,7 @@ public class MainApplication extends NavigationApplication implements INotificat
   public List<ReactPackage> createAdditionalReactPackages() {
     // Add the packages you require here.
     // No need to add RnnPackage and MainReactPackage
-    return Arrays.<ReactPackage>asList(
+    List<ReactPackage> packages = Arrays.<ReactPackage>asList(
             new ImagePickerPackage(),
             new RNBottomSheetPackage(),
             new RNDeviceInfo(),
@@ -68,7 +67,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             new MattermostPackage(this),
             new RNSentryPackage(this),
             new ReactNativeExceptionHandlerPackage(),
-            new ReactNativeYouTube(),
             new ReactVideoPackage(),
             new RNReactNativeDocViewerPackage(),
             new ReactNativeDocumentPicker(),
@@ -76,7 +74,11 @@ public class MainApplication extends NavigationApplication implements INotificat
             new KeychainPackage(),
             new InitializationPackage(this)
     );
-  }
+
+    packages.addAll(PackageManager.getOptionalPackages());
+
+    return packages;
+}
 
   @Override
   public String getJSMainModuleName() {
