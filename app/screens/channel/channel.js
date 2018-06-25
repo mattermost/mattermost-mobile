@@ -6,15 +6,18 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     AppState,
+    Dimensions,
     Platform,
     View,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import ChannelDrawer from 'app/components/channel_drawer';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
-import SettingsDrawer from 'app/components/settings_drawer';
+import ChannelLoader from 'app/components/channel_loader';
+import MainSidebar from 'app/components/sidebars/main';
+import SettingsSidebar from 'app/components/sidebars/settings';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import OfflineIndicator from 'app/components/offline_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -29,6 +32,15 @@ import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
+
+import {ViewTypes} from 'app/constants';
+const {
+    ANDROID_TOP_LANDSCAPE,
+    ANDROID_TOP_PORTRAIT,
+    IOS_TOP_LANDSCAPE,
+    IOS_TOP_PORTRAIT,
+    IOSX_TOP_PORTRAIT,
+} = ViewTypes;
 
 let ClientUpgradeListener;
 
@@ -60,6 +72,8 @@ export default class Channel extends PureComponent {
 
     constructor(props) {
         super(props);
+
+        this.isX = DeviceInfo.getModel() === 'iPhone X';
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -137,15 +151,41 @@ export default class Channel extends PureComponent {
         }
     };
 
-    channelDrawerRef = (ref) => {
+    channelLoaderDimensions = () => {
+        const {isLandscape} = this.props;
+        let top = 0;
+        let {height} = Dimensions.get('window');
+        switch (Platform.OS) {
+        case 'android':
+            if (isLandscape) {
+                top = ANDROID_TOP_LANDSCAPE;
+            } else {
+                top = ANDROID_TOP_PORTRAIT;
+                height = (height - 84);
+            }
+            break;
+        case 'ios':
+            if (isLandscape) {
+                top = IOS_TOP_LANDSCAPE;
+            } else {
+                height = this.isX ? (height - IOSX_TOP_PORTRAIT) : (height - IOS_TOP_PORTRAIT);
+                top = this.isX ? IOSX_TOP_PORTRAIT : IOS_TOP_PORTRAIT;
+            }
+            break;
+        }
+
+        return {height, top};
+    };
+
+    channelSidebarRef = (ref) => {
         if (ref) {
-            this.channelDrawer = ref.getWrappedInstance();
+            this.channelSidebar = ref.getWrappedInstance();
         }
     };
 
-    settingsDrawerRef = (ref) => {
+    settingsSidebarRef = (ref) => {
         if (ref) {
-            this.settingsDrawer = ref.getWrappedInstance();
+            this.settingsSidebar = ref.getWrappedInstance();
         }
     };
 
@@ -231,15 +271,15 @@ export default class Channel extends PureComponent {
         });
     };
 
-    openChannelDrawer = () => {
-        if (this.channelDrawer) {
-            this.channelDrawer.openChannelDrawer();
+    openChannelSidebar = () => {
+        if (this.channelSidebar) {
+            this.channelSidebar.openChannelSidebar();
         }
     };
 
-    openSettingsDrawer = () => {
-        if (this.settingsDrawer) {
-            this.settingsDrawer.openSettingsDrawer();
+    openSettingsSidebar = () => {
+        if (this.settingsSidebar) {
+            this.settingsSidebar.openSettingsSidebar();
         }
     };
 
@@ -248,10 +288,10 @@ export default class Channel extends PureComponent {
     };
 
     render() {
-        const {intl} = this.context;
         const {
             channelsRequestFailed,
             currentChannelId,
+            isLandscape,
             navigator,
             theme,
         } = this.props;
@@ -283,15 +323,17 @@ export default class Channel extends PureComponent {
             );
         }
 
+        const loaderDimensions = this.channelLoaderDimensions();
+
+        // console.warn('height', height, Date.now())
         return (
-            <ChannelDrawer
-                ref={this.channelDrawerRef}
+            <MainSidebar
+                ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
-                intl={intl}
                 navigator={navigator}
             >
-                <SettingsDrawer
-                    ref={this.settingsDrawerRef}
+                <SettingsSidebar
+                    ref={this.settingsSidebarRef}
                     blurPostTextBox={this.blurPostTextBox}
                     navigator={navigator}
                 >
@@ -300,8 +342,8 @@ export default class Channel extends PureComponent {
                         <OfflineIndicator/>
                         <ChannelNavBar
                             navigator={navigator}
-                            openChannelDrawer={this.openChannelDrawer}
-                            openSettingsDrawer={this.openSettingsDrawer}
+                            openChannelDrawer={this.openChannelSidebar}
+                            openSettingsDrawer={this.openSettingsSidebar}
                             onPress={this.goToChannelInfo}
                         />
                         <KeyboardLayout>
@@ -313,10 +355,14 @@ export default class Channel extends PureComponent {
                                 navigator={navigator}
                             />
                         </KeyboardLayout>
+                        <ChannelLoader
+                            style={[style.channelLoader, loaderDimensions]}
+                            maxRows={isLandscape ? 4 : 6}
+                        />
                         {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener navigator={navigator}/>}
                     </SafeAreaView>
-                </SettingsDrawer>
-            </ChannelDrawer>
+                </SettingsSidebar>
+            </MainSidebar>
         );
     }
 }
@@ -328,6 +374,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         loading: {
             backgroundColor: theme.centerChannelBg,
+            flex: 1,
+        },
+        channelLoader: {
+            position: 'absolute',
+            width: '100%',
             flex: 1,
         },
     };

@@ -6,15 +6,18 @@ import {connect} from 'react-redux';
 
 import {logout, setStatus} from 'mattermost-redux/actions/users';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-
-import SettingsDrawer from './settings_drawer';
 import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+
+import {getDimensions} from 'app/selectors/device';
+
+import SettingsSidebar from './settings_sidebar';
 
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);
     const status = getStatusForUserId(state, currentUser.id);
 
     return {
+        ...getDimensions(state),
         currentUser,
         status,
         theme: getTheme(state),
@@ -30,4 +33,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(SettingsDrawer);
+export default connect(mapStateToProps, mapDispatchToProps, null, {withRef: true})(SettingsSidebar);

@@ -16,7 +16,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {General} from 'mattermost-redux/constants';
 import {debounce} from 'mattermost-redux/actions/helpers';
 
-import ChannelItem from 'app/components/channel_drawer/channels_list/channel_item';
+import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity} from 'app/utils/theme';
@@ -313,7 +313,7 @@ export default class List extends PureComponent {
 
     emitUnreadIndicatorChange = debounce((showIndicator) => {
         if (showIndicator && !UnreadIndicator) {
-            UnreadIndicator = require('app/components/channel_drawer/channels_list/unread_indicator').default;
+            UnreadIndicator = require('app/components/sidebars/main/channels_list/unread_indicator').default;
         }
         this.setState({showIndicator});
     }, 100);
