@@ -73,16 +73,6 @@ public class RealPathUtil {
                 return uri.getLastPathSegment();
             }
 
-            try {
-                String path = getDataColumn(context, uri, null, null);
-
-                if (path != null) {
-                    return path;
-                }
-            } catch (Exception e) {
-                // do nothing and try to get a temp file
-            }
-
             // Try save to tmp file, and return tmp file path
             return getPathFromSavingTempFile(context, uri);
         } else if ("file".equalsIgnoreCase(uri.getScheme())) {
