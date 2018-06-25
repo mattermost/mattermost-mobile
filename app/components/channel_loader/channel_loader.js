@@ -34,7 +34,7 @@ export default class ChannelLoader extends PureComponent {
     };
 
     state = {
-        switching: false,
+        switch: false,
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {

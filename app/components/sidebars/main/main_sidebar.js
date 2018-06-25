@@ -112,7 +112,7 @@ export default class ChannelSidebar extends Component {
     }
 
     handleAndroidBack = () => {
-        if (this.drawerOpened) {
+        if (this.drawerOpened && this.refs.drawer) {
             this.refs.drawer.closeDrawer();
             return true;
         }
@@ -125,7 +125,7 @@ export default class ChannelSidebar extends Component {
     };
 
     closeChannelDrawer = () => {
-        if (this.drawerOpened) {
+        if (this.drawerOpened && this.refs.drawer) {
             this.refs.drawer.closeDrawer();
         }
     };
