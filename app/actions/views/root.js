@@ -87,7 +87,7 @@ export function loadFromPushNotification(notification) {
         // we should get the posts
         if (channelId === currentChannelId) {
             dispatch(markChannelAsRead(channelId, null, false));
-            await dispatch(retryGetPostsAction(getPosts(channelId)));
+            await retryGetPostsAction(getPosts(channelId), dispatch, getState);
         } else {
             // when the notification is from a channel other than the current channel
             dispatch(markChannelAsRead(channelId, currentChannelId, false));
