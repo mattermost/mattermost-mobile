@@ -166,6 +166,9 @@ export default class AttachmentButton extends PureComponent {
                     }
                 }
 
+                // Decode file uri to get the actual path
+                res.uri = decodeURIComponent(res.uri);
+
                 this.uploadFiles([res]);
             });
         }
