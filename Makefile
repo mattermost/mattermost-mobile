@@ -177,10 +177,6 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
     fi
 
 build-ios: | pre-run check-style ## Creates an iOS build
-ifneq ($(IOS_APP_GROUP),)
-	@mkdir -p assets/override
-	@echo "{\n\t\"AppGroupId\": \"$$IOS_APP_GROUP\"\n}" > assets/override/config.json
-endif
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
 		echo Starting React Native packager server; \
 		npm start & echo; \
@@ -188,7 +184,6 @@ endif
 	@echo "Building iOS app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
 	@ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' | xargs kill -9
-	@rm -rf assets/override
 
 build-android: | pre-run check-style prepare-android-build ## Creates an Android build
 	@if [ $(shell ps -e | grep -i "cli.js start" | grep -civ grep) -eq 0 ]; then \
@@ -205,17 +200,12 @@ unsigned-ios: pre-run check-style
 		npm start & echo; \
 	fi
 	@echo "Building unsigned iOS app"
-ifneq ($(IOS_APP_GROUP),)
-	@mkdir -p assets/override
-	@echo "{\n\t\"AppGroupId\": \"$$IOS_APP_GROUP\"\n}" > assets/override/config.json
-endif
 	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
 	@mkdir -p build-ios
 	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Relase -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
 	@cd build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/
 	@mv build-ios/Mattermost-unsigned.ipa .
 	@rm -rf build-ios/
-	@rm -rf assets/override
 	@ps -e | grep -i "cli.js start" | grep -iv grep | awk '{print $$1}' | xargs kill -9
 
 unsigned-android: pre-run check-style prepare-android-build

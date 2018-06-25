@@ -278,66 +278,52 @@ export default class Downloader extends PureComponent {
     startDownload = async () => {
         const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
         const {data} = file;
-        let downloadFile = true;
 
         try {
             if (this.state.didCancel) {
                 this.setState({didCancel: false});
             }
 
-            let path;
-            let res;
-            if (data && data.localPath) {
-                path = data.localPath;
-                downloadFile = false;
-                this.setState({
-                    progress: 100,
-                    started: true,
-                });
-            }
+            const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
+            const imageUrl = Client4.getFileUrl(data.id);
+            const options = {
+                session: data.id,
+                timeout: 10000,
+                indicator: true,
+                overwrite: true,
+                certificate,
+            };
 
-            if (downloadFile) {
-                const certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
-                const imageUrl = Client4.getFileUrl(data.id);
-                const options = {
-                    session: data.id,
-                    timeout: 10000,
-                    indicator: true,
-                    overwrite: true,
-                    certificate,
-                };
-
-                if (downloadPath && prompt) {
-                    const isDir = await RNFetchBlob.fs.isDir(downloadPath);
-                    if (!isDir) {
-                        try {
-                            await RNFetchBlob.fs.mkdir(downloadPath);
-                        } catch (error) {
-                            this.showDownloadFailedAlert();
-                            return;
-                        }
+            if (downloadPath && prompt) {
+                const isDir = await RNFetchBlob.fs.isDir(downloadPath);
+                if (!isDir) {
+                    try {
+                        await RNFetchBlob.fs.mkdir(downloadPath);
+                    } catch (error) {
+                        this.showDownloadFailedAlert();
+                        return;
                     }
-
-                    options.path = `${downloadPath}/${data.id}-${file.caption}`;
-                } else {
-                    options.fileCache = true;
-                    options.appendExt = data.extension;
                 }
 
-                this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl);
-                this.downloadTask.progress((received, total) => {
-                    const progress = (received / total) * 100;
-                    if (this.mounted) {
-                        this.setState({
-                            progress,
-                            started: true,
-                        });
-                    }
-                });
-
-                res = await this.downloadTask;
-                path = res.path();
+                options.path = `${downloadPath}/${data.id}-${file.caption}`;
+            } else {
+                options.fileCache = true;
+                options.appendExt = data.extension;
             }
+
+            this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl);
+            this.downloadTask.progress((received, total) => {
+                const progress = (received / total) * 100;
+                if (this.mounted) {
+                    this.setState({
+                        progress,
+                        started: true,
+                    });
+                }
+            });
+
+            const res = await this.downloadTask;
+            let path = res.path();
 
             if (saveToCameraRoll) {
                 path = await CameraRoll.saveToCameraRoll(path, 'photo');

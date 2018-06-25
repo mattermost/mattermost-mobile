@@ -145,6 +145,12 @@ platform :ios do
             entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
             app_group_identifiers: [ENV['IOS_APP_GROUP']]
         )
+
+        find_replace_string(
+            path_to_file: './dist/assets/config.json',
+            old_string: 'group.com.mattermost.rnbeta',
+            new_string: ENV['IOS_APP_GROUP']
+        )
       end
 
       unless ENV['IOS_EXTENSION_APP_IDENTIFIER'].nil? || ENV['IOS_EXTENSION_APP_IDENTIFIER'].empty? || ENV['IOS_EXTENSION_APP_IDENTIFIER'] == 'com.mattermost.rnbeta.MattermostShare'
