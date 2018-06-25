@@ -19,15 +19,14 @@ export function createSentryMiddleware() {
 }
 
 function makeBreadcrumbFromAction(action) {
+    if (!action.type) {
+        console.warn('dispatching action with undefined type', action); // eslint-disable-line no-console
+    }
+
     const breadcrumb = {
         category: BREADCRUMB_REDUX_ACTION,
-        message: action.type,
+        message: action.type || 'undefined action',
     };
-
-    if (action.type === BATCH) {
-        // Attach additional information so that batched actions display what they're doing
-        breadcrumb.data = action.payload.map((a) => a.type);
-    }
 
     if (action.type === BATCH) {
         // Attach additional information so that batched actions display what they're doing, and make it
@@ -35,7 +34,7 @@ function makeBreadcrumbFromAction(action) {
         breadcrumb.data = {};
 
         action.payload.forEach((a, index) => {
-            breadcrumb.data[index] = a.type;
+            breadcrumb.data[index] = a.type || 'undefined action';
         });
     }
 
