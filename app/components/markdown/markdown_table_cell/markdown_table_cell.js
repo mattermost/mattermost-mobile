@@ -9,8 +9,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class MarkdownTableCell extends React.PureComponent {
     static propTypes = {
+        align: PropTypes.oneOf(['', 'left', 'center', 'right']),
         children: PropTypes.node,
-        isHeading: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -18,13 +18,17 @@ export default class MarkdownTableCell extends React.PureComponent {
         const style = getStyleSheet(this.props.theme);
 
         const cellStyle = [style.cell];
-        if (this.props.isHeading) {
-            cellStyle.push(style.heading);
+
+        let textStyle = null;
+        if (this.props.align === 'center') {
+            textStyle = style.alignCenter;
+        } else if (this.props.align === 'right') {
+            textStyle = style.alignRight;
         }
 
         return (
             <View style={cellStyle}>
-                <Text>
+                <Text style={textStyle}>
                     {this.props.children}
                 </Text>
             </View>
@@ -41,6 +45,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'flex-start',
             paddingHorizontal: 13,
             paddingVertical: 6,
+        },
+        alignCenter: {
+            textAlign: 'center',
+        },
+        alignRight: {
+            textAlign: 'right',
         },
     };
 });
