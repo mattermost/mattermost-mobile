@@ -10,6 +10,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import MarkdownLink from 'app/components/markdown/markdown_link';
 import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getMarkdownTextStyles} from 'app/utils/markdown';
+import CustomPropTypes from 'app/constants/custom_prop_types';
 
 const TARGET_BLANK_URL_PREFIX = '!';
 
@@ -31,21 +32,17 @@ class FormattedMarkdownText extends React.PureComponent {
         intl: intlShape.isRequired,
         id: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        defaultMessage: PropTypes.string,
+        defaultMessage: PropTypes.string.isRequired,
         values: PropTypes.object,
-        style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-    };
-
-    static defaultProps = {
-        defaultMessage: '',
+        style: CustomPropTypes.Style,
     };
 
     constructor(props) {
         super(props);
         this.parser = this.createParser();
         this.renderer = this.createRenderer();
-        this.textStyles = getMarkdownTextStyles(props.theme);
-        this.baseTextStyle = getStyleSheet(props.theme).message;
+        this.textStyles = null;
+        this.baseTextStyle = null;
     }
 
     createParser = () => {
@@ -96,10 +93,12 @@ class FormattedMarkdownText extends React.PureComponent {
     }
 
     render() {
-        const {id, defaultMessage, values} = this.props;
+        const {id, defaultMessage, values, theme} = this.props;
         const messageDescriptor = {id, defaultMessage};
         const message = this.props.intl.formatMessage(messageDescriptor, values);
         const ast = this.parser.parse(message);
+        this.textStyles = getMarkdownTextStyles(theme);
+        this.baseTextStyle = getStyleSheet(theme).message;
         return this.renderer.render(ast);
     }
 }
