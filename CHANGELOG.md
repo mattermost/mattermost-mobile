@@ -1,5 +1,30 @@
 # Mattermost Mobile Apps Changelog
 
+## v1.10.0 Release
+- Release Date: July 16, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Highlights
+
+#### Channel drawer performance
+ - Replaced the current drawer with DrawerLayout and brought back the channel loader when switching channels.
+
+#### Channel linking issues
+
+
+### Improvements
+
+ - Added CBA support for iOS.
+ - Changed post textbox to not be a connected component.
+ - Allow connecting to mattermost instances hosted at subpaths.
+
+### Bug Fixes
+
+ - Fixed an issue where the unread badge background was always white.
+ - Fixed an issue where a username repeated in system message if user was added to a channel more than once.
+ - Fixed an issue where Android Sharing from Microsoft apps failed.
+ 
+
 ## 1.9.1 Release
 - Release Date: June 23, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
