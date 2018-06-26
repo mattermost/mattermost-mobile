@@ -147,6 +147,13 @@ public class ShareModule extends ReactContextBaseJavaModule {
                 Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 text = "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri);
                 map.putString("value", text);
+
+                if (type.equals("image/*")) {
+                    type = "image/jpeg";
+                } else if (type.equals("video/*")) {
+                    type = "video/mp4";
+                }
+
                 map.putString("type", type);
                 items.pushMap(map);
             } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
@@ -156,7 +163,15 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     map = Arguments.createMap();
                     text = "file://" + filePath;
                     map.putString("value", text);
-                    map.putString("type", RealPathUtil.getMimeTypeFromUri(currentActivity, uri));
+
+                    type = RealPathUtil.getMimeTypeFromUri(currentActivity, uri);
+                    if (type.equals("image/*")) {
+                        type = "image/jpeg";
+                    } else if (type.equals("video/*")) {
+                        type = "video/mp4";
+                    }
+
+                    map.putString("type", type);
                     items.pushMap(map);
                 }
             }
