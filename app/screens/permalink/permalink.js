@@ -200,10 +200,6 @@ export default class Permalink extends PureComponent {
 
             actions.selectPost('');
 
-            if (onClose) {
-                onClose();
-            }
-
             navigator.resetTo({
                 screen: 'Channel',
                 animated: true,
@@ -215,6 +211,11 @@ export default class Permalink extends PureComponent {
                     screenBackgroundColor: theme.centerChannelBg,
                 },
             });
+            navigator.dismissAllModals({animationType: 'slide-down'});
+
+            if (onClose) {
+                onClose();
+            }
 
             if (channelTeamId && currentTeamId !== channelTeamId) {
                 handleTeamChange(channelTeamId, false);
