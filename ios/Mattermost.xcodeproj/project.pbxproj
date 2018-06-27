@@ -840,7 +840,6 @@
 				7FFE32E71FD9CCD00038C7A0 /* libART.a in Frameworks */,
 				7F3F66101FE4281A0085CA0E /* libRNSentry.a in Frameworks */,
 				7F642DF1209353A400F3165E /* libRNDeviceInfo.a in Frameworks */,
-				7F3F660F1FE4280D0085CA0E /* libReactNativeExceptionHandler.a in Frameworks */,
 				7FB6006B1FE3116800DB284F /* libRNFetchBlob.a in Frameworks */,
 				7FF7BE6F1FDF3CE4005E55FE /* libRNVectorIcons.a in Frameworks */,
 				7F380D0B1FDB3CFC0061AAD2 /* libRCTVideo.a in Frameworks */,
