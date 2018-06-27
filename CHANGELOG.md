@@ -11,8 +11,8 @@
 - Fixed an issue where post comments did not identify which parent post they belonged to
 - Fixed multiple issues with typing non-english characters in the post input box
 - Fixed multiple issues causing random app crashes
-- Fixed an issue where files from the iOS Files app failed to upload
-- Fixed an issue where the Android share extension crashed when switching the team or channel
+- Fixed an issue where files from the Android Files app failed to upload
+- Fixed an issue where the iOS share extension crashed when switching the team or channel
 - Fixed an issue where files from the Microsoft app failed to upload
 - Fixed an issue on Android devices where sharing files changed the file extension of the attachment
 
