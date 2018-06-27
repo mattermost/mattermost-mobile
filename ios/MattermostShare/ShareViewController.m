@@ -12,6 +12,8 @@ NSExtensionContext* extensionContext;
   return YES;
 }
 
+@synthesize bridge = _bridge;
+
 - (UIView*) shareView {
   NSURL *jsCodeLocation;
   
@@ -57,13 +59,23 @@ RCT_EXPORT_METHOD(close:(NSDictionary *)data appGroupId:(NSString *)appGroupId) 
 
     if (tryToUploadInTheBackgound) {
       NSString *requestWithGroup = [NSString stringWithFormat:@"%@|%@", requestId, appGroupId];
+      [SessionManager sharedSession].closeExtension = ^{
+         [extensionContext completeRequestReturningItems:nil
+                                        completionHandler:nil];
+         NSLog(@"Extension closed");
+      };
+
+      [SessionManager sharedSession].sendShareEvent = ^(NSString* eventName) {
+        NSLog(@"Send Share Extension Event to JS");
+        [_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+                        method:@"emit"
+                          args:@[eventName]
+                    completion:nil];
+      };
+
       [[SessionManager sharedSession] setRequestWithGroup:requestWithGroup certificateName:certificateName];
       [[SessionManager sharedSession] setDataForRequest:data forRequestWithGroup:requestWithGroup];
       [[SessionManager sharedSession] createPostForRequest:requestWithGroup];
-
-      [extensionContext completeRequestReturningItems:nil
-                                    completionHandler:nil];
-      NSLog(@"Extension closed");
     } else {
       NSDictionary *post = [data objectForKey:@"post"];
       NSArray *files = [data objectForKey:@"files"];
