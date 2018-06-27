@@ -51,6 +51,8 @@ export default class Post extends PureComponent {
         renderReplies: PropTypes.bool,
         isFirstReply: PropTypes.bool,
         isLastReply: PropTypes.bool,
+        consecutivePost: PropTypes.bool,
+        hasComments: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
         license: PropTypes.object.isRequired,
@@ -139,7 +141,7 @@ export default class Post extends PureComponent {
 
     autofillUserMention = (username) => {
         this.props.actions.insertToDraft(`@${username} `);
-    }
+    };
 
     handleEditDisable = () => {
         this.setState({canEdit: false});
@@ -151,7 +153,10 @@ export default class Post extends PureComponent {
 
         Alert.alert(
             formatMessage({id: 'mobile.post.delete_title', defaultMessage: 'Delete Post'}),
-            formatMessage({id: 'mobile.post.delete_question', defaultMessage: 'Are you sure you want to delete this post?'}),
+            formatMessage({
+                id: 'mobile.post.delete_question',
+                defaultMessage: 'Are you sure you want to delete this post?',
+            }),
             [{
                 text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
                 style: 'cancel',
@@ -194,31 +199,30 @@ export default class Post extends PureComponent {
     handleAddReactionToPost = (emoji) => {
         const {post} = this.props;
         this.props.actions.addReaction(post.id, emoji);
-    }
+    };
 
     handleAddReaction = preventDoubleTap(() => {
         const {intl} = this.context;
         const {navigator, post, theme} = this.props;
 
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).
-            then((source) => {
-                navigator.showModal({
-                    screen: 'AddReaction',
-                    title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-                    animated: true,
-                    navigatorStyle: {
-                        navBarTextColor: theme.sidebarHeaderTextColor,
-                        navBarBackgroundColor: theme.sidebarHeaderBg,
-                        navBarButtonColor: theme.sidebarHeaderTextColor,
-                        screenBackgroundColor: theme.centerChannelBg,
-                    },
-                    passProps: {
-                        post,
-                        closeButton: source,
-                        onEmojiPress: this.handleAddReactionToPost,
-                    },
-                });
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            navigator.showModal({
+                screen: 'AddReaction',
+                title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+                animated: true,
+                navigatorStyle: {
+                    navBarTextColor: theme.sidebarHeaderTextColor,
+                    navBarBackgroundColor: theme.sidebarHeaderBg,
+                    navBarButtonColor: theme.sidebarHeaderTextColor,
+                    screenBackgroundColor: theme.centerChannelBg,
+                },
+                passProps: {
+                    post,
+                    closeButton: source,
+                    onEmojiPress: this.handleAddReactionToPost,
+                },
             });
+        });
     });
 
     handleFailedPostPress = () => {
@@ -355,7 +359,7 @@ export default class Post extends PureComponent {
         }
 
         Clipboard.setString(textToCopy);
-    }
+    };
 
     handleCopyPermalink = () => {
         const {currentTeamUrl, postId} = this.props;
@@ -394,6 +398,8 @@ export default class Post extends PureComponent {
             showLongPost,
             theme,
             managedConfig,
+            consecutivePost,
+            hasComments,
             isFlagged,
         } = this.props;
 
@@ -405,14 +411,19 @@ export default class Post extends PureComponent {
         const selected = this.state && this.state.selected ? style.selected : null;
         const highlighted = highlight ? style.highlight : null;
         const isReplyPost = this.isReplyPost();
-
         const onUsernamePress = Config.ExperimentalUsernamePressIsMention ? this.autofillUserMention : this.viewUserProfile;
+        const mergeMessage = consecutivePost && !hasComments;
 
         // postWidth = deviceWidth - profilePic width - profilePictureContainer margins - right column margin
         const postWidth = this.props.deviceWidth - 66;
 
-        return (
-            <View style={[style.container, this.props.style, highlighted, selected]}>
+        let postHeader;
+        let userProfile;
+
+        if (mergeMessage) {
+            userProfile = <View style={style.consecutivePostContainer}/>;
+        } else {
+            userProfile = (
                 <TouchableHighlight
                     style={[style.profilePictureContainer, (isPostPendingOrFailed(post) && style.pendingPost)]}
                     onPress={this.handlePress}
@@ -426,22 +437,31 @@ export default class Post extends PureComponent {
                         postId={post.id}
                     />
                 </TouchableHighlight>
+            );
+            postHeader = (
+                <PostHeader
+                    postId={post.id}
+                    commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
+                    createAt={post.create_at}
+                    isSearchResult={isSearchResult}
+                    shouldRenderReplyButton={shouldRenderReplyButton}
+                    showFullDate={showFullDate}
+                    onPress={this.handleReply}
+                    onUsernamePress={onUsernamePress}
+                    renderReplies={renderReplies}
+                    theme={theme}
+                    isFlagged={isFlagged}
+                />
+            );
+        }
+
+        return (
+            <View style={[style.container, this.props.style, highlighted, selected]}>
+                {userProfile}
                 <View style={style.messageContainerWithReplyBar}>
                     {!commentedOnPost && this.renderReplyBar()}
                     <View style={[style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)]}>
-                        <PostHeader
-                            postId={post.id}
-                            commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
-                            createAt={post.create_at}
-                            isSearchResult={isSearchResult}
-                            shouldRenderReplyButton={shouldRenderReplyButton}
-                            showFullDate={showFullDate}
-                            onPress={this.handleReply}
-                            onUsernamePress={onUsernamePress}
-                            renderReplies={renderReplies}
-                            theme={theme}
-                            isFlagged={isFlagged}
-                        />
+                        {postHeader}
                         <View style={{maxWidth: postWidth}}>
                             <PostBody
                                 ref={'postBody'}
@@ -495,6 +515,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         messageContainerWithReplyBar: {
             flexDirection: 'row',
             flex: 1,
+        },
+        consecutivePostContainer: {
+            marginBottom: 10,
+            marginRight: 10,
+            marginLeft: 46,
+            marginTop: 10,
         },
         profilePictureContainer: {
             marginBottom: 10,
