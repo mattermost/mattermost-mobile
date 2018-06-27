@@ -14,6 +14,7 @@ import * as Animatable from 'react-native-animatable';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -200,21 +201,27 @@ export default class Permalink extends PureComponent {
 
             actions.selectPost('');
 
+            if (channelId === currentChannelId) {
+                EventEmitter.emit('reset_channel');
+            } else {
+                navigator.resetTo({
+                    screen: 'Channel',
+                    animated: true,
+                    animationType: 'fade',
+                    navigatorStyle: {
+                        navBarHidden: true,
+                        statusBarHidden: false,
+                        statusBarHideWithNavBar: false,
+                        screenBackgroundColor: theme.centerChannelBg,
+                    },
+                });
+            }
+
+            navigator.dismissAllModals({animationType: 'slide-down'});
+
             if (onClose) {
                 onClose();
             }
-
-            navigator.resetTo({
-                screen: 'Channel',
-                animated: true,
-                animationType: 'fade',
-                navigatorStyle: {
-                    navBarHidden: true,
-                    statusBarHidden: false,
-                    statusBarHideWithNavBar: false,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-            });
 
             if (channelTeamId && currentTeamId !== channelTeamId) {
                 handleTeamChange(channelTeamId, false);
