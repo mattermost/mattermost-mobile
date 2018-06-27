@@ -37,6 +37,7 @@
     NSLog(@"ERROR %@", [error userInfo]);
     NSLog(@"invalidating session %@", requestWithGroup);
     [session invalidateAndCancel];
+    self.sendShareEvent(@"extensionPostFailed");
   } else if (requestWithGroup != nil) {
     NSString *appGroupId = [self getAppGroupIdFromRequestIdentifier:requestWithGroup];
     NSURL *requestUrl = [[task originalRequest] URL];
@@ -80,6 +81,8 @@
       }
       [data setObject:fileIds forKey:@"file_ids"];
       [self setDataForRequest:data forRequestWithGroup:requestWithGroup];
+    } else {
+      self.sendShareEvent(@"extensionPostFailed");
     }
   }
 }
@@ -124,6 +127,7 @@
     NSString *appGroupId = [self getAppGroupIdFromRequestIdentifier:requestWithGroup];
     
     if (credentials == nil) {
+      self.sendShareEvent(@"extensionPostFailed");
       return;
     }
     
@@ -164,6 +168,7 @@
   NSDictionary *credentials = [self getCredentialsForRequest:requestWithGroup];
   
   if (credentials == nil) {
+    self.sendShareEvent(@"extensionPostFailed");
     return;
   }
   
@@ -196,6 +201,9 @@
     NSURLSessionDataTask *createTask = [createSession dataTaskWithRequest:request];
     NSLog(@"Executing post request");
     [createTask resume];
+    self.closeExtension();
+  } else {
+    self.sendShareEvent(@"extensionPostFailed");
   }
 }
 

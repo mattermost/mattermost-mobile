@@ -2513,6 +2513,7 @@
   "mobile.share_extension.error_close": "Close",
   "mobile.share_extension.error_message": "An error has occurred while using the share extension.",
   "mobile.share_extension.error_title": "Extension Error",
+  "mobile.share_extension.post_error": "An error has occurred while posting the message. Please try again.",
   "mobile.share_extension.send": "Send",
   "mobile.share_extension.team": "Team",
   "mobile.suggestion.members": "Members",
