@@ -39,7 +39,9 @@ export default class PostHeader extends PureComponent {
         showFullDate: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         username: PropTypes.string,
+        userTimezone: PropTypes.string,
         isFlagged: PropTypes.bool,
+        enableTimezone: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -172,6 +174,7 @@ export default class PostHeader extends PureComponent {
             createAt,
             isPendingOrFailedPost,
             isSearchResult,
+            userTimezone,
             militaryTime,
             onPress,
             renderReplies,
@@ -192,6 +195,7 @@ export default class PostHeader extends PureComponent {
                     </Text>
                     <Text style={style.time}>
                         <FormattedTime
+                            timeZone={userTimezone}
                             hour12={!militaryTime}
                             value={createAt}
                         />
@@ -202,6 +206,7 @@ export default class PostHeader extends PureComponent {
             dateComponent = (
                 <Text style={style.time}>
                     <FormattedTime
+                        timeZone={userTimezone}
                         hour12={!militaryTime}
                         value={createAt}
                     />

@@ -7,14 +7,19 @@ import {connect} from 'react-redux';
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 
-import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme, getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import Preferences from 'mattermost-redux/constants/preferences';
+
+import {isTimezoneEnabled} from 'app/utils/timezone';
 
 import UserProfile from './user_profile';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const {createChannel: createChannelRequest} = state.requests.channels;
+    const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
+    const enableTimezone = isTimezoneEnabled(state);
 
     return {
         config,
@@ -22,6 +27,8 @@ function mapStateToProps(state, ownProps) {
         currentDisplayName: state.views.channel.displayName,
         user: state.entities.users.profiles[ownProps.userId],
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
+        enableTimezone,
+        militaryTime,
         theme: getTheme(state),
     };
 }
