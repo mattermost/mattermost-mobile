@@ -78,16 +78,16 @@
   NSString *channelId = [post objectForKey:@"channel_id"];
   NSURLSession *session = [self createSessionForRequestRequest:requestWithGroup];
   NSString *appGroupId = [self getAppGroupIdFromRequestIdentifier:requestWithGroup];
-  
+
   for (id file in files) {
     NSURL *filePath = [NSURL fileURLWithPath:[file objectForKey:@"filePath"]];
     NSString *fileName = [file objectForKey:@"filename"];
-    
+
     NSError *err;
     NSURL *tempContainerURL = [self tempContainerURL:appGroupId];
     NSURL *destinationURL = [tempContainerURL URLByAppendingPathComponent: fileName];
     BOOL bVal = [[NSFileManager defaultManager] copyItemAtURL:filePath toURL:destinationURL error:&err];
-    
+
     NSCharacterSet *allowedCharacters = [NSCharacterSet URLQueryAllowedCharacterSet];
     NSString *encodedFilename = [[file objectForKey:@"filename"] stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
     NSString *url = [serverUrl stringByAppendingString:@"/api/v4/files"];
@@ -97,7 +97,7 @@
     [uploadRequest setHTTPMethod:@"POST"];
     [uploadRequest setValue:[@"Bearer " stringByAppendingString:token] forHTTPHeaderField:@"Authorization"];
     [uploadRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    
+
     NSURLSessionUploadTask *task = [session uploadTaskWithRequest:uploadRequest fromFile:destinationURL];
     NSLog(@"Executing file request %@", fileName);
     [task resume];
@@ -113,7 +113,7 @@
   if (fileIds != nil && [fileIds count] > 0) {
     [post setObject:fileIds forKey:@"file_ids"];
   }
-  
+
   NSError *error;
   NSData *postData = [NSJSONSerialization dataWithJSONObject:post options:NSJSONWritingPrettyPrinted error:&error];
   
@@ -134,6 +134,9 @@
     NSURLSessionDataTask *createTask = [createSession dataTaskWithRequest:request];
     NSLog(@"Executing post request");
     [createTask resume];
+    self.closeExtension();
+  } else {
+    self.sendShareEvent(@"extensionPostFailed");
   }
 }
 
@@ -144,9 +147,10 @@
   NSDictionary *credentials = [self getCredentialsForRequest:requestWithGroup];
 
   if (credentials == nil) {
+    self.sendShareEvent(@"extensionPostFailed");
     return;
   }
-  
+
   if (files != nil && [files count] > 0) {
     [self createPost:post withFiles:files credentials:credentials requestWithGroup:requestWithGroup];
   }
@@ -158,10 +162,10 @@
 -(void)sendPostRequestForId:(NSString *)requestWithGroup {
   NSDictionary *data = [self getDataForRequest:requestWithGroup];
   NSDictionary *credentials = [self getCredentialsForRequest:requestWithGroup];
-  
+
   NSMutableDictionary *post = [[data objectForKey:@"post"] mutableCopy];
   NSArray *fileIds = [data objectForKey:@"file_ids"];
-  
+
   [self createPost:post withFileIds:fileIds credentials:credentials];
 }
 
@@ -199,21 +203,20 @@
           if ([emails count] > 0){
             email = [emails objectAtIndex:0];
           }
-          NSLog(@"completition %@ %@", tagstr, email);
+          NSLog(@"completion %@ %@", tagstr, email);
           const void *certs[] = {certificate};
           CFArrayRef certArray = CFArrayCreate(kCFAllocatorDefault, certs, 1, NULL);
           NSURLCredential *credential = [NSURLCredential credentialWithIdentity:identity certificates:(__bridge NSArray*)certArray persistence:NSURLCredentialPersistencePermanent];
           [challenge.sender useCredential:credential forAuthenticationChallenge:challenge];
           completionHandler(NSURLSessionAuthChallengeUseCredential,credential);
-          NSLog(@"completition handler for certificate");
+          NSLog(@"completion handler for certificate");
           return;
         }
       }
     }
     completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
-    NSLog(@"completition handler that should not be reached");
   } else {
-    NSLog(@"completition handler regular stuff");
+    NSLog(@"completion handler regular stuff");
     completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
   }
 }
@@ -226,7 +229,7 @@
     requestWithGroup = self.requestWithGroup;
   }
   NSURL *requestUrl = [[dataTask originalRequest] URL];
-  
+
   if ([[requestUrl absoluteString] containsString:@"files"]) {
     NSString *appGroupId = [self getAppGroupIdFromRequestIdentifier:requestWithGroup];
     NSError *error;
@@ -239,7 +242,7 @@
       if (fileIds == nil && data != nil) {
         fileIds = [[NSMutableArray alloc] init];
       }
-      
+
       for (id file in fileInfos) {
         [fileIds addObject:[file objectForKey:@"id"]];
         NSString * filename = [file objectForKey:@"name"];
@@ -250,6 +253,8 @@
       }
       [data setObject:fileIds forKey:@"file_ids"];
       [self setDataForRequest:data forRequestWithGroup:requestWithGroup];
+    } else {
+      self.sendShareEvent(@"extensionPostFailed");
     }
   }
 }
@@ -266,14 +271,15 @@
     NSLog(@"completition ERROR %@", [error userInfo]);
     NSLog(@"invalidating session %@", requestWithGroup);
     [session invalidateAndCancel];
+    self.sendShareEvent(@"extensionPostFailed");
   } else if (requestWithGroup != nil) {
     NSString *appGroupId = [self getAppGroupIdFromRequestIdentifier:requestWithGroup];
     NSURL *requestUrl = [[task originalRequest] URL];
-    
+
     NSDictionary *data = [self getDataForRequest:requestWithGroup];
     NSArray *files = [data objectForKey:@"files"];
     NSMutableArray *fileIds = [data objectForKey:@"file_ids"];
-    
+
     if ([[requestUrl absoluteString] containsString:@"files"] &&
         [files count] == [fileIds count]) {
       [self sendPostRequestForId:requestWithGroup];

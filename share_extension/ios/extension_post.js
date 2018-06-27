@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    DeviceEventEmitter,
     Dimensions,
     Image,
     NativeModules,
@@ -93,11 +94,16 @@ export default class ExtensionPost extends PureComponent {
     }
 
     componentWillMount() {
+        this.event = DeviceEventEmitter.addListener('extensionPostFailed', this.handlePostFailed);
         this.loadData();
     }
 
     componentDidMount() {
         this.focusInput();
+    }
+
+    componentWillUnmount() {
+        this.event.remove();
     }
 
     componentDidUpdate() {
@@ -141,6 +147,10 @@ export default class ExtensionPost extends PureComponent {
         const {navigator, theme} = this.props;
         const {channel, entities, team} = this.state;
 
+        if (!entities || !team || !channel) {
+            return;
+        }
+
         navigator.push({
             component: ExtensionChannels,
             wrapperStyle: {
@@ -161,7 +171,11 @@ export default class ExtensionPost extends PureComponent {
     goToTeams = preventDoubleTap(() => {
         const {navigator, theme} = this.props;
         const {formatMessage} = this.context.intl;
-        const {team} = this.state;
+        const {entities, team} = this.state;
+
+        if (!entities || !team) {
+            return;
+        }
 
         navigator.push({
             component: ExtensionTeams,
@@ -171,7 +185,7 @@ export default class ExtensionPost extends PureComponent {
                 backgroundColor: theme.centerChannelBg,
             },
             passProps: {
-                entities: this.state.entities,
+                entities,
                 currentTeamId: team.id,
                 onSelectTeam: this.selectTeam,
                 theme,
@@ -185,6 +199,19 @@ export default class ExtensionPost extends PureComponent {
 
     handleTextChange = (value) => {
         this.setState({value});
+    };
+
+    handlePostFailed = () => {
+        const {formatMessage} = this.context.intl;
+        this.setState({
+            error: {
+                message: formatMessage({
+                    id: 'mobile.share_extension.post_error',
+                    defaultMessage: 'An error has occurred while posting the message. Please try again.',
+                }),
+            },
+            sending: false,
+        });
     };
 
     loadData = async () => {
@@ -287,6 +314,16 @@ export default class ExtensionPost extends PureComponent {
         const serverMaxFileSize = getAllowedServerMaxFileSize(config);
         const maxSize = Math.min(MAX_FILE_SIZE, serverMaxFileSize);
 
+        if (error) {
+            return (
+                <View style={styles.unauthenticatedContainer}>
+                    <Text style={styles.unauthenticated}>
+                        {error.message}
+                    </Text>
+                </View>
+            );
+        }
+
         if (sending) {
             return (
                 <View style={styles.sendingContainer}>
@@ -333,16 +370,6 @@ export default class ExtensionPost extends PureComponent {
                     />
                     {this.renderFiles(styles)}
                 </ScrollView>
-            );
-        }
-
-        if (error) {
-            return (
-                <View style={styles.unauthenticatedContainer}>
-                    <Text style={styles.unauthenticated}>
-                        {error.message}
-                    </Text>
-                </View>
             );
         }
 
@@ -552,7 +579,7 @@ export default class ExtensionPost extends PureComponent {
                     this.setState({channel: townSquare});
                 }
             } else {
-                this.setState({error});
+                this.setState({error, channel: null});
             }
         });
     };
@@ -629,13 +656,20 @@ export default class ExtensionPost extends PureComponent {
 
     render() {
         const {authenticated, theme} = this.props;
-        const {channel, totalSize, sending} = this.state;
+        const {channel, error, totalSize, sending} = this.state;
         const {formatMessage} = this.context.intl;
         const styles = getStyleSheet(theme);
 
         let postButtonText = formatMessage({id: 'mobile.share_extension.send', defaultMessage: 'Send'});
-        if (totalSize >= MAX_FILE_SIZE || sending || !channel) {
+        if (totalSize >= MAX_FILE_SIZE || sending || error || !channel) {
             postButtonText = null;
+        }
+
+        let cancelButton = formatMessage({id: 'mobile.share_extension.cancel', defaultMessage: 'Cancel'});
+        if (sending) {
+            cancelButton = null;
+        } else if (error) {
+            cancelButton = formatMessage({id: 'mobile.share_extension.error_close', defaultMessage: 'Close'});
         }
 
         return (
@@ -645,15 +679,15 @@ export default class ExtensionPost extends PureComponent {
             >
                 <ExtensionNavBar
                     authenticated={authenticated}
-                    leftButtonTitle={sending ? null : formatMessage({id: 'mobile.share_extension.cancel', defaultMessage: 'Cancel'})}
+                    leftButtonTitle={cancelButton}
                     onLeftButtonPress={this.handleCancel}
                     onRightButtonPress={this.sendMessage}
                     rightButtonTitle={postButtonText}
                     theme={theme}
                 />
                 {this.renderBody(styles)}
-                {this.renderTeamButton(styles)}
-                {this.renderChannelButton(styles)}
+                {!error && this.renderTeamButton(styles)}
+                {!error && this.renderChannelButton(styles)}
             </View>
         );
     }

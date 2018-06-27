@@ -10,6 +10,8 @@ import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
+import android.util.Log;
+import android.text.TextUtils;
 
 import android.os.ParcelFileDescriptor;
 import java.io.*;
@@ -37,10 +39,19 @@ public class RealPathUtil {
                 // DownloadsProvider
 
                 final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                return getDataColumn(context, contentUri, null, null);
+                if (!TextUtils.isEmpty(id)) {
+                    if (id.startsWith("raw:")) {
+                        return id.replaceFirst("raw:", "");
+                    }
+                    try {
+                        final Uri contentUri = ContentUris.withAppendedId(
+                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                        return getDataColumn(context, contentUri, null, null);
+                    } catch (NumberFormatException e) {
+                        Log.e("ReactNative", "DownloadsProvider unexpected uri " + uri.toString());
+                        return null;
+                    }
+                }
             } else if (isMediaDocument(uri)) {
                 // MediaProvider
 
