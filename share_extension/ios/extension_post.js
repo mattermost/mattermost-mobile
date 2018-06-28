@@ -247,7 +247,7 @@ export default class ExtensionPost extends PureComponent {
                         break;
                     default: {
                         const fullPath = item.value;
-                        const filePath = fullPath.replace('file://', '');
+                        const filePath = decodeURIComponent(fullPath.replace('file://', ''));
                         const fileSize = await RNFetchBlob.fs.stat(filePath);
                         const filename = fullPath.replace(/^.*[\\/]/, '');
                         const extension = filename.split('.').pop();
@@ -612,7 +612,7 @@ export default class ExtensionPost extends PureComponent {
                     post,
                     requestId: generateId().replace(/-/g, ''),
                     useBackgroundUpload: this.useBackgroundUpload,
-                    certificate,
+                    certificate: certificate || '',
                 };
 
                 this.setState({sending: true});
