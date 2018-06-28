@@ -63,6 +63,7 @@ export default class ChannelSidebar extends Component {
 
         this.state = {
             show: false,
+            lockMode: 'unlocked',
             openDrawerOffset,
         };
     }
@@ -101,7 +102,7 @@ export default class ChannelSidebar extends Component {
 
         return nextProps.currentTeamId !== currentTeamId ||
             nextProps.isLandscape !== isLandscape ||
-            nextProps.teamsCount !== teamsCount;
+            nextProps.teamsCount !== teamsCount || this.state.lockMode !== nextState.lockMode;
     }
 
     componentWillUnmount() {
@@ -230,6 +231,11 @@ export default class ChannelSidebar extends Component {
 
     onPageSelected = (index) => {
         this.swiperIndex = index;
+        if (this.swiperIndex === 0) {
+            this.setState({lockMode: 'locked-open'});
+        } else {
+            this.setState({lockMode: 'unlocked'});
+        }
     };
 
     onSearchEnds = () => {
@@ -338,10 +344,11 @@ export default class ChannelSidebar extends Component {
 
     render() {
         const {children, deviceWidth} = this.props;
-        const {openDrawerOffset} = this.state;
+        const {lockMode, openDrawerOffset} = this.state;
 
         return (
             <DrawerLayout
+                drawerLockMode={lockMode}
                 ref='drawer'
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}

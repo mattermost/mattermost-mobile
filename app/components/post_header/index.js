@@ -28,7 +28,7 @@ function makeMapStateToProps() {
         const teammateNameDisplay = getTeammateNameDisplaySetting(state);
         const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
         const enableTimezone = isTimezoneEnabled(state);
-        const userTimezone = enableTimezone && getUserCurrentTimezone(currentUser.timezone);
+        const userTimezone = enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : '';
 
         return {
             commentedOnDisplayName: ownProps.commentedOnUserId ? displayUsername(commentedOnUser, teammateNameDisplay) : '',
