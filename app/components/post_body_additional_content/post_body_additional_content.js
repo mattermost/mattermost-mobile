@@ -369,7 +369,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         const time = link.match(timeRegex);
         if (!time || !time[0]) {
-            return '';
+            return 0;
         }
 
         const hours = time[2] ? time[2].match(/([0-9]+)h/) : null;
