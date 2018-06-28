@@ -1,5 +1,21 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.9.2 Release
+- Release Date: June 27, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+
+- Fixed an issue where attached videos did not play for the poster
+- Fixed an issue where "Jump to recent messages" from the permalink view did not direct the user to the bottom of the channel
+- Fixed an issue where post comments did not identify which parent post they belonged to
+- Fixed multiple issues with typing non-english characters in the post input box
+- Fixed multiple issues causing random app crashes
+- Fixed an issue where files from the Android Files app failed to upload
+- Fixed an issue where the iOS share extension crashed when switching the team or channel
+- Fixed an issue where files from the Microsoft app failed to upload
+- Fixed an issue on Android devices where sharing files changed the file extension of the attachment
+
 ## 1.9.1 Release
 - Release Date: June 23, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
