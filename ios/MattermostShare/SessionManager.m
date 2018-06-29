@@ -26,7 +26,7 @@
 -(void)setRequestWithGroup:(NSString *)requestWithGroup certificateName:(NSString *)certificateName {
   self.requestWithGroup = requestWithGroup;
   self.certificateName = certificateName;
-  self.isBackground = certificateName == nil;
+  self.isBackground = [certificateName length] == 0;
 }
 
 -(void)setDataForRequest:(NSDictionary *)data forRequestWithGroup:(NSString *)requestWithGroup {
