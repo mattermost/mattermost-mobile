@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {dismissBanner} from 'app/actions/views/announcement';
 
@@ -22,6 +23,7 @@ function mapStateToProps(state) {
         bannerEnabled: config.EnableBanner === 'true' && license.IsLicensed === 'true',
         bannerText: config.BannerText,
         bannerTextColor: config.BannerTextColor || '#000',
+        theme: getTheme(state),
     };
 }
 

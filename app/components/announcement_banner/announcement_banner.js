@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Alert,
     Animated,
     StyleSheet,
     Text,
@@ -12,6 +11,8 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+import RemoveMarkdown from 'app/components/remove_markdown';
 
 const {View: AnimatedView} = Animated;
 
@@ -26,6 +27,8 @@ export default class AnnouncementBanner extends PureComponent {
         bannerEnabled: PropTypes.bool,
         bannerText: PropTypes.string,
         bannerTextColor: PropTypes.string,
+        navigator: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
@@ -58,24 +61,25 @@ export default class AnnouncementBanner extends PureComponent {
     };
 
     handlePress = () => {
-        const {formatMessage} = this.context.intl;
-        const options = [{
-            text: formatMessage({id: 'mobile.announcement_banner.ok', defaultMessage: 'OK'}),
-        }];
+        const {navigator, theme} = this.props;
 
-        if (this.props.allowDismissal) {
-            options.push({
-                text: formatMessage({id: 'mobile.announcement_banner.dismiss', defaultMessage: 'Dismiss'}),
-                onPress: this.handleDismiss,
-            });
-        }
+        // TODO figure out how to dismiss banner
 
-        Alert.alert(
-            formatMessage({id: 'mobile.announcement_banner.title', defaultMessage: 'Announcement'}),
-            this.props.bannerText,
-            options,
-            {cancelable: false}
-        );
+        navigator.push({
+            screen: 'ExpandedAnnouncementBanner',
+            title: this.context.intl.formatMessage({
+                id: 'mobile.announcement_banner.title',
+                defaultMessage: 'Announcement',
+            }),
+            animated: true,
+            backButtonTitle: '',
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+        });
     };
 
     toggleBanner = (show = true) => {
@@ -120,7 +124,7 @@ export default class AnnouncementBanner extends PureComponent {
                         numberOfLines={1}
                         style={[style.bannerText, bannerTextStyle]}
                     >
-                        {bannerText}
+                        <RemoveMarkdown value={bannerText}/>
                     </Text>
                     <MaterialIcons
                         color={bannerTextColor}
