@@ -26,6 +26,8 @@ import TeamIcon from 'app/components/team_icon';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
+const TEAMS_PER_PAGE = 200;
+
 export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -55,7 +57,7 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.actions.getTeams().then(() => {
+        this.props.actions.getTeams(0, TEAMS_PER_PAGE).then(() => {
             this.buildData(this.props);
         });
     }
