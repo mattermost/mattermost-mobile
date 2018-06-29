@@ -357,15 +357,19 @@ function cleanupState(action, keepCurrent = false) {
 export function shareExtensionData() {
     return (next) => (action) => {
         // allow other middleware to do their things
-        const nextAction = next(action);
+        if (typeof action === 'object' && action.type) {
+            const nextAction = next(action);
 
-        switch (action.type) {
-        case UserTypes.LOGOUT_SUCCESS:
-            mattermostBucket.removePreference('emm', Config.AppGroupId);
-            mattermostBucket.removeFile('entities', Config.AppGroupId);
-            break;
+            switch (action.type) {
+            case UserTypes.LOGOUT_SUCCESS:
+                mattermostBucket.removePreference('emm', Config.AppGroupId);
+                mattermostBucket.removeFile('entities', Config.AppGroupId);
+                break;
+            }
+            return nextAction;
         }
-        return nextAction;
+
+        return next();
     };
 }
 
