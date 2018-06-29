@@ -13,7 +13,6 @@ import {
     StatusBar,
     StyleSheet,
     Text,
-    TextInput,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
@@ -23,6 +22,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
+import QuickTextInput from 'app/components/quick_text_input';
 import {UpgradeTypes} from 'app/constants/view';
 import {GlobalStyles} from 'app/styles';
 import checkUpgradeType from 'app/utils/client_upgrade';
@@ -346,7 +346,7 @@ export default class SelectServer extends PureComponent {
                                 defaultMessage='Enter Server URL'
                             />
                         </View>
-                        <TextInput
+                        <QuickTextInput
                             ref={this.inputRef}
                             value={url}
                             editable={!inputDisabled}
