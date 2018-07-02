@@ -381,7 +381,6 @@ export default class Login extends PureComponent {
                         />
                         <QuickTextInput
                             ref={this.passwordRef}
-                            value={this.props.password}
                             onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
