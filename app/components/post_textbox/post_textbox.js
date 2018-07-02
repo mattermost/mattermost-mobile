@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, BackHandler, Keyboard, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, BackHandler, Keyboard, Platform, Text, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -11,6 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import AttachmentButton from 'app/components/attachment_button';
 import Autocomplete from 'app/components/autocomplete';
 import FileUploadPreview from 'app/components/file_upload_preview';
+import QuickTextInput from 'app/components/quick_text_input';
 import {INITIAL_HEIGHT, INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_CONTENT_HEIGHT, MAX_FILE_COUNT} from 'app/constants/post_textbox';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -526,7 +527,7 @@ export default class PostTextbox extends PureComponent {
                 <View style={style.inputWrapper}>
                     {!channelIsReadOnly && attachmentButton}
                     <View style={[inputContainerStyle, (channelIsReadOnly && {marginLeft: 10})]}>
-                        <TextInput
+                        <QuickTextInput
                             ref='input'
                             value={textValue}
                             onChangeText={this.handleTextChange}

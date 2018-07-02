@@ -5,13 +5,13 @@ import PropTypes from 'prop-types';
 import {
     InteractionManager,
     Keyboard,
-    TextInput,
     StyleSheet,
     View,
     TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import QuickTextInput from 'app/components/quick_text_input';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity} from 'app/utils/theme';
 
@@ -212,7 +212,7 @@ export default class SearchBarAndroid extends PureComponent {
                             color={tintColorSearch || placeholderTextColor}
                         />
                     }
-                    <TextInput
+                    <QuickTextInput
                         ref='input'
                         blurOnSubmit={blurOnSubmit}
                         value={this.state.value}

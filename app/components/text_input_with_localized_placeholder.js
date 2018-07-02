@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {TextInput} from 'react-native';
 
+import QuickTextInput from 'app/components/quick_text_input';
+
 class TextInputWithLocalizedPlaceholder extends PureComponent {
     static propTypes = {
         ...TextInput.propTypes,
@@ -29,7 +31,7 @@ class TextInputWithLocalizedPlaceholder extends PureComponent {
         }
 
         return (
-            <TextInput
+            <QuickTextInput
                 ref='input'
                 {...otherProps}
                 placeholder={placeholderString}
