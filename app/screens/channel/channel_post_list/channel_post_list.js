@@ -20,7 +20,6 @@ import tracker from 'app/utils/time_tracker';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
-const MAX_EXTRA_PAGES_LOADED = 10;
 
 export default class ChannelPostList extends PureComponent {
     static propTypes = {
@@ -57,7 +56,6 @@ export default class ChannelPostList extends PureComponent {
         };
 
         this.contentHeight = 0;
-        this.extraPagesLoaded = 0;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -82,7 +80,6 @@ export default class ChannelPostList extends PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.channelId !== this.props.channelId && tracker.channelSwitch) {
-            this.extraPagesLoaded = 0;
             this.props.actions.recordLoadTime('Switch Channel', 'channelSwitch');
         }
     }
@@ -133,14 +130,8 @@ export default class ChannelPostList extends PureComponent {
         if (this.props.loadMorePostsVisible) {
             const {actions, channelId} = this.props;
             actions.increasePostVisibility(channelId).then((hasMore) => {
-                if (
-                    hasMore &&
-                    this.props.loadMorePostsVisible &&
-                    this.extraPagesLoaded < MAX_EXTRA_PAGES_LOADED &&
-                    this.contentHeight < this.props.deviceHeight
-                ) {
+                if (hasMore && this.contentHeight < this.props.deviceHeight) {
                     // We still have less than 1 screen of posts loaded with more to get, so load more
-                    this.extraPagesLoaded += 1;
                     this.loadMorePosts();
                 }
             });
