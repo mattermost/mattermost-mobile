@@ -45,9 +45,11 @@ function getDsn() {
 }
 
 export function captureException(error, logger, store) {
-    capture(() => {
-        Sentry.captureException(error, {logger});
-    }, store);
+    if (error && logger && store) {
+        capture(() => {
+            Sentry.captureException(error, {logger});
+        }, store);
+    }
 }
 
 export function captureExceptionWithoutState(err, logger) {
@@ -55,17 +57,21 @@ export function captureExceptionWithoutState(err, logger) {
         return;
     }
 
-    try {
-        Sentry.captureException(err, {logger});
-    } catch (error) {
-        // do nothing...
+    if (err && logger) {
+        try {
+            Sentry.captureException(err, {logger});
+        } catch (error) {
+            // do nothing...
+        }
     }
 }
 
 export function captureMessage(message, logger, store) {
-    capture(() => {
-        Sentry.captureMessage(message, {logger});
-    }, store);
+    if (message && logger && store) {
+        capture(() => {
+            Sentry.captureMessage(message, {logger});
+        }, store);
+    }
 }
 
 // Wrapper function to any calls to Sentry so that we can gather any necessary extra data
