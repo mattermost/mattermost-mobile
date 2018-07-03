@@ -24,16 +24,16 @@ import {
 import {app, store} from 'app/mattermost';
 
 const errorHandler = (e, isFatal) => {
-    console.warn('Handling Javascript error ' + JSON.stringify(e)); // eslint-disable-line no-console
-    const {dispatch, getState} = store;
+    console.warn('Handling Javascript error ', e); // eslint-disable-line no-console
+    const {dispatch} = store;
 
     captureException(e, LOGGER_JAVASCRIPT, store);
 
     const translations = app.getTranslations();
-    closeWebSocket()(dispatch, getState);
+    dispatch(closeWebSocket());
 
     if (Client4.getUrl()) {
-        logError(e)(dispatch, getState);
+        dispatch(logError(e));
     }
 
     if (isFatal) {
@@ -44,7 +44,7 @@ const errorHandler = (e, isFatal) => {
                 text: translations['mobile.error_handler.button'],
                 onPress: () => {
                     // purge the store
-                    purgeOfflineStore()(dispatch, getState);
+                    dispatch(purgeOfflineStore());
                 },
             }],
             {cancelable: false}
