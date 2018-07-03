@@ -77,6 +77,10 @@ export default class QuickTextInput extends React.PureComponent {
         this.storedValue = this.props.value;
     }
 
+    isFocused() {
+        return this.input.isFocused();
+    }
+
     focus() {
         this.input.focus();
     }

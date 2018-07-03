@@ -232,7 +232,7 @@ export default class ExtensionPost extends PureComponent {
                 let totalSize = 0;
                 let exceededSize = false;
 
-                if (channel.type === General.GM_CHANNEL || channel.type === General.DM_CHANNEL) {
+                if (channel && (channel.type === General.GM_CHANNEL || channel.type === General.DM_CHANNEL)) {
                     channel = getChannel({entities}, channel.id);
                 }
 
@@ -590,7 +590,7 @@ export default class ExtensionPost extends PureComponent {
         const {currentUserId} = entities.users;
 
         // If no text and no files do nothing
-        if (!value && !files.length) {
+        if ((!value && !files.length) || !channel) {
             return;
         }
 
