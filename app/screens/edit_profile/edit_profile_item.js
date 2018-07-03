@@ -6,10 +6,10 @@ import PropTypes from 'prop-types';
 import {
     View,
     Text,
-    TextInput,
 } from 'react-native';
 
 import FormattedText from 'app/components/formatted_text';
+import QuickTextInput from 'app/components/quick_text_input';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class AccountSettingsItem extends PureComponent {
@@ -65,7 +65,7 @@ export default class AccountSettingsItem extends PureComponent {
                     )}
                 </View>
                 <View style={style.inputContainer}>
-                    <TextInput
+                    <QuickTextInput
                         ref={this.channelNameRef}
                         value={value}
                         onChangeText={this.onChangeText}
