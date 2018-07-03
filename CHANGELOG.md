@@ -17,12 +17,17 @@
  - Added CBA support for iOS.
  - Changed post textbox to not be a connected component.
  - Allow connecting to mattermost instances hosted at subpaths.
+ - Allow retrieving posts when push notifications are received to improve messages appearing more quickly.
+ - Implemented ``FormattedMarkdownMessage`` to format translations.
 
 ### Bug Fixes
 
  - Fixed an issue where the unread badge background was always white.
  - Fixed an issue where a username repeated in system message if user was added to a channel more than once.
  - Fixed an issue where Android Sharing from Microsoft apps failed.
+ - Fixed an issue where the loading screen was missing when the "Add Members to Channel" screen was loading.
+ - Fixed an issue where YouTube crashed the app if link did not have a time set.
+ - Fixed an issue where System Admins did not see all teams available to join on mobile.
  
 
 ## 1.9.1 Release
