@@ -4,6 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
+    Image,
     Switch,
     Text,
     TouchableHighlight,
@@ -23,7 +24,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, textColor, textId, togglable, theme, shouldRender} = props;
+    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, textColor, textId, togglable, theme, shouldRender} = props;
 
     if (!shouldRender) {
         return null;
@@ -31,14 +32,28 @@ function channelInfoRow(props) {
 
     const style = getStyleSheet(theme);
 
-    const RowComponent = (
-        <View style={style.container}>
+    let iconElement = null;
+    if (image == null) {
+        iconElement = (
             <Icon
                 name={icon}
                 size={15}
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.5)}
                 style={style.leftIcon}
             />
+        );
+    } else {
+        iconElement = (
+            <Image
+                source={image}
+                style={{width: 15, height: 15, tintColor: imageTintColor || changeOpacity(theme.sidebarText, 0.5)}}
+            />
+        );
+    }
+
+    const RowComponent = (
+        <View style={style.container}>
+            {iconElement}
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
                 id={textId}
@@ -74,8 +89,10 @@ channelInfoRow.propTypes = {
         PropTypes.number,
         PropTypes.bool,
     ]),
-    icon: PropTypes.string.isRequired,
+    icon: PropTypes.string,
     iconColor: PropTypes.string,
+    image: PropTypes.number,
+    imageTintColor: PropTypes.string,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
