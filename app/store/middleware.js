@@ -3,12 +3,8 @@
 
 import DeviceInfo from 'react-native-device-info';
 
-import {UserTypes} from 'mattermost-redux/action_types';
-
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
-import mattermostBucket from 'app/mattermost_bucket';
-import Config from 'assets/config';
 
 import {
     captureException,
@@ -351,22 +347,6 @@ function cleanupState(action, keepCurrent = false) {
         type: action.type,
         payload: nextState,
         error: action.error,
-    };
-}
-
-export function shareExtensionData() {
-    return (next) => (action) => {
-        // allow other middleware to do their things
-        const nextAction = next(action);
-
-        switch (action.type) {
-        case UserTypes.LOGOUT_SUCCESS:
-            mattermostBucket.removePreference('cert', Config.AppGroupId);
-            mattermostBucket.removePreference('emm', Config.AppGroupId);
-            mattermostBucket.removeFile('entities', Config.AppGroupId);
-            break;
-        }
-        return nextAction;
     };
 }
 
