@@ -5,12 +5,6 @@ ShallowWrapper {
   "length": 1,
   Symbol(enzyme.__root__): [Circular],
   Symbol(enzyme.__unrendered__): <AnnouncementBanner
-    actions={
-      Object {
-        "dismissBanner": [MockFunction],
-      }
-    }
-    allowDismissal={true}
     bannerColor="#ddd"
     bannerDismissed={false}
     bannerEnabled={true}
@@ -363,12 +357,6 @@ ShallowWrapper {
   "length": 1,
   Symbol(enzyme.__root__): [Circular],
   Symbol(enzyme.__unrendered__): <AnnouncementBanner
-    actions={
-      Object {
-        "dismissBanner": [MockFunction],
-      }
-    }
-    allowDismissal={true}
     bannerColor="#ddd"
     bannerDismissed={false}
     bannerEnabled={false}

@@ -18,10 +18,6 @@ const {View: AnimatedView} = Animated;
 
 export default class AnnouncementBanner extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            dismissBanner: PropTypes.func.isRequired,
-        }).isRequired,
-        allowDismissal: PropTypes.bool,
         bannerColor: PropTypes.string,
         bannerDismissed: PropTypes.bool,
         bannerEnabled: PropTypes.bool,
@@ -55,15 +51,8 @@ export default class AnnouncementBanner extends PureComponent {
         }
     }
 
-    handleDismiss = () => {
-        const {actions, bannerText} = this.props;
-        actions.dismissBanner(bannerText);
-    };
-
     handlePress = () => {
         const {navigator, theme} = this.props;
-
-        // TODO figure out how to dismiss banner
 
         navigator.push({
             screen: 'ExpandedAnnouncementBanner',
