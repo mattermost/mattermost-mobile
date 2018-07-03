@@ -55,7 +55,7 @@ export default class QuickTextInput extends React.PureComponent {
             });
         }
 
-        this.hadFocus = this.input.isFocused();
+        this.hadFocus = this.isFocused();
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -83,6 +83,10 @@ export default class QuickTextInput extends React.PureComponent {
 
     blur() {
         this.input.blur();
+    }
+
+    isFocused() {
+        return this.input.isFocused();
     }
 
     handleChangeText = (value) => {
