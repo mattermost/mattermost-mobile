@@ -1,5 +1,14 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.9.3 Release
+- Release Date: July 04, 2018
+- Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
+
+### Bug Fixes
+
+- Fixed multiple issues causing app crashes
+- Fixed an issue on iOS devices with typing non-english characters in the post input box
+
 ## 1.9.2 Release
 - Release Date: June 27, 2018
 - Server Versions Supported: Server v4.0+ is required, Self-Signed SSL Certificates are not supported
