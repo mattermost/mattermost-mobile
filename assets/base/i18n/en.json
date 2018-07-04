@@ -2307,7 +2307,6 @@
   "mobile.android.videos_permission_denied_description": "To upload videos from your library, please change your permission settings.",
   "mobile.android.videos_permission_denied_title": "Video library access is required",
   "mobile.announcement_banner.dismiss": "Dismiss",
-  "mobile.announcement_banner.ok": "OK",
   "mobile.announcement_banner.title": "Announcement",
   "mobile.channel.markAsRead": "Mark As Read",
   "mobile.channel_drawer.search": "Jump to...",
