@@ -53,7 +53,7 @@ describe('ForgotPassword', () => {
         expect(actions.sendPasswordResetEmail).toBeCalledWith('test@test.com');
     });
 
-    test('match smapshot after success of sendPasswordResetEmail', async () => {
+    test('match snapshot after success of sendPasswordResetEmail', async () => {
         const sendPasswordResetEmail = async () => {
             return {
                 data: {},

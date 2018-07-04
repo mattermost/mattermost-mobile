@@ -76,7 +76,7 @@ export default class ForgotPassword extends PureComponent {
     };
 
     blur = () => {
-        if (this.email) {
+        if (this.emailId) {
             this.emailId.blur();
         }
         Keyboard.dismiss();
@@ -100,7 +100,7 @@ export default class ForgotPassword extends PureComponent {
                 <View style={style.resetSuccessContainer}>
                     <FormattedText
                         style={style.successTxtColor}
-                        id='password_send.link'
+                        id='mobile.password_send.link'
                         defaultMessage='If the account exists, a password reset email will be sent to:'
                     />
                     <Text style={[style.successTxtColor, style.emailId]}>

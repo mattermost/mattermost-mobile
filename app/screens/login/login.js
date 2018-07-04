@@ -418,7 +418,7 @@ export default class Login extends PureComponent {
                             <FormattedText
                                 id='login.forgot'
                                 defaultMessage='I forgot my password'
-                                style={{color: '#2389D7'}}
+                                style={style.forgotPasswordTxt}
                             />
                         </Button>
                     </KeyboardAwareScrollView>
@@ -443,5 +443,8 @@ const style = StyleSheet.create({
     forgotPasswordBtn: {
         borderColor: 'transparent',
         marginTop: 15,
+    },
+    forgotPasswordTxt: {
+        color: '#2389D7',
     },
 });
