@@ -1,0 +1,128 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotificationSettingsMobileAndroid should match snapshot 1`] = `
+<sectionItem
+  action={[Function]}
+  actionType="default"
+  description={
+    <InjectIntl(FormattedText)
+      defaultMessage="Immediately"
+      id="user.settings.notifications.email.immediately"
+    />
+  }
+  label={
+    <InjectIntl(FormattedText)
+      defaultMessage="Send email notifications"
+      id="user.settings.notifications.email.send"
+    />
+  }
+  theme={
+    Object {
+      "centerChannelBg": "#aaa",
+      "centerChannelColor": "#aaa",
+    }
+  }
+/>
+`;
+
+exports[`NotificationSettingsMobileAndroid should match snapshot 2`] = `
+<Component
+  animationType="slide"
+  hardwareAccelerated={false}
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={false}
+>
+  <Component
+    style={undefined}
+  >
+    <Component
+      style={Object {}}
+    >
+      <Component
+        style={Object {}}
+      >
+        <Component
+          style={Object {}}
+        >
+          <InjectIntl(FormattedText)
+            defaultMessage="Send email notifications"
+            id="user.settings.notifications.email.send"
+            style={Object {}}
+          />
+        </Component>
+        <RadioButtonGroup
+          name="emailSettings"
+          onSelect={[Function]}
+          options={
+            Array [
+              Object {
+                "checked": true,
+                "label": "Immediately",
+                "value": "30",
+              },
+              Object {
+                "checked": false,
+                "label": "Never",
+                "value": "0",
+              },
+            ]
+          }
+        />
+        <InjectIntl(FormattedText)
+          defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes."
+          id="user.settings.notifications.emailInfo"
+          style={Object {}}
+          values={
+            Object {
+              "siteName": "Mattermost",
+            }
+          }
+        />
+      </Component>
+      <Component
+        style={Object {}}
+      >
+        <Component
+          style={Object {}}
+        />
+        <Component
+          style={Object {}}
+        >
+          <TouchableOpacity
+            activeOpacity={0.2}
+            onPress={[Function]}
+            style={Object {}}
+          >
+            <InjectIntl(FormattedText)
+              defaultMessage="CANCEL"
+              id="mobile.notification_settings.modal_cancel"
+              style={Object {}}
+            />
+          </TouchableOpacity>
+          <Component>
+            <Component
+              style={
+                Object {
+                  "marginRight": 10,
+                }
+              }
+            />
+            <TouchableOpacity
+              activeOpacity={0.2}
+              onPress={[Function]}
+              style={Object {}}
+            >
+              <InjectIntl(FormattedText)
+                defaultMessage="SAVE"
+                id="mobile.notification_settings.modal_save"
+                style={Object {}}
+              />
+            </TouchableOpacity>
+          </Component>
+        </Component>
+      </Component>
+    </Component>
+  </Component>
+</Component>
+`;
