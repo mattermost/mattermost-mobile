@@ -108,6 +108,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         dismissButtonText: {
             color: theme.sidebarHeaderTextColor,
+            fontSize: 15,
+            fontWeight: '600',
             textAlign: 'center',
         },
     };
