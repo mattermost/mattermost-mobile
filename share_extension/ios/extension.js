@@ -7,6 +7,7 @@ import {Animated, Dimensions, NavigatorIOS, StyleSheet, View} from 'react-native
 
 import {Preferences} from 'mattermost-redux/constants';
 
+import initialState from 'app/initial_state';
 import mattermostBucket from 'app/mattermost_bucket';
 
 import ExtensionPost from './extension_post';
@@ -32,7 +33,7 @@ export default class SharedApp extends PureComponent {
         };
 
         mattermostBucket.readFromFile('entities', props.appGroupId).then((value) => {
-            this.entities = value;
+            this.entities = value || initialState;
             this.setState({init: true});
         });
     }

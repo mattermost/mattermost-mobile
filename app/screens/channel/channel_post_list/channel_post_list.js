@@ -228,7 +228,7 @@ export default class ChannelPostList extends PureComponent {
         return (
             <View style={style.container}>
                 {component}
-                <AnnouncementBanner/>
+                <AnnouncementBanner navigator={navigator}/>
                 <RetryBarIndicator/>
             </View>
         );

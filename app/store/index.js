@@ -51,7 +51,7 @@ const setTransforms = [
 export default function configureAppStore(initialState) {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
-        ['announcement', 'extension', 'login', 'root']
+        ['extension', 'login', 'root']
     );
 
     const typingBlackListFilter = createBlacklistFilter(
