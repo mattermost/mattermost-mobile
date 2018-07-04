@@ -26,6 +26,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditPost', () => wrapWithContextProvider(require('app/screens/edit_post').default), store, Provider);
     Navigation.registerComponent('EditProfile', () => wrapWithContextProvider(require('app/screens/edit_profile').default), store, Provider);
     Navigation.registerComponent('Entry', () => Entry, store, Provider);
+    Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapWithContextProvider(require('app/screens/expanded_announcement_banner').default), store, Provider);
     Navigation.registerComponent('FlaggedPosts', () => wrapWithContextProvider(require('app/screens/flagged_posts').default), store, Provider);
     Navigation.registerComponent('ImagePreview', () => wrapWithContextProvider(require('app/screens/image_preview').default), store, Provider);
     Navigation.registerComponent('Login', () => wrapWithContextProvider(require('app/screens/login').default), store, Provider);

@@ -11,6 +11,10 @@ import {TextInput} from 'react-native';
 // We're using this in place of a connected TextInput due to changes made in RN v0.54
 // that break input in Chinese and Japanese when using a connected TextInput. See
 // https://github.com/facebook/react-native/issues/18403 for more information.
+//
+// In addition to that, there's also an ugly hack to change the key on the TextInput
+// when this is triggered because that same version made setNativeProps work inconsistently.
+// See https://github.com/facebook/react-native/issues/18272 for more information on that.
 export default class QuickTextInput extends React.PureComponent {
     static propTypes = {
 
@@ -31,15 +35,36 @@ export default class QuickTextInput extends React.PureComponent {
         super(props);
 
         this.storedValue = props.value;
+
+        this.state = {
+            key: 0,
+        };
     }
 
     componentDidMount() {
         this.updateInputFromProps();
     }
 
-    componentDidUpdate() {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
+        // This will force the base TextInput to re-render if the value is changing
+        // from something other than the user typing in it. This does however cause
+        // the TextInput to flicker when this happens.
+        if (nextProps.value !== this.storedValue) {
+            this.setState({
+                key: this.state.key + 1,
+            });
+        }
+
+        this.hadFocus = this.input.isFocused();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         if (this.props.value !== this.storedValue) {
             this.updateInputFromProps();
+        }
+
+        if (prevState.key !== this.state.key && this.hadFocus) {
+            this.input.focus();
         }
     }
 
@@ -50,6 +75,14 @@ export default class QuickTextInput extends React.PureComponent {
 
         this.input.setNativeProps({text: this.props.value});
         this.storedValue = this.props.value;
+    }
+
+    setNativeProps(nativeProps) {
+        this.input.setNativeProps(nativeProps);
+    }
+
+    isFocused() {
+        return this.input.isFocused();
     }
 
     focus() {
@@ -82,6 +115,7 @@ export default class QuickTextInput extends React.PureComponent {
         return (
             <TextInput
                 {...props}
+                key={this.state.key}
                 onChangeText={this.handleChangeText}
                 ref={this.setInput}
             />

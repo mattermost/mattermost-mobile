@@ -6,19 +6,14 @@ import PropTypes from 'prop-types';
 import {injectIntl, intlShape} from 'react-intl';
 import {
     Alert,
-    Modal,
     Platform,
     ScrollView,
-    TouchableOpacity,
     View,
 } from 'react-native';
 import deepEqual from 'deep-equal';
 
-import {General, Preferences, RequestStatus} from 'mattermost-redux/constants';
-import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
+import {General, RequestStatus} from 'mattermost-redux/constants';
 
-import FormattedText from 'app/components/formatted_text';
-import RadioButtonGroup from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
@@ -31,19 +26,13 @@ class NotificationSettings extends PureComponent {
         actions: PropTypes.shape({
             handleUpdateUserNotifyProps: PropTypes.func.isRequired,
         }),
-        config: PropTypes.object.isRequired,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
-        myPreferences: PropTypes.object.isRequired,
         navigator: PropTypes.object,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
         enableAutoResponder: PropTypes.bool.isRequired,
-    };
-
-    state = {
-        showEmailNotificationsModal: false,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -94,30 +83,25 @@ class NotificationSettings extends PureComponent {
     };
 
     goToNotificationSettingsEmail = () => {
-        if (Platform.OS === 'ios') {
-            const {currentUser, intl, navigator, theme} = this.props;
-            navigator.push({
-                backButtonTitle: '',
-                screen: 'NotificationSettingsEmail',
-                title: intl.formatMessage({
-                    id: 'mobile.notification_settings.email_title',
-                    defaultMessage: 'Email Notifications',
-                }),
-                animated: true,
-                navigatorStyle: {
-                    navBarTextColor: theme.sidebarHeaderTextColor,
-                    navBarBackgroundColor: theme.sidebarHeaderBg,
-                    navBarButtonColor: theme.sidebarHeaderTextColor,
-                    screenBackgroundColor: theme.centerChannelBg,
-                },
-                passProps: {
-                    currentUser,
-                    onBack: this.saveNotificationProps,
-                },
-            });
-        } else {
-            this.setState({showEmailNotificationsModal: true});
-        }
+        const {currentUser, intl, navigator, theme} = this.props;
+        navigator.push({
+            backButtonTitle: '',
+            screen: 'NotificationSettingsEmail',
+            title: intl.formatMessage({
+                id: 'mobile.notification_settings.email_title',
+                defaultMessage: 'Email Notifications',
+            }),
+            animated: true,
+            navigatorStyle: {
+                navBarTextColor: theme.sidebarHeaderTextColor,
+                navBarBackgroundColor: theme.sidebarHeaderBg,
+                navBarButtonColor: theme.sidebarHeaderTextColor,
+                screenBackgroundColor: theme.centerChannelBg,
+            },
+            passProps: {
+                currentUserId: currentUser.id,
+            },
+        });
     };
 
     goToNotificationSettingsMentions = () => {
@@ -168,34 +152,6 @@ class NotificationSettings extends PureComponent {
         });
     };
 
-    setEmailNotifications = (emailSetting) => {
-        this.setState({emailSetting});
-    };
-
-    saveEmailNotifications = () => {
-        const {config, currentUser} = this.props;
-        const {emailSetting} = this.state;
-
-        this.setState({showEmailNotificationsModal: false});
-
-        if (emailSetting) {
-            let email = emailSetting;
-            let interval;
-
-            const emailBatchingEnabled = config.EnableEmailBatching === 'true';
-            if (emailBatchingEnabled && emailSetting !== 'false') {
-                interval = emailSetting;
-                email = 'true';
-            }
-
-            this.saveNotificationProps({
-                ...getNotificationProps(currentUser),
-                email,
-                interval,
-            });
-        }
-    };
-
     saveNotificationProps = (notifyProps) => {
         const {currentUser} = this.props;
         const {user_id: userId} = notifyProps;
@@ -203,10 +159,6 @@ class NotificationSettings extends PureComponent {
             ...getNotificationProps(currentUser),
             user_id: userId,
         };
-
-        if (notifyProps.interval) {
-            previousProps.interval = notifyProps.interval;
-        }
 
         if (!deepEqual(previousProps, notifyProps)) {
             this.props.actions.handleUpdateUserNotifyProps(notifyProps);
@@ -245,154 +197,6 @@ class NotificationSettings extends PureComponent {
         if (this.shouldSaveAutoResponder(notifyProps)) {
             this.props.actions.handleUpdateUserNotifyProps(notifyProps);
         }
-    };
-
-    renderEmailNotificationSettings = (style) => {
-        if (Platform.OS === 'ios') {
-            return null;
-        }
-
-        const {config, currentUser, intl, myPreferences} = this.props;
-        const notifyProps = getNotificationProps(currentUser);
-        const sendEmailNotifications = config.SendEmailNotifications === 'true';
-        const emailBatchingEnabled = sendEmailNotifications && config.EnableEmailBatching === 'true';
-
-        const never = notifyProps.email === 'false';
-        let sendImmediatley = notifyProps.email === 'true';
-        let sendImmediatleyValue = 'true';
-        let fifteenMinutes;
-        let hourly;
-        let interval;
-
-        if (emailBatchingEnabled) {
-            const emailPreferences = getPreferencesByCategory(myPreferences, Preferences.CATEGORY_NOTIFICATIONS);
-            if (emailPreferences.size) {
-                interval = emailPreferences.get(Preferences.EMAIL_INTERVAL).value;
-            }
-        }
-
-        if (emailBatchingEnabled && notifyProps.email !== 'false') {
-            sendImmediatley = interval === Preferences.INTERVAL_IMMEDIATE.toString();
-            fifteenMinutes = interval === Preferences.INTERVAL_FIFTEEN_MINUTES.toString();
-            hourly = interval === Preferences.INTERVAL_HOUR.toString();
-            sendImmediatleyValue = Preferences.INTERVAL_IMMEDIATE.toString();
-        }
-
-        let helpText;
-        if (sendEmailNotifications) {
-            helpText = (
-                <FormattedText
-                    id='user.settings.notifications.emailInfo'
-                    defaultMessage='Email notifications are sent for mentions and direct messages when you are offline or away from {siteName} for more than 5 minutes.'
-                    values={{siteName: config.SiteName}}
-                    style={style.modalHelpText}
-                />
-            );
-        }
-
-        const emailOptions = [{
-            label: intl.formatMessage({
-                id: 'user.settings.notifications.email.immediately',
-                defaultMessage: 'Immediately',
-            }),
-            value: sendImmediatleyValue,
-            checked: sendImmediatley,
-        }];
-
-        if (emailBatchingEnabled) {
-            emailOptions.push({
-                label: intl.formatMessage({
-                    id: 'user.settings.notifications.email.everyXMinutes',
-                    defaultMessage: 'Every {count, plural, one {minute} other {{count, number} minutes}}',
-                }, {count: Preferences.INTERVAL_FIFTEEN_MINUTES / 60}),
-                value: Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
-                checked: fifteenMinutes,
-            }, {
-                label: intl.formatMessage({
-                    id: 'user.settings.notifications.email.everyHour',
-                    defaultMessage: 'Every hour',
-                }),
-                value: Preferences.INTERVAL_HOUR.toString(),
-                checked: hourly,
-            });
-        }
-
-        emailOptions.push({
-            label: intl.formatMessage({
-                id: 'user.settings.notifications.email.never',
-                defaultMessage: 'Never',
-            }),
-            value: 'false',
-            checked: never,
-        });
-
-        return (
-            <Modal
-                animationType='slide'
-                transparent={true}
-                visible={this.state.showEmailNotificationsModal}
-                onRequestClose={() => this.setState({showEmailNotificationsModal: false})}
-            >
-                <View style={style.modalOverlay}>
-                    <View style={style.modal}>
-                        <View style={style.modalBody}>
-                            <View style={style.modalTitleContainer}>
-                                <FormattedText
-                                    id='user.settings.notifications.email.send'
-                                    defaultMessage='Send email notifications'
-                                    style={style.modalTitle}
-                                />
-                            </View>
-                            {!sendEmailNotifications &&
-                            <FormattedText
-                                id='user.settings.general.emailHelp2'
-                                defaultMessage='Email has been disabled by your System Administrator. No notification emails will be sent until it is enabled.'
-                                style={style.modalOptionDisabled}
-                            />
-                            }
-                            {sendEmailNotifications &&
-                            <RadioButtonGroup
-                                name='emailSettings'
-                                onSelect={this.setEmailNotifications}
-                                options={emailOptions}
-                            />
-                            }
-                            {helpText}
-                        </View>
-                        <View style={style.modalFooter}>
-                            <View style={style.divider}/>
-                            <View style={style.modalFooterContainer}>
-                                <TouchableOpacity
-                                    style={style.modalFooterOptionContainer}
-                                    onPress={this.saveEmailNotifications}
-                                >
-                                    <FormattedText
-                                        id='mobile.notification_settings.modal_cancel'
-                                        defaultMessage='CANCEL'
-                                        style={style.modalFooterOption}
-                                    />
-                                </TouchableOpacity>
-                                {sendEmailNotifications &&
-                                <View>
-                                    <View style={{marginRight: 10}}/>
-                                    <TouchableOpacity
-                                        style={style.modalFooterOptionContainer}
-                                        onPress={this.saveEmailNotifications}
-                                    >
-                                        <FormattedText
-                                            id='mobile.notification_settings.modal_save'
-                                            defaultMessage='SAVE'
-                                            style={style.modalFooterOption}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                                }
-                            </View>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
-        );
     };
 
     render() {
@@ -458,7 +262,6 @@ class NotificationSettings extends PureComponent {
                     {autoResponder}
                     <View style={style.divider}/>
                 </ScrollView>
-                {this.renderEmailNotificationSettings(style)}
             </View>
         );
     }
@@ -482,60 +285,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
             width: '100%',
-        },
-        modalOverlay: {
-            backgroundColor: changeOpacity('#000000', 0.6),
-            alignItems: 'center',
-            flex: 1,
-        },
-        modal: {
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
-            marginTop: 20,
-            width: '95%',
-        },
-        modalBody: {
-            paddingHorizontal: 24,
-        },
-        modalTitleContainer: {
-            marginBottom: 30,
-            marginTop: 20,
-        },
-        modalTitle: {
-            color: theme.centerChannelColor,
-            fontSize: 19,
-        },
-        modalOptionDisabled: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17,
-        },
-        modalHelpText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 13,
-            marginTop: 20,
-        },
-        modalFooter: {
-            alignItems: 'flex-end',
-            height: 58,
-            marginTop: 40,
-            width: '100%',
-        },
-        modalFooterContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            paddingRight: 24,
-        },
-        modalFooterOptionContainer: {
-            alignItems: 'center',
-            height: 40,
-            justifyContent: 'center',
-            paddingHorizontal: 10,
-            paddingVertical: 5,
-        },
-        modalFooterOption: {
-            color: theme.linkColor,
-            fontSize: 14,
         },
     };
 });

@@ -49,7 +49,7 @@ function loadTranslation(locale) {
             TRANSLATIONS.pl = require('assets/i18n/pl.json');
             localeData = require('react-intl/locale-data/pl');
             break;
-        case 'pt-BT':
+        case 'pt-BR':
             TRANSLATIONS[locale] = require('assets/i18n/pt-BR.json');
             localeData = require('react-intl/locale-data/pt');
             break;
