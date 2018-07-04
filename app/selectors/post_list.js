@@ -47,10 +47,6 @@ export function makePreparePostIdsForPostList() {
                     continue;
                 }
 
-                if (post.state === Posts.POST_DELETED && post.user_id === currentUser.id) {
-                    continue;
-                }
-
                 // Filter out join/leave messages if necessary
                 if (shouldFilterJoinLeavePost(post, showJoinLeave, currentUser.username)) {
                     continue;
