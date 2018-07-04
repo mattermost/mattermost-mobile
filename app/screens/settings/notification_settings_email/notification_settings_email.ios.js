@@ -61,7 +61,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                         <SectionItem
                             label={(
                                 <FormattedText
-                                    id='user.settings.notifications.email.fifteenMinutes'
+                                    id='mobile.user.settings.notifications.email.fifteenMinutes'
                                     defaultMessage='Every 15 minutes'
                                 />
                             )}

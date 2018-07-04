@@ -57,7 +57,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 i18nMessage = 'Every hour';
                 break;
             case Preferences.INTERVAL_FIFTEEN_MINUTES.toString():
-                i18nId = 'user.settings.notifications.email.fifteenMinutes';
+                i18nId = 'mobile.user.settings.notifications.email.fifteenMinutes';
                 i18nMessage = 'Every 15 minutes';
                 break;
             case Preferences.INTERVAL_NEVER.toString():
@@ -125,7 +125,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
         if (enableEmailBatching) {
             emailOptions.push({
                 label: intl.formatMessage({
-                    id: 'user.settings.notifications.email.fifteenMinutes',
+                    id: 'mobile.user.settings.notifications.email.fifteenMinutes',
                     defaultMessage: 'Every 15 minutes',
                 }),
                 value: Preferences.INTERVAL_FIFTEEN_MINUTES.toString(),
