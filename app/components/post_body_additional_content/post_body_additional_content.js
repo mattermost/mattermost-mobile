@@ -19,7 +19,7 @@ import ProgressiveImage from 'app/components/progressive_image';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
-import {isImageLink, isYoutubeLink} from 'app/utils/url';
+import {getYouTubeVideoId, isImageLink, isYoutubeLink} from 'app/utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
 
@@ -86,7 +86,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             if (isImageLink(link)) {
                 imageUrl = link;
             } else if (isYoutubeLink(link)) {
-                const videoId = this.getYouTubeVideoId(link);
+                const videoId = getYouTubeVideoId(link);
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
             }
@@ -155,7 +155,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         if (link) {
             if (isYouTube) {
-                const videoId = this.getYouTubeVideoId(link);
+                const videoId = getYouTubeVideoId(link);
                 const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
 
@@ -319,16 +319,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return ticks;
     };
 
-    getYouTubeVideoId = (link) => {
-        const regex = /(?:youtube\.com\/\S*(?:(?:\/e(?:mbed))?\/|watch\/?\?(?:\S*?&?v=))|youtu\.be\/)([a-zA-Z0-9_-]{6,11})/g;
-        const match = regex.exec(link);
-        if (match && match.length > 0) {
-            return match[1];
-        }
-
-        return link;
-    };
-
     goToImagePreview = (passProps) => {
         this.props.navigator.showModal({
             screen: 'ImagePreview',
@@ -381,7 +371,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     playYouTubeVideo = () => {
         const {link} = this.props;
-        const videoId = this.getYouTubeVideoId(link);
+        const videoId = getYouTubeVideoId(link);
         const startTime = this.getYouTubeTime(link);
 
         if (Platform.OS === 'ios') {

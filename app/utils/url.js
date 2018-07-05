@@ -94,3 +94,25 @@ export function getScheme(url) {
 
     return match && match[1];
 }
+
+export function getYouTubeVideoId(link) {
+    // https://youtube.com/watch?v=<id>
+    let match = (/youtube\.com\/watch\?\S*\bv=([a-zA-Z0-9_-]{6,11})/g).exec(link);
+    if (match) {
+        return match[1];
+    }
+
+    // https://youtube.com/embed/<id>
+    match = (/youtube\.com\/embed\/([a-zA-Z0-9_-]{6,11})/g).exec(link);
+    if (match) {
+        return match[1];
+    }
+
+    // https://youtu.be/<id>
+    match = (/youtu.be\/([a-zA-Z0-9_-]{6,11})/g).exec(link);
+    if (match) {
+        return match[1];
+    }
+
+    return '';
+}
