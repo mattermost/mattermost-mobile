@@ -13,7 +13,6 @@ import {
     View,
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
-import youTubeVideoId from 'youtube-video-id';
 
 import ProgressiveImage from 'app/components/progressive_image';
 
@@ -87,7 +86,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             if (isImageLink(link)) {
                 imageUrl = link;
             } else if (isYoutubeLink(link)) {
-                const videoId = youTubeVideoId(link);
+                const videoId = this.getYouTubeVideoId(link);
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
             }
@@ -156,7 +155,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
         if (link) {
             if (isYouTube) {
-                const videoId = youTubeVideoId(link);
+                const videoId = this.getYouTubeVideoId(link);
                 const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                 const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
 
@@ -291,6 +290,46 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return previewComponent ? {...previewComponent.props} : {};
     };
 
+    getYouTubeTime = (link) => {
+        const timeRegex = /[\\?&](t|start|time_continue)=([0-9]+h)?([0-9]+m)?([0-9]+s?)/;
+
+        const time = link.match(timeRegex);
+        if (!time || !time[0]) {
+            return 0;
+        }
+
+        const hours = time[2] ? time[2].match(/([0-9]+)h/) : null;
+        const minutes = time[3] ? time[3].match(/([0-9]+)m/) : null;
+        const seconds = time[4] ? time[4].match(/([0-9]+)s?/) : null;
+
+        let ticks = 0;
+
+        if (hours && hours[1]) {
+            ticks += parseInt(hours[1], 10) * 3600;
+        }
+
+        if (minutes && minutes[1]) {
+            ticks += parseInt(minutes[1], 10) * 60;
+        }
+
+        if (seconds && seconds[1]) {
+            ticks += parseInt(seconds[1], 10);
+        }
+
+        return ticks;
+    };
+
+    getYouTubeVideoId = (link) => {
+        const regex = /(youtube\.com\/watch|(v=)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+        const match = link.match(regex);
+        if (match && match.length > 2) {
+            return match[3];
+        } else if (match && match.length > 1) {
+            return match[2];
+        }
+        return link;
+    };
+
     goToImagePreview = (passProps) => {
         this.props.navigator.showModal({
             screen: 'ImagePreview',
@@ -343,7 +382,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     playYouTubeVideo = () => {
         const {link} = this.props;
-        const videoId = youTubeVideoId(link);
+        const videoId = this.getYouTubeVideoId(link);
         const startTime = this.getYouTubeTime(link);
 
         if (Platform.OS === 'ios') {
@@ -362,35 +401,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
                 Linking.openURL(link);
             }
         }
-    };
-
-    getYouTubeTime = (link) => {
-        const timeRegex = /[\\?&](t|start|time_continue)=([0-9]+h)?([0-9]+m)?([0-9]+s?)/;
-
-        const time = link.match(timeRegex);
-        if (!time || !time[0]) {
-            return 0;
-        }
-
-        const hours = time[2] ? time[2].match(/([0-9]+)h/) : null;
-        const minutes = time[3] ? time[3].match(/([0-9]+)m/) : null;
-        const seconds = time[4] ? time[4].match(/([0-9]+)s?/) : null;
-
-        let ticks = 0;
-
-        if (hours && hours[1]) {
-            ticks += parseInt(hours[1], 10) * 3600;
-        }
-
-        if (minutes && minutes[1]) {
-            ticks += parseInt(minutes[1], 10) * 60;
-        }
-
-        if (seconds && seconds[1]) {
-            ticks += parseInt(seconds[1], 10);
-        }
-
-        return ticks;
     };
 
     render() {
