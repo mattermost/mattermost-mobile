@@ -320,13 +320,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     getYouTubeVideoId = (link) => {
-        const regex = /(youtube\.com\/watch|(v=)|youtu\.be\/)([a-zA-Z0-9_-]+)/;
-        const match = link.match(regex);
-        if (match && match.length > 2) {
-            return match[3];
-        } else if (match && match.length > 1) {
-            return match[2];
+        const regex = /(?:youtube\.com\/\S*(?:(?:\/e(?:mbed))?\/|watch\/?\?(?:\S*?&?v=))|youtu\.be\/)([a-zA-Z0-9_-]{6,11})/g;
+        const match = regex.exec(link);
+        if (match && match.length > 0) {
+            return match[1];
         }
+
         return link;
     };
 
