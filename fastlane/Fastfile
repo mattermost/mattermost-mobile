@@ -43,10 +43,10 @@ platform :ios do
 
     if ENV['MATTERMOST_WEBHOOK_URL']
       pretext = '#### New iOS beta published to TestFlight'
-      msg = '#ios-beta should be available in TestFlight soon, you can sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
+      msg = '@qateam #ios-beta should be available in TestFlight soon, you can sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
       if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
         pretext = '#### New iOS released ready to be published'
-        msg = '#ios-release has been cut and should be available for [download](https://itunes.apple.com/us/app/mattermost/id1257222717?mt=8) soon.'
+        msg = '@qateam #ios-release has been cut and should be available for [download](https://itunes.apple.com/us/app/mattermost/id1257222717?mt=8) soon.'
       end
       send_message_for_ios(
           pretext,
@@ -308,10 +308,10 @@ platform :android do
 
     if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
       pretext = '#### New Android beta published to Google Play'
-      msg = '#android-beta available for testing, you can sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
+      msg = '@qateam #android-beta available for testing, you can sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
       if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
         pretext = '#### New Android released ready to be published'
-        msg = '#android-release has been cut and should be available for [download](https://play.google.com/store/apps/details?id=com.mattermost.rn&hl=en) soon.'
+        msg = '@qateam #android-release has been cut and should be available for [download](https://play.google.com/store/apps/details?id=com.mattermost.rn&hl=en) soon.'
       end
       send_message_for_android(
           pretext,
