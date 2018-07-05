@@ -42,10 +42,10 @@ platform :ios do
     git_actions()
 
     if ENV['MATTERMOST_WEBHOOK_URL']
-      pretext = '#### New iOS beta published to TestFlight'
+      pretext = '#### New iOS beta published to TestFlight -> @qateam'
       msg = '#ios-beta should be available in TestFlight soon, you can sign up as a beta tester [here](https://mattermost-fastlane.herokuapp.com/)'
       if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
-        pretext = '#### New iOS released ready to be published'
+        pretext = '#### New iOS released ready to be published -> @qateam'
         msg = '#ios-release has been cut and should be available for [download](https://itunes.apple.com/us/app/mattermost/id1257222717?mt=8) soon.'
       end
       send_message_for_ios(
@@ -307,10 +307,10 @@ platform :android do
     git_actions()
 
     if ENV['MATTERMOST_WEBHOOK_URL'] && !ENV['MATTERMOST_WEBHOOK_URL'].nil? && !ENV['MATTERMOST_WEBHOOK_URL'].empty?
-      pretext = '#### New Android beta published to Google Play'
+      pretext = '#### New Android beta published to Google Play -> @qateam'
       msg = '#android-beta available for testing, you can sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta)'
       if !ENV['BETA_BUILD'].nil? && !ENV['BETA_BUILD'].empty? && ENV['BETA_BUILD'] != 'true'
-        pretext = '#### New Android released ready to be published'
+        pretext = '#### New Android released ready to be published -> @qateam'
         msg = '#android-release has been cut and should be available for [download](https://play.google.com/store/apps/details?id=com.mattermost.rn&hl=en) soon.'
       end
       send_message_for_android(

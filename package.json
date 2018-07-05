@@ -66,8 +66,7 @@
     "semver": "5.5.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.1",
-    "url-parse": "1.4.0",
-    "youtube-video-id": "0.0.2"
+    "url-parse": "1.4.0"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
