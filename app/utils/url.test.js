@@ -42,4 +42,23 @@ describe('UrlUtils', () => {
             expect(UrlUtils.isImageLink(link)).toEqual(true);
         });
     });
+
+    describe('getYouTubeVideoId', () => {
+        const tests = [
+            ['https://youtu.be/zrFWrmPgfzc', 'zrFWrmPgfzc'],
+            ['https://youtu.be/zrFWrmPgfzc?t=10s', 'zrFWrmPgfzc'],
+            ['https://www.youtube.com/watch?v=zrFWrmPgfzc&feature=youtu.be', 'zrFWrmPgfzc'],
+            ['https://www.youtube.com/watch?v=zrFWrmPgfzc&t=10s', 'zrFWrmPgfzc'],
+            ['https://www.youtube.com/watch?t=10s&v=zrFWrmPgfzc', 'zrFWrmPgfzc'],
+        ];
+
+        for (const test of tests) {
+            const input = test[0];
+            const expected = test[1];
+
+            it(input, () => {
+                expect(UrlUtils.getYouTubeVideoId(input)).toEqual(expected);
+            });
+        }
+    });
 });
