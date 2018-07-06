@@ -48,8 +48,18 @@ const onRegisterDevice = (data) => {
     }
 };
 
+const loadFromNotification = async (notification) => {
+    await store.dispatch(loadFromPushNotification(notification));
+    if (!app.startAppFromPushNotification) {
+        EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
+        PushNotifications.resetNotification();
+    }
+};
+
 const onPushNotification = async (deviceNotification) => {
     const {dispatch, getState} = store;
+    let unsubscribeFromStore = null;
+    let stopLoadingNotification = false;
 
     // mark the app as started as soon as possible
     if (Platform.OS === 'android' && !app.appStarted) {
@@ -77,11 +87,17 @@ const onPushNotification = async (deviceNotification) => {
         } else if (userInteraction && !notification.localNotification) {
             EventEmitter.emit('close_channel_drawer');
             if (getState().views.root.hydrationComplete) {
-                await dispatch(loadFromPushNotification(notification));
-                if (!app.startAppFromPushNotification) {
-                    EventEmitter.emit(ViewTypes.NOTIFICATION_TAPPED);
-                    PushNotifications.resetNotification();
-                }
+                loadFromNotification(notification);
+            } else {
+                const waitForHydration = () => {
+                    if (getState().views.root.hydrationComplete && !stopLoadingNotification) {
+                        stopLoadingNotification = true;
+                        unsubscribeFromStore();
+                        loadFromNotification(notification);
+                    }
+                };
+
+                unsubscribeFromStore = store.subscribe(waitForHydration);
             }
         }
     }
