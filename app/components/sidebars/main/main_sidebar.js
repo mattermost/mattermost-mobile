@@ -93,7 +93,7 @@ export default class ChannelSidebar extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, isLandscape, teamsCount} = this.props;
+        const {currentTeamId, deviceWidth, isLandscape, teamsCount} = this.props;
         const {openDrawerOffset} = this.state;
 
         if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== this.state.show) {
@@ -101,7 +101,7 @@ export default class ChannelSidebar extends Component {
         }
 
         return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.isLandscape !== isLandscape ||
+            nextProps.isLandscape !== isLandscape || nextProps.deviceWidth !== deviceWidth ||
             nextProps.teamsCount !== teamsCount || this.state.lockMode !== nextState.lockMode;
     }
 
