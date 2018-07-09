@@ -41,12 +41,13 @@ export default class SettingsDrawer extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         navigator: PropTypes.object,
-        status: PropTypes.string.isRequired,
+        status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         currentUser: {},
+        status: 'offline',
     };
 
     static contextTypes = {
