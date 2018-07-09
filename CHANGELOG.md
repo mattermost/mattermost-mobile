@@ -7,14 +7,15 @@
 ### Highlights
 
 #### Channel drawer performance
- - Replaced the current drawer with DrawerLayout and brought back the channel loader when switching channels.
+ - On Android, replaced the current drawer with DrawerLayout and brought back the channel loader when switching channels.
 
-#### Channel linking issues
+#### Channel loading improvements by retrieving posts with push notifications
 
+#### Markdown support for announcement banner
 
 ### Improvements
 
- - Added CBA support for iOS.
+ - Added experimental support for certificate-based authentication (CBA) for iOS to identify a user or a device before granting access to Mattermost. See [documentation](https://docs.mattermost.com/deployment/certificate-based-authentication.html) to learn more.
  - Changed post textbox to not be a connected component.
  - Allow connecting to mattermost instances hosted at subpaths.
  - Allow retrieving posts when push notifications are received to improve messages appearing more quickly.
@@ -25,9 +26,13 @@
  - Fixed an issue where the unread badge background was always white.
  - Fixed an issue where a username repeated in system message if user was added to a channel more than once.
  - Fixed an issue where Android Sharing from Microsoft apps failed.
- - Fixed an issue where the loading screen was missing when the "Add Members to Channel" screen was loading.
  - Fixed an issue where YouTube crashed the app if link did not have a time set.
  - Fixed an issue where System Admins did not see all teams available to join on mobile.
+ - Fixed an issue with iOS extension crash and ability to share from Files app.
+ - Fixed an issue where viewing a non-existent permalink didn't show an error message.
+ - Fixed an issue where jumping to a channel search did not bold unread channels.
+ - Fixed an issue with being able to add own user to a Group Message channel.
+ - Fixed an issue with not being able to reply from a push notification on iOS.
  
 
 ## 1.9.1 Release
