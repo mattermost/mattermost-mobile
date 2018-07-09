@@ -104,9 +104,9 @@
     "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
     "postinstall": "make post-install",
-    "test": "TZ=utc jest --forceExit",
-    "test:watch": "TZ=utc jest --watch",
-    "test:coverage": "TZ=utc jest --coverage"
+    "test": "TZ=GMT jest --forceExit",
+    "test:watch": "TZ=GMT jest --watch",
+    "test:coverage": "TZ=GMT jest --coverage"
   },
   "rnpm": {
     "assets": [
