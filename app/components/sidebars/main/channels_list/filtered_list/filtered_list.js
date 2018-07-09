@@ -114,7 +114,7 @@ class FilteredList extends Component {
                 channelId={channel.id}
                 channel={channel}
                 isSearchResult={true}
-                isUnread={false}
+                isUnread={channel.isUnread}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
             />
@@ -173,8 +173,11 @@ class FilteredList extends Component {
     buildUnreadChannelsForSearch = (props, term) => {
         const {unreadChannels} = props.channels;
 
-        return this.filterChannels(unreadChannels, term);
-    }
+        return this.filterChannels(unreadChannels, term).map((item) => {
+            item.isUnread = true;
+            return item;
+        });
+    };
 
     buildCurrentDMSForSearch = (props, term) => {
         const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages, groupChannelMemberDetails} = props;

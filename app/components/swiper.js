@@ -10,7 +10,6 @@ import {
     Platform,
     StyleSheet,
     InteractionManager,
-    PanResponder,
 } from 'react-native';
 
 export default class Swiper extends PureComponent {
@@ -49,18 +48,8 @@ export default class Swiper extends PureComponent {
 
         this.runOnLayout = true;
         this.offset = props.width * props.initialPage;
-        this.isScrolling = false;
 
         this.state = this.initialState(props);
-    }
-
-    componentWillMount() {
-        this.panResponder = PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onStartShouldSetPanResponderCapture: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponderCapture: () => true,
-        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -89,7 +78,6 @@ export default class Swiper extends PureComponent {
     };
 
     onScrollBegin = () => {
-        this.isScrolling = true;
         this.props.onScrollBegin();
     };
 
@@ -99,19 +87,13 @@ export default class Swiper extends PureComponent {
             e.nativeEvent.contentOffset = {x: e.nativeEvent.position * this.props.width};
         }
 
-        this.isScrolling = false;
-
         // get the index
         this.updateIndex(e.nativeEvent.contentOffset.x);
     };
 
     onPageScrollStateChanged = (e) => {
         switch (e) {
-        case 'idle':
-            this.isScrolling = false;
-            break;
         case 'dragging':
-            this.isScrolling = true;
             this.props.onScrollBegin();
             break;
         }
@@ -152,7 +134,6 @@ export default class Swiper extends PureComponent {
         if (Platform.OS === 'ios') {
             return (
                 <ScrollView
-                    {...this.panResponder.panHandlers}
                     ref={this.refScrollView}
                     bounces={false}
                     horizontal={true}
@@ -227,7 +208,7 @@ export default class Swiper extends PureComponent {
     };
 
     scrollToIndex = (index, animated) => {
-        if (this.isScrolling || this.state.total < 2) {
+        if (this.state.total < 2) {
             return;
         }
 

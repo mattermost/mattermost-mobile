@@ -12,10 +12,6 @@ jest.useFakeTimers();
 
 describe('AnnouncementBanner', () => {
     const baseProps = {
-        actions: {
-            dismissBanner: jest.fn(),
-        },
-        allowDismissal: true,
         bannerColor: '#ddd',
         bannerDismissed: false,
         bannerEnabled: true,
@@ -32,17 +28,5 @@ describe('AnnouncementBanner', () => {
 
         wrapper.setProps({bannerEnabled: false});
         expect(wrapper).toMatchSnapshot();
-    });
-
-    test('should call actions.dismissBanner on handleDismiss', () => {
-        const actions = {dismissBanner: jest.fn()};
-        const props = {...baseProps, actions};
-        const wrapper = shallow(
-            <AnnouncementBanner {...props}/>
-        );
-
-        wrapper.instance().handleDismiss();
-        expect(actions.dismissBanner).toHaveBeenCalledTimes(1);
-        expect(actions.dismissBanner).toHaveBeenCalledWith(props.bannerText);
     });
 });

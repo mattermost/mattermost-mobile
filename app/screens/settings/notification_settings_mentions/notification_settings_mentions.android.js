@@ -20,7 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import NotificationSettingsMentionsBase from './notification_settings_mention_base';
 
-class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
+class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBase {
     cancelMentionKeys = () => {
         this.setState({showKeywordsModal: false});
         this.keywords = this.state.mention_keys;
@@ -442,4 +442,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(NotificationSettingsMentionsIos);
+export default injectIntl(NotificationSettingsMentionsAndroid);

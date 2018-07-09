@@ -208,7 +208,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
 export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
     for (let i = 0; i < maxTries; i++) {
-        const {data} = await action(dispatch, getState);
+        const {data} = await dispatch(action);
 
         if (data) {
             dispatch(setChannelRetryFailed(false));
@@ -511,17 +511,19 @@ export function increasePostVisibility(channelId, focusedPostId) {
         }];
 
         const posts = result.data;
+        let hasMorePost = false;
         if (posts) {
+            hasMorePost = posts.order.length >= pageSize;
+
             // make sure to increment the posts visibility
             // only if we got results
             actions.push(doIncreasePostVisibility(channelId));
 
-            actions.push(setLoadMorePostsVisible(posts.order.length >= pageSize));
+            actions.push(setLoadMorePostsVisible(hasMorePost));
         }
 
         dispatch(batchActions(actions));
-
-        return Boolean(posts);
+        return hasMorePost;
     };
 }
 

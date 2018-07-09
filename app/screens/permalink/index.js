@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {getChannel as getChannelAction, joinChannel, markChannelAsRead, markChannelAsViewed} from 'mattermost-redux/actions/channels';
 import {getPostsAfter, getPostsBefore, getPostThread, selectPost} from 'mattermost-redux/actions/posts';
+import {Posts} from 'mattermost-redux/constants';
 import {makeGetChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {makeGetPostIdsAroundPost, getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -29,11 +30,13 @@ function makeMapStateToProps() {
     return function mapStateToProps(state) {
         const {currentFocusedPostId} = state.entities.posts;
         const post = getPost(state, currentFocusedPostId);
-        const channel = post ? getChannel(state, {id: post.channel_id}) : null;
+
+        let channel;
         let postIds;
 
-        if (channel && channel.id) {
-            postIds = getPostIdsAroundPost(state, currentFocusedPostId, channel.id, {
+        if (post && post.delete_at === 0 && post.state !== Posts.POST_DELETED) {
+            channel = getChannel(state, {id: post.channel_id});
+            postIds = getPostIdsAroundPost(state, currentFocusedPostId, post.channel_id, {
                 postsBeforeCount: 10,
                 postsAfterCount: 10,
             });

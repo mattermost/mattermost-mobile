@@ -3,35 +3,37 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
 export default class FormattedTime extends React.PureComponent {
     static propTypes = {
         value: PropTypes.any.isRequired,
+        timeZone: PropTypes.string,
         children: PropTypes.func,
         hour12: PropTypes.bool,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     render() {
         const {
             value,
             children,
+            timeZone,
             hour12,
         } = this.props;
+        const {intl} = this.context;
 
-        const date = new Date(value);
-        const militaryTime = !hour12;
-
-        const hour = militaryTime ? date.getHours() : (date.getHours() % 12 || 12);
-        let minute = date.getMinutes();
-        minute = minute >= 10 ? minute : ('0' + minute);
-        let time = '';
-
-        if (!militaryTime) {
-            time = (date.getHours() >= 12 ? ' PM' : ' AM');
-        }
-
-        const formattedTime = hour + ':' + minute + time;
+        const timezoneProps = timeZone ? {timeZone} : {};
+        const formattedTime = intl.formatDate(value, {
+            ...timezoneProps,
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12,
+        });
 
         if (typeof children === 'function') {
             return children(formattedTime);

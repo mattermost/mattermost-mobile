@@ -61,6 +61,8 @@ export default class Entry extends PureComponent {
         navigator: PropTypes.object,
         isLandscape: PropTypes.bool,
         hydrationComplete: PropTypes.bool,
+        enableTimezone: PropTypes.bool,
+        deviceTimezone: PropTypes.string,
         initializeModules: PropTypes.func.isRequired,
         actions: PropTypes.shape({
             setDeviceToken: PropTypes.func.isRequired,
@@ -106,6 +108,13 @@ export default class Entry extends PureComponent {
     };
 
     listenForHydration = () => {
+        const {
+            actions: {
+                autoUpdateTimezone,
+            },
+            enableTimezone,
+            deviceTimezone,
+        } = this.props;
         const {getState} = store;
         const state = getState();
 
@@ -115,6 +124,10 @@ export default class Entry extends PureComponent {
 
         if (state.views.root.hydrationComplete) {
             this.unsubscribeFromStore();
+
+            if (enableTimezone) {
+                autoUpdateTimezone(deviceTimezone);
+            }
 
             this.setAppCredentials();
             this.setStartupThemes();

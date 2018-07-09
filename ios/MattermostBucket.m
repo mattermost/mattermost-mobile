@@ -81,7 +81,9 @@ RCT_EXPORT_METHOD(removePreference:(NSString *) key
   if(![fileManager fileExistsAtPath:filePath]) {
     [fileManager createFileAtPath:filePath contents:nil attributes:nil];
   }
-  [content writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+  if ([content length] > 0) {
+    [content writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+  }
 }
 
 -(NSString *)readFromFile:(NSString *)fileName appGroupId:(NSString *)appGroupId {
@@ -107,7 +109,9 @@ RCT_EXPORT_METHOD(removePreference:(NSString *) key
 
 -(void) setPreference:(NSString *)key value:(NSString *) value appGroupId:(NSString*)appGroupId {
   NSUserDefaults* bucket = [self bucketByName: appGroupId];
-  [bucket setObject:value forKey:key];
+  if ([key length] > 0 && [value length] > 0) {
+    [bucket setObject:value forKey:key];
+  }
 }
 
 -(id) getPreference:(NSString *)key appGroupId:(NSString*)appGroupId {

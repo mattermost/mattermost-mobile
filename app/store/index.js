@@ -20,7 +20,7 @@ import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 import mattermostBucket from 'app/mattermost_bucket';
 import Config from 'assets/config';
 
-import {messageRetention, shareExtensionData} from './middleware';
+import {messageRetention} from './middleware';
 import {transformSet} from './utils';
 
 function getAppReducer() {
@@ -51,7 +51,7 @@ const setTransforms = [
 export default function configureAppStore(initialState) {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
-        ['announcement', 'extension', 'login', 'root']
+        ['extension', 'login', 'root']
     );
 
     const typingBlackListFilter = createBlacklistFilter(
@@ -208,6 +208,11 @@ export default function configureAppStore(initialState) {
                         },
                     ]));
 
+                    // When logging out remove the data stored in the bucket
+                    mattermostBucket.removePreference('cert', Config.AppGroupId);
+                    mattermostBucket.removePreference('emm', Config.AppGroupId);
+                    mattermostBucket.removeFile('entities', Config.AppGroupId);
+
                     setTimeout(() => {
                         purging = false;
                     }, 500);
@@ -267,7 +272,7 @@ export default function configureAppStore(initialState) {
         },
     };
 
-    const additionalMiddleware = [createSentryMiddleware(), messageRetention, shareExtensionData];
+    const additionalMiddleware = [createSentryMiddleware(), messageRetention];
     return configureStore(initialState, appReducer, offlineOptions, getAppReducer, {
         additionalMiddleware,
     });

@@ -6,7 +6,6 @@ import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import {fetchMyChannelsAndMembers, markChannelAsRead} from 'mattermost-redux/actions/channels';
 import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
-import {getPosts} from 'mattermost-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
 
 import {ViewTypes} from 'app/constants';
@@ -15,7 +14,6 @@ import {recordTime} from 'app/utils/segment';
 import {
     handleSelectChannel,
     setChannelDisplayName,
-    retryGetPostsAction,
 } from 'app/actions/views/channel';
 
 export function startDataCleanup() {
@@ -83,12 +81,10 @@ export function loadFromPushNotification(notification) {
             dispatch(selectTeam({id: teamId}));
         }
 
-        // when the notification is from the same channel as the current channel
-        // we should get the posts
-        if (channelId === currentChannelId) {
-            dispatch(markChannelAsRead(channelId, null, false));
-            await retryGetPostsAction(getPosts(channelId), dispatch, getState);
-        } else {
+        // mark channel as read
+        dispatch(markChannelAsRead(channelId, channelId === currentChannelId ? null : currentChannelId, false));
+
+        if (channelId !== currentChannelId) {
             // when the notification is from a channel other than the current channel
             dispatch(markChannelAsRead(channelId, currentChannelId, false));
             dispatch(setChannelDisplayName(''));
