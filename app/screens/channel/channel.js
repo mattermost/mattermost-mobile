@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    Alert,
     AppState,
     Dimensions,
     Platform,
@@ -22,6 +23,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import OfflineIndicator from 'app/components/offline_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
+import {ViewTypes} from 'app/constants';
 import mattermostBucket from 'app/mattermost_bucket';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -33,7 +35,6 @@ import LocalConfig from 'assets/config';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
-import {ViewTypes} from 'app/constants';
 const {
     ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
@@ -50,6 +51,7 @@ export default class Channel extends PureComponent {
             connection: PropTypes.func.isRequired,
             loadChannelsIfNecessary: PropTypes.func.isRequired,
             loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
+            logout: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
@@ -236,8 +238,12 @@ export default class Channel extends PureComponent {
     handleConnectionChange = (isConnected) => {
         const {connection} = this.props.actions;
 
-        this.handleWebSocket(isConnected);
-        connection(isConnected);
+        // Prevent for being called more than once.
+        if (this.isConnected !== isConnected) {
+            this.isConnected = isConnected;
+            this.handleWebSocket(isConnected);
+            connection(isConnected);
+        }
     };
 
     handleLeaveTeam = () => {
@@ -245,6 +251,7 @@ export default class Channel extends PureComponent {
     };
 
     initializeWebSocket = async () => {
+        const {formatMessage} = this.context.intl;
         const {actions} = this.props;
         const {initWebSocket} = actions;
         const platform = Platform.OS;
@@ -253,7 +260,25 @@ export default class Channel extends PureComponent {
             certificate = await mattermostBucket.getPreference('cert', LocalConfig.AppGroupId);
         }
 
-        initWebSocket(platform, null, null, null, {certificate});
+        initWebSocket(platform, null, null, null, {certificate}).catch(() => {
+            // we should dispatch a failure and show the app as disconnected
+            Alert.alert(
+                formatMessage({id: 'mobile.authentication_error.title', defaultMessage: 'Authentication Error'}),
+                formatMessage({
+                    id: 'mobile.authentication_error.message',
+                    defaultMessage: 'Mattermost has encountered an error. Please re-authenticate to start a new session.',
+                }),
+                [{
+                    text: formatMessage({
+                        id: 'navbar_dropdown.logout',
+                        defaultMessage: 'Logout',
+                    }),
+                    onPress: actions.logout,
+                }],
+                {cancelable: false}
+            );
+            this.props.actions.closeWebSocket(true);
+        });
     };
 
     loadChannels = (teamId) => {
