@@ -135,7 +135,7 @@ export const onPushNotificationReply = (data, text, badge, completed) => {
             Client4.setToken(token);
         }
 
-        dispatch(retryGetPostsAction(getPosts(data.channel_id)));
+        retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
         dispatch(createPost(post)).then(() => {
             dispatch(markChannelAsRead(data.channel_id));
 
