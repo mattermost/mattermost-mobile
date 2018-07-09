@@ -9,6 +9,7 @@ import {createIdsSelector} from 'mattermost-redux/utils/helpers';
 import {shouldFilterJoinLeavePost} from 'mattermost-redux/utils/post_utils';
 
 export const DATE_LINE = 'date-';
+export const DATE_LINE_SUFFIX = '-index-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
 
 function shouldShowJoinLeaveMessages(state) {
@@ -107,7 +108,14 @@ export function makePreparePostIdsForSearchPosts() {
 
                 const postDate = new Date(post.create_at);
 
-                out.push(DATE_LINE + postDate.toString(), post.id);
+                // Render a date line for each post, even if displayed on the same date as the
+                // previous post. Since we don't deduplicate here like in other views, we need to
+                // ensure the resulting key is unique, even if the post timestamps (down to the
+                // second) are identical. The screens know to parse out the index before trying
+                // to consume the date value.
+                out.push(DATE_LINE + postDate.toString() + DATE_LINE_SUFFIX + i);
+
+                out.push(post.id);
             }
 
             return out;

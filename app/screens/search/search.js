@@ -20,7 +20,7 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {RequestStatus} from 'mattermost-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
-import DateHeader from 'app/components/post_list/date_header';
+import {isDateLine, DateLine} from 'app/components/post_list/date_header/date_line';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import PostListRetry from 'app/components/post_list_retry';
@@ -29,7 +29,6 @@ import SafeAreaView from 'app/components/safe_area_view';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import mattermostManaged from 'app/mattermost_managed';
-import {DATE_LINE} from 'app/selectors/post_list';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -260,16 +259,6 @@ export default class Search extends PureComponent {
         actions.removeSearchTerms(currentTeamId, item.terms);
     });
 
-    renderDateHeader = (date, index) => {
-        return (
-            <DateHeader
-                key={`${date}-${index}`}
-                date={date}
-                index={index}
-            />
-        );
-    };
-
     renderModifiers = ({item}) => {
         const {theme} = this.props;
         const style = getStyleFromTheme(theme);
@@ -317,14 +306,18 @@ export default class Search extends PureComponent {
             );
         }
 
-        if (item.indexOf(DATE_LINE) === 0) {
-            const date = item.substring(DATE_LINE.length);
-            return this.renderDateHeader(new Date(date), index);
+        if (isDateLine(item)) {
+            return (
+                <DateLine
+                    dateString={item}
+                    index={index}
+                />
+            );
         }
 
         let separator;
         const nextPost = postIds[index + 1];
-        if (nextPost && nextPost.indexOf(DATE_LINE) === -1) {
+        if (nextPost && !isDateLine(nextPost)) {
             separator = <PostSeparator theme={theme}/>;
         }
 
