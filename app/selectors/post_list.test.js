@@ -4,7 +4,6 @@
 import assert from 'assert';
 
 import {
-    DATE_LINE,
     makePreparePostIdsForPostList,
     makePreparePostIdsForSearchPosts,
     START_OF_NEW_MESSAGES,
@@ -46,7 +45,7 @@ describe('Selectors.PostList', () => {
             // Defaults to show post
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(now, [
-                '1002', 
+                '1002',
                 '1001',
                 'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
             ]);
@@ -72,7 +71,7 @@ describe('Selectors.PostList', () => {
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
             assert.deepEqual(now, [
-                '1002', 
+                '1002',
                 '1001',
                 'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
             ]);
@@ -120,7 +119,7 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages});
 
             assert.deepEqual(now, [
-                '1002', 
+                '1002',
                 '1001',
                 'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)',
             ]);
@@ -155,24 +154,24 @@ describe('Selectors.PostList', () => {
             // Do not show new messages indicator before all posts
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 0, indicateNewMessages: true});
             assert.deepEqual(now, [
-                '1010', 
-                '1005', 
+                '1010',
+                '1005',
                 '1000',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, indicateNewMessages: true});
             assert.deepEqual(now, [
-                '1010', 
-                '1005', 
+                '1010',
+                '1005',
                 '1000',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: false});
             assert.deepEqual(now, [
-                '1010', 
-                '1005', 
+                '1010',
+                '1005',
                 '1000',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
             ]);
@@ -180,8 +179,8 @@ describe('Selectors.PostList', () => {
             // Show new messages indicator before all posts
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 999, indicateNewMessages: true});
             assert.deepEqual(now, [
-                '1010', 
-                '1005', 
+                '1010',
+                '1005',
                 '1000',
                 START_OF_NEW_MESSAGES,
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
@@ -190,18 +189,18 @@ describe('Selectors.PostList', () => {
             // Show indicator between posts
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1003, indicateNewMessages: true});
             assert.deepEqual(now, [
-                '1010', 
-                '1005', 
-                START_OF_NEW_MESSAGES, 
+                '1010',
+                '1005',
+                START_OF_NEW_MESSAGES,
                 '1000',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
             ]);
 
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1006, indicateNewMessages: true});
             assert.deepEqual(now, [
-                '1010', 
-                START_OF_NEW_MESSAGES, 
-                '1005', 
+                '1010',
+                START_OF_NEW_MESSAGES,
+                '1005',
                 '1000',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
             ]);
@@ -209,8 +208,8 @@ describe('Selectors.PostList', () => {
             // Don't show indicator when all posts are read
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt: 1020});
             assert.deepEqual(now, [
-                '1010', 
-                '1005', 
+                '1010',
+                '1005',
                 '1000',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)',
             ]);
@@ -252,20 +251,20 @@ describe('Selectors.PostList', () => {
             };
 
             let postIds = [
-                '1006', 
-                '1004', 
-                '1003', 
-                '1001', 
+                '1006',
+                '1004',
+                '1003',
+                '1001',
             ];
             let lastViewedAt = initialPosts['1001'].create_at + 1;
 
             let now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.deepEqual(now, [
-                '1006', 
-                '1004', 
-                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)', 
-                '1003', 
-                START_OF_NEW_MESSAGES, 
+                '1006',
+                '1004',
+                'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
+                '1003',
+                START_OF_NEW_MESSAGES,
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -275,11 +274,11 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(now, [
-                '1006', 
-                '1004', 
+                '1006',
+                '1004',
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
-                START_OF_NEW_MESSAGES, 
+                '1003',
+                START_OF_NEW_MESSAGES,
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -291,11 +290,11 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(now, [
-                '1006', 
-                '1004', 
+                '1006',
+                '1004',
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
-                START_OF_NEW_MESSAGES, 
+                '1003',
+                START_OF_NEW_MESSAGES,
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -307,11 +306,11 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.notEqual(now, prev);
             assert.deepEqual(now, [
-                '1006', 
-                '1004', 
-                START_OF_NEW_MESSAGES, 
+                '1006',
+                '1004',
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -320,11 +319,11 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(now, [
-                '1006', 
-                '1004', 
-                START_OF_NEW_MESSAGES, 
+                '1006',
+                '1004',
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -337,10 +336,10 @@ describe('Selectors.PostList', () => {
             assert.equal(now, prev);
             assert.deepEqual(now, [
                 '1006',
-                '1004', 
-                START_OF_NEW_MESSAGES, 
+                '1004',
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -364,11 +363,11 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(now, [
-                '1006', 
-                '1004', 
-                START_OF_NEW_MESSAGES, 
+                '1006',
+                '1004',
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -392,11 +391,11 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(now, [
-                '1006', 
+                '1006',
                 '1004',
-                START_OF_NEW_MESSAGES, 
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -424,10 +423,10 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.notEqual(now, prev);
             assert.deepEqual(now, [
-                '1004', 
-                START_OF_NEW_MESSAGES, 
+                '1004',
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -436,10 +435,10 @@ describe('Selectors.PostList', () => {
             now = preparePostIdsForPostList(state, {postIds, lastViewedAt, indicateNewMessages: true});
             assert.equal(now, prev);
             assert.deepEqual(now, [
-                '1004', 
-                START_OF_NEW_MESSAGES, 
+                '1004',
+                START_OF_NEW_MESSAGES,
                 'date-Fri Jan 02 1970 01:00:00 GMT+0000 (GMT)',
-                '1003', 
+                '1003',
                 '1001',
                 'date-Thu Jan 01 1970 01:00:00 GMT+0000 (GMT)',
             ]);
@@ -503,6 +502,7 @@ describe('Selectors.PostList', () => {
                         posts: {
                             1001: {id: '1001', create_at: 0, type: ''},
                             1002: {id: '1002', create_at: 1000, type: ''},
+
                             // Same timestamp as 1002
                             1003: {id: '1003', create_at: 1000, type: ''},
                         },
@@ -522,7 +522,7 @@ describe('Selectors.PostList', () => {
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)-index-0',
                 '1003',
                 'date-Thu Jan 01 1970 00:00:01 GMT+0000 (GMT)-index-1',
-                '1002', 
+                '1002',
                 'date-Thu Jan 01 1970 00:00:00 GMT+0000 (GMT)-index-2',
                 '1001',
             ]);

@@ -26,6 +26,6 @@ export class DateLine extends PureComponent {
             />
         );
     }
-};
+}
 
 export const isDateLine = (dateString) => dateString.indexOf(DATE_LINE) === 0;
